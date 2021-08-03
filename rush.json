@@ -460,6 +460,11 @@
       "packageName": "@anticrm/core",
       "projectFolder": "packages/core",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server",
+      "projectFolder": "server/server",
+      "shouldPublish": true
     }
     // 
     // {
