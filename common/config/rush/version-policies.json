@@ -1,0 +1,102 @@
+/**
+ * This is configuration file is used for advanced publishing configurations with Rush.
+ * More documentation is available on the Rush website: https://rushjs.io
+ */
+
+/**
+ * A list of version policy definitions.  A "version policy" is a custom package versioning
+ * strategy that affects "rush change", "rush version", and "rush publish".  The strategy applies
+ * to a set of projects that are specified using the "versionPolicyName" field in rush.json.
+ */
+[
+  // {
+  //   /**
+  //    * (Required) Indicates the kind of version policy being defined ("lockStepVersion" or "individualVersion").
+  //    *
+  //    * The "lockStepVersion" mode specifies that the projects will use "lock-step versioning".  This
+  //    * strategy is appropriate for a set of packages that act as selectable components of a
+  //    * unified product.  The entire set of packages are always published together, and always share
+  //    * the same NPM version number.  When the packages depend on other packages in the set, the
+  //    * SemVer range is usually restricted to a single version.
+  //    */
+  //   "definitionName": "lockStepVersion",
+  // 
+  //   /**
+  //    * (Required) The name that will be used for the "versionPolicyName" field in rush.json.
+  //    * This name is also used command-line parameters such as "--version-policy"
+  //    * and "--to-version-policy".
+  //    */
+  //   "policyName": "MyBigFramework",
+  // 
+  //   /**
+  //    * (Required) The current version.  All packages belonging to the set should have this version
+  //    * in the current branch.  When bumping versions, Rush uses this to determine the next version.
+  //    * (The "version" field in package.json is NOT considered.)
+  //    */
+  //   "version": "1.0.0",
+  // 
+  //   /**
+  //    * (Required) The type of bump that will be performed when publishing the next release.
+  //    * When creating a release branch in Git, this field should be updated according to the
+  //    * type of release.
+  //    *
+  //    * Valid values are: "prerelease", "release", "minor", "patch", "major"
+  //    */
+  //   "nextBump": "prerelease",
+  // 
+  //   /**
+  //    * (Optional) If specified, all packages in the set share a common CHANGELOG.md file.
+  //    * This file is stored with the specified "main" project, which must be a member of the set.
+  //    *
+  //    * If this field is omitted, then a separate CHANGELOG.md file will be maintained for each
+  //    * package in the set.
+  //    */
+  //   "mainProject": "my-app",
+  // 
+  //   /**
+  //    * (Optional) If enabled, the "rush change" command will prompt the user for their email address
+  //    * and include it in the JSON change files.  If an organization maintains multiple repos, tracking
+  //    * this contact information may be useful for a service that automatically upgrades packages and
+  //    * needs to notify engineers whose change may be responsible for a downstream build break.  It might
+  //    * also be useful for crediting contributors.  Rush itself does not do anything with the collected
+  //    * email addresses.  The default value is "false".
+  //    */
+  //   // "includeEmailInChangeFile": true
+  // },
+  // 
+  // {
+  //   /**
+  //    * (Required) Indicates the kind of version policy being defined ("lockStepVersion" or "individualVersion").
+  //    *
+  //    * The "individualVersion" mode specifies that the projects will use "individual versioning".
+  //    * This is the typical NPM model where each package has an independent version number
+  //    * and CHANGELOG.md file.  Although a single CI definition is responsible for publishing the
+  //    * packages, they otherwise don't have any special relationship.  The version bumping will
+  //    * depend on how developers answer the "rush change" questions for each package that
+  //    * is changed.
+  //    */
+  //   "definitionName": "individualVersion",
+  // 
+  //   "policyName": "MyRandomLibraries",
+  // 
+  //   /**
+  //    * (Optional) This can be used to enforce that all packages in the set must share a common
+  //    * major version number, e.g. because they are from the same major release branch.
+  //    * It can also be used to discourage people from accidentally making "MAJOR" SemVer changes
+  //    * inappropriately.  The minor/patch version parts will be bumped independently according
+  //    * to the types of changes made to each project, according to the "rush change" command.
+  //    */
+  //   "lockedMajor": 3,
+  // 
+  //   /**
+  //    * (Optional) When publishing is managed by Rush, by default the "rush change" command will
+  //    * request changes for any projects that are modified by a pull request. These change entries
+  //    * will produce a CHANGELOG.md file. If you author your CHANGELOG.md manually or announce updates
+  //    * in some other way, set "exemptFromRushChange" to true to tell "rush change" to ignore the projects
+  //    * belonging to this version policy.
+  //    */
+  //   "exemptFromRushChange": false,
+  // 
+  //   // "includeEmailInChangeFile": true
+  // }
+]

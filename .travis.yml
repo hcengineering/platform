@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - '8.9.4'
+script:
+  - set -e
+
+  - echo 'Checking for missing change logs...' && echo -en 'travis_fold:start:change\\r'
+  - git fetch origin master:refs/remotes/origin/master -a
+  - node common/scripts/install-run-rush.js change -v
+  - echo -en 'travis_fold:end:change\\r'
+
+  - echo 'Installing...' && echo -en 'travis_fold:start:install\\r'
+  - node common/scripts/install-run-rush.js install
+  - echo -en 'travis_fold:end:install\\r'
+
+  - echo 'Building...' && echo -en 'travis_fold:start:build\\r'
+  - node common/scripts/install-run-rush.js rebuild --verbose
+  - echo -en 'travis_fold:end:build\\r'

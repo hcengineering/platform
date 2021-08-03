@@ -1,0 +1,84 @@
+/**
+ * This configuration file manages Rush's build cache feature.
+ * More documentation is available on the Rush website: https://rushjs.io
+ */
+ {
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/build-cache.schema.json",
+
+  /**
+   * (Required) EXPERIMENTAL - Set this to true to enable the build cache feature.
+   *
+   * See https://rushjs.io/pages/maintainer/build_cache/ for details about this experimental feature.
+   */
+  "buildCacheEnabled": false,
+
+  /**
+   * (Required) Choose where project build outputs will be cached.
+   *
+   * Possible values: "local-only", "azure-blob-storage", "amazon-s3"
+   */
+  "cacheProvider": "local-only",
+
+  /**
+   * Setting this property overrides the cache entry ID.  If this property is set, it must contain
+   * a [hash] token. It may also contain a [projectName] or a [projectName:normalize] token.
+   */
+  // "cacheEntryNamePattern": "[projectName:normalize]-[hash]"
+
+  /**
+   * Use this configuration with "cacheProvider"="azure-blob-storage"
+   */
+  "azureBlobStorageConfiguration": {
+    /**
+     * (Required) The name of the the Azure storage account to use for build cache.
+     */
+    // "storageAccountName": "example",
+
+    /**
+     * (Required) The name of the container in the Azure storage account to use for build cache.
+     */
+    // "storageContainerName": "my-container",
+
+    /**
+     * The Azure environment the storage account exists in. Defaults to AzurePublicCloud.
+     *
+     * Possible values: "AzurePublicCloud", "AzureChina", "AzureGermany", "AzureGovernment"
+     */
+    // "azureEnvironment": "AzurePublicCloud",
+
+    /**
+     * An optional prefix for cache item blob names.
+     */
+    // "blobPrefix": "my-prefix",
+
+    /**
+     * If set to true, allow writing to the cache. Defaults to false.
+     */
+    // "isCacheWriteAllowed": true
+  },
+
+  /**
+   * Use this configuration with "cacheProvider"="amazon-s3"
+   */
+  "amazonS3Configuration": {
+    /**
+     * (Required) The Amazon S3 region of the bucket to use for build cache (e.g. "us-east-1").
+     */
+    // "s3Region": "us-east-1",
+
+    /**
+     * The name of the bucket in Amazon S3 to use for build cache.
+     */
+    // (Required) "s3Bucket": "my-bucket",
+
+    /**
+     * An optional prefix ("folder") for cache items.
+     */
+    // "s3Prefix": "my-prefix",
+
+    /**
+     * If set to true, allow writing to the cache. Defaults to false.
+     */
+    // "isCacheWriteAllowed": true
+  }
+}

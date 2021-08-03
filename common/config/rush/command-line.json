@@ -1,0 +1,297 @@
+/**
+ * This configuration file defines custom commands for the "rush" command-line.
+ * More documentation is available on the Rush website: https://rushjs.io
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+
+  /**
+   * Custom "commands" introduce new verbs for the command-line.  To see the help for these
+   * example commands, try "rush --help", "rush my-bulk-command --help", or
+   * "rush my-global-command --help".
+   */
+  "commands": [
+    // {
+    //   /**
+    //    * (Required) Determines the type of custom command.
+    //    * Rush's "bulk" commands are invoked separately for each project.  Rush will look in
+    //    * each project's package.json file for a "scripts" entry whose name matches the
+    //    * command name.  By default, the command will run for every project in the repo,
+    //    * according to the dependency graph (similar to how "rush build" works).
+    //    * The set of projects can be restricted e.g. using the "--to" or "--from" parameters.
+    //    */
+    //   "commandKind": "bulk",
+    // 
+    //   /**
+    //    * (Required) The name that will be typed as part of the command line.  This is also the name
+    //    * of the "scripts" hook in the project's package.json file.
+    //    * The name should be comprised of lower case words separated by hyphens or colons. The name should include an
+    //    * English verb (e.g. "deploy"). Use a hyphen to separate words (e.g. "upload-docs"). A group of related commands
+    //    * can be prefixed with a colon (e.g. "docs:generate", "docs:deploy", "docs:serve", etc).
+    //    *
+    //    * Note that if the "rebuild" command is overridden here, it becomes separated from the "build" command
+    //    * and will call the "rebuild" script instead of the "build" script.
+    //    */
+    //   "name": "my-bulk-command",
+    // 
+    //   /**
+    //    * (Required) A short summary of the custom command to be shown when printing command line
+    //    * help, e.g. "rush --help".
+    //    */
+    //   "summary": "Example bulk custom command",
+    // 
+    //   /**
+    //    * A detailed description of the command to be shown when printing command line
+    //    * help (e.g. "rush --help my-command").
+    //    * If omitted, the "summary" text will be shown instead.
+    //    *
+    //    * Whenever you introduce commands/parameters, taking a little time to write meaningful
+    //    * documentation can make a big difference for the developer experience in your repo.
+    //    */
+    //   "description": "This is an example custom command that runs separately for each project",
+    // 
+    //   /**
+    //    * By default, Rush operations acquire a lock file which prevents multiple commands from executing simultaneously
+    //    * in the same repo folder.  (For example, it would be a mistake to run "rush install" and "rush build" at the
+    //    * same time.)  If your command makes sense to run concurrently with other operations,
+    //    * set "safeForSimultaneousRushProcesses" to true to disable this protection.
+    //    *
+    //    * In particular, this is needed for custom scripts that invoke other Rush commands.
+    //    */
+    //   "safeForSimultaneousRushProcesses": false,
+    // 
+    //   /**
+    //    * (Required) If true, then this command is safe to be run in parallel, i.e. executed
+    //    * simultaneously for multiple projects.  Similar to "rush build", regardless of parallelism
+    //    * projects will not start processing until their dependencies have completed processing.
+    //    */
+    //   "enableParallelism": false,
+    // 
+    //   /**
+    //    * Normally projects will be processed according to their dependency order: a given project will not start
+    //    * processing the command until all of its dependencies have completed.  This restriction doesn't apply for
+    //    * certain operations, for example a "clean" task that deletes output files.  In this case
+    //    * you can set "ignoreDependencyOrder" to true to increase parallelism.
+    //    */
+    //   "ignoreDependencyOrder": false,
+    // 
+    //   /**
+    //    * Normally Rush requires that each project's package.json has a "scripts" entry matching
+    //    * the custom command name.  To disable this check, set "ignoreMissingScript" to true;
+    //    * projects with a missing definition will be skipped.
+    //    */
+    //   "ignoreMissingScript": false,
+    // 
+    //   /**
+    //    * When invoking shell scripts, Rush uses a heuristic to distinguish errors from warnings:
+    //    * - If the shell script returns a nonzero process exit code, Rush interprets this as "one or more errors".
+    //    * Error output is displayed in red, and it prevents Rush from attempting to process any downstream projects.
+    //    * - If the shell script returns a zero process exit code but writes something to its stderr stream,
+    //    * Rush interprets this as "one or more warnings". Warning output is printed in yellow, but does NOT prevent
+    //    * Rush from processing downstream projects.
+    //    *
+    //    * Thus, warnings do not interfere with local development, but they will cause a CI job to fail, because
+    //    * the Rush process itself returns a nonzero exit code if there are any warnings or errors. This is by design.
+    //    * In an active monorepo, we've found that if you allow any warnings in your master branch, it inadvertently
+    //    * teaches developers to ignore warnings, which quickly leads to a situation where so many "expected" warnings
+    //    * have accumulated that warnings no longer serve any useful purpose.
+    //    *
+    //    * Sometimes a poorly behaved task will write output to stderr even though its operation was successful.
+    //    * In that case, it's strongly recommended to fix the task.  However, as a workaround you can set
+    //    * allowWarningsInSuccessfulBuild=true, which causes Rush to return a nonzero exit code for errors only.
+    //    *
+    //    * Note: The default value is false. In Rush 5.7.x and earlier, the default value was true.
+    //    */
+    //   "allowWarningsInSuccessfulBuild": false,
+    // 
+    //   /**
+    //    * If true then this command will be incremental like the built-in "build" command
+    //    */
+    //   "incremental": false,
+    // 
+    //   /**
+    //    * (EXPERIMENTAL) Normally Rush terminates after the command finishes. If this option is set to "true" Rush
+    //    * will instead enter a loop where it watches the file system for changes to the selected projects. Whenever a
+    //    * change is detected, the command will be invoked again for the changed project and any selected projects that
+    //    * directly or indirectly depend on it.
+    //    *
+    //    * For details, refer to the website article "Using watch mode".
+    //    */
+    //   "watchForChanges": false,
+    // 
+    //   /**
+    //    * (EXPERIMENTAL) Disable cache for this action. This may be useful if this command affects state outside of
+    //    * projects' own folders.
+    //    */
+    //   "disableBuildCache": false
+    // },
+    // 
+    // {
+    //   /**
+    //    * (Required) Determines the type of custom command.
+    //    * Rush's "global" commands are invoked once for the entire repo.
+    //    */
+    //   "commandKind": "global",
+    // 
+    //   "name": "my-global-command",
+    //   "summary": "Example global custom command",
+    //   "description": "This is an example custom command that runs once for the entire repo",
+    // 
+    //   "safeForSimultaneousRushProcesses": false,
+    // 
+    //   /**
+    //    * (Required) A script that will be invoked using the OS shell. The working directory will be
+    //    * the folder that contains rush.json.  If custom parameters are associated with this command, their
+    //    * values will be appended to the end of this string.
+    //    */
+    //   "shellCommand": "node common/scripts/my-global-command.js",
+    // 
+    //   /**
+    //    * If your "shellCommand" script depends on NPM packages, the recommended best practice is
+    //    * to make it into a regular Rush project that builds using your normal toolchain.  In cases where
+    //    * the command needs to work without first having to run "rush build", the recommended practice
+    //    * is to publish the project to an NPM registry and use common/scripts/install-run.js to launch it.
+    //    *
+    //    * Autoinstallers offer another possibility: They are folders under "common/autoinstallers" with
+    //    * a package.json file and shrinkwrap file. Rush will automatically invoke the package manager to
+    //    * install these dependencies before an associated command is invoked.  Autoinstallers have the
+    //    * advantage that they work even in a branch where "rush install" is broken, which makes them a
+    //    * good solution for Git hook scripts.  But they have the disadvantages of not being buildable
+    //    * projects, and of increasing the overall installation footprint for your monorepo.
+    //    *
+    //    * The "autoinstallerName" setting must not contain a path and must be a valid NPM package name.
+    //    * For example, the name "my-task" would map to "common/autoinstallers/my-task/package.json", and
+    //    * the "common/autoinstallers/my-task/node_modules/.bin" folder would be added to the shell PATH when
+    //    * invoking the "shellCommand".
+    //    */
+    //   // "autoinstallerName": "my-task"
+    // }
+  ],
+
+  /**
+   * Custom "parameters" introduce new parameters for specified Rush command-line commands.
+   * For example, you might define a "--production" parameter for the "rush build" command.
+   */
+  "parameters": [
+    // {
+    //   /**
+    //    * (Required) Determines the type of custom parameter.
+    //    * A "flag" is a custom command-line parameter whose presence acts as an on/off switch.
+    //    */
+    //   "parameterKind": "flag",
+    // 
+    //   /**
+    //    * (Required) The long name of the parameter.  It must be lower-case and use dash delimiters.
+    //    */
+    //   "longName": "--my-flag",
+    // 
+    //   /**
+    //    * An optional alternative short name for the parameter.  It must be a dash followed by a single
+    //    * lower-case or upper-case letter, which is case-sensitive.
+    //    *
+    //    * NOTE: The Rush developers recommend that automation scripts should always use the long name
+    //    * to improve readability.  The short name is only intended as a convenience for humans.
+    //    * The alphabet letters run out quickly, and are difficult to memorize, so *only* use
+    //    * a short name if you expect the parameter to be needed very often in everyday operations.
+    //    */
+    //   "shortName": "-m",
+    // 
+    //   /**
+    //    * (Required) A long description to be shown in the command-line help.
+    //    *
+    //    * Whenever you introduce commands/parameters, taking a little time to write meaningful
+    //    * documentation can make a big difference for the developer experience in your repo.
+    //    */
+    //   "description": "A custom flag parameter that is passed to the scripts that are invoked when building projects",
+    // 
+    //   /**
+    //    * (Required) A list of custom commands and/or built-in Rush commands that this parameter may
+    //    * be used with.  The parameter will be appended to the shell command that Rush invokes.
+    //    */
+    //   "associatedCommands": ["build", "rebuild"]
+    // },
+    // 
+    // {
+    //   /**
+    //    * (Required) Determines the type of custom parameter.
+    //    * A "string" is a custom command-line parameter whose value is a simple text string.
+    //    */
+    //   "parameterKind": "string",
+    //   "longName": "--my-string",
+    //   "description": "A custom string parameter for the \"my-global-command\" custom command",
+    // 
+    //   "associatedCommands": ["my-global-command"],
+    // 
+    //   /**
+    //    * The name of the argument, which will be shown in the command-line help.
+    //    *
+    //    * For example, if the parameter name is '--count" and the argument name is "NUMBER",
+    //    * then the command-line help would display "--count NUMBER".  The argument name must
+    //    * be comprised of upper-case letters, numbers, and underscores.  It should be kept short.
+    //    */
+    //   "argumentName": "SOME_TEXT",
+    // 
+    //   /**
+    //    * If true, this parameter must be included with the command.  The default is false.
+    //    */
+    //   "required": false
+    // },
+    // 
+    // {
+    //   /**
+    //    * (Required) Determines the type of custom parameter.
+    //    * A "choice" is a custom command-line parameter whose argument must be chosen from a list of
+    //    * allowable alternatives.
+    //    */
+    //   "parameterKind": "choice",
+    //   "longName": "--my-choice",
+    //   "description": "A custom choice parameter for the \"my-global-command\" custom command",
+    // 
+    //   "associatedCommands": ["my-global-command"],
+    // 
+    //   /**
+    //    * If true, this parameter must be included with the command.  The default is false.
+    //    */
+    //   "required": false,
+    // 
+    //   /**
+    //    * Normally if a parameter is omitted from the command line, it will not be passed
+    //    * to the shell command. this value will be inserted by default.  Whereas if a "defaultValue"
+    //    * is defined, the parameter will always be passed to the shell command, and will use the
+    //    * default value if unspecified.  The value must be one of the defined alternatives.
+    //    */
+    //   "defaultValue": "vanilla",
+    // 
+    //   /**
+    //    * (Required) A list of alternative argument values that can be chosen for this parameter.
+    //    */
+    //   "alternatives": [
+    //     {
+    //       /**
+    //        * A token that is one of the alternatives that can be used with the choice parameter,
+    //        * e.g. "vanilla" in "--flavor vanilla".
+    //        */
+    //       "name": "vanilla",
+    // 
+    //       /**
+    //        * A detailed description for the alternative that can be shown in the command-line help.
+    //        *
+    //        * Whenever you introduce commands/parameters, taking a little time to write meaningful
+    //        * documentation can make a big difference for the developer experience in your repo.
+    //        */
+    //       "description": "Use the vanilla flavor (the default)"
+    //     },
+    // 
+    //     {
+    //       "name": "chocolate",
+    //       "description": "Use the chocolate flavor"
+    //     },
+    // 
+    //     {
+    //       "name": "strawberry",
+    //       "description": "Use the strawberry flavor"
+    //     }
+    //   ]
+    // }
+  ]
+}

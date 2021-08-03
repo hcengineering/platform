@@ -1,0 +1,14 @@
+{
+  "name": "@anticrm/platform-rig",
+  "version": "0.5.0",
+  "scripts": {
+    "build": ""
+  },
+  "devDependencies": {
+    "@rushstack/heft-jest-plugin":"~0.1.15",
+    "@rushstack/heft":"^0.35.0"
+  },
+  "dependencies": {
+    "@microsoft/api-extractor": "~7.18.4"
+  }
+}

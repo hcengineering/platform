@@ -1,0 +1,32 @@
+{
+  "name": "@anticrm/platform",
+  "version": "0.5.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "heft build --clean",
+    "build:docs": "api-extractor run --local",
+    "test": "jest",
+    "lint": "ts-standard src",
+    "lint:fix": "eslint --fix ./src",
+    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && ts-standard --fix src"
+  },
+  "devDependencies": {
+    "@anticrm/platform-rig":"~0.5.0",
+    "@types/heft-jest":"^1.0.2",
+    "eslint-plugin-promise":"4",
+    "eslint-plugin-import":"2",
+    "eslint-plugin-node":"11",
+    "@typescript-eslint/eslint-plugin":"4",
+    "eslint-config-standard-with-typescript":"^20.0.0",
+    "typescript":"^4.3.5",
+    "eslint":"^7.32.0"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/parser":"^4.0.0"
+  },
+  "dependencies": {
+    "intl-messageformat": "^9.7.1"
+  }
+}
