@@ -1,0 +1,8 @@
+{
+    "extends": [
+        "standard-with-typescript"
+    ],
+    "rules": {
+        "@typescript-eslint/array-type": "off"
+    }    
+}

@@ -6,7 +6,8 @@
   },
   "devDependencies": {
     "@rushstack/heft-jest-plugin":"~0.1.15",
-    "@rushstack/heft":"^0.35.0"
+    "@rushstack/heft":"^0.35.0",
+    "eslint-config-standard-with-typescript":"^20.0.0"
   },
   "dependencies": {
     "@microsoft/api-extractor": "~7.18.4"

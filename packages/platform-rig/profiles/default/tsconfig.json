@@ -6,11 +6,6 @@
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "types": ["heft-jest"],
-    "lib": [
-      "esnext",
-      "esnext.intl",
-      "dom"
-    ]
+    "types": ["heft-jest"]
   }
 }

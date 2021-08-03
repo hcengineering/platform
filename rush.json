@@ -447,13 +447,18 @@
     // },
     // 
     {
+      "packageName": "@anticrm/platform-rig",
+      "projectFolder": "packages/platform-rig",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/platform",
       "projectFolder": "packages/platform",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/platform-rig",
-      "projectFolder": "packages/platform-rig",
+      "packageName": "@anticrm/core",
+      "projectFolder": "packages/core",
       "shouldPublish": true
     }
     // 

@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@microsoft/api-extractor': ~7.18.4
+  '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rushstack/heft': ^0.35.0
@@ -15,12 +16,14 @@ specifiers:
   eslint-plugin-node: '11'
   eslint-plugin-promise: '4'
   intl-messageformat: ^9.7.1
+  simplytyped: ^3.3.0
   typescript: ^4.3.5
 
 dependencies:
   '@microsoft/api-extractor': 7.18.4
+  '@rush-temp/core': file:projects/core.tgz
   '@rush-temp/platform': file:projects/platform.tgz
-  '@rush-temp/platform-rig': file:projects/platform-rig.tgz
+  '@rush-temp/platform-rig': file:projects/platform-rig.tgz_eslint@7.32.0+typescript@4.3.5
   '@rushstack/heft': 0.35.0
   '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
   '@types/heft-jest': 1.0.2
@@ -32,6 +35,7 @@ dependencies:
   eslint-plugin-node: 11.1.0_eslint@7.32.0
   eslint-plugin-promise: 4.3.1
   intl-messageformat: 9.8.1
+  simplytyped: 3.3.0_typescript@4.3.5
   typescript: 4.3.5
 
 packages:
@@ -4452,6 +4456,14 @@ packages:
     resolution: {integrity: sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==}
     dev: false
 
+  /simplytyped/3.3.0_typescript@4.3.5:
+    resolution: {integrity: sha512-mz4RaNdKTZiaKXgi6P1k/cdsxV3gz+y1Wh2NXHWD40dExktLh4Xx/h6MFakmQWODZHj/2rKe59acacpL74ZhQA==}
+    peerDependencies:
+      typescript: '>=2.8.0'
+    dependencies:
+      typescript: 4.3.5
+    dev: false
+
   /slash/3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
@@ -5154,18 +5166,46 @@ packages:
       commander: 2.20.3
     dev: false
 
-  file:projects/platform-rig.tgz:
-    resolution: {integrity: sha512-bUPKt7uRIPzuShO2D4ncHYn9lqkg7S5IyQkzdL3O06sT027+wkP8SlGdBWPumU/GiPOOB6WIeG4M1/eCjpZvEA==, tarball: file:projects/platform-rig.tgz}
+  file:projects/core.tgz:
+    resolution: {integrity: sha512-t+dgsEkYQSoo/p/wy3ZsCCCL5beZ2p7shTsTSAcvssigjlTIBoCKjnukzHLTAiVdRMwxsObAIf8GXEmtRteyvg==, tarball: file:projects/core.tgz}
+    name: '@rush-temp/core'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      simplytyped: 3.3.0_typescript@4.3.5
+      typescript: 4.3.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/platform-rig.tgz_eslint@7.32.0+typescript@4.3.5:
+    resolution: {integrity: sha512-TKHuAhvUIcQRtvjoXmexJXdGD9HFljUddiThWwSleLTosIPsXNSUr+88F4V4a1pz/HQV1KpiPchn5HxTXFZ8GA==, tarball: file:projects/platform-rig.tgz}
+    id: file:projects/platform-rig.tgz
     name: '@rush-temp/platform-rig'
     version: 0.0.0
     dependencies:
       '@microsoft/api-extractor': 7.18.4
       '@rushstack/heft': 0.35.0
       '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
+      eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
     transitivePeerDependencies:
       - bufferutil
       - canvas
+      - eslint
       - supports-color
+      - typescript
       - utf-8-validate
     dev: false
 

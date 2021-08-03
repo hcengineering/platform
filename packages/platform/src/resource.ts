@@ -67,7 +67,6 @@ function getLocation (plugin: Plugin): PluginLoader<Resources> {
 const loading = new Map<Plugin, Promise<Resources>>()
 
 async function loadPlugin (id: Plugin): Promise<Resources> {
-  console.log('loading plugin ', id)
   let pluginLoader = loading.get(id)
   if (pluginLoader === undefined) {
     const status = new Status(Severity.INFO, platform.status.LoadingPlugin, {
