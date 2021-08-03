@@ -21,9 +21,9 @@ specifiers:
 
 dependencies:
   '@microsoft/api-extractor': 7.18.4
-  '@rush-temp/core': file:projects/core.tgz
+  '@rush-temp/core': file:projects/core.tgz_typescript@4.3.5
   '@rush-temp/platform': file:projects/platform.tgz
-  '@rush-temp/platform-rig': file:projects/platform-rig.tgz_eslint@7.32.0+typescript@4.3.5
+  '@rush-temp/platform-rig': file:projects/platform-rig.tgz
   '@rushstack/heft': 0.35.0
   '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
   '@types/heft-jest': 1.0.2
@@ -5166,28 +5166,20 @@ packages:
       commander: 2.20.3
     dev: false
 
-  file:projects/core.tgz:
-    resolution: {integrity: sha512-t+dgsEkYQSoo/p/wy3ZsCCCL5beZ2p7shTsTSAcvssigjlTIBoCKjnukzHLTAiVdRMwxsObAIf8GXEmtRteyvg==, tarball: file:projects/core.tgz}
+  file:projects/core.tgz_typescript@4.3.5:
+    resolution: {integrity: sha512-gM4kVbLtQPRGrnJPjshrLTW81xCp1qmb1hNcRto1f9BOsHp1plS4AuePeg5GSuxOAx3/iYN/b67RBGc8zpKLVw==, tarball: file:projects/core.tgz}
+    id: file:projects/core.tgz
     name: '@rush-temp/core'
     version: 0.0.0
     dependencies:
       '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
-      '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
-      eslint-plugin-import: 2.23.4_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 4.3.1
       simplytyped: 3.3.0_typescript@4.3.5
-      typescript: 4.3.5
     transitivePeerDependencies:
-      - supports-color
+      - typescript
     dev: false
 
-  file:projects/platform-rig.tgz_eslint@7.32.0+typescript@4.3.5:
-    resolution: {integrity: sha512-TKHuAhvUIcQRtvjoXmexJXdGD9HFljUddiThWwSleLTosIPsXNSUr+88F4V4a1pz/HQV1KpiPchn5HxTXFZ8GA==, tarball: file:projects/platform-rig.tgz}
-    id: file:projects/platform-rig.tgz
+  file:projects/platform-rig.tgz:
+    resolution: {integrity: sha512-kjMXo63GJVeYUiMoTOYnbDP7Hsm8JuAtKuFpZo2Hthm88EMxnxZTBHNJ3KkaPUW5HPWAyP/eWzSHG+4eEJixZA==, tarball: file:projects/platform-rig.tgz}
     name: '@rush-temp/platform-rig'
     version: 0.0.0
     dependencies:
@@ -5196,21 +5188,21 @@ packages:
       '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
+      eslint: 7.32.0
       eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      typescript: 4.3.5
     transitivePeerDependencies:
       - bufferutil
       - canvas
-      - eslint
       - supports-color
-      - typescript
       - utf-8-validate
     dev: false
 
   file:projects/platform.tgz:
-    resolution: {integrity: sha512-/l7TvGNOC1ZfZmYU1Kl3NKzInwCpT2HPcdWwyCLRY7/NPmggyPt0qftJXUnOBe7iXg1clsj9/rLIkmDxsZqZ5A==, tarball: file:projects/platform.tgz}
+    resolution: {integrity: sha512-5cFV2VVh65WRhdCjPXkit2cPAnJx3O7QwOXMfhxkhsqYDRMWKvqOfqHKCZLHly3izAt2hpZKHWKZSqpllMrNDQ==, tarball: file:projects/platform.tgz}
     name: '@rush-temp/platform'
     version: 0.0.0
     dependencies:
