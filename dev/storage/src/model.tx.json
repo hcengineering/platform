@@ -1,0 +1,1018 @@
+[
+  {
+    "_id": "610828bdad975a4e5f24b461",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Obj",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b462",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Doc",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Obj"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b463",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Type",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b464",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.TypeString",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Type"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b465",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Attribute",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b466",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Account",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b467",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Space",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b468",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Tx",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "tx",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b469",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.TxUpdateDoc",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Tx"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46a",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.TxMixin",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Tx"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46b",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.TxCreateDoc",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Tx"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46c",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Class",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46d",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "core.class.Mixin",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Class"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46e",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "view.class.Viewlet",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b46f",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "view.class.ViewletDescriptor",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b470",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "view.mixin.AttributePresenter",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Class"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b471",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "view.mixin.AttributeEditor",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669333,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Class"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b472",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669333,
+    "objectId": "core.class.TypeString",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "view.mixin.AttributeEditor",
+    "attributes": {
+      "editor": "view.component.StringEditor"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b473",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669333,
+    "objectId": "core.class.TypeString",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "view.mixin.AttributePresenter",
+    "attributes": {
+      "presenter": "view.component.StringPresenter"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b474",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "view.viewlet.Table",
+    "objectClass": "view.class.ViewletDescriptor",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "label": "Table",
+      "icon": "view.icon.Table",
+      "component": "table.component.TableView"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b475",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "workbench.mixin.SpaceView",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Class"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b476",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "workbench.class.Application",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "domain": "model",
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b477",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "contact.class.Contact",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b478",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "contact.class.Organization",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "contact.class.Contact"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b479",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "contact.class.Person",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "contact.class.Contact",
+      "label": "Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b47a",
+    "objectId": "610828bdad975a4e5f24b47b",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669178,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "firstName",
+      "label": "First name",
+      "attributeOf": "contact.class.Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b47c",
+    "objectId": "610828bdad975a4e5f24b47d",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669178,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "lastName",
+      "label": "Last name",
+      "attributeOf": "contact.class.Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b47e",
+    "objectId": "610828bdad975a4e5f24b47f",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669178,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "email",
+      "label": "Email",
+      "attributeOf": "contact.class.Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b480",
+    "objectId": "610828bdad975a4e5f24b481",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669178,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "phone",
+      "label": "Phone",
+      "attributeOf": "contact.class.Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b482",
+    "objectId": "610828bdad975a4e5f24b483",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669178,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "city",
+      "label": "City",
+      "attributeOf": "contact.class.Person"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b484",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669334,
+    "objectId": "contact.class.Person",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "view.mixin.AttributePresenter",
+    "attributes": {
+      "presenter": "contact.component.PersonPresenter"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b485",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "chunter.class.Backlink",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b486",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "chunter.class.Message",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc",
+      "triggers": [
+        "chunter-server.trigger.OnMessage"
+      ]
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b487",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "chunter.class.Channel",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Space",
+      "label": "chunter.string.Channel",
+      "icon": "chunter.icon.Hashtag"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b488",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669334,
+    "objectId": "chunter.class.Channel",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "workbench.mixin.SpaceView",
+    "attributes": {
+      "view": {
+        "class": "chunter.class.Message"
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b489",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "chunter.viewlet.Chat",
+    "objectClass": "view.class.ViewletDescriptor",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "label": "Chat",
+      "icon": "view.icon.Table",
+      "component": "chunter.component.ChannelView"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b48a",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b48b",
+    "objectClass": "view.class.Viewlet",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "attachTo": "chunter.class.Message",
+      "descriptor": "chunter.viewlet.Chat",
+      "open": "X",
+      "config": {}
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b48c",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b48d",
+    "objectClass": "workbench.class.Application",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "label": "chunter.string.ApplicationLabelChunter",
+      "icon": "chunter.icon.Chunter",
+      "navigatorModel": {
+        "spaces": [
+          {
+            "label": "chunter.string.Channels",
+            "spaceClass": "chunter.class.Channel",
+            "addSpaceLabel": "chunter.string.CreateChannel",
+            "createComponent": "chunter.component.CreateChannel"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b48e",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b48f",
+    "objectClass": "chunter.class.Channel",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "name": "general",
+      "description": "General Channel",
+      "private": false,
+      "members": []
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b490",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b491",
+    "objectClass": "chunter.class.Channel",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "name": "random",
+      "description": "Random Talks",
+      "private": false,
+      "members": []
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b492",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "task.class.Task",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b493",
+    "objectId": "610828bdad975a4e5f24b494",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669332,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "title",
+      "label": "Title",
+      "attributeOf": "task.class.Task"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b495",
+    "objectId": "610828bdad975a4e5f24b496",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669332,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "description",
+      "label": "Description",
+      "attributeOf": "task.class.Task"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b497",
+    "objectId": "610828bdad975a4e5f24b498",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669332,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "assignee",
+      "label": "Assignee",
+      "attributeOf": "task.class.Task"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b499",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "task.class.Project",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Space",
+      "label": "Project",
+      "icon": "task.icon.Task"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b49a",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669334,
+    "objectId": "task.class.Project",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "workbench.mixin.SpaceView",
+    "attributes": {
+      "view": {
+        "class": "task.class.Task",
+        "createItemDialog": "task.component.CreateTask"
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b49b",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b49c",
+    "objectClass": "view.class.Viewlet",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "attachTo": "task.class.Task",
+      "descriptor": "view.viewlet.Table",
+      "open": "ZX",
+      "options": {
+        "lookup": {
+          "assignee": "contact.class.Person"
+        }
+      },
+      "config": [
+        "title",
+        "$lookup.assignee"
+      ]
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b49d",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b49e",
+    "objectClass": "workbench.class.Application",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "label": "task.string.ApplicationLabelTask",
+      "icon": "task.icon.Task",
+      "navigatorModel": {
+        "spaces": [
+          {
+            "label": "task.string.Projects",
+            "spaceClass": "task.class.Project",
+            "addSpaceLabel": "task.string.CreateProject",
+            "createComponent": "task.component.CreateProject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b49f",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4a0",
+    "objectClass": "task.class.Project",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "name": "demo",
+      "description": "Demo Project",
+      "private": false,
+      "members": []
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a1",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "recruit.class.Applicant",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Doc"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a2",
+    "objectId": "610828bdad975a4e5f24b4a3",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669299,
+    "objectSpace": "core.space.Model",
+    "objectClass": "core.class.Attribute",
+    "attributes": {
+      "type": {
+        "_class": "core.class.TypeString"
+      },
+      "name": "candidate",
+      "label": "Candidate",
+      "attributeOf": "recruit.class.Applicant"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a4",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "recruit.class.Candidate",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "contact.class.Person",
+      "label": "Candidate"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a5",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "recruit.class.Candidates",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Space",
+      "label": "recruit.string.CandidatePools",
+      "icon": "recruit.icon.RecruitApplication"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a6",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "recruit.class.Vacancy",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "kind": 0,
+      "extends": "core.class.Space",
+      "label": "recruit.string.Vacancy",
+      "icon": "recruit.icon.Vacancy"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a7",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669334,
+    "objectId": "recruit.class.Vacancy",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "workbench.mixin.SpaceView",
+    "attributes": {
+      "view": {
+        "class": "recruit.class.Applicant",
+        "createItemDialog": "recruit.component.CreateApplication"
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a8",
+    "_class": "core.class.TxMixin",
+    "space": "core.space.Tx",
+    "modifiedBy": "core.account.System",
+    "modifiedOn": 1627924669334,
+    "objectId": "recruit.class.Candidates",
+    "objectClass": "core.class.Class",
+    "objectSpace": "core.space.Model",
+    "mixin": "workbench.mixin.SpaceView",
+    "attributes": {
+      "view": {
+        "class": "recruit.class.Candidate",
+        "createItemDialog": "recruit.component.CreateCandidate"
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4a9",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4aa",
+    "objectClass": "workbench.class.Application",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "label": "recruit.string.RecruitApplication",
+      "icon": "recruit.icon.RecruitApplication",
+      "navigatorModel": {
+        "spaces": [
+          {
+            "label": "recruit.string.Vacancies",
+            "spaceClass": "recruit.class.Vacancy",
+            "addSpaceLabel": "recruit.string.CreateVacancy",
+            "createComponent": "recruit.component.CreateVacancy"
+          },
+          {
+            "label": "recruit.string.CandidatePools",
+            "spaceClass": "recruit.class.Candidates",
+            "addSpaceLabel": "recruit.string.CreateCandidates",
+            "createComponent": "recruit.component.CreateCandidates"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4ab",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "recruit.space.CandidatesPublic",
+    "objectClass": "recruit.class.Candidates",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "name": "public",
+      "description": "Public Candidates",
+      "private": false,
+      "members": []
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4ac",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4ad",
+    "objectClass": "view.class.Viewlet",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "attachTo": "recruit.class.Candidate",
+      "descriptor": "view.viewlet.Table",
+      "open": "recruit.component.EditCandidate",
+      "config": [
+        "",
+        "email",
+        "phone",
+        "city"
+      ]
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4ae",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4af",
+    "objectClass": "view.class.Viewlet",
+    "objectSpace": "core.space.Model",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "attachTo": "recruit.class.Applicant",
+      "descriptor": "view.viewlet.Table",
+      "open": "recruit.component.EditCandidate",
+      "options": {
+        "lookup": {
+          "candidate": "recruit.class.Candidate"
+        }
+      },
+      "config": [
+        "$lookup.candidate",
+        "$lookup.candidate.email",
+        "$lookup.candidate.city"
+      ]
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4b0",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4b1",
+    "objectClass": "recruit.class.Candidate",
+    "objectSpace": "recruit.space.CandidatesPublic",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "firstName": "Andrey",
+      "lastName": "P.",
+      "email": "andrey@hc.engineering",
+      "phone": "+1 646 667 6832",
+      "city": "Monte Carlo"
+    }
+  },
+  {
+    "_id": "610828bdad975a4e5f24b4b2",
+    "_class": "core.class.TxCreateDoc",
+    "space": "core.space.Tx",
+    "objectId": "610828bdad975a4e5f24b4b3",
+    "objectClass": "recruit.class.Candidate",
+    "objectSpace": "recruit.space.CandidatesPublic",
+    "modifiedOn": 1627924669334,
+    "modifiedBy": "core.account.System",
+    "attributes": {
+      "firstName": "Marina",
+      "lastName": "M.",
+      "email": "marina@hc.engineering",
+      "phone": "+1 646 777 3333",
+      "city": "Los Angeles"
+    }
+  }
+]

@@ -462,15 +462,14 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server",
-      "projectFolder": "server/server",
+      "packageName": "@anticrm/server-ws",
+      "projectFolder": "server/ws",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/dev-storage",
+      "projectFolder": "dev/storage",
       "shouldPublish": true
     }
-    // 
-    // {
-    //   "packageName": "my-toolchain",
-    //   "projectFolder": "tools/my-toolchain",
-    //   "reviewCategory": "tools"
-    // }
   ]
 }

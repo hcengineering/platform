@@ -38,9 +38,9 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
 
 /**
  * @public
- * @param serviceFactory
- * @param port
- * @param host
+ * @param serviceFactory -
+ * @param port -
+ * @param host -
  */
 export function start<S> (serviceFactory: () => Promise<S>, port: number, host?: string): void {
   // console.log('starting server on port ' + port + '...')

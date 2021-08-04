@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/server",
+  "name": "@anticrm/server-ws",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
