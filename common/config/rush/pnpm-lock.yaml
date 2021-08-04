@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@microsoft/api-extractor': ^7.18.4
   '@rush-temp/core': file:./projects/core.tgz
+  '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
@@ -28,6 +29,7 @@ specifiers:
 dependencies:
   '@microsoft/api-extractor': 7.18.4
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
@@ -5201,8 +5203,26 @@ packages:
       - typescript
     dev: false
 
+  file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-wWD3XTjUjOM0zuwKN3Y8nuzCmWTPR0m554z+Vun/V20HOJ3ykNCe+oYJUIbSgvZfL647XDkomAVGZtCMl7qu/w==, tarball: file:projects/dev-server.tgz}
+    id: file:projects/dev-server.tgz
+    name: '@rush-temp/dev-server'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-Jf/W4dvCH5kUvK2ItxuijWJM4IGZf8Hi1noFrzk9PLL+2WNrD5t7sPB9c/lv4KzKEhX5gTV4ZkLBHNyD+lo2oQ==, tarball: file:projects/dev-storage.tgz}
+    resolution: {integrity: sha512-upE4u9M1Pna5G71wXTMBeMd+pGiZbjjyhpXfHZR+lgSthSPnC7avk/Ozb7L2gL87zaqK4ZhKaiI+WNg6FeGQDg==, tarball: file:projects/dev-storage.tgz}
     id: file:projects/dev-storage.tgz
     name: '@rush-temp/dev-storage'
     version: 0.0.0

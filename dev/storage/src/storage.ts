@@ -15,7 +15,6 @@
 
 import type {
   Tx,
-  Storage,
   Ref,
   Doc,
   Class,
@@ -26,18 +25,30 @@ import type {
 import { getResource } from '@anticrm/platform'
 import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, DefaultTxFactory } from '@anticrm/core'
 
+/**
+ * @public
+ */
+export interface ServerStorage {
+  findAll: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+  tx: (tx: Tx) => Promise<Tx[]>
+}
+
 async function getModel (): Promise<Tx[]> {
   return import('./model.tx.json') as unknown as Tx[]
 }
 
-class DevStorage implements Storage {
+class DevStorage implements ServerStorage {
   private readonly txFactory: DefaultTxFactory
 
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly txdb: TxDb,
-    private readonly modeldb: ModelDb,
-    private readonly handler: (tx: Tx) => void) {
+    private readonly modeldb: ModelDb
+  ) {
     this.txFactory = new DefaultTxFactory(core.account.System)
   }
 
@@ -51,7 +62,7 @@ class DevStorage implements Storage {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<Tx[]> {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
     }
@@ -59,15 +70,18 @@ class DevStorage implements Storage {
     // invoke triggers
     const triggers = this.hierarchy.getClass(tx.objectClass).triggers
     if (triggers !== undefined) {
+      const derived: Tx[] = []
       for (const trigger of triggers) {
         const impl = await getResource(trigger)
         const txes = await impl(tx, this.txFactory)
+        derived.push(...txes)
         for (const tx of txes) {
           await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-          this.handler(tx)
         }
       }
+      return derived
     }
+    return []
   }
 }
 
@@ -76,7 +90,7 @@ class DevStorage implements Storage {
  * @param handler -
  * @returns
  */
-export async function createStorage (handler: (tx: Tx) => void): Promise<Storage> {
+export async function createStorage (): Promise<ServerStorage> {
   const txes = await getModel()
 
   const hierarchy = new Hierarchy()
@@ -88,5 +102,5 @@ export async function createStorage (handler: (tx: Tx) => void): Promise<Storage
     await Promise.all([transactions.tx(tx), model.tx(tx)])
   }
 
-  return new DevStorage(hierarchy, transactions, model, handler)
+  return new DevStorage(hierarchy, transactions, model)
 }

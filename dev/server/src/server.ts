@@ -14,4 +14,14 @@
 // limitations under the License.
 //
 
-export * from './server'
+import { start as startJsonRpc } from '@anticrm/server-ws'
+import { createStorage } from '@anticrm/dev-storage'
+import { DevSession } from './session'
+
+/**
+ * @public
+ */
+export async function start (): Promise<void> {
+  const storage = await createStorage()
+  startJsonRpc(server => new DevSession(server, storage), 3333)
+}

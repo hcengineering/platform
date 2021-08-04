@@ -470,6 +470,11 @@
       "packageName": "@anticrm/dev-storage",
       "projectFolder": "dev/storage",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/dev-server",
+      "projectFolder": "dev/server",
+      "shouldPublish": true
     }
   ]
 }

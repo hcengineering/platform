@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { readRequest, serialize } from '@anticrm/platform'
+import { readRequest, serialize, Response } from '@anticrm/platform'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
@@ -38,21 +38,43 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
 
 /**
  * @public
- * @param serviceFactory -
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Session {}
+
+/**
+ * @public
+ */
+export interface JsonRpcServer {
+  broadcast: (from: Session, resp: Response<any>) => void
+}
+
+/**
+ * @public
+ * @param sessionFactory -
  * @param port -
  * @param host -
  */
-export function start<S> (serviceFactory: () => Promise<S>, port: number, host?: string): void {
+export function start (sessionFactory: (server: JsonRpcServer) => Session, port: number, host?: string): void {
   // console.log('starting server on port ' + port + '...')
   // console.log('host: ' + host)
 
-  const connections: S[] = []
+  const sessions: [Session, WebSocket][] = []
+
+  const jsonServer: JsonRpcServer = {
+    broadcast (from: Session, resp: Response<[]>) {
+      const msg = serialize(resp)
+      for (const session of sessions) {
+        if (session[0] !== from) { session[1].send(msg) }
+      }
+    }
+  }
 
   const wss = new Server({ noServer: true })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('connection', async (ws: WebSocket, request: any, token: _Token) => {
-    const service = await serviceFactory()
-    connections.push(service)
+  wss.on('connection', (ws: WebSocket, request: any, token: _Token) => {
+    const service = sessionFactory(jsonServer)
+    sessions.push([service, ws])
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(service, ws, msg))
   })
