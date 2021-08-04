@@ -15,6 +15,9 @@
 
 import type { IntlString, Asset, Resource } from '@anticrm/platform'
 
+/**
+ * @public
+ */
 export type Ref<T extends Doc> = string & { __ref: T }
 export type PrimitiveType = number | string | boolean | undefined | Ref<Doc>
 export type Timestamp = number

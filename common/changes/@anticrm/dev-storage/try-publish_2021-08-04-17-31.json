@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/dev-storage",
+      "comment": "Minor changes for publish",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/dev-storage"
+}

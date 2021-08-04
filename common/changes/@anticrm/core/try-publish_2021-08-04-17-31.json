@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/core",
+      "comment": "Minor changes for publish",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/core"
+}
