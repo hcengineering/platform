@@ -19,6 +19,9 @@ import { TxProcessor } from './tx'
 
 import core from './component'
 
+/**
+ * @public
+ */
 export class Hierarchy {
   private readonly classes = new Map<Ref<Class<Obj>>, Class<Obj>>()
   private readonly attributes = new Map<Ref<Class<Obj>>, Map<string, AnyAttribute>>()
