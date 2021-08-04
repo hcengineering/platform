@@ -1,0 +1,17 @@
+{
+  "name": "@anticrm/platform",
+  "entries": [
+    {
+      "version": "0.6.1",
+      "tag": "@anticrm/platform_v0.6.1",
+      "date": "Wed, 04 Aug 2021 17:38:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Minor changes for publish"
+          }
+        ]
+      }
+    }
+  ]
+}
