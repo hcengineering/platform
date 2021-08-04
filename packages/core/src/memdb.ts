@@ -138,6 +138,8 @@ class MemDb extends TxProcessor {
 
 /**
  * Hold transactions
+ * 
+ * @public
  */
 export class TxDb extends MemDb implements Storage {
   async tx (tx: Tx): Promise<void> {
@@ -147,6 +149,8 @@ export class TxDb extends MemDb implements Storage {
 
 /**
  * Hold model objects and classes
+ * 
+ * @public
  */
 export class ModelDb extends MemDb implements Storage {
   protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
