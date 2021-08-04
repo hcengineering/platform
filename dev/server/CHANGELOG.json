@@ -2,6 +2,23 @@
   "name": "@anticrm/dev-server",
   "entries": [
     {
+      "version": "0.6.2",
+      "tag": "@anticrm/dev-server_v0.6.2",
+      "date": "Wed, 04 Aug 2021 20:26:15 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Export start function as defauilt"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.4` to `~0.6.5`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.1",
       "tag": "@anticrm/dev-server_v0.6.1",
       "date": "Wed, 04 Aug 2021 17:38:30 GMT",

@@ -2,6 +2,18 @@
   "name": "@anticrm/core",
   "entries": [
     {
+      "version": "0.6.5",
+      "tag": "@anticrm/core_v0.6.5",
+      "date": "Wed, 04 Aug 2021 20:26:15 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missed docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.4",
       "tag": "@anticrm/core_v0.6.4",
       "date": "Wed, 04 Aug 2021 18:12:38 GMT",
