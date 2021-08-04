@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/core",
+      "comment": "Add `hierarchy.ts` docs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/core"
+}
