@@ -22,7 +22,7 @@
     "eslint":"^7.32.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.1",
+    "@anticrm/platform": "~0.6.2",
     "simplytyped": "^3.3.0"
   }
 }
