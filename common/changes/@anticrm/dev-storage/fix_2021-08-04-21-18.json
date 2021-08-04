@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/dev-storage",
+      "comment": "fix",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/dev-storage"
+}
