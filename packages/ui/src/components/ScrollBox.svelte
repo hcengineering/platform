@@ -1,0 +1,77 @@
+<!--
+// Copyright © 2020 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
+<script lang="ts">
+  export let gap: number = 12
+  export let vertical: boolean = false
+  export let stretch: boolean = false
+  export let bothScroll: boolean = false
+</script>
+
+<div class="scroll" class:vertical={vertical} class:bothScroll={bothScroll}>
+  <div class="box" class:stretch={stretch} style="gap: {gap}px">
+    <slot/>
+  </div>
+</div>
+
+<style lang="scss">
+  .scroll {
+    position: relative;
+    width: auto;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-right: 0;
+    margin-bottom: -5px;
+
+    .box {
+      position: absolute;
+      display: grid;
+      grid-auto-flow: column;
+      padding: 0 0 5px 0;
+      gap: 24px;
+      top: 0;
+      left: 0;
+      width: auto;
+      height: 100%;
+      &.stretch {
+        width: 100%;
+      }
+    }
+
+    &.vertical {
+      margin: 0 -10px 0 -10px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      .box {
+        grid-auto-flow: row;
+        padding: 0 10px 0 10px;
+        width: 100%;
+        height: auto;
+        &.stretch {
+          height: 100%;
+        }
+      }
+    }
+
+    &.bothScroll {
+      margin: 0 -5px -5px 0;
+      overflow: auto;
+      .box {
+        padding: 0 5px 5px 0;
+      }
+    }
+  }
+</style>

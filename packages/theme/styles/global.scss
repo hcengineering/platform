@@ -1,0 +1,94 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+@import "./_colors.scss";
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('IBM Plex Sans'),
+    local('IBMPlexSans'),
+    url('../fonts/complete/woff2/IBMPlexSans-Regular.woff2') format('woff2'),
+    url('../fonts/complete/woff/IBMPlexSans-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: local('IBM Plex Sans Medium'),
+    local('IBMPlexSans-Medium'),
+    url('../fonts/complete/woff2/IBMPlexSans-Medium.woff2') format('woff2'),
+    url('../fonts/complete/woff/IBMPlexSans-Medium.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: local('IBM Plex Sans SemiBold'),
+    local('IBMPlexSans-SemiBold'),
+    url('../fonts/complete/woff2/IBMPlexSans-SemiBold.woff2') format('woff2'),
+    url('../fonts/complete/woff/IBMPlexSans-SemiBold.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: local('IBM Plex Sans Bold'),
+    local('IBMPlexSans-Bold'),
+    url('../fonts/complete/woff2/IBMPlexSans-Bold.woff2') format('woff2'),
+    url('../fonts/complete/woff/IBMPlexSans-Bold.woff') format('woff');
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-color: var(--theme-menu-color) var(--theme-bg-color);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar:horizontal {
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  margin: 6px;
+  // background-color: var(--theme-scroll-bar);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-scroll-bar);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-scroll-bar);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-corner {
+  background-color: var(--theme-scroll-bar);
+  border-radius: 4px;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--theme-content-color);
+  background-color: var(--theme-menu-color);
+}

@@ -1,0 +1,206 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Common Colors */
+* {
+  --primary-button-enabled: #4474F6;
+  --primary-button-hovered: #2A5FF6;
+  --primary-button-pressed: #194CD7;
+  --primary-button-focused: #194CD7;
+  --primary-button-disabled: #5771B9;
+  --primary-button-focused-border: #7393EB;
+  --primary-button-outline: rgba(87, 132, 255, .3);
+  --primary-button-border: rgba(255, 255, 255, .09);
+
+  --system-error-color: #EE7A7A;
+  --system-error-60-color: rgba(238, 122, 122, .6); // #EE7A7A / 60%
+
+  --activity-status-active: #34DB80;
+  --activity-status-dnd: #D95757;
+  --activity-status-busy: #FCC500;
+  --activity-status-away: #9099A2;
+
+  --primary-color-purple-01: #4B38BD;
+  --primary-color-purple-02: #6552DB;
+  --primary-color-purple-03: #9D92C4;
+  --primary-color-orange-01: #CC4726;
+  --primary-color-orange-02: #F47758;
+  --primary-color-skyblue: #93CAF3;
+  --primary-color-pink: #FA8DA1;
+
+  --highlight-red: #F96E50;
+}
+
+/* Dark Theme */
+.theme-dark {
+  --theme-bg-color: #18181e;
+  --theme-bg-selection: #282830;
+  --theme-menu-color: #111117;
+  --theme-menu-selection: #1D1D23;
+  --theme-menu-divider: rgba(255, 255, 255, .05);
+  --theme-scroll-bar: #2C2C34;
+  --theme-bg-modal: #2C2B35;
+  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
+  --theme-chat-divider: rgb(36, 36, 41);
+
+  --theme-bg-accent-color: rgba(255, 255, 255, .03);
+  --theme-bg-accent-hover: rgba(255, 255, 255, .06);
+  --theme-bg-accent-press: rgba(255, 255, 255, .07);
+  --theme-bg-focused-color: rgba(255, 255, 255, .1);
+  --theme-bg-focused-border: rgba(255, 255, 255, .4);
+  --theme-bg-accent-error: rgba(251, 158, 158, .06);
+  --theme-on-color: #94AEF3;
+  --theme-off-color: #77818E;
+  --theme-bg-check: #F2F2F2;
+  --theme-tooltip-color: #2C2C34;
+
+  --theme-button-bg-enabled: #1F1F25;
+  --theme-button-bg-hovered: #26262B;
+  --theme-button-bg-pressed: #2A2A30;
+  --theme-button-bg-disabled: #212127;
+  --theme-button-bg-focused: #2F2F34;
+  --theme-button-bg-error: #262026;
+  --theme-button-border-enabled: rgba(255, 255, 255, .06);
+  --theme-button-border-hovered: rgba(255, 255, 255, .08);
+  --theme-button-border-pressed: rgba(255, 255, 255, .12);
+  --theme-button-border-disabled: rgba(255, 255, 255, .06);
+  --theme-button-border-focused: rgba(255, 255, 255, .4);
+  --theme-button-border-error: rgba(205, 104, 104, .1);
+
+  --theme-caption-color: #fff;
+  --theme-content-accent-color: rgba(255, 255, 255, 0.8);
+  --theme-content-color: rgba(255, 255, 255, 0.6);
+  --theme-content-dark-color: rgba(255, 255, 255, 0.4);
+  --theme-content-trans-color: rgba(255, 255, 255, 0.3);
+
+  --theme-userlink-color: #b92d52;
+  --theme-userlink-hover: #b92d52;
+  --theme-doclink-color: #2d6ab9;
+  --theme-doclink-hover: #2d6ab9;
+  --theme-status-online: #6cd871;
+  --theme-shadow: 0px 4px 8px rgba(15, 15, 15, 0.5);
+  --theme-text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.25);
+}
+
+/* Grey Theme */
+.theme-grey {
+  --theme-bg-color: #393844;
+  --theme-bg-selection: #454351;
+  --theme-menu-color: #2C2B35;
+  --theme-menu-selection: #37363F;
+  --theme-menu-divider: rgba(255, 255, 255, .05);
+  --theme-scroll-bar: #494852;
+  --theme-bg-modal: #2C2B35;
+  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
+  --theme-chat-divider: rgb(66, 65, 76);
+
+  --theme-bg-accent-color: rgba(255, 255, 255, .03);
+  --theme-bg-accent-hover: rgba(255, 255, 255, .06);
+  --theme-bg-accent-press: rgba(255, 255, 255, .07);
+  --theme-bg-focused-color: rgba(255, 255, 255, .1);
+  --theme-bg-focused-border: rgba(255, 255, 255, .4);
+  --theme-bg-accent-error: rgba(251, 158, 158, .06);
+  --theme-on-color: #94AEF3;
+  --theme-off-color: #77818E;
+  --theme-bg-check: #F2F2F2;
+  --theme-tooltip-color: #4D4C58;
+
+  --theme-button-bg-enabled: #3F3E4A;
+  --theme-button-bg-hovered: #45444F;
+  --theme-button-bg-pressed: #494853;
+  --theme-button-bg-disabled: #41404B;
+  --theme-button-bg-focused: #4D4C57;
+  --theme-button-bg-error: #453E49;
+  --theme-button-border-enabled: rgba(255, 255, 255, .06);
+  --theme-button-border-hovered: rgba(255, 255, 255, .08);
+  --theme-button-border-pressed: rgba(255, 255, 255, .12);
+  --theme-button-border-disabled: rgba(255, 255, 255, .06);
+  --theme-button-border-focused: rgba(255, 255, 255, .4);
+  --theme-button-border-error: rgba(205, 104, 104, .1);
+
+  --theme-caption-color: #fff;
+  --theme-content-accent-color: rgba(255, 255, 255, 0.8);
+  --theme-content-color: rgba(255, 255, 255, 0.6);
+  --theme-content-dark-color: rgba(255, 255, 255, 0.4);
+  --theme-content-trans-color: rgba(255, 255, 255, 0.3);
+
+  --theme-userlink-color: #b92d52;
+  --theme-userlink-hover: #b92d52;
+  --theme-doclink-color: #2d6ab9;
+  --theme-doclink-hover: #2d6ab9;
+  --theme-status-online: #6cd871;
+  --theme-shadow: 0px 4px 8px rgba(15, 15, 15, 0.5);
+}
+
+/* Light Theme */
+.theme-light {
+  --theme-bg-color: #FFFFFF;
+  --theme-bg-selection: #F1F1F4;
+  --theme-menu-color: #E7E7E7;
+  --theme-menu-selection: #DBDBDB;
+  --theme-menu-divider: rgba(0, 0, 0, .08);
+  --theme-scroll-bar: #CBCBCB;
+  --theme-bg-modal: #fff;
+  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
+  --theme-chat-divider: rgb(233, 233, 233);
+
+  --theme-bg-accent-color: rgba(0, 0, 0, .03);
+  --theme-bg-accent-hover: rgba(0, 0, 0, .05);
+  --theme-bg-accent-press: rgba(0, 0, 0, .07);
+  --theme-bg-focused-color: rgba(0, 0, 0, .03);
+  --theme-bg-focused-border: rgba(0, 0, 0, .4);
+  --theme-bg-accent-error: rgba(251, 158, 158, .06);
+  --theme-on-color: #4474F6;
+  --theme-off-color: #ECEEF5;
+  --theme-bg-check: #45444F;
+  --theme-tooltip-color: #F1F1F4;
+
+  --theme-button-bg-enabled: #F7F7F7;
+  --theme-button-bg-hovered: #F2F2F2;
+  --theme-button-bg-pressed: #EDEDED;
+  --theme-button-bg-disabled: #F7F7F7;
+  --theme-button-bg-focused: #F7F7F7;
+  --theme-button-bg-error: #FEF2F2;
+  --theme-button-border-enabled: rgba(0, 0, 0, .06);
+  --theme-button-border-hovered: rgba(0, 0, 0, .06);
+  --theme-button-border-pressed: rgba(255, 255, 255, .06);
+  --theme-button-border-disabled: rgba(255, 255, 255, .06);
+  --theme-button-border-focused: rgba(255, 255, 255, .4);
+  --theme-button-border-error: rgba(205, 104, 104, .1);
+
+  --theme-caption-color: #272121;
+  --theme-content-accent-color: rgba(39, 33, 33, 0.8);
+  --theme-content-color: rgba(39, 33, 33, 0.6);
+  --theme-content-dark-color: rgba(39, 33, 33, 0.4);
+  --theme-content-trans-color: rgba(31, 33, 43, 0.3);
+
+  --theme-userlink-color: #b92d52;
+  --theme-userlink-hover: #b92d52;
+  --theme-doclink-color: #2d6ab9;
+  --theme-doclink-hover: #2d6ab9;
+  --theme-status-online: #4ebc53;
+  --theme-shadow: 0px 4px 8px rgba(155, 155, 155, 0.5);
+}
+
+.small-font {
+  font-size: 12px;
+}
+
+.normal-font {
+  font-size: 14px;
+}

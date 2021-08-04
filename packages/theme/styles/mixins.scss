@@ -1,0 +1,13 @@
+@mixin bg-fullsize {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+@mixin bg-layer($color, $opacity) {
+  @include bg-fullsize;
+  background: $color;
+  opacity: $opacity;
+}

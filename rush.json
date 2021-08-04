@@ -475,6 +475,22 @@
       "packageName": "@anticrm/dev-server",
       "projectFolder": "dev/server",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/theme",
+      "projectFolder": "packages/theme",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/ui",
+      "projectFolder": "packages/ui",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "prod",
+      "projectFolder": "dev/prod",
+      "shouldPublish": true
     }
+
   ]
 }
