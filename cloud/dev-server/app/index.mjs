@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
-import start from '@anticrm/dev-server'
+import devServer from '@anticrm/dev-server'
 
-start.default(3333)
+devServer.default(33333)
+
+
