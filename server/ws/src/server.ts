@@ -56,8 +56,7 @@ export interface JsonRpcServer {
  * @param host -
  */
 export function start (sessionFactory: (server: JsonRpcServer) => Session, port: number, host?: string): void {
-  // console.log('starting server on port ' + port + '...')
-  // console.log('host: ' + host)
+  console.log(`starting server on port ${port} ...`)
 
   const sessions: [Session, WebSocket][] = []
 
@@ -86,6 +85,7 @@ export function start (sessionFactory: (server: JsonRpcServer) => Session, port:
       const payload = decode(token ?? '', 'secret', false)
       wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
     } catch (err) {
+      console.log('unauthorized')
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
       socket.destroy()
     }

@@ -14,6 +14,6 @@
 // limitations under the License.
 //
 
-const start = require('@anticrm/dev-server')
+import start from '@anticrm/dev-server'
 
-start (3333)
+start.default(3333)

@@ -14,4 +14,4 @@
 // limitations under the License.
 //
 
-export { start as default } from './server'
+export { start } from './server'
