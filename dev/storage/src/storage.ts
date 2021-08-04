@@ -71,7 +71,12 @@ class DevStorage implements Storage {
   }
 }
 
-export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
+/**
+ * @public
+ * @param handler -
+ * @returns
+ */
+export async function createStorage (handler: (tx: Tx) => void): Promise<Storage> {
   const txes = await getModel()
 
   const hierarchy = new Hierarchy()

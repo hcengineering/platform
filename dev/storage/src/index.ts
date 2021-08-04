@@ -14,7 +14,4 @@
 // limitations under the License.
 //
 
-/**
- * @public
- */
-export const x = 42
+export { createStorage } from './storage'
