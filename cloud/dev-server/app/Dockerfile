@@ -3,10 +3,10 @@ FROM node:14
 WORKDIR /usr/src/app
 
 COPY package.json ./
+COPY index.mjs ./
 
 RUN npm install
 
-COPY ./lib ./lib
 
 EXPOSE 3333
-CMD [ "node", "lib/server.js" ]
+CMD [ "node", "index.mjs" ]

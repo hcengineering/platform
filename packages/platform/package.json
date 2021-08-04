@@ -6,7 +6,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
-    "lint:fix": "eslint --fix ./src"
+    "lint:fix": "eslint --fix src"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",
