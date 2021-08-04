@@ -85,8 +85,6 @@ class DevStorage implements ServerStorage {
 
 /**
  * @public
- * @param handler -
- * @returns
  */
 export async function createStorage (): Promise<ServerStorage> {
   const txes = txJson as unknown as Tx[]
