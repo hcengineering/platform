@@ -2,6 +2,18 @@
   "name": "@anticrm/core",
   "entries": [
     {
+      "version": "0.6.3",
+      "tag": "@anticrm/core_v0.6.3",
+      "date": "Wed, 04 Aug 2021 18:05:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add `hierarchy.ts` docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.2",
       "tag": "@anticrm/core_v0.6.2",
       "date": "Wed, 04 Aug 2021 17:53:24 GMT",
