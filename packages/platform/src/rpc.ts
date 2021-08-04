@@ -29,7 +29,7 @@ export class Request<P extends any[], M extends string = string> {
   method: M
   params: P
 
-  constructor (method: M, ...params: P) {
+  constructor (method: M, params: P, id?: ReqId) {
     this.method = method
     this.params = params
   }

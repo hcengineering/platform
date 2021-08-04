@@ -60,12 +60,12 @@ export function start<S> (serviceFactory: () => Promise<S>, port: number, host?:
   const server = createServer()
   server.on('upgrade', (request: IncomingMessage, socket, head: Buffer) => {
     const token = request.url?.substring(1) // remove leading '/'
-    if (token === undefined) {
+    try {
+      const payload = decode(token ?? '', 'secret', false)
+      wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
+    } catch (err) {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
       socket.destroy()
-    } else {
-      const payload = decode(token, 'secret', false)
-      wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
     }
   })
 
