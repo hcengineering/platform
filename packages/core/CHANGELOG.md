@@ -1,6 +1,13 @@
 # Change Log - @anticrm/core
 
-This log was last generated on Wed, 04 Aug 2021 18:05:12 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 18:12:38 GMT and should not be manually modified.
+
+## 0.6.4
+Wed, 04 Aug 2021 18:12:38 GMT
+
+### Patches
+
+- Add `memdb` docs
 
 ## 0.6.3
 Wed, 04 Aug 2021 18:05:12 GMT

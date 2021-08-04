@@ -22,7 +22,7 @@
     "eslint":"^7.32.0"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.3",
+    "@anticrm/core": "~0.6.4",
     "@anticrm/platform": "~0.6.1"
   }
 }
