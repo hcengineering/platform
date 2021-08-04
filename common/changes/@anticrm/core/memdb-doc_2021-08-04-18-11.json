@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/core",
+      "comment": "Add `memdb` docs",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/core"
+}
