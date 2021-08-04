@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Request, readResponse, serialize } from '@anticrm/platform'
+import { readResponse, serialize } from '@anticrm/platform'
 import { start, _Token } from '../server'
 import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
@@ -43,7 +43,6 @@ describe('server', () => {
   it('should not connect to server without token', (done) => {
     const conn = new WebSocket('ws://localhost:3333/xyz')
     conn.on('error', () => {
-      console.log('error')
       conn.close()
       done()
     })
@@ -55,7 +54,7 @@ describe('server', () => {
     // const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
-        conn.send(serialize(new Request('ping', [], i)))
+        conn.send(serialize({ method: 'ping', params: [], id: i }))
       }
     })
     let received = 0

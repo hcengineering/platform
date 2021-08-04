@@ -24,15 +24,10 @@ export type ReqId = string | number
 /**
  * @public
  */
-export class Request<P extends any[], M extends string = string> {
+export interface Request<P extends any[], M extends string = string> {
   id?: ReqId
   method: M
   params: P
-
-  constructor (method: M, params: P, id?: ReqId) {
-    this.method = method
-    this.params = params
-  }
 }
 
 /**
