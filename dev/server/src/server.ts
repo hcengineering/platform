@@ -21,7 +21,7 @@ import { DevSession } from './session'
 /**
  * @public
  */
-export async function start (): Promise<void> {
+export async function start (port: number, host?: string): Promise<void> {
   const storage = await createStorage()
-  startJsonRpc(server => new DevSession(server, storage), 3333)
+  startJsonRpc(server => new DevSession(server, storage), port, host)
 }

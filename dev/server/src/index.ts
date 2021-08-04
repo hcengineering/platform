@@ -14,4 +14,7 @@
 // limitations under the License.
 //
 
-export { start } from './server'
+import { start } from './server'
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+start(3333)

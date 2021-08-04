@@ -157,7 +157,6 @@ export class Hierarchy {
       this.attributes.set(_class, attributes)
     }
     attributes.set(attribute.name, attribute)
-    console.log('added attribute:', _class, attribute.name)
   }
 
   getAttribute (_class: Ref<Class<Obj>>, name: string): AnyAttribute {

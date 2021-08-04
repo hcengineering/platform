@@ -25,6 +25,8 @@ import type {
 import { getResource } from '@anticrm/platform'
 import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, DefaultTxFactory } from '@anticrm/core'
 
+import * as txJson from './model.tx.json'
+
 /**
  * @public
  */
@@ -35,10 +37,6 @@ export interface ServerStorage {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (tx: Tx) => Promise<Tx[]>
-}
-
-async function getModel (): Promise<Tx[]> {
-  return import('./model.tx.json') as unknown as Tx[]
 }
 
 class DevStorage implements ServerStorage {
@@ -91,8 +89,7 @@ class DevStorage implements ServerStorage {
  * @returns
  */
 export async function createStorage (): Promise<ServerStorage> {
-  const txes = await getModel()
-
+  const txes = txJson as unknown as Tx[]
   const hierarchy = new Hierarchy()
   for (const tx of txes) hierarchy.tx(tx)
 
