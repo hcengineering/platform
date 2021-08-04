@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/dev-server",
+      "comment": "Export start function as defauilt",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/dev-server"
+}
