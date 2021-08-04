@@ -16,20 +16,35 @@
 import type { KeysByType } from 'simplytyped'
 import type { Class, Doc, Ref, Tx } from './classes'
 
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type QuerySelector<T> = {
   $in?: T[]
   $like?: string
 }
 
+/**
+ * @public
+ */
 export type ObjQueryType<T> = T | QuerySelector<T>
 
+/**
+ * @public
+ */
 export type DocumentQuery<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]>
 }
 
+/**
+ * @public
+ */
 export type Refs<T extends Doc> = Partial<Pick<T, KeysByType<T, Ref<Doc>>>>
 
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type FindOptions<T extends Doc> = {
   limit?: number
@@ -37,29 +52,53 @@ export type FindOptions<T extends Doc> = {
   lookup?: Refs<T>
 }
 
+/**
+ * @public
+ */
 export type SortingQuery<T extends Doc> = {
   [P in keyof T]?: T[P] extends object ? never : SortingOrder
 }
 
+/**
+ * @public
+ */
 export enum SortingOrder {
   Ascending = 1,
   Descending = -1
 }
 
-type RefsAsDocs<T extends Doc> = {
+/**
+ * @public
+ */
+export type RefsAsDocs<T extends Doc> = {
   [P in keyof T]: T[P] extends Ref<infer X> ? X : never
 }
 
-type RemoveNever<T extends object> = Omit<T, KeysByType<T, never>>
+/**
+ * @public
+ */
+export type RemoveNever<T extends object> = Omit<T, KeysByType<T, never>>
 
+/**
+ * @public
+ */
 export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<T>>>
 
+/**
+ * @public
+ */
 export type WithLookup<T extends Doc> = T & {
   $lookup?: LookupData<T>
 }
 
+/**
+ * @public
+ */
 export type FindResult<T extends Doc> = WithLookup<T>[]
 
+/**
+ * @public
+ */
 export interface Storage {
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,

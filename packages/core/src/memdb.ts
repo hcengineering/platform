@@ -17,13 +17,16 @@ import { PlatformError, Severity, Status } from '@anticrm/platform'
 import type { Class, Doc, Ref, Tx, TxCreateDoc, TxMixin } from './classes'
 import core from './component'
 import type { Hierarchy } from './hierarchy'
-import { getOperator } from './operator'
+import { _getOperator } from './operator'
 import { findProperty, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, LookupData, Refs } from './storage'
 import type { TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 
-class MemDb extends TxProcessor {
+/**
+ * @public
+ */
+export class MemDb extends TxProcessor {
   protected readonly hierarchy: Hierarchy
   private readonly objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
@@ -138,7 +141,7 @@ class MemDb extends TxProcessor {
 
 /**
  * Hold transactions
- * 
+ *
  * @public
  */
 export class TxDb extends MemDb implements Storage {
@@ -149,7 +152,7 @@ export class TxDb extends MemDb implements Storage {
 
 /**
  * Hold model objects and classes
- * 
+ *
  * @public
  */
 export class ModelDb extends MemDb implements Storage {
@@ -162,7 +165,7 @@ export class ModelDb extends MemDb implements Storage {
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
-        const operator = getOperator(key)
+        const operator = _getOperator(key)
         operator(doc, ops[key])
       } else {
         doc[key] = ops[key]

@@ -23,8 +23,14 @@ import { TxProcessor } from './tx'
 
 import core from './component'
 
-type TxHander = (tx: Tx) => void
+/**
+ * @public
+ */
+export type TxHander = (tx: Tx) => void
 
+/**
+ * @public
+ */
 export interface Client extends Storage {
   getHierarchy: () => Hierarchy
 }
@@ -53,6 +59,9 @@ class ClientImpl extends TxProcessor implements Storage, Client {
   }
 }
 
+/**
+ * @public
+ */
 export async function createClient (
   connect: (txHandler: TxHander) => Promise<Storage>,
   notify?: (tx: Tx) => void

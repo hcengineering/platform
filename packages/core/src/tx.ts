@@ -18,31 +18,58 @@ import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, Tx, TxC
 import core from './component'
 import { generateId } from './utils'
 
-type ArrayAsElement<T extends Doc> = {
+/**
+ * @public
+ */
+export type ArrayAsElement<T extends Doc> = {
   [P in keyof T]: T[P] extends Arr<infer X> ? X : never
 }
 
-type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
+/**
+ * @public
+ */
+export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
 
-interface PushOptions<T extends Doc> {
+/**
+ * @public
+ */
+export interface PushOptions<T extends Doc> {
   $push?: Partial<OmitNever<ArrayAsElement<T>>>
 }
 
+/**
+ * @public
+ */
 export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T>
 
+/**
+ * @public
+ */
 export interface TxUpdateDoc<T extends Doc> extends Tx<T> {
   operations: DocumentUpdate<T>
 }
 
+/**
+ * @public
+ */
 export interface TxRemoveDoc<T extends Doc> extends Tx<T> {
 }
 
+/**
+ * @public
+ */
 export const DOMAIN_TX = 'tx' as Domain
 
-interface WithTx {
+/**
+ * @public
+ */
+export interface WithTx {
   tx: (tx: Tx) => Promise<void>
 }
 
+/**
+ * @public
+ */
 export class TxProcessor implements WithTx {
   async tx (tx: Tx): Promise<void> {
     switch (tx._class) {
@@ -75,6 +102,9 @@ export class TxProcessor implements WithTx {
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {}
 }
 
+/**
+ * @public
+ */
 export interface TxOperations {
   createDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>) => Promise<T>
   updateDoc: <T extends Doc>(
@@ -86,6 +116,9 @@ export interface TxOperations {
   removeDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>) => Promise<void>
 }
 
+/**
+ * @public
+ */
 export function withOperations<T extends WithTx> (user: Ref<Account>, storage: T): T & TxOperations {
   const result = storage as T & TxOperations
 
@@ -150,6 +183,9 @@ export function withOperations<T extends WithTx> (user: Ref<Account>, storage: T
   return result
 }
 
+/**
+ * @public
+ */
 export class DefaultTxFactory implements TxFactory {
   constructor (readonly account: Ref<Account>) {}
 

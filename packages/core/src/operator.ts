@@ -16,7 +16,10 @@
 
 import type { Doc, PropertyType } from './classes'
 
-type OperatorFunc = (doc: Doc, op: object) => void
+/**
+ * @internal
+ */
+export type _OperatorFunc = (doc: Doc, op: object) => void
 
 function $push (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
@@ -30,11 +33,16 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
-const operators: Record<string, OperatorFunc> = {
+const operators: Record<string, _OperatorFunc> = {
   $push
 }
 
-export function getOperator (name: string): OperatorFunc {
+/**
+ * @internal
+ * @param name -
+ * @returns
+ */
+export function _getOperator (name: string): _OperatorFunc {
   const operator = operators[name]
   if (operator === undefined) throw new Error('unknown operator: ' + name)
   return operator
