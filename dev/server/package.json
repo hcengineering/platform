@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/dev-server",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -18,9 +18,9 @@
     "eslint":"^7.32.0"
   },
   "dependencies": {
-    "@anticrm/dev-storage": "~0.6.2",
-    "@anticrm/server-ws": "~0.6.3",
-    "@anticrm/core": "~0.6.6",
-    "@anticrm/platform": "~0.6.2"
+    "@anticrm/dev-storage": "~0.6.3",
+    "@anticrm/server-ws": "~0.6.4",
+    "@anticrm/core": "~0.6.7",
+    "@anticrm/platform": "~0.6.3"
   }
 }

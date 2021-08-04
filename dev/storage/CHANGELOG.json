@@ -2,6 +2,26 @@
   "name": "@anticrm/dev-storage",
   "entries": [
     {
+      "version": "0.6.3",
+      "tag": "@anticrm/dev-storage_v0.6.3",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.6` to `~0.6.7`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.2` to `~0.6.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.2",
       "tag": "@anticrm/dev-storage_v0.6.2",
       "date": "Wed, 04 Aug 2021 21:00:14 GMT",

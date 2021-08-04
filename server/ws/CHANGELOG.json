@@ -2,6 +2,23 @@
   "name": "@anticrm/server-ws",
   "entries": [
     {
+      "version": "0.6.4",
+      "tag": "@anticrm/server-ws_v0.6.4",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.2` to `~0.6.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.3",
       "tag": "@anticrm/server-ws_v0.6.3",
       "date": "Wed, 04 Aug 2021 21:00:14 GMT",

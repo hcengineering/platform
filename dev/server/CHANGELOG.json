@@ -2,6 +2,32 @@
   "name": "@anticrm/dev-server",
   "entries": [
     {
+      "version": "0.6.5",
+      "tag": "@anticrm/dev-server_v0.6.5",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/dev-storage\" from `~0.6.2` to `~0.6.3`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/server-ws\" from `~0.6.3` to `~0.6.4`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.6` to `~0.6.7`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.2` to `~0.6.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.4",
       "tag": "@anticrm/dev-server_v0.6.4",
       "date": "Wed, 04 Aug 2021 21:00:14 GMT",
