@@ -2,6 +2,29 @@
   "name": "@anticrm/dev-server",
   "entries": [
     {
+      "version": "0.6.4",
+      "tag": "@anticrm/dev-server_v0.6.4",
+      "date": "Wed, 04 Aug 2021 21:00:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "npmignore"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/dev-storage\" from `~0.6.1` to `~0.6.2`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/server-ws\" from `~0.6.2` to `~0.6.3`"
+          },
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.5` to `~0.6.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.3",
       "tag": "@anticrm/dev-server_v0.6.3",
       "date": "Wed, 04 Aug 2021 20:48:46 GMT",

@@ -2,6 +2,18 @@
   "name": "@anticrm/core",
   "entries": [
     {
+      "version": "0.6.6",
+      "tag": "@anticrm/core_v0.6.6",
+      "date": "Wed, 04 Aug 2021 21:00:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "npmigonre"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.5",
       "tag": "@anticrm/core_v0.6.5",
       "date": "Wed, 04 Aug 2021 20:26:15 GMT",

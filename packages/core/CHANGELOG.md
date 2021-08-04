@@ -1,6 +1,13 @@
 # Change Log - @anticrm/core
 
-This log was last generated on Wed, 04 Aug 2021 20:26:15 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 21:00:14 GMT and should not be manually modified.
+
+## 0.6.6
+Wed, 04 Aug 2021 21:00:14 GMT
+
+### Patches
+
+- npmigonre
 
 ## 0.6.5
 Wed, 04 Aug 2021 20:26:15 GMT
