@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import devServer from '@anticrm/dev-server'
+import pkg from '@anticrm/dev-server'
 
-devServer.default(33333)
+pkg.start(3333)
 
 

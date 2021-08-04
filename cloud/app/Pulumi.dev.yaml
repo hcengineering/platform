@@ -1,0 +1,4 @@
+config:
+  aws:region: us-west-2
+  cloud:provider: aws
+  cloud-aws:useFargate: true

@@ -7,6 +7,6 @@
     "start": "node ./index.js"
   },
   "dependencies": {
-    "@anticrm/dev-server": "^0.6.4"
+    "@anticrm/dev-server": "^0.6.5"
   }
 }

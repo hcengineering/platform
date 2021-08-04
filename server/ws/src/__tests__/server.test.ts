@@ -20,7 +20,7 @@ import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
 describe('server', () => {
-  start(async () => ({
+  start(() => ({
     ping: () => {}
   }), 3333)
 
