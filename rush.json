@@ -500,6 +500,16 @@
       "packageName": "@anticrm/server",
       "projectFolder": "server/server",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/login",
+      "projectFolder": "plugins/login",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/login-resources",
+      "projectFolder": "plugins/login-resources",
+      "shouldPublish": true
     }
 
   ]

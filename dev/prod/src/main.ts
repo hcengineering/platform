@@ -20,9 +20,9 @@ import { createApp } from '@anticrm/ui'
 // import pluginCore from '@anticrm/plugin-core'
 // import meetingPlugin from '@anticrm/meeting'
 
-// import { configurePlatform } from './platform'
+import { configurePlatform } from './platform'
 
-// configurePlatform()
+configurePlatform()
 
 // const accountsUrl = process.env.APP_ACCOUNTS_URL
 // const appHost = process.env.APP_WSHOST

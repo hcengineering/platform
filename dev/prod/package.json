@@ -33,11 +33,16 @@
     "file-loader":"^6.2.0",
     "sass":"^1.37.5",
     "webpack-dev-server":"^3.11.2",
-    "style-loader":"^3.2.1"
+    "style-loader":"^3.2.1",
+    "svgo-loader":"^3.0.0",
+    "webpack-bundle-analyzer":"^4.4.2"
   },
   "dependencies": {
     "@anticrm/ui": "~0.6.0",
     "@anticrm/theme": "~0.6.0",
-    "svelte": "^3.42.1"
+    "svelte": "^3.42.1",
+    "@anticrm/login": "~0.6.0",
+    "@anticrm/login-resources": "~0.6.0",
+    "@anticrm/platform": "~0.6.3"
   }
 }
