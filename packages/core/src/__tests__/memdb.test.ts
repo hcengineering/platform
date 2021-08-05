@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Obj, Ref } from '../classes'
+import type { Class, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -39,9 +39,9 @@ describe('memdb', () => {
     const model = new ModelDb(hierarchy)
     for (const tx of txes) await model.tx(tx)
     const result = await model.findAll(core.class.Class, {})
-    expect(result.length).toBeGreaterThan(5)
-    const result2 = await model.findAll('class:workbench.Application' as Ref<Class<Doc>>, { _id: undefined })
-    expect(result2).toHaveLength(0)
+    expect(result.length).toBe(9)
+    const result2 = await model.findAll(core.class.Class, { _id: undefined })
+    expect(result2.length).toBe(0)
   })
 
   it('should allow delete', async () => {
