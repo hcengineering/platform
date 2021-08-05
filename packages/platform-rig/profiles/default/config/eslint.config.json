@@ -3,6 +3,7 @@
         "standard-with-typescript"
     ],
     "rules": {
-        "@typescript-eslint/array-type": "off"
+        "@typescript-eslint/array-type": "off",
+        "@typescript-eslint/promise-function-async": "off"
     }    
 }

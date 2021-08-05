@@ -18,7 +18,7 @@ import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { SortingOrder } from '../storage'
-import { withOperations } from '../tx'
+import { TxOperations } from '../tx'
 import { genMinModel } from './minmodel'
 
 const txes = genMinModel()
@@ -52,7 +52,7 @@ describe('memdb', () => {
     const result = await model.findAll(core.class.Space, {})
     expect(result.length).toBe(2)
 
-    const ops = withOperations(core.account.System, model)
+    const ops = new TxOperations(model, core.account.System)
     await ops.removeDoc(result[0]._class, result[0].space, result[0]._id)
     const result2 = await model.findAll(core.class.Space, {})
     expect(result2).toHaveLength(1)
@@ -122,7 +122,7 @@ describe('memdb', () => {
   it('should push to array', async () => {
     const hierarchy = new Hierarchy()
     for (const tx of txes) await hierarchy.tx(tx)
-    const model = withOperations(core.account.System, new ModelDb(hierarchy))
+    const model = new TxOperations(new ModelDb(hierarchy), core.account.System)
     for (const tx of txes) await model.tx(tx)
     const space = await model.createDoc(core.class.Space, core.space.Model, {
       name: 'name',
@@ -131,15 +131,15 @@ describe('memdb', () => {
       members: []
     })
     const account = await model.createDoc(core.class.Account, core.space.Model, {})
-    await model.updateDoc(core.class.Space, core.space.Model, space._id, { $push: { members: account._id } })
-    const txSpace = await model.findAll(core.class.Space, { _id: space._id })
-    expect(txSpace[0].members).toEqual(expect.arrayContaining([account._id]))
+    await model.updateDoc(core.class.Space, core.space.Model, space, { $push: { members: account } })
+    const txSpace = await model.findAll(core.class.Space, { _id: space })
+    expect(txSpace[0].members).toEqual(expect.arrayContaining([account]))
   })
 
   it('limit and sorting', async () => {
     const hierarchy = new Hierarchy()
     for (const tx of txes) hierarchy.tx(tx)
-    const model = withOperations(core.account.System, new ModelDb(hierarchy))
+    const model = new TxOperations(new ModelDb(hierarchy), core.account.System)
     for (const tx of txes) await model.tx(tx)
 
     const without = await model.findAll(core.class.Space, {})

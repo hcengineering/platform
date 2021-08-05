@@ -15,13 +15,9 @@
 
 import type { KeysByType } from 'simplytyped'
 import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin } from './classes'
+import { DocumentQuery, FindOptions, FindResult, Storage } from './storage'
 import core from './component'
 import { generateId } from './utils'
-
-//  export interface TxFactory {
-//   createTxCreateDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>) => TxCreateDoc<T>
-//   createTxMixin: <D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, mixin: Ref<Mixin<M>>, attributes: ExtendedAttributes<D, M>) => TxMixin<D, M>
-// }
 
 /**
  * @public
@@ -139,82 +135,49 @@ export class TxProcessor implements WithTx {
 /**
  * @public
  */
-export interface TxOperations {
-  createDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>) => Promise<T>
-  updateDoc: <T extends Doc>(
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>,
-    operations: DocumentUpdate<T>
-  ) => Promise<void>
-  removeDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>) => Promise<void>
-}
+export class TxOperations implements Storage {
+  private readonly txFactory: TxFactory
 
-/**
- * @public
- */
-export function withOperations<T extends WithTx> (user: Ref<Account>, storage: T): T & TxOperations {
-  const result = storage as T & TxOperations
+  constructor (private readonly storage: Storage, user: Ref<Account>) {
+    this.txFactory = new TxFactory(user)
+  }
 
-  result.createDoc = async <T extends Doc>(
+  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
+    return this.storage.findAll(_class, query, options)
+  }
+
+  tx (tx: Tx<Doc>): Promise<void> {
+    return this.storage.tx(tx)
+  }
+
+  async createDoc<T extends Doc> (
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     attributes: Data<T>
-  ): Promise<T> => {
-    const tx: TxCreateDoc<T> = {
-      _id: generateId(),
-      _class: core.class.TxCreateDoc,
-      space: core.space.Tx,
-      modifiedBy: user,
-      modifiedOn: Date.now(),
-      objectId: generateId(),
-      objectClass: _class,
-      objectSpace: space,
-      attributes
-    }
-    await storage.tx(tx)
-    return TxProcessor.createDoc2Doc(tx)
+  ): Promise<Ref<T>> {
+    const tx = this.txFactory.createTxCreateDoc(_class, space, attributes)
+    await this.storage.tx(tx)
+    return tx.objectId
   }
 
-  result.updateDoc = async <T extends Doc>(
+  updateDoc <T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
     operations: DocumentUpdate<T>
-  ): Promise<void> => {
-    const tx: TxUpdateDoc<T> = {
-      _id: generateId(),
-      _class: core.class.TxUpdateDoc,
-      space: core.space.Tx,
-      modifiedBy: user,
-      modifiedOn: Date.now(),
-      objectId,
-      objectClass: _class,
-      objectSpace: space,
-      operations
-    }
-    await storage.tx(tx)
+  ): Promise<void> {
+    const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
+    return this.storage.tx(tx)
   }
 
-  result.removeDoc = async <T extends Doc>(
+  removeDoc<T extends Doc> (
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>
-  ): Promise<void> => {
-    const tx: TxRemoveDoc<T> = {
-      _id: generateId(),
-      _class: core.class.TxRemoveDoc,
-      space: core.space.Tx,
-      modifiedBy: user,
-      modifiedOn: Date.now(),
-      objectId,
-      objectClass: _class,
-      objectSpace: space
-    }
-    await storage.tx(tx)
+  ): Promise<void> {
+    const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
+    return this.storage.tx(tx)
   }
-
-  return result
 }
 
 /**
@@ -234,6 +197,42 @@ export class TxFactory {
       modifiedOn: Date.now(),
       modifiedBy: this.account,
       attributes
+    }
+  }
+
+  createTxUpdateDoc <T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    objectId: Ref<T>,
+    operations: DocumentUpdate<T>
+  ): TxUpdateDoc<T> {
+    return {
+      _id: generateId(),
+      _class: core.class.TxUpdateDoc,
+      space: core.space.Tx,
+      modifiedBy: this.account,
+      modifiedOn: Date.now(),
+      objectId,
+      objectClass: _class,
+      objectSpace: space,
+      operations
+    }
+  }
+
+  createTxRemoveDoc<T extends Doc> (
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    objectId: Ref<T>
+  ): TxRemoveDoc<T> {
+    return {
+      _id: generateId(),
+      _class: core.class.TxRemoveDoc,
+      space: core.space.Tx,
+      modifiedBy: this.account,
+      modifiedOn: Date.now(),
+      objectId,
+      objectClass: _class,
+      objectSpace: space
     }
   }
 

@@ -17,13 +17,13 @@
 import { Space } from '../classes'
 import { createClient } from '../client'
 import core from '../component'
-import { withOperations } from '../tx'
+import { TxOperations } from '../tx'
 import { connect } from './connection'
 
 describe('client', () => {
   it('client', async () => {
     const klass = core.class.Space
-    const client = withOperations(core.account.System, await createClient(connect))
+    const client = new TxOperations(await createClient(connect), core.account.System)
     const result = await client.findAll(klass, {})
     expect(result).toHaveLength(2)
 
