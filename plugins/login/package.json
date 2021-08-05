@@ -17,6 +17,7 @@
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0"
   },
-  "dependencies": {"@anticrm/platform":"~0.6.3"
+  "dependencies": {
+    "@anticrm/platform":"~0.6.3"
   }
 }
