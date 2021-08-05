@@ -25,7 +25,7 @@ const txes = genMinModel()
 
 async function createModel (): Promise<{ model: ModelDb, hierarchy: Hierarchy }> {
   const hierarchy = new Hierarchy()
-  for (const tx of txes) await hierarchy.tx(tx)
+  for (const tx of txes) hierarchy.tx(tx)
   const model = new ModelDb(hierarchy)
   for (const tx of txes) await model.tx(tx)
   return { model, hierarchy }
@@ -144,7 +144,7 @@ describe('memdb', () => {
 
   it('should push to array', async () => {
     const hierarchy = new Hierarchy()
-    for (const tx of txes) await hierarchy.tx(tx)
+    for (const tx of txes) hierarchy.tx(tx)
     const model = new TxOperations(new ModelDb(hierarchy), core.account.System)
     for (const tx of txes) await model.tx(tx)
     const space = await model.createDoc(core.class.Space, core.space.Model, {

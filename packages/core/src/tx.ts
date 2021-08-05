@@ -22,16 +22,22 @@ import { generateId } from './utils'
 /**
  * @public
  */
-export interface Tx<T extends Doc = Doc> extends Doc {
-  objectId: Ref<T>
-  objectClass: Ref<Class<T>>
-  objectSpace: Ref<Space>
+export interface Tx extends Doc {
+  objectSpace: Ref<Space> // space where transaction will operate
 }
 
 /**
  * @public
  */
-export interface TxCreateDoc<T extends Doc> extends Tx<T> {
+export interface TxCUD<T extends Doc> extends Tx {
+  objectId: Ref<T>
+  objectClass: Ref<Class<T>>
+}
+
+/**
+ * @public
+ */
+export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
   attributes: Data<T>
 }
 
@@ -43,7 +49,7 @@ export type ExtendedAttributes<D extends Doc, M extends D> = Omit<M, keyof D>
 /**
  * @public
  */
-export interface TxMixin<D extends Doc, M extends D> extends Tx<D> {
+export interface TxMixin<D extends Doc, M extends D> extends TxCUD<D> {
   mixin: Ref<Mixin<M>>
   attributes: ExtendedAttributes<D, M>
 }
@@ -85,14 +91,14 @@ export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & 
 /**
  * @public
  */
-export interface TxUpdateDoc<T extends Doc> extends Tx<T> {
+export interface TxUpdateDoc<T extends Doc> extends TxCUD<T> {
   operations: DocumentUpdate<T>
 }
 
 /**
  * @public
  */
-export interface TxRemoveDoc<T extends Doc> extends Tx<T> {
+export interface TxRemoveDoc<T extends Doc> extends TxCUD<T> {
 }
 
 /**
@@ -122,6 +128,7 @@ export class TxProcessor implements WithTx {
       case core.class.TxMixin:
         return await this.txMixin(tx as TxMixin<Doc, Doc>)
     }
+    throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
 
   static createDoc2Doc<T extends Doc> (tx: TxCreateDoc<T>): T {
@@ -156,7 +163,7 @@ export class TxOperations implements Storage {
     return this.storage.findAll(_class, query, options)
   }
 
-  tx (tx: Tx<Doc>): Promise<void> {
+  tx (tx: Tx): Promise<void> {
     return this.storage.tx(tx)
   }
 

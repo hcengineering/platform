@@ -78,6 +78,7 @@ export async function createClient (
       txBuffer?.push(tx)
     } else {
       if (tx.objectSpace === core.space.Model) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         hierarchy.tx(tx)
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         model.tx(tx)

@@ -86,25 +86,32 @@ export class Hierarchy {
   }
 
   tx (tx: Tx): void {
-    if (tx._class !== core.class.TxCreateDoc) {
-      if (tx._class === core.class.TxMixin) {
-        const mixinTx = tx as TxMixin<Doc, Doc>
-        if (tx.objectClass !== core.class.Class) { return }
-        const obj = this.getClass(tx.objectId as Ref<Class<Obj>>) as any
-        obj[mixinTx.mixin] = mixinTx.attributes
-      }
-      return
+    switch (tx._class) {
+      case core.class.TxCreateDoc:
+        this.txCreateDoc(tx as TxCreateDoc<Doc>)
+        return
+      case core.class.TxMixin:
+        this.txMixin(tx as TxMixin<Doc, Doc>)
     }
-    const createTx = tx as TxCreateDoc<Doc>
-    if (createTx.objectClass === core.class.Class) {
+  }
+
+  private txCreateDoc (tx: TxCreateDoc<Doc>): void {
+    if (tx.objectClass === core.class.Class) {
       const createTx = tx as TxCreateDoc<Class<Obj>>
       const _id = createTx.objectId
       this.classes.set(_id, TxProcessor.createDoc2Doc(createTx))
       this.addAncestors(_id)
       this.addDescendant(_id)
-    } else if (createTx.objectClass === core.class.Attribute) {
+    } else if (tx.objectClass === core.class.Attribute) {
       const createTx = tx as TxCreateDoc<AnyAttribute>
       this.addAttribute(TxProcessor.createDoc2Doc(createTx))
+    }
+  }
+
+  private txMixin (tx: TxMixin<Doc, Doc>): void {
+    if (tx.objectClass === core.class.Class) {
+      const obj = this.getClass(tx.objectId as Ref<Class<Obj>>) as any
+      obj[tx.mixin] = tx.attributes
     }
   }
 

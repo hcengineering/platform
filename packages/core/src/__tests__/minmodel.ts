@@ -17,7 +17,7 @@ import type { Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Class, Data, Doc, Obj, Ref, Mixin, Arr } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL } from '../classes'
-import type { Tx, TxCreateDoc } from '../tx'
+import type { TxCUD, TxCreateDoc } from '../tx'
 import core from '../component'
 import { DOMAIN_TX, TxFactory } from '../tx'
 
@@ -45,7 +45,7 @@ export const test = plugin('test' as Plugin, {
  * Generate minimal model for testing purposes.
  * @returns R
  */
-export function genMinModel (): Tx[] {
+export function genMinModel (): TxCUD<Doc>[] {
   const txes = []
   // Fill Tx'es with basic model classes.
   txes.push(createClass(core.class.Obj, { kind: ClassifierKind.CLASS }))
