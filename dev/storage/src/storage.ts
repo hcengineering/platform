@@ -23,7 +23,7 @@ import type {
   FindOptions
 } from '@anticrm/core'
 import { getResource } from '@anticrm/platform'
-import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, DefaultTxFactory } from '@anticrm/core'
+import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
 
 import * as txJson from './model.tx.json'
 
@@ -40,14 +40,14 @@ export interface ServerStorage {
 }
 
 class DevStorage implements ServerStorage {
-  private readonly txFactory: DefaultTxFactory
+  private readonly txFactory: TxFactory
 
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly txdb: TxDb,
     private readonly modeldb: ModelDb
   ) {
-    this.txFactory = new DefaultTxFactory(core.account.System)
+    this.txFactory = new TxFactory(core.account.System)
   }
 
   async findAll<T extends Doc> (
