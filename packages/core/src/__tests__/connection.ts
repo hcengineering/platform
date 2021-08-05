@@ -14,7 +14,8 @@
 //
 
 import type { Storage, DocumentQuery, FindResult } from '../storage'
-import type { Class, Doc, Ref, Tx } from '../classes'
+import type { Class, Doc, Ref } from '../classes'
+import type { Tx } from '../tx'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'

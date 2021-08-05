@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Obj, Ref, TxCreateDoc } from '../classes'
+import type { Class, Doc, Obj, Ref } from '../classes'
+import type { TxCreateDoc } from '../tx'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { genMinModel } from './minmodel'

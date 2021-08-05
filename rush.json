@@ -490,6 +490,11 @@
       "packageName": "prod",
       "projectFolder": "dev/prod",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-core",
+      "projectFolder": "server/core",
+      "shouldPublish": true
     }
 
   ]

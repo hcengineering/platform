@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { IntlString, Asset, Resource } from '@anticrm/platform'
+import type { IntlString, Asset } from '@anticrm/platform'
 
 /**
  * @public
@@ -108,7 +108,6 @@ export type Domain = string & { __domain: true }
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
   domain?: Domain
-  triggers?: Trigger[]
 }
 
 /**
@@ -177,47 +176,3 @@ export interface Space extends Doc {
  * @public
  */
 export interface Account extends Doc {}
-
-// T X
-
-/**
- * @public
- */
-export interface TxFactory {
-  createTxCreateDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>) => TxCreateDoc<T>
-  createTxMixin: <D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, mixin: Ref<Mixin<M>>, attributes: ExtendedAttributes<D, M>) => TxMixin<D, M>
-}
-
-/**
- * @public
- */
-export type Trigger = Resource<(tx: Tx, txFactory: TxFactory) => Promise<Tx[]>>
-
-/**
- * @public
- */
-export interface Tx<T extends Doc = Doc> extends Doc {
-  objectId: Ref<T>
-  objectClass: Ref<Class<T>>
-  objectSpace: Ref<Space>
-}
-
-/**
- * @public
- */
-export interface TxCreateDoc<T extends Doc> extends Tx<T> {
-  attributes: Data<T>
-}
-
-/**
- * @public
- */
-export type ExtendedAttributes<D extends Doc, M extends D> = Omit<M, keyof D>
-
-/**
- * @public
- */
-export interface TxMixin<D extends Doc, M extends D> extends Tx<D> {
-  mixin: Ref<Mixin<M>>
-  attributes: ExtendedAttributes<D, M>
-}

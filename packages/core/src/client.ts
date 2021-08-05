@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Class, Tx } from './classes'
+import type { Doc, Ref, Class } from './classes'
+import type { Tx } from './tx'
 import type { Storage, DocumentQuery, FindOptions, FindResult } from './storage'
 
 import { Hierarchy } from './hierarchy'

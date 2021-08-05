@@ -14,9 +14,43 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, Tx, TxCreateDoc, TxFactory, TxMixin, ExtendedAttributes } from './classes'
+import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin } from './classes'
 import core from './component'
 import { generateId } from './utils'
+
+//  export interface TxFactory {
+//   createTxCreateDoc: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>) => TxCreateDoc<T>
+//   createTxMixin: <D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, mixin: Ref<Mixin<M>>, attributes: ExtendedAttributes<D, M>) => TxMixin<D, M>
+// }
+
+/**
+ * @public
+ */
+export interface Tx<T extends Doc = Doc> extends Doc {
+  objectId: Ref<T>
+  objectClass: Ref<Class<T>>
+  objectSpace: Ref<Space>
+}
+
+/**
+ * @public
+ */
+export interface TxCreateDoc<T extends Doc> extends Tx<T> {
+  attributes: Data<T>
+}
+
+/**
+ * @public
+ */
+export type ExtendedAttributes<D extends Doc, M extends D> = Omit<M, keyof D>
+
+/**
+ * @public
+ */
+export interface TxMixin<D extends Doc, M extends D> extends Tx<D> {
+  mixin: Ref<Mixin<M>>
+  attributes: ExtendedAttributes<D, M>
+}
 
 /**
  * @public
@@ -186,7 +220,7 @@ export function withOperations<T extends WithTx> (user: Ref<Account>, storage: T
 /**
  * @public
  */
-export class DefaultTxFactory implements TxFactory {
+export class TxFactory {
   constructor (readonly account: Ref<Account>) {}
 
   createTxCreateDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>, objectId?: Ref<T>): TxCreateDoc<T> {
