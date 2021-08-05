@@ -6,6 +6,7 @@ specifiers:
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
   '@rush-temp/login': file:./projects/login.tgz
+  '@rush-temp/login-assets': file:./projects/login-assets.tgz
   '@rush-temp/login-resources': file:./projects/login-resources.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
@@ -48,6 +49,7 @@ specifiers:
   ts-loader: ^9.2.5
   typescript: ^4.3.5
   webpack: ^5.48.0
+  webpack-bundle-analyzer: ^4.4.2
   webpack-cli: ^4.7.2
   webpack-dev-server: ^3.11.2
   ws: ^8.0.0
@@ -58,6 +60,7 @@ dependencies:
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/login': file:projects/login.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/login-assets': file:projects/login-assets.tgz
   '@rush-temp/login-resources': file:projects/login-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
@@ -100,7 +103,8 @@ dependencies:
   ts-loader: 9.2.5_typescript@4.3.5+webpack@5.48.0
   typescript: 4.3.5
   webpack: 5.48.0_webpack-cli@4.7.2
-  webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+  webpack-bundle-analyzer: 4.4.2
+  webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
   webpack-dev-server: 3.11.2_webpack-cli@4.7.2+webpack@5.48.0
   ws: 8.0.0
 
@@ -1289,7 +1293,7 @@ packages:
       webpack-cli: 4.x.x
     dependencies:
       webpack: 5.48.0_webpack-cli@4.7.2
-      webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+      webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
     dev: false
 
   /@webpack-cli/info/1.3.0_webpack-cli@4.7.2:
@@ -1298,7 +1302,7 @@ packages:
       webpack-cli: 4.x.x
     dependencies:
       envinfo: 7.8.1
-      webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+      webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
     dev: false
 
   /@webpack-cli/serve/1.5.1_8f539f003d3f73da23f531c906cfc201:
@@ -1310,7 +1314,7 @@ packages:
       webpack-dev-server:
         optional: true
     dependencies:
-      webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+      webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
       webpack-dev-server: 3.11.2_webpack-cli@4.7.2+webpack@5.48.0
     dev: false
 
@@ -7347,43 +7351,6 @@ packages:
       webpack-merge: 5.8.0
     dev: false
 
-  /webpack-cli/4.7.2_e6a3c038781d6207761c29e1aac8eed2:
-    resolution: {integrity: sha512-mEoLmnmOIZQNiRl0ebnjzQ74Hk0iKS5SiEEnpq3dRezoyR3yPaeQZCMCe+db4524pj1Pd5ghZXjT41KLzIhSLw==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    peerDependencies:
-      '@webpack-cli/generators': '*'
-      '@webpack-cli/migrate': '*'
-      webpack: 4.x.x || 5.x.x
-      webpack-bundle-analyzer: '*'
-      webpack-dev-server: '*'
-    peerDependenciesMeta:
-      '@webpack-cli/generators':
-        optional: true
-      '@webpack-cli/migrate':
-        optional: true
-      webpack-bundle-analyzer:
-        optional: true
-      webpack-dev-server:
-        optional: true
-    dependencies:
-      '@discoveryjs/json-ext': 0.5.3
-      '@webpack-cli/configtest': 1.0.4_webpack-cli@4.7.2+webpack@5.48.0
-      '@webpack-cli/info': 1.3.0_webpack-cli@4.7.2
-      '@webpack-cli/serve': 1.5.1_8f539f003d3f73da23f531c906cfc201
-      colorette: 1.2.2
-      commander: 7.2.0
-      execa: 5.1.1
-      fastest-levenshtein: 1.0.12
-      import-local: 3.0.2
-      interpret: 2.2.0
-      rechoir: 0.7.1
-      v8-compile-cache: 2.3.0
-      webpack: 5.48.0_webpack-cli@4.7.2
-      webpack-dev-server: 3.11.2_webpack-cli@4.7.2+webpack@5.48.0
-      webpack-merge: 5.8.0
-    dev: false
-
   /webpack-dev-middleware/3.7.3_webpack@5.48.0:
     resolution: {integrity: sha512-djelc/zGiz9nZj/U7PTBi2ViorGJXEWo/3ltkPbDyxCXhhEXkW0ce99falaok4TPj+AsxLiXJR0EBOb0zh9fKQ==}
     engines: {node: '>= 6'}
@@ -7439,7 +7406,7 @@ packages:
       supports-color: 6.1.0
       url: 0.11.0
       webpack: 5.48.0_webpack-cli@4.7.2
-      webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+      webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
       webpack-dev-middleware: 3.7.3_webpack@5.48.0
       webpack-log: 2.0.0
       ws: 6.2.2
@@ -7500,7 +7467,7 @@ packages:
       tapable: 2.2.0
       terser-webpack-plugin: 5.1.4_webpack@5.48.0
       watchpack: 2.2.0
-      webpack-cli: 4.7.2_e6a3c038781d6207761c29e1aac8eed2
+      webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
       webpack-sources: 3.2.0
     dev: false
 
@@ -7777,6 +7744,12 @@ packages:
       - typescript
     dev: false
 
+  file:projects/login-assets.tgz:
+    resolution: {integrity: sha512-9zgHyYjB25jstXaa3q5FitulpLfvdXRJCG9G2klk9WewAXGx5X6brJT7CYZerN9G7p0jCjnz0JnMgJwmnz8ZeA==, tarball: file:projects/login-assets.tgz}
+    name: '@rush-temp/login-assets'
+    version: 0.0.0
+    dev: false
+
   file:projects/login-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
     resolution: {integrity: sha512-/y0RdsR15OZIqLJx1mwd8oOB51lbw7kKHWmy+CS2qRZufQcUZLU0R3Eo0wnoRynXRby11E6A17LxMglB8R1Txw==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
@@ -7862,7 +7835,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_typescript@4.3.5:
-    resolution: {integrity: sha512-ti6nz+pb0TRqhi0+pGET0k++WDa/DS+Crnfa0y9ZERFFNJMYFBKcspo5fpKKIUlwTx6O14layZ8h+fAHtKcj4Q==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-bM0WYb/I0MnLe8uOmNDzrQ8eOyT24MIhWt+d+T10364rGd9HSyCH1GDnrgm4oZEnnHWQz3Pf5Hmz8KyP4J5QRA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

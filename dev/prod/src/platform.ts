@@ -27,7 +27,7 @@ import { loginId } from '@anticrm/login'
 
 // import { chunterServerId } from '@anticrm/chunter-server'
 
-// import '@anticrm/login-assets'
+import '@anticrm/login-assets'
 // import '@anticrm/chunter-assets'
 // import '@anticrm/recruit-assets'
 // import '@anticrm/task-assets'

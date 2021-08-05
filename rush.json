@@ -507,6 +507,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/login-assets",
+      "projectFolder": "plugins/login-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/login-resources",
       "projectFolder": "plugins/login-resources",
       "shouldPublish": true

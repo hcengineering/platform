@@ -42,6 +42,7 @@
     "@anticrm/theme": "~0.6.0",
     "svelte": "^3.42.1",
     "@anticrm/login": "~0.6.0",
+    "@anticrm/login-assets": "~0.6.0",
     "@anticrm/login-resources": "~0.6.0",
     "@anticrm/platform": "~0.6.3"
   }
