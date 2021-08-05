@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { EditBox, Label, Button, StatusControl } from '@anticrm/ui'
+  import { StylishEdit, Label, Button, StatusControl } from '@anticrm/ui'
   import { OK, Status, Severity } from '@anticrm/platform'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
@@ -75,7 +75,7 @@
 
     {#each fields as field (field.name)}
     <div class={field.short ? 'form-col' : 'form-row'}>
-      <EditBox label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate}/>
+      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate}/>
     </div>
     {/each}
 
