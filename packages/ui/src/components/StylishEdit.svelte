@@ -13,64 +13,81 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '../types'
-  import Icon from './Icon.svelte'
+  import type { IntlString } from '@anticrm/platform'
+  import Label from './Label.svelte'
 
-  export let icon: Asset | AnySvelteComponent
+  export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
-  export let placeholder: string = 'placeholder'
+  export let error: string | undefined = undefined
+  export let password: boolean | undefined = undefined
+  export let id: string | undefined = undefined
 </script>
 
-<div class="editbox" style={width ? 'width: ' + width : ''}>
-  <input type="text" bind:value {placeholder} />
-  <div class="icon">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size={'small'} />
-    {:else}
-      <svelte:component this={icon} size={'small'} />
-    {/if}
-  </div>
+<div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
+  {#if password}
+    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup placeholder=" " />
+  {:else}
+    <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup placeholder=" " />
+  {/if}
+  {#if label}
+    <div class="label"><Label {label} /></div>
+  {/if}
 </div>
 
 <style lang="scss">
   .editbox {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     padding: 0;
-    min-width: 268px;
-    height: 40px;
-    background-color: var(--theme-bg-focused-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 8px;
-
+    min-width: 50px;
+    height: 52px;
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-hover);
+    border-radius: 12px;
     &:focus-within {
+      background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);
     }
     input {
-      width: 100%;
-      height: 40px;
+      height: 52px;
       margin: 0;
-      padding: 10px 12px;
+      padding: 14px 20px 0px;
       font-family: inherit;
       color: var(--theme-caption-color);
       background-color: transparent;
       outline: none;
       border: none;
-      border-radius: 8px;
-
-      &::placeholder {
-        color: var(--theme-content-trans-color);
-      }
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 17px;
+    }
+    .nolabel {
+      padding-top: 0;
     }
 
-    .icon {
-      margin: 12px;
-      width: 16px;
-      height: 16px;
-      opacity: .3;
+    .label {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      font-size: 12px;
+      line-height: 14px;
+      color: var(--theme-caption-color);
+      pointer-events: none;
+      opacity: 0.3;
+      transition: top 200ms;
+      user-select: none;
+    }
+    input:focus + .label,
+    input:not(:placeholder-shown) + .label {
+      top: 10px;
+    }
+  }
+  .error {
+    border: 1px solid var(--system-error-60-color);
+    &:focus-within {
+      border-color: var(--system-error-color);
     }
   }
 </style>
