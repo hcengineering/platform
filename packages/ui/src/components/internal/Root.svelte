@@ -79,6 +79,7 @@
     .status-bar {
       min-height: $status-bar-height;
       min-width: 1200px;
+      font-size: 14px;
 
       .container {
         display: flex;
@@ -94,13 +95,12 @@
           display: flex;
           align-items: center;
           flex-direction: row-reverse;
+          color: var(--theme-content-trans-color);
 
           .clock {
             margin: 0 40px 0 24px;
             font-weight: 500;
             font-size: 12px;
-            color: var(--theme-caption-color);
-            opacity: 0.3;
             user-select: none;
           }
           .widget {
@@ -109,7 +109,7 @@
             justify-content: center;
             width: 32px;
             height: 32px;
-            opacity: 0.3;
+            opacity: .3;
           }
         }
       }
