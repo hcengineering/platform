@@ -13,17 +13,10 @@
 // limitations under the License.
 //
 
-import type {
-  Tx,
-  Ref,
-  Doc,
-  Class,
-  DocumentQuery,
-  FindResult,
-  FindOptions
-} from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
 import { getResource } from '@anticrm/platform'
 import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
+import serverCore from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
@@ -66,7 +59,8 @@ class DevStorage implements ServerStorage {
     }
     await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
     // invoke triggers
-    const triggers = this.hierarchy.getClass(tx.objectClass).triggers
+    const clazz = this.hierarchy.getClass(tx.objectClass)
+    const triggers = this.hierarchy.as(clazz, serverCore.mixin.Triggers).triggers
     if (triggers !== undefined) {
       const derived: Tx[] = []
       for (const trigger of triggers) {
