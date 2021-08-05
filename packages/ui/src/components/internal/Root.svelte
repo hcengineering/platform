@@ -95,7 +95,7 @@
           display: flex;
           align-items: center;
           flex-direction: row-reverse;
-          color: var(--theme-content-trans-color);
+          color: var(--theme-content-color);
 
           .clock {
             margin: 0 40px 0 24px;
