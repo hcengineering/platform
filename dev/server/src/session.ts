@@ -28,7 +28,7 @@ export class DevSession implements Storage {
     return await this.storage.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx<Doc>): Promise<void> {
+  async tx (tx: Tx): Promise<void> {
     const derived = await this.storage.tx(tx)
     for (const tx of derived) {
       this.server.broadcast(this, { result: tx })

@@ -14,32 +14,4 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { Doc, Tx, TxFactory, Class, Ref } from '@anticrm/core'
-
-/**
- * @public
- */
-export type TriggerFunc = (tx: Tx, txFactory: TxFactory) => Promise<Tx[]>
-
-/**
- * @public
- */
-export interface Trigger extends Doc {
-  trigger: Resource<TriggerFunc>
-}
-
-/**
- * @public
- */
-export const serverCoreId = 'server-core' as Plugin
-
-/**
- * @public
- */
-export default plugin(serverCoreId, {
-  class: {
-    Trigger: '' as Ref<Class<Trigger>>
-  }
-})
+export * from './triggers'

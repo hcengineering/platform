@@ -8,6 +8,7 @@ specifiers:
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
+  '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
@@ -56,6 +57,7 @@ dependencies:
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
   '@rush-temp/prod': file:projects/prod.tgz_typescript@4.3.5
+  '@rush-temp/server': file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/theme': file:projects/theme.tgz_c38cf1a7a413db8918b0b4754c21e4c5
@@ -7529,7 +7531,7 @@ packages:
     dev: false
 
   file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-YmDGlFbQJXNPLUxWyHQMvnULcuGmWeW1CJUWGSatSSdQ0oSnPnCvhAZQ+XKl024M4WurMbLz8dtS2q4Mlvl6hA==, tarball: file:projects/dev-storage.tgz}
+    resolution: {integrity: sha512-8aUE293xbOrDLOua1RsUMHGN5KMpU+FP0b6KRVBGnUMkbtvGZEghpU1lH3VkcNJgHbGKWFgdZsvhsZ+P1kohJg==, tarball: file:projects/dev-storage.tgz}
     id: file:projects/dev-storage.tgz
     name: '@rush-temp/dev-storage'
     version: 0.0.0
@@ -7632,7 +7634,7 @@ packages:
     dev: false
 
   file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-Y/tFe0ms52BXamdAMTFcI8GLan6+g39TKzG8taX7PiwXTdpVr170mZ4zTnER6OnxBHOlKXfwaHvgFTUmdupnEw==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-lHE4PAWrX+WKdM9/Yy1rYZW6rCacwLMkSUIJakrXZeyGlNytXXSvH20bgfocVn73grez3Zjy6qlNm7H7EClgDQ==, tarball: file:projects/server-core.tgz}
     id: file:projects/server-core.tgz
     name: '@rush-temp/server-core'
     version: 0.0.0
@@ -7673,6 +7675,26 @@ packages:
       - supports-color
       - typescript
       - utf-8-validate
+    dev: false
+
+  file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-DDKeiFrAHUr+H88vgiv9LFigEmlZyqSLez073wjTVT/WS1cbHQ4cSAxObaxl1w3jt2HZ7q0Twf0DK51NQXQZRA==, tarball: file:projects/server.tgz}
+    id: file:projects/server.tgz
+    name: '@rush-temp/server'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.4.10
+      '@types/ws': 7.4.7
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
     dev: false
 
   file:projects/theme.tgz_c38cf1a7a413db8918b0b4754c21e4c5:

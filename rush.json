@@ -495,6 +495,11 @@
       "packageName": "@anticrm/server-core",
       "projectFolder": "server/core",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server",
+      "projectFolder": "server/server",
+      "shouldPublish": true
     }
 
   ]

@@ -14,9 +14,8 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
-import { getResource } from '@anticrm/platform'
 import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
-import serverCore from '@anticrm/server-core'
+import { Triggers } from '@anticrm/server'
 
 import * as txJson from './model.tx.json'
 
@@ -33,14 +32,14 @@ export interface ServerStorage {
 }
 
 class DevStorage implements ServerStorage {
-  private readonly txFactory: TxFactory
+  private readonly triggers: Triggers
 
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly txdb: TxDb,
     private readonly modeldb: ModelDb
   ) {
-    this.txFactory = new TxFactory(core.account.System)
+    this.triggers = new Triggers(new TxFactory(core.account.System))
   }
 
   async findAll<T extends Doc> (
@@ -56,24 +55,10 @@ class DevStorage implements ServerStorage {
   async tx (tx: Tx): Promise<Tx[]> {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
+      await this.triggers.tx(tx)
     }
     await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-    // invoke triggers
-    const clazz = this.hierarchy.getClass(tx.objectClass)
-    const triggers = this.hierarchy.as(clazz, serverCore.mixin.Triggers).triggers
-    if (triggers !== undefined) {
-      const derived: Tx[] = []
-      for (const trigger of triggers) {
-        const impl = await getResource(trigger)
-        const txes = await impl(tx, this.txFactory)
-        derived.push(...txes)
-        for (const tx of txes) {
-          await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-        }
-      }
-      return derived
-    }
-    return []
+    return await this.triggers.apply(tx)
   }
 }
 
