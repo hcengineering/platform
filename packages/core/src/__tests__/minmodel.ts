@@ -13,20 +13,19 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Data, Doc, Domain, Obj, Ref } from '../classes'
+import type { Class, Data, Doc, Obj, Ref } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL } from '../classes'
-import { Tx, TxCreateDoc, TxFactory } from '../tx'
+import type { Tx, TxCreateDoc } from '../tx'
 import core from '../component'
-import { DOMAIN_TX } from '../tx'
-import { generateId } from '../utils'
+import { DOMAIN_TX, TxFactory } from '../tx'
 
 const txFactory = new TxFactory(core.account.System)
 
-function createClass(_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>) {
-  return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes)
+function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
+  return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)
 }
 
-export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>) {
+export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(_class, core.space.Model, attributes)
 }
 
