@@ -63,6 +63,11 @@ export type StatusCode<T extends Record<string, any> = {}> = IntlString<T>
  */
 export type Namespace = Record<string, Record<string, string>>
 
+/**
+ * @internal
+ */
+export const _ID_SEPARATOR = ':'
+
 function identify (
   result: Record<string, any>,
   prefix: string,
@@ -73,7 +78,7 @@ function identify (
     if (typeof result[key] === 'string') {
       throw new Error(`'identify' overwrites '${key}'.`)
     }
-    const ident = prefix + '.' + key
+    const ident = prefix + _ID_SEPARATOR + key
     result[key] =
       typeof value === 'string'
         ? ident

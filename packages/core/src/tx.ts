@@ -70,7 +70,17 @@ export interface PushOptions<T extends Doc> {
 /**
  * @public
  */
-export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T>
+export interface PushMixinOptions<D extends Doc> {
+  $pushMixin?: {
+    $mixin: Ref<Mixin<D>>
+    values: Partial<OmitNever<ArrayAsElement<D>>>
+  }
+}
+
+/**
+ * @public
+ */
+export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T>
 
 /**
  * @public
@@ -176,6 +186,16 @@ export class TxOperations implements Storage {
     objectId: Ref<T>
   ): Promise<void> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
+    return this.storage.tx(tx)
+  }
+
+  createMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    mixin: Ref<Mixin<M>>,
+    attributes: ExtendedAttributes<D, M>
+  ): Promise<void> {
+    const tx = this.txFactory.createTxMixin(objectId, objectClass, mixin, attributes)
     return this.storage.tx(tx)
   }
 }

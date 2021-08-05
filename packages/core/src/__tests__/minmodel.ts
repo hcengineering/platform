@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
-import type { Class, Data, Doc, Obj, Ref } from '../classes'
+import type { Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import type { Class, Data, Doc, Obj, Ref, Mixin, Arr } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL } from '../classes'
 import type { Tx, TxCreateDoc } from '../tx'
 import core from '../component'
@@ -28,6 +30,16 @@ function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): Tx
 export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(_class, core.space.Model, attributes)
 }
+
+export interface TestMixin extends Doc {
+  arr: Arr<string>
+}
+
+export const test = plugin('test' as Plugin, {
+  mixin: {
+    TestMixin: '' as Ref<Mixin<TestMixin>>
+  }
+})
 
 /**
  * Generate minimal model for testing purposes.
@@ -46,6 +58,8 @@ export function genMinModel (): Tx[] {
   txes.push(createClass(core.class.TxCreateDoc, { extends: core.class.Tx, kind: ClassifierKind.CLASS }))
   txes.push(createClass(core.class.TxUpdateDoc, { extends: core.class.Tx, kind: ClassifierKind.CLASS }))
   txes.push(createClass(core.class.TxRemoveDoc, { extends: core.class.Tx, kind: ClassifierKind.CLASS }))
+
+  txes.push(createClass(test.mixin.TestMixin, { extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
 
   txes.push(
     createDoc(core.class.Space, {

@@ -33,8 +33,25 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
+function $pushMixin (document: Doc, options: any): void {
+  const doc = document as any
+  const mixinId = options.$mixin
+  if (mixinId === undefined) { throw new Error('$mixin must be specified for $push_mixin operation') }
+  const mixin = doc[mixinId]
+  const keyval = options.values
+  for (const key in keyval) {
+    const arr = mixin[key]
+    if (arr === undefined) {
+      mixin[key] = [keyval[key]]
+    } else {
+      arr.push(keyval[key])
+    }
+  }
+}
+
 const operators: Record<string, _OperatorFunc> = {
-  $push
+  $push,
+  $pushMixin
 }
 
 /**

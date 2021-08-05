@@ -19,9 +19,17 @@ import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { SortingOrder } from '../storage'
 import { TxOperations } from '../tx'
-import { genMinModel } from './minmodel'
+import { genMinModel, test, TestMixin } from './minmodel'
 
 const txes = genMinModel()
+
+async function createModel (): Promise<{ model: ModelDb, hierarchy: Hierarchy }> {
+  const hierarchy = new Hierarchy()
+  for (const tx of txes) await hierarchy.tx(tx)
+  const model = new ModelDb(hierarchy)
+  for (const tx of txes) await model.tx(tx)
+  return { model, hierarchy }
+}
 
 describe('memdb', () => {
   it('should save all tx', async () => {
@@ -34,21 +42,36 @@ describe('memdb', () => {
   })
 
   it('should query model', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) await hierarchy.tx(tx)
-    const model = new ModelDb(hierarchy)
-    for (const tx of txes) await model.tx(tx)
+    const { model } = await createModel()
     const result = await model.findAll(core.class.Class, {})
-    expect(result.length).toBe(9)
+    expect(result.length).toBe(10)
     const result2 = await model.findAll(core.class.Class, { _id: undefined })
     expect(result2.length).toBe(0)
   })
 
+  it('should create mixin', async () => {
+    const { model } = await createModel()
+    const ops = new TxOperations(model, core.account.System)
+
+    await ops.createMixin(core.class.Obj, core.class.Class, test.mixin.TestMixin, { arr: ['hello'] })
+    const objClass = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
+    expect(objClass['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello']))
+
+    await ops.updateDoc(test.mixin.TestMixin, core.space.Model, core.class.Obj as unknown as Ref<TestMixin>, {
+      $pushMixin: {
+        $mixin: test.mixin.TestMixin,
+        values: {
+          arr: 'there'
+        }
+      }
+    })
+
+    const objClass2 = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
+    expect(objClass2['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello', 'there']))
+  })
+
   it('should allow delete', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) await hierarchy.tx(tx)
-    const model = new ModelDb(hierarchy)
-    for (const tx of txes) await model.tx(tx)
+    const { model } = await createModel()
     const result = await model.findAll(core.class.Space, {})
     expect(result.length).toBe(2)
 
