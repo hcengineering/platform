@@ -84,6 +84,7 @@
         display: flex;
         align-items: center;
         height: 100%;
+        color: var(--theme-content-color);
 
         .status-messages {
           flex-grow: 1;
