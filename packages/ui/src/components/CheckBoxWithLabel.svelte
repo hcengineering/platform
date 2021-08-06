@@ -92,10 +92,6 @@
       position: relative;
       margin-left: 16px;
       color: var(--theme-caption-color);
-      &.onEdit {
-        margin: 2px 0px 1px 17px;
-        text-decoration: none;
-      }
 
       .edit-item {
         max-width: 100%;
