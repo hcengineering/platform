@@ -20,7 +20,6 @@ import type { Storage, DocumentQuery, FindOptions, FindResult } from './storage'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import { DOMAIN_MODEL } from './classes'
-import { TxProcessor } from './tx'
 
 import core from './component'
 
@@ -36,9 +35,8 @@ export interface Client extends Storage {
   getHierarchy: () => Hierarchy
 }
 
-class ClientImpl extends TxProcessor implements Storage, Client {
+class ClientImpl implements Storage, Client {
   constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {
-    super()
   }
 
   getHierarchy (): Hierarchy { return this.hierarchy }

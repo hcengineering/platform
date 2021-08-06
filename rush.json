@@ -531,5 +531,20 @@
       "projectFolder": "packages/presentation",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/client",
+      "projectFolder": "plugins/client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/query",
+      "projectFolder": "packages/query",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/view",
+      "projectFolder": "plugins/view",
+      "shouldPublish": true
+    },
   ]
 }

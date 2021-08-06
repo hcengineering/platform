@@ -1,0 +1,24 @@
+{
+  "name": "@anticrm/client",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "heft build",
+    "lint:fix": "eslint --fix src"
+  },
+  "devDependencies": {
+    "@anticrm/platform-rig":"~0.6.0",
+    "@types/heft-jest":"^1.0.2",
+    "@typescript-eslint/eslint-plugin":"4",
+    "eslint-plugin-import":"2",
+    "eslint-plugin-promise":"4",
+    "eslint-plugin-node":"11",
+    "eslint":"^7.32.0"
+  },
+  "dependencies": {
+    "@anticrm/platform":"~0.6.3",
+    "@anticrm/core":"~0.6.0"
+  }
+}

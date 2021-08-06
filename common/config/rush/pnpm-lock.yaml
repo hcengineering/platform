@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@microsoft/api-extractor': ^7.18.4
+  '@rush-temp/client': file:./projects/client.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
@@ -12,11 +13,13 @@ specifiers:
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
+  '@rush-temp/query': file:./projects/query.tgz
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
   '@rush-temp/ui': file:./projects/ui.tgz
+  '@rush-temp/view': file:./projects/view.tgz
   '@rush-temp/workbench': file:./projects/workbench.tgz
   '@rush-temp/workbench-resources': file:./projects/workbench-resources.tgz
   '@rushstack/heft': ^0.35.0
@@ -57,6 +60,7 @@ specifiers:
 
 dependencies:
   '@microsoft/api-extractor': 7.18.4
+  '@rush-temp/client': file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -67,11 +71,13 @@ dependencies:
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
   '@rush-temp/presentation': file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/prod': file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5
+  '@rush-temp/query': file:projects/query.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server': file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/theme': file:projects/theme.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/ui': file:projects/ui.tgz_c38cf1a7a413db8918b0b4754c21e4c5
+  '@rush-temp/view': file:projects/view.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/workbench': file:projects/workbench.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/workbench-resources': file:projects/workbench-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rushstack/heft': 0.35.0
@@ -7680,6 +7686,24 @@ packages:
       commander: 2.20.3
     dev: false
 
+  file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-8YJou7AitxzzH2roWCno/zgd27SiQXlqrdDVyhAAvZrBZY7KGbxw4OxGkI+6eVK+Lk/zajS2FkGZ+oyZ+Bxe6g==, tarball: file:projects/client.tgz}
+    id: file:projects/client.tgz
+    name: '@rush-temp/client'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-H49oedby3HV+eR2uQZAI0kIJ8Yxh8uIR+sLg4Ox0JAy4UJtfP5AmyWltddqaUdQIcfYrb2BrhDSDSxddlDWhpg==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
@@ -7827,7 +7851,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-y4BqVd0TM1NHy74NaREi5s26qWOro+kn+dVogNYFm3mkuVEqHwv/ZzivbLI9X7Ti7IbuG8FeCy2N1r9Cs6XUJg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-v1qRQGQrWDFfME4IEpK6bM0E3IQljeG2+Ft/YVPM/Fbf/y3e+28AvI3nyvLn+1N6gY+5faEAHLE4M9vBbR+A1A==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -7885,6 +7909,25 @@ packages:
       - ts-node
       - typescript
       - utf-8-validate
+    dev: false
+
+  file:projects/query.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-9CUYPnThJmot4jmOsi6R7ugG/yTz+6emWtPfhSTK+1hqr3hXaYSXIXuYirvqpa6a434uRTUAe362U5VuNi4xdA==, tarball: file:projects/query.tgz}
+    id: file:projects/query.tgz
+    name: '@rush-temp/query'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      simplytyped: 3.3.0_typescript@4.3.5
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
     dev: false
 
   file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
@@ -7997,8 +8040,26 @@ packages:
       - typescript
     dev: false
 
+  file:projects/view.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-BQgcAfVRNy1QO/Z8ATfQZbm090HU2b7jl5r38stX7rjzF0udaYKci9yDb9xECP1oYCEPWXbayUPlF/AwRqxZ4g==, tarball: file:projects/view.tgz}
+    id: file:projects/view.tgz
+    name: '@rush-temp/view'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/workbench-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-LMzBHdlTssEH28+ttT/0/eeghU3OWwwJ7AWksnnJsabUEgfjaYNZqTfsLiD6CCjMJXMVU/kUvUjBmlpB8HWUpg==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-UZMkx/Mq9SBiSR6JFaCmJ548KfR1cSser177G9y196X9ot7EYLYHSZ0Teo9hZTwUgDU1TDkk2KW2sxuFN71naA==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

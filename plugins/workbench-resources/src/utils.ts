@@ -16,9 +16,9 @@
 
 import type { Ref, Obj, Class, WithLookup } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import type { Connection } from '@anticrm/client'
+import type { Client } from '@anticrm/core'
 
-export function classIcon(client: Connection, _class: Ref<Class<Obj>>): Asset | undefined {
+export function classIcon(client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
 

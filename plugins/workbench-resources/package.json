@@ -22,8 +22,10 @@
     "svelte": "^3.37.0",
     "@anticrm/platform": "~0.6.0",
     "@anticrm/core": "~0.6.0",
+    "@anticrm/client": "~0.6.0",
     "@anticrm/workbench": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
+    "@anticrm/view": "~0.6.0",
     "@anticrm/presentation": "~0.6.0"
   }
 }

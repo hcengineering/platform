@@ -16,17 +16,20 @@
 
 import { getContext, setContext, onDestroy } from 'svelte'
 
-import type { Doc, Ref, Class, DocumentQuery, FindOptions } from '@anticrm/core'
-import type { Connection } from '@anticrm/client'
+import type { Doc, Ref, Class, DocumentQuery, FindOptions, Client } from '@anticrm/core'
+import { LiveQuery as LQ } from '@anticrm/query'
 
 const CLIENT_CONEXT = 'workbench.context.Client'
 
-export function getClient(): Connection {
-  return getContext<Connection>(CLIENT_CONEXT)
+let liveQuery: LQ
+
+export function getClient(): Client {
+  return getContext<Client>(CLIENT_CONEXT)
 }
 
-export function setClient(client: Connection) {
+export function setClient(client: Client) {
   setContext(CLIENT_CONEXT, client)
+  liveQuery = new LQ(client)
 }
 
 class LiveQuery {
@@ -39,7 +42,7 @@ class LiveQuery {
 
   query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>) {
     this.unsubscribe()
-    this.unsubscribe = this.client.query(_class, query, callback, options)
+    this.unsubscribe = liveQuery.query(_class, query, callback, options)
   }
 }
 
