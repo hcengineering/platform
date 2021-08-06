@@ -1,0 +1,25 @@
+{
+  "name": "@anticrm/presentation",
+  "version": "0.6.0",
+  "main": "src/index.ts",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "",
+    "build:docs": "api-extractor run --local",
+    "test": "jest",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src",
+    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && eslint --fix src",
+    "svelte-check": "svelte-check"
+  },
+  "devDependencies": {
+    "svelte-loader":"^3.1.2",
+    "sass":"^1.37.5",
+    "svelte-preprocess":"^4.7.4"
+  },
+  "dependencies": {
+    "@anticrm/ui": "~0.6.0",
+    "svelte": "^3.37.0"
+  }
+}

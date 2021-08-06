@@ -515,7 +515,21 @@
       "packageName": "@anticrm/login-resources",
       "projectFolder": "plugins/login-resources",
       "shouldPublish": true
-    }
-
+    },
+    {
+      "packageName": "@anticrm/workbench",
+      "projectFolder": "plugins/workbench",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/workbench-resources",
+      "projectFolder": "plugins/workbench-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/presentation",
+      "projectFolder": "packages/presentation",
+      "shouldPublish": true
+    },
   ]
 }

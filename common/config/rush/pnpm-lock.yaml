@@ -10,12 +10,15 @@ specifiers:
   '@rush-temp/login-resources': file:./projects/login-resources.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
+  '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
   '@rush-temp/ui': file:./projects/ui.tgz
+  '@rush-temp/workbench': file:./projects/workbench.tgz
+  '@rush-temp/workbench-resources': file:./projects/workbench-resources.tgz
   '@rushstack/heft': ^0.35.0
   '@rushstack/heft-jest-plugin': ~0.1.15
   '@types/heft-jest': ^1.0.2
@@ -62,12 +65,15 @@ dependencies:
   '@rush-temp/login-resources': file:projects/login-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
+  '@rush-temp/presentation': file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/prod': file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5
   '@rush-temp/server': file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/theme': file:projects/theme.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/ui': file:projects/ui.tgz_c38cf1a7a413db8918b0b4754c21e4c5
+  '@rush-temp/workbench': file:projects/workbench.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/workbench-resources': file:projects/workbench-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rushstack/heft': 0.35.0
   '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
   '@types/heft-jest': 1.0.2
@@ -7820,8 +7826,31 @@ packages:
       - typescript
     dev: false
 
+  file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
+    resolution: {integrity: sha512-y4BqVd0TM1NHy74NaREi5s26qWOro+kn+dVogNYFm3mkuVEqHwv/ZzivbLI9X7Ti7IbuG8FeCy2N1r9Cs6XUJg==, tarball: file:projects/presentation.tgz}
+    id: file:projects/presentation.tgz
+    name: '@rush-temp/presentation'
+    version: 0.0.0
+    dependencies:
+      sass: 1.37.5
+      svelte: 3.42.1
+      svelte-loader: 3.1.2_svelte@3.42.1
+      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - typescript
+    dev: false
+
   file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5:
-    resolution: {integrity: sha512-61x9TpznyjCX5pvHeEgC95KQXKfJ0PVkVeGhr1Oi1adZN6cHNwT1FXCZmw/NNR8VRFsBQqz7FBSSps0xE6+GAQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-RKHRlPdnGvUzQoKQ0oFqyfykBDw4DGUGBMBukgx1TJu95/HRLuDVcX2PWxL3KMMHToqRVajpUkvQMYKT6fcWWQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -7965,5 +7994,46 @@ packages:
       - pug
       - stylus
       - sugarss
+      - typescript
+    dev: false
+
+  file:projects/workbench-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
+    resolution: {integrity: sha512-LMzBHdlTssEH28+ttT/0/eeghU3OWwwJ7AWksnnJsabUEgfjaYNZqTfsLiD6CCjMJXMVU/kUvUjBmlpB8HWUpg==, tarball: file:projects/workbench-resources.tgz}
+    id: file:projects/workbench-resources.tgz
+    name: '@rush-temp/workbench-resources'
+    version: 0.0.0
+    dependencies:
+      sass: 1.37.5
+      svelte: 3.42.1
+      svelte-loader: 3.1.2_svelte@3.42.1
+      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - typescript
+    dev: false
+
+  file:projects/workbench.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-Et3ux6GBUUjekSU8T9jXBlgOVlR4j5KUaMWZ112uhmduZG/nLPKSSkbMxDHJBzXZeuYoOqMb9BNlfV05SwkRww==, tarball: file:projects/workbench.tgz}
+    id: file:projects/workbench.tgz
+    name: '@rush-temp/workbench'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
       - typescript
     dev: false

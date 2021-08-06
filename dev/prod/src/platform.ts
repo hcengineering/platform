@@ -17,7 +17,7 @@ import { addLocation } from '@anticrm/platform'
 
 import { loginId } from '@anticrm/login'
 // import { clientId } from '@anticrm/client'
-// import { workbenchId } from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 // import { chunterId } from '@anticrm/chunter'
 // import { recruitId } from '@anticrm/recruit'
 // import { tableId } from '@anticrm/table'
@@ -44,9 +44,9 @@ export function configurePlatform() {
   //   addLocation(core, () => import(/* webpackChunkName: "plugin-core" */ '@anticrm/plugin-core-impl'))
 
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
-  // addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/plugin-workbench'))
+  addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
   // addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/plugin-chunter'))
-  // addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/plugin-recruit'))
+  // // addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/plugin-recruit'))
   // addLocation(tableId, () => import(/* webpackChunkName: "table" */ '@anticrm/table-resources'))
   // addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
   // addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@anticrm/task-resources'))
