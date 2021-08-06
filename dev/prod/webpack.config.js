@@ -107,7 +107,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'fonts/[name].[ext]',
+            name: 'fonts/[hash:base64:8].[ext]',
             esModule: false
           }
         }
@@ -117,7 +117,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'img/[name].[ext]',
+            name: 'img/[hash:base64:8].[ext]',
             esModule: false
           }
         }
@@ -128,6 +128,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
+              name: 'img/[hash:base64:8].[ext]',
               esModule: false
             }
           },

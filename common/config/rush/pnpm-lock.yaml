@@ -19,14 +19,13 @@ specifiers:
   '@rushstack/heft': ^0.35.0
   '@rushstack/heft-jest-plugin': ~0.1.15
   '@types/heft-jest': ^1.0.2
-  '@types/node': ^16.4.10
   '@types/ws': ^7.4.7
   '@typescript-eslint/eslint-plugin': '4'
   '@typescript-eslint/parser': ^4.0.0
-  autoprefixer: ^10.3.1
+  autoprefixer: ^10.2.6
   cross-env: ^7.0.3
-  css-loader: ^6.2.0
-  dotenv-webpack: ^7.0.3
+  css-loader: ^5.2.1
+  dotenv-webpack: ^7.0.2
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^20.0.0
   eslint-plugin-import: '2'
@@ -36,21 +35,20 @@ specifiers:
   intl-messageformat: ^9.7.1
   jwt-simple: ^0.5.6
   mini-css-extract-plugin: ^2.2.0
-  postcss: ^8.3.6
+  postcss: ^8.3.4
   postcss-load-config: ^3.1.0
-  postcss-loader: ^6.1.1
+  postcss-loader: ^6.1.0
   sass: ^1.37.5
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
   style-loader: ^3.2.1
-  svelte-loader: ^3.1.2
   svelte-preprocess: ^4.7.4
   svgo-loader: ^3.0.0
   ts-loader: ^9.2.5
   typescript: ^4.3.5
-  webpack: ^5.48.0
-  webpack-bundle-analyzer: ^4.4.2
-  webpack-cli: ^4.7.2
+  webpack: ^5.32.0
+  webpack-bundle-analyzer: ^4.4.1
+  webpack-cli: ^4.6.0
   webpack-dev-server: ^3.11.2
   ws: ^8.0.0
 
@@ -64,7 +62,7 @@ dependencies:
   '@rush-temp/login-resources': file:projects/login-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
-  '@rush-temp/prod': file:projects/prod.tgz_typescript@4.3.5
+  '@rush-temp/prod': file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5
   '@rush-temp/server': file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -73,13 +71,12 @@ dependencies:
   '@rushstack/heft': 0.35.0
   '@rushstack/heft-jest-plugin': 0.1.15_@rushstack+heft@0.35.0
   '@types/heft-jest': 1.0.2
-  '@types/node': 16.4.10
   '@types/ws': 7.4.7
   '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
   '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
   autoprefixer: 10.3.1_postcss@8.3.6
   cross-env: 7.0.3
-  css-loader: 6.2.0_webpack@5.48.0
+  css-loader: 5.2.7_webpack@5.48.0
   dotenv-webpack: 7.0.3_webpack@5.48.0
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
@@ -97,7 +94,6 @@ dependencies:
   sass-loader: 12.1.0_sass@1.37.5+webpack@5.48.0
   simplytyped: 3.3.0_typescript@4.3.5
   style-loader: 3.2.1_webpack@5.48.0
-  svelte-loader: 3.1.2
   svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
   svgo-loader: 3.0.0
   ts-loader: 9.2.5_typescript@4.3.5+webpack@5.48.0
@@ -1023,6 +1019,10 @@ packages:
 
   /@types/node/10.17.13:
     resolution: {integrity: sha512-pMCcqU2zT4TjqYFrWtYHKal7Sl30Ims6ulZ4UFXxI4xbtQqK/qqKwkDoBFCfooRqqmRu9vY3xaJRwxSh673aYg==}
+    dev: false
+
+  /@types/node/14.17.9:
+    resolution: {integrity: sha512-CMjgRNsks27IDwI785YMY0KLt3co/c0cQ5foxHYv/shC2w8oOnVwz5Ubq1QG5KzrcW+AXk6gzdnxIkDnTvzu3g==}
     dev: false
 
   /@types/node/16.4.10:
@@ -2191,19 +2191,21 @@ packages:
       which: 2.0.2
     dev: false
 
-  /css-loader/6.2.0_webpack@5.48.0:
-    resolution: {integrity: sha512-/rvHfYRjIpymZblf49w8jYcRo2y9gj6rV8UroHGmBxKrIyGLokpycyKzp9OkitvqT29ZSpzJ0Ic7SpnJX3sC8g==}
-    engines: {node: '>= 12.13.0'}
+  /css-loader/5.2.7_webpack@5.48.0:
+    resolution: {integrity: sha512-Q7mOvpBNBG7YrVGMxRxcBJZFL75o+cH2abNASdibkj/fffYD8qWbInZrD0S9ccI6vZclF3DsHE7njGlLtaHbhg==}
+    engines: {node: '>= 10.13.0'}
     peerDependencies:
-      webpack: ^5.0.0
+      webpack: ^4.27.0 || ^5.0.0
     dependencies:
       icss-utils: 5.1.0_postcss@8.3.6
+      loader-utils: 2.0.0
       postcss: 8.3.6
       postcss-modules-extract-imports: 3.0.0_postcss@8.3.6
       postcss-modules-local-by-default: 4.0.0_postcss@8.3.6
       postcss-modules-scope: 3.0.0_postcss@8.3.6
       postcss-modules-values: 4.0.0_postcss@8.3.6
       postcss-value-parser: 4.1.0
+      schema-utils: 3.1.1
       semver: 7.3.5
       webpack: 5.48.0_webpack-cli@4.7.2
     dev: false
@@ -6694,28 +6696,12 @@ packages:
     resolution: {integrity: sha1-fRh9tcbNu9ZNdaMvkbiZi94yc8M=}
     dev: false
 
-  /svelte-hmr/0.14.7:
-    resolution: {integrity: sha512-pDrzgcWSoMaK6AJkBWkmgIsecW0GChxYZSZieIYfCP0v2oPyx2CYU/zm7TBIcjLVUPP714WxmViE9Thht4etog==}
-    peerDependencies:
-      svelte: '>=3.19.0'
-    dev: false
-
   /svelte-hmr/0.14.7_svelte@3.42.1:
     resolution: {integrity: sha512-pDrzgcWSoMaK6AJkBWkmgIsecW0GChxYZSZieIYfCP0v2oPyx2CYU/zm7TBIcjLVUPP714WxmViE9Thht4etog==}
     peerDependencies:
       svelte: '>=3.19.0'
     dependencies:
       svelte: 3.42.1
-    dev: false
-
-  /svelte-loader/3.1.2:
-    resolution: {integrity: sha512-RhVIvitb+mtIwKNyvNQoDQ0EhXg2KH8LhQiiqeJh8u6vqJyGWoMoFcYCar69TT+1iaK5IYe0wPNYJ6TILcsurw==}
-    peerDependencies:
-      svelte: '>3.0.0'
-    dependencies:
-      loader-utils: 2.0.0
-      svelte-dev-helper: 1.1.9
-      svelte-hmr: 0.14.7
     dev: false
 
   /svelte-loader/3.1.2_svelte@3.42.1:
@@ -7834,27 +7820,26 @@ packages:
       - typescript
     dev: false
 
-  file:projects/prod.tgz_typescript@4.3.5:
-    resolution: {integrity: sha512-bM0WYb/I0MnLe8uOmNDzrQ8eOyT24MIhWt+d+T10364rGd9HSyCH1GDnrgm4oZEnnHWQz3Pf5Hmz8KyP4J5QRA==, tarball: file:projects/prod.tgz}
+  file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5:
+    resolution: {integrity: sha512-61x9TpznyjCX5pvHeEgC95KQXKfJ0PVkVeGhr1Oi1adZN6cHNwT1FXCZmw/NNR8VRFsBQqz7FBSSps0xE6+GAQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
     dependencies:
+      '@types/node': 14.17.9
       autoprefixer: 10.3.1_postcss@8.3.6
       cross-env: 7.0.3
-      css-loader: 6.2.0_webpack@5.48.0
+      css-loader: 5.2.7_webpack@5.48.0
       dotenv-webpack: 7.0.3_webpack@5.48.0
       file-loader: 6.2.0_webpack@5.48.0
       mini-css-extract-plugin: 2.2.0_webpack@5.48.0
       postcss: 8.3.6
       postcss-load-config: 3.1.0
       postcss-loader: 6.1.1_postcss@8.3.6+webpack@5.48.0
-      sass: 1.37.5
       sass-loader: 12.1.0_sass@1.37.5+webpack@5.48.0
       style-loader: 3.2.1_webpack@5.48.0
       svelte: 3.42.1
       svelte-loader: 3.1.2_svelte@3.42.1
-      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
       svgo-loader: 3.0.0
       ts-loader: 9.2.5_typescript@4.3.5+webpack@5.48.0
       webpack: 5.48.0_webpack-cli@4.7.2
@@ -7862,17 +7847,12 @@ packages:
       webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
       webpack-dev-server: 3.11.2_webpack-cli@4.7.2+webpack@5.48.0
     transitivePeerDependencies:
-      - '@babel/core'
       - '@webpack-cli/generators'
       - '@webpack-cli/migrate'
       - bufferutil
-      - coffeescript
       - fibers
-      - less
       - node-sass
-      - pug
-      - stylus
-      - sugarss
+      - sass
       - ts-node
       - typescript
       - utf-8-validate
