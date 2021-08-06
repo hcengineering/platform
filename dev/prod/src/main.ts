@@ -1,4 +1,4 @@
-/*!
+//
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering, Inc.
 //
@@ -12,7 +12,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-*/
+//
 
 // import { setMetadata } from '@anticrm/platform'
 import { createApp } from '@anticrm/ui'
