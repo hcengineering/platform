@@ -551,5 +551,20 @@
       "projectFolder": "plugins/view",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/model",
+      "projectFolder": "packages/model",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-core",
+      "projectFolder": "models/core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-rig",
+      "projectFolder": "models/model-rig",
+      "shouldPublish": true
+    },
   ]
 }

@@ -19,7 +19,10 @@ import {
   FindResult, Hierarchy, Refs, WithLookup, LookupData
 } from '@anticrm/core'
 
-interface Query {
+/**
+ * @internal
+ */
+export interface _Query {
   _class: Ref<Class<Doc>>
   query: DocumentQuery<Doc>
   result: Doc[] | Promise<Doc[]>
@@ -27,9 +30,12 @@ interface Query {
   callback: (result: FindResult<Doc>) => void
 }
 
+/**
+ * @public
+ */
 export class LiveQuery extends TxProcessor implements Client {
   private readonly client: Client
-  private readonly queries: Query[] = []
+  private readonly queries: _Query[] = []
 
   constructor (client: Client) {
     super()
@@ -40,7 +46,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return this.client.getHierarchy()
   }
 
-  private match (q: Query, doc: Doc): boolean {
+  private match (q: _Query, doc: Doc): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       return false
     }
@@ -59,7 +65,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
   query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>): () => void {
     const result = this.client.findAll(_class, query, options)
-    const q: Query = {
+    const q: _Query = {
       _class,
       query,
       result,
@@ -161,7 +167,7 @@ export class LiveQuery extends TxProcessor implements Client {
     updatedDoc.modifiedOn = tx.modifiedOn
   }
 
-  private sort (q: Query, tx: TxUpdateDoc<Doc>): void {
+  private sort (q: _Query, tx: TxUpdateDoc<Doc>): void {
     const sort = q.options?.sort
     if (sort === undefined) return
     let needSort = sort.modifiedBy !== undefined || sort.modifiedOn !== undefined
@@ -184,7 +190,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  async callback (updatedDoc: Doc, q: Query): Promise<void> {
+  private async callback (updatedDoc: Doc, q: _Query): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {

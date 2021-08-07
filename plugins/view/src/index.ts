@@ -20,18 +20,30 @@ import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc } from '@anti
 
 import type { AnyComponent } from '@anticrm/ui'
 
+/**
+ * @public
+ */
 export interface AttributeEditor extends Class<Doc> {
   editor: AnyComponent
 }
 
+/**
+ * @public
+ */
 export interface AttributePresenter extends Class<Doc> {
   presenter: AnyComponent
 }
 
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
 
+/**
+ * @public
+ */
 export interface Viewlet extends Doc {
   attachTo: Ref<Class<Space>>
   descriptor: Ref<ViewletDescriptor>
@@ -40,6 +52,9 @@ export interface Viewlet extends Doc {
   config: any
 }
 
+/**
+ * @public
+ */
 export const viewId = 'view' as Plugin
 
 export default plugin(viewId, {
