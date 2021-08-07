@@ -576,5 +576,15 @@
       "projectFolder": "models/view",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/contact",
+      "projectFolder": "plugins/contact",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/task",
+      "projectFolder": "plugins/task",
+      "shouldPublish": true
+    },
   ]
 }
