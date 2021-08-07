@@ -12,6 +12,7 @@ specifiers:
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
+  '@rush-temp/dev-server-chunter-resources': file:./projects/dev-server-chunter-resources.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
   '@rush-temp/login': file:./projects/login.tgz
   '@rush-temp/login-assets': file:./projects/login-assets.tgz
@@ -24,6 +25,8 @@ specifiers:
   '@rush-temp/model-demo': file:./projects/model-demo.tgz
   '@rush-temp/model-recruit': file:./projects/model-recruit.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
+  '@rush-temp/model-server-chunter': file:./projects/model-server-chunter.tgz
+  '@rush-temp/model-server-core': file:./projects/model-server-core.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
   '@rush-temp/model-view': file:./projects/model-view.tgz
   '@rush-temp/model-workbench': file:./projects/model-workbench.tgz
@@ -36,6 +39,7 @@ specifiers:
   '@rush-temp/recruit-assets': file:./projects/recruit-assets.tgz
   '@rush-temp/recruit-resources': file:./projects/recruit-resources.tgz
   '@rush-temp/server': file:./projects/server.tgz
+  '@rush-temp/server-chunter': file:./projects/server-chunter.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/task': file:./projects/task.tgz
@@ -106,6 +110,7 @@ dependencies:
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/dev-server-chunter-resources': file:projects/dev-server-chunter-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/login': file:projects/login.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/login-assets': file:projects/login-assets.tgz
@@ -118,6 +123,8 @@ dependencies:
   '@rush-temp/model-demo': file:projects/model-demo.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-recruit': file:projects/model-recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-rig': file:projects/model-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
+  '@rush-temp/model-server-chunter': file:projects/model-server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/model-server-core': file:projects/model-server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-task': file:projects/model-task.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-view': file:projects/model-view.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-workbench': file:projects/model-workbench.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -130,6 +137,7 @@ dependencies:
   '@rush-temp/recruit-assets': file:projects/recruit-assets.tgz
   '@rush-temp/recruit-resources': file:projects/recruit-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/server': file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/server-chunter': file:projects/server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/task': file:projects/task.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -8453,6 +8461,24 @@ packages:
       - typescript
     dev: false
 
+  file:projects/dev-server-chunter-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-4fbCn1eq1hWfj33bXc56bZhoo49ETBCwcCMK7aH5RtGOlRlKaWc6v9Z0p8QKewYxNO1JX9sv84vknLx+guKDuA==, tarball: file:projects/dev-server-chunter-resources.tgz}
+    id: file:projects/dev-server-chunter-resources.tgz
+    name: '@rush-temp/dev-server-chunter-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-Zj6rBT3x7MGKM3H4RDuT7heWMI14fruf/LO0bAuLaJf99SWtkug9mNgFSnrLJyxoKUimhOBT1BHNVOH53MNOCg==, tarball: file:projects/dev-server.tgz}
     id: file:projects/dev-server.tgz
@@ -8542,7 +8568,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-9hTEKuheThP0pu/QIH2Czyg1FIVdSfcNBLQQD5yZPyn+Qw61dpHY68fBv5cKVlcNk/Zwm3e+bbJG3ylF4QvyjA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-/GpWvrrVnXqWzYe7by1474pdG116the3TcAf7ArVScAYYXQaCwHb3gu84q0ZHR6fqt2ToFVkK9a/MlVmjDzujw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -8615,7 +8641,7 @@ packages:
     dev: false
 
   file:projects/model-demo.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-PF4ieOchEaN7Zgzx5N5Xz1VaIZ6HkXj5v80T8wyRV0ClC2u2ViAzUdrg8mCeG9E1ttwoVPhXjNmxeEV+QgLAZQ==, tarball: file:projects/model-demo.tgz}
+    resolution: {integrity: sha512-yLHv7bqAq3BIwxE5T5bQ+l/aiCUp6rB06I8rJmJGs64U7QGOt4WNzv/9yxf5Fvq3FPxBApWjqDLWSUHAIs3+bg==, tarball: file:projects/model-demo.tgz}
     id: file:projects/model-demo.tgz
     name: '@rush-temp/model-demo'
     version: 0.0.0
@@ -8666,6 +8692,40 @@ packages:
       - eslint-plugin-node
       - eslint-plugin-promise
       - supports-color
+    dev: false
+
+  file:projects/model-server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-eVwDSJ253ybGmhHs8SvB7MxIGzJ36gf7pdTHT8W6STWcg53NEdMkf99M81dhgkJH9F6frpkH2sE+MAONNy5/mA==, tarball: file:projects/model-server-chunter.tgz}
+    id: file:projects/model-server-chunter.tgz
+    name: '@rush-temp/model-server-chunter'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-zFzFBsZLMuvW/TQcs7k9cnlqkHYfrYiOWpFPIlrnkZHIO90oAzqsaB7BAH3NNJQFUYexjLNHziZKqqg51IgPow==, tarball: file:projects/model-server-core.tgz}
+    id: file:projects/model-server-core.tgz
+    name: '@rush-temp/model-server-core'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
     dev: false
 
   file:projects/model-task.tgz_6c259fadfeb3a4b20890aefe87070b8b:
@@ -8898,6 +8958,26 @@ packages:
     version: 0.0.0
     dependencies:
       '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-pGco+NViUiZi9ZIi4EziDG5wgaPq6KleO7J1wyNuCLM2f0p2e2AZ3ZVYDRmnAghOo9IQJLSihOh9bO9RmTg97A==, tarball: file:projects/server-chunter.tgz}
+    id: file:projects/server-chunter.tgz
+    name: '@rush-temp/server-chunter'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.4.13
+      '@types/ws': 7.4.7
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0

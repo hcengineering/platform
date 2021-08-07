@@ -681,5 +681,25 @@
       "projectFolder": "models/demo",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/dev-server-chunter-resources",
+      "projectFolder": "dev/server-chunter-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-core",
+      "projectFolder": "models/server-core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-chunter",
+      "projectFolder": "server/chunter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-chunter",
+      "projectFolder": "models/server-chunter",
+      "shouldPublish": true
+    },
   ]
 }

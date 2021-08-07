@@ -32,14 +32,12 @@ export interface ServerStorage {
 }
 
 class DevStorage implements ServerStorage {
-  private readonly triggers: Triggers
-
   constructor (
     private readonly hierarchy: Hierarchy,
+    private readonly triggers: Triggers,
     private readonly txdb: TxDb,
     private readonly modeldb: ModelDb
   ) {
-    this.triggers = new Triggers(new TxFactory(core.account.System))
   }
 
   async findAll<T extends Doc> (
@@ -58,7 +56,11 @@ class DevStorage implements ServerStorage {
       await this.triggers.tx(tx)
     }
     await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-    return await this.triggers.apply(tx)
+    const derived = await this.triggers.apply(tx)
+    for (const tx of derived) {
+      await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
+    }
+    return derived
   }
 }
 
@@ -68,7 +70,11 @@ class DevStorage implements ServerStorage {
 export async function createStorage (): Promise<ServerStorage> {
   const txes = txJson as unknown as Tx[]
   const hierarchy = new Hierarchy()
-  for (const tx of txes) hierarchy.tx(tx)
+  const triggers = new Triggers(new TxFactory(core.account.System))
+  for (const tx of txes) {
+    hierarchy.tx(tx)
+    await triggers.tx(tx)
+  }
 
   const transactions = new TxDb(hierarchy)
   const model = new ModelDb(hierarchy)
@@ -76,5 +82,5 @@ export async function createStorage (): Promise<ServerStorage> {
     await Promise.all([transactions.tx(tx), model.tx(tx)])
   }
 
-  return new DevStorage(hierarchy, transactions, model)
+  return new DevStorage(hierarchy, triggers, transactions, model)
 }

@@ -24,7 +24,7 @@ import { contactId } from '@anticrm/contact'
 import { chunterId } from '@anticrm/chunter'
 import { recruitId } from '@anticrm/recruit'
 
-// import { chunterServerId } from '@anticrm/chunter-server'
+import { serverChunterId } from '@anticrm/server-chunter'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -50,6 +50,6 @@ export function configurePlatform() {
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   
-  // addLocation(chunterServerId, () => import(/* webpackChunkName: "chunter-server" */ '@anticrm/chunter-server'))
+  addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
 
 }

@@ -23,6 +23,9 @@ import { createModel as taskModel } from '@anticrm/model-task'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
 
+import { createModel as serverCoreModel } from '@anticrm/model-server-core'
+import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
+
 import { createDemo } from '@anticrm/model-demo'
 
 const builder = new Builder()
@@ -34,6 +37,9 @@ contactModel(builder)
 chunterModel(builder)
 taskModel(builder)
 recruitModel(builder)
+
+serverCoreModel(builder)
+serverChunterModel(builder)
 
 createDemo(builder)
 
