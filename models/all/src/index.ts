@@ -21,9 +21,9 @@ import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as contactModel } from '@anticrm/model-contact'
 import { createModel as taskModel } from '@anticrm/model-task'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
-// import { createModel as recruitModel } from '@anticrm/model-recruit'
+import { createModel as recruitModel } from '@anticrm/model-recruit'
 
-// import { createDemo } from '@anticrm/model-demo'
+import { createDemo } from '@anticrm/model-demo'
 
 const builder = new Builder()
 
@@ -33,8 +33,8 @@ workbenchModel(builder)
 contactModel(builder)
 chunterModel(builder)
 taskModel(builder)
-// recruitModel(builder)
+recruitModel(builder)
 
-// createDemo(builder)
+createDemo(builder)
 
 export default builder

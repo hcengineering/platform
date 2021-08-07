@@ -656,5 +656,30 @@
       "projectFolder": "models/chunter",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/recruit",
+      "projectFolder": "plugins/recruit",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/recruit-assets",
+      "projectFolder": "plugins/recruit-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/recruit-resources",
+      "projectFolder": "plugins/recruit-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-recruit",
+      "projectFolder": "models/recruit",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-demo",
+      "projectFolder": "models/demo",
+      "shouldPublish": true
+    },
   ]
 }
