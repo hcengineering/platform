@@ -35,8 +35,8 @@ function createObjects(root: string, path: string): void {
   }
 }
 
-// createObjects(buildDir + '/public', '')
-// createObjects(buildDir + '/dist', '')
+createObjects(buildDir + '/public', '')
+createObjects(buildDir + '/dist', '')
 
 export const bucketName = siteBucket.bucket // create a stack export for bucket name
 export const websiteUrl = siteBucket.websiteEndpoint
