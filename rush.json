@@ -591,5 +591,10 @@
       "projectFolder": "dev/client-resources",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/model-workbench",
+      "projectFolder": "models/workbench",
+      "shouldPublish": true
+    },
   ]
 }

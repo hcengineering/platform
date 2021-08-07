@@ -15,11 +15,10 @@
 
 <script lang="ts">
 
-  import { onDestroy, createEventDispatcher } from 'svelte'
   import type { Ref } from '@anticrm/core'
   import type { Application } from '@anticrm/workbench'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
 
   import AppItem from './AppItem.svelte'
@@ -27,7 +26,9 @@
   export let active: Ref<Application> | undefined
 
   let apps: Application[] = []
-  onDestroy(getClient().query(workbench.class.Application, {}, result => { apps = result }))
+
+  const query = createQuery()  
+  $: query.query(workbench.class.Application, {}, result => { apps = result })
 
   function navigateApp(app: Ref<Application>) {
     const loc = getCurrentLocation()

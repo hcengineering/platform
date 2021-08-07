@@ -21,7 +21,7 @@
   import Add from './icons/Add.svelte'
   import Star from './icons/Star.svelte'
 
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, createQuery } from '@anticrm/presentation'
   import { showModal } from '@anticrm/ui'
   import { classIcon } from '../utils'
   import core from '@anticrm/core'
@@ -30,13 +30,10 @@
   export let createItemDialog: AnyComponent | undefined
 
   const client = getClient()
+  const query = createQuery()
   let data: Space | undefined
 
-  let unsubscribe = () => {}
-  $: {
-    unsubscribe()
-    unsubscribe = client.query(core.class.Space, { _id: space }, result => { data = result[0] })
-  }
+  $: query.query(core.class.Space, { _id: space }, result => { data = result[0] })
 
   function showCreateDialog() {
     showModal(createItemDialog as AnyComponent, { space })
