@@ -47,6 +47,14 @@
     "@anticrm/client": "~0.6.0",
     "@anticrm/dev-client-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.0",
-    "@anticrm/workbench-resources": "~0.6.0"
+    "@anticrm/workbench-resources": "~0.6.0",
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/view-assets": "~0.6.0",
+    "@anticrm/view-resources": "~0.6.0",
+    "@anticrm/contact": "~0.6.0",
+    "@anticrm/contact-resources": "~0.6.0",
+    "@anticrm/task": "~0.6.0",
+    "@anticrm/task-assets": "~0.6.0",
+    "@anticrm/task-resources": "~0.6.0"
   }
 }

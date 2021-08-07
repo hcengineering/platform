@@ -552,6 +552,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/view-assets",
+      "projectFolder": "plugins/view-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/view-resources",
+      "projectFolder": "plugins/view-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/model",
       "projectFolder": "packages/model",
       "shouldPublish": true
@@ -582,8 +592,23 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/contact-resources",
+      "projectFolder": "plugins/contact-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/task",
       "projectFolder": "plugins/task",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/task-assets",
+      "projectFolder": "plugins/task-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/task-resources",
+      "projectFolder": "plugins/task-resources",
       "shouldPublish": true
     },
     {
@@ -594,6 +619,21 @@
     {
       "packageName": "@anticrm/model-workbench",
       "projectFolder": "models/workbench",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-task",
+      "projectFolder": "models/task",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-contact",
+      "projectFolder": "models/contact",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/text-editor",
+      "projectFolder": "packages/text-editor",
       "shouldPublish": true
     },
   ]

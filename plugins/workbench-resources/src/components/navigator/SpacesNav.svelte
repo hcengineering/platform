@@ -22,7 +22,7 @@
   import { Action, navigate, getCurrentLocation } from '@anticrm/ui'
 
   import { IconAdd } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, createQuery } from '@anticrm/presentation'
   import { showModal } from '@anticrm/ui'
 
   import { classIcon } from '../../utils'
@@ -33,15 +33,10 @@
   export let model: SpacesNavModel
   
   const client = getClient()
+  const query = createQuery()
   let spaces: Space[] = []
-  let unsubscribe = () => {}
 
-  $: {
-    unsubscribe()
-    unsubscribe = client.query(model.spaceClass, {}, result => { spaces = result })
-  }
-
-  onDestroy(unsubscribe)
+  $: query.query(model.spaceClass, {}, result => { spaces = result })
 
   const addSpace: Action = {
     label: model.addSpaceLabel,

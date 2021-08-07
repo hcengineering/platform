@@ -18,20 +18,20 @@ import { addLocation } from '@anticrm/platform'
 import { loginId } from '@anticrm/login'
 import { clientId } from '@anticrm/client'
 import { workbenchId } from '@anticrm/workbench'
+import { viewId } from '@anticrm/view'
+import { taskId } from '@anticrm/task'
+import { contactId } from '@anticrm/contact'
 // import { chunterId } from '@anticrm/chunter'
 // import { recruitId } from '@anticrm/recruit'
 // import { tableId } from '@anticrm/table'
-// import { viewId } from '@anticrm/view'
-// import { taskId } from '@anticrm/task'
-// import { contactId } from '@anticrm/contact'
 
 // import { chunterServerId } from '@anticrm/chunter-server'
 
 import '@anticrm/login-assets'
+import '@anticrm/task-assets'
+import '@anticrm/view-assets'
 // import '@anticrm/chunter-assets'
 // import '@anticrm/recruit-assets'
-// import '@anticrm/task-assets'
-// import '@anticrm/view-assets'
 
 export function configurePlatform() {
 
@@ -45,12 +45,12 @@ export function configurePlatform() {
 
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
+  addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
+  addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@anticrm/task-resources'))
+  addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
   // addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/plugin-chunter'))
   // // addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/plugin-recruit'))
   // addLocation(tableId, () => import(/* webpackChunkName: "table" */ '@anticrm/table-resources'))
-  // addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
-  // addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@anticrm/task-resources'))
-  // addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
 
   // addLocation(chunterServerId, () => import(/* webpackChunkName: "chunter-server" */ '@anticrm/chunter-server'))
 
