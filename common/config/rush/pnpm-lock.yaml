@@ -2,6 +2,9 @@ lockfileVersion: 5.3
 
 specifiers:
   '@microsoft/api-extractor': ^7.18.4
+  '@rush-temp/chunter': file:./projects/chunter.tgz
+  '@rush-temp/chunter-assets': file:./projects/chunter-assets.tgz
+  '@rush-temp/chunter-resources': file:./projects/chunter-resources.tgz
   '@rush-temp/client': file:./projects/client.tgz
   '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/contact': file:./projects/contact.tgz
@@ -15,6 +18,7 @@ specifiers:
   '@rush-temp/login-resources': file:./projects/login-resources.tgz
   '@rush-temp/model': file:./projects/model.tgz
   '@rush-temp/model-all': file:./projects/model-all.tgz
+  '@rush-temp/model-chunter': file:./projects/model-chunter.tgz
   '@rush-temp/model-contact': file:./projects/model-contact.tgz
   '@rush-temp/model-core': file:./projects/model-core.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
@@ -87,6 +91,9 @@ specifiers:
 
 dependencies:
   '@microsoft/api-extractor': 7.18.4
+  '@rush-temp/chunter': file:projects/chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/chunter-assets': file:projects/chunter-assets.tgz
+  '@rush-temp/chunter-resources': file:projects/chunter-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/client': file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -100,6 +107,7 @@ dependencies:
   '@rush-temp/login-resources': file:projects/login-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/model': file:projects/model.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-all': file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/model-chunter': file:projects/model-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-contact': file:projects/model-contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-core': file:projects/model-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-rig': file:projects/model-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
@@ -8274,6 +8282,53 @@ packages:
       commander: 2.20.3
     dev: false
 
+  file:projects/chunter-assets.tgz:
+    resolution: {integrity: sha512-kRmElkS58/FJwkgz4yx35+C0wj3u/X+qJa1qJnHtcK9d2rnBwaWnU54+4OoFvNQj3L7vuHsrt7Nv2tiuHwRtyQ==, tarball: file:projects/chunter-assets.tgz}
+    name: '@rush-temp/chunter-assets'
+    version: 0.0.0
+    dev: false
+
+  file:projects/chunter-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
+    resolution: {integrity: sha512-VP1784iSMDjU+I5KOnhTTogIUV0KXWPZilDfgbksztHlcphtRl3SMfD++sdfxjapqivJJ0cWPdYpEwEOEuTA4g==, tarball: file:projects/chunter-resources.tgz}
+    id: file:projects/chunter-resources.tgz
+    name: '@rush-temp/chunter-resources'
+    version: 0.0.0
+    dependencies:
+      sass: 1.37.5
+      svelte: 3.42.1
+      svelte-loader: 3.1.2_svelte@3.42.1
+      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - typescript
+    dev: false
+
+  file:projects/chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-hmgD0Nd/V8tmm2gRjx+V4a0In4/B05vfI1sNPeD1CUd9zmaxCmP6zszeCGBSdT86eLAbTR6zgmmGuvPCEmfsvQ==, tarball: file:projects/chunter.tgz}
+    id: file:projects/chunter.tgz
+    name: '@rush-temp/chunter'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-sZx3SSO4spAS8S/DNgBlr8t/yz9UeCjmZsBU0foLLXOTijqUpAO/OvFfUW2H22pxg+sUVSElWeAKI/qRINishw==, tarball: file:projects/client-resources.tgz}
     id: file:projects/client-resources.tgz
@@ -8497,6 +8552,23 @@ packages:
       - typescript
     dev: false
 
+  file:projects/model-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-Fyp9PC9Hir9bpNLM0WzvSRduqiH4I7feu2A4QZzuk+Ezi6ddmHKTAwhjn1K/J9mY3iWyBpJp1FfQN/K2LWuJiw==, tarball: file:projects/model-chunter.tgz}
+    id: file:projects/model-chunter.tgz
+    name: '@rush-temp/model-chunter'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/model-contact.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-JlEMxKqXuBQ/W+rx/Y/8AzgpvNXgzYW07FdV4ttM4XHeVx6kOhrS7U9FPB7d6o9ABqNsxJEhK9bwg5zclnS0eQ==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
@@ -8690,7 +8762,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_9242e79bee31c899aa4d2de67405a771:
-    resolution: {integrity: sha512-s++Fsji9qUBKlBSO+X/+Ke1yXzdJB0BNq2S+kQ+2lwbYRCCK/AUCIxMgFUTX/cb0WXpjCUNIhlh+ynApJ0njWQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-7EQmn4HF+UC7i1Ia43tXlAiswU3iaa2E/OpX7QquArY63qNtKjR44PYrVb2a2q10kzXDHZv2hEhk6TZFsSNUBQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

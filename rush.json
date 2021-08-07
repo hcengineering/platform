@@ -636,5 +636,25 @@
       "projectFolder": "packages/text-editor",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/chunter",
+      "projectFolder": "plugins/chunter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/chunter-assets",
+      "projectFolder": "plugins/chunter-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/chunter-resources",
+      "projectFolder": "plugins/chunter-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-chunter",
+      "projectFolder": "models/chunter",
+      "shouldPublish": true
+    },
   ]
 }

@@ -15,6 +15,7 @@
 
 import type { Doc, Ref, Class } from './classes'
 import type { Tx } from './tx'
+import { TxOperations } from './tx'
 import type { Storage, DocumentQuery, FindOptions, FindResult } from './storage'
 
 import { Hierarchy } from './hierarchy'
@@ -31,15 +32,13 @@ export type TxHander = (tx: Tx) => void
 /**
  * @public
  */
-export interface Client extends Storage {
+export interface Client extends TxOperations {
   getHierarchy: () => Hierarchy
 }
 
-class ClientImpl implements Storage, Client {
+class ClientStorage implements Storage {
   constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {
   }
-
-  getHierarchy (): Hierarchy { return this.hierarchy }
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -56,6 +55,14 @@ class ClientImpl implements Storage, Client {
   async tx (tx: Tx): Promise<void> {
     await this.conn.tx(tx)
   }
+}
+
+class ClientImpl extends TxOperations {
+  constructor (private readonly hierarchy: Hierarchy, model: ModelDb, conn: Storage) {
+    super(new ClientStorage(hierarchy, model, conn), core.account.System)
+  }
+
+  getHierarchy (): Hierarchy { return this.hierarchy }
 }
 
 /**

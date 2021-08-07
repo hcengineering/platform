@@ -16,7 +16,7 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData
+  FindResult, Hierarchy, Refs, WithLookup, LookupData, Storage
 } from '@anticrm/core'
 
 /**
@@ -33,7 +33,7 @@ export interface _Query {
 /**
  * @public
  */
-export class LiveQuery extends TxProcessor implements Client {
+export class LiveQuery extends TxProcessor implements Storage {
   private readonly client: Client
   private readonly queries: _Query[] = []
 
