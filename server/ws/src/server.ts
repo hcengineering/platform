@@ -79,7 +79,7 @@ export function start (sessionFactory: (server: JsonRpcServer) => Session, port:
   })
 
   const server = createServer()
-  server.on('upgrade', (request: IncomingMessage, socket, head: Buffer) => {
+  server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     const token = request.url?.substring(1) // remove leading '/'
     try {
       const payload = decode(token ?? '', 'secret', false)
