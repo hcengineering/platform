@@ -566,5 +566,10 @@
       "projectFolder": "models/model-rig",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/model-all",
+      "projectFolder": "models/all",
+      "shouldPublish": true
+    },
   ]
 }
