@@ -16,13 +16,10 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData, Storage
+  FindResult, Hierarchy, Refs, WithLookup, LookupData
 } from '@anticrm/core'
 
-/**
- * @internal
- */
-export interface _Query {
+interface Query {
   _class: Ref<Class<Doc>>
   query: DocumentQuery<Doc>
   result: Doc[] | Promise<Doc[]>
@@ -33,9 +30,9 @@ export interface _Query {
 /**
  * @public
  */
-export class LiveQuery extends TxProcessor implements Storage {
+export class LiveQuery extends TxProcessor implements Client {
   private readonly client: Client
-  private readonly queries: _Query[] = []
+  private readonly queries: Query[] = []
 
   constructor (client: Client) {
     super()
@@ -46,7 +43,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     return this.client.getHierarchy()
   }
 
-  private match (q: _Query, doc: Doc): boolean {
+  private match (q: Query, doc: Doc): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       return false
     }
@@ -65,7 +62,7 @@ export class LiveQuery extends TxProcessor implements Storage {
 
   query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>): () => void {
     const result = this.client.findAll(_class, query, options)
-    const q: _Query = {
+    const q: Query = {
       _class,
       query,
       result,
@@ -86,7 +83,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     }
   }
 
-  async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
         q.result = await q.result
@@ -110,7 +107,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     (doc as WithLookup<Doc>).$lookup = result
   }
 
-  async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
     for (const q of this.queries) {
       const doc = TxProcessor.createDoc2Doc(tx)
       if (this.match(q, doc)) {
@@ -135,7 +132,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     }
   }
 
-  async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
         q.result = await q.result
@@ -153,7 +150,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     await super.tx(tx)
   }
 
-  async __updateDoc (updatedDoc: Doc, tx: TxUpdateDoc<Doc>): Promise<void> {
+  private async __updateDoc (updatedDoc: Doc, tx: TxUpdateDoc<Doc>): Promise<void> {
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -167,7 +164,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     updatedDoc.modifiedOn = tx.modifiedOn
   }
 
-  private sort (q: _Query, tx: TxUpdateDoc<Doc>): void {
+  private sort (q: Query, tx: TxUpdateDoc<Doc>): void {
     const sort = q.options?.sort
     if (sort === undefined) return
     let needSort = sort.modifiedBy !== undefined || sort.modifiedOn !== undefined
@@ -190,7 +187,7 @@ export class LiveQuery extends TxProcessor implements Storage {
     return false
   }
 
-  private async callback (updatedDoc: Doc, q: _Query): Promise<void> {
+  private async callback (updatedDoc: Doc, q: Query): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {

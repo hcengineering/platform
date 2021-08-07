@@ -14,22 +14,34 @@
 // limitations under the License.
 //
 
-import { getContext, setContext, onDestroy } from 'svelte'
+import { onDestroy } from 'svelte'
 
-import type { Doc, Ref, Class, DocumentQuery, FindOptions, Client } from '@anticrm/core'
+import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy } from '@anticrm/core'
+import { TxOperations } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
-
-const CLIENT_CONEXT = 'workbench.context.Client'
+import core from '@anticrm/core'
 
 let liveQuery: LQ
+let client: Client & TxOperations
 
-export function getClient(): Client {
-  return getContext<Client>(CLIENT_CONEXT)
+class UIClient extends TxOperations implements Client {
+
+  constructor (private readonly client: Client) {
+    super(client, core.account.System)
+  }
+
+  getHierarchy (): Hierarchy { 
+    return this.client.getHierarchy()
+  }  
 }
 
-export function setClient(client: Client) {
-  setContext(CLIENT_CONEXT, client)
-  liveQuery = new LQ(client)
+export function getClient(): Client & TxOperations {
+  return client
+}
+
+export function setClient(_client: Client) {
+  liveQuery = new LQ(_client)
+  client = new UIClient(liveQuery)
 }
 
 class LiveQuery {
