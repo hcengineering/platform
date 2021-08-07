@@ -1,0 +1,27 @@
+{
+  "name": "@anticrm/model-view",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "heft build",
+    "lint:fix": "eslint --fix src"
+  },
+  "devDependencies": {
+    "@anticrm/model-rig":"~0.6.0",
+    "@typescript-eslint/eslint-plugin":"4",
+    "eslint-plugin-import":"2",
+    "eslint-plugin-promise":"4",
+    "eslint-plugin-node":"11",
+    "eslint":"^7.32.0"
+  },
+  "dependencies": {
+    "@anticrm/core": "~0.6.7",
+    "@anticrm/model": "~0.6.0",
+    "@anticrm/platform": "~0.6.3",
+    "@anticrm/ui": "~0.6.0",
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/model-core": "~0.6.0"
+  }
+}

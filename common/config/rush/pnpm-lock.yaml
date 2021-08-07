@@ -14,6 +14,7 @@ specifiers:
   '@rush-temp/model-all': file:./projects/model-all.tgz
   '@rush-temp/model-core': file:./projects/model-core.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
+  '@rush-temp/model-view': file:./projects/model-view.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
@@ -80,6 +81,7 @@ dependencies:
   '@rush-temp/model-all': file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-core': file:projects/model-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-rig': file:projects/model-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
+  '@rush-temp/model-view': file:projects/model-view.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
   '@rush-temp/presentation': file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5
@@ -7954,7 +7956,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-LvpfR+r7PaQCz/9Hyd3fpNON/ngE+8A78/LML7s2Z56598J9kwI/hvsVEemfBcOrktgix2QTLOWTzNKb8mdb1g==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-Ny03qMMno3IlAoJcogi3ExyU1xTKo3tlzjY4TY1Vnu3m+r4UzP93VgP/3TPN5qcSF/9gC6RFVYLeWyXiKXdjxw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -8010,6 +8012,23 @@ packages:
       - eslint-plugin-node
       - eslint-plugin-promise
       - supports-color
+    dev: false
+
+  file:projects/model-view.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-p41TPHPPPtNlJatDd5UuUunmRUewUcU+/15EUBds6teIXCq5t54VBhkio3qE4SIuIeu9x+vDoKbJg49g1H6xmw==, tarball: file:projects/model-view.tgz}
+    id: file:projects/model-view.tgz
+    name: '@rush-temp/model-view'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
     dev: false
 
   file:projects/model.tgz_6c259fadfeb3a4b20890aefe87070b8b:

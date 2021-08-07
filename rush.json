@@ -571,5 +571,10 @@
       "projectFolder": "models/all",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/model-view",
+      "projectFolder": "models/view",
+      "shouldPublish": true
+    },
   ]
 }
