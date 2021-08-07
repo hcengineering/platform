@@ -16,7 +16,7 @@
 import { addLocation } from '@anticrm/platform'
 
 import { loginId } from '@anticrm/login'
-// import { clientId } from '@anticrm/client'
+import { clientId } from '@anticrm/client'
 import { workbenchId } from '@anticrm/workbench'
 // import { chunterId } from '@anticrm/chunter'
 // import { recruitId } from '@anticrm/recruit'
@@ -39,7 +39,7 @@ export function configurePlatform() {
 // platform.setMetadata(ui.metadata.DefaultApplication, 'workbench')
 
   // if (process.env.CLIENT === 'dev')
-  // addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/plugin-client-dev'))
+  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
   // else
   //   addLocation(core, () => import(/* webpackChunkName: "plugin-core" */ '@anticrm/plugin-core-impl'))
 
