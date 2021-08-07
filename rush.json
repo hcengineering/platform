@@ -537,6 +537,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/client-resources",
+      "projectFolder": "plugins/client-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/query",
       "projectFolder": "packages/query",
       "shouldPublish": true

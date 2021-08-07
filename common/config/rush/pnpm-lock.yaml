@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@microsoft/api-extractor': ^7.18.4
   '@rush-temp/client': file:./projects/client.tgz
+  '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
@@ -61,6 +62,7 @@ specifiers:
 dependencies:
   '@microsoft/api-extractor': 7.18.4
   '@rush-temp/client': file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -7686,6 +7688,24 @@ packages:
       commander: 2.20.3
     dev: false
 
+  file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-PjpCnRuDrh/T+p0+t2m0AHQJ2RswCa3JNpnEtFuJSskxnd3FYKcu7MYjnujM9wcrPZqygAeSfmei1ZA9uS5bqA==, tarball: file:projects/client-resources.tgz}
+    id: file:projects/client-resources.tgz
+    name: '@rush-temp/client-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-8YJou7AitxzzH2roWCno/zgd27SiQXlqrdDVyhAAvZrBZY7KGbxw4OxGkI+6eVK+Lk/zajS2FkGZ+oyZ+Bxe6g==, tarball: file:projects/client.tgz}
     id: file:projects/client.tgz
@@ -7851,7 +7871,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-v1qRQGQrWDFfME4IEpK6bM0E3IQljeG2+Ft/YVPM/Fbf/y3e+28AvI3nyvLn+1N6gY+5faEAHLE4M9vBbR+A1A==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-0da7jIZ76QPDe/6DKiocyNFA3rzQvBBNMIpouw0nWZS9qgnOgDARiBB9mg+2vuw4u1FmRgFQUIdpMxrwRi2b/g==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -8059,7 +8079,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-UZMkx/Mq9SBiSR6JFaCmJ548KfR1cSser177G9y196X9ot7EYLYHSZ0Teo9hZTwUgDU1TDkk2KW2sxuFN71naA==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-i2M+58McWVoRf331FyY9crFu/50O8YuU1x6WbnJ+hBqq+nuW3XJdqJcabrr6+ZYMMnPqfuXrKkZJoGipc9zwMA==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

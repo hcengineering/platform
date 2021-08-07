@@ -24,9 +24,9 @@ export type ReqId = string | number
 /**
  * @public
  */
-export interface Request<P extends any[], M extends string = string> {
+export interface Request<P extends any[]> {
   id?: ReqId
-  method: M
+  method: string
   params: P
 }
 
