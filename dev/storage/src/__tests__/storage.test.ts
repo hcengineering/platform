@@ -14,13 +14,27 @@
 // limitations under the License.
 //
 
-import core from '@anticrm/core'
+import core, { TxFactory } from '@anticrm/core'
 import { createStorage } from '../storage'
 
 describe('client', () => {
   it('should create storage', async () => {
     const storage = await createStorage()
     const txes = await storage.findAll(core.class.Tx, {})
-    expect(txes.length).toBe(14)
+    expect(txes.length).toBe(64)
+  })
+
+  it('should create space', async () => {
+    const storage = await createStorage()
+    const factory = new TxFactory(core.account.System)
+    const tx = factory.createTxCreateDoc(core.class.Space, core.space.Model, {
+      name: 'xxx',
+      description: 'desc',
+      private: false,
+      members: []
+    })
+    await storage.tx(tx)
+    const txes = await storage.findAll(core.class.Space, { name: 'xxx' })
+    expect(txes.length).toBe(1)
   })
 })

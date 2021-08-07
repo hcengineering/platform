@@ -14,18 +14,31 @@
 //
 
 import { connect } from '../connection'
-import core, { createClient } from '@anticrm/core'
+import core, { createClient, TxOperations } from '@anticrm/core'
 
 describe('client', () => {
   it('should create connection', async () => {
     const conn = await connect(() => {})
     const txes = await conn.findAll(core.class.Tx, {})
-    expect(txes.length).toBe(14)
+    expect(txes.length).toBe(64)
   })
 
   it('should create client', async () => {
     const client = await createClient(connect)
     const txes = await client.findAll(core.class.Class, {})
-    expect(txes.length).toBe(14)
+    expect(txes.length).toBe(33)
+  })
+
+  it('should create space', async () => {
+    const client = await createClient(connect)
+    const ops = new TxOperations(client, core.account.System)
+    await ops.createDoc(core.class.Space, core.space.Model, {
+      name: 'xxx',
+      description: 'desc',
+      private: false,
+      members: []
+    })
+    const txes = await client.findAll(core.class.Space, { name: 'xxx' })
+    expect(txes.length).toBe(1)
   })
 })

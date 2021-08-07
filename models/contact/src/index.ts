@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Domain } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 
@@ -22,7 +23,9 @@ import type { Contact, Person, Organization, Employee } from '@anticrm/contact'
 import view from '@anticrm/model-view'
 import { ids as contact } from './plugin'
 
-@Model(contact.class.Contact, core.class.Doc)
+export const DOMAIN_CONTACT = 'contact' as Domain
+
+@Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 export class TContact extends TDoc implements Contact {
 }
 

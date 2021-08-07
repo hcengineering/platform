@@ -46,15 +46,15 @@ class ClientImpl implements Storage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const clazz = this.hierarchy.getClass(_class)
-    if (clazz.domain === DOMAIN_MODEL) {
+    const domain = this.hierarchy.getDomain(_class)
+    if (domain === DOMAIN_MODEL) {
       return await this.model.findAll(_class, query, options)
     }
     return await this.conn.findAll(_class, query, options)
   }
 
   async tx (tx: Tx): Promise<void> {
-    await this.conn.tx(tx)
+    await Promise.all([this.conn.tx(tx), this.model.tx(tx)])
   }
 }
 

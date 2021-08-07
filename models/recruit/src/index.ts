@@ -15,7 +15,7 @@
 
 import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, UX, Prop, TypeString } from '@anticrm/model'
-import type { Ref, FindOptions, Doc } from '@anticrm/core'
+import type { Ref, FindOptions, Doc, Domain } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 
@@ -25,6 +25,8 @@ import view from '@anticrm/model-view'
 import contact, { TPerson } from '@anticrm/model-contact'
 import recruit from './plugin'
 import { Person } from '@anticrm/contact'
+
+export const DOMAIN_RECRUIT = 'recruit' as Domain
 
 @Model(recruit.class.Vacancy, core.class.Space)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -38,7 +40,7 @@ export class TCandidates extends TSpace implements Candidates {}
 @UX('Candidate' as IntlString)
 export class TCandidate extends TPerson implements Candidate {}
 
-@Model(recruit.class.Applicant, core.class.Doc)
+@Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)
 export class TApplicant extends TDoc implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
   candidate!: Ref<Person>

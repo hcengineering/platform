@@ -47,7 +47,7 @@ class DevStorage implements ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getClass(_class).domain
+    const domain = this.hierarchy.getDomain(_class)
     if (domain === DOMAIN_TX) return await this.txdb.findAll(_class, query, options)
     return await this.modeldb.findAll(_class, query, options)
   }
