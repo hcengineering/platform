@@ -55,6 +55,7 @@ export function addLocation<R extends Resources> (
 function getLocation (plugin: Plugin): PluginLoader<Resources> {
   const location = locations.get(plugin)
   if (location === undefined) {
+    console.log(plugin)
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.NoLocationForPlugin, {
         plugin

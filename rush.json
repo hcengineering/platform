@@ -586,5 +586,10 @@
       "projectFolder": "plugins/task",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/dev-client-resources",
+      "projectFolder": "dev/client-resources",
+      "shouldPublish": true
+    },
   ]
 }

@@ -6,6 +6,7 @@ specifiers:
   '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/contact': file:./projects/contact.tgz
   '@rush-temp/core': file:./projects/core.tgz
+  '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
   '@rush-temp/login': file:./projects/login.tgz
@@ -75,6 +76,7 @@ dependencies:
   '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/login': file:projects/login.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -7883,6 +7885,24 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
       simplytyped: 3.3.0_typescript@4.3.5
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-EUDIrb3wXy6PHSbUnxEkKagNVsM5jKUBg0qSdd6/BriulwYZ5C1BlLqS58oDWxaySjHBSMGyaKN4Ath5QYrI8A==, tarball: file:projects/dev-client-resources.tgz}
+    id: file:projects/dev-client-resources.tgz
+    name: '@rush-temp/dev-client-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - supports-color
