@@ -95,33 +95,42 @@ const api = new awsx.apigateway.API("login", {
       path: "/",
       method: "POST",
       eventHandler: async (event) => {
-        const result = handle(event.body, serverEndpoint.get())
+        console.log(event.body)
+        console.log(serverEndpoint.get())
+
+        let body = event.body;
+        if (event.isBase64Encoded) {
+            body = Buffer.from(body as string, 'base64').toString()
+        }
+
+        const result = handle(body, serverEndpoint.get())
         return { 
           statusCode: result.statusCode,
-          headers: {
-            "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,HEAD,POST"
-          },
+          // headers: {
+          //   "Access-Control-Allow-Headers" : "Content-Type",
+          //   "Access-Control-Allow-Origin": "*",
+          //   "Access-Control-Allow-Methods": "GET,HEAD,POST"
+          // },
           body: result.body
         }
       },
     },
-    // {
-    //   path: "/",
-    //   method: "OPTIONS",
-    //   eventHandler: async (event) => {
-    //     return { 
-    //       statusCode: 200,
-    //       headers: {
-    //         "Access-Control-Allow-Headers" : "*",
-    //         "Access-Control-Allow-Origin": "*",
-    //         "Access-Control-Allow-Methods": "*"
-    //       },
-    //       body: ''
-    //     }
-    //   },
-    // },
+    {
+      path: "/",
+      method: "OPTIONS",
+      eventHandler: async (event) => {
+        console.log('OPTIONS call')
+        return { 
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,POST"
+          },
+          body: ''
+        }
+      },
+    },
   ],
 })
 

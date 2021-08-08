@@ -36,7 +36,8 @@ import { setMetadata } from '@anticrm/platform'
 
 export function configurePlatform() {
 
-  setMetadata(login.metadata.AccountsUrl, 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/')
+  // setMetadata(login.metadata.AccountsUrl, 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/')
+  setMetadata(login.metadata.AccountsUrl, '/api')
 
   // if (process.env.CLIENT === 'dev')
   addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))

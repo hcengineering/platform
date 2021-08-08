@@ -165,6 +165,7 @@ module.exports = {
         target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
         changeOrigin: true,
         pathRewrite: { '^/api': '' },
+        logLevel: 'debug'
       },
     }
   }

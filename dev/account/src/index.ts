@@ -19,8 +19,8 @@ import { handleRequest } from './account'
 /**
  * @public
  */
-export function handle (req: string | null, serverEndpoint: string): { statusCode: number, body: string } {
-  if (req === null) return { statusCode: 401, body: 'unauthorized' }
+export function handle (req: string | null | undefined, serverEndpoint: string): { statusCode: number, body: string } {
+  if (req === null || req === undefined) return { statusCode: 401, body: 'unauthorized' }
   const resp = handleRequest(JSON.parse(req), serverEndpoint)
   if (resp.error !== undefined) { return { statusCode: 401, body: '' } }
   return {

@@ -40,9 +40,9 @@ export async function doLogin (
   try {
     const response = await fetch(accountsUrl, {
       method: 'POST',
-      // headers: {
-      //   'Content-Type': 'text/plain'
-      // },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: serialize(request)
     })
     const result: Response<any> = await response.json()
