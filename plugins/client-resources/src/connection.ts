@@ -31,12 +31,10 @@ class DeferredPromise {
 }
 
 class Connection implements Storage {
-  private readonly webSocket: WebSocket
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
 
-  constructor (url: string, private readonly handler: TxHander) {
-    this.webSocket = new WebSocket(url)
+  constructor (private readonly webSocket: WebSocket, private readonly handler: TxHander) {
     this.webSocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
@@ -49,6 +47,7 @@ class Connection implements Storage {
           promise.resolve(resp.result)
         }
       } else {
+        console.log('handle', resp)
         this.handler(resp.result as Tx)
       }
     }
@@ -76,5 +75,11 @@ class Connection implements Storage {
 }
 
 export async function connect (url: string, handler: TxHander): Promise<Storage> {
-  return new Connection(url, handler)
+  return await new Promise((resolve, reject) => {
+    const webSocket = new WebSocket(url)
+    webSocket.onopen = () => {
+      resolve(new Connection(webSocket, handler))
+    }
+    webSocket.onerror = () => reject(new Error('Could not connect'))
+  })
 }

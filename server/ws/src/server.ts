@@ -29,11 +29,9 @@ export interface _Token {
 async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promise<void> {
   const request = readRequest(msg)
   const f = (service as any)[request.method]
-  const result = await f.apply(null, request.params)
-  ws.send(serialize({
-    id: request.id,
-    result
-  }))
+  const result = await f.apply(service, request.params)
+  const resp = { id: request.id, result }
+  ws.send(serialize(resp))
 }
 
 /**
@@ -62,6 +60,7 @@ export function start (sessionFactory: (server: JsonRpcServer) => Session, port:
 
   const jsonServer: JsonRpcServer = {
     broadcast (from: Session, resp: Response<[]>) {
+      console.log('server broadcasting', resp)
       const msg = serialize(resp)
       for (const session of sessions) {
         if (session[0] !== from) { session[1].send(msg) }

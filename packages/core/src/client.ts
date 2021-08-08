@@ -32,10 +32,13 @@ export type TxHander = (tx: Tx) => void
  * @public
  */
 export interface Client extends Storage {
+  notify?: (tx: Tx) => void
   getHierarchy: () => Hierarchy
 }
 
-class ClientImpl implements Storage {
+class ClientImpl implements Client {
+  notify?: (tx: Tx) => void
+
   constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {
   }
 
@@ -54,7 +57,11 @@ class ClientImpl implements Storage {
   }
 
   async tx (tx: Tx): Promise<void> {
+    if (tx.objectSpace === core.space.Model) {
+      this.hierarchy.tx(tx)
+    }
     await Promise.all([this.conn.tx(tx), this.model.tx(tx)])
+    this.notify?.(tx)
   }
 }
 
@@ -62,8 +69,7 @@ class ClientImpl implements Storage {
  * @public
  */
 export async function createClient (
-  connect: (txHandler: TxHander) => Promise<Storage>,
-  notify?: (tx: Tx) => void
+  connect: (txHandler: TxHander) => Promise<Storage>
 ): Promise<Client> {
   let client: Client | null = null
   let txBuffer: Tx[] | undefined = []
@@ -75,13 +81,8 @@ export async function createClient (
     if (client === null) {
       txBuffer?.push(tx)
     } else {
-      if (tx.objectSpace === core.space.Model) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        hierarchy.tx(tx)
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        model.tx(tx)
-      }
-      notify?.(tx)
+      console.log('handler got ', tx)
+      client.notify?.(tx)
     }
   }
 

@@ -30,6 +30,7 @@ export class DevSession implements Storage {
 
   async tx (tx: Tx): Promise<void> {
     const derived = await this.storage.tx(tx)
+    this.server.broadcast(this, { result: tx })
     for (const tx of derived) {
       this.server.broadcast(this, { result: tx })
     }
