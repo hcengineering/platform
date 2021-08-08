@@ -153,7 +153,7 @@ describe('memdb', () => {
       private: false,
       members: []
     })
-    const account = await model.createDoc(core.class.Account, core.space.Model, {})
+    const account = await model.createDoc(core.class.Account, core.space.Model, { email: 'email' })
     await model.updateDoc(core.class.Space, core.space.Model, space, { $push: { members: account } })
     const txSpace = await model.findAll(core.class.Space, { _id: space })
     expect(txSpace[0].members).toEqual(expect.arrayContaining([account]))

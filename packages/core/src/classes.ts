@@ -175,4 +175,6 @@ export interface Space extends Doc {
 /**
  * @public
  */
-export interface Account extends Doc {}
+export interface Account extends Doc {
+  email: string
+}

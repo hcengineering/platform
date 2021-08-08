@@ -14,7 +14,7 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
-import type { Ref, Class } from '@anticrm/core'
+import type { Ref, Class, Space } from '@anticrm/core'
 import contact, { contactId, Employee } from '@anticrm/contact'
 import type { AnyComponent } from '@anticrm/ui'
 import {} from '@anticrm/core'
@@ -25,5 +25,8 @@ export const ids = mergeIds(contactId, contact, {
   },
   class: {
     Employee: '' as Ref<Class<Employee>>
+  },
+  space: {
+    Employee: '' as Ref<Space>
   }
 })
