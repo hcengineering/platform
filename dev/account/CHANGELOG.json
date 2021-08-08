@@ -1,0 +1,17 @@
+{
+  "name": "@anticrm/dev-account",
+  "entries": [
+    {
+      "version": "0.6.1",
+      "tag": "@anticrm/dev-account_v0.6.1",
+      "date": "Sun, 08 Aug 2021 09:33:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Initial implementation"
+          }
+        ]
+      }
+    }
+  ]
+}
