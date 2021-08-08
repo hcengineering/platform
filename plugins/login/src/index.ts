@@ -13,33 +13,21 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset } from '@anticrm/platform'
+import type { Plugin, Asset, Metadata } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import type { AnyComponent } from '@anticrm/ui'
 
-/**
- * @public
- */
-export interface LoginInfo {
-  email: string
-  workspace: string
-  server: string
-  port: string
-  token: string
-  secondFactorEnabled: boolean
-}
-
-/**
- * @public
- */
-export const ACCOUNT_KEY = 'anticrm-account'
-
-/**
- * @public
- */
-export function currentAccount (): LoginInfo | null {
-  const account = localStorage.getItem(ACCOUNT_KEY)
-  return (account !== null) ? JSON.parse(account) : null
-}
+// /**
+//  * @public
+//  */
+// export interface LoginInfo {
+//   email: string
+//   workspace: string
+//   server: string
+//   port: string
+//   token: string
+//   secondFactorEnabled: boolean
+// }
 
 /**
  * @public
@@ -48,6 +36,13 @@ export const loginId = 'login' as Plugin
 
 export default plugin(loginId, {
   metadata: {
-    AccountsUrl: '' as Asset
+    AccountsUrl: '' as Asset,
+    LoginToken: '' as Metadata<string>,
+    LoginEndpoint: '' as Metadata<string>,
+    OverrideLoginToken: '' as Metadata<string>, // debug purposes
+    OverrideEndpoint: '' as Metadata<string>
+  },
+  component: {
+    LoginApp: '' as AnyComponent
   }
 })

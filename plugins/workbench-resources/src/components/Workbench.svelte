@@ -20,9 +20,8 @@
   import avatar from '../../img/avatar.png'
 
   import { onDestroy } from 'svelte'
-  import type { Connection } from '@anticrm/client'
-
-  import type { Ref, Space } from '@anticrm/core'
+  
+  import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
   import { setClient } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
@@ -32,10 +31,10 @@
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, Component, location } from '@anticrm/ui'
+  import { AnyComponent, location } from '@anticrm/ui'
   import core from '@anticrm/core'
 
-  export let client: Connection
+  export let client: Client
 
   setClient(client)
 
@@ -62,34 +61,38 @@
   }))
 </script>
 
-<svg class="mask">
-  <clipPath id="notify">
-    <path d="M0,0v48h48V0H0z M32,25c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,25,32,25z"/>
-  </clipPath>
-</svg>
-<div class="container">
-  <div class="applications">
-    <ActivityStatus status="active"/>
-    <Applications active={currentApp}/>
-    <div class="profile">
-      <img class="avatar" src={avatar} alt="Profile"/>
+{#if client}
+  <svg class="mask">
+    <clipPath id="notify">
+      <path d="M0,0v48h48V0H0z M32,25c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,25,32,25z"/>
+    </clipPath>
+  </svg>
+  <div class="container">
+    <div class="applications">
+      <ActivityStatus status="active"/>
+      <Applications active={currentApp}/>
+      <div class="profile">
+        <img class="avatar" src={avatar} alt="Profile"/>
+      </div>
     </div>
-  </div>
-  {#if navigator}
-  <div class="navigator">
-    <NavHeader/>
-    <Navigator model={navigatorModel}/>
-  </div>
-  {/if}
-  <div class="component">
-    <SpaceHeader space={currentSpace} {createItemDialog}/>
-    {#if currentView && currentSpace}
-      <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
+    {#if navigator}
+    <div class="navigator">
+      <NavHeader/>
+      <Navigator model={navigatorModel}/>
+    </div>
     {/if}
+    <div class="component">
+      <SpaceHeader space={currentSpace} {createItemDialog}/>
+      {#if currentView && currentSpace}
+        <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
+      {/if}
+    </div>
+    <!-- <div class="aside"><Chat thread/></div> -->
   </div>
-  <!-- <div class="aside"><Chat thread/></div> -->
-</div>
-<Modal />
+  <Modal />
+{:else}
+  No client
+{/if}
 
 <style lang="scss">
   @mixin panel($bg-color) {

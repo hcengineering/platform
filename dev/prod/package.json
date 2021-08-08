@@ -63,6 +63,7 @@
     "@anticrm/recruit-assets": "~0.6.0",
     "@anticrm/recruit-resources": "~0.6.0",
     "@anticrm/server-chunter": "~0.6.0",
-    "@anticrm/dev-server-chunter-resources": "~0.6.0"
+    "@anticrm/dev-server-chunter-resources": "~0.6.0",
+    "@anticrm/client-resources": "~0.6.0"
   }
 }

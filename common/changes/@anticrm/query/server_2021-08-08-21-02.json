@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/query",
+      "comment": "Fix server connection",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/query"
+}

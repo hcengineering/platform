@@ -18,6 +18,7 @@
     "eslint":"^7.32.0"
   },
   "dependencies": {
-    "@anticrm/platform":"~0.6.5"
+    "@anticrm/platform":"~0.6.5",
+    "@anticrm/ui":"~0.6.0"
   }
 }

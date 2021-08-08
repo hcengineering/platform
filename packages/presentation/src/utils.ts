@@ -16,7 +16,7 @@
 
 import { onDestroy } from 'svelte'
 
-import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy } from '@anticrm/core'
+import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx } from '@anticrm/core'
 import { TxOperations } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import core from '@anticrm/core'
@@ -26,13 +26,17 @@ let client: Client & TxOperations
 
 class UIClient extends TxOperations implements Client {
 
-  constructor (private readonly client: Client) {
+  constructor (private readonly client: Client, private readonly liveQuery: LQ) {
     super(client, core.account.System)
   }
 
   getHierarchy (): Hierarchy { 
     return this.client.getHierarchy()
-  }  
+  }
+
+  tx(tx: Tx): Promise<void> {
+    return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
+  }
 }
 
 export function getClient(): Client & TxOperations {
@@ -41,7 +45,10 @@ export function getClient(): Client & TxOperations {
 
 export function setClient(_client: Client) {
   liveQuery = new LQ(_client)
-  client = new UIClient(liveQuery)
+  client = new UIClient(_client, liveQuery)
+  _client.notify = (tx: Tx) => {
+    liveQuery.tx(tx)
+  }
 }
 
 class LiveQuery {

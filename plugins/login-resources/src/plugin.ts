@@ -21,9 +21,6 @@ import type { AnyComponent } from '@anticrm/ui'
 import login, { loginId } from '@anticrm/login'
 
 export default mergeIds(loginId, login, {
-  component: {
-    LoginApp: '' as AnyComponent
-  },
   status: {
     RequiredField: '' as StatusCode<{ field: string }>,
     ConnectingToServer: '' as StatusCode
