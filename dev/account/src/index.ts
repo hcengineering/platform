@@ -23,7 +23,8 @@ export function handle (req: string | null, serverEndpoint: string): { statusCod
   if (req === null) return { statusCode: 401, body: 'unauthorized' }
   const resp = handleRequest(JSON.parse(req), serverEndpoint)
   if (resp.error !== undefined) { return { statusCode: 401, body: '' } }
-  return { 
-    statusCode: 200, body: JSON.stringify(resp.result) 
+  return {
+    statusCode: 200,
+    body: JSON.stringify(resp.result)
   }
 }
