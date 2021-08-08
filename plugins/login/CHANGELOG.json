@@ -2,6 +2,18 @@
   "name": "@anticrm/login",
   "entries": [
     {
+      "version": "0.6.1",
+      "tag": "@anticrm/login_v0.6.1",
+      "date": "Sun, 08 Aug 2021 21:05:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix server connection"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.0",
       "tag": "@anticrm/login_v0.6.0",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",

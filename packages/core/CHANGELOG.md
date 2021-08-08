@@ -1,6 +1,13 @@
 # Change Log - @anticrm/core
 
-This log was last generated on Wed, 04 Aug 2021 21:18:44 GMT and should not be manually modified.
+This log was last generated on Sun, 08 Aug 2021 21:05:26 GMT and should not be manually modified.
+
+## 0.6.8
+Sun, 08 Aug 2021 21:05:26 GMT
+
+### Patches
+
+- Fix server connection
 
 ## 0.6.7
 Wed, 04 Aug 2021 21:18:44 GMT

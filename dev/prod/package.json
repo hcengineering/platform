@@ -1,6 +1,6 @@
 {
   "name": "prod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "EPL-2.0",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --stats-error-details",
@@ -41,13 +41,13 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/theme": "~0.6.0",
     "svelte": "^3.42.1",
-    "@anticrm/login": "~0.6.0",
+    "@anticrm/login": "~0.6.1",
     "@anticrm/login-assets": "~0.6.0",
-    "@anticrm/login-resources": "~0.6.0",
-    "@anticrm/client": "~0.6.0",
+    "@anticrm/login-resources": "~0.6.1",
+    "@anticrm/client": "~0.6.1",
     "@anticrm/dev-client-resources": "~0.6.0",
-    "@anticrm/workbench": "~0.6.0",
-    "@anticrm/workbench-resources": "~0.6.0",
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/workbench-resources": "~0.6.1",
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-assets": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
@@ -64,6 +64,6 @@
     "@anticrm/recruit-resources": "~0.6.0",
     "@anticrm/server-chunter": "~0.6.0",
     "@anticrm/dev-server-chunter-resources": "~0.6.0",
-    "@anticrm/client-resources": "~0.6.0"
+    "@anticrm/client-resources": "~0.6.1"
   }
 }

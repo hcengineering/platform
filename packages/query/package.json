@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/query",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -20,6 +20,6 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.3"
+    "@anticrm/core": "~0.6.8"
   }
 }

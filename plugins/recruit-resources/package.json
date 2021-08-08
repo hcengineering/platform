@@ -20,11 +20,11 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.0",
+    "@anticrm/core": "~0.6.8",
     "svelte": "^3.37.0",
     "@anticrm/recruit": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.0",
+    "@anticrm/presentation": "~0.6.1",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/chunter": "~0.6.0",
     "@anticrm/contact": "~0.6.0"

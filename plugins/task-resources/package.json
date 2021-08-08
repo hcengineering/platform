@@ -23,7 +23,7 @@
     "svelte": "^3.37.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.0",
+    "@anticrm/presentation": "~0.6.1",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.0"
   }

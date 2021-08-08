@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/workbench-resources",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -21,12 +21,12 @@
   "dependencies": {
     "svelte": "^3.37.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.0",
-    "@anticrm/client": "~0.6.0",
-    "@anticrm/workbench": "~0.6.0",
+    "@anticrm/core": "~0.6.8",
+    "@anticrm/client": "~0.6.1",
+    "@anticrm/workbench": "~0.6.1",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/view": "~0.6.0",
-    "@anticrm/presentation": "~0.6.0",
-    "@anticrm/login": "~0.6.0"
+    "@anticrm/presentation": "~0.6.1",
+    "@anticrm/login": "~0.6.1"
   }
 }

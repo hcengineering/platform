@@ -18,7 +18,7 @@
     "eslint":"^7.32.0"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.7",
+    "@anticrm/core": "~0.6.8",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-core": "~0.6.0",
     "@anticrm/server-chunter": "~0.6.0",
