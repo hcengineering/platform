@@ -108,6 +108,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+    console.log('query tx', tx)
     for (const q of this.queries) {
       const doc = TxProcessor.createDoc2Doc(tx)
       if (this.match(q, doc)) {
@@ -146,7 +147,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   async tx (tx: Tx): Promise<void> {
-    await this.client.tx(tx)
+    // await this.client.tx(tx)
     await super.tx(tx)
   }
 
