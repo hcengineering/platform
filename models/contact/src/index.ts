@@ -60,6 +60,13 @@ export class TEmployee extends TPerson implements Employee {
 export function createModel (builder: Builder): void {
   builder.createModel(TContact, TPerson, TOrganization, TEmployee)
 
+  builder.createDoc(core.class.Space, core.space.Model, {
+    name: 'Employees',
+    description: 'Employees',
+    private: false,
+    members: []
+  }, contact.space.Employee)
+
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter
   })
