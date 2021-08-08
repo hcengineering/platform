@@ -73,5 +73,8 @@ export default plugin(workbenchId, {
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>
+  },
+  component: {
+    WorkbenchApp: '' as AnyComponent
   }
 })

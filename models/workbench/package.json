@@ -21,6 +21,7 @@
     "@anticrm/model": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
-    "@anticrm/workbench": "~0.6.0"
+    "@anticrm/workbench": "~0.6.0",
+    "@anticrm/ui": "~0.6.0"
   }
 }

@@ -18,6 +18,11 @@ import type { Request, Response } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
+export interface LoginInfo { 
+  token: string
+  endpoint: string
+}
+
 /**
  * Perform a login operation to required workspace with user credentials.
  */
@@ -25,11 +30,19 @@ export async function doLogin (
   username: string,
   password: string,
   workspace: string
-): Promise<[Status, any]> {
+): Promise<[Status, LoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(login.metadata.OverrideLoginToken)
+  if (token !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token, endpoint }]
+    }
   }
 
   const request: Request<[string, string, string]> = {
@@ -46,9 +59,8 @@ export async function doLogin (
       body: serialize(request)
     })
     const result: Response<any> = await response.json()
-    console.log('LOGIN: ', result)
-    const status = result.error ?? OK
-    return [status, result.result]
+
+    return [result.error ?? OK, result.result]
   } catch (err) {
     return [unknownError(err), undefined]
   }

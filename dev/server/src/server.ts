@@ -18,10 +18,15 @@ import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createStorage } from '@anticrm/dev-storage'
 import { DevSession } from './session'
 
+import { addLocation } from '@anticrm/platform'
+import { serverChunterId } from '@anticrm/server-chunter'
+
 /**
  * @public
  */
 export async function start (port: number, host?: string): Promise<void> {
+  addLocation(serverChunterId, () => import('@anticrm/dev-server-chunter-resources'))
+
   const storage = await createStorage()
   startJsonRpc(server => new DevSession(server, storage), port, host)
 }

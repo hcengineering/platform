@@ -14,7 +14,7 @@
 //
 
 import { plugin } from '@anticrm/platform'
-import type { Metadata, Plugin, Resource } from '@anticrm/platform'
+import type { Plugin, Resource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
 // import type { LiveQuery } from '@anticrm/query'
 
@@ -28,10 +28,7 @@ export const clientId = 'client' as Plugin
 export default plugin(clientId,
   {
     function: {
-      GetClient: '' as Resource<() => Promise<Client>>
-    },
-    metadata: {
-      ClientUrl: '' as Metadata<string>
+      GetClient: '' as Resource<(token: string, endpoint: string) => Promise<Client>>
     }
   }
 )

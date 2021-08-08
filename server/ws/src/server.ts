@@ -83,6 +83,7 @@ export function start (sessionFactory: (server: JsonRpcServer) => Session, port:
     const token = request.url?.substring(1) // remove leading '/'
     try {
       const payload = decode(token ?? '', 'secret', false)
+      console.log('client connected with payload', payload)
       wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
     } catch (err) {
       console.log('unauthorized')

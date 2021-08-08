@@ -36,15 +36,12 @@ import { setMetadata } from '@anticrm/platform'
 
 export function configurePlatform() {
 
-  console.log(process.env.APP_ACCOUNTS_URL)
+  setMetadata(login.metadata.AccountsUrl, process.env.ACCOUNTS_URL)
+  setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN)
+  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
-  // setMetadata(login.metadata.AccountsUrl, 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/')
-  setMetadata(login.metadata.AccountsUrl, process.env.APP_ACCOUNTS_URL)
-
-  // if (process.env.CLIENT === 'dev')
-  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
-  // else
-  //   addLocation(core, () => import(/* webpackChunkName: "plugin-core" */ '@anticrm/plugin-core-impl'))
+//  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
+  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/client-resources'))
 
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))

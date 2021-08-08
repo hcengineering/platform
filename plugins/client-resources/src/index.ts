@@ -14,8 +14,6 @@
 //
 
 import { createClient, Client, TxHander } from '@anticrm/core'
-import { getMetadata } from '@anticrm/platform'
-import clientPlugin from '@anticrm/client'
 
 import { connect } from './connection'
 
@@ -30,13 +28,11 @@ export default async () => {
 
   return {
     function: {
-      GetClient: async (): Promise<Client> => {
+      GetClient: async (token: string, endpoint: string): Promise<Client> => {
         if (client === undefined) {
-          const url = getMetadata(clientPlugin.metadata.ClientUrl)
-          if (url === undefined) {
-            throw new Error('no app server url provided.')
-          }
           return await createClient((handler: TxHander) => {
+            const url = `ws://${endpoint}:3333/${token}`
+            console.log('connecting to', url)
             return connect(url, handler)
           })
         }

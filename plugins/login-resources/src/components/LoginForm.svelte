@@ -15,12 +15,14 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { OK, Status, Severity } from '@anticrm/platform'
+  import { OK, Status, Severity, setMetadata } from '@anticrm/platform'
+  import { navigate } from '@anticrm/ui'
 
   import Form from './Form.svelte'
   import { doLogin } from '../utils'
 
   import login from '../plugin'
+  import workbench from '@anticrm/workbench'
 
   const dispatch = createEventDispatcher()
 
@@ -48,13 +50,14 @@
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
       const [loginStatus, result] = await doLogin(object.username, object.password, object.workspace)
+      status = loginStatus
 
-      return new Promise<void>((resolve, reject) => {
-        setTimeout(() => { 
-          status = loginStatus
-          resolve() 
-        }, 1000)
-      })
+      if (result !== undefined) {
+        console.log('token', result.token)
+        setMetadata(login.metadata.LoginToken, result.token)
+        setMetadata(login.metadata.LoginEndpoint, result.endpoint)
+        navigate({ path: [workbench.component.WorkbenchApp] })
+      }
     }
   }
 

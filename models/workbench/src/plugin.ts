@@ -14,6 +14,7 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
+import {} from '@anticrm/ui'
 import workbench, { workbenchId } from '@anticrm/workbench'
 
 export default mergeIds(workbenchId, workbench, {
