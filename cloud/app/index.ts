@@ -94,7 +94,7 @@ const api = new awsx.apigateway.API("login", {
       path: "/",
       method: "POST",
       eventHandler: async (event) => {
-        return handle(event.body, serverEndpoint)
+        return handle(event.body, serverEndpoint.get())
       },
   }],
 })
