@@ -2,7 +2,7 @@
   "extends": "./node_modules/@anticrm/platform-rig/profiles/default/tsconfig.json",
 
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES5",
     "rootDir": "./src",
     "outDir": "./lib",
     "lib": ["esnext", "esnext.intl", "dom"]
