@@ -1,11 +1,14 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as aws from '@pulumi/aws'
+import * as awsx from '@pulumi/awsx'
 import * as cloud from '@pulumi/cloud'
 
 import { getType } from 'mime'
 
 import { readdirSync, lstatSync } from 'fs'
 import { join } from 'path'
+
+import { handle } from '@anticrm/dev-account'
 
 const siteBucket = new aws.s3.Bucket('anticrm-app', {
   acl: "public-read",
@@ -41,21 +44,6 @@ createObjects(buildDir + '/dist', '')
 export const bucketName = siteBucket.bucket // create a stack export for bucket name
 export const websiteUrl = siteBucket.websiteEndpoint
 
-// D O C K E R
-
-const service = new cloud.Service("dev-server", {
-  containers: {
-      server: {
-          build: "./dev-server",
-          memory: 128,
-          ports: [{ port: 3333 }],
-      },
-  },
-  replicas: 1,
-})
-
-export const serverEndpoint = service.defaultEndpoint.hostname
-
 // // Create an S3 Bucket Policy to allow public read of all objects in bucket
 // // This reusable function can be pulled out into its own module
 // function publicReadPolicyForBucket(bucketName: string) {
@@ -80,6 +68,78 @@ export const serverEndpoint = service.defaultEndpoint.hostname
 //   policy: siteBucket.bucket.apply(publicReadPolicyForBucket)
 //           // transform the siteBucket.bucket output property -- see explanation below
 // });
+
+// D O C K E R
+
+const service = new cloud.Service("dev-server", {
+  containers: {
+      server: {
+          build: "./dev-server",
+          memory: 128,
+          ports: [{ port: 3333 }],
+      },
+  },
+  replicas: 1,
+})
+
+export const serverEndpoint = service.defaultEndpoint.hostname
+
+//
+// L O G I N
+//
+
+// Define a new GET endpoint that just returns a 200 and "hello" in the body.
+const api = new awsx.apigateway.API("login", {
+  routes: [
+    {
+      path: "/",
+      method: "POST",
+      eventHandler: async (event) => {
+        console.log(event.body)
+        console.log(serverEndpoint.get())
+
+        let body = event.body;
+        if (event.isBase64Encoded) {
+            body = Buffer.from(body as string, 'base64').toString()
+        }
+
+        const result = handle(body, serverEndpoint.get())
+        return { 
+          statusCode: result.statusCode,
+          // headers: {
+          //   "Access-Control-Allow-Headers" : "Content-Type",
+          //   "Access-Control-Allow-Origin": "*",
+          //   "Access-Control-Allow-Methods": "GET,HEAD,POST"
+          // },
+          body: result.body
+        }
+      },
+    },
+    {
+      path: "/",
+      method: "OPTIONS",
+      eventHandler: async (event) => {
+        console.log('OPTIONS call')
+        return { 
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,POST"
+          },
+          body: ''
+        }
+      },
+    },
+  ],
+})
+
+// Export the auto-generated API Gateway base URL.
+export const url = api.url
+
+//
+// D N S
+//
 
 // Get the hosted zone by domain name
 const zoneId = aws.route53.getZone({ name: "hc.engineering." }).then(zone => zone.zoneId)

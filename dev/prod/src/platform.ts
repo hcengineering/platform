@@ -15,7 +15,7 @@
 
 import { addLocation } from '@anticrm/platform'
 
-import { loginId } from '@anticrm/login'
+import login, { loginId } from '@anticrm/login'
 import { clientId } from '@anticrm/client'
 import { workbenchId } from '@anticrm/workbench'
 import { viewId } from '@anticrm/view'
@@ -32,10 +32,12 @@ import '@anticrm/view-assets'
 import '@anticrm/chunter-assets'
 import '@anticrm/recruit-assets'
 
+import { setMetadata } from '@anticrm/platform'
+
 export function configurePlatform() {
 
-// platform.setMetadata(ui.metadata.LoginApplication, 'login')
-// platform.setMetadata(ui.metadata.DefaultApplication, 'workbench')
+  // setMetadata(login.metadata.AccountsUrl, 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/')
+  setMetadata(login.metadata.AccountsUrl, '/api')
 
   // if (process.env.CLIENT === 'dev')
   addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))

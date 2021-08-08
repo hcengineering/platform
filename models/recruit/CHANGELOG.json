@@ -1,0 +1,17 @@
+{
+  "name": "@anticrm/model-recruit",
+  "entries": [
+    {
+      "version": "0.6.0",
+      "tag": "@anticrm/model-recruit_v0.6.0",
+      "date": "Sun, 08 Aug 2021 10:14:57 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.3` to `~0.6.4`"
+          }
+        ]
+      }
+    }
+  ]
+}

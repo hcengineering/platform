@@ -134,9 +134,9 @@ export default plugin(platformId, {
 
     NoLoaderForStrings: '' as StatusCode<{ plugin: Plugin }>,
 
-    BadRequest: '' as StatusCode
-    // Forbidden: '' as StatusCode,
-    // Unauthorized: '' as StatusCode,
-    // UnknownMethod: '' as StatusCode<{ method: string }>
+    BadRequest: '' as StatusCode,
+    Forbidden: '' as StatusCode,
+    Unauthorized: '' as StatusCode,
+    UnknownMethod: '' as StatusCode<{ method: string }>
   }
 })

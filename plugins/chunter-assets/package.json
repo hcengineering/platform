@@ -15,7 +15,7 @@
   "devDependencies": {
   },
   "dependencies": {
-    "@anticrm/platform":"~0.6.3",
+    "@anticrm/platform":"~0.6.5",
     "@anticrm/chunter":"~0.6.0"
   }
 }

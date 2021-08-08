@@ -41,11 +41,12 @@ export async function doLogin (
     const response = await fetch(accountsUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json;charset=utf-8'
+        'Content-Type': 'application/json'
       },
       body: serialize(request)
     })
     const result: Response<any> = await response.json()
+    console.log('LOGIN: ', result)
     const status = result.error ?? OK
     return [status, result.result]
   } catch (err) {
