@@ -2,6 +2,18 @@
   "name": "@anticrm/dev-account",
   "entries": [
     {
+      "version": "0.6.3",
+      "tag": "@anticrm/dev-account_v0.6.3",
+      "date": "Sun, 08 Aug 2021 10:21:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Lint"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.2",
       "tag": "@anticrm/dev-account_v0.6.2",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",

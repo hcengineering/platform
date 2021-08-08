@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/login-resources",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/login-resources"
+}

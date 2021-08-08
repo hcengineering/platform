@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/model-server-core",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/model-server-core"
+}

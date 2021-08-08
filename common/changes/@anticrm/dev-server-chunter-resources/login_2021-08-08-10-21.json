@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/dev-server-chunter-resources",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/dev-server-chunter-resources"
+}
