@@ -19,6 +19,6 @@
     "simplytyped": "^3.3.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.3"
+    "@anticrm/platform": "~0.6.4"
   }
 }

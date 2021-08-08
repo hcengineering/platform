@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/dev-account",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -19,7 +19,7 @@
     "simplytyped": "^3.3.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.0",
+    "@anticrm/platform": "~0.6.4",
     "jwt-simple": "^0.5.6"
   }
 }

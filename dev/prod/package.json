@@ -37,7 +37,7 @@
     "postcss-load-config": "^3.1.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.3",
+    "@anticrm/platform": "~0.6.4",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/theme": "~0.6.0",
     "svelte": "^3.42.1",

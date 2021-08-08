@@ -19,7 +19,7 @@
     "svelte-preprocess":"^4.7.4"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.0",
+    "@anticrm/platform": "~0.6.4",
     "@anticrm/theme": "~0.6.0",
     "svelte": "^3.37.0"
   }

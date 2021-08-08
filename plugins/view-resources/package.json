@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "svelte": "^3.37.0",
-    "@anticrm/platform": "~0.6.0",
+    "@anticrm/platform": "~0.6.4",
     "@anticrm/core": "~0.6.0",
     "@anticrm/view": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
