@@ -43,3 +43,5 @@ export type URL = string
  * @public
  */
 export type Asset = Metadata<URL>
+
+export { default } from './platform'

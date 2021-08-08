@@ -13,3 +13,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+import type { Request, Response } from '@anticrm/platform'
+import platform, { Status, Severity } from '@anticrm/platform'
+
+import { encode } from 'jwt-simple'
+
+interface LoginInfo {
+  token: string,
+  endpoint: string
+}
+
+function login(endpoint: string, email: string, password: string, workspace: string): Response<LoginInfo> {
+  if (email !== 'rosamund@hc.engineering' && email !== 'elon@hc.engineering') {
+    return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+  }
+
+  if (password !== '1111') {
+    return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+  }
+
+  if (workspace !== 'ws1' && workspace !== 'ws2') {
+    return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+  }
+
+  const token = encode({ email, workspace }, 'secret')
+  return { result: { token, endpoint } }
+}
+
+export function handleRequest(req: Request<any[]>, serverEndpoint: string): Response<any> {
+  if (req.method === 'login')
+    return login(serverEndpoint, ...(req as Request<[string, string, string]>).params)
+
+  return { error: new Status(Severity.ERROR, platform.status.BadRequest, {}) }
+}

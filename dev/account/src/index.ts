@@ -14,9 +14,14 @@
 // limitations under the License.
 //
 
+import { handleRequest } from "./account"
+
 /**
  * @public
  */
-export function handle (req: string | null): { statusCode: number, body: string } {
-  return { statusCode: 200, body: 'hello' }
+export function handle (req: string | null, serverEndpoint: string): { statusCode: number, body: string } {
+  if (req === null) return { statusCode: 401, body: 'unauthorized' }
+  const resp = handleRequest(JSON.parse(req), serverEndpoint)
+  if (resp.error !== undefined) { return { statusCode: 401, body: '' } }
+  return { statusCode: 200, body: JSON.stringify(resp.result) }
 }

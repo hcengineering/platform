@@ -8,6 +8,8 @@ import { getType } from 'mime'
 import { readdirSync, lstatSync } from 'fs'
 import { join } from 'path'
 
+import { handle } from '@anticrm/dev-account'
+
 const siteBucket = new aws.s3.Bucket('anticrm-app', {
   acl: "public-read",
   website: {
@@ -92,14 +94,7 @@ const api = new awsx.apigateway.API("login", {
       path: "/",
       method: "POST",
       eventHandler: async (event) => {
-        if (event.body === null) {
-          return { statusCode: 401, body: '' }
-        }
-        const req = JSON.parse(event.body)
-        return {
-            statusCode: 200,
-            body: "Hello, API Gateway!",
-        }
+        return handle(event.body, serverEndpoint)
       },
   }],
 })

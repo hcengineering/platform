@@ -8446,7 +8446,7 @@ packages:
     dev: false
 
   file:projects/dev-account.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-JgOQNgqk+nWDo+xJOQ1cDyAtOqh2vKY56EWohCcHQuSGKw2mgn1oMiZp1IhFwk36/QyjSok8wKM1hYh5fGIszQ==, tarball: file:projects/dev-account.tgz}
+    resolution: {integrity: sha512-TAqsbX91LUYsbg1ZILddY2vOiup5qwFbo+TDusmlMJb55egEniPQPfqkblGoSQY4jbPYYH599YhRLbvpap9EYw==, tarball: file:projects/dev-account.tgz}
     id: file:projects/dev-account.tgz
     name: '@rush-temp/dev-account'
     version: 0.0.0
@@ -8457,6 +8457,7 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      jwt-simple: 0.5.6
       simplytyped: 3.3.0_typescript@4.3.5
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
