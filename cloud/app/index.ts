@@ -106,11 +106,11 @@ const api = new awsx.apigateway.API("login", {
         const result = handle(body, serverEndpoint.get())
         return { 
           statusCode: result.statusCode,
-          // headers: {
-          //   "Access-Control-Allow-Headers" : "Content-Type",
-          //   "Access-Control-Allow-Origin": "*",
-          //   "Access-Control-Allow-Methods": "GET,HEAD,POST"
-          // },
+          headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,POST"
+          },
           body: result.body
         }
       },

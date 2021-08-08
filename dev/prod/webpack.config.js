@@ -152,7 +152,7 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: '[name].css'
     }),
-    new Dotenv()
+    new Dotenv({path: prod ? '.env-prod' : '.env'})
   ],
   devtool: prod ? false : 'source-map',
   devServer: {
