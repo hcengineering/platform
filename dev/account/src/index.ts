@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { handleRequest } from "./account"
+import { handleRequest } from './account'
 
 /**
  * @public
