@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/dev-account",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/dev-account"
+}

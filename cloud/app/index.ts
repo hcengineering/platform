@@ -90,13 +90,39 @@ export const serverEndpoint = service.defaultEndpoint.hostname
 
 // Define a new GET endpoint that just returns a 200 and "hello" in the body.
 const api = new awsx.apigateway.API("login", {
-  routes: [{
+  routes: [
+    {
       path: "/",
       method: "POST",
       eventHandler: async (event) => {
-        return handle(event.body, serverEndpoint.get())
+        const result = handle(event.body, serverEndpoint.get())
+        return { 
+          statusCode: result.statusCode,
+          headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,HEAD,POST"
+          },
+          body: result.body
+        }
       },
-  }],
+    },
+    // {
+    //   path: "/",
+    //   method: "OPTIONS",
+    //   eventHandler: async (event) => {
+    //     return { 
+    //       statusCode: 200,
+    //       headers: {
+    //         "Access-Control-Allow-Headers" : "*",
+    //         "Access-Control-Allow-Origin": "*",
+    //         "Access-Control-Allow-Methods": "*"
+    //       },
+    //       body: ''
+    //     }
+    //   },
+    // },
+  ],
 })
 
 // Export the auto-generated API Gateway base URL.

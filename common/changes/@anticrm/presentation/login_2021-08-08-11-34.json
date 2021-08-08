@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/presentation",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/presentation"
+}

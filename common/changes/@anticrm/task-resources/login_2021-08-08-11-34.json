@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/task-resources",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/task-resources"
+}

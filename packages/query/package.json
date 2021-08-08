@@ -19,7 +19,7 @@
     "simplytyped": "^3.3.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.4",
+    "@anticrm/platform": "~0.6.5",
     "@anticrm/core": "~0.6.3"
   }
 }

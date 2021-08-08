@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/model-server-chunter",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@anticrm/model-server-chunter"
+}

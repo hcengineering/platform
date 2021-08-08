@@ -23,6 +23,6 @@
     "@anticrm/dev-storage": "~0.6.3",
     "@anticrm/server-ws": "~0.6.4",
     "@anticrm/core": "~0.6.7",
-    "@anticrm/platform": "~0.6.4"
+    "@anticrm/platform": "~0.6.5"
   }
 }

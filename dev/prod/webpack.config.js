@@ -159,6 +159,13 @@ module.exports = {
     publicPath: '/',
     historyApiFallback: {
       disableDotRule: true
+    },
+    proxy: {
+      '/api': {
+        target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+      },
     }
   }
 }

@@ -1,6 +1,13 @@
 # Change Log - @anticrm/platform
 
-This log was last generated on Sun, 08 Aug 2021 10:14:57 GMT and should not be manually modified.
+This log was last generated on Sun, 08 Aug 2021 11:34:23 GMT and should not be manually modified.
+
+## 0.6.5
+Sun, 08 Aug 2021 11:34:23 GMT
+
+### Patches
+
+- ES6 target
 
 ## 0.6.4
 Sun, 08 Aug 2021 10:14:57 GMT
