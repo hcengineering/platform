@@ -701,5 +701,10 @@
       "projectFolder": "models/server-chunter",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/dev-account",
+      "projectFolder": "dev/account",
+      "shouldPublish": true
+    },
   ]
 }

@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as aws from '@pulumi/aws'
+import * as awsx from '@pulumi/awsx'
 import * as cloud from '@pulumi/cloud'
 
 import { getType } from 'mime'
@@ -41,21 +42,6 @@ createObjects(buildDir + '/dist', '')
 export const bucketName = siteBucket.bucket // create a stack export for bucket name
 export const websiteUrl = siteBucket.websiteEndpoint
 
-// D O C K E R
-
-const service = new cloud.Service("dev-server", {
-  containers: {
-      server: {
-          build: "./dev-server",
-          memory: 128,
-          ports: [{ port: 3333 }],
-      },
-  },
-  replicas: 1,
-})
-
-export const serverEndpoint = service.defaultEndpoint.hostname
-
 // // Create an S3 Bucket Policy to allow public read of all objects in bucket
 // // This reusable function can be pulled out into its own module
 // function publicReadPolicyForBucket(bucketName: string) {
@@ -80,6 +66,50 @@ export const serverEndpoint = service.defaultEndpoint.hostname
 //   policy: siteBucket.bucket.apply(publicReadPolicyForBucket)
 //           // transform the siteBucket.bucket output property -- see explanation below
 // });
+
+// D O C K E R
+
+const service = new cloud.Service("dev-server", {
+  containers: {
+      server: {
+          build: "./dev-server",
+          memory: 128,
+          ports: [{ port: 3333 }],
+      },
+  },
+  replicas: 1,
+})
+
+export const serverEndpoint = service.defaultEndpoint.hostname
+
+//
+// L O G I N
+//
+
+// Define a new GET endpoint that just returns a 200 and "hello" in the body.
+const api = new awsx.apigateway.API("login", {
+  routes: [{
+      path: "/",
+      method: "POST",
+      eventHandler: async (event) => {
+        if (event.body === null) {
+          return { statusCode: 401, body: '' }
+        }
+        const req = JSON.parse(event.body)
+        return {
+            statusCode: 200,
+            body: "Hello, API Gateway!",
+        }
+      },
+  }],
+})
+
+// Export the auto-generated API Gateway base URL.
+export const url = api.url
+
+//
+// D N S
+//
 
 // Get the hosted zone by domain name
 const zoneId = aws.route53.getZone({ name: "hc.engineering." }).then(zone => zone.zoneId)

@@ -10,6 +10,7 @@ specifiers:
   '@rush-temp/contact': file:./projects/contact.tgz
   '@rush-temp/contact-resources': file:./projects/contact-resources.tgz
   '@rush-temp/core': file:./projects/core.tgz
+  '@rush-temp/dev-account': file:./projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-server-chunter-resources': file:./projects/dev-server-chunter-resources.tgz
@@ -108,6 +109,7 @@ dependencies:
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/dev-account': file:projects/dev-account.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server': file:projects/dev-server.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-server-chunter-resources': file:projects/dev-server-chunter-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -8443,6 +8445,25 @@ packages:
       - typescript
     dev: false
 
+  file:projects/dev-account.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-JgOQNgqk+nWDo+xJOQ1cDyAtOqh2vKY56EWohCcHQuSGKw2mgn1oMiZp1IhFwk36/QyjSok8wKM1hYh5fGIszQ==, tarball: file:projects/dev-account.tgz}
+    id: file:projects/dev-account.tgz
+    name: '@rush-temp/dev-account'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      simplytyped: 3.3.0_typescript@4.3.5
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-biw7Qe9DoDRjkgmEJ4Dl1MAxSzzm580Eb3cqU5ISPSrJ+1EIR+RqUf7W7fwN+PQQuZHy24/mR/tm6P2w8zJnwQ==, tarball: file:projects/dev-client-resources.tgz}
     id: file:projects/dev-client-resources.tgz
@@ -8568,7 +8589,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-/GpWvrrVnXqWzYe7by1474pdG116the3TcAf7ArVScAYYXQaCwHb3gu84q0ZHR6fqt2ToFVkK9a/MlVmjDzujw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-4167bgbH5r0vJ6Vz20Qunizln+miaa7pLi5zFnF87WiBq7Vj1YcgALIJZlzQsHbXKeJgtTuZF9emX6c9Rhu52w==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -8641,7 +8662,7 @@ packages:
     dev: false
 
   file:projects/model-demo.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-yLHv7bqAq3BIwxE5T5bQ+l/aiCUp6rB06I8rJmJGs64U7QGOt4WNzv/9yxf5Fvq3FPxBApWjqDLWSUHAIs3+bg==, tarball: file:projects/model-demo.tgz}
+    resolution: {integrity: sha512-iWM9a2RmUcjpMTWmw2GNxYCA2krfK9os9qIrnyaktafwXwDAfgt9apVaGnhUgNWzDe+0SNS3VbuoXehAWgwB0g==, tarball: file:projects/model-demo.tgz}
     id: file:projects/model-demo.tgz
     name: '@rush-temp/model-demo'
     version: 0.0.0
@@ -8695,7 +8716,7 @@ packages:
     dev: false
 
   file:projects/model-server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-eVwDSJ253ybGmhHs8SvB7MxIGzJ36gf7pdTHT8W6STWcg53NEdMkf99M81dhgkJH9F6frpkH2sE+MAONNy5/mA==, tarball: file:projects/model-server-chunter.tgz}
+    resolution: {integrity: sha512-9w+dSGnK3lVyefpXR+04A+A9p8QFJM0mlec/cv1tAv4sp0ZUI1pA4VHb5AgyeeeaeCYmf501sKoGhZWD7hE4cQ==, tarball: file:projects/model-server-chunter.tgz}
     id: file:projects/model-server-chunter.tgz
     name: '@rush-temp/model-server-chunter'
     version: 0.0.0
@@ -8866,7 +8887,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_9242e79bee31c899aa4d2de67405a771:
-    resolution: {integrity: sha512-KwU2YgWoCY4XohrdVNdX9DrLtDBkUwkU+lZIwzCfFWazzxTFtyUpiDPY9WLNT+7l9yePGsEpcCxbyDLQFppznA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-KQSRGEoTWonc4rmGhs4AtWnwwXsnL8Kk33UR/8GsUoWZxaptU37ARq4/T04TLSsjIqnaImi8Edq3vyN/3Rnyyw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
