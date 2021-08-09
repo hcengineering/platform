@@ -51,6 +51,7 @@
     outline: none;
     background-color: transparent;
     cursor: pointer;
+    font-size: inherit;
 
     .icon {
       opacity: .3;
@@ -78,7 +79,7 @@
     height: 1.429em;
   }
   .large {
-    width: 1.714em;
-    height: 1.714em;
+    width: 1.715em;
+    height: 1.715em;
   }
 </style>
