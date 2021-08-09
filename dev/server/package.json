@@ -25,7 +25,7 @@
     "@anticrm/core": "~0.6.8",
     "@anticrm/platform": "~0.6.5",
     "jwt-simple": "~0.5.6",
-    "@anticrm/server-chunter": "~0.6.0",
+    "@anticrm/server-chunter": "~0.6.1",
     "@anticrm/dev-server-chunter-resources": "~0.6.3"
   }
 }

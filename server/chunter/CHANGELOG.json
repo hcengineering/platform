@@ -2,6 +2,18 @@
   "name": "@anticrm/server-chunter",
   "entries": [
     {
+      "version": "0.6.1",
+      "tag": "@anticrm/server-chunter_v0.6.1",
+      "date": "Mon, 09 Aug 2021 10:57:00 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.0",
       "tag": "@anticrm/server-chunter_v0.6.0",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",
