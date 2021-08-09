@@ -1,6 +1,13 @@
 # Change Log - @anticrm/login-resources
 
-This log was last generated on Sun, 08 Aug 2021 21:05:26 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Aug 2021 08:00:44 GMT and should not be manually modified.
+
+## 0.6.2
+Mon, 09 Aug 2021 08:00:44 GMT
+
+### Patches
+
+- fix
 
 ## 0.6.1
 Sun, 08 Aug 2021 21:05:26 GMT

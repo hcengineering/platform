@@ -43,7 +43,7 @@
     "svelte": "^3.42.1",
     "@anticrm/login": "~0.6.1",
     "@anticrm/login-assets": "~0.6.0",
-    "@anticrm/login-resources": "~0.6.1",
+    "@anticrm/login-resources": "~0.6.2",
     "@anticrm/client": "~0.6.1",
     "@anticrm/dev-client-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.1",

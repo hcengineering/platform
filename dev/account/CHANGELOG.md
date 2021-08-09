@@ -1,6 +1,13 @@
 # Change Log - @anticrm/dev-account
 
-This log was last generated on Sun, 08 Aug 2021 12:00:07 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Aug 2021 08:00:44 GMT and should not be manually modified.
+
+## 0.6.7
+Mon, 09 Aug 2021 08:00:44 GMT
+
+### Patches
+
+- fix
 
 ## 0.6.6
 Sun, 08 Aug 2021 12:00:07 GMT
