@@ -25,6 +25,6 @@ export function handle (req: string | null | undefined, serverEndpoint: string):
   if (resp.error !== undefined) { return { statusCode: 401, body: '' } }
   return {
     statusCode: 200,
-    body: JSON.stringify(resp.result)
+    body: JSON.stringify(resp)
   }
 }

@@ -59,9 +59,10 @@ export async function doLogin (
       body: serialize(request)
     })
     const result: Response<any> = await response.json()
-
+    console.log('login result', result)
     return [result.error ?? OK, result.result]
   } catch (err) {
+    console.log('login error', err)
     return [unknownError(err), undefined]
   }
 }
