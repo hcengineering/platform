@@ -44,5 +44,5 @@ async function connect(): Promise<Client | undefined> {
 {:then client}
   <Workbench {client}/>
 {:catch error}
-  <div>{error}</div>
+  <div>{error} -- {error.stack}</div>
 {/await}
