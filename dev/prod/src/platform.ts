@@ -40,9 +40,12 @@ export function configurePlatform() {
   setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN)
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
-//  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
-  addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/client-resources'))
-
+  if (process.env.NODE_ENV === 'production') {
+    addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
+  } else {
+    addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
+  }
+  
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
   addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
