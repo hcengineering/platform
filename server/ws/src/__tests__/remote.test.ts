@@ -39,7 +39,7 @@ describe('server', () => {
   it('should send many requests', (done) => {
     const conn = connect()
     const total = 10
-    // const start = Date.now()
+    const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
         conn.send(serialize({ method: 'findAll', params: ['core:class:Class', {}], id: i }))
@@ -47,12 +47,13 @@ describe('server', () => {
     })
     let received = 0
     conn.on('message', (msg: string) => {
-      readResponse(msg)
+      const resp = readResponse(msg)
+      console.log(resp.id)
       if (++received === total) {
-        // console.log('resp:', resp, ' Time: ', Date.now() - start)
+        console.log(' Time: ', Date.now() - start)
         conn.close()
-        done()
       }
     })
+    conn.onclose = () => { console.log('closed'); done() }
   })
 })

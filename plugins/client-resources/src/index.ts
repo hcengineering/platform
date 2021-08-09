@@ -31,7 +31,7 @@ export default async () => {
       GetClient: async (token: string, endpoint: string): Promise<Client> => {
         if (client === undefined) {
           return await createClient((handler: TxHander) => {
-            const url = `ws://${endpoint}:3333/${token}`
+            const url = `${endpoint}/${token}`
             console.log('connecting to', url)
             return connect(url, handler)
           })

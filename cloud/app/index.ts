@@ -71,18 +71,18 @@ export const websiteUrl = siteBucket.websiteEndpoint
 
 // D O C K E R
 
-const service = new cloud.Service("dev-server", {
-  containers: {
-      server: {
-          build: "./dev-server",
-          memory: 128,
-          ports: [{ port: 3333 }],
-      },
-  },
-  replicas: 1,
-})
+// const service = new cloud.Service("dev-server", {
+//   containers: {
+//       server: {
+//           build: "./dev-server",
+//           memory: 128,
+//           ports: [{ port: 3333 }],
+//       },
+//   },
+//   replicas: 1,
+// })
 
-export const serverEndpoint = service.defaultEndpoint.hostname
+// export const serverEndpoint = service.defaultEndpoint.hostname
 
 //
 // L O G I N
@@ -95,15 +95,12 @@ const api = new awsx.apigateway.API("login", {
       path: "/",
       method: "POST",
       eventHandler: async (event) => {
-        console.log(event.body)
-        console.log(serverEndpoint.get())
-
         let body = event.body;
         if (event.isBase64Encoded) {
             body = Buffer.from(body as string, 'base64').toString()
         }
 
-        const result = handle(body, serverEndpoint.get())
+        const result = handle(body, 'wss://pacific-refuge-43514.herokuapp.com/')
         return { 
           statusCode: result.statusCode,
           headers: {
