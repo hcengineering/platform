@@ -31,9 +31,9 @@ export default async () => {
       GetClient: async (token: string, endpoint: string): Promise<Client> => {
         if (client === undefined) {
           return await createClient((handler: TxHander) => {
-            const url = `${endpoint}/${token}`
-            console.log('connecting to', url)
-            return connect(url, handler)
+            const url = new URL(`/${token}`, endpoint)
+            console.log('connecting to', url.href)
+            return connect(url.href, handler)
           })
         }
         return client
