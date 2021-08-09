@@ -63,6 +63,14 @@ class ClientImpl implements Client {
     await Promise.all([this.conn.tx(tx), this.model.tx(tx)])
     this.notify?.(tx)
   }
+
+  async updateFromRemote (tx: Tx): Promise<void> {
+    if (tx.objectSpace === core.space.Model) {
+      this.hierarchy.tx(tx)
+      await this.model.tx(tx)
+    }
+    this.notify?.(tx)
+  }
 }
 
 /**
@@ -71,7 +79,7 @@ class ClientImpl implements Client {
 export async function createClient (
   connect: (txHandler: TxHander) => Promise<Storage>
 ): Promise<Client> {
-  let client: Client | null = null
+  let client: ClientImpl | null = null
   let txBuffer: Tx[] | undefined = []
 
   const hierarchy = new Hierarchy()
@@ -81,8 +89,8 @@ export async function createClient (
     if (client === null) {
       txBuffer?.push(tx)
     } else {
-      console.log('handler got ', tx)
-      client.notify?.(tx)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      client.updateFromRemote(tx)
     }
   }
 
