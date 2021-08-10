@@ -18,7 +18,7 @@
   import type { AnyComponent } from '../types'
   
   // import Icon from './Icon.svelte'
-  import Spinner from './Spinner.svelte'
+  import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
 
   export let is: AnyComponent
@@ -28,7 +28,7 @@
 </script>
 
 {#await component}
-  <div class="spinner-container"><div class="inner"><Spinner /></div></div>
+  <Loading/>
 {:then Ctor}
   <ErrorBoundary>
     <Ctor {...props} on:change on:close on:open on:click/>
@@ -39,29 +39,3 @@
   {err}
   <!-- <Icon icon={ui.icon.Error} size="32" /> -->
 {/await}
-
-<style lang="scss">
-
-.spinner-container {
-  display: flex;
-  height: 100%;
-}
-
-@keyframes makeVisible {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.spinner-container .inner {
-  margin: auto;
-  opacity: 0;
-  animation-name: makeVisible;
-  animation-duration: 0.25s;
-  animation-delay: 0.1s;
-}
-
-</style>
