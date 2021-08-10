@@ -51,6 +51,7 @@ export { default as CheckBoxWithLabel } from './components/CheckBoxWithLabel.sve
 export { default as CheckBoxList } from './components/CheckBoxList.svelte'
 export { default as IconSize } from './components/IconSize.svelte'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
+export { default as Loading } from './components/Loading.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'

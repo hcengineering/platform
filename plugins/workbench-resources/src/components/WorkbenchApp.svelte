@@ -17,7 +17,7 @@
 
 import { getResource, getMetadata } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
-import { navigate } from '@anticrm/ui'
+import { navigate, Loading } from '@anticrm/ui'
 
 import client from '@anticrm/client'
 import login from '@anticrm/login'
@@ -40,7 +40,7 @@ async function connect(): Promise<Client | undefined> {
 </script>
 
 {#await connect()}
-  <div></div>
+  <Loading/>
 {:then client}
   <Workbench {client}/>
 {:catch error}

@@ -20,7 +20,7 @@ import { createEventDispatcher } from 'svelte'
 import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
 import { buildModel } from '../utils'
 import { getClient } from '@anticrm/presentation'
-import { Label, showModal } from '@anticrm/ui'
+import { Label, showModal, Loading } from '@anticrm/ui'
 import type { AnyComponent } from '@anticrm/ui'
 
 import { createQuery } from '@anticrm/presentation'
@@ -59,7 +59,7 @@ function onClick(object: Doc) {
 </script>
 
 {#await buildModel(client, _class, config, options)}
- ...
+ <Loading/>
 {:then model}
 <table class="table-body">
   <tr class="tr-head">
