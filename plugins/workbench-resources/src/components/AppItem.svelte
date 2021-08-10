@@ -48,6 +48,7 @@
     outline: none;
     background-color: transparent;
     cursor: pointer;
+    font-size: inherit;
 
     .marker {
       position: absolute;

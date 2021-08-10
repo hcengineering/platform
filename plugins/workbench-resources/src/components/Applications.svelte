@@ -55,6 +55,7 @@
       align-items: center;
       width: 48px;
       height: 48px;
+      font-size: inherit;
     }
     .app + .app {
       margin-top: 4px;

@@ -96,7 +96,6 @@
           display: flex;
           align-items: center;
           flex-direction: row-reverse;
-          color: var(--theme-content-color);
 
           .clock {
             margin: 0 40px 0 24px;
@@ -110,7 +109,7 @@
             justify-content: center;
             width: 32px;
             height: 32px;
-            opacity: .3;
+            opacity: .6;
           }
         }
       }

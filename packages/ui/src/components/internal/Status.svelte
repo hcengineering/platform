@@ -24,10 +24,9 @@
     align-items: center;
     font-size: 11px;
     user-select: none;
-    opacity: .5;
 
     span {
-      margin-left: 8px;
+      margin-left: .75em;
     }
   }
 </style>
