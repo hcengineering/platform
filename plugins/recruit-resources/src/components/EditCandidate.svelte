@@ -44,14 +44,14 @@
   const query = createQuery()
   $: query.query(chunter.class.Backlink, { objectId: object._id }, result => { backlinks = result })
 
-  function save() {
+  async function save() {
     const attributes: Record<string, any> = {}
     for (const key in object) {
       if ((newValue as any)[key] !== (object as any)[key]) {
         attributes[key] = (newValue as any)[key]
       }
     }
-    client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
+    await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
   }
 </script>
 

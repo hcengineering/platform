@@ -59,8 +59,9 @@ class ClientImpl implements Client {
   async tx (tx: Tx): Promise<void> {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
+      await this.model.tx(tx)
     }
-    await Promise.all([this.conn.tx(tx), this.model.tx(tx)])
+    await this.conn.tx(tx)
     this.notify?.(tx)
   }
 
