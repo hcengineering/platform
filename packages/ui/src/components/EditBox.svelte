@@ -32,7 +32,7 @@
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + 6 + 'px'
+    target.style.width = text.clientWidth + 8 + 'px'
   }
 
   onMount(() => {
@@ -58,15 +58,18 @@
 
 <style lang="scss">
 
-  .text {
-    position: absolute;
-    visibility: hidden;
-  }
   .editbox {
     display: flex;
     flex-direction: column;
     min-width: 50px;
     height: auto;
+
+    .text {
+      position: absolute;
+      visibility: hidden;
+      overflow: hidden;
+      white-space: pre-wrap;
+    }
 
     .label {
       margin-bottom: 4px;
@@ -81,14 +84,13 @@
     input {
       max-width: 100%;
       height: 21px;
-      margin: -3px;
+      margin: -4px;
       padding: 2px;
       font-family: inherit;
-      font-size: 14px;
-      line-height: 150%;
+      font-size: inherit;
       color: var(--theme-caption-color);
       background-color: transparent;
-      border: 1px solid transparent;
+      border: 2px solid transparent;
       border-radius: 2px;
       outline: none;
 
