@@ -20,12 +20,8 @@
   let page = 'login'
 </script>
 
-<div class="container">
+<div class="panel-container">
   <div class="panel">
-    <div class="back-panel-dark"/>
-    <div class="back-panel-light">
-      <div class="bg-noise opacity-3"/>
-    </div>
     {#if page === 'login'}
       <LoginForm on:switch={(event) => page = event.detail}/>
     {:else if page === 'signup'}
@@ -44,39 +40,20 @@
 </div>
 
 <style lang="scss">
-  @import "@anticrm/theme/styles/mixins.scss";
+  // @import "@anticrm/theme/styles/mixins.scss";
 
-  .bg-noise {
-    @include bg-fullsize;
-    background: url('../../img/noise.png');
-    z-index: -1;
-  }
-  .opacity-3 {
-    opacity: 0.03;
-  }
-
-  .container {
+  .panel-container {
     display: flex;
     flex-direction: row;
     height: 100%;
     padding: 0px 20px 20px 20px;
 
     .panel {
-      position: relative;
-      overflow: hidden;
       margin-right: 20px;
       width: 668px;
       height: 100%;
       border-radius: 20px;
-
-      .back-panel-light {
-        @include bg-layer(linear-gradient(158.74deg, rgba(205, 166, 255, 0.12) 5.62%, rgba(255, 255, 255, 0) 97.09%), 0.3);
-        z-index: -1;
-      }
-      .back-panel-dark {
-        @include bg-layer(#1D1D23, 0.5);
-        z-index: -1;
-      }
+      background-color: var(--theme-menu-selection);
     }
 
     .intro {

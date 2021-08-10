@@ -21,7 +21,7 @@
   export let direction: string = 'top'
 </script>
 
-<div class="container">
+<div class="tooltip-container">
   <div class="trigger"><slot/></div>
   <div class="tooltip {direction}">
     <Label label={label}/>
@@ -29,7 +29,7 @@
 </div>
 
 <style lang="scss">
-  .container {
+  .tooltip-container {
     position: relative;
     display: flex;
     justify-content: center;

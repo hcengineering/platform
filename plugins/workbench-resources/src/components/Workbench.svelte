@@ -62,26 +62,26 @@
 </script>
 
 {#if client}
-  <svg class="mask">
-    <clipPath id="notify">
-      <path d="M0,0v48h48V0H0z M32,25c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,25,32,25z"/>
+  <!-- <svg class="absolute w-0 h-0" viewBox="0 0 48 48">
+    <clipPath class="w-15 h-15" id="notify">
+      <path d="M0,0v48h48V0H0z M32,23c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,23,32,23z"/>
     </clipPath>
-  </svg>
-  <div class="container">
-    <div class="applications">
+  </svg> -->
+  <div class="flex h-full pb-6">
+    <div class="flex flex-col justify-between min-w-685 items-center h-full rounded-3xl">
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
-      <div class="profile">
-        <img class="avatar" src={avatar} alt="Profile"/>
+      <div class="flex items-center min-h-715">
+        <img class="w-10 h-10" src={avatar} alt="Profile"/>
       </div>
     </div>
     {#if navigator}
-    <div class="navigator">
+    <div class="flex flex-col mr-6 w-80 min-w-80 h-full rounded-3xl background-theme-bg-color">
       <NavHeader/>
       <Navigator model={navigatorModel}/>
     </div>
     {/if}
-    <div class="component">
+    <div class="flex flex-col flex-grow mr-6 h-full rounded-3xl  background-theme-bg-color">
       <SpaceHeader space={currentSpace} {createItemDialog}/>
       {#if currentView && currentSpace}
         <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
@@ -93,69 +93,3 @@
 {:else}
   No client
 {/if}
-
-<style lang="scss">
-  @mixin panel($bg-color) {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border-radius: 20px;
-    background-color: $bg-color;
-  }
-  .mask {
-    position: absolute;
-    width: 0;
-    height: 0;
-  }
-
-  .container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    padding-bottom: 20px;
-
-    .applications {
-      @include panel('transparent');
-      justify-content: space-between;
-      align-items: center;
-      min-width: 96px;
-
-      .profile {
-        display: flex;
-        align-items: center;
-        height: 100px;
-        min-height: 100px;
-        .avatar {
-          width: 36px;
-          height: 36px;
-        }
-      }
-    }
-
-    .navigator {
-      @include panel(var(--theme-bg-color));
-      width: 280px;
-      min-width: 280px;
-      margin-right: 20px;
-    }
-
-    // .externalComponent {
-    //   @include panel(var(--theme-bg-color));
-    //   width: 100%;
-    //   margin-right: 20px;
-    // }
-
-    .component {
-      @include panel(var(--theme-bg-color));
-      flex-grow: 1;
-      margin-right: 20px;
-    }
-
-    // .aside {
-    //   @include panel(var(--theme-bg-color));
-    //   min-width: 400px;
-    //   max-width: 400px;
-    //   margin-right: 20px;
-    // }
-  }
-</style>

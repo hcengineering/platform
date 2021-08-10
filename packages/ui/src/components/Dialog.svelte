@@ -31,7 +31,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="container">
+<div class="dialog-container">
   <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
     <div class="header">
       <div class="title"><Label {label}/></div>
@@ -48,7 +48,7 @@
 </div>
 
 <style lang="scss">
-  .container {
+  .dialog-container {
     position: relative;
     display: flex;
     justify-content: space-between;

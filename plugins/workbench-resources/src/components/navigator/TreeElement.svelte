@@ -33,7 +33,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="container" on:click|stopPropagation={() => {if (node && !icon) collapsed = !collapsed; dispatch('click')}}>
+<div class="te-container" on:click|stopPropagation={() => {if (node && !icon) collapsed = !collapsed; dispatch('click')}}>
   <div class="title" class:sub={!node}>
     <div class="icon" class:sub={!node}>
       {#if icon}
@@ -62,7 +62,7 @@
 {/if}
 
 <style lang="scss">
-  .container {
+  .te-container {
     height: 36px;
     cursor: pointer;
     .title {

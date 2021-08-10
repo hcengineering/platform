@@ -14,12 +14,12 @@
   }
 </script>
 
-<div class="container" on:click={changeTheme}>
+<div class="ths-container" on:click={changeTheme}>
   <Mute size={'small'}/>
 </div>
 
 <style lang="scss">
-  .container {
+  .ths-container {
     display: flex;
     align-items: center;
     height: 56px;

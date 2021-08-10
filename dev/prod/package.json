@@ -6,7 +6,7 @@
     "build": "cross-env NODE_ENV=production webpack --stats-error-details",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
-    "dev": "webpack serve --content-base public",
+    "dev": "webpack serve --content-base public --host 0.0.0.0",
     "dev-server": "cross-env CLIENT=server webpack serve --content-base public",
     "start": "cross-env NODE_ENV=production webpack serve --content-base public",
     "test": "echo 'no tests'",

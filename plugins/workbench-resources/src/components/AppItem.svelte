@@ -24,65 +24,40 @@
   export let notify: boolean
 </script>
 
-<button class="app" class:selected={selected} on:click={action}>
-  {#if notify}
-    <div class="marker"/>
-  {/if}
+<button class="border-box relative p-0 w-15 h-15 rounded-lg border border-transparent background-transparent cursor-pointer outline-none app" class:selected={selected} on:click={action}>
   <Tooltip label={label} direction="right">
-    <div class="container" class:noty={notify}>
+    <div class="flex justify-center items-center w-15 h-15 opacity-30 icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
   </Tooltip>
+  {#if notify}
+    <div class="absolute top-4 right-4 w-2 h-2 rounded-full background-highlight-red"/>
+  {/if}
 </button>
 
 <style lang="scss">
   .app {
-    position: relative;
-    padding: 0;
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    outline: none;
-    background-color: transparent;
-    cursor: pointer;
-    font-size: inherit;
-
-    .marker {
-      position: absolute;
-      top: 14px;
-      left: 28px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--highlight-red);
-    }
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 48px;
-      height: 48px;
-      opacity: .3;
+    // font-size: inherit;
+    // background-color: rgba(255, 255, 0, .3);
+    .icon-container {
+      // background-color: rgba(255, 255, 0, .5);
       &.noty {
-        clip-path: url(#notify);
+        // clip-path: url(#notify);
       }
     }
-    &:hover .container {
+    &:hover .icon-container {
       opacity: 1;
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
-      .container {
+      .icon-container {
         opacity: 1;
       }
     }
     &.selected {
       background-color: var(--theme-menu-selection);
-      .container {
+      .icon-container {
         opacity: 1;
       }
     }

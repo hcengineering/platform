@@ -47,7 +47,7 @@ let selected = 0
 {#await getViewlets(client, _class)}
  ...
 {:then viewlets}
-<div class="container">
+<div class="sp-container">
 
   {#if viewlets.length > 0}
   <div class="toolbar">
@@ -111,7 +111,7 @@ let selected = 0
       }
     }
   }
-  .container {
+  .sp-container {
     display: flex;
     flex-direction: column;
     width: 100%;
