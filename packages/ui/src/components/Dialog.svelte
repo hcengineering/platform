@@ -32,7 +32,7 @@
 </script>
 
 <div class="container">
-  <form class="dialog">
+  <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
     <div class="header">
       <div class="title"><Label {label}/></div>
       <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'}/></div>
@@ -41,8 +41,8 @@
       <ScrollBox vertical gap={0}><slot/></ScrollBox>
     </div>
     <div class="footer">
-      <Button label={okLabel} primary on:click={() => { okAction(); dispatch('close') }}/>
-      <Button label={'Cancel'} on:click={() => { okAction(); dispatch('close') }}/>
+      <Button label={okLabel} primary/>
+      <Button label={'Cancel'} on:click={() => { dispatch('close') }}/>
     </div>
   </form>
 </div>
