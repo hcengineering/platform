@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+// @import "./tailwind.min.css";
 @import "./_colors.scss";
-@import "./layouts.scss";
+@import "./_tailwind.our.scss";
+@import "./_layouts.scss";
 @import "./_components.scss";
 
 @font-face {

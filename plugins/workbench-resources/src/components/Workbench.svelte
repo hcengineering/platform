@@ -62,21 +62,24 @@
 </script>
 
 {#if client}
-  <!-- <svg class="absolute w-0 h-0" viewBox="0 0 48 48">
-    <clipPath class="w-15 h-15" id="notify">
-      <path d="M0,0v48h48V0H0z M32,23c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,23,32,23z"/>
+  <svg class="absolute w-0 h-0">
+    <clipPath id="notify-normal">
+      <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"/>
     </clipPath>
-  </svg> -->
+    <clipPath id="notify-small">
+      <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z"/>
+    </clipPath>
+  </svg>
   <div class="flex h-full pb-6">
-    <div class="flex flex-col justify-between min-w-685 items-center h-full rounded-3xl">
+    <div class="flex flex-col justify-between items-center h-full rounded-3xl" style="min-width: 6.85em;">
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
-      <div class="flex items-center min-h-715">
+      <div class="flex items-center" style="min-height: 7.15em;">
         <img class="w-10 h-10" src={avatar} alt="Profile"/>
       </div>
     </div>
     {#if navigator}
-    <div class="flex flex-col mr-6 w-80 min-w-80 h-full rounded-3xl background-theme-bg-color">
+    <div class="flex flex-col mr-6 w-80 h-full rounded-3xl background-theme-bg-color" style="min-width: 20em;">
       <NavHeader/>
       <Navigator model={navigatorModel}/>
     </div>

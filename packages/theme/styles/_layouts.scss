@@ -13,61 +13,8 @@
 // limitations under the License.
 //
 
-/* Position */
-.relative { position: relative; }
-.absolute { position: absolute; }
-
-.top-4 { top: 1em }
-.right-4 { right: 1em }
-
-/* Width & Height */
-.min-w-80 { min-width: 20em; }
-.min-w-685 { min-width: 6.85em; }
-.w-0 { width: 0; }
-.w-2 { width: .5em; }
-.w-10 { width: 2.5em; }
-.w-15 { width: 3.75em; }
-.w-80 { width: 20em; }
-
-.min-h-715 { min-height: 7.15em; }
-.h-0 { height: 0; }
-.h-2 { height: .5em; }
-.h-10 { height: 2.5em; }
-.h-15 { height: 3.75em; }
-.h-screen { height: 100vh; }
-.h-full { height: 100%; }
-
-/* Spacing */
-.p-0 { padding: 0; }
-.pb-6 { padding-bottom: 1.5em; }
-.mr-6 { margin-right: 1.5em; }
-
-/* Flex */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.flex-row-reverse { flex-direction: row-reverse; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.items-center { align-items: center; }
-.flex-grow { flex-grow: 1; }
-
-/* Typography */
-.text-center { text-align: center; }
-
-/* Borders */
-.rounded-lg { border-radius: .5em; }
-.rounded-3xl { border-radius: 1.5em; }
-.rounded-full { border-radius: 100%; }
-.border	{ border-width: 1px; }
-.border-transparent	{ border-color: transparent; }
-.outline-none { outline: none; }
-
 /* Backgrounds & Colors */
-.background-transparent { background-color: transparent; }
 .background-theme-bg-color { background-color: var(--theme-bg-color); }
 .background-highlight-red { background-color: var(--highlight-red); }
-.opacity-30 { opacity: .3; }
 
-/* Others */
-.border-box { box-sizing: border-box; }
-.cursor-pointer { cursor: pointer; }
+.color-content-color { color: var(--theme-content-color); }
