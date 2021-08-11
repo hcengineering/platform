@@ -2,6 +2,18 @@
   "name": "@anticrm/server-ws",
   "entries": [
     {
+      "version": "0.6.9",
+      "tag": "@anticrm/server-ws_v0.6.9",
+      "date": "Wed, 11 Aug 2021 10:08:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "server ping"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.8",
       "tag": "@anticrm/server-ws_v0.6.8",
       "date": "Wed, 11 Aug 2021 09:37:04 GMT",

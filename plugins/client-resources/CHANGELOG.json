@@ -2,6 +2,18 @@
   "name": "@anticrm/client-resources",
   "entries": [
     {
+      "version": "0.6.2",
+      "tag": "@anticrm/client-resources_v0.6.2",
+      "date": "Wed, 11 Aug 2021 10:08:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "server ping"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.1",
       "tag": "@anticrm/client-resources_v0.6.1",
       "date": "Sun, 08 Aug 2021 21:05:26 GMT",
