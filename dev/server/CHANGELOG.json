@@ -2,6 +2,18 @@
   "name": "@anticrm/dev-server",
   "entries": [
     {
+      "version": "0.6.9",
+      "tag": "@anticrm/dev-server_v0.6.9",
+      "date": "Wed, 11 Aug 2021 10:10:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "server ping"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.8",
       "tag": "@anticrm/dev-server_v0.6.8",
       "date": "Wed, 11 Aug 2021 09:37:04 GMT",
