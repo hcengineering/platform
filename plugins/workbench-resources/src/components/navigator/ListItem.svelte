@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import TreeElement from './TreeElement.svelte'
-  import type { Asset } from '@anticrm/status'
+  import type { Asset } from '@anticrm/platform'
 
   export let icon: Asset
   export let title: string

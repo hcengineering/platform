@@ -33,120 +33,45 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="te-container" on:click|stopPropagation={() => {if (node && !icon) collapsed = !collapsed; dispatch('click')}}>
-  <div class="title" class:sub={!node}>
-    <div class="icon" class:sub={!node}>
-      {#if icon}
-        <Icon {icon} size={'small'}/>
-      {:else}
-        {#if collapsed}<Collapsed/>{:else}<Expanded/>{/if}
-      {/if}
-    </div>
-    <span>
-      {#if label}<Label {label}/>{:else}{title}{/if}
-    </span>
-    {#each actions as action}
-      <div class="tool">
-        <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
-      </div>
-    {/each}
-    {#if notifications > 0 && collapsed}
-      <div class="counter">{notifications}</div>
+<div class="flex items-center mx-5 h-10 rounded-lg select-none cursor-pointer tree-element"
+  on:click|stopPropagation={() => {
+    if (node && !icon) collapsed = !collapsed
+    dispatch('click')
+  }}
+>
+  <div
+    class="opacity-30 {node ? 'ml-3 mr-5' : 'ml-12 mr-2'}"
+    style="min-width: 1.143em;"
+  >
+    {#if icon}
+      <Icon {icon} size={'small'}/>
+    {:else}
+      {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
     {/if}
   </div>
+  <span class="flex-grow mr-3 whitespace-nowrap overflow-ellipsis overflow-hidden select-none {node ? 'font-medium caption-color' : 'content-color'}">
+    {#if label}<Label {label}/>{:else}{title}{/if}
+  </span>
+  {#each actions as action}
+    <div class="mr-3 invisible tool">
+      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
+    </div>
+  {/each}
+  {#if notifications > 0 && collapsed}
+    <div class="mr-3 font-semibold text-sm caption-color">{notifications}</div>
+  {/if}
 </div>
 {#if node && !icon}
-  <div class="dropdown" class:collapsed={collapsed}>
+  <div class={collapsed ? 'invisible h-0 mb-2' : 'visible h-auto mb-6'}>
     <slot/>
   </div>
 {/if}
 
 <style lang="scss">
-  .te-container {
-    height: 36px;
-    cursor: pointer;
-    .title {
-      display: flex;
-      align-items: center;
-      margin: 0 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-      user-select: none;
-      &.sub {
-        font-weight: 400;
-        color: var(--theme-content-color);
-      }
-      .icon {
-        width: 16px;
-        min-width: 16px;
-        height: 16px;
-        margin: 10px 16px 10px 18px;
-        border-radius: 4px;
-        opacity: .3;
-        &.sub {
-          margin: 10px 16px 10px 50px;
-        }
-      }
-      // .avatar {
-      //   width: 24px;
-      //   min-width: 24px;
-      //   height: 24px;
-      //   margin: 6px 8px 6px 50px;
-      //   border-radius: 50%;
-      //   background-color: var(--theme-bg-selection);
-      // }
-      span {
-        flex-grow: 1;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-      .tool {
-        width: 16px;
-        height: 16px;
-        margin-left: 12px;
-        opacity: 0;
-        &:last-child {
-          margin-right: 10px;
-        }
-      }
-      .counter {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 24px;
-        min-width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        margin: 6px 10px;
-        background-color: #DA5F44;
-        font-size: 12px;
-        font-weight: 600;
-        color: #fff;
-      }
-      &:hover {
-        background-color: var(--theme-button-bg-enabled);
-        .tool {
-          visibility: visible;
-        }
-      }
-    }
-
-    &:hover .title .tool {
-      opacity: 1;
-    }
-  }
-  .dropdown {
-    visibility: visible;
-    height: auto;
-    width: 100%;
-    margin-bottom: 20px;
-    &.collapsed {
-      visibility: hidden;
-      height: 0;
-      margin-bottom: 8px;
+  .tree-element:hover {
+    background-color: var(--theme-button-bg-enabled);
+    .tool {
+      visibility: visible;
     }
   }
 </style>

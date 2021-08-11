@@ -13,14 +13,4 @@
 // limitations under the License.
 -->
 
-<div class="separator"/>
-
-<style lang="scss">
-  .separator {
-    width: 100%;
-    height: 1px;
-    min-height: 1px;
-    margin: 24px 0;
-    background-color: var(--theme-menu-divider);
-  }
-</style>
+<div class="h-px my-7 background-menu-divider"/>

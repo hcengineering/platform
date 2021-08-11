@@ -14,53 +14,17 @@
 -->
 
 <script lang="ts">
+  import type { IntlString } from '@anticrm/platform'
   import { ActionIcon } from '@anticrm/ui'
   import MoreH from './icons/MoreH.svelte'
 
-  export let title: string = 'Company name'
+  export let label: IntlString
+  export let action: () => Promise<void>
 </script>
 
-<div class="navigator-header">
-  <div class="title">
-    <span>{title}</span>
-    <div class="arrow">
-      <ActionIcon icon={MoreH} size={'small'}/>
-    </div>
-  </div>
+<div class="flex justify-between items-center px-8 h-20">
+  <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-lg font-medium caption-color">
+    {label}
+  </span>
+  <ActionIcon label={'More...'} icon={MoreH} size={'small'} {action}/>
 </div>
-
-<style lang="scss">
-  .navigator-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 72px;
-    padding: 20px 28px;
-    .title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      height: 32px;
-      span {
-        flex-grow: 1;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        font-size: 16px;
-        font-weight: 500;
-        line-height: 150%;
-        color: var(--theme-caption-color);
-        user-select: none;
-      }
-      .arrow {
-        width: 16px;
-        min-width: 16px;
-        height: 16px;
-        border-radius: 4px;
-        margin-left: 16px;
-      }
-    }
-  }
-</style>

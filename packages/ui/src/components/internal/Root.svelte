@@ -34,7 +34,7 @@
 <Theme>
   <div id="ui-root" class="relative flex flex-col h-screen">
     <div class="status-bar">
-      <div class="flex items-center h-full color-content-color">
+      <div class="flex items-center h-full content-color">
         <div class="flex-grow text-center">
           <StatusComponent {status} />
         </div>

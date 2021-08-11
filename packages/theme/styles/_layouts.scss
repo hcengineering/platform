@@ -16,5 +16,8 @@
 /* Backgrounds & Colors */
 .background-theme-bg-color { background-color: var(--theme-bg-color); }
 .background-highlight-red { background-color: var(--highlight-red); }
+.background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
+.background-menu-divider { background-color: var(--theme-menu-divider); }
 
-.color-content-color { color: var(--theme-content-color); }
+.content-color { color: var(--theme-content-color); }
+.caption-color { color: var(--theme-caption-color); }

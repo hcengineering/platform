@@ -80,7 +80,7 @@
     </div>
     {#if navigator}
     <div class="flex flex-col mr-6 w-80 h-full rounded-3xl background-theme-bg-color" style="min-width: 20em;">
-      <NavHeader/>
+      <NavHeader label={'Chat'}/>
       <Navigator model={navigatorModel}/>
     </div>
     {/if}

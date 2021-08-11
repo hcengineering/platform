@@ -51,19 +51,3 @@
     <CheckBoxList label={'Add a To Do'} editable />
   </Section>
 </Dialog>
-
-
-<style lang="scss">
-
-  .content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    row-gap: 20px;
-    
-    .row {
-      grid-column-start: 1;
-      grid-column-end: 3;
-    }
-  }
-
-</style>
