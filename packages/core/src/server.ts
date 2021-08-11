@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,4 +14,18 @@
 // limitations under the License.
 //
 
-export { createStorage } from './storage'
+import type { Doc, Class, Ref } from './classes'
+import type { DocumentQuery, FindOptions, FindResult } from './storage'
+import type { Tx } from './tx'
+
+/**
+ * @public
+ */
+export interface ServerStorage {
+  findAll: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+  tx: (tx: Tx) => Promise<Tx[]>
+}

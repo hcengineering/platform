@@ -15,13 +15,22 @@
 //
 
 import { readResponse, serialize } from '@anticrm/platform'
-import { start, _Token } from '../server'
+import { start, _Token, disableLogging } from '../server'
 import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
+import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx } from '@anticrm/core'
+
 describe('server', () => {
-  start(() => ({
-    ping: () => {}
+  disableLogging()
+
+  start(async () => ({
+    findAll: async <T extends Doc>(
+      _class: Ref<Class<T>>,
+      query: DocumentQuery<T>,
+      options?: FindOptions<T>
+    ): Promise<FindResult<T>> => ([]),
+    tx: async (tx: Tx): Promise<Tx[]> => ([])
   }), 3333)
 
   function connect (): WebSocket {
@@ -36,16 +45,16 @@ describe('server', () => {
     const conn = connect()
     conn.on('open', () => {
       conn.close()
-      done()
     })
+    conn.on('close', () => { done() })
   })
 
   it('should not connect to server without token', (done) => {
     const conn = new WebSocket('ws://localhost:3333/xyz')
     conn.on('error', () => {
       conn.close()
-      done()
     })
+    conn.on('close', () => { done() })
   })
 
   it('should send many requests', (done) => {
@@ -54,7 +63,7 @@ describe('server', () => {
     // const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
-        conn.send(serialize({ method: 'ping', params: [], id: i }))
+        conn.send(serialize({ method: 'tx', params: [], id: i }))
       }
     })
     let received = 0
@@ -63,8 +72,8 @@ describe('server', () => {
       if (++received === total) {
         // console.log('resp:', resp, ' Time: ', Date.now() - start)
         conn.close()
-        done()
       }
     })
+    conn.on('close', () => { done() })
   })
 })

@@ -14,22 +14,10 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
-import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
+import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory, ServerStorage } from '@anticrm/core'
 import { Triggers } from '@anticrm/server'
 
 import * as txJson from './model.tx.json'
-
-/**
- * @public
- */
-export interface ServerStorage {
-  findAll: <T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<Tx[]>
-}
 
 class DevStorage implements ServerStorage {
   constructor (

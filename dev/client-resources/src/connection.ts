@@ -22,9 +22,10 @@ import type {
   DocumentQuery,
   FindResult,
   FindOptions,
-  TxHander
+  TxHander,
+  ServerStorage
 } from '@anticrm/core'
-import { createStorage, ServerStorage } from '@anticrm/dev-storage'
+import { createStorage } from '@anticrm/dev-storage'
 
 class ServerStorageWrapper implements Storage {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}

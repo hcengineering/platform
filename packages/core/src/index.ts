@@ -21,5 +21,6 @@ export * from './memdb'
 export * from './client'
 export * from './operator'
 export * from './query'
+export * from './server'
 
 export { default, coreId } from './component'

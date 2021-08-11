@@ -22,7 +22,7 @@ import WebSocket from 'ws'
 describe('server', () => {
   function connect (): WebSocket {
     const payload: _Token = {
-      workspace: 'latest'
+      workspace: 'ws1'
     }
     const token = encode(payload, 'secret')
     return new WebSocket('wss://pacific-refuge-43514.herokuapp.com/' + token)
@@ -32,8 +32,8 @@ describe('server', () => {
     const conn = connect()
     conn.on('open', () => {
       conn.close()
-      done()
     })
+    conn.onclose = () => { console.log('closed'); done() }
   })
 
   it('should send many requests', (done) => {

@@ -19,11 +19,89 @@ import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
 
+import type { Doc, Ref, Class, FindOptions, FindResult, Tx, DocumentQuery, Storage, ServerStorage } from '@anticrm/core'
+
+let LOGGING_ENABLED = true
+
+export function disableLogging (): void { LOGGING_ENABLED = false }
+
 /**
  * @internal
  */
 export interface _Token {
   workspace: string
+}
+
+class Session implements Storage {
+  constructor (
+    private readonly manager: SessionManager,
+    private readonly token: _Token,
+    private readonly storage: ServerStorage
+  ) {}
+
+  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+    return await this.storage.findAll(_class, query, options)
+  }
+
+  async tx (tx: Tx): Promise<void> {
+    const derived = await this.storage.tx(tx)
+    this.manager.broadcast(this, this.token, { result: tx })
+    for (const tx of derived) {
+      this.manager.broadcast(this, this.token, { result: tx })
+    }
+  }
+}
+
+interface Workspace {
+  storage: ServerStorage
+  sessions: [Session, WebSocket][]
+}
+
+class SessionManager {
+  private readonly workspaces = new Map<string, Workspace>()
+
+  async addSession (ws: WebSocket, token: _Token, storageFactory: () => Promise<ServerStorage>): Promise<Session> {
+    const workspace = this.workspaces.get(token.workspace)
+    if (workspace === undefined) {
+      const storage = await storageFactory()
+      const session = new Session(this, token, storage)
+      const workspace: Workspace = {
+        storage,
+        sessions: [[session, ws]]
+      }
+      this.workspaces.set(token.workspace, workspace)
+      return session
+    } else {
+      const session = new Session(this, token, workspace.storage)
+      workspace.sessions.push([session, ws])
+      return session
+    }
+  }
+
+  close (ws: WebSocket, token: _Token, code: number, reason: string): void {
+    if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
+    const workspace = this.workspaces.get(token.workspace)
+    if (workspace === undefined) {
+      throw new Error('internal: cannot find sessions')
+    }
+    workspace.sessions = workspace.sessions.filter(session => session[1] !== ws)
+    if (workspace.sessions.length === 0) {
+      if (LOGGING_ENABLED) console.log('no sessions for workspace', token.workspace)
+      this.workspaces.delete(token.workspace)
+    }
+  }
+
+  broadcast (from: Session, token: _Token, resp: Response<any>): void {
+    const workspace = this.workspaces.get(token.workspace)
+    if (workspace === undefined) {
+      throw new Error('internal: cannot find sessions')
+    }
+    if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
+    const msg = serialize(resp)
+    for (const session of workspace.sessions) {
+      if (session[0] !== from) { session[1].send(msg) }
+    }
+  }
 }
 
 async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promise<void> {
@@ -36,45 +114,22 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
 
 /**
  * @public
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Session {}
-
-/**
- * @public
- */
-export interface JsonRpcServer {
-  broadcast: (from: Session, resp: Response<any>) => void
-}
-
-/**
- * @public
  * @param sessionFactory -
  * @param port -
  * @param host -
  */
-export function start (sessionFactory: (server: JsonRpcServer) => Session, port: number, host?: string): void {
+export function start (storageFactory: () => Promise<ServerStorage>, port: number, host?: string): void {
   console.log(`starting server on port ${port} ...`)
 
-  const sessions: [Session, WebSocket][] = []
-
-  const jsonServer: JsonRpcServer = {
-    broadcast (from: Session, resp: Response<[]>) {
-      console.log('server broadcasting', resp)
-      const msg = serialize(resp)
-      for (const session of sessions) {
-        if (session[0] !== from) { session[1].send(msg) }
-      }
-    }
-  }
+  const sessions = new SessionManager()
 
   const wss = new Server({ noServer: true })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('connection', (ws: WebSocket, request: any, token: _Token) => {
-    const service = sessionFactory(jsonServer)
-    sessions.push([service, ws])
+  wss.on('connection', async (ws: WebSocket, request: any, token: _Token) => {
+    const session = await sessions.addSession(ws, token, storageFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('message', async (msg: string) => await handleRequest(service, ws, msg))
+    ws.on('message', async (msg: string) => await handleRequest(session, ws, msg))
+    ws.on('close', (code: number, reason: string) => sessions.close(ws, token, code, reason))
   })
 
   const server = createServer()
@@ -85,7 +140,7 @@ export function start (sessionFactory: (server: JsonRpcServer) => Session, port:
       console.log('client connected with payload', payload)
       wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
     } catch (err) {
-      console.log('unauthorized')
+      console.log('unauthorized client')
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
       socket.destroy()
     }
