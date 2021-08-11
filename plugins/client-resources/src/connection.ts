@@ -31,11 +31,16 @@ class DeferredPromise {
 }
 
 class Connection implements Storage {
+  private websocket: WebSocket | null = null
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
 
-  constructor (private readonly webSocket: WebSocket, private readonly handler: TxHander) {
-    this.webSocket.onmessage = (event: MessageEvent) => {
+  constructor (private readonly url: string, private readonly handler: TxHander) {
+  }
+
+  private async openConnection (): Promise<WebSocket> {
+    const websocket = new WebSocket(this.url)
+    websocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
         const promise = this.requests.get(resp.id)
@@ -53,21 +58,36 @@ class Connection implements Storage {
     }
     const interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      console.log('ping')
       this.sendRequest('ping')
     }, 10000)
-    this.webSocket.onclose = () => { console.log('client websocket closed'); clearInterval(interval) }
+    websocket.onclose = () => {
+      console.log('client websocket closed')
+      clearInterval(interval)
+      this.websocket = null
+    }
+    return new Promise((resolve, reject) => {
+      websocket.onopen = () => {
+        resolve(websocket)
+      }
+      websocket.onerror = (event) => {
+        console.log('client websocket error', event)
+        reject(new Error('websocket error'))
+      }
+    })
   }
 
-  private sendRequest (method: string, ...params: any[]): Promise<any> {
+  private async sendRequest (method: string, ...params: any[]): Promise<any> {
+    if (this.websocket === null) { this.websocket = await this.openConnection() }
     const id = this.lastId++
-    this.webSocket.send(serialize({
+    this.websocket.send(serialize({
       method,
       params,
       id
     }))
     const promise = new DeferredPromise()
     this.requests.set(id, promise)
-    return promise.promise
+    return await promise.promise
   }
 
   findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
@@ -80,11 +100,5 @@ class Connection implements Storage {
 }
 
 export async function connect (url: string, handler: TxHander): Promise<Storage> {
-  return await new Promise((resolve, reject) => {
-    const webSocket = new WebSocket(url)
-    webSocket.onopen = () => {
-      resolve(new Connection(webSocket, handler))
-    }
-    webSocket.onerror = () => reject(new Error('Could not connect'))
-  })
+  return new Connection(url, handler)
 }
