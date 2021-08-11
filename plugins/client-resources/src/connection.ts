@@ -51,6 +51,11 @@ class Connection implements Storage {
         this.handler(resp.result as Tx)
       }
     }
+    const interval = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.sendRequest('ping')
+    }, 10000)
+    this.webSocket.onclose = () => { console.log('client websocket closed'); clearInterval(interval) }
   }
 
   private sendRequest (method: string, ...params: any[]): Promise<any> {

@@ -39,6 +39,8 @@ class Session implements Storage {
     private readonly storage: ServerStorage
   ) {}
 
+  async ping (): Promise<string> { return 'pong!' }
+
   async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     return await this.storage.findAll(_class, query, options)
   }
