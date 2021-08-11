@@ -21,7 +21,7 @@
   "dependencies": {
     "svelte": "^3.37.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.8",
+    "@anticrm/core": "~0.6.10",
     "@anticrm/client": "~0.6.1",
     "@anticrm/workbench": "~0.6.1",
     "@anticrm/ui": "~0.6.0",

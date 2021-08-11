@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.8",
+    "@anticrm/core": "~0.6.10",
     "@anticrm/query": "~0.6.1",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/view": "~0.6.0",

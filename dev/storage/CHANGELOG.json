@@ -2,6 +2,23 @@
   "name": "@anticrm/dev-storage",
   "entries": [
     {
+      "version": "0.6.6",
+      "tag": "@anticrm/dev-storage_v0.6.6",
+      "date": "Wed, 11 Aug 2021 09:37:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Server support for workspaces"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.8` to `~0.6.10`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.3",
       "tag": "@anticrm/dev-storage_v0.6.3",
       "date": "Wed, 04 Aug 2021 21:18:44 GMT",

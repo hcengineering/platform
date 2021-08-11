@@ -45,7 +45,7 @@
     "@anticrm/login-assets": "~0.6.0",
     "@anticrm/login-resources": "~0.6.2",
     "@anticrm/client": "~0.6.1",
-    "@anticrm/dev-client-resources": "~0.6.0",
+    "@anticrm/dev-client-resources": "~0.6.1",
     "@anticrm/workbench": "~0.6.1",
     "@anticrm/workbench-resources": "~0.6.1",
     "@anticrm/view": "~0.6.0",

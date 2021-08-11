@@ -1,6 +1,13 @@
 # Change Log - @anticrm/dev-server
 
-This log was last generated on Sun, 08 Aug 2021 21:05:26 GMT and should not be manually modified.
+This log was last generated on Wed, 11 Aug 2021 09:37:04 GMT and should not be manually modified.
+
+## 0.6.8
+Wed, 11 Aug 2021 09:37:04 GMT
+
+### Patches
+
+- Server support for workspaces
 
 ## 0.6.6
 Sun, 08 Aug 2021 21:05:26 GMT

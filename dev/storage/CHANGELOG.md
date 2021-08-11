@@ -1,6 +1,13 @@
 # Change Log - @anticrm/dev-storage
 
-This log was last generated on Wed, 04 Aug 2021 21:18:44 GMT and should not be manually modified.
+This log was last generated on Wed, 11 Aug 2021 09:37:04 GMT and should not be manually modified.
+
+## 0.6.6
+Wed, 11 Aug 2021 09:37:04 GMT
+
+### Patches
+
+- Server support for workspaces
 
 ## 0.6.3
 Wed, 04 Aug 2021 21:18:44 GMT
