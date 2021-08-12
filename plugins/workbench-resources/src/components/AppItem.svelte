@@ -31,7 +31,7 @@
     </div>
   </Tooltip>
   {#if notify}
-    <div class="absolute top-4 right-4 w-2 h-2 rounded-full background-highlight-red"/>
+    <div class="absolute top-3 right-3 w-2 h-2 rounded-full background-highlight-red"/>
   {/if}
 </button>
 
