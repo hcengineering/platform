@@ -36,7 +36,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .w-10 { width: 2.5em; }
 .w-15 { width: 3.75em; }
 .w-80 { width: 20em; }
-// .w-full { width: 100%; }
+.w-full { width: 100%; }
 
 .h-0 { height: 0; }
 .h-2 { height: .5em; }
@@ -51,6 +51,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 
 /* Spacing */
 .ml-3 { margin-left: .75em; }
+.ml-4 { margin-left: 1em; }
 .ml-5 { margin-left: 1.25em; }
 .ml-12 { margin-left: 3em; }
 
@@ -62,7 +63,10 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .mb-6 { margin-bottom: 1.5em; }
 .mx-5 { margin-left: 1.25em; margin-right: 1.25em; }
 .my-7 { margin-top: 1.75em; margin-bottom: 1.75em; }
+
 .p-0 { padding: 0; }
+.pl-11 { padding-left: 2.75em; }
+.pr-8 { padding-right: 2em; }
 .pb-6 { padding-bottom: 1.5em; }
 .px-8 { padding-left: 2em; padding-right: 2em; }
 
@@ -96,6 +100,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 /* Backgrounds & Colors */
 .bg-transparent { background-color: transparent; }
 .opacity-30 { opacity: .3; }
+.opacity-60 { opacity: .6; }
 
 /* Others */
 .border-box { box-sizing: border-box; }

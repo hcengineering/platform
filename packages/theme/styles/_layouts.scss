@@ -20,4 +20,7 @@
 .background-menu-divider { background-color: var(--theme-menu-divider); }
 
 .content-color { color: var(--theme-content-color); }
+.content-trans-color { color: var(--theme-content-trans-color); }
 .caption-color { color: var(--theme-caption-color); }
+
+.bottom-divider { border-bottom: 1px solid var(--theme-menu-divider); }
