@@ -47,24 +47,23 @@ let selected = 0
 {#await getViewlets(client, _class)}
  ...
 {:then viewlets}
-<div class="sp-container">
 
   {#if viewlets.length > 0}
-  <div class="toolbar">
-    <div style="flex-grow: 1" />
+    <div class="flex justify-between items-center h-11 mx-11 mt-11">
+      <div class="flex-grow" />
 
-    <div class="viewSelection-container">
-      {#each viewlets as viewlet, i}
-        <div class="button" class:selected={i === selected}>
-          <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
-        </div>
-      {/each}
+      <div class="flex">
+        {#each viewlets as viewlet, i}
+          <div class="flex justify-center items-center w-11 h-11 rounded-lg btn {selected ? 'background-button-bg-enabled cursor-default selected' : 'background-transparent cursor-pointer'}">
+            <div class="opacity-30 icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+          </div>
+        {/each}
+      </div>
+      
     </div>
-    
-  </div>
   {/if}
 
-  <div class="content">
+  <div class="flex flex-col m-11 h-full">
     <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
       _class,
       space,
@@ -73,65 +72,14 @@ let selected = 0
       config: viewlets[selected].config
     } } />
   </div>
-</div>
+
 {/await}
 
 <style lang="scss">
-  .viewSelection-container {
-    display: flex;
-    flex-direction: row;
-    height: 32px;
-
-    .button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background-color: transparent;
-      cursor: pointer;
-
-      .icon {
-        width: 16px;
-        height: 16px;
-        opacity: 0.2;
-      }
-
-      &:hover .icon {
-        opacity: 1;
-      }
-
-      &.selected {
-        background-color: var(--theme-button-bg-enabled);
-        cursor: default;
-        .icon {
-          opacity: 0.8;
-        }
-      }
-    }
+  .btn:hover .icon {
+    opacity: 1;
   }
-  .sp-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: auto;
-      min-height: 40px;
-      height: 40px;
-      margin: 40px 40px 0;
-    }
-    .content {
-      display: flex;
-      flex-direction: column;
-      width: auto;
-      height: 100%;
-      margin: 40px;
-    }
+  .selected:hover .icon {
+    opacity: .8;
   }
 </style>

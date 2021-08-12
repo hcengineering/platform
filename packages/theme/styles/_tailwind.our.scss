@@ -34,6 +34,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .w-2 { width: .5em; }
 .w-5 { width: 1.25em; }
 .w-10 { width: 2.5em; }
+.w-11 { width: 2.75em; }
 .w-15 { width: 3.75em; }
 .w-80 { width: 20em; }
 .w-full { width: 100%; }
@@ -42,6 +43,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .h-2 { height: .5em; }
 .h-5 { height: 1.25em; }
 .h-10 { height: 2.5em; }
+.h-11 { height: 2.75em; }
 .h-15 { height: 3.75em; }
 .h-20 { height: 5em; }
 .h-auto { height: auto; }
@@ -50,25 +52,27 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .h-full { height: 100%; }
 
 /* Spacing */
-.ml-3 { margin-left: .75em; }
-.ml-4 { margin-left: 1em; }
-.ml-5 { margin-left: 1.25em; }
-.ml-12 { margin-left: 3em; }
-
 .mr-2 { margin-right: .5em; }
 .mb-2 { margin-bottom: .5em; }
+.ml-3 { margin-left: .75em; }
 .mr-3 { margin-right: .75em; }
+.ml-4 { margin-left: 1em; }
+.ml-5 { margin-left: 1.25em; }
 .mr-5 { margin-right: 1.25em; }
+.mx-5 { margin-left: 1.25em; margin-right: 1.25em; }
 .mr-6 { margin-right: 1.5em; }
 .mb-6 { margin-bottom: 1.5em; }
-.mx-5 { margin-left: 1.25em; margin-right: 1.25em; }
 .my-7 { margin-top: 1.75em; margin-bottom: 1.75em; }
+.m-11 { margin: 2.75em; }
+.mt-11 { margin-top: 2.75em; }
+.mx-11 { margin-left: 2.75em; margin-right: 2.75em; }
+.ml-12 { margin-left: 3em; }
 
 .p-0 { padding: 0; }
-.pl-11 { padding-left: 2.75em; }
-.pr-8 { padding-right: 2em; }
 .pb-6 { padding-bottom: 1.5em; }
+.pr-8 { padding-right: 2em; }
 .px-8 { padding-left: 2em; padding-right: 2em; }
+.pl-11 { padding-left: 2.75em; }
 
 /* Flex */
 .flex { display: flex; }
@@ -111,6 +115,7 @@ audio, canvas, embed, iframe, img, object, svg, video {
 /* Others */
 .border-box { box-sizing: border-box; }
 .cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
 .overflow-hidden { overflow: hidden; }
 .select-none { user-select: none; }
 .visible { visibility: visible; }
