@@ -43,16 +43,16 @@
 </script>
 
 <div
-  class="flex justify-between items-center h-20 pl-11 pr-8 {divider ? 'bottom-divider' : ''}"
-  style="min-height: 5em;"
+  class="grid grid-flow-col auto-cols-min gap-4 items-center h-20 pl-11 pr-8 {divider ? 'bottom-divider' : ''}"
+  style="min-height: 5em; grid-template-columns: auto;"
 >
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
-      <div class="ml-4"><Button label="Create" primary={true} on:click={showCreateDialog}/></div>
+      <Button label="Create" primary={true} on:click={showCreateDialog}/>
     {/if}
-    <div class="ml-4"><ActionIcon label={'Favorite'} icon={Star} size={'small'}/></div>
-    <div class="ml-4"><ActionIcon label={'Create'} icon={Add} size={'small'}/></div>
-    <div class="ml-4"><ActionIcon label={'More...'} icon={MoreH} size={'small'}/></div>
+    <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
+    <ActionIcon label={'Create'} icon={Add} size={'small'}/>
+    <ActionIcon label={'More...'} icon={MoreH} size={'small'}/>
   {/if}
 </div>

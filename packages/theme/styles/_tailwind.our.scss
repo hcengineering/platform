@@ -79,6 +79,12 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .items-center { align-items: center; }
 .flex-grow { flex-grow: 1; }
 
+/* Grid */
+.grid { display: grid; }
+.grid-flow-col { grid-auto-flow: column; }
+.auto-cols-min { grid-auto-columns: min-content; }
+.gap-4 { gap: 1em; }
+
 /* Typography */
 .text-sm { font-size: .875em; }
 .text-lg { font-size: 1.125em; }
