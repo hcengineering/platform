@@ -19,12 +19,19 @@
 
   export let label: IntlString
   export let primary: boolean = false
+  export let size: 'small' | 'normal' = 'normal'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
+
+  let cls: string = 'button flex justify-center items-center px-6 rounded-xl font-semibold '
+  cls += 'caption-color outline-none select-none cursor-pointer border border-solid '
+  cls += size === 'normal' ? 'h-12 ' : 'h-10 '
+  cls += primary ? 'background-primary-button-enabled border-primary-button primary'
+                 : 'background-button-bg-enabled border-button-enabled'
 </script>
 
-<button class="button" class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class={cls} disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if loading}
     <Spinner />
   {:else}
@@ -34,21 +41,6 @@
 
 <style lang="scss">
   .button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 48px;
-    padding: 0 25px;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 12px;
-    outline: none;
-    user-select: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
     &:hover {
       background-color: var(--theme-button-bg-hovered);
       border-color: var(--theme-button-border-hovered);
@@ -70,16 +62,14 @@
   }
 
   .primary {
-    background-color: var(--primary-button-enabled);
-    border-color: var(--primary-button-border);
     &:hover {
       background-color: var(--primary-button-hovered);
       border-color: var(--primary-button-border);
     }
     &:focus {
       background-color: var(--primary-button-focused);
-      border-color: var(--primary-button-focused-border);
-      box-shadow: 0 0 0 2px var(--primary-button-outline);
+      border: 1px solid var(--primary-button-focused-border);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
     }
     &:active {
       background-color: var(--primary-button-pressed);

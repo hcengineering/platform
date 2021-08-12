@@ -43,13 +43,13 @@
 </script>
 
 <div
-  class="grid grid-flow-col auto-cols-min gap-4 items-center h-20 pl-11 pr-8 {divider ? 'bottom-divider' : ''}"
-  style="min-height: 5em; grid-template-columns: auto;"
+  class="grid grid-flow-col auto-cols-min gap-3 items-center h-18 pl-10 pr-8 {divider ? 'bottom-divider' : ''}"
+  style="min-height: 4.5rem; grid-template-columns: auto;"
 >
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
-      <Button label="Create" primary={true} on:click={showCreateDialog}/>
+      <Button label="Create" primary={true} size={'small'} on:click={showCreateDialog}/>
     {/if}
     <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
     <ActionIcon label={'Create'} icon={Add} size={'small'}/>

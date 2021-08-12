@@ -25,12 +25,12 @@
 <div class="flex flex-col flex-grow w-full">
   <div class="flex items-center">
     {#if icon }<span class="mr-2 opacity-60"><Icon {icon} size={'small'}/></span>{/if}
-    <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-lg font-medium caption-color">
+    <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-base font-medium caption-color">
       {label}
     </span>
   </div>
   {#if description }
-    <div class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-sm content-trans-color">
+    <div class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-xs content-trans-color">
       {description}
     </div>
   {/if}

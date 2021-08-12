@@ -13,4 +13,4 @@
 // limitations under the License.
 -->
 
-<div class="h-px my-7 background-menu-divider"/>
+<div class="h-px my-6 background-menu-divider"/>

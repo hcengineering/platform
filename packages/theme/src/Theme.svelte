@@ -22,10 +22,10 @@
   const currentFontSize = getCurrnetFontSize()
 
   const setRootColors = (theme: string) => {
-    document.body.setAttribute('class', `${theme} ${getCurrnetFontSize()}`)
+    document.documentElement.setAttribute('class', `${theme} ${getCurrnetFontSize()}`)
   }
   const setRootFontSize = (fontsize: string) => {
-    document.body.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
+    document.documentElement.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
   }
 
   setContext('theme', {

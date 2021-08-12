@@ -22,8 +22,8 @@
   export let action: () => Promise<void>
 </script>
 
-<div class="flex justify-between items-center px-8 h-20">
-  <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-lg font-medium caption-color">
+<div class="flex justify-between items-center px-7 h-18">
+  <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-base font-medium caption-color">
     {label}
   </span>
   <ActionIcon label={'More...'} icon={MoreH} size={'small'} {action}/>

@@ -49,12 +49,12 @@ let selected = 0
 {:then viewlets}
 
   {#if viewlets.length > 0}
-    <div class="flex justify-between items-center h-11 mx-11 mt-11">
+    <div class="flex justify-between items-center h-10 mx-10 my-5">
       <div class="flex-grow" />
 
       <div class="flex">
         {#each viewlets as viewlet, i}
-          <div class="flex justify-center items-center w-11 h-11 rounded-lg btn {selected ? 'background-button-bg-enabled cursor-default selected' : 'background-transparent cursor-pointer'}">
+          <div class="flex justify-center items-center w-10 h-10 rounded-lg btn {selected ? 'background-button-bg-enabled cursor-default selected' : 'background-transparent cursor-pointer'}">
             <div class="opacity-30 icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
           </div>
         {/each}
@@ -63,7 +63,7 @@ let selected = 0
     </div>
   {/if}
 
-  <div class="flex flex-col m-11 h-full">
+  <div class="flex flex-col mx-10 mb-10 h-full">
     <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
       _class,
       space,

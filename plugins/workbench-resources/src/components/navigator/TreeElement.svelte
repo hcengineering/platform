@@ -33,15 +33,15 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex items-center mx-5 h-10 rounded-lg select-none cursor-pointer tree-element"
+<div class="flex items-center mx-4 h-9 rounded-lg select-none cursor-pointer tree-element"
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
   }}
 >
   <div
-    class="opacity-30 {node ? 'ml-3 mr-5' : 'ml-12 mr-2'}"
-    style="min-width: 1.143em;"
+    class="opacity-30 {node ? 'mx-3' : 'ml-11 mr-2'}"
+    style="min-width: 1rem;"
   >
     {#if icon}
       <Icon {icon} size={'small'}/>
@@ -58,11 +58,11 @@
     </div>
   {/each}
   {#if notifications > 0 && collapsed}
-    <div class="mr-3 font-semibold text-sm caption-color">{notifications}</div>
+    <div class="mr-3 font-semibold text-xs caption-color">{notifications}</div>
   {/if}
 </div>
 {#if node && !icon}
-  <div class={collapsed ? 'invisible h-0 mb-2' : 'visible h-auto mb-6'}>
+  <div class={collapsed ? 'invisible h-0 mb-2' : 'visible h-auto mb-2'}>
     <slot/>
   </div>
 {/if}

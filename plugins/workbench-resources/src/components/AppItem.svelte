@@ -24,9 +24,9 @@
   export let notify: boolean
 </script>
 
-<button class="border-box relative p-0 w-15 h-15 rounded-lg border border-transparent bg-transparent cursor-pointer outline-none app" class:selected={selected} on:click={action}>
+<button class="border-box relative p-0 w-13 h-13 rounded-lg border border-transparent bg-transparent cursor-pointer outline-none app" class:selected={selected} on:click={action}>
   <Tooltip label={label} direction="right">
-    <div class="flex justify-center items-center w-15 h-15 opacity-30 icon-container" class:noty={notify}>
+    <div class="flex justify-center items-center w-13 h-13 opacity-30 icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
   </Tooltip>

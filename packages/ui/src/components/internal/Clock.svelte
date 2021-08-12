@@ -22,12 +22,6 @@
 
 <div>
   <span>{hours}</span>
-  <span class:h={!delimiter}>:</span>
+  <span class={delimiter ? 'visible' : 'invisible'}>:</span>
   <span>{minutes}</span>
 </div>
-
-<style>
-  .h {
-    visibility: hidden;
-  }
-</style>

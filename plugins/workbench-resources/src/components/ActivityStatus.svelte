@@ -18,7 +18,7 @@
   export let status: string = 'away'
 </script>
 
-<div class="flex justify-center items-center {status}" style="min-height: 6.85em">
+<div class="flex justify-center items-center {status}" style="min-height: 5rem;">
   <div class="w-2 h-2 rounded-full status"></div>
 </div>
 

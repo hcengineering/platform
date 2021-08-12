@@ -70,21 +70,21 @@
       <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z"/>
     </clipPath>
   </svg>
-  <div class="flex h-full pb-6">
-    <div class="flex flex-col justify-between items-center h-full rounded-3xl" style="min-width: 6.85em;">
+  <div class="flex h-full pb-5">
+    <div class="flex flex-col justify-between items-center w-20 h-full rounded-3xl" style="min-width: 5rem;">
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
-      <div class="flex items-center" style="min-height: 7.15em;">
-        <img class="w-10 h-10" src={avatar} alt="Profile"/>
+      <div class="flex items-center" style="min-height: 6.25rem;">
+        <img class="w-9 h-9" src={avatar} alt="Profile"/>
       </div>
     </div>
     {#if navigator}
-    <div class="flex flex-col mr-6 w-80 h-full rounded-3xl background-theme-bg-color" style="min-width: 20em;">
+    <div class="flex flex-col mr-4 w-72 h-full rounded-3xl background-theme-bg-color" style="min-width: 18rem;">
       <NavHeader label={'Chat'}/>
       <Navigator model={navigatorModel}/>
     </div>
     {/if}
-    <div class="flex flex-col flex-grow mr-6 h-full rounded-3xl  background-theme-bg-color">
+    <div class="flex flex-col flex-grow mr-4 h-full rounded-3xl  background-theme-bg-color">
       <SpaceHeader space={currentSpace} {createItemDialog}/>
       {#if currentView && currentSpace}
         <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />

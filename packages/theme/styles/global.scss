@@ -15,7 +15,7 @@
 
 // @import "./tailwind.min.css";
 @import "./_colors.scss";
-@import "./_tailwind.our.scss";
+@import "./_tailwind.scss";
 @import "./_layouts.scss";
 @import "./_components.scss";
 
@@ -85,13 +85,8 @@
   border-radius: 4px;
 }
 
-.small-font {
-  font-size: 12px;
-}
-
-.normal-font {
-  font-size: 14px;
-}
+.normal-font { font-size: 16px; }
+.small-font { font-size: 14px; }
 
 body {
   -webkit-font-smoothing: antialiased;
@@ -100,6 +95,7 @@ body {
 
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
   font-weight: 400;
+  font-size: .875rem;
   color: var(--theme-content-color);
   background-color: var(--theme-menu-color);
 }

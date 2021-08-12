@@ -18,9 +18,12 @@
 .background-highlight-red { background-color: var(--highlight-red); }
 .background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
 .background-menu-divider { background-color: var(--theme-menu-divider); }
+.background-primary-button-enabled { background-color: var(--primary-button-enabled); }
 
 .content-color { color: var(--theme-content-color); }
 .content-trans-color { color: var(--theme-content-trans-color); }
 .caption-color { color: var(--theme-caption-color); }
 
+.border-primary-button { border-color: var(--primary-button-border); }
+.border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }
 .bottom-divider { border-bottom: 1px solid var(--theme-menu-divider); }
