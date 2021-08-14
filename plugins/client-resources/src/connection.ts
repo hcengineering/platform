@@ -57,8 +57,8 @@ class Connection implements Storage {
       }
     }
     const interval = setInterval(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       console.log('ping')
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.sendRequest('ping')
     }, 10000)
     websocket.onclose = () => {
