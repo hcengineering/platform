@@ -49,13 +49,13 @@ let selected = 0
 {:then viewlets}
 
   {#if viewlets.length > 0}
-    <div class="flex justify-between items-center h-10 mx-10 my-5">
-      <div class="flex-grow" />
+    <div class="toolbar">
+      <div style="flex-grow: 1;" />
 
       <div class="flex">
         {#each viewlets as viewlet, i}
-          <div class="flex justify-center items-center w-10 h-10 rounded-lg btn {selected ? 'background-button-bg-enabled cursor-default selected' : 'background-transparent cursor-pointer'}">
-            <div class="opacity-30 icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+          <div class="btn" class:selected>
+            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
           </div>
         {/each}
       </div>
@@ -63,7 +63,7 @@ let selected = 0
     </div>
   {/if}
 
-  <div class="flex flex-col mx-10 mb-10 h-full">
+  <div class="container">
     <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
       _class,
       space,
@@ -76,10 +76,40 @@ let selected = 0
 {/await}
 
 <style lang="scss">
-  .btn:hover .icon {
-    opacity: 1;
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.25rem 2.5rem;
+    height: 2.5rem;
+
+    .btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      background-color: transparent;
+      border-radius: .5rem;
+      cursor: pointer;
+
+      .icon { opacity: .3; }
+      &:hover .icon {
+        opacity: 1;
+      }
+      &.selected {
+        background-color: var(--theme-button-bg-enabled);
+        cursor: default;
+        &:hover .icon {
+          opacity: .8;
+        }
+      }
+    }
   }
-  .selected:hover .icon {
-    opacity: .8;
+  .container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 2.5rem 2.5rem;
+    height: 100%;
   }
 </style>

@@ -42,16 +42,7 @@
 
 <style lang="scss">
   .button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    border: 1px solid transparent;
     border-radius: 4px;
-    outline: none;
-    background-color: transparent;
-    cursor: pointer;
-    font-size: inherit;
 
     .icon {
       opacity: .3;

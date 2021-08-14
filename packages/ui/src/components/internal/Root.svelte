@@ -32,13 +32,13 @@
 </script>
 
 <Theme>
-  <div id="ui-root" class="relative flex flex-col h-screen">
+  <div id="ui-root">
     <div class="status-bar">
-      <div class="flex items-center h-full content-color">
-        <div class="flex-grow text-center">
+      <div class="flex-row-center h-full content-color">
+        <div class="status-info">
           <StatusComponent {status} />
         </div>
-        <div class="flex flex-row-reverse items-center">
+        <div class="flex-row-reverse">
           <div class="clock">
             <Clock />
           </div>
@@ -70,11 +70,20 @@
   $status-bar-height: 32px;
 
   #ui-root {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
     .status-bar {
       min-height: $status-bar-height;
       min-width: 1200px;
       font-size: 14px;
 
+      .status-info {
+        flex-grow: 1;
+        text-align: center;
+      }
       .clock {
         margin: 0 40px 0 24px;
         font-weight: 500;

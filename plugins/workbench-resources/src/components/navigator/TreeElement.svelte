@@ -33,45 +33,94 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex items-center mx-4 h-9 rounded-lg select-none cursor-pointer tree-element"
+<div class="container"
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
   }}
 >
-  <div
-    class="opacity-30 {node ? 'mx-3' : 'ml-11 mr-2'}"
-    style="min-width: 1rem;"
-  >
+  <div class="icon" class:sub={!node}>
     {#if icon}
       <Icon {icon} size={'small'}/>
     {:else}
       {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
     {/if}
   </div>
-  <span class="flex-grow mr-3 whitespace-nowrap overflow-ellipsis overflow-hidden select-none {node ? 'font-medium caption-color' : 'content-color'}">
+  <span class="label" class:sub={node}>
     {#if label}<Label {label}/>{:else}{title}{/if}
   </span>
   {#each actions as action}
-    <div class="mr-3 invisible tool">
+    <div class="tool">
       <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
     </div>
   {/each}
   {#if notifications > 0 && collapsed}
-    <div class="mr-3 font-semibold text-xs caption-color">{notifications}</div>
+    <div class="counter">{notifications}</div>
   {/if}
 </div>
 {#if node && !icon}
-  <div class={collapsed ? 'invisible h-0 mb-2' : 'visible h-auto mb-2'}>
+  <div class="dropbox" class:hidden={collapsed}>
     <slot/>
   </div>
 {/if}
 
 <style lang="scss">
-  .tree-element:hover {
-    background-color: var(--theme-button-bg-enabled);
+  .container {
+    display: flex;
+    align-items: center;
+    margin: 0 1rem;
+    height: 2.25rem;
+    border-radius: .5rem;
+    user-select: none;
+    cursor: pointer;
+
+    .icon {
+      min-width: 1rem;
+      opacity: .3;
+      margin: 0 1.125rem 0 .625rem;
+      &.sub { margin: 0 .5rem 0 2.75rem }
+    }
+    .label {
+      flex-grow: 1;
+      margin-right: .75rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      user-select: none;
+      font-weight: 400;
+      color: var(--theme-content-color);
+      &.sub {
+        font-weight: 500;
+        color: var(--theme-caption-color);
+      }
+    }
     .tool {
-      visibility: visible;
+      margin-right: .75rem;
+      visibility: hidden;
+    }
+    .counter {
+      margin-right: .75rem;
+      font-weight: 600;
+      font-size: .75rem;
+      color: var(--theme-caption-color);
+    }
+
+    &:hover {
+      background-color: var(--theme-button-bg-enabled);
+      .tool {
+        visibility: visible;
+      }
+    }
+  }
+
+  .dropbox {
+    height: auto;
+    margin-bottom: .5rem;
+    visibility: visible;
+
+    &.hidden {
+      height: auto;
+      visibility: hidden;
     }
   }
 </style>

@@ -18,11 +18,16 @@
   export let status: string = 'away'
 </script>
 
-<div class="flex justify-center items-center {status}" style="min-height: 5rem;">
-  <div class="w-2 h-2 rounded-full status"></div>
+<div class="flex-center {status}" style="min-height: 5rem;">
+  <div class="status"/>
 </div>
 
 <style lang="scss">
+  .status {
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+  }
   .active .status {
     background-color: var(--activity-status-active);
   }

@@ -22,16 +22,40 @@
   export let description: IntlString | undefined
 </script>
 
-<div class="flex flex-col flex-grow w-full">
-  <div class="flex items-center">
-    {#if icon }<span class="mr-2 opacity-60"><Icon {icon} size={'small'}/></span>{/if}
-    <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-base font-medium caption-color">
-      {label}
-    </span>
+<div class="container">
+  <div class="flex-center">
+    {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
+    <span class="label">{label}</span>
   </div>
-  {#if description }
-    <div class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-xs content-trans-color">
-      {description}
-    </div>
-  {/if}
+  {#if description }<div class="description">{description}</div>{/if}
 </div>
+
+<style lang="scss">
+  .container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+
+    .icon {
+      margin-right: .5rem;
+      opacity: .6;
+    }
+    .label, .description {
+      flex-grow: 1;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      user-select: none;
+    }
+    .label {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
+    }
+    .description {
+      font-size: .75rem;
+      color: var(--theme-content-trans-color);
+    }
+  }
+</style>

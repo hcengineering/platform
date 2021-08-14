@@ -62,7 +62,7 @@
 </script>
 
 {#if client}
-  <svg class="absolute w-0 h-0">
+  <svg class="mask">
     <clipPath id="notify-normal">
       <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"/>
     </clipPath>
@@ -70,22 +70,22 @@
       <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z"/>
     </clipPath>
   </svg>
-  <div class="flex h-full pb-5">
-    <div class="flex flex-col justify-between items-center w-20 h-full rounded-3xl" style="min-width: 5rem;">
+  <div class="container">
+    <div class="panel-app">
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
-      <div class="flex items-center" style="min-height: 6.25rem;">
-        <img class="w-9 h-9" src={avatar} alt="Profile"/>
+      <div class="flex-center" style="min-height: 6.25rem;">
+        <img class="square-36" src={avatar} alt="Profile"/>
       </div>
     </div>
     {#if navigator}
-    <div class="flex flex-col mr-4 w-72 h-full rounded-3xl background-theme-bg-color" style="min-width: 18rem;">
+    <div class="panel-navigator">
       <NavHeader label={'Chat'}/>
       <Navigator model={navigatorModel}/>
     </div>
     {/if}
-    <div class="flex flex-col flex-grow mr-4 h-full rounded-3xl  background-theme-bg-color">
-      <SpaceHeader space={currentSpace} {createItemDialog}/>
+    <div class="panel-component">
+      <SpaceHeader space={currentSpace} {createItemDialog} />
       {#if currentView && currentSpace}
         <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
       {/if}
@@ -96,3 +96,46 @@
 {:else}
   No client
 {/if}
+
+<style lang="scss">
+  .mask {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+  .container {
+    display: flex;
+    height: 100%;
+    padding-bottom: 1.25rem;
+
+    .panel-app {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      min-width: 5rem;
+      width: 5rem;
+      height: 100%;
+      border-radius: 1.25rem;
+    }
+    .panel-navigator {
+      display: flex;
+      flex-direction: column;
+      margin-right: 1rem;
+      min-width: 18rem;
+      width: 18rem;
+      height: 100%;
+      border-radius: 1.25rem;
+      background-color: var(--theme-bg-color);
+    }
+    .panel-component {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      margin-right: 1rem;
+      height: 100%;
+      border-radius: 1.25rem;
+      background-color: var(--theme-bg-color);
+    }
+  }
+</style>

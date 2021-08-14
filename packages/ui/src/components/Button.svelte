@@ -19,19 +19,13 @@
 
   export let label: IntlString
   export let primary: boolean = false
-  export let size: 'small' | 'normal' = 'normal'
+  export let size: 'small' | 'medium' = 'medium'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
-
-  let cls: string = 'button flex justify-center items-center px-6 rounded-xl font-semibold '
-  cls += 'caption-color outline-none select-none cursor-pointer border border-solid '
-  cls += size === 'normal' ? 'h-12 ' : 'h-10 '
-  cls += primary ? 'background-primary-button-enabled border-primary-button primary'
-                 : 'background-button-bg-enabled border-button-enabled'
 </script>
 
-<button class={cls} disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class="button {size}" class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if loading}
     <Spinner />
   {:else}
@@ -40,7 +34,16 @@
 </button>
 
 <style lang="scss">
+  .small { height: 2.5rem; }
+  .medium { height: 3rem; }
   .button {
+    padding: 0 1.5rem;
+    font-weight: 600;
+    background-color: var(--theme-button-bg-enabled);
+    color: var(--theme-caption-color);
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: 0.75rem;
+
     &:hover {
       background-color: var(--theme-button-bg-hovered);
       border-color: var(--theme-button-border-hovered);
@@ -62,6 +65,9 @@
   }
 
   .primary {
+    background-color: var(--primary-button-enabled);
+    border-color: var(--primary-button-border);
+
     &:hover {
       background-color: var(--primary-button-hovered);
       border-color: var(--primary-button-border);

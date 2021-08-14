@@ -24,20 +24,37 @@
   export let notify: boolean
 </script>
 
-<button class="border-box relative p-0 w-13 h-13 rounded-lg border border-transparent bg-transparent cursor-pointer outline-none app" class:selected={selected} on:click={action}>
+<button class="app" class:selected={selected} on:click={action}>
   <Tooltip label={label} direction="right">
-    <div class="flex justify-center items-center w-13 h-13 opacity-30 icon-container" class:noty={notify}>
+    <div class="icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
   </Tooltip>
   {#if notify}
-    <div class="absolute top-3 right-3 w-2 h-2 rounded-full background-highlight-red"/>
+    <div class="marker"/>
   {/if}
 </button>
 
 <style lang="scss">
   .app {
+    position: relative;
+    padding: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: .5rem;
+    cursor: pointer;
+    outline: none;
+
     .icon-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 3.25rem;
+      height: 3.25rem;
+      opacity: .3;
+
       .normal-font &.noty {
         clip-path: url(#notify-normal);
       }
@@ -45,6 +62,7 @@
         clip-path: url(#notify-small);
       }
     }
+
     &:hover .icon-container {
       opacity: 1;
     }
@@ -55,11 +73,22 @@
         opacity: 1;
       }
     }
+
     &.selected {
       background-color: var(--theme-menu-selection);
       .icon-container {
         opacity: 1;
       }
     }
+  }
+
+  .marker {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background-color: var(--highlight-red);
   }
 </style>

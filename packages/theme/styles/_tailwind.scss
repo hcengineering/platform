@@ -13,16 +13,6 @@
 // limitations under the License.
 //
 
-/* CLEAR */
-button {
-  padding: 0;
-  font-size: inherit;
-}
-audio, canvas, embed, iframe, img, object, svg, video {
-  display: block;
-  vertical-align: middle;
-}
-
 /* Position */
 .relative { position: relative; }
 .absolute { position: absolute; }
@@ -50,7 +40,6 @@ audio, canvas, embed, iframe, img, object, svg, video {
 .h-auto { height: auto; }
 .h-px { height: 1px; }
 .h-screen { height: 100vh; }
-.h-full { height: 100%; }
 
 /* Spacing */
 .mr-2 { margin-right: .5rem; }

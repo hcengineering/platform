@@ -22,9 +22,28 @@
   export let action: () => Promise<void>
 </script>
 
-<div class="flex justify-between items-center px-7 h-18">
-  <span class="flex-grow whitespace-nowrap overflow-ellipsis overflow-hidden select-none text-base font-medium caption-color">
-    {label}
-  </span>
+<div class="container">
+  <span class="label">{label}</span>
   <ActionIcon label={'More...'} icon={MoreH} size={'small'} {action}/>
 </div>
+
+<style lang="scss">
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.75rem;
+    height: 4.5rem;
+
+    .label {
+      flex-grow: 1;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      user-select: none;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
+    }
+  }
+</style>

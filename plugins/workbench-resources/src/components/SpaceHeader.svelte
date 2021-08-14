@@ -42,10 +42,7 @@
   }
 </script>
 
-<div
-  class="grid grid-flow-col auto-cols-min gap-3 items-center h-18 pl-10 pr-8 {divider ? 'bottom-divider' : ''}"
-  style="min-height: 4.5rem; grid-template-columns: auto;"
->
+<div class="container" class:bottom-divider={divider}>
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
@@ -56,3 +53,17 @@
     <ActionIcon label={'More...'} icon={MoreH} size={'small'}/>
   {/if}
 </div>
+
+<style lang="scss">
+  .container {
+    display: grid;
+    grid-template-columns: auto;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    gap: .75rem;
+    align-items: center;
+    padding: 0 2rem 0 2.5rem;
+    height: 4.5rem;
+    min-height: 4.5rem;
+  }
+</style>

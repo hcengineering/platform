@@ -16,6 +16,6 @@
   }
 </script>
 
-<div class="flex items-center" on:click={changeFontSize}>
+<div class="flex-center" on:click={changeFontSize}>
   <FontSize size={'small'}/>
 </div>
