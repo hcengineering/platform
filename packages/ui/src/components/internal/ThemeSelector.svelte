@@ -14,14 +14,6 @@
   }
 </script>
 
-<div class="container" on:click={changeTheme}>
+<div class="flex-center" on:click={changeTheme}>
   <Mute size={'small'}/>
 </div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    align-items: center;
-    height: 56px;
-  }
-</style>

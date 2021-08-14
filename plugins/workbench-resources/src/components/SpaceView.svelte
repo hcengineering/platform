@@ -47,24 +47,23 @@ let selected = 0
 {#await getViewlets(client, _class)}
  ...
 {:then viewlets}
-<div class="container">
 
   {#if viewlets.length > 0}
-  <div class="toolbar">
-    <div style="flex-grow: 1" />
+    <div class="toolbar">
+      <div style="flex-grow: 1;" />
 
-    <div class="viewSelection-container">
-      {#each viewlets as viewlet, i}
-        <div class="button" class:selected={i === selected}>
-          <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
-        </div>
-      {/each}
+      <div class="flex">
+        {#each viewlets as viewlet, i}
+          <div class="btn" class:selected>
+            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+          </div>
+        {/each}
+      </div>
+      
     </div>
-    
-  </div>
   {/if}
 
-  <div class="content">
+  <div class="container">
     <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
       _class,
       space,
@@ -73,40 +72,36 @@ let selected = 0
       config: viewlets[selected].config
     } } />
   </div>
-</div>
+
 {/await}
 
 <style lang="scss">
-  .viewSelection-container {
+  .toolbar {
     display: flex;
-    flex-direction: row;
-    height: 32px;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.25rem 2.5rem;
+    height: 2.5rem;
 
-    .button {
+    .btn {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 2.5rem;
+      height: 2.5rem;
       background-color: transparent;
+      border-radius: .5rem;
       cursor: pointer;
 
-      .icon {
-        width: 16px;
-        height: 16px;
-        opacity: 0.2;
-      }
-
+      .icon { opacity: .3; }
       &:hover .icon {
         opacity: 1;
       }
-
       &.selected {
         background-color: var(--theme-button-bg-enabled);
         cursor: default;
-        .icon {
-          opacity: 0.8;
+        &:hover .icon {
+          opacity: .8;
         }
       }
     }
@@ -114,24 +109,7 @@ let selected = 0
   .container {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    margin: 0 2.5rem 2.5rem;
     height: 100%;
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: auto;
-      min-height: 40px;
-      height: 40px;
-      margin: 40px 40px 0;
-    }
-    .content {
-      display: flex;
-      flex-direction: column;
-      width: auto;
-      height: 100%;
-      margin: 40px;
-    }
   }
 </style>

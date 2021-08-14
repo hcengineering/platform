@@ -17,6 +17,7 @@
   import type { Ref, Space } from '@anticrm/core'
   import { Icon, ActionIcon, Button } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
+  import Header from './Header.svelte'
   import MoreH from './icons/MoreH.svelte'
   import Add from './icons/Add.svelte'
   import Star from './icons/Star.svelte'
@@ -28,6 +29,7 @@
 
   export let space: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
+  export let divider: boolean = false
 
   const client = getClient()
   const query = createQuery()
@@ -40,80 +42,28 @@
   }
 </script>
 
-<div class="header">
+<div class="container" class:bottom-divider={divider}>
   {#if data}
-  <div class="caption">
-    <div class="title">
-      <span><Icon icon={classIcon(client, data._class)} size={'small'}/></span>
-      {data.name}
-    </div>
-    <div class="subtitle">{data.description}</div>
-  </div>
-  {#if createItemDialog}
-    <Button label="Create" primary={true} on:click={showCreateDialog}/>
-  {/if}
-  <div class="buttons">
-    <div class="button"><ActionIcon icon={Star} size={'small'}/></div>
-    <div class="button"><ActionIcon icon={Add} size={'small'}/></div>
-    <div class="button"><ActionIcon icon={MoreH} size={'small'}/></div>
-  </div>
+    <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
+    {#if createItemDialog}
+      <Button label="Create" primary={true} size={'small'} on:click={showCreateDialog}/>
+    {/if}
+    <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
+    <ActionIcon label={'Create'} icon={Add} size={'small'}/>
+    <ActionIcon label={'More...'} icon={MoreH} size={'small'}/>
   {/if}
 </div>
 
 <style lang="scss">
-  .header {
-    width: 100%;
-    height: 72px;
-    min-height: 72px;
-    border-bottom: 1px solid var(--theme-menu-divider);
-    display: flex;
-    justify-content: space-between;
+  .container {
+    display: grid;
+    grid-template-columns: auto;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    gap: .75rem;
     align-items: center;
-    padding: 0 32px 0 40px;
-
-    .caption {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      color: var(--theme-caption-color);
-
-      .title {
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        user-select: none;
-        font-size: 16px;
-        font-weight: 500;
-
-        span {
-          width: 16px;
-          height: 16px;
-          margin-right: 8px;
-        }
-      }
-      .subtitle {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        font-size: 12px;
-        font-weight: 400;
-        opacity: .3;
-        user-select: none;
-      }
-    }
-
-    .buttons {
-      display: flex;
-      margin-left: 24px;
-      .button {
-        width: 16px;
-        height: 16px;
-      }
-      .button + .button {
-        margin-left: 16px;
-      }
-    }
+    padding: 0 2rem 0 2.5rem;
+    height: 4.5rem;
+    min-height: 4.5rem;
   }
 </style>

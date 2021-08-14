@@ -39,26 +39,8 @@
 
 </script>
 
-<div class="app-icons">
+<div class="flex-col">
   {#each apps as app}
-    <div class="app">
-      <AppItem selected={app._id === active} icon={app.icon} label={app.label} notify action={async () => {navigateApp(app._id)}}/>
-    </div>
+    <AppItem selected={app._id === active} icon={app.icon} label={app.label} notify action={async () => {navigateApp(app._id)}}/>
   {/each}
 </div>
-
-<style lang="scss">
-  .app-icons {
-    .app {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 48px;
-      height: 48px;
-      font-size: inherit;
-    }
-    .app + .app {
-      margin-top: 4px;
-    }
-  }
-</style>

@@ -19,12 +19,13 @@
 
   export let label: IntlString
   export let primary: boolean = false
+  export let size: 'small' | 'medium' = 'medium'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
 </script>
 
-<button class="button" class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class="button {size}" class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if loading}
     <Spinner />
   {:else}
@@ -33,22 +34,16 @@
 </button>
 
 <style lang="scss">
+  .small { height: 2.5rem; }
+  .medium { height: 3rem; }
   .button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 48px;
-    padding: 0 25px;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 12px;
-    outline: none;
-    user-select: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
+    padding: 0 1.5rem;
     font-weight: 600;
+    background-color: var(--theme-button-bg-enabled);
+    color: var(--theme-caption-color);
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: 0.75rem;
+
     &:hover {
       background-color: var(--theme-button-bg-hovered);
       border-color: var(--theme-button-border-hovered);
@@ -72,14 +67,15 @@
   .primary {
     background-color: var(--primary-button-enabled);
     border-color: var(--primary-button-border);
+
     &:hover {
       background-color: var(--primary-button-hovered);
       border-color: var(--primary-button-border);
     }
     &:focus {
       background-color: var(--primary-button-focused);
-      border-color: var(--primary-button-focused-border);
-      box-shadow: 0 0 0 2px var(--primary-button-outline);
+      border: 1px solid var(--primary-button-focused-border);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
     }
     &:active {
       background-color: var(--primary-button-pressed);

@@ -34,11 +34,11 @@
 <Theme>
   <div id="ui-root">
     <div class="status-bar">
-      <div class="container">
-        <div class="status-messages">
+      <div class="flex-row-center h-full content-color">
+        <div class="status-info">
           <StatusComponent {status} />
         </div>
-        <div class="widgets">
+        <div class="flex-row-reverse">
           <div class="clock">
             <Clock />
           </div>
@@ -58,7 +58,7 @@
       {#if application}
         <Component is={application} props={{}} />
       {:else}
-        <div class="caption-1 error">
+        <div class="error">
           Application not found: {application}
         </div>
       {/if}
@@ -73,7 +73,6 @@
     position: relative;
     display: flex;
     flex-direction: column;
-
     height: 100vh;
 
     .status-bar {
@@ -81,49 +80,35 @@
       min-width: 1200px;
       font-size: 14px;
 
-      .container {
+      .status-info {
+        flex-grow: 1;
+        text-align: center;
+      }
+      .clock {
+        margin: 0 40px 0 24px;
+        font-weight: 500;
+        font-size: 12px;
+        user-select: none;
+      }
+      .widget {
         display: flex;
         align-items: center;
-        height: 100%;
-        color: var(--theme-content-color);
-
-        .status-messages {
-          flex-grow: 1;
-          text-align: center;
-        }
-
-        .widgets {
-          display: flex;
-          align-items: center;
-          flex-direction: row-reverse;
-
-          .clock {
-            margin: 0 40px 0 24px;
-            font-weight: 500;
-            font-size: 12px;
-            user-select: none;
-          }
-          .widget {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            opacity: .6;
-          }
-        }
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        opacity: .6;
       }
-    }
-
-    .error {
-      margin-top: 45vh;
-      text-align: center;
     }
 
     .app {
       height: calc(100vh - #{$status-bar-height});
       min-width: 1200px;
       min-height: 600px;
+
+      .error {
+        margin-top: 45vh;
+        text-align: center;
+      }
     }
   }
 </style>

@@ -14,36 +14,48 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { ActionIcon } from '@anticrm/ui'
-  import MoreH from './icons/MoreH.svelte'
+  import type { IntlString, Asset } from '@anticrm/platform'
+  import { Icon } from '@anticrm/ui'
 
+  export let icon: Asset | undefined
   export let label: IntlString
-  export let action: () => Promise<void>
+  export let description: IntlString | undefined
 </script>
 
 <div class="container">
-  <span class="label">{label}</span>
-  <ActionIcon label={'More...'} icon={MoreH} size={'small'} {action}/>
+  <div class="flex-center">
+    {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
+    <span class="label">{label}</span>
+  </div>
+  {#if description }<div class="description">{description}</div>{/if}
 </div>
 
 <style lang="scss">
   .container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1.75rem;
-    height: 4.5rem;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
 
-    .label {
+    .icon {
+      margin-right: .5rem;
+      opacity: .6;
+    }
+    .label, .description {
       flex-grow: 1;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
       user-select: none;
+    }
+    .label {
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
+    }
+    .description {
+      font-size: .75rem;
+      color: var(--theme-content-trans-color);
     }
   }
 </style>

@@ -44,7 +44,7 @@
   })
 </script>
 
-<div class="editbox" style="{width ? 'width: ' + width : ''}"
+<div class="editbox" style="min-width: ; {width ? 'width: ' + width : ''}"
   on:click={() => { input.focus() }}
 >
   <div class="text" bind:this={text}></div>
@@ -57,60 +57,58 @@
 </div>
 
 <style lang="scss">
+.editbox {
+  display: flex;
+  flex-direction: column;
+  min-width: 50px;
+  height: auto;
 
-  .editbox {
-    display: flex;
-    flex-direction: column;
-    min-width: 50px;
-    height: auto;
+  .text {
+    position: absolute;
+    visibility: hidden;
+    overflow: hidden;
+    white-space: pre-wrap;
+  }
 
-    .text {
-      position: absolute;
+  .label {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+    opacity: .8;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  input {
+    max-width: 100%;
+    height: 21px;
+    margin: -4px;
+    padding: 2px;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--theme-caption-color);
+    background-color: transparent;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--primary-button-enabled);
+    }
+    &::placeholder {
+      color: var(--theme-content-dark-color);
+    }
+
+    &::-webkit-contacts-auto-fill-button,
+    &::-webkit-credentials-auto-fill-button {
       visibility: hidden;
-      overflow: hidden;
-      white-space: pre-wrap;
-    }
-
-    .label {
-      margin-bottom: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-      opacity: .8;
+      display: none !important;
       pointer-events: none;
-      user-select: none;
-    }
-
-    input {
-      max-width: 100%;
-      height: 21px;
-      margin: -4px;
-      padding: 2px;
-      font-family: inherit;
-      font-size: inherit;
-      color: var(--theme-caption-color);
-      background-color: transparent;
-      border: 2px solid transparent;
-      border-radius: 2px;
-      outline: none;
-
-      &:focus {
-        border-color: var(--primary-button-enabled);
-      }
-      &::placeholder {
-        color: var(--theme-content-dark-color);
-      }
-
-      &::-webkit-contacts-auto-fill-button,
-      &::-webkit-credentials-auto-fill-button {
-        visibility: hidden;
-        display: none !important;
-        pointer-events: none;
-        height: 0;
-        width: 0;
-        margin: 0;
-      }
-
+      height: 0;
+      width: 0;
+      margin: 0;
     }
   }
+}
 </style>

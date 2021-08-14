@@ -63,26 +63,29 @@
 
 {#if client}
   <svg class="mask">
-    <clipPath id="notify">
-      <path d="M0,0v48h48V0H0z M32,25c-3.9,0-7-3.1-7-7s3.1-7,7-7s7,3.1,7,7S35.9,25,32,25z"/>
+    <clipPath id="notify-normal">
+      <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"/>
+    </clipPath>
+    <clipPath id="notify-small">
+      <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z"/>
     </clipPath>
   </svg>
   <div class="container">
-    <div class="applications">
+    <div class="panel-app">
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
-      <div class="profile">
-        <img class="avatar" src={avatar} alt="Profile"/>
+      <div class="flex-center" style="min-height: 6.25rem;">
+        <img class="square-36" src={avatar} alt="Profile"/>
       </div>
     </div>
     {#if navigator}
-    <div class="navigator">
-      <NavHeader/>
+    <div class="panel-navigator">
+      <NavHeader label={'Chat'}/>
       <Navigator model={navigatorModel}/>
     </div>
     {/if}
-    <div class="component">
-      <SpaceHeader space={currentSpace} {createItemDialog}/>
+    <div class="panel-component">
+      <SpaceHeader space={currentSpace} {createItemDialog} />
       {#if currentView && currentSpace}
         <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
       {/if}
@@ -95,67 +98,44 @@
 {/if}
 
 <style lang="scss">
-  @mixin panel($bg-color) {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border-radius: 20px;
-    background-color: $bg-color;
-  }
   .mask {
     position: absolute;
     width: 0;
     height: 0;
   }
-
   .container {
     display: flex;
-    flex-direction: row;
     height: 100%;
-    padding-bottom: 20px;
+    padding-bottom: 1.25rem;
 
-    .applications {
-      @include panel('transparent');
+    .panel-app {
+      display: flex;
+      flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      min-width: 96px;
-
-      .profile {
-        display: flex;
-        align-items: center;
-        height: 100px;
-        min-height: 100px;
-        .avatar {
-          width: 36px;
-          height: 36px;
-        }
-      }
+      min-width: 5rem;
+      width: 5rem;
+      height: 100%;
+      border-radius: 1.25rem;
     }
-
-    .navigator {
-      @include panel(var(--theme-bg-color));
-      width: 280px;
-      min-width: 280px;
-      margin-right: 20px;
+    .panel-navigator {
+      display: flex;
+      flex-direction: column;
+      margin-right: 1rem;
+      min-width: 18rem;
+      width: 18rem;
+      height: 100%;
+      border-radius: 1.25rem;
+      background-color: var(--theme-bg-color);
     }
-
-    // .externalComponent {
-    //   @include panel(var(--theme-bg-color));
-    //   width: 100%;
-    //   margin-right: 20px;
-    // }
-
-    .component {
-      @include panel(var(--theme-bg-color));
+    .panel-component {
       flex-grow: 1;
-      margin-right: 20px;
+      display: flex;
+      flex-direction: column;
+      margin-right: 1rem;
+      height: 100%;
+      border-radius: 1.25rem;
+      background-color: var(--theme-bg-color);
     }
-
-    // .aside {
-    //   @include panel(var(--theme-bg-color));
-    //   min-width: 400px;
-    //   max-width: 400px;
-    //   margin-right: 20px;
-    // }
   }
 </style>

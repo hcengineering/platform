@@ -25,66 +25,70 @@
 </script>
 
 <button class="app" class:selected={selected} on:click={action}>
-  {#if notify}
-    <div class="marker"/>
-  {/if}
   <Tooltip label={label} direction="right">
-    <div class="container" class:noty={notify}>
+    <div class="icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
   </Tooltip>
+  {#if notify}
+    <div class="marker"/>
+  {/if}
 </button>
 
 <style lang="scss">
   .app {
     position: relative;
     padding: 0;
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    outline: none;
+    width: 3.25rem;
+    height: 3.25rem;
     background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: .5rem;
     cursor: pointer;
-    font-size: inherit;
+    outline: none;
 
-    .marker {
-      position: absolute;
-      top: 14px;
-      left: 28px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--highlight-red);
-    }
-    .container {
+    .icon-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 48px;
-      height: 48px;
+      width: 3.25rem;
+      height: 3.25rem;
       opacity: .3;
-      &.noty {
-        clip-path: url(#notify);
+
+      .normal-font &.noty {
+        clip-path: url(#notify-normal);
+      }
+      .small-font &.noty {
+        clip-path: url(#notify-small);
       }
     }
-    &:hover .container {
+
+    &:hover .icon-container {
       opacity: 1;
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
-      .container {
+      .icon-container {
         opacity: 1;
       }
     }
+
     &.selected {
       background-color: var(--theme-menu-selection);
-      .container {
+      .icon-container {
         opacity: 1;
       }
     }
+  }
+
+  .marker {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background-color: var(--highlight-red);
   }
 </style>

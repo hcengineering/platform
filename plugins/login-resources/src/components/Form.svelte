@@ -137,12 +137,6 @@
         grid-column-start: 1;
         grid-column-end: 3;
       }
-      @media (max-width: 985px) {
-        .form-col {
-          grid-column-start: 1;
-          grid-column-end: 3;
-        }
-      }
       .send {
         margin-top: 36px;
       }

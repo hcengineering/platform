@@ -33,120 +33,94 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="container" on:click|stopPropagation={() => {if (node && !icon) collapsed = !collapsed; dispatch('click')}}>
-  <div class="title" class:sub={!node}>
-    <div class="icon" class:sub={!node}>
-      {#if icon}
-        <Icon {icon} size={'small'}/>
-      {:else}
-        {#if collapsed}<Collapsed/>{:else}<Expanded/>{/if}
-      {/if}
-    </div>
-    <span>
-      {#if label}<Label {label}/>{:else}{title}{/if}
-    </span>
-    {#each actions as action}
-      <div class="tool">
-        <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
-      </div>
-    {/each}
-    {#if notifications > 0 && collapsed}
-      <div class="counter">{notifications}</div>
+<div class="container"
+  on:click|stopPropagation={() => {
+    if (node && !icon) collapsed = !collapsed
+    dispatch('click')
+  }}
+>
+  <div class="icon" class:sub={!node}>
+    {#if icon}
+      <Icon {icon} size={'small'}/>
+    {:else}
+      {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
     {/if}
   </div>
+  <span class="label" class:sub={node}>
+    {#if label}<Label {label}/>{:else}{title}{/if}
+  </span>
+  {#each actions as action}
+    <div class="tool">
+      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
+    </div>
+  {/each}
+  {#if notifications > 0 && collapsed}
+    <div class="counter">{notifications}</div>
+  {/if}
 </div>
 {#if node && !icon}
-  <div class="dropdown" class:collapsed={collapsed}>
+  <div class="dropbox" class:hidden={collapsed}>
     <slot/>
   </div>
 {/if}
 
 <style lang="scss">
   .container {
-    height: 36px;
+    display: flex;
+    align-items: center;
+    margin: 0 1rem;
+    height: 2.25rem;
+    border-radius: .5rem;
+    user-select: none;
     cursor: pointer;
-    .title {
-      display: flex;
-      align-items: center;
-      margin: 0 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--theme-caption-color);
+
+    .icon {
+      min-width: 1rem;
+      opacity: .3;
+      margin: 0 1.125rem 0 .625rem;
+      &.sub { margin: 0 .5rem 0 2.75rem }
+    }
+    .label {
+      flex-grow: 1;
+      margin-right: .75rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       user-select: none;
+      font-weight: 400;
+      color: var(--theme-content-color);
       &.sub {
-        font-weight: 400;
-        color: var(--theme-content-color);
+        font-weight: 500;
+        color: var(--theme-caption-color);
       }
-      .icon {
-        width: 16px;
-        min-width: 16px;
-        height: 16px;
-        margin: 10px 16px 10px 18px;
-        border-radius: 4px;
-        opacity: .3;
-        &.sub {
-          margin: 10px 16px 10px 50px;
-        }
-      }
-      // .avatar {
-      //   width: 24px;
-      //   min-width: 24px;
-      //   height: 24px;
-      //   margin: 6px 8px 6px 50px;
-      //   border-radius: 50%;
-      //   background-color: var(--theme-bg-selection);
-      // }
-      span {
-        flex-grow: 1;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-      .tool {
-        width: 16px;
-        height: 16px;
-        margin-left: 12px;
-        opacity: 0;
-        &:last-child {
-          margin-right: 10px;
-        }
-      }
-      .counter {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 24px;
-        min-width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        margin: 6px 10px;
-        background-color: #DA5F44;
-        font-size: 12px;
-        font-weight: 600;
-        color: #fff;
-      }
-      &:hover {
-        background-color: var(--theme-button-bg-enabled);
-        .tool {
-          visibility: visible;
-        }
-      }
+    }
+    .tool {
+      margin-right: .75rem;
+      visibility: hidden;
+    }
+    .counter {
+      margin-right: .75rem;
+      font-weight: 600;
+      font-size: .75rem;
+      color: var(--theme-caption-color);
     }
 
-    &:hover .title .tool {
-      opacity: 1;
+    &:hover {
+      background-color: var(--theme-button-bg-enabled);
+      .tool {
+        visibility: visible;
+      }
     }
   }
-  .dropdown {
-    visibility: visible;
+
+  .dropbox {
     height: auto;
-    width: 100%;
-    margin-bottom: 20px;
-    &.collapsed {
+    margin-bottom: .5rem;
+    visibility: visible;
+
+    &.hidden {
+      height: auto;
       visibility: hidden;
-      height: 0;
-      margin-bottom: 8px;
     }
   }
 </style>

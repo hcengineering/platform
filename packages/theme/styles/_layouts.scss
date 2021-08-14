@@ -1,0 +1,93 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* CLEAR */
+button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  font-size: inherit;
+  background-color: transparent;
+  border: 1px solid transparent;
+  outline: none;
+  cursor: pointer;
+}
+audio, canvas, embed, iframe, img, object, svg, video {
+  display: block;
+  vertical-align: middle;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus
+input:-webkit-autofill, 
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--theme-caption-color);
+  transition: background-color 5000s ease-in-out 0s;
+  background: transparent;
+}
+
+/* Common */
+.flex { display: flex; }
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-row-center {
+  display: flex;
+  align-items: center;
+}
+.flex-row-reverse {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.h-full { height: 100%; }
+.square-36 { width: 2.25rem; height: 2.25rem; }
+
+/* Backgrounds & Colors */
+.background-theme-bg-color { background-color: var(--theme-bg-color); }
+.background-highlight-red { background-color: var(--highlight-red); }
+.background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
+.background-menu-divider { background-color: var(--theme-menu-divider); }
+.background-primary-button-enabled { background-color: var(--primary-button-enabled); }
+
+.content-color { color: var(--theme-content-color); }
+.content-trans-color { color: var(--theme-content-trans-color); }
+.caption-color { color: var(--theme-caption-color); }
+
+.border-primary-button { border-color: var(--primary-button-border); }
+.border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }
+.bottom-divider { border-bottom: 1px solid var(--theme-menu-divider); }
