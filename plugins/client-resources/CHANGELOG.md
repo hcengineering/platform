@@ -1,6 +1,13 @@
 # Change Log - @anticrm/client-resources
 
-This log was last generated on Wed, 11 Aug 2021 10:08:19 GMT and should not be manually modified.
+This log was last generated on Sat, 14 Aug 2021 09:12:06 GMT and should not be manually modified.
+
+## 0.6.3
+Sat, 14 Aug 2021 09:12:06 GMT
+
+### Patches
+
+- ping
 
 ## 0.6.2
 Wed, 11 Aug 2021 10:08:19 GMT
