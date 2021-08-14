@@ -29,6 +29,20 @@ audio, canvas, embed, iframe, img, object, svg, video {
   display: block;
   vertical-align: middle;
 }
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus
+input:-webkit-autofill, 
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--theme-caption-color);
+  transition: background-color 5000s ease-in-out 0s;
+  background: transparent;
+}
 
 /* Common */
 .flex { display: flex; }
