@@ -17,6 +17,10 @@
 import express from 'express'
 import fileUpload from 'express-fileupload'
 
+/**
+ * @public
+ * @param port -
+ */
 export function start (port: number): void {
   const app = express()
 
@@ -32,6 +36,6 @@ export function start (port: number): void {
       res.status(400).send()
     }
   })
-  
+
   app.listen(port)
 }
