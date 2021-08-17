@@ -130,6 +130,7 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: .5rem;
+    border: none;
   }
 
   .arrow {

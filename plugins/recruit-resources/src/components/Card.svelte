@@ -32,9 +32,9 @@
 
 </script>
 
-<div class="card-container">
+<div class="container">
   <div class="status"><LabelStatus label={user.state} color={'var(--primary-button-enabled)'} /></div>
-  <div class="avatar"><Avatar size={88} /></div>
+  <div class="avatar"><Avatar size={'large'} /></div>
   <div class="name">{user.lastName} {user.firstName}</div>
   <div class="description">{user.description}</div>
   <div class="city">{user.city}</div>
@@ -42,11 +42,11 @@
 </div>
 
 <style lang="scss">
-  .card-container {
+  .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 24px;
+    padding: 1.25rem 1.5rem;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
@@ -55,29 +55,29 @@
       display: flex;
       flex-direction: row-reverse;
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
     }
     .avatar {
-      height: 88px;
+      height: 5rem;
     }
     .name {
-      margin: 16px 0 4px;
+      margin: 1rem 0 .25rem;
       font-weight: 500;
-      font-size: 16px;
+      font-size: 1rem;
       line-height: 150%;
       color: var(--theme-caption-color);
     }
     .description, .city {
-      font-size: 12px;
+      font-size: .75rem;
       color: var(--theme-content-dark-color);
     }
     .city {
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
     }
 
     &:hover {
       background-color: var(--theme-bg-accent-hover);
-      box-shadow: 0px 12px 40px rgba(0, 0, 0, .15);
+      box-shadow: 0px .75rem 2.5rem rgba(0, 0, 0, .15);
     }
   }
 </style>

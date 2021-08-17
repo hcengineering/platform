@@ -36,7 +36,7 @@
 </script>
 
 <div class="container">
-  <div class="avatar"><Avatar size={36} /></div>
+  <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
     <div class="header">{name}<span>{time}</span></div>
     <div class="text"><MessageViewer message={message.content}/></div>

@@ -81,7 +81,7 @@ $: {
     <div class="scroll">
       {#each items as item, i}
         <div class:selected={i === selected}>
-          <UserInfo size={36} value={item} />
+          <UserInfo size={'medium'} value={item} />
         </div>
       {/each}
     </div>

@@ -19,12 +19,10 @@
 </script>
 
 <div class="header">
-  <div class="flex-center">
+  <div class="flex-col-center">
     <div class="avatar"></div>
-    <div class="flex-col-center info">
-      <div class="name">Candidate Name</div>
-      <div class="title">Candidate title</div>
-    </div>
+    <div class="name">Candidate Name</div>
+    <div class="title">Candidate title</div>
   </div>
 </div>
 
@@ -48,22 +46,17 @@
       border-radius: 50%;
       background-color: #C4C4C4;
     }
-
-    .info {
+    .name {
       margin-top: .625rem;
-
-      .name {
-        font-size: 1rem;
-        font-weight: 500;
-        line-height: 150%;
-        color: var(--theme-caption-color);
-      }
-      .title {
-        font-size: .75rem;
-        font-weight: 500;
-        color: var(--theme-caption-color);
-        opacity: .6;
-      }
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 150%;
+      color: var(--theme-caption-color);
+    }
+    .title {
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--theme-content-color);
     }
   }
 </style>

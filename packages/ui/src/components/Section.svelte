@@ -34,7 +34,7 @@
   <div class="title"><Label {label} /></div>
   <div class="arrow">{#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}</div>
 </div>
-<div class="section-content" class:hidden={closed}><slot/></div>
+{#if !closed }<div class="section-content"><slot/></div>{/if}
 
 <style lang="scss">
   .section-container {
@@ -57,12 +57,6 @@
   .section-content {
     margin: 1rem 0 3.5rem;
     height: auto;
-    visibility: visible;
-    &.hidden {
-      margin: 0;
-      height: 0;
-      visibility: hidden;
-    }
   }
   :global(.section-container + .section-container),
   :global(.section-content + .section-container) {

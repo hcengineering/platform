@@ -24,7 +24,7 @@
 </script>
 
 <div class="flex-nowrap">
-  <div class="avatar"><Avatar size={36} /></div>
+  <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
     <div class="header">Rosamund Chen<span>July 28th</span></div>
     <div class="text"><MessageViewer message={backlink.message} /></div>

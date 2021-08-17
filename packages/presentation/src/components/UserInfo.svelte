@@ -20,7 +20,7 @@
 
   export let value: Person
   export let subtitle: string | undefined = undefined
-  export let size: 24 | 28 | 32 | 34 | 36 = 24
+  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 </script>
 
 <div class="flex-row-center">

@@ -29,7 +29,7 @@
   <div class="counter">{replies.length} Replies</div>
   <div class="flex-row-center">
     {#each showReplies as reply}
-      <div class="reply"><Avatar size={28} /></div>
+      <div class="reply"><Avatar size={'x-small'} /></div>
     {/each}
     {#if replies.length > shown}
       <div class="reply"><span>+{replies.length - shown}</span></div>
@@ -62,8 +62,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 1.75rem;
-        height: 1.75rem;
+        width: 1.5rem;
+        height: 1.5rem;
         font-size: .75rem;
         font-weight: 500;
         line-height: .5;

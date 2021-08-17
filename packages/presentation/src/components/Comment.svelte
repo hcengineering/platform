@@ -35,7 +35,7 @@
 </script>
 
 <div class="flex-nowrap">
-  <div class="avatar"><Avatar size={36} /></div>
+  <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
     <div class="header">{user.firstName} {user.lastName}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>

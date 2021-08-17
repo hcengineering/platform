@@ -36,7 +36,7 @@
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
   <div class="header">
-    <UserInfo value={{firstName: card.firstName, lastName: card.lastName }} subtitle={'Candidate'} size={28} />
+    <UserInfo value={{firstName: card.firstName, lastName: card.lastName }} subtitle={'Candidate'} size={'small'} />
     <ActionIcon icon={MoreH} label={'More..'} direction={'left'} />
   </div>
   <div class="content">

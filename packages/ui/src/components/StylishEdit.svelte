@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import Label from './Label.svelte'
 
@@ -23,16 +22,13 @@
   export let error: string | undefined = undefined
   export let password: boolean | undefined = undefined
   export let id: string | undefined = undefined
-  export let focus: boolean = false
-
-  let input: HTMLInputElement
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
   {#if password}
-    <input bind:this={input} type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
+    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {:else}
-    <input bind:this={input} type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
+    <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {/if}
   {#if label}
     <div class="label"><Label {label} /></div>

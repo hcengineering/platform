@@ -51,7 +51,7 @@
       }}
     >
       {#if selected}
-        <Avatar size={34} />
+        <Avatar size={'medium'} />
       {:else}
         <div class="icon">
           {#if show}<Close size={'small'} />{:else}<Add size={'small'} />{/if}
@@ -70,7 +70,7 @@
         selected = person
         value = person._id
         show = !show
-      }}><UserInfo value={person}/></button>
+      }}><UserInfo size={'medium'} value={person} /></button>
     {/each}
   </PopupMenu>
 
@@ -87,6 +87,7 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 50%;
+    border: none;
   }
 
   .header {
