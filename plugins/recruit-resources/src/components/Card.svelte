@@ -49,7 +49,7 @@
     padding: 20px 24px;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 12px;
+    border-radius: .75rem;
 
     .status {
       display: flex;

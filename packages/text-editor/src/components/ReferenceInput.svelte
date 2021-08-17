@@ -55,7 +55,7 @@
       padding: 8px 16px;
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 12px;
+      border-radius: .75rem;
 
       .inputMsg {
         display: flex;
@@ -105,7 +105,7 @@
         height: 20px;
         background-color: transparent;
         border: 1px solid transparent;
-        border-radius: 4px;
+        border-radius: .25rem;
         outline: none;
         cursor: pointer;
 

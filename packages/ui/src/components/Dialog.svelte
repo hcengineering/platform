@@ -33,7 +33,7 @@
 
 <div class="dialog-container">
   <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
-    <div class="header">
+    <div class="flex-between header">
       <div class="title"><Label {label}/></div>
       <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'}/></div>
     </div>
@@ -54,7 +54,7 @@
     justify-content: space-between;
     flex-direction: row-reverse;
     width: 100vw;
-    max-height: 100vh;
+    min-height: 100vh;
     height: 100vh;
 
     .dialog {
@@ -63,45 +63,38 @@
       min-width: 40%;
       max-width: 80%;
       width: auto;
-      max-height: 100vh;
+      min-height: 100vh;
       height: 100vh;
       background-color: var(--theme-bg-color);
-      border-radius: 30px 0 0 30px;
-      box-shadow: 0px 50px 120px rgba(0, 0, 0, 0.4);
+      border-radius: 1.875rem 0 0 1.875rem;
+      box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
 
       .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         flex-shrink: 0;
-        padding: 0 32px 0 40px;
-        height: 72px;
+        padding: 0 2rem 0 2.5rem;
+        height: 4.5rem;
 
         .title {
           flex-grow: 1;
           font-weight: 500;
-          font-size: 18px;
+          font-size: 1.125rem;
           color: var(--theme-caption-color);
           user-select: none;
         }
 
         .tool {
-          width: 16px;
-          height: 16px;
-          margin-left: 12px;
+          margin-left: .75rem;
           opacity: .4;
           cursor: pointer;
-          &:hover {
-            opacity: 1;
-          }
+          &:hover { opacity: 1; }
         }
       }
 
       .content {
         flex-shrink: 0;
-        width: 640px;
-        margin: 0 40px;
-        height: calc(100vh - 168px);
+        width: 40rem;
+        margin: 0 2.5rem;
+        height: calc(100vh - 10.5rem);
       }
 
       .footer {
@@ -110,10 +103,10 @@
         flex-direction: row-reverse;
         align-items: center;
         flex-shrink: 0;
-        gap: 12px;
-        padding: 0 40px;
-        height: 96px;
-        mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 20px, rgba(0, 0, 0, 1) 40px);
+        gap: .75rem;
+        padding: 0 2.5rem;
+        height: 6rem;
+        mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
       }
     }
   }

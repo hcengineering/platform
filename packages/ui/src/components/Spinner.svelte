@@ -12,8 +12,8 @@
 
 <style lang="scss">
   .spinner {
-    width: 24px;
-    height: 24px;
+    width: 1.5rem;
+    height: 1.5rem;
     -webkit-animation: spinCircle 1s infinite linear;
     animation: spinCircle 1s infinite linear;
   }

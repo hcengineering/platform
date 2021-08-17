@@ -55,7 +55,7 @@
     align-items: stretch;
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 12px;
+    border-radius: .75rem;
     user-select: none;
 
     .header {

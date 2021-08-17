@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   export let column: number = 2
-  export let rowGap: number = 40
-  export let columnGap: number = 24
+  export let rowGap: number = 2.5
+  export let columnGap: number = 1.5
 
-  const style = `grid-template-columns: repeat(${column}, 1fr); row-gap: ${rowGap}px; column-gap: ${columnGap}px;`
+  const style = `grid-template-columns: repeat(${column}, 1fr); row-gap: ${rowGap}rem; column-gap: ${columnGap}rem;`
 </script>
 
 <div class="grid" {style}>
@@ -28,7 +28,7 @@
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    row-gap: 40px;
-    column-gap: 24px;
+    row-gap: 2.5rem;
+    column-gap: 1.5rem;
   }
 </style>

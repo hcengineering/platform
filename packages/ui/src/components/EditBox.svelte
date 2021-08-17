@@ -32,7 +32,7 @@
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + 8 + 'px'
+    target.style.width = text.clientWidth + (parseFloat(getComputedStyle(document.documentElement).fontSize) * .5) + 'px'
   }
 
   onMount(() => {
@@ -44,10 +44,10 @@
   })
 </script>
 
-<div class="editbox" style="min-width: ; {width ? 'width: ' + width : ''}"
+<div class="flex-col" style="{width ? 'width: ' + width : ''}"
   on:click={() => { input.focus() }}
 >
-  <div class="text" bind:this={text}></div>
+  <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   {#if password}
     <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
@@ -57,22 +57,9 @@
 </div>
 
 <style lang="scss">
-.editbox {
-  display: flex;
-  flex-direction: column;
-  min-width: 50px;
-  height: auto;
-
-  .text {
-    position: absolute;
-    visibility: hidden;
-    overflow: hidden;
-    white-space: pre-wrap;
-  }
-
   .label {
-    margin-bottom: 4px;
-    font-size: 12px;
+    margin-bottom: .25rem;
+    font-size: .75rem;
     font-weight: 500;
     color: var(--theme-caption-color);
     opacity: .8;
@@ -81,17 +68,11 @@
   }
 
   input {
-    max-width: 100%;
-    height: 21px;
-    margin: -4px;
-    padding: 2px;
-    font-family: inherit;
-    font-size: inherit;
-    color: var(--theme-caption-color);
-    background-color: transparent;
-    border: 2px solid transparent;
-    border-radius: 2px;
-    outline: none;
+    height: 1.25rem;
+    margin: -.25rem;
+    padding: .125rem;
+    border: .125rem solid transparent;
+    border-radius: .125rem;
 
     &:focus {
       border-color: var(--primary-button-enabled);
@@ -110,5 +91,4 @@
       margin: 0;
     }
   }
-}
 </style>

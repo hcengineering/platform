@@ -34,50 +34,39 @@
 
 </script>
 
-<div class="comment-message">
+<div class="flex-nowrap">
   <div class="avatar"><Avatar size={36} /></div>
-  <div class="message">
+  <div class="flex-col-stretch message">
     <div class="header">{user.firstName} {user.lastName}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>
   </div>
 </div>
 
 <style lang="scss">
-  .comment-message {
-    display: flex;
-    flex-wrap: nowrap;
+  .avatar {
+    margin-right: 1rem;
+  }
+  .message {
+    margin-right: 1.25rem;
 
-    .avatar {
-      width: 36px;
-      height: 36px;
-      margin-right: 16px;
+    .header {
+      margin-bottom: .25rem;
+      font-weight: 500;
+      font-size: 1rem;
+      line-height: 150%;
+      color: var(--theme-caption-color);
+
+      span {
+        margin-left: .5rem;
+        font-weight: 400;
+        font-size: .875rem;
+        color: var(--theme-content-dark-color);
+      }
     }
-    .message {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      margin-right: 20px;
 
-      .header {
-        margin-bottom: 4px;
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 150%;
-        color: var(--theme-caption-color);
-
-        span {
-          margin-left: 8px;
-          font-weight: 400;
-          font-size: 14px;
-          color: var(--theme-content-dark-color);
-        }
-      }
-
-      .text {
-        font-size: 14px;
-        line-height: 150%;
-        color: var(--theme-content-color);
-      }
+    .text {
+      line-height: 150%;
+      color: var(--theme-content-color);
     }
   }
 </style>

@@ -17,15 +17,17 @@
   import chen from '../../img/chen.png'
 
   export let avatar: any = chen
-  export let size: 16 | 24 | 32 | 34 | 36 | 88 = 24
+  export let size: 16 | 24 | 28 | 32 | 34 | 36 | 88 = 24
+
+  let remSize = size / parseFloat(getComputedStyle(document.documentElement).fontSize)
 </script>
 
-<div class="avatar-container" style="width: {size}px; height: {size}px;">
-  <img style="width: {size}px; height: {size}px;" src={avatar} alt={''}/>
+<div class="container" style="width: {remSize}rem; height: {remSize}rem;">
+  <img style="width: {remSize}rem; height: {remSize}rem;" src={avatar} alt={''}/>
 </div>
 
 <style lang="scss">
-  .avatar-container {
+  .container {
     overflow: hidden;
     border: 50%;
     pointer-events: none;

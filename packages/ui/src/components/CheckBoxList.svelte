@@ -12,36 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import CheckBoxWithLabel from './CheckBoxWithLabel.svelte'
   import Label from './Label.svelte'
   import Add from './icons/Add.svelte'
 
   export let label: IntlString
-  export let items: Array<Object> = [
-    { id: 0, label: '15 minute phone call', done: true },
-    { id: 1, label: 'Follow up email', done: false },
-    { id: 2, label: 'First round interview', done: false },
-    { id: 3, label: 'Follow up email', done: false },
-    { id: 4, label: 'Second round interview', done: false },
-    { id: 5, label: 'Third round interview', done: false },
+  export let items: Array<Object>
+  = [
+    { description: '15 minute phone call', done: true },
+    { description: 'Follow up email', done: false },
+    { description: 'First round interview', done: false },
+    { description: 'Follow up email', done: false },
+    { description: 'Second round interview', done: false },
+    { description: 'Third round interview', done: false },
   ]
   export let editable: boolean = false
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="checkbox-list">
   {#each items as item}
-    <div class="list-item"><CheckBoxWithLabel bind:label={item.label} bind:checked={item.done} {editable} /></div>
+    <div class="list-item">
+      <CheckBoxWithLabel
+        bind:label={item.description}
+        bind:checked={item.done}
+        {editable}
+        on:change={() => {
+          dispatch('change', item)
+        }}
+      />
+    </div>
   {/each}
-  <div class="add-item"
+  <div
+    class="add-item"
     on:click={() => {
-      items.push({ id: Date.now(), label: 'New item', done: false })
+      items.push({ description: 'New item', done: false })
       items = items
     }}
   >
-    <div class="icon"><Add /></div>
+    <div class="icon"><Add size={'small'} /></div>
     <div class="label"><Label {label} /></div>
   </div>
 </div>
@@ -51,34 +64,24 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    margin: 0 16px;
-    .list-item + .list-item {
-      margin-top: 20px;
-    }
+    margin: 0 1rem;
+
+    .list-item + .list-item { margin-top: 1.25rem; }
 
     .add-item {
       display: flex;
       align-items: center;
-      margin-top: 20px;
+      margin-top: 1.25rem;
       cursor: pointer;
 
-      .icon {
-        width: 16px;
-        height: 16px;
-        opacity: .6;
-      }
+      .icon { opacity: .6; }
       .label {
-        margin-left: 16px;
+        margin-left: 1rem;
         color: var(--theme-content-color);
       }
-
       &:hover {
-        .icon {
-          opacity: 1;
-        }
-        .label {
-          color: var(--theme-caption-color);
-        }
+        .icon { opacity: 1; }
+        .label { color: var(--theme-caption-color); }
       }
     }
   }

@@ -56,11 +56,11 @@
   }
 </script>
 
-<div class="dataPicker">
+<div class="flex-row-center">
   <PopupMenu bind:show={show}>
     <button
       slot="trigger"
-      class="btn"
+      class="focused-button btn"
       class:selected={show}
       on:click|preventDefault={() => {
         show = !show
@@ -71,11 +71,11 @@
       </div>
     </button>
 
-    <div class="header">
+    <div class="flex-col caption-color">
       <div class="title"><Label label={title} /></div>
-      <div class="nav">
+      <div class="flex-between nav">
         <button
-          class="btn arrow"
+          class="focused-button arrow"
           on:click|preventDefault={() => {
             view.setMonth(view.getMonth() - 1)
             view = view
@@ -84,7 +84,7 @@
           {monthYear}
         </div>
         <button
-          class="btn arrow"
+          class="focused-button arrow"
           on:click|preventDefault={() => {
             view.setMonth(view.getMonth() + 1)
             view = view
@@ -118,7 +118,7 @@
     </div>
   </PopupMenu>
   <div class="selectDate">
-    <div class="title"><Label label={title} /></div>
+    <div class="label"><Label label={title} /></div>
     <div class="date">
       {selected.getMonth() + 1} / {selected.getDate()} / {selected.getFullYear()}
     </div>
@@ -126,139 +126,72 @@
 </div>
 
 <style lang="scss">
-  .dataPicker {
-    display: flex;
-    flex-wrap: nowrap;
+  .btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .5rem;
+  }
 
-    .btn {
+  .arrow {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .25rem;
+  }
+
+  .title {
+    margin-bottom: .75rem;
+    font-weight: 500;
+    text-align: left;
+  }
+  .nav {
+    min-width: 16.5rem;
+
+    .monthYear {
+      margin: 0 1rem;
+      line-height: 150%;
+      white-space: nowrap;
+    }
+  }
+
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: .125rem;
+    margin-top: .5rem;
+
+    .caption, .day {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0;
-      padding: 0;
-      width: 36px;
-      height: 36px;
-      background-color: var(--theme-button-bg-focused);
-      border: 1px solid transparent;
-      border-radius: 8px;
-      outline: none;
+      width: 2.25rem;
+      height: 2.25rem;
+      color: var(--theme-content-dark-color);
+    }
+    .caption {
+      font-size: .75rem;
+    }
+    .day {
+      border-radius: .5rem;
       cursor: pointer;
-
-      .icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 20px;
-        height: 20px;
-        opacity: 0.3;
-      }
-
-      &.arrow {
-        width: 32px;
-        height: 32px;
-        border: 1px solid var(--theme-bg-accent-color);
-        border-radius: 4px;
-
-        .icon {
-          width: 16px;
-          height: 16px;
-        }
-      }
 
       &.selected {
         background-color: var(--theme-button-bg-focused);
         border: 1px solid var(--theme-bg-accent-color);
-        .icon {
-          opacity: 0.6;
-        }
-      }
-
-      &:hover {
-        background-color: var(--theme-button-bg-pressed);
-        border: 1px solid var(--theme-bg-accent-color);
-        .icon {
-          opacity: 1;
-        }
-      }
-      &:focus {
-        border: 1px solid var(--primary-button-focused-border);
-        box-shadow: 0 0 0 3px var(--primary-button-outline);
-        .icon {
-          opacity: 1;
-        }
-      }
-    }
-
-    .header {
-      display: flex;
-      flex-direction: column;
-      color: var(--theme-caption-color);
-
-      .title {
-        margin-bottom: 12px;
-        font-size: 14px;
-        font-weight: 500;
-        text-align: left;
-      }
-      .nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        min-width: 264px;
-
-        .monthYear {
-          margin: 0 16px;
-          line-height: 150%;
-          white-space: nowrap;
-        }
-      }
-    }
-
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      margin-top: 8px;
-
-      .caption {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 36px;
-        height: 36px;
-        font-size: 12px;
-        color: var(--theme-content-dark-color);
-      }
-      .day {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 36px;
-        height: 36px;
-        font-family: inherit;
-        color: var(--theme-content-dark-color);
-        border-radius: 8px;
-        cursor: pointer;
-
-        &.selected {
-          background-color: var(--theme-button-bg-focused);
-          border: 1px solid var(--theme-bg-accent-color);
-          color: var(--theme-caption-color);
-        }
-      }
-    }
-
-    .selectDate {
-      margin-left: 12px;
-      .title {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--theme-content-accent-color);
-      }
-      .date {
-        font-size: 14px;
         color: var(--theme-caption-color);
       }
+    }
+  }
+
+  .selectDate {
+    margin-left: .75rem;
+    .label {
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--theme-content-accent-color);
+    }
+    .date {
+      color: var(--theme-caption-color);
     }
   }
 </style>

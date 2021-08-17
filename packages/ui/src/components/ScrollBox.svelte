@@ -14,14 +14,14 @@
 -->
 
 <script lang="ts">
-  export let gap: number = 12
+  export let gap: number = .75
   export let vertical: boolean = false
   export let stretch: boolean = false
   export let bothScroll: boolean = false
 </script>
 
 <div class="scroll" class:vertical={vertical} class:bothScroll={bothScroll}>
-  <div class="box" class:stretch={stretch} style="gap: {gap}px">
+  <div class="box" class:stretch={stretch} style="gap: {gap}rem">
     <slot/>
   </div>
 </div>
@@ -34,14 +34,14 @@
     overflow-x: auto;
     overflow-y: hidden;
     margin-right: 0;
-    margin-bottom: -5px;
+    margin-bottom: -.75rem;
 
     .box {
       position: absolute;
       display: grid;
       grid-auto-flow: column;
-      padding: 0 0 5px 0;
-      gap: 24px;
+      padding: 0 0 .375rem 0;
+      gap: 1.5rem;
       top: 0;
       left: 0;
       width: auto;
@@ -52,12 +52,12 @@
     }
 
     &.vertical {
-      margin: 0 -10px 0 -10px;
+      margin: 0 -.5rem 0 -.5rem;
       overflow-x: hidden;
       overflow-y: auto;
       .box {
         grid-auto-flow: row;
-        padding: 0 10px 0 10px;
+        padding: 0 .5rem 0 .5rem;
         width: 100%;
         height: auto;
         &.stretch {
@@ -67,10 +67,10 @@
     }
 
     &.bothScroll {
-      margin: 0 -5px -5px 0;
+      margin: 0 -.375rem -.375rem 0;
       overflow: auto;
       .box {
-        padding: 0 5px 5px 0;
+        padding: 0 .375rem .375rem 0;
       }
     }
   }

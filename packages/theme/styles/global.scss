@@ -14,7 +14,7 @@
 //
 
 @import "./_colors.scss";
-@import "./_tailwind.scss";
+// @import "./_tailwind.scss";
 @import "./_layouts.scss";
 
 @font-face {
@@ -72,15 +72,15 @@
 }
 ::-webkit-scrollbar-thumb {
   background-color: var(--theme-scroll-bar);
-  border-radius: 4px;
+  border-radius: .25rem;
 }
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--theme-scroll-bar);
-  border-radius: 4px;
+  border-radius: .25rem;
 }
 ::-webkit-scrollbar-corner {
   background-color: var(--theme-scroll-bar);
-  border-radius: 4px;
+  border-radius: .25rem;
 }
 
 .normal-font { font-size: 16px; }

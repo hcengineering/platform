@@ -19,9 +19,9 @@
 </script>
 
 <div class="header">
-  <div class="user-container">
+  <div class="flex-center">
     <div class="avatar"></div>
-    <div class="info">
+    <div class="flex-col-center info">
       <div class="name">Candidate Name</div>
       <div class="title">Candidate title</div>
     </div>
@@ -29,51 +29,41 @@
 </div>
 
 <style lang="scss">
-
   .header {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 640px;
-    min-height: 240px;
+    width: 40rem;
+    min-width: 40rem;
+    min-height: 15rem;
     background-image: url(../../img/header-green.png);
     background-repeat: no-repeat;
     background-clip: border-box;
     background-size: cover;
-    border-radius: 20px;
+    border-radius: 1.25rem;
 
-    .user-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .avatar {
+      width: 5rem;
+      height: 5rem;
+      border-radius: 50%;
+      background-color: #C4C4C4;
+    }
 
-      .avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background-color: #C4C4C4;
+    .info {
+      margin-top: .625rem;
+
+      .name {
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 150%;
+        color: var(--theme-caption-color);
       }
-
-      .info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 10px;
-
-        .name {
-          font-size: 16px;
-          font-weight: 500;
-          line-height: 150%;
-          color: var(--theme-caption-color);
-        }
-        .title {
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--theme-caption-color);
-          opacity: .6;
-        }
+      .title {
+        font-size: .75rem;
+        font-weight: 500;
+        color: var(--theme-caption-color);
+        opacity: .6;
       }
     }
   }
-
 </style>

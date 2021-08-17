@@ -25,7 +25,7 @@
   export let closed: boolean = false
 </script>
 
-<div class="section-container"
+<div class="flex-row-center section-container"
   on:click|preventDefault={() => {
     closed = !closed
   }}
@@ -38,28 +38,24 @@
 
 <style lang="scss">
   .section-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: nowrap;
     width: 100%;
-    height: 80px;
-    min-height: 80px;
+    height: 5rem;
+    min-height: 5rem;
     cursor: pointer;
     user-select: none;
 
     .title {
       flex-grow: 1;
-      margin-left: 12px;
+      margin-left: .75rem;
       font-weight: 500;
       color: var(--theme-caption-color);
     }
     .arrow {
-      margin: 8px;
+      margin: .5rem;
     }
   }
   .section-content {
-    margin: 16px 0 54px;
+    margin: 1rem 0 3.5rem;
     height: auto;
     visibility: visible;
     &.hidden {

@@ -25,7 +25,7 @@
   export let on: boolean = false
 </script>
 
-<div class="toggleWithLabel">
+<div class="flex-between">
   <div class="caption">
     <Label {label} />
     {#if description}
@@ -36,21 +36,14 @@
 </div>
 
 <style lang="scss">
-  .toggleWithLabel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    .caption {
-      margin-right: 16px;
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--theme-caption-color);
-      user-select: none;
-      span {
-        display: block;
-        font-size: 12px;
-        opacity: .3;
-      }
+  .caption {
+    margin-right: 1rem;
+    color: var(--theme-caption-color);
+    user-select: none;
+    span {
+      display: block;
+      font-size: .75rem;
+      color: var(--theme-caption-trans-color);
     }
   }
 </style>

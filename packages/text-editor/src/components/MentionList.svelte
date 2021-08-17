@@ -100,7 +100,7 @@ $: {
   padding: 16px;
   background-color: var(--theme-button-bg-hovered);
   border: 1px solid var(--theme-bg-accent-hover);
-  border-radius: 12px;
+  border-radius: .75rem;
   box-shadow: 0 20px 20px 0 rgba(0, 0, 0, .1);
 
   .caption {
