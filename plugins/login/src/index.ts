@@ -37,6 +37,7 @@ export const loginId = 'login' as Plugin
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
+    UploadUrl: '' as Asset,
     LoginToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     OverrideLoginToken: '' as Metadata<string>, // debug purposes

@@ -706,5 +706,10 @@
       "projectFolder": "dev/account",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/upload",
+      "projectFolder": "server/upload",
+      "shouldPublish": true
+    },
   ]
 }

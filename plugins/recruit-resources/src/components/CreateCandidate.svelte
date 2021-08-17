@@ -21,6 +21,7 @@
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
+  import DialogHeader from './DialogHeader.svelte'
 
   import { getClient } from '@anticrm/presentation'
 

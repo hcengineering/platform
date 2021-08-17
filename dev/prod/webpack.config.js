@@ -161,10 +161,16 @@ module.exports = {
       disableDotRule: true
     },
     proxy: {
-      '/api': {
+      '/account': {
         target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
         changeOrigin: true,
-        pathRewrite: { '^/api': '' },
+        pathRewrite: { '^/account': '' },
+        logLevel: 'debug'
+      },
+      '/upload': {
+        target: 'http://localhost:3000/',
+        changeOrigin: true,
+        pathRewrite: { '^/upload': '' },
         logLevel: 'debug'
       },
     }
