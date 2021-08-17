@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { store as modal } from '@anticrm/ui'
-  import Component from '@anticrm/ui/src/components/Component.svelte'
+  import { Component } from '@anticrm/ui'
 
   let modalHTML: HTMLElement
   let modalOHTML: HTMLElement
