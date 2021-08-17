@@ -17,15 +17,35 @@
   import chen from '../../img/chen.png'
 
   export let avatar: any = chen
-  export let size: 16 | 24 | 32 | 34 | 36 | 88 = 24
+  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 </script>
 
-<div class="avatar-container" style="width: {size}px; height: {size}px;">
-  <img style="width: {size}px; height: {size}px;" src={avatar} alt={''}/>
+<div class="{size} container">
+  <img class={size} src={avatar} alt={''}/>
 </div>
 
 <style lang="scss">
-  .avatar-container {
+  .x-small {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .small {
+    width: 2rem;
+    height: 2rem;
+  }
+  .medium {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .large {
+    width: 5rem;
+    height: 5rem;
+  }
+  .x-large {
+    width: 10rem;
+    height: 10rem;
+  }
+  .container {
     overflow: hidden;
     border: 50%;
     pointer-events: none;

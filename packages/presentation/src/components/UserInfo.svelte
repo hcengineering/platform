@@ -20,42 +20,32 @@
 
   export let value: Person
   export let subtitle: string | undefined = undefined
-  export let size: 24 | 28 | 32 | 34 | 36 = 24
+  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 </script>
 
-<div class="user-container">
+<div class="flex-row-center">
   <Avatar {size} />
-  <div class="user-info">
+  <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
     <div class="title">{value.firstName + ' ' + value.lastName}</div>
   </div>
 </div>
 
 <style lang="scss">
-  .user-container {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
+  .user-info {
+    margin-left: .5rem;
+    color: var(--theme-content-accent-color);
 
-    .user-info {
-      display: flex;
-      flex-direction: column;
-      margin-left: 8px;
-      font-family: inherit;
-      color: var(--theme-content-accent-color);
-
-      .subtitle {
-        font-size: 12px;
-        color: var(--theme-content-dark-color);
-      }
-      .title {
-        max-width: 150px;
-        font-weight: 500;
-        text-align: left;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
+    .subtitle {
+      font-size: .75rem;
+      color: var(--theme-content-dark-color);
+    }
+    .title {
+      font-weight: 500;
+      text-align: left;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
   }
 </style>

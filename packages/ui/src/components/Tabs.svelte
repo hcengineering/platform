@@ -25,9 +25,9 @@
   export let selected: IntlString = 'General'
 </script>
 
-<div class="tabs-container">
+<div class="flex-stretch container">
   {#each tabs as tab}
-    <div class="tab" class:selected={tab.title === selected}
+    <div class="flex-row-center tab" class:selected={tab.title === selected}
          on:click={() => { selected = tab.title }}>
       <Label label={tab.title}/>
     </div>
@@ -36,37 +36,32 @@
 </div>
 
 <style lang="scss">
-  .tabs-container {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
+  .container {
     flex-wrap: nowrap;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     width: 100%;
-    height: 72px;
-    min-height: 72px;
+    height: 4.5rem;
+    min-height: 4.5rem;
     border-bottom: 1px solid var(--theme-menu-divider);
 
     .tab {
-      display: flex;
-      align-items: center;
-      height: 72px;
+      height: 4.5rem;
       color: var(--theme-content-trans-color);
       cursor: pointer;
       user-select: none;
 
       &.selected {
-        border-top: 2px solid transparent;
-        border-bottom: 2px solid var(--theme-caption-color);
+        border-top: .125rem solid transparent;
+        border-bottom: .125rem solid var(--theme-caption-color);
         color: var(--theme-caption-color);
         cursor: default;
       }
     }
     .tab + .tab {
-      margin-left: 40px;
+      margin-left: 2.5rem;
     }
     .grow {
-      min-width: 40px;
+      min-width: 2.5rem;
       flex-grow: 1;
     }
   }

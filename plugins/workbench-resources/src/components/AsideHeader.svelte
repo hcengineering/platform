@@ -44,7 +44,7 @@
       align-items: center;
       height: 28px;
       padding: 6px 8px;
-      border-radius: 8px;
+      border-radius: .5rem;
       background-color: var(--theme-menu-divider);
       span {
         font-weight: 600;

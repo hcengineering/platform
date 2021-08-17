@@ -20,25 +20,22 @@
   export let line: boolean = false
 </script>
 
-<div class="separator-container" class:line={line}>
+<div class="flex-center container" class:line={line}>
   <div class="title">{title}</div>
 </div>
 
 <style lang="scss">
-  .separator-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .container {
     width: 100%;
-    height: 28px;
-    margin-bottom: 32px;
+    height: 1.75rem;
+    margin-bottom: 2rem;
 
     .title {
       position: relative;
-      padding: 6px 12px;
+      padding: .375rem .75rem;
       font-weight: 600;
-      font-size: 12px;
-      letter-spacing: .5px;
+      font-size: .75rem;
+      letter-spacing: .5;
       text-transform: uppercase;
       color: var(--theme-content-trans-color);
       z-index: 1;
@@ -50,7 +47,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        border-radius: 20px;
+        border-radius: 1.25rem;
         background-color: var(--theme-chat-divider);
         z-index: -1;
       }

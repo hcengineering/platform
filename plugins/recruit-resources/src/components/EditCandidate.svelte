@@ -22,6 +22,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import type { Backlink } from '@anticrm/chunter'
   import { Backlink as BacklinkComponent } from '@anticrm/presentation'
+  import DialogHeader from './DialogHeader.svelte'
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'

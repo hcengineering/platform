@@ -14,6 +14,7 @@
 -->
 
 <script lang="ts">
+  import { Avatar } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
   import { ActionIcon } from '@anticrm/ui'
   import Emoji from './icons/Emoji.svelte'
@@ -22,7 +23,6 @@
   import MoreH from './icons/MoreH.svelte'
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
-  import avatar from '../../img/avatar.png'
 
   import { MessageViewer } from '@anticrm/presentation'
 
@@ -35,8 +35,8 @@
   let thread: boolean = false
 </script>
 
-<div class="message-container">
-  <div class="avatar"><img src={avatar} alt="Avatar"></div>
+<div class="container">
+  <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
     <div class="header">{name}<span>{time}</span></div>
     <div class="text"><MessageViewer message={message.content}/></div>
@@ -58,39 +58,32 @@
 </div>
 
 <style lang="scss">
-  .message-container {
+  .container {
     position: relative;
     display: flex;
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
     z-index: 1;
 
-    .avatar {
-      min-width: 36px;
-      width: 36px;
-      height: 36px;
-      background-color: var(--theme-bg-accent-color);
-      border-radius: 50%;
-      user-select: none;
-    }
+    .avatar { min-width: 2.25rem; }
 
     .message {
       display: flex;
       flex-direction: column;
       width: 100%;
-      margin-left: 16px;
+      margin-left: 1rem;
 
       .header {
         font-weight: 500;
-        font-size: 16px;
+        font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
-        margin-bottom: 4px;
+        margin-bottom: .25rem;
 
         span {
-          margin-left: 8px;
+          margin-left: .5rem;
           font-weight: 400;
-          font-size: 14px;
-          line-height: 18px;
+          font-size: .875rem;
+          line-height: 1.125rem;
           opacity: .4;
         }
       }
@@ -101,12 +94,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        height: 32px;
-        margin-top: 8px;
+        height: 2rem;
+        margin-top: .5rem;
         user-select: none;
 
         div + div {
-          margin-left: 16px;
+          margin-left: 1rem;
         }
       }
     }
@@ -114,22 +107,14 @@
     .buttons {
       position: absolute;
       visibility: hidden;
-      top: -8px;
-      right: -8px;
+      top: -.5rem;
+      right: -.5rem;
       display: flex;
       flex-direction: row-reverse;
       user-select: none;
 
-      .tool {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 20px;
-        height: 20px;
-      }
-
       .tool + .tool {
-        margin-right: 8px;
+        margin-right: .5rem;
       }
     }
 
@@ -142,13 +127,13 @@
 
     &::before {
       position: absolute;
-      top: -20px;
-      left: -20px;
-      width: calc(100% + 40px);
-      height: calc(100% + 40px);
+      top: -1.25rem;
+      left: -1.25rem;
+      width: calc(100% + 2.5rem);
+      height: calc(100% + 2.5rem);
       background-color: var(--theme-button-bg-enabled);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 12px;
+      border-radius: .75rem;
       z-index: -1;
     }
   }

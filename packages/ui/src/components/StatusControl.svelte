@@ -23,20 +23,17 @@
 </script>
 
 {#if status.severity !== Severity.OK}
-<div class="message-container" class:error={status.severity === Severity.ERROR}>
+<div class="flex-row-center container" class:error={status.severity === Severity.ERROR}>
   <StatusControl {status} />
 </div>
 {/if}
 
 <style lang="scss">
-  .message-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 12px 16px;
+  .container {
+    padding: .75rem 1rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 8px;
+    border-radius: .5rem;
   }
 
   .error {

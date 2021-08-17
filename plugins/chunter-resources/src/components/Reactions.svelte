@@ -26,38 +26,21 @@
   export let reactions: Reaction[] = [{ icon: Check, count: 3}, { icon: Heart, count: 10}]
 </script>
 
-<div class="reactions-container">
+<div class="container">
   {#each reactions as reaction}
-    <div class="reaction">
-      <div class="icon"><svelte:component this={reaction.icon} size={'medium'}/></div>
-      <div class="counter">{reaction.count}</div>
+    <div class="flex-row-center reaction">
+      <svelte:component this={reaction.icon} size={'medium'}/>
+      <div class="caption-color counter">{reaction.count}</div>
     </div>
   {/each}
 </div>
 
 <style lang="scss">
-  .reactions-container {
+  .container {
     display: flex;
     user-select: none;
 
-    .reaction {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: center;
-
-      .icon {
-        width: 20px;
-        height: 20px;
-      }
-      .counter {
-        margin-left: 4px;
-        color: var(--theme-caption-color);
-      }
-    }
-
-    .reaction + .reaction {
-      margin-left: 16px;
-    }
+    .counter { margin-left: .25rem; }
+    .reaction + .reaction { margin-left: 1rem; }
   }
 </style>

@@ -23,7 +23,7 @@
   
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
-  import { setClient } from '@anticrm/presentation'
+  import { setClient, Avatar } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
 
   import Navigator from './Navigator.svelte'
@@ -75,7 +75,7 @@
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
-        <img class="square-36" src={avatar} alt="Profile"/>
+        <Avatar size={'medium'} />
       </div>
     </div>
     {#if navigator}

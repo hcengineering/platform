@@ -24,24 +24,24 @@
   if (value < min) value = min
 </script>
 
-<div class="progress-container">
+<div class="container">
   <div class="bar" style="background-color: {color}; width: calc(100% * {Math.round((value - min) / proc)} / 100);"/>
 </div>
 
 <style lang="scss">
-  .progress-container {
+  .container {
     position: relative;
     width: 100%;
-    height: 4px;
+    height: .25rem;
     background-color: var(--theme-button-bg-hovered);
-    border-radius: 2px;
+    border-radius: .125rem;
 
     .bar {
       position: absolute;
       top: 0;
       left: 0;
       height: 100%;
-      border-radius: 2px;
+      border-radius: .125rem;
     }
   }
 </style>

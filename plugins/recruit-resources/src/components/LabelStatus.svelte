@@ -42,6 +42,6 @@
     text-align: center;
     color: #fff;
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 8px;
+    border-radius: .5rem;
   }
 </style>

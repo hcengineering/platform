@@ -29,8 +29,8 @@
 <style lang="scss">
   .checkbox {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: 1rem;
+    height: 1rem;
 
     .chBox {
       position: absolute;
@@ -66,9 +66,9 @@
       }
     }
     .checkSVG {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
+      width: 1rem;
+      height: 1rem;
+      border-radius: .25rem;
 
       .back {
         fill: var(--theme-button-bg-hovered);

@@ -26,9 +26,9 @@
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
   {#if password}
-    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup placeholder=" " />
+    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {:else}
-    <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup placeholder=" " />
+    <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {/if}
   {#if label}
     <div class="label"><Label {label} /></div>
@@ -41,27 +41,22 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-    min-width: 50px;
-    height: 52px;
+    min-width: 3rem;
+    height: 3.25rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 12px;
+    border-radius: .75rem;
     &:focus-within {
       background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);
     }
     input {
-      height: 52px;
+      height: 3.25rem;
       margin: 0;
-      padding: 14px 20px 0px;
-      font-family: inherit;
-      color: var(--theme-caption-color);
+      padding: .875rem 1.25rem 0px;
       background-color: transparent;
-      outline: none;
       border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 17px;
+      border-radius: .75rem;
     }
     .nolabel {
       padding-top: 0;
@@ -69,19 +64,18 @@
 
     .label {
       position: absolute;
-      top: 18px;
-      left: 20px;
-      font-size: 12px;
-      line-height: 14px;
+      top: 1rem;
+      left: 1.25rem;
+      font-size: .75rem;
       color: var(--theme-caption-color);
-      pointer-events: none;
-      opacity: 0.3;
+      opacity: .3;
       transition: top 200ms;
+      pointer-events: none;
       user-select: none;
     }
     input:focus + .label,
     input:not(:placeholder-shown) + .label {
-      top: 10px;
+      top: .5rem;
     }
   }
   .error {

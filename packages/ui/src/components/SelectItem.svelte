@@ -26,8 +26,8 @@
   export let item: IPopupItem
   export let vAlign: 'top' | 'middle' | 'bottom' = 'bottom'
   export let hAlign: 'left' | 'center' | 'right' = 'left'
-  export let margin: number = 16
-  export let gap: number = 8
+  export let margin: number = 1
+  export let gap: number = .5
 
   let byTitle: boolean = (component) ? false : true
   let pressed: boolean = false
@@ -72,19 +72,13 @@
 
 <style lang="scss">
   .btn {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
-    flex-wrap: nowrap;
-    margin: 0;
-    padding: 8px 12px;
+    padding: .5rem .75rem;
     width: auto;
-    height: 40px;
+    height: 2.5rem;
     background-color: var(--theme-button-bg-pressed);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 12px;
-    outline: none;
-    cursor: pointer;
+    border-radius: .75rem;
 
     .title {
       flex-grow: 1;
@@ -93,25 +87,8 @@
     }
 
     .icon {
-      width: 16px;
-      height: 16px;
-      margin-left: 12px;
+      margin-left: .75rem;
       opacity: .8;
-    }
-
-    &:hover {
-      background-color: var(--theme-button-bg-pressed);
-      border: 1px solid var(--theme-bg-accent-color);
-      .icon {
-        opacity: 1;
-      }
-    }
-    &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
-      .icon {
-        opacity: 1;
-      }
     }
   }
 </style>

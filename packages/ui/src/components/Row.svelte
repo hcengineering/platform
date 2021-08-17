@@ -15,9 +15,7 @@
 <script lang="ts">
 </script>
 
-<div class="row">
-  <slot />
-</div>
+<div class="row"><slot /></div>
 
 <style lang="scss">
   .row {

@@ -43,7 +43,7 @@
     height: 100%;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 12px;
+    border-radius: .75rem;
 
     .header {
       display: flex;
@@ -54,7 +54,7 @@
       min-height: 44px;
       font-weight: 500;
       border: 1px solid rgba(0, 0, 0, .1);
-      border-radius: 8px;
+      border-radius: .5rem;
 
       .title {
         padding-left: 8px;

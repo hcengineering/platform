@@ -45,11 +45,11 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    margin: 15px 15px 0px;
-    padding: 25px 25px 0px;
+    margin: 1rem 1rem 0;
+    padding: 1.5rem 1.5rem 0px;
     overflow: auto;
   }
   .reference {
-    margin: 20px 40px;
+    margin: 1.25rem 2.5rem;
   }
 </style>

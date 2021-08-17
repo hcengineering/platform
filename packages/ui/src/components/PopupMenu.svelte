@@ -48,21 +48,21 @@
     scrolling = false
     if (rectT.top > document.body.clientHeight - rectT.bottom) {
       // Up
-      if (rectT.top - 20 - margin < rectP.height) {
+      if (rectT.top - 10 - margin < rectP.height) {
         scrolling = true
-        popup.style.maxHeight = `${rectT.top - margin - 20}px`
-        popup.style.top = '20px'
+        popup.style.maxHeight = `${rectT.top - margin - 10}px`
+        popup.style.top = '10px'
       } else popup.style.top = `${rectT.top - rectP.height - margin}px`
     } else {
       // Down
-      if (rectT.bottom + rectP.height + 20 + margin > document.body.clientHeight) {
+      if (rectT.bottom + rectP.height + 10 + margin > document.body.clientHeight) {
         scrolling = true
-        popup.style.maxHeight = `${document.body.clientHeight - rectT.bottom - margin - 20}px`
+        popup.style.maxHeight = `${document.body.clientHeight - rectT.bottom - margin - 10}px`
       }
       popup.style.top = `${rectT.bottom + margin}px`
     }
-    if (rectT.left + rectP.width + 20 > document.body.clientWidth) {
-      popup.style.left = `${document.body.clientWidth - rectP.width - 20}px`
+    if (rectT.left + rectP.width + 10 > document.body.clientWidth) {
+      popup.style.left = `${document.body.clientWidth - rectP.width - 10}px`
     } else popup.style.left = `${rectT.left}px`
   }
 
@@ -93,7 +93,7 @@
   </div>
   <div class="popup" bind:this={popup}>
     {#if show}
-      <div class="content" class:scrolling><slot /></div>
+      <div class="flex-col" class:scrolling><slot /></div>
     {/if}
   </div>
 </div>
@@ -104,22 +104,14 @@
     visibility: hidden;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 1rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 12px;
-    box-shadow: 0px 20px 60px rgba(0, 0, 0, 0.6);
+    border-radius: .75rem;
+    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, .6);
     user-select: none;
     z-index: 10;
-
-    .content {
-      display: flex;
-      flex-direction: column;
-
-      &.scrolling {
-        overflow-y: auto;
-      }
-    }
   }
+  .scrolling { overflow-y: auto; }
 </style>

@@ -25,10 +25,10 @@
 <style lang="scss">
   .toggle {
     display: inline-block;
-    height: 28px;
-    line-height: 28px;
+    height: 1.75rem;
+    line-height: 1.75rem;
     vertical-align: middle;
-    font-size: 14px;
+    font-size: inherit;
     user-select: none;
     .chBox {
       position: absolute;
@@ -43,7 +43,7 @@
       &:checked + .toggle-switch {
         background-color: var(--theme-on-color);
         &:before {
-          transform: translateX(22px);
+          left: 1.625rem;
         }
       }
       &:not(:disabled) + .toggle-switch {
@@ -60,25 +60,28 @@
         box-shadow: 0 0 0 2px var(--primary-button-outline);
       }
     }
+    &:active > .toggle-switch {
+      border: 1px solid var(--primary-button-focused-border);
+      box-shadow: 0 0 0 2px var(--primary-button-outline);
+    }
     .toggle-switch {
       position: relative;
       display: inline-block;
-      box-sizing: border-box;
-      width: 54px;
-      height: 30px;
-      border-radius: 50px;
-      vertical-align: top;
+      width: 3.5rem;
+      height: 1.875rem;
+      border-radius: 3.125rem;
+      // vertical-align: top;
       background-color: var(--theme-off-color);
       border: 1px solid transparent;
-      transition: .2s;
+      transition: left .2s;
       &:before {
         content: '';
         position: absolute;
-        top: 2px;
-        left: 3px;
+        top: .125rem;
+        left: .25rem;
         display: inline-block;
-        width: 24px;
-        height: 24px;
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 50%;
         background: #fff;
         box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);

@@ -81,7 +81,7 @@ $: {
     <div class="scroll">
       {#each items as item, i}
         <div class:selected={i === selected}>
-          <UserInfo size={36} value={item} />
+          <UserInfo size={'medium'} value={item} />
         </div>
       {/each}
     </div>
@@ -100,7 +100,7 @@ $: {
   padding: 16px;
   background-color: var(--theme-button-bg-hovered);
   border: 1px solid var(--theme-bg-accent-hover);
-  border-radius: 12px;
+  border-radius: .75rem;
   box-shadow: 0 20px 20px 0 rgba(0, 0, 0, .1);
 
   .caption {

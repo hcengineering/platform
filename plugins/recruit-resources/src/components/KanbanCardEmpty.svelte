@@ -39,7 +39,7 @@
     color: var(--theme-content-dark-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px dotted var(--theme-bg-accent-color);
-    border-radius: 12px;
+    border-radius: .75rem;
     cursor: pointer;
 
     .icon {

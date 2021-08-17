@@ -19,7 +19,7 @@
   import Comment from './Comment.svelte'
 </script>
 
-<Grid column={1} rowGap={24}>
+<Grid column={1} rowGap={1.5}>
   <Comment user={{firstName: 'Tim', lastName: 'Ferris'}}
     message={{createDate: Date.now(), text: 'The Dark Lord has Nine. But we have One, mightier than they: the White Rider. Hero  has passed through the fire and the abyss, and they shall fear him. mightier than they: the White Rider. Hero  has passed through the fire and the abyss, and they shall fear him.'}}
   />
