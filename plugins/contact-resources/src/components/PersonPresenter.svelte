@@ -23,6 +23,6 @@ export let value: Person
 
 </script>
 
-<UserInfo size={'medium'} {value}/>
+<UserInfo size={'x-small'} {value}/>
 
   
