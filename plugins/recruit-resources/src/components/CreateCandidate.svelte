@@ -16,10 +16,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { TextArea, EditBox, Dialog, Tabs, Section, Grid, DialogHeader } from '@anticrm/ui'
+  import { TextArea, EditBox, Dialog, Tabs, Section, Grid } from '@anticrm/ui'
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
+  import DialogHeader from './DialogHeader.svelte'
 
   import { getClient } from '@anticrm/presentation'
 

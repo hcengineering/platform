@@ -15,15 +15,44 @@
 -->
 
 <script lang="ts">
-  import Label from './Label.svelte'
+  import { getMetadata } from '@anticrm/platform'
+  import login from '@anticrm/login'
+
+  import Label from '@anticrm/ui/src/components/Label.svelte'
+
+  let dragover = false
+
+  function drop(event: DragEvent) {
+    dragover = false
+    const droppedFile = event.dataTransfer?.files[0]
+    const uploadUrl = getMetadata(login.metadata.UploadUrl)
+    console.log(droppedFile)
+    
+    if (droppedFile !== undefined && uploadUrl !== undefined) {
+      const data = new FormData()
+      data.append('file', droppedFile)
+      
+      fetch(uploadUrl, {
+        method: 'POST',
+        body: data
+      })
+      .then(resonse => { console.log(resonse) })
+      .catch(error => { console.log(error) })
+    }
+  }
 </script>
 
-<div class="header">
+<div class="header" class:dragover={dragover} 
+    on:dragenter={ () => { console.log('dragenter'); dragover = true } }
+    on:dragover|preventDefault={ ()=>{} }
+    on:dragleave={ () => { dragover = false } }
+    on:drop|preventDefault|stopPropagation={drop}>
   <div class="user-container">
     <div class="avatar"></div>
     <div class="info">
       <div class="name">Candidate Name</div>
       <div class="title">Candidate title</div>
+      <!-- <input type="file" name="file" id="file"/> -->
     </div>
   </div>
 </div>
@@ -41,6 +70,10 @@
     background-clip: border-box;
     background-size: cover;
     border-radius: 20px;
+
+    &.dragover {
+      border: 1px solid red;
+    }
 
     .user-container {
       display: flex;

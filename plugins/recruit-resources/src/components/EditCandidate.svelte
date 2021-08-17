@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
-  import { TextArea, EditBox, Dialog, Tabs, Section, Grid, DialogHeader, IconComments } from '@anticrm/ui'
+  import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconComments } from '@anticrm/ui'
   import { AttributeEditor, getClient, CommentViewer } from '@anticrm/presentation'
   import { ReferenceInput } from '@anticrm/text-editor'
   import type { Candidate } from '@anticrm/recruit'
@@ -25,6 +25,7 @@
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
+  import DialogHeader from './DialogHeader.svelte'
 
   import { createQuery } from '@anticrm/presentation'
 

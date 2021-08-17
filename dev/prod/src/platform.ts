@@ -37,6 +37,7 @@ import { setMetadata } from '@anticrm/platform'
 export function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, process.env.ACCOUNTS_URL)
+  setMetadata(login.metadata.UploadUrl, process.env.UPLOAD_URL)
   setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN)
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
