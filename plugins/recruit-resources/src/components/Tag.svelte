@@ -43,7 +43,7 @@
     text-align: center;
     background-color: var(--theme-bg-accent-color);
     color: var(--theme-caption-color);
-    border-radius: 8px;
+    border-radius: .5rem;
     
     .icon {
       margin-right: .3em;

@@ -65,7 +65,7 @@
 
 </script>
 
-<form class="form-container">
+<form class="container">
   <div class="grow-separator"/>
   <div class="title"><Label label={caption}/></div>
   <div class="status">
@@ -75,7 +75,7 @@
 
     {#each fields as field (field.name)}
     <div class={field.short ? 'form-col' : 'form-row'}>
-      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate}/>
+      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate} />
     </div>
     {/each}
 
@@ -106,59 +106,54 @@
   </div> -->
 
 <style lang="scss">
-
-  .form-container {
+  .container {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
     height: 100%;
-    padding: 80px 80px;
+    padding: 5rem;
 
     .title {
       font-weight: 600;
-      font-size: 24px;
-      line-height: 29px;
-      color: #FFFFFF;
+      font-size: 1.5rem;
+      color: var(--theme-caption-color);
     }
     .status {
-      min-height: 120px;
-      max-height: 120px;
-      padding-top: 20px;
+      min-height: 7.5rem;
+      max-height: 7.5rem;
+      padding-top: 1.25rem;
     }
     
     .form {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      column-gap: 12px;
-      row-gap: 24px;
+      column-gap: .75rem;
+      row-gap: 1.5rem;
 
       .form-row {
         grid-column-start: 1;
         grid-column-end: 3;
       }
       .send {
-        margin-top: 36px;
+        margin-top: 2.25rem;
       }
     }
     .grow-separator {
       flex-grow: 1;
     }
     .footer {
-      margin-top: 56px;
-      font-size: 13px;
-      line-height: 16px;
-      color: #FFFFFF;
+      margin-top: 3.5rem;
+      font-size: .8rem;
+      color: var(--theme-caption-color);
       span {
-        opacity: 0.3;
+        opacity: .3;
       }
       a {
-        color: #fff;
-        opacity: 0.8;
         text-decoration: none;
-        :hover {
-          opacity: 1;
-        }
+        color: var(--theme-caption-color);
+        opacity: .8;
+        &:hover { opacity: 1; }
       }
     }
   }

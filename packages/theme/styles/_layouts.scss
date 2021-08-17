@@ -18,12 +18,20 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
   padding: 0;
   font-size: inherit;
   background-color: transparent;
   border: 1px solid transparent;
   outline: none;
   cursor: pointer;
+}
+input {
+  font-family: inherit;
+  font-size: inherit;
+  background-color: transparent;
+  outline: none;
+  color: var(--theme-caption-color);
 }
 audio, canvas, embed, iframe, img, object, svg, video {
   display: block;
@@ -44,8 +52,26 @@ select:-webkit-autofill:focus {
   background: transparent;
 }
 
+// input:-webkit-autofill,
+// input:-webkit-autofill:hover,
+// input:-webkit-autofill:focus,
+// input:-webkit-autofill:active {
+//   -webkit-animation: autofill 0s forwards;
+// }
+ 
+// @-webkit-keyframes autofill {
+//   100% {
+//     background: transparent;
+//     color: inherit;
+//   }
+// }
+
 /* Common */
 .flex { display: flex; }
+.flex-nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+}
 .flex-center {
   display: flex;
   justify-content: center;
@@ -56,9 +82,14 @@ select:-webkit-autofill:focus {
   justify-content: space-between;
   align-items: center;
 }
+.flex-stretch {
+  display: flex;
+  align-items: stretch;
+}
 .flex-row-center {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
 }
 .flex-row-reverse {
   display: flex;
@@ -74,8 +105,42 @@ select:-webkit-autofill:focus {
   flex-direction: column;
   align-items: center;
 }
+.flex-col-stretch {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
 .h-full { height: 100%; }
 .square-36 { width: 2.25rem; height: 2.25rem; }
+
+/* --------- */
+.hidden-text {
+  position: absolute;
+  visibility: hidden;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.focused-button {
+  background-color: var(--theme-button-bg-focused);
+  border: 1px solid transparent;
+
+  & > .icon { opacity: .3; }
+  &.selected {
+    background-color: var(--theme-button-bg-focused);
+    border: 1px solid var(--theme-bg-accent-color);
+  }
+  &:hover {
+    background-color: var(--theme-button-bg-pressed);
+    border: 1px solid var(--theme-bg-accent-color);
+    & > .icon { opacity: 1; }
+  }
+  &:focus {
+    border: 1px solid var(--primary-button-focused-border);
+    box-shadow: 0 0 0 3px var(--primary-button-outline);
+    & > .icon { opacity: 1; }
+  }
+}
 
 /* Backgrounds & Colors */
 .background-theme-bg-color { background-color: var(--theme-bg-color); }

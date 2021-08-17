@@ -42,7 +42,7 @@
 
 <style lang="scss">
   .button {
-    border-radius: 4px;
+    border-radius: .125rem;
 
     .icon {
       opacity: .3;

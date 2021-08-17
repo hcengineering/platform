@@ -33,31 +33,30 @@
   .textarea {
     display: flex;
     flex-direction: column;
-    min-width: 50px;
-    min-height: 36px;
+    min-width: 3.125rem;
+    min-height: 2.25rem;
 
     .label {
-      margin-bottom: 4px;
-      font-size: 12px;
+      margin-bottom: .25rem;
+      font-size: .75rem;
       font-weight: 500;
-      color: var(--theme-caption-color);
-      opacity: .8;
+      color: var(--theme-content-accent-color);
       pointer-events: none;
       user-select: none;
     }
 
     textarea {
       width: auto;
-      min-height: 70px;
-      margin: -3px;
-      padding: 2px;
+      min-height: 4.5rem;
+      margin: -.25rem;
+      padding: .125rem;
       font-family: inherit;
-      font-size: 14px;
+      font-size: inherit;
       line-height: 150%;
       color: var(--theme-caption-color);
       background-color: transparent;
-      border: 1px solid transparent;
-      border-radius: 2px;
+      border: .125rem solid transparent;
+      border-radius: .125rem;
       outline: none;
       overflow-y: scroll;
       resize: none;

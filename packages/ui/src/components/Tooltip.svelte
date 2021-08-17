@@ -18,10 +18,10 @@
   import Label from './Label.svelte'
 
   export let label: IntlString
-  export let direction: string = 'top'
+  export let direction: 'top' | 'bottom' | 'left' | 'right' = 'top'
 </script>
 
-<div class="tooltip-container">
+<div class="flex-center container">
   <div class="trigger"><slot/></div>
   <div class="tooltip {direction}">
     <Label label={label}/>
@@ -29,37 +29,34 @@
 </div>
 
 <style lang="scss">
-  .tooltip-container {
+  .container {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     
     .trigger:hover + .tooltip {
       opacity: 1;
       &.top {
-        transform: translateY(-10px);
+        transform: translateY(-.625rem);
       }
       &.bottom {
-        transform: translateY(10px);
+        transform: translateY(.625rem);
       }
       &.right {
-        transform: translateX(10px);
+        transform: translateX(.625rem);
       }
       &.left {
-        transform: translateX(-10px);
+        transform: translateX(-.625rem);
       }
     }
 
     .tooltip {
       box-sizing: border-box;
       position: absolute;
-      padding: 8px;
+      padding: .5rem;
       color: var(--theme-caption-color);
       background-color: var(--theme-tooltip-color);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 8px;
-      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.25);
+      border-radius: .5rem;
+      box-shadow: 0px .5rem 1.25rem rgba(0, 0, 0, .25);
       opacity: 0;
       transition: transform .3s ease, opacity .2s ease-in-out;
       pointer-events: none;
@@ -71,52 +68,52 @@
       &::after {
         content: "";
         position: absolute;
-        width: 14px;
-        height: 14px;
+        width: .875rem;
+        height: .875rem;
         background-color: var(--theme-tooltip-color);
         border: 1px solid var(--theme-bg-accent-color);
-        border-radius: 0 0 3px;
-        mask-image: linear-gradient(-45deg, rgba(0, 0, 0, 1) 9px, rgba(0, 0, 0, 0) 9.1px);
+        border-radius: 0 0 .25rem;
+        mask-image: linear-gradient(-45deg, rgba(0, 0, 0, 1) .655rem, rgba(0, 0, 0, 0) .656rem);
       }
 
       &.top::after, &.bottom::after {
         left: 50%;
-        margin-left: -8px;
+        margin-left: -.5rem;
       }
       &.top {
         bottom: 100%;
-        box-shadow: 0px -8px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px -.5rem 1.25rem rgba(0, 0, 0, .25);
         &::after {
-          bottom: -5px;
+          bottom: -.5rem;
           transform: rotate(45deg);
         }
       }
       &.bottom {
         top: 100%;
-        box-shadow: 0px -8px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px -.5rem 1.25rem rgba(0, 0, 0, .25);
         &::after {
-          top: -5px;
+          top: -.5rem;
           transform: rotate(-135deg);
         }
       }
 
       &.right::after, &.left::after {
         top: 50%;
-        margin-top: -8px;
+        margin-top: -.5rem;
       }
       &.right {
         left: 100%;
-        box-shadow: -8px 0px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: -.5rem 0px 1.25rem rgba(0, 0, 0, .25);
         &::after {
-          left: -5px;
+          left: -.4rem;
           transform: rotate(135deg);
         }
       }
       &.left {
         right: 100%;
-        box-shadow: 8px 0px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: .5rem 0px 1.25rem rgba(0, 0, 0, .25);
         &::after {
-          right: -5px;
+          right: -.4rem;
           transform: rotate(-45deg);
         }
       }

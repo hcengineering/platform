@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import CheckBox from './CheckBox.svelte'
@@ -25,7 +25,6 @@
   let text: HTMLElement
   let input: HTMLInputElement
   let onEdit: boolean = false
-  let goOut: boolean = false
 
   $: {
     if (text && input) {
@@ -53,83 +52,99 @@
     }
   }
 
-  function computeSize(t: EventTarget | null) {
+  function convertRemToPx(rem: number) {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
+  }
+
+  function computeSize (t: EventTarget | null) {
     const target = t as HTMLInputElement
-    const value = target.value
+    const value = target.value.charCodeAt(target.value.length - 1) === 10 ? convertRemToPx(1.125) : 0
     text.innerHTML = label.replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + 12 + 'px'
+    target.style.height = text.clientHeight + value + convertRemToPx(.5) + 'px'
   }
 
   onMount(() => {
     computeSize(input)
   })
+
+  const dispatch = createEventDispatcher()
+  function changeItem () {
+    dispatch('change', { checked, label })
+  }
 </script>
 
 <svelte:window on:mousedown={waitClick} />
-<div class="checkBox-container">
-  <CheckBox bind:checked={checked} />
-  <div class="label"
+<div class="flex-stretch">
+  <div style="margin-top: 1px;">
+    <CheckBox bind:checked on:change={changeItem} />
+  </div>
+  <div
+    class="label"
     on:click={() => {
       if (editable) {
         onEdit = true
       }
     }}
   >
-    <input bind:this={input} type="text" bind:value={label}
+    <textarea
+      bind:this={input}
+      type="text"
+      bind:value={label}
       class="edit-item"
       on:input={(ev) => ev.target && computeSize(ev.target)}
+      on:change={changeItem}
     />
-    <div class="text" class:checked bind:this={text}>{label}</div>
+    <div class="hidden-text text" class:checked bind:this={text}>{label}</div>
   </div>
 </div>
 
 <style lang="scss">
-  .checkBox-container {
-    display: flex;
-    align-items: center;
+  .label {
+    position: relative;
+    margin-left: 1rem;
+    width: 100%;
+    color: var(--theme-caption-color);
 
-    .label {
-      position: relative;
-      margin-left: 16px;
+    .edit-item {
+      width: 100%;
+      min-height: 1.25rem;
+      height: minmax(1.25rem, auto);
+      margin: -.25rem;
+      padding: .125rem;
+      font-family: inherit;
+      font-size: inherit;
       color: var(--theme-caption-color);
+      background-color: transparent;
+      border: .125rem solid transparent;
+      border-radius: .125rem;
+      outline: none;
+      overflow-y: scroll;
+      resize: none;
+      overflow-wrap: break-word;
 
-      .edit-item {
-        max-width: 100%;
-        height: 21px;
-        margin: -3px;
-        padding: 2px;
-        font-family: inherit;
-        font-size: 14px;
-        line-height: 150%;
-        color: var(--theme-caption-color);
-        background-color: transparent;
-        border: 1px solid transparent;
-        border-radius: 2px;
-        outline: none;
-
-        &:focus {
-          border-color: var(--primary-button-enabled);
-        }
-
-        &::-webkit-contacts-auto-fill-button,
-        &::-webkit-credentials-auto-fill-button {
-          visibility: hidden;
-          display: none !important;
-          pointer-events: none;
-          height: 0;
-          width: 0;
-          margin: 0;
-        }
+      &:focus {
+        border-color: var(--primary-button-enabled);
       }
-      .text {
-        position: absolute;
-        top: 0;
-        left: 0;
 
-        &.checked {
-          text-decoration: line-through;
-          color: var(--theme-content-dark-color);
-        }
+      &::-webkit-contacts-auto-fill-button,
+      &::-webkit-credentials-auto-fill-button {
+        visibility: hidden;
+        display: none !important;
+        pointer-events: none;
+        height: 0;
+        width: 0;
+        margin: 0;
+      }
+    }
+    .text {
+      top: 0;
+      width: 100%;
+      text-overflow: ellipsis;
+      overflow-wrap: break-word;
+
+      &.checked {
+        text-decoration: line-through;
+        color: var(--theme-content-dark-color);
       }
     }
   }

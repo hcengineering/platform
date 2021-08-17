@@ -20,7 +20,7 @@
   let page = 'login'
 </script>
 
-<div class="panel-container">
+<div class="container">
   <div class="panel">
     {#if page === 'login'}
       <LoginForm on:switch={(event) => page = event.detail}/>
@@ -40,19 +40,17 @@
 </div>
 
 <style lang="scss">
-  // @import "@anticrm/theme/styles/mixins.scss";
-
-  .panel-container {
+  .container {
     display: flex;
     flex-direction: row;
     height: 100%;
-    padding: 0px 20px 20px 20px;
+    padding: 0px 1.25rem 1.25rem 1.25rem;
 
     .panel {
-      margin-right: 20px;
-      width: 668px;
+      margin-right: 1.25rem;
+      width: 41.75rem;
       height: 100%;
-      border-radius: 20px;
+      border-radius: 1.25rem;
       background-color: var(--theme-menu-selection);
     }
 
@@ -61,14 +59,14 @@
       flex-direction: column;
       flex-grow: 1;
       overflow: hidden;
-      min-width: 320px;
+      min-width: 20rem;
 
       .content {
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
         justify-content: center;
         align-items: center;
+        flex-grow: 1;
         .logo {
           position: relative;
           &:after {
@@ -83,11 +81,11 @@
             position: absolute;
             content: "";
             transform: translate(-50%, -50%);
-            width: 255px;
-            height: 255px;
-            border: 1.8px solid #FFFFFF;
+            width: 16rem;
+            height: 16rem;
+            border: 1.8px solid var(--theme-caption-color);
             border-radius: 50%;
-            opacity: 0.08;
+            opacity: .08;
           }
         }
       }
@@ -96,11 +94,10 @@
         p {
           margin: 0;
           font-weight: 400;
-          font-size: 13px;
-          line-height: 19px;
+          font-size: .8rem;
           text-align: center;
-          color: #FFFFFF;
-          opacity: 0.8;
+          color: var(--theme-caption-color);
+          opacity: .8;
         }
       }
     }

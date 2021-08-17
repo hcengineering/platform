@@ -47,63 +47,41 @@
 <style lang="scss">
   .popup-item {
     position: relative;
-    display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin: 0;
-    padding: 8px 12px;
-    height: 40px;
-    background-color: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    outline: none;
-    cursor: pointer;
+    padding: .5rem .75rem;
+    height: 2.5rem;
+    border-radius: .5rem;
 
     .title {
       flex-grow: 1;
-      font-size: 14px;
-      line-height: 18px;
       text-align: left;
       color: var(--theme-content-accent-color);
     }
 
     .check {
-      margin-left: 12px;
-      width: 20px;
-      height: 20px;
+      margin-left: .75rem;
       border-radius: 50%;
       opacity: 0;
-
-      &.selected {
-        opacity: .8;
-      }
+      &.selected { opacity: .8; }
     }
 
     &:hover {
       background-color: var(--theme-button-bg-pressed);
       border: 1px solid var(--theme-bg-accent-color);
-      .title {
-        color: var(--theme-caption-color);
-      }
+      .title { color: var(--theme-caption-color); }
       .check {
         opacity: .2;
-        &.selected {
-          opacity: 1;
-        }
+        &.selected { opacity: 1; }
       }
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       z-index: 1;
-      .title {
-        color: var(--theme-caption-color);
-      }
+      .title { color: var(--theme-caption-color); }
       .check {
         opacity: .2;
-        &.selected {
-          opacity: .8;
-        }
+        &.selected { opacity: .8; }
       }
     }
   }

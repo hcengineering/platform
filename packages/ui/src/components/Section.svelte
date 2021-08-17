@@ -25,7 +25,7 @@
   export let closed: boolean = false
 </script>
 
-<div class="section-container"
+<div class="flex-row-center section-container"
   on:click|preventDefault={() => {
     closed = !closed
   }}
@@ -34,39 +34,29 @@
   <div class="title"><Label {label} /></div>
   <div class="arrow">{#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}</div>
 </div>
-<div class="section-content" class:hidden={closed}><slot/></div>
+{#if !closed }<div class="section-content"><slot/></div>{/if}
 
 <style lang="scss">
   .section-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: nowrap;
     width: 100%;
-    height: 80px;
-    min-height: 80px;
+    height: 5rem;
+    min-height: 5rem;
     cursor: pointer;
     user-select: none;
 
     .title {
       flex-grow: 1;
-      margin-left: 12px;
+      margin-left: .75rem;
       font-weight: 500;
       color: var(--theme-caption-color);
     }
     .arrow {
-      margin: 8px;
+      margin: .5rem;
     }
   }
   .section-content {
-    margin: 16px 0 54px;
+    margin: 1rem 0 3.5rem;
     height: auto;
-    visibility: visible;
-    &.hidden {
-      margin: 0;
-      height: 0;
-      visibility: hidden;
-    }
   }
   :global(.section-container + .section-container),
   :global(.section-content + .section-container) {

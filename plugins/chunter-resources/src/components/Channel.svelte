@@ -29,7 +29,7 @@
   $: query.query(chunter.class.Message, { space }, result => { messages = result })
 </script>
 
-<div class="channel-container">
+<div class="flex-col container">
   {#if messages}
     {#each messages as message}
       <MessageComponent {message}/>
@@ -38,9 +38,7 @@
 </div>
 
 <style lang="scss">
-  .channel-container {
-    display: flex;
-    flex-direction: column;
+  .container {
     flex-shrink: 0;
   }
 </style>

@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import avatar from '../../img/avatar.png'
+  import { Avatar } from '@anticrm/presentation'
 
   export let replies: string[] = ['Chen', 'Elon', 'Tim', 'Elon', 'Tim', 'Chen']
 
@@ -25,11 +25,11 @@
   }
 </script>
 
-<div class="replies-container">
+<div class="flex-row-center container">
   <div class="counter">{replies.length} Replies</div>
-  <div class="replies">
+  <div class="flex-row-center">
     {#each showReplies as reply}
-      <div class="reply"><img class="circle" src={avatar} alt={reply}></div>
+      <div class="reply"><Avatar size={'x-small'} /></div>
     {/each}
     {#if replies.length > shown}
       <div class="reply"><span>+{replies.length - shown}</span></div>
@@ -38,57 +38,42 @@
 </div>
 
 <style lang="scss">
-  .replies-container {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
+  .container {
     user-select: none;
 
     .counter {
-      margin-right: 12px;
+      margin-right: .75rem;
       line-height: 150%;
       color: var(--theme-content-color);
       white-space: nowrap;
     }
 
-    .replies {
+    .reply {
       display: flex;
-      flex-wrap: nowrap;
+      justify-content: center;
       align-items: center;
+      width: 1rem;
+      height: 1rem;
+      background-color: var(--theme-bg-color);
+      border-radius: 50%;
+      margin-right: -.625rem;
 
-      .reply {
+      span {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 32px;
-        height: 32px;
-        background-color: var(--theme-bg-color);
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: .75rem;
+        font-weight: 500;
+        line-height: .5;
+        color: var(--theme-caption-color);
+        background-color: var(--theme-bg-selection);
         border-radius: 50%;
-        margin-right: -10px;
+      }
 
-        .circle {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-        }
-
-        span {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 28px;
-          height: 28px;
-          font-size: 12px;
-          font-weight: 500;
-          line-height: .5;
-          color: var(--theme-caption-color);
-          background-color: var(--theme-bg-selection);
-          border-radius: 50%;
-        }
-
-        &:last-child {
-          margin-right: 0;
-        }
+      &:last-child {
+        margin-right: 0;
       }
     }
   }
