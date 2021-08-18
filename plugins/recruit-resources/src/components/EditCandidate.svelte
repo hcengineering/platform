@@ -23,7 +23,6 @@
   import type { Backlink } from '@anticrm/chunter'
   import { Backlink as BacklinkComponent } from '@anticrm/presentation'
   import DialogHeader from './DialogHeader.svelte'
-  import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
 
@@ -31,11 +30,8 @@
 
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
-  import contact from '@anticrm/contact'
 
   export let object: Candidate
-
-  let newValue = Object.assign({}, object)
 
   const dispatch = createEventDispatcher()
 
@@ -44,6 +40,8 @@
   const client = getClient()
   const query = createQuery()
   $: query.query(chunter.class.Backlink, { objectId: object._id }, result => { backlinks = result })
+
+  const newValue = Object.assign({}, object)
 
   async function save() {
     const attributes: Record<string, any> = {}
@@ -54,6 +52,26 @@
     }
     await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
   }
+
+  const tabModel = [
+    {
+      label: 'General',
+      component: 'recruit:component:CandidateGeneral',
+      props: {
+        object,
+        newValue,
+      }
+    },
+    {
+      label: 'Activity',
+      component: 'recruit:component:CandidateGeneral',
+      props: {
+        object,
+        newValue,
+      }
+    }
+  ]
+
 </script>
 
 <Dialog label={recruit.string.CreateCandidate} 
@@ -61,23 +79,7 @@
         okAction={save}
         on:close={() => { dispatch('close') }}>
   <DialogHeader />
-  <Tabs/>
-  <Section icon={File} label={'Personal Information'}>
-    <Grid>
-      <AttributeEditor _class={contact.class.Person} key={'firstName'} {newValue} oldValue={object} focus/>
-      <AttributeEditor _class={contact.class.Person} key={'lastName'} {newValue} oldValue={object}/>
-      <AttributeEditor _class={contact.class.Person} key={'email'} {newValue} oldValue={object}/>
-      <AttributeEditor _class={contact.class.Person} key={'phone'} {newValue} oldValue={object}/>
-    </Grid>
-  </Section>
-  <Section icon={Address} label={'Address'}>
-    <Grid>
-      <EditBox label={'Street'} placeholder={'Broderick st'} />
-      <EditBox label={'City *'} placeholder={'Los Angeles'} bind:value={newValue.city}/>
-      <EditBox label={'ZIP / Postal code'} placeholder={'26892'} />
-      <EditBox label={'Country'} placeholder={'United States'} />
-    </Grid>
-  </Section>
+  <Tabs model={tabModel}/>
   <Section icon={IconComments} label={'Comments'}>
     <CommentViewer />
     <div class="reference"><ReferenceInput /></div>

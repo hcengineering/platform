@@ -27,7 +27,6 @@ export interface Location {
 }
 
 export type AnySvelteComponent = typeof SvelteComponent
-
 export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
@@ -45,3 +44,12 @@ export interface IPopupItem {
   selected?: boolean
   action?: Function
 }
+
+export interface Tab {
+  label: IntlString
+  icon?: Asset
+  component: AnyComponent
+  props: any
+}
+
+export type TabModel = Tab[]

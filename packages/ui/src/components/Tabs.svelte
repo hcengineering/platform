@@ -14,26 +14,28 @@
 -->
 
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
+  import type { TabModel } from '../types'
   import Label from './Label.svelte'
+  import Component from './Component.svelte'
 
-  interface Tab {
-    title: IntlString
-  }
-
-  export let tabs: Array<Tab> = [{ title: 'General' }, { title: 'Attachments' }]
-  export let selected: IntlString = 'General'
+  export let model: TabModel
+  export let selected = 0
 </script>
 
 <div class="flex-stretch container">
-  {#each tabs as tab}
-    <div class="flex-row-center tab" class:selected={tab.title === selected}
-         on:click={() => { selected = tab.title }}>
-      <Label label={tab.title}/>
+  {#each model as tab, i}
+    <div class="flex-row-center tab" class:selected={i === selected}
+         on:click={() => { selected = i }}>
+      <Label label={model[i].label}/>
     </div>
   {/each}
   <div class="grow"/>
 </div>
+{#each model as tab, i}
+  {#if selected === i}
+    <Component is = {model[i].component} props={model[i].props}/>
+  {/if}
+{/each}
 
 <style lang="scss">
   .container {

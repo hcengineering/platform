@@ -16,6 +16,7 @@
 import { mergeIds } from '@anticrm/platform'
 import type { IntlString } from '@anticrm/platform' 
 import type { Ref, Class } from '@anticrm/core'
+import type { AnyComponent } from '@anticrm/ui'
 import type { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit, { recruitId } from '@anticrm/recruit'
 
