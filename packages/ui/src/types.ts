@@ -31,26 +31,6 @@ export type AnySvelteComponent = typeof SvelteComponent
 export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
-export const CONTEXT_PLATFORM = 'platform'
-export const CONTEXT_PLATFORM_UI = 'platform-ui'
-
-export interface Document {} // eslint-disable-line @typescript-eslint/no-empty-interface
-
-/**
- * Allow to control currently selected document.
- */
-export interface DocumentProvider {
-  /**
-   * Opening a document
-   * */
-  open: (doc: Document) => Promise<void>
-
-  /**
-   * Return currently selected document, if one.
-   */
-  selection: () => Document | undefined
-}
-
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
@@ -65,34 +45,3 @@ export interface IPopupItem {
   selected?: boolean
   action?: Function
 }
-
-// export default plugin(
-//   'ui' as Plugin<UIService>,
-//   {},
-//   {
-//     metadata: {
-//       LoginApplication: '' as Metadata<string>,
-//       DefaultApplication: '' as Metadata<string>
-//     },
-//     icon: {
-//       Default: '' as Asset,
-//       Error: '' as Asset,
-//       Network: '' as Asset,
-//       Search: '' as Asset,
-//       Add: '' as Asset,
-//       ArrowDown: '' as Asset,
-//       Message: '' as Asset,
-//       Phone: '' as Asset,
-//       Mail: '' as Asset,
-//       More: '' as Asset
-//     },
-//     component: {
-//       Icon: '' as AnyComponent,
-//       Spinner: '' as AnyComponent,
-//       BadComponent: '' as AnyComponent
-//     },
-//     method: {
-//       AnAction: '' as Resource<(args: any) => void>
-//     }
-//   }
-// )

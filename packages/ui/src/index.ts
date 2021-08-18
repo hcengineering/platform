@@ -56,32 +56,12 @@ export { default as IconSearch } from './components/icons/Search.svelte'
 export { default as IconToDo } from './components/icons/ToDo.svelte'
 export { default as IconComments } from './components/icons/Comments.svelte'
 
+import type { AnySvelteComponent, AnyComponent } from './types'
+import { writable } from 'svelte/store'
+
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
-
-// let documentProvider: DocumentProvider | undefined
-
-// async function open (doc: Document): Promise<void> {
-//   if (documentProvider != null) {
-//     return await documentProvider.open(doc)
-//   }
-//   return await Promise.reject(new Error('Document provider is not registred'))
-// }
-
-// function selection (): Document | undefined {
-//   if (documentProvider != null) {
-//     return documentProvider.selection()
-//   }
-//   return undefined
-// }
-
-// function registerDocumentProvider (provider: DocumentProvider): void {
-//   documentProvider = provider
-// }
-
-import type { AnySvelteComponent, AnyComponent } from './types'
-import { writable } from 'svelte/store'
 
 interface CompAndProps {
   is: AnySvelteComponent | AnyComponent | undefined
