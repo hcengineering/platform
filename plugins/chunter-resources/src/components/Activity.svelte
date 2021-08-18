@@ -16,37 +16,44 @@
 
 <script lang="ts">
 
-import type { Doc } from '@anticrm/core'
-import { Backlink as BacklinkComponent } from '@anticrm/presentation'
-import type { Backlink } from '@anticrm/chunter'
+import type { Doc, Ref, Space } from '@anticrm/core'
+import type { Comment } from '@anticrm/chunter'
 import { ReferenceInput } from '@anticrm/text-editor'
-import { createQuery } from '@anticrm/presentation'
+import { createQuery, getClient } from '@anticrm/presentation'
 import { Section, IconComments } from '@anticrm/ui'
 
 import Bookmark from './icons/Bookmark.svelte'
-import CommentViewer from './CommentViewer.svelte'
+import Backlink from './Backlink.svelte'
 
 import chunter from '@anticrm/chunter'
 
 export let object: Doc
+export let space: Ref<Space>
   
-let backlinks: Backlink[]
+let comments: Comment[]
 
+const client = getClient()
 const query = createQuery()
-$: query.query(chunter.class.Backlink, { objectId: object._id }, result => { backlinks = result })
-  
+$: query.query(chunter.class.Comment, { objectId: object._id }, result => { comments = result })
+
+function onMessage(event: CustomEvent) {
+  client.createDoc(chunter.class.Comment, space, {
+    objectId: object._id,
+    message: event.detail
+  })
+  console.log(event.detail)
+}
 </script>
 
-<Section icon={IconComments} label={'Comments'}>
+<div class="reference"><ReferenceInput on:message={onMessage}/></div>
+
+<!-- <Section icon={IconComments} label={'Comments'}>
   <CommentViewer />
-  <div class="reference"><ReferenceInput /></div>
-</Section>
-{#if backlinks && backlinks.length > 0}
-<Section icon={Bookmark} label={'Backlinks'}>
-  {#each backlinks as backlink}
-    <BacklinkComponent {backlink} />
+</Section> -->
+{#if comments}
+  {#each comments as comment}
+    <Backlink {comment} />
   {/each}
-</Section>
 {/if}
 
 <style lang="scss">

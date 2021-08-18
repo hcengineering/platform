@@ -32,11 +32,17 @@ export interface Message extends Doc {
 /**
  * @public
  */
-export interface Backlink extends Doc {
+export interface Comment extends Doc {
   objectId: Ref<Doc>
+  message: string
+}
+
+/**
+ * @public
+ */
+export interface Backlink extends Comment {
   backlinkId: Ref<Doc>
   backlinkClass: Ref<Class<Doc>>
-  message: string
 }
 
 /**
@@ -52,7 +58,8 @@ export default plugin(chunterId, {
   },
   class: {
     Message: '' as Ref<Class<Message>>,
-    Backlink: '' as Ref<Class<Backlink>>
+    Backlink: '' as Ref<Class<Backlink>>,
+    Comment: '' as Ref<Class<Comment>>
   },
   space: {
     Backlinks: '' as Ref<Space>

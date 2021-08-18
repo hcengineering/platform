@@ -14,12 +14,12 @@
 -->
 
 <script lang="ts">
-  import type { Backlink } from '@anticrm/chunter'
-  import MessageViewer from './MessageViewer.svelte'
+  import type { Comment } from '@anticrm/chunter'
+  import MessageViewer from '@anticrm/presentation/src/components/MessageViewer.svelte'
 
-  import Avatar from './Avatar.svelte'
+  import Avatar from '@anticrm/presentation/src/components/Avatar.svelte'
 
-  export let backlink: Backlink
+  export let comment: Comment
 
 </script>
 
@@ -27,7 +27,7 @@
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
     <div class="header">Rosamund Chen<span>July 28th</span></div>
-    <div class="text"><MessageViewer message={backlink.message} /></div>
+    <div class="text"><MessageViewer message={comment.message} /></div>
   </div>
 </div>
 

@@ -48,12 +48,10 @@ function getValue(doc: Doc, key: string): any {
   return obj
 }
 
-const dispatch = createEventDispatcher()
 const client = getClient()
 
 function onClick(object: Doc) {
-  console.log('going modal: ', open)
-  showModal(open, { object })
+  showModal(open, { object, space })
 }
 
 </script>

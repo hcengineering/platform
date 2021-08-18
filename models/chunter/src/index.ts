@@ -17,7 +17,7 @@ import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, UX } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
-import type { Backlink, Channel, Message } from '@anticrm/chunter'
+import type { Backlink, Channel, Message, Comment } from '@anticrm/chunter'
 import type { AnyComponent } from '@anticrm/ui'
 
 import workbench from '@anticrm/model-workbench'
@@ -26,7 +26,7 @@ import view from '@anticrm/model-view'
 import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
-export const DOMAIN_BACKLINKS = 'backlinks' as Domain
+export const DOMAIN_COMMENT = 'comment' as Domain
 
 @Model(chunter.class.Channel, core.class.Space)
 @UX(chunter.string.Channel, chunter.icon.Hashtag)
@@ -37,16 +37,20 @@ export class TMessage extends TDoc implements Message {
   content!: string
 }
 
-@Model(chunter.class.Backlink, core.class.Doc, DOMAIN_BACKLINKS)
-export class TBacklink extends TDoc implements Backlink {
+@Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
+export class TComment extends TDoc implements Comment {
   objectId!: Ref<Doc>
-  backlinkId!: Ref<Doc>
-  backlinkClass!: Ref<Class<Doc>>
   message!: string
 }
 
+@Model(chunter.class.Backlink, chunter.class.Comment)
+export class TBacklink extends TComment implements Backlink {
+  backlinkId!: Ref<Doc>
+  backlinkClass!: Ref<Class<Doc>>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TBacklink)
+  builder.createModel(TChannel, TMessage, TComment, TBacklink)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message

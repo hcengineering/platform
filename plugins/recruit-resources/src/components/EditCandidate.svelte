@@ -15,6 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import type { Ref, Space } from '@anticrm/core'
   import { Dialog, Tabs } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
@@ -23,6 +24,7 @@
   import recruit from '../plugin'
 
   export let object: Candidate
+  export let space: Ref<Space>
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -52,7 +54,8 @@
       label: 'Activity',
       component: 'chunter:component:Activity',
       props: {
-        object
+        object,
+        space
       }
     }
   ]
