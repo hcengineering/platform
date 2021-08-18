@@ -14,4 +14,4 @@
 // limitations under the License.
 //
 
-export * from './triggers'
+export const x = 42

@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import type { Doc, Tx, TxCreateDoc, TxFactory, Ref, Class } from '@anticrm/core'
 import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { Doc, Tx, TxFactory, Class, Ref } from '@anticrm/core'
+import { getResource, plugin } from '@anticrm/platform'
+
+import core from '@anticrm/core'
 
 /**
  * @public
@@ -24,10 +26,38 @@ import type { Doc, Tx, TxFactory, Class, Ref } from '@anticrm/core'
 export type TriggerFunc = (tx: Tx, txFactory: TxFactory) => Promise<Tx[]>
 
 /**
- * @public
- */
+  * @public
+  */
 export interface Trigger extends Doc {
   trigger: Resource<TriggerFunc>
+}
+
+/**
+ * @public
+ */
+export class Triggers {
+  private readonly triggers: TriggerFunc[] = []
+
+  constructor (private readonly txFactory: TxFactory) {
+
+  }
+
+  async tx (tx: Tx): Promise<void> {
+    if (tx._class === core.class.TxCreateDoc) {
+      const createTx = tx as TxCreateDoc<Doc>
+      if (createTx.objectClass === serverCore.class.Trigger) {
+        const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
+        const func = await getResource(trigger)
+        this.triggers.push(func)
+      }
+    }
+  }
+
+  async apply (tx: Tx): Promise<Tx[]> {
+    const derived = this.triggers.map(trigger => trigger(tx, this.txFactory))
+    const result = await Promise.all(derived)
+    return result.flatMap(x => x)
+  }
 }
 
 /**
@@ -38,8 +68,10 @@ export const serverCoreId = 'server-core' as Plugin
 /**
  * @public
  */
-export default plugin(serverCoreId, {
+const serverCore = plugin(serverCoreId, {
   class: {
     Trigger: '' as Ref<Class<Trigger>>
   }
 })
+
+export default serverCore

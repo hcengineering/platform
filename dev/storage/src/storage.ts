@@ -15,7 +15,7 @@
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
 import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory, ServerStorage } from '@anticrm/core'
-import { Triggers } from '@anticrm/server'
+import { Triggers } from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
