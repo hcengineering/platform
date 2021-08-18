@@ -24,7 +24,7 @@ import chunter, { chunterId } from '@anticrm/chunter'
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
-    ChannelView: '' as AnyComponent
+    ChannelView: '' as AnyComponent,
   },
   class: { 
     Channel: '' as Ref<Class<Channel>>,

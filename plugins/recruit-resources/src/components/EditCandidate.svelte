@@ -15,31 +15,17 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Doc } from '@anticrm/core'
-  import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconComments } from '@anticrm/ui'
-  import { AttributeEditor, getClient, CommentViewer } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
+  import { Dialog, Tabs } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import type { Backlink } from '@anticrm/chunter'
-  import { Backlink as BacklinkComponent } from '@anticrm/presentation'
   import DialogHeader from './DialogHeader.svelte'
-  import Address from './icons/Address.svelte'
-  import Attachment from './icons/Attachment.svelte'
-
-  import { createQuery } from '@anticrm/presentation'
-
+  
   import recruit from '../plugin'
-  import chunter from '@anticrm/chunter'
 
   export let object: Candidate
 
   const dispatch = createEventDispatcher()
-
-  let backlinks: Backlink[]
-
   const client = getClient()
-  const query = createQuery()
-  $: query.query(chunter.class.Backlink, { objectId: object._id }, result => { backlinks = result })
 
   const newValue = Object.assign({}, object)
 
@@ -64,10 +50,9 @@
     },
     {
       label: 'Activity',
-      component: 'recruit:component:CandidateGeneral',
+      component: 'chunter:component:Activity',
       props: {
-        object,
-        newValue,
+        object
       }
     }
   ]
@@ -80,21 +65,5 @@
         on:close={() => { dispatch('close') }}>
   <DialogHeader />
   <Tabs model={tabModel}/>
-  <Section icon={IconComments} label={'Comments'}>
-    <CommentViewer />
-    <div class="reference"><ReferenceInput /></div>
-  </Section>
-  {#if backlinks && backlinks.length > 0}
-  <Section icon={Address} label={'Backlinks'}>
-    {#each backlinks as backlink}
-      <BacklinkComponent {backlink} />
-    {/each}
-  </Section>
-  {/if}
 </Dialog>
 
-<style lang="scss">
-  .reference {
-    margin-top: 24px;
-  }
-</style>

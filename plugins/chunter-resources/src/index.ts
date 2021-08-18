@@ -15,10 +15,12 @@
 
 import CreateChannel from './components/CreateChannel.svelte'
 import ChannelView from './components/ChannelView.svelte'
+import Activity from './components/Activity.svelte'
 
 export default async () => ({
   component: {
     CreateChannel,
-    ChannelView
+    ChannelView,
+    Activity
   }
 })
