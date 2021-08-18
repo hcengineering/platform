@@ -17,6 +17,10 @@ const siteBucket = new aws.s3.Bucket('anticrm-app', {
   }
 })
 
+const uploadBucket = new aws.s3.Bucket('anticrm-upload', {
+  acl: "public-read"
+})
+
 const buildDir = "../../dev/prod"
 
 function createObjects(root: string, path: string): void {
@@ -43,6 +47,8 @@ createObjects(buildDir + '/dist', '')
 
 export const bucketName = siteBucket.bucket // create a stack export for bucket name
 export const websiteUrl = siteBucket.websiteEndpoint
+
+export const uploadBucketName = uploadBucket.bucket
 
 // // Create an S3 Bucket Policy to allow public read of all objects in bucket
 // // This reusable function can be pulled out into its own module

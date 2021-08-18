@@ -15,7 +15,24 @@
 //
 
 import express from 'express'
-import fileUpload from 'express-fileupload'
+import fileUpload, { UploadedFile } from 'express-fileupload'
+import { S3 } from 'aws-sdk'
+import { v4 as uuid } from 'uuid'
+
+const BUCKET = 'anticrm-upload-9e4e89c'
+
+async function awsUpload(file: UploadedFile) {
+  console.log(file)
+  const s3 = new S3()
+  const resp = await s3.upload({
+    Bucket: BUCKET,
+    Key: uuid(),
+    Body: file.data,
+    ContentType: file.mimetype,
+    ACL: 'public-read' 
+  }).promise()
+  console.log(resp)
+}
 
 /**
  * @public
@@ -30,8 +47,9 @@ export function start (port: number): void {
     const file = req.files?.file
 
     if (file !== undefined) {
-      console.log(file)
-      res.status(200).send()
+      awsUpload(file as UploadedFile)
+      .then(() => res.status(200).send())
+      .catch(error => console.log(error))
     } else {
       res.status(400).send()
     }

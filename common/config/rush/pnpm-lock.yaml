@@ -64,12 +64,14 @@ specifiers:
   '@tiptap/extension-typography': ~2.0.0-beta.13
   '@tiptap/starter-kit': ~2.0.0-beta.89
   '@types/express': ^4.17.13
+  '@types/express-fileupload': ^1.1.7
   '@types/heft-jest': ^1.0.2
   '@types/toposort': ^2.0.3
   '@types/ws': ^7.4.7
   '@typescript-eslint/eslint-plugin': '4'
   '@typescript-eslint/parser': ^4.0.0
   autoprefixer: ^10.2.6
+  aws-sdk: ^2.969.0
   cross-env: ^7.0.3
   css-loader: ^5.2.1
   dotenv-webpack: ^7.0.2
@@ -95,6 +97,7 @@ specifiers:
   toposort: ^2.0.2
   ts-loader: ^9.2.5
   typescript: ^4.3.5
+  uuid: ^8.3.2
   webpack: ^5.32.0
   webpack-bundle-analyzer: ^4.4.1
   webpack-cli: ^4.6.0
@@ -165,12 +168,14 @@ dependencies:
   '@tiptap/extension-typography': 2.0.0-beta.13_@tiptap+core@2.0.0-beta.93
   '@tiptap/starter-kit': 2.0.0-beta.89
   '@types/express': 4.17.13
+  '@types/express-fileupload': 1.1.7
   '@types/heft-jest': 1.0.2
   '@types/toposort': 2.0.3
   '@types/ws': 7.4.7
   '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
   '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
   autoprefixer: 10.3.1_postcss@8.3.6
+  aws-sdk: 2.969.0
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
   dotenv-webpack: 7.0.3_webpack@5.48.0
@@ -196,6 +201,7 @@ dependencies:
   toposort: 2.0.2
   ts-loader: 9.2.5_typescript@4.3.5+webpack@5.48.0
   typescript: 4.3.5
+  uuid: 8.3.2
   webpack: 5.48.0_webpack-cli@4.7.2
   webpack-bundle-analyzer: 4.4.2
   webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
@@ -1589,6 +1595,10 @@ packages:
     resolution: {integrity: sha512-jRtyvEu0Na/sy0oIxBW0f6wPQjidgVqlmCTJVHEGTNEUdL1f0YSvdPzHY7nX7MUWAZS6zcAa0KkqofHjy/xDZQ==}
     dev: false
 
+  /@types/uuid/8.3.1:
+    resolution: {integrity: sha512-Y2mHTRAbqfFkpjldbkHGY8JIzRN6XqYRliG8/24FcHm2D2PwW24fl5xMRTVGdrb7iMrwCaIEbLWerGIkXuFWVg==}
+    dev: false
+
   /@types/ws/7.4.7:
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
@@ -2169,6 +2179,22 @@ packages:
       postcss-value-parser: 4.1.0
     dev: false
 
+  /aws-sdk/2.969.0:
+    resolution: {integrity: sha512-bDQenWDH9CdPIsgh7E6zgq2bO576teSnlQv1Oz0IwxVq+AbGsArSJXjNrvniV1l9TrqPOZk9dqBa/q4mOzwyLw==}
+    engines: {node: '>= 0.8.0'}
+    requiresBuild: true
+    dependencies:
+      buffer: 4.9.2
+      events: 1.1.1
+      ieee754: 1.1.13
+      jmespath: 0.15.0
+      querystring: 0.2.0
+      sax: 1.2.1
+      url: 0.10.3
+      uuid: 3.3.2
+      xml2js: 0.4.19
+    dev: false
+
   /aws-sign2/0.7.0:
     resolution: {integrity: sha1-tG6JCTSpWR8tL2+G1+ap8bP+dqg=}
     dev: false
@@ -2263,6 +2289,10 @@ packages:
       isobject: 3.0.1
       mixin-deep: 1.3.2
       pascalcase: 0.1.1
+    dev: false
+
+  /base64-js/1.5.1:
+    resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
     dev: false
 
   /batch/0.6.1:
@@ -2391,6 +2421,14 @@ packages:
 
   /buffer-indexof/1.1.1:
     resolution: {integrity: sha512-4/rOEg86jivtPTeOUUT61jJO1Ya1TrR/OkqCSZDyq84WJh3LuuiphBYJN+fm5xufIk4XAFcEwte/8WzC8If/1g==}
+    dev: false
+
+  /buffer/4.9.2:
+    resolution: {integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg==}
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.1.13
+      isarray: 1.0.0
     dev: false
 
   /busboy/0.3.1:
@@ -3506,6 +3544,11 @@ packages:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
     dev: false
 
+  /events/1.1.1:
+    resolution: {integrity: sha1-nr23Y1rQmccNzEwqH1AEKI6L2SQ=}
+    engines: {node: '>=0.4.x'}
+    dev: false
+
   /events/3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
@@ -4268,6 +4311,10 @@ packages:
       postcss: ^8.1.0
     dependencies:
       postcss: 8.3.6
+    dev: false
+
+  /ieee754/1.1.13:
+    resolution: {integrity: sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==}
     dev: false
 
   /ignore/4.0.6:
@@ -5171,6 +5218,11 @@ packages:
 
   /jju/1.4.0:
     resolution: {integrity: sha1-o6vicYryQaKykE+EpiWXDzia4yo=}
+    dev: false
+
+  /jmespath/0.15.0:
+    resolution: {integrity: sha1-o/Iiqarp+Wb10nx5ZRDigJF2Qhc=}
+    engines: {node: '>= 0.6.0'}
     dev: false
 
   /js-tokens/4.0.0:
@@ -6863,6 +6915,10 @@ packages:
       chokidar: 3.4.3
     dev: false
 
+  /sax/1.2.1:
+    resolution: {integrity: sha1-e45lYZCyKOgaZq6nSEgNgozS03o=}
+    dev: false
+
   /saxes/3.1.11:
     resolution: {integrity: sha512-Ydydq3zC+WYDJK1+gRxRapLIED9PWeSuuS41wqyoRmzvhhh9nc+QQrVMKJYzJFULazeGhzSV0QleN2wD3boh2g==}
     engines: {node: '>=8'}
@@ -7986,6 +8042,13 @@ packages:
       requires-port: 1.0.0
     dev: false
 
+  /url/0.10.3:
+    resolution: {integrity: sha1-Ah5NnHcF8hu/N9A861h2dAJ3TGQ=}
+    dependencies:
+      punycode: 1.3.2
+      querystring: 0.2.0
+    dev: false
+
   /url/0.11.0:
     resolution: {integrity: sha1-ODjpfPxgUh63PFJajlW/3Z4uKPE=}
     dependencies:
@@ -8007,9 +8070,20 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: false
 
+  /uuid/3.3.2:
+    resolution: {integrity: sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==}
+    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    hasBin: true
+    dev: false
+
   /uuid/3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    hasBin: true
+    dev: false
+
+  /uuid/8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
     dev: false
 
@@ -8429,6 +8503,18 @@ packages:
 
   /xml-name-validator/3.0.0:
     resolution: {integrity: sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==}
+    dev: false
+
+  /xml2js/0.4.19:
+    resolution: {integrity: sha512-esZnJZJOiJR9wWKMyuvSE1y6Dq5LCuJanqhxslH2bxM6duahNZ+HMpCLhBQGZkbX6xRf8x1Y2eJlgt2q3qo49Q==}
+    dependencies:
+      sax: 1.2.1
+      xmlbuilder: 9.0.7
+    dev: false
+
+  /xmlbuilder/9.0.7:
+    resolution: {integrity: sha1-Ey7mPS7FVlxVfiD0wi35rKaGsQ0=}
+    engines: {node: '>=4.0'}
     dev: false
 
   /xmlchars/2.2.0:
@@ -9414,7 +9500,7 @@ packages:
     dev: false
 
   file:projects/upload.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-w/+oyUyPZBE2o5S7ppt+annmXvrApcNRsoWxwVDnBKA/5T176jx8+y47UhGvCiMCb1z3oToZR2jLzGPvZqyCEQ==, tarball: file:projects/upload.tgz}
+    resolution: {integrity: sha512-+1p02O15vwiBqvbOGVh2gd+ZUDZk6HrQaDkrdVCSeMyA4zVVLozNsQ3ZqDAxngNTYiX5keRwHw8YU+384ONyFg==, tarball: file:projects/upload.tgz}
     id: file:projects/upload.tgz
     name: '@rush-temp/upload'
     version: 0.0.0
@@ -9423,8 +9509,10 @@ packages:
       '@types/express-fileupload': 1.1.7
       '@types/heft-jest': 1.0.2
       '@types/node': 16.4.13
+      '@types/uuid': 8.3.1
       '@types/ws': 7.4.7
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      aws-sdk: 2.969.0
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
@@ -9432,6 +9520,7 @@ packages:
       express: 4.17.1
       express-fileupload: 1.2.1
       ts-node: 10.2.0_dea0625f6d31b223e93dc3dc354b8b43
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
