@@ -19,11 +19,12 @@
 import type { Doc } from '@anticrm/core'
 import { Backlink as BacklinkComponent } from '@anticrm/presentation'
 import type { Backlink } from '@anticrm/chunter'
-import { CommentViewer } from '@anticrm/presentation'
 import { ReferenceInput } from '@anticrm/text-editor'
 import { createQuery } from '@anticrm/presentation'
 import { Section, IconComments } from '@anticrm/ui'
+
 import Bookmark from './icons/Bookmark.svelte'
+import CommentViewer from './CommentViewer.svelte'
 
 import chunter from '@anticrm/chunter'
 

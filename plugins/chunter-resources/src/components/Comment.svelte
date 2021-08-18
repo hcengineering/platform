@@ -14,15 +14,8 @@
 -->
 
 <script lang="ts">
-  import Avatar from './Avatar.svelte'
-
-  interface Person {
-    firstName: string
-    lastName: string
-    email: string
-    description: string
-    city: string
-  }
+  import type { Person } from '@anticrm/contact'
+  import { Avatar } from '@anticrm/presentation'
 
   interface IMessage {
     text: string

@@ -21,7 +21,7 @@ import { v4 as uuid } from 'uuid'
 
 const BUCKET = 'anticrm-upload-9e4e89c'
 
-async function awsUpload(file: UploadedFile) {
+async function awsUpload (file: UploadedFile): Promise<S3.ManagedUpload.SendData> {
   console.log(file)
   const s3 = new S3()
   const resp = await s3.upload({
@@ -29,9 +29,10 @@ async function awsUpload(file: UploadedFile) {
     Key: uuid(),
     Body: file.data,
     ContentType: file.mimetype,
-    ACL: 'public-read' 
+    ACL: 'public-read'
   }).promise()
   console.log(resp)
+  return resp
 }
 
 /**
@@ -48,8 +49,8 @@ export function start (port: number): void {
 
     if (file !== undefined) {
       awsUpload(file as UploadedFile)
-      .then(() => res.status(200).send())
-      .catch(error => console.log(error))
+        .then(() => res.status(200).send())
+        .catch(error => console.log(error))
     } else {
       res.status(400).send()
     }
