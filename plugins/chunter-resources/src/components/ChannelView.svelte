@@ -24,7 +24,7 @@
 
   export let space: Ref<Space>
 
-  const client = new TxOperations(getClient())
+  const client = getClient()
 
   function onMessage(event: CustomEvent) {
     client.createDoc(chunter.class.Message, space, {
