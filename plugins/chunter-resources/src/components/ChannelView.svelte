@@ -15,7 +15,6 @@
 
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
-  import { TxOperations } from '@anticrm/core'
   import chunter from '../plugin'
   import { getClient } from '@anticrm/presentation'
 
