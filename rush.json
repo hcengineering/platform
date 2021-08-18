@@ -711,5 +711,15 @@
       "projectFolder": "server/upload",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/server-chunter-resources",
+      "projectFolder": "server/chunter-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/mongo",
+      "projectFolder": "server/mongo",
+      "shouldPublish": true
+    },
   ]
 }

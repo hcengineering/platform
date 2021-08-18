@@ -14,17 +14,7 @@
 // limitations under the License.
 //
 
-import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createStorage } from '@anticrm/dev-storage'
+import { start } from '.'
 
-import { addLocation } from '@anticrm/platform'
-import { serverChunterId } from '@anticrm/server-chunter'
-
-/**
- * @public
- */
-export async function start (port: number, host?: string): Promise<void> {
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-
-  startJsonRpc(() => createStorage(), port, host)
-}
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+start(3333)

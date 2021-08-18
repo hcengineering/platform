@@ -43,6 +43,7 @@ export function configurePlatform() {
 
   if (process.env.CLIENT_TYPE === 'dev') {
     addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
+    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
   } else {
     addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   }
@@ -55,6 +56,5 @@ export function configurePlatform() {
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   
-  addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
 
 }

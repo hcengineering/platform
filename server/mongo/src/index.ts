@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,17 +14,4 @@
 // limitations under the License.
 //
 
-import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createStorage } from '@anticrm/dev-storage'
-
-import { addLocation } from '@anticrm/platform'
-import { serverChunterId } from '@anticrm/server-chunter'
-
-/**
- * @public
- */
-export async function start (port: number, host?: string): Promise<void> {
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-
-  startJsonRpc(() => createStorage(), port, host)
-}
+export { createStorage } from './storage'
