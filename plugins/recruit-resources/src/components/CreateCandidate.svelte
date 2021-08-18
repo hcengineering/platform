@@ -54,7 +54,6 @@
         okAction={createCandidate}
         on:close={() => { dispatch('close') }}>
   <DialogHeader />
-  <Tabs/>
   <Section icon={File} label={'Personal Information'}>
     <Grid>
       <EditBox label={'First name *'} placeholder={'John'} bind:value={firstName} focus/>
