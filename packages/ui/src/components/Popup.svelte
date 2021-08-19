@@ -77,7 +77,7 @@
       <svelte:component this={$modal.is} {...$modal.props} on:close={close} />
     {/if}
   </div>
-  <div bind:this={arrowHTML} class="arrow" />
+  <!-- <div bind:this={arrowHTML} class="arrow" /> -->
   <div bind:this={modalOHTML} class="modal-overlay" on:click={close} />
 {/if}
 
