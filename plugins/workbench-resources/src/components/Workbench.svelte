@@ -17,7 +17,6 @@
   import ActivityStatus from './ActivityStatus.svelte'
   import Applications from './Applications.svelte'
   import NavHeader from './NavHeader.svelte'
-  import avatar from '../../img/avatar.png'
 
   import { onDestroy } from 'svelte'
   
@@ -31,8 +30,9 @@
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, location } from '@anticrm/ui'
+  import { AnyComponent, location, Popup, showPopup } from '@anticrm/ui'
   import core from '@anticrm/core'
+  import CreateUser from './CreateUser.svelte'
 
   export let client: Client
 
@@ -75,7 +75,7 @@
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
-        <Avatar size={'medium'} />
+        <div on:click={(el) => { showPopup(CreateUser, { }, el.target) }}><Avatar size={'medium'} /></div>
       </div>
     </div>
     {#if navigator}
@@ -93,6 +93,7 @@
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
   <Modal />
+  <Popup />
 {:else}
   No client
 {/if}
