@@ -20,14 +20,11 @@ import { createStorage } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
 
-const url = 'mongodb://localhost:27017'
-const dbName = 'ws1'
-
 /**
  * @public
  */
-export async function start (port: number, host?: string): Promise<void> {
+export async function start (dbUrl: string, port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc(() => createStorage(url, dbName), port, host)
+  startJsonRpc((workspace: string) => createStorage(dbUrl, workspace), port, host)
 }

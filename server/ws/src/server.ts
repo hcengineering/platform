@@ -62,10 +62,10 @@ interface Workspace {
 class SessionManager {
   private readonly workspaces = new Map<string, Workspace>()
 
-  async addSession (ws: WebSocket, token: _Token, storageFactory: () => Promise<ServerStorage>): Promise<Session> {
+  async addSession (ws: WebSocket, token: _Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
-      const storage = await storageFactory()
+      const storage = await storageFactory(token.workspace)
       const session = new Session(this, token, storage)
       const workspace: Workspace = {
         storage,
@@ -120,7 +120,7 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
  * @param port -
  * @param host -
  */
-export function start (storageFactory: () => Promise<ServerStorage>, port: number, host?: string): void {
+export function start (storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): void {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager()

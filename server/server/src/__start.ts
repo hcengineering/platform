@@ -16,5 +16,12 @@
 
 import { start } from '.'
 
+const url = process.env.MONGO_URL
+
+if (url === undefined) {
+  console.error('please provide mongodb url')
+  process.exit(1)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-start(3333)
+start(url, 3333)

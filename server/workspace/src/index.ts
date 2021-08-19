@@ -30,6 +30,6 @@ export async function createModel (url: string, dbName: string): Promise<number>
     const result = await db.collection(DOMAIN_TX).insertMany(txJson as Document[])
     return result.insertedCount
   } finally {
-    client.close()
+    await client.close()
   }
 }
