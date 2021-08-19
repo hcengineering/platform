@@ -265,3 +265,13 @@ new aws.route53.Record("targetDomain", {
       evaluateTargetHealth: true,
   }],
 })
+
+new aws.route53.Record("databaseRecord", {
+  name: "db.hc.engineering",
+  zoneId: zoneId,
+  type: "CNAME",
+  ttl: 300,
+  records: [
+    "xored.com"
+  ]
+})

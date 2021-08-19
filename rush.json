@@ -721,5 +721,10 @@
       "projectFolder": "server/mongo",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/workspace",
+      "projectFolder": "server/workspace",
+      "shouldPublish": true
+    },
   ]
 }

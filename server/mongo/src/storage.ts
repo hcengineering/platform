@@ -96,7 +96,7 @@ export async function createStorage (url: string, dbName: string): Promise<Serve
   const hierarchy = new Hierarchy()
   const triggers = new Triggers(new TxFactory(core.account.System))
 
-  const txes = await db.collection(DOMAIN_TX).find<Tx>({}).toArray()
+  const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).toArray()
   for (const tx of txes) {
     hierarchy.tx(tx)
     await triggers.tx(tx)

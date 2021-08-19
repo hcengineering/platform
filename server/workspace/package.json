@@ -1,10 +1,11 @@
 {
-  "name": "@anticrm/mongo",
+  "name": "@anticrm/workspace",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
+    "create": "ts-node src/__create.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src"
   },
@@ -15,12 +16,11 @@
     "eslint-plugin-import":"2",
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
-    "eslint":"^7.32.0"
+    "eslint":"^7.32.0",
+    "ts-node":"^10.2.1"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.10",
-    "@anticrm/platform": "~0.6.5",
-    "@anticrm/server-core": "~0.6.0",
     "mongodb": "^4.1.0"
   }
 }
