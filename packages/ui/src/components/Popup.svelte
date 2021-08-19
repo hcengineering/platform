@@ -17,6 +17,7 @@
   import Component from './Component.svelte'
 
   let modalHTML: HTMLElement
+  let arrowHTML: HTMLElement
   let modalOHTML: HTMLElement
 
   function close () {
@@ -39,20 +40,24 @@
         const rect = $modal.element.getBoundingClientRect()
         let style: string = 'popup-'
         if (rect.top > document.body.clientHeight - rect.bottom) {
-          style += 'top-'
+          // style += 'top-'
           modalHTML.style.bottom = document.body.clientHeight - rect.top + convertRemToPx(.75) + 'px'
+          // arrowHTML.style.top = rect.top - convertRemToPx(.75) + 'px'
+          // arrowHTML.style.left = rect.left + rect.width / 2 + 'px'
+          // arrowHTML.classList.add('popup-top')
         } else {
-          style += 'bottom-'
+          // style += 'bottom-'
           modalHTML.style.top = rect.bottom + convertRemToPx(.75) + 'px'
+          // arrowHTML.style.top = '0px'
         }
         if (rect.left > document.body.clientWidth - rect.right) {
-          style += 'left'
+          // style += 'left'
           modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
         } else {
-          style += 'right'
+          // style += 'right'
           modalHTML.style.left = rect.left + 'px'
         }
-        modalHTML.classList.add(style)
+        // modalHTML.classList.add(style)
       } else {
         modalHTML.style.top = '50%'
         modalHTML.style.left = '50%'
@@ -72,6 +77,7 @@
       <svelte:component this={$modal.is} {...$modal.props} on:close={close} />
     {/if}
   </div>
+  <div bind:this={arrowHTML} class="arrow" />
   <div bind:this={modalOHTML} class="modal-overlay" on:click={close} />
 {/if}
 
@@ -95,4 +101,14 @@
     background: transparent;
     z-index: 1000;
   }
+
+  // .arrow {
+  //   position: fixed;
+  //   width: 1.75rem;
+  //   height: .625rem;
+  //   clip-path: path('M8.3,4.4l2.4-2.7C11.8,0.6,12.8,0,14,0C13.1,0,0.9,0,0,0c1.2,0,2.2,0.6,3.2,1.7l2.5,2.7 c0.6,0.7,1.7,0.8,2.5,0.2C8.2,4.5,8.3,4.5,8.3,4.4z');
+  //   transform: translateX(-25%);
+  //   background-color: green;
+  //   z-index: 1002;
+  // }
 </style>
