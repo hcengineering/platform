@@ -128,10 +128,17 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
   const wss = new Server({ noServer: true })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   wss.on('connection', async (ws: WebSocket, request: any, token: _Token) => {
+    const buffer: string[] = []
+
+    ws.on('message', (msg: string) => { buffer.push(msg) })
     const session = await sessions.addSession(ws, token, storageFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(session, ws, msg))
     ws.on('close', (code: number, reason: string) => sessions.close(ws, token, code, reason))
+
+    for (const msg of buffer) {
+      await handleRequest(session, ws, msg)
+    }
   })
 
   const server = createServer()
