@@ -9513,7 +9513,7 @@ packages:
     dev: false
 
   file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-FGh0R+fgnIuNcoSfPKeIXVZuNrlspS3l7hwwb/pJbyHQ/ao/mETg/xyDtFO53czcAIPCYt43i/de/OOGF0j3Lw==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-Bpc8oo27XWe+uKFoDgS9nnkZF4A9rzcNq/IB1M6u0V4HUOfA/HW8XrdJ3Y2heEWev4B9CGuJ0j6QWq6Usm8lHg==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
@@ -9526,7 +9526,10 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      ts-node: 10.2.1_c780171742f6906a053a603dfa210a4e
     transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
       - '@typescript-eslint/parser'
       - supports-color
       - typescript

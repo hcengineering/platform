@@ -5,6 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
+    "start": "ts-node src/__start.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src"
   },
@@ -17,7 +18,8 @@
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
-    "@types/ws":"^7.4.7" 
+    "@types/ws":"^7.4.7",
+    "ts-node":"^10.2.1" 
   },
   "dependencies": {
     "@anticrm/core": "~0.6.10",

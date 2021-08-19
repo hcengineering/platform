@@ -67,6 +67,7 @@ class MongoStorage implements ServerStorage {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
+    console.log('findAll', _class, domain, query)
     if (domain === DOMAIN_MODEL) return await this.modeldb.findAll(_class, query, options)
     return await this.db.collection(domain).find<T>(translateQuery(query)).toArray()
   }
