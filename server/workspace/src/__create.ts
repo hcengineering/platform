@@ -32,5 +32,3 @@ console.log('creating model...')
 createModel(url, db).then(rows => {
   console.log(`done, ${rows} rows inserted.`)
 }).catch(error => { console.error(error) })
-
-// mongodb+srv://dbUser:ZfVAdSSnw9myvd70@cluster0.fyeho.mongodb.net/?retryWrites=true&w=majority
