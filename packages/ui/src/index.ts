@@ -50,6 +50,7 @@ export { default as CheckBoxList } from './components/CheckBoxList.svelte'
 export { default as IconSize } from './components/IconSize.svelte'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as Loading } from './components/Loading.svelte'
+export { default as Popup } from './components/Popup.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'
@@ -83,3 +84,16 @@ export function closeModal (): void {
   store.set({ is: undefined, props: {}, element: undefined })
 }
 
+export const popupstore = writable<CompAndProps>({
+  is: undefined,
+  props: {},
+  element: undefined
+})
+
+export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement): void {
+  popupstore.set({ is: component, props, element: element })
+}
+
+export function closePopup (): void {
+  popupstore.set({ is: undefined, props: {}, element: undefined })
+}
