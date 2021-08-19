@@ -8,25 +8,20 @@
   export let status: Status
 </script>
 
-<div class="status">
+<div class="flex-center container">
   {#if status.severity !== Severity.OK}
     <Info size={'small'}/>
-  {/if}
-  {#if status.severity !== Severity.OK}
     <span><Label label={status.code} params={status.params}/></span>
   {/if}
 </div>
 
 <style lang="scss">
-  .status {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 11px;
+  .container {
     user-select: none;
-
     span {
-      margin-left: .75em;
+      margin-left: .75rem;
+      font-size: .75rem;
+      color: var(--theme-content-accent-color);
     }
   }
 </style>
