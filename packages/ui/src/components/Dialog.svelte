@@ -60,8 +60,6 @@
     .dialog {
       display: flex;
       flex-direction: column;
-      min-width: 40%;
-      max-width: 80%;
       width: auto;
       min-height: 100vh;
       height: 100vh;
