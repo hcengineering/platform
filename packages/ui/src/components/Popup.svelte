@@ -29,10 +29,6 @@
       close()
     }
   }
-  
-  function convertRemToPx(rem: number) {
-    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
-  }
 
   $: {
     if (modalHTML) {
@@ -41,13 +37,13 @@
         let style: string = 'popup-'
         if (rect.top > document.body.clientHeight - rect.bottom) {
           // style += 'top-'
-          modalHTML.style.bottom = document.body.clientHeight - rect.top + convertRemToPx(.75) + 'px'
+          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
           // arrowHTML.style.top = rect.top - convertRemToPx(.75) + 'px'
           // arrowHTML.style.left = rect.left + rect.width / 2 + 'px'
           // arrowHTML.classList.add('popup-top')
         } else {
           // style += 'bottom-'
-          modalHTML.style.top = rect.bottom + convertRemToPx(.75) + 'px'
+          modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
           // arrowHTML.style.top = '0px'
         }
         if (rect.left > document.body.clientWidth - rect.right) {

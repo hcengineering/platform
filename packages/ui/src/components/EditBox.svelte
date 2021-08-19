@@ -32,7 +32,7 @@
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + (parseFloat(getComputedStyle(document.documentElement).fontSize) * .5) + 'px'
+    target.style.width = text.clientWidth + 8 + 'px'
   }
 
   onMount(() => {
@@ -69,9 +69,9 @@
 
   input {
     height: 1.25rem;
-    margin: -.25rem;
-    padding: .125rem;
-    border: .125rem solid transparent;
+    margin: -4px;
+    padding: 2px;
+    border: 2px solid transparent;
     border-radius: .125rem;
 
     &:focus {
