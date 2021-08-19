@@ -84,14 +84,14 @@ function onClick(object: Doc) {
 
   td {
     align-items: center;
-    height: 64px;
-    padding: 6px 20px;
+    height: 4rem;
+    padding: .375rem 1.25rem;
     color: var(--theme-content-accent-color);
   }
   th {
     align-items: center;
-    height: 50px;
-    padding: 0 20px;
+    height: 3.125rem;
+    padding: 0 1.25rem;
     font-weight: 500;
     text-align: left;
     color: var(--theme-content-trans-color);
