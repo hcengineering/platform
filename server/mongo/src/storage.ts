@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, ServerStorage } from '@anticrm/core'
-import core, { DOMAIN_MODEL, TxProcessor, ModelDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
+import core, { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, ServerStorage, SortingOrder, DOMAIN_MODEL, TxProcessor, ModelDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
 
 import { Triggers } from '@anticrm/server-core'
-import { MongoClient, Db, Filter, Document } from 'mongodb'
+import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
 function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<T> {
   return query as Filter<T>
@@ -69,7 +68,18 @@ class MongoStorage implements ServerStorage {
     const domain = this.hierarchy.getDomain(_class)
     console.log('findAll', _class, domain, query)
     if (domain === DOMAIN_MODEL) return await this.modeldb.findAll(_class, query, options)
-    return await this.db.collection(domain).find<T>(translateQuery(query)).toArray()
+    let cursor = this.db.collection(domain).find<T>(translateQuery(query))
+    if (options !== null && options !== undefined) {
+      if (options.sort !== undefined) {
+        const sort: Sort = {}
+        for (const key in options.sort) {
+          const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
+          sort[key] = order
+        }
+        cursor = cursor.sort(sort)
+      }
+    }
+    return await cursor.toArray()
   }
 
   async tx (tx: Tx): Promise<Tx[]> {
@@ -97,7 +107,7 @@ export async function createStorage (url: string, dbName: string): Promise<Serve
   const hierarchy = new Hierarchy()
   const triggers = new Triggers(new TxFactory(core.account.System))
 
-  const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).toArray()
+  const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
   for (const tx of txes) {
     hierarchy.tx(tx)
     await triggers.tx(tx)

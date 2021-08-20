@@ -17,6 +17,7 @@ import type { Doc, Ref, Class } from './classes'
 import type { Tx } from './tx'
 import type { Storage, DocumentQuery, FindOptions, FindResult } from './storage'
 
+import { SortingOrder } from './storage'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import { DOMAIN_MODEL } from './classes'
@@ -96,7 +97,7 @@ export async function createClient (
   }
 
   const conn = await connect(txHander)
-  const txes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model })
+  const txes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model }, { sort: { _id: SortingOrder.Ascending } })
 
   const txMap = new Map<Ref<Tx>, Ref<Tx>>()
   for (const tx of txes) txMap.set(tx._id, tx._id)

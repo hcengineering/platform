@@ -57,7 +57,7 @@ export type FindOptions<T extends Doc> = {
  * @public
  */
 export type SortingQuery<T extends Doc> = {
-  [P in keyof T]?: T[P] extends object ? never : SortingOrder
+  [P in keyof T]?: SortingOrder
 }
 
 /**
