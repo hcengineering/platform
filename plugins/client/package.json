@@ -19,6 +19,6 @@
   },
   "dependencies": {
     "@anticrm/platform":"~0.6.5",
-    "@anticrm/core":"~0.6.10"
+    "@anticrm/core":"~0.6.11"
   }
 }

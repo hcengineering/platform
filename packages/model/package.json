@@ -19,7 +19,7 @@
     "@types/toposort":"^2.0.3"
   },
   "dependencies": {
-    "@anticrm/core":"~0.6.10",
+    "@anticrm/core":"~0.6.11",
     "@anticrm/platform":"~0.6.5",
     "toposort":"^2.0.2"
   }

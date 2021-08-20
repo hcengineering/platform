@@ -1,0 +1,17 @@
+{
+  "name": "@anticrm/server-chunter-resources",
+  "entries": [
+    {
+      "version": "0.6.0",
+      "tag": "@anticrm/server-chunter-resources_v0.6.0",
+      "date": "Fri, 20 Aug 2021 16:21:03 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.10` to `~0.6.11`"
+          }
+        ]
+      }
+    }
+  ]
+}

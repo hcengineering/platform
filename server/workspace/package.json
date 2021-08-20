@@ -20,7 +20,7 @@
     "ts-node":"^10.2.1"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.10",
+    "@anticrm/core": "~0.6.11",
     "mongodb": "^4.1.0"
   }
 }

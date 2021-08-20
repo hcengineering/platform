@@ -1,6 +1,13 @@
 # Change Log - @anticrm/core
 
-This log was last generated on Wed, 11 Aug 2021 09:37:04 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 16:21:03 GMT and should not be manually modified.
+
+## 0.6.11
+Fri, 20 Aug 2021 16:21:03 GMT
+
+### Patches
+
+- Transaction ordering
 
 ## 0.6.10
 Wed, 11 Aug 2021 09:37:04 GMT

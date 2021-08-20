@@ -2,6 +2,18 @@
   "name": "@anticrm/core",
   "entries": [
     {
+      "version": "0.6.11",
+      "tag": "@anticrm/core_v0.6.11",
+      "date": "Fri, 20 Aug 2021 16:21:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Transaction ordering"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.10",
       "tag": "@anticrm/core_v0.6.10",
       "date": "Wed, 11 Aug 2021 09:37:04 GMT",
