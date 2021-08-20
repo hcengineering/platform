@@ -52,15 +52,11 @@
     }
   }
 
-  function convertRemToPx(rem: number) {
-    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
-  }
-
   function computeSize (t: EventTarget | null) {
     const target = t as HTMLInputElement
-    const value = target.value.charCodeAt(target.value.length - 1) === 10 ? convertRemToPx(1.125) : 0
+    const value = target.value.charCodeAt(target.value.length - 1) === 10 ? 1.125 : 0
     text.innerHTML = label.replaceAll(' ', '&nbsp;')
-    target.style.height = text.clientHeight + value + convertRemToPx(.5) + 'px'
+    target.style.height = `calc(${text.clientHeight}px + ${value + .5}rem)`
   }
 
   onMount(() => {

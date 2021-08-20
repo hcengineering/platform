@@ -48,14 +48,14 @@
     textarea {
       width: auto;
       min-height: 4.5rem;
-      margin: -.25rem;
-      padding: .125rem;
+      margin: -4px;
+      padding: 2px;
       font-family: inherit;
       font-size: inherit;
       line-height: 150%;
       color: var(--theme-caption-color);
       background-color: transparent;
-      border: .125rem solid transparent;
+      border: 2px solid transparent;
       border-radius: .125rem;
       outline: none;
       overflow-y: scroll;
