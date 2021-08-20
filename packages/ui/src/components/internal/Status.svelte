@@ -20,7 +20,7 @@
     user-select: none;
     span {
       margin-left: .75em;
-      font-size: .75em;
+      font-size: .857em;
       color: var(--theme-content-accent-color);
     }
   }
