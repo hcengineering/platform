@@ -20,7 +20,7 @@ import type { Doc, Ref, Space } from '@anticrm/core'
 import type { Comment } from '@anticrm/chunter'
 import { ReferenceInput } from '@anticrm/text-editor'
 import { createQuery, getClient } from '@anticrm/presentation'
-import { Section, IconComments } from '@anticrm/ui'
+import { Section, IconComments, Grid } from '@anticrm/ui'
 
 import Bookmark from './icons/Bookmark.svelte'
 import Backlink from './Backlink.svelte'
@@ -45,20 +45,13 @@ function onMessage(event: CustomEvent) {
 }
 </script>
 
-<div class="reference"><ReferenceInput on:message={onMessage}/></div>
-
-<!-- <Section icon={IconComments} label={'Comments'}>
-  <CommentViewer />
-</Section> -->
-{#if comments}
-  {#each comments as comment}
-    <Backlink {comment} />
-  {/each}
-{/if}
-
-<style lang="scss">
-  .reference {
-    margin-top: 24px;
-  }
-</style>
-
+<Section icon={IconComments} label={'Comments'}>
+  <Grid column={1} rowGap={1.5}>
+    {#if comments}
+      {#each comments as comment}
+        <Backlink {comment} />
+      {/each}
+    {/if}
+    <ReferenceInput on:message={onMessage}/>
+  </Grid>
+</Section>
