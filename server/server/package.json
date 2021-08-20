@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/server",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -25,7 +25,7 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-core": "~0.6.1",
-    "@anticrm/server-ws": "~0.6.10",
+    "@anticrm/server-ws": "~0.6.11",
     "@anticrm/server-chunter": "~0.6.1",
     "@anticrm/server-chunter-resources": "~0.6.0",
     "@anticrm/mongo": "~0.6.1"
