@@ -78,7 +78,7 @@
     .status-bar {
       min-height: $status-bar-height;
       min-width: 1200px;
-      font-size: 14px;
+      font-size: 12px;
 
       .status-info {
         flex-grow: 1;
@@ -87,7 +87,6 @@
       .clock {
         margin: 0 40px 0 24px;
         font-weight: 500;
-        font-size: 12px;
         user-select: none;
       }
       .widget {
