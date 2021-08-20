@@ -114,6 +114,19 @@ select:-webkit-autofill:focus {
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-small {
+  width: 1.143em;
+  height: 1.143em;
+}
+.svg-medium {
+  width: 1.429em;
+  height: 1.429em;
+}
+.svg-large {
+  width: 1.715em;
+  height: 1.715em;
+}
+
 .hidden-text {
   position: absolute;
   visibility: hidden;
