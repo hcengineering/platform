@@ -79,6 +79,7 @@
       min-height: $status-bar-height;
       min-width: 1200px;
       font-size: 12px;
+      line-height: 150%;
 
       .status-info {
         flex-grow: 1;
