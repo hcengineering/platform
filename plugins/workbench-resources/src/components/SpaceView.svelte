@@ -109,7 +109,6 @@ let selected = 0
   .container {
     display: flex;
     flex-direction: column;
-    margin: 0 2.5rem 2.5rem;
-    height: 100%;
+    height: calc(100% - 9.5rem);
   }
 </style>
