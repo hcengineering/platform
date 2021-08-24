@@ -38,7 +38,7 @@ async function connect(): Promise<Client | undefined> {
 
   const getClient = await getResource(client.function.GetClient)
   const instance = await getClient(token, endpoint)
-  const me = (await instance.findAll(contact.class.Employee, { email }))[0]
+  const me = await instance.findOne(contact.class.Employee, { email })
   if (me !== undefined) {
     setCurrentAccount(me._id)
   }

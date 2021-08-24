@@ -60,6 +60,10 @@ export class LiveQuery extends TxProcessor implements Client {
     return await this.client.findAll(_class, query, options)
   }
 
+  async findOne<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
+    return (await this.findAll(_class, query, options))[0]
+  }
+
   query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>): () => void {
     const result = this.client.findAll(_class, query, options)
     const q: Query = {

@@ -15,7 +15,7 @@
 
 import type { KeysByType } from 'simplytyped'
 import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin } from './classes'
-import { DocumentQuery, FindOptions, FindResult, Storage } from './storage'
+import { DocumentQuery, FindOptions, FindResult, Storage, WithLookup } from './storage'
 import core from './component'
 import { generateId } from './utils'
 
@@ -161,6 +161,10 @@ export class TxOperations implements Storage {
 
   findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
     return this.storage.findAll(_class, query, options)
+  }
+
+  async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
+    return (await this.findAll(_class, query, options))[0]
   }
 
   tx (tx: Tx): Promise<void> {

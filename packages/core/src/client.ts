@@ -15,7 +15,7 @@
 
 import type { Doc, Ref, Class } from './classes'
 import type { Tx } from './tx'
-import type { Storage, DocumentQuery, FindOptions, FindResult } from './storage'
+import type { Storage, DocumentQuery, FindOptions, FindResult, WithLookup } from './storage'
 
 import { SortingOrder } from './storage'
 import { Hierarchy } from './hierarchy'
@@ -35,6 +35,11 @@ export type TxHander = (tx: Tx) => void
 export interface Client extends Storage {
   notify?: (tx: Tx) => void
   getHierarchy: () => Hierarchy
+  findOne: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<WithLookup<T> | undefined>
 }
 
 class ClientImpl implements Client {
@@ -55,6 +60,14 @@ class ClientImpl implements Client {
       return await this.model.findAll(_class, query, options)
     }
     return await this.conn.findAll(_class, query, options)
+  }
+
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    return (await this.findAll(_class, query, options))[0]
   }
 
   async tx (tx: Tx): Promise<void> {
