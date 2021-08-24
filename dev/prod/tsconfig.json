@@ -3,13 +3,13 @@
     "outDir": "./dist/",
     "noImplicitAny": true,
     "module": "esnext",
-    "target": "es6",
+    "target": "es2016",
     "allowJs": true,
     "sourceMap": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": [
-      "esnext",
+      "es2016",
       "dom"
     ]
   }
