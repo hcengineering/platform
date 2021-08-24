@@ -46,7 +46,6 @@
         okLabel={'Create Application'} 
         okAction={createCandidate}
         on:close={() => { dispatch('close') }}>
-  <Tabs/>
   <Section icon={File} label={'General Information'}>
     <Grid>
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show/>

@@ -45,7 +45,6 @@
         okLabel={recruit.string.CreateVacancy} 
         okAction={createVacancy}
         on:close={() => { dispatch('close') }}>
-  <Tabs/>
   <Section icon={File} label={'General Information'}>
     <Grid column={1}>
       <EditBox label={recruit.string.VacancyName} bind:value={name} placeholder="Software Engineer" focus/>
