@@ -40,6 +40,7 @@ export default plugin(loginId, {
     UploadUrl: '' as Asset,
     LoginToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
+    LoginEmail: '' as Metadata<string>,
     OverrideLoginToken: '' as Metadata<string>, // debug purposes
     OverrideEndpoint: '' as Metadata<string>
   },

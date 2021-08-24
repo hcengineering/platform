@@ -21,20 +21,28 @@ import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
 
 import client from '@anticrm/client'
 import login from '@anticrm/login'
+import contact from '@anticrm/contact'
 
 import Workbench from './Workbench.svelte'
+import { setCurrentAccount } from '../utils'
 
 async function connect(): Promise<Client | undefined> {
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
-  if (token === null || endpoint === null) {
+  if (token === null || endpoint === null || email === null) {
     navigate({ path: [login.component.LoginApp] })
     return
   }
 
   const getClient = await getResource(client.function.GetClient)
-  return getClient(token, endpoint)
+  const instance = await getClient(token, endpoint)
+  const me = (await instance.findAll(contact.class.Employee, { email }))[0]
+  if (me !== undefined) {
+    setCurrentAccount(me._id)
+  }
+  return instance
 }
 
 </script>

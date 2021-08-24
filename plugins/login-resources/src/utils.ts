@@ -21,13 +21,14 @@ import login from '@anticrm/login'
 export interface LoginInfo { 
   token: string
   endpoint: string
+  email: string
 }
 
 /**
  * Perform a login operation to required workspace with user credentials.
  */
 export async function doLogin (
-  username: string,
+  email: string,
   password: string,
   workspace: string
 ): Promise<[Status, LoginInfo | undefined]> {
@@ -41,13 +42,13 @@ export async function doLogin (
   if (token !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [OK, { token, endpoint }]
+      return [OK, { token, endpoint, email }]
     }
   }
 
   const request: Request<[string, string, string]> = {
     method: 'login',
-    params: [username, password, workspace]
+    params: [email, password, workspace]
   }
 
   try {

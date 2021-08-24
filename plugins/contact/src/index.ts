@@ -57,6 +57,7 @@ export default plugin(contactId, {
   class: {
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
-    Organization: '' as Ref<Class<Organization>>
+    Organization: '' as Ref<Class<Organization>>,
+    Employee: '' as Ref<Class<Employee>>
   }
 })
