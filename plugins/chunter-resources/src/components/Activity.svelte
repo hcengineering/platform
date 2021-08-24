@@ -20,9 +20,8 @@ import type { Doc, Ref, Space } from '@anticrm/core'
 import type { Comment } from '@anticrm/chunter'
 import { ReferenceInput } from '@anticrm/text-editor'
 import { createQuery, getClient } from '@anticrm/presentation'
-import { ScrollBox, IconComments, Grid } from '@anticrm/ui'
+import { ScrollBox, Grid } from '@anticrm/ui'
 
-import Bookmark from './icons/Bookmark.svelte'
 import Backlink from './Backlink.svelte'
 
 import chunter from '@anticrm/chunter'
