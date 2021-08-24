@@ -34,15 +34,15 @@
 <div class="dialog-container">
   <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
     <div class="flex-between header">
-      <div class="title"><Label {label}/></div>
-      <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'}/></div>
+      <div class="title"><Label {label} /></div>
+      <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'} /></div>
     </div>
     <div class="content">
-      <ScrollBox vertical stretch><slot/></ScrollBox>
+      <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
     <div class="footer">
-      <Button label={okLabel} primary/>
-      <Button label={'Cancel'} on:click={() => { dispatch('close') }}/>
+      <Button label={'Cancel'} on:click={() => { dispatch('close') }} />
+      <Button label={okLabel} primary />
     </div>
   </form>
 </div>
@@ -60,7 +60,7 @@
     .dialog {
       display: flex;
       flex-direction: column;
-      width: auto;
+      width: 45rem;
       min-height: 100vh;
       max-height: 100vh;
       background-color: var(--theme-bg-color);
@@ -91,21 +91,21 @@
       .content {
         flex-shrink: 0;
         flex-grow: 1;
-        width: 40rem;
         margin: 0 2.5rem;
         height: fit-content;
       }
 
       .footer {
-        display: flex;
-        overflow: hidden;
-        flex-direction: row-reverse;
-        align-items: center;
         flex-shrink: 0;
-        gap: .75rem;
+        display: grid;
+        grid-auto-flow: column;
+        justify-content: end;
+        align-items: center;
+        column-gap: .75rem;
         padding: 0 2.5rem;
         height: 6rem;
         mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
+        overflow: hidden;
       }
     }
   }
