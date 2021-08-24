@@ -28,7 +28,7 @@ const predicates: Record<string, PredicateFactory> = {
     return (docs: Doc[]): Doc[] => {
       const result: Doc[] = []
       for (const doc of docs) {
-        if (o.indexOf((doc as any)[propertyKey]) !== -1) result.push(doc)
+        if (o.includes((doc as any)[propertyKey])) result.push(doc)
       }
       return result
     }
