@@ -53,7 +53,6 @@ export function setClient(_client: Client) {
 
 class LiveQuery {
   private unsubscribe = () => {}
-  private client = getClient()
 
   constructor() { 
     onDestroy(this.unsubscribe)
