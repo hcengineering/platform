@@ -50,7 +50,7 @@ describe('i18n', () => {
   it('should emit status and return id when no loader', async () => {
     expect.assertions(2)
     const plugin = 'plugin-without-string-loader'
-    const message = `${plugin}.string.id`
+    const message = `${plugin}:string:id`
 
     const checkStatus = new Status(Severity.ERROR, platform.status.NoLoaderForStrings, { plugin })
     const eventListener = async (event: string, data: any): Promise<void> => {
@@ -65,7 +65,7 @@ describe('i18n', () => {
   it('should emit status and return id when bad loader', async () => {
     expect.assertions(2)
     const plugin = 'component-for-bad-loader'
-    const message = `${plugin}.string.id`
+    const message = `${plugin}:string:id`
     const errorMessage = 'bad loader'
     addStringsLoader(plugin as Plugin, (locale: string) => {
       throw new Error(errorMessage)
@@ -83,7 +83,7 @@ describe('i18n', () => {
 
   it('should cache error', async () => {
     const plugin = 'component'
-    const message = `${plugin}.string.id`
+    const message = `${plugin}:string:id`
 
     const checkStatus = new Status(Severity.ERROR, platform.status.NoLoaderForStrings, { plugin })
     let calls = 0

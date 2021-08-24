@@ -73,7 +73,7 @@ async function broadcastEvent (event: string, data: any): Promise<void> {
  * @returns
  */
 export async function setPlatformStatus (status: Status | Error): Promise<void> {
-  console.log('platform status', status)
+  // console.log('platform status', status)
   if (status instanceof Error) {
     return await broadcastEvent(PlatformEvent, unknownError(status))
   } else {

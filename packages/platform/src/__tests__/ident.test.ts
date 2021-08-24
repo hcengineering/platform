@@ -26,7 +26,7 @@ describe('ident', () => {
         MyString: '' as StatusCode<{}>
       }
     })
-    expect(ids.status.MyString).toBe('test.status.MyString')
+    expect(ids.status.MyString).toBe('test:status:MyString')
   })
 
   it('should merge ids', () => {
@@ -43,9 +43,9 @@ describe('ident', () => {
         X: '' as StatusCode<{}>
       }
     })
-    expect(merged.resource.MyString).toBe('test.resource.MyString')
-    expect(merged.resource.OneMore).toBe('test.resource.OneMore')
-    expect(merged.more.X).toBe('test.more.X')
+    expect(merged.resource.MyString).toBe('test:resource:MyString')
+    expect(merged.resource.OneMore).toBe('test:resource:OneMore')
+    expect(merged.more.X).toBe('test:more:X')
   })
 
   it('should fail overwriting ids', () => {
@@ -65,12 +65,12 @@ describe('ident', () => {
 
   it('should fail to parse id', () => {
     expect(() => _parseId('bad id' as Id)).toThrowError(
-      'ERROR: platform.status.InvalidId'
+      'ERROR: platform:status:InvalidId'
     )
   })
 
   it('should parse id', () => {
-    expect(_parseId('comp.res.X' as Id)).toEqual({
+    expect(_parseId('comp:res:X' as Id)).toEqual({
       kind: 'res',
       component: 'comp',
       name: 'X'
