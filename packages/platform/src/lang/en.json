@@ -2,6 +2,6 @@
   "status": {
     "LoadingPlugin": "Loading plugin '<b>'{plugin}'</b>'...",
     "UnknownError": "Unknown error: {message}",
-    "InvaldId": "Invalid Id: {id}"
+    "InvalidId": "Invalid Id: {id}"
   }
 }
