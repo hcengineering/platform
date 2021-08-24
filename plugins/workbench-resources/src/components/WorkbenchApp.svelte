@@ -15,9 +15,9 @@
 
 <script lang="ts">
 
-import { getResource, getMetadata } from '@anticrm/platform'
+import { getResource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
-import { navigate, Loading } from '@anticrm/ui'
+import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
 
 import client from '@anticrm/client'
 import login from '@anticrm/login'
@@ -25,10 +25,10 @@ import login from '@anticrm/login'
 import Workbench from './Workbench.svelte'
 
 async function connect(): Promise<Client | undefined> {
-  const token = getMetadata(login.metadata.LoginToken)
-  const endpoint = getMetadata(login.metadata.LoginEndpoint)
+  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
+  const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
 
-  if (token === undefined || endpoint === undefined) {
+  if (token === null || endpoint === null) {
     navigate({ path: [login.component.LoginApp] })
     return
   }

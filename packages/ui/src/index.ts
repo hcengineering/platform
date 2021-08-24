@@ -56,6 +56,8 @@ export { default as IconSearch } from './components/icons/Search.svelte'
 export { default as IconToDo } from './components/icons/ToDo.svelte'
 export { default as IconComments } from './components/icons/Comments.svelte'
 
+export * from './utils'
+
 import type { AnySvelteComponent, AnyComponent } from './types'
 import { writable } from 'svelte/store'
 

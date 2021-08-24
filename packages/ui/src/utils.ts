@@ -14,7 +14,21 @@
 //
 
 // import type { Metadata } from '@anticrm/platform'
-import type { AnyComponent /*, Location */ } from './types'
+import { setMetadata } from '@anticrm/platform'
+import type { Metadata } from '@anticrm/platform'
+
+export function setMetadataLocalStorage(id: Metadata<string>, value: string): void {
+  localStorage.setItem(id, value)
+  setMetadata(id, value)
+}
+
+export function fetchMetadataLocalStorage(id: Metadata<string>): string | null {
+  const value = localStorage.getItem(id)
+  if (value !== null) {
+    setMetadata(id, value)
+  }
+  return value
+}
 
 // import { Readable, derived, writable } from 'svelte/store'
 // import { onDestroy, getContext, setContext } from 'svelte'

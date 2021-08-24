@@ -15,8 +15,8 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { OK, Status, Severity, setMetadata } from '@anticrm/platform'
-  import { navigate } from '@anticrm/ui'
+  import { OK, Status, Severity } from '@anticrm/platform'
+  import { navigate, setMetadataLocalStorage } from '@anticrm/ui'
 
   import Form from './Form.svelte'
   import { doLogin } from '../utils'
@@ -54,8 +54,8 @@
 
       if (result !== undefined) {
         console.log('token', result.token)
-        setMetadata(login.metadata.LoginToken, result.token)
-        setMetadata(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         navigate({ path: [workbench.component.WorkbenchApp] })
       }
     }
