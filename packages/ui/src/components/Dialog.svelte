@@ -38,7 +38,7 @@
       <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'}/></div>
     </div>
     <div class="content">
-      <ScrollBox vertical gap={0}><slot/></ScrollBox>
+      <ScrollBox vertical stretch><slot/></ScrollBox>
     </div>
     <div class="footer">
       <Button label={okLabel} primary/>
@@ -55,14 +55,14 @@
     flex-direction: row-reverse;
     width: 100vw;
     min-height: 100vh;
-    height: 100vh;
+    max-height: 100vh;
 
     .dialog {
       display: flex;
       flex-direction: column;
       width: auto;
       min-height: 100vh;
-      height: 100vh;
+      max-height: 100vh;
       background-color: var(--theme-bg-color);
       border-radius: 1.875rem 0 0 1.875rem;
       box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
@@ -90,9 +90,10 @@
 
       .content {
         flex-shrink: 0;
+        flex-grow: 1;
         width: 40rem;
         margin: 0 2.5rem;
-        height: calc(100vh - 10.5rem);
+        height: fit-content;
       }
 
       .footer {
