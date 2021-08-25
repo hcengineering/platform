@@ -15,8 +15,8 @@
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc } from '@anticrm/core'
 import core, { TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
+import type { DbAdapter } from '@anticrm/server-core'
 
-import { DbAdapter } from '@anticrm/server-core'
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
 function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<T> {
@@ -27,48 +27,26 @@ function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
-/**
- * @public
- */
-export class MongoAdapter extends TxProcessor implements DbAdapter {
-  private _client: MongoClient | undefined
-  private _db: Db | undefined
-  private _hierarchy: Hierarchy | undefined
-
-  async connect (url: string, dbName: string): Promise<void> {
-    this._client = new MongoClient(url)
-    await this._client.connect()
-    this._db = this._client.db(dbName)
+class MongoAdapter extends TxProcessor implements DbAdapter {
+  constructor (
+    private readonly db: Db,
+    private readonly hierarchy: Hierarchy
+  ) {
+    super()
   }
 
-  db (): Db {
-    if (this._db === undefined) {
-      throw new Error('adapter not connected')
-    }
-    return this._db
-  }
-
-  hierarchy (): Hierarchy {
-    if (this._hierarchy === undefined) {
-      throw new Error('hierarchy do not set')
-    }
-    return this._hierarchy
-  }
-
-  setHierarchy (hierarchy: Hierarchy): void {
-    this._hierarchy = hierarchy
-  }
+  async init (): Promise<void> {}
 
   override async tx (tx: Tx): Promise<void> {
-    const p1 = this.db().collection(DOMAIN_TX).insertOne(translateDoc(tx))
+    const p1 = this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
     const p2 = super.tx(tx)
     await Promise.all([p1, p2])
   }
 
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
     const doc = TxProcessor.createDoc2Doc(tx)
-    const domain = this.hierarchy().getDomain(doc._class)
-    await this.db().collection(domain).insertOne(translateDoc(doc))
+    const domain = this.hierarchy.getDomain(doc._class)
+    await this.db.collection(domain).insertOne(translateDoc(doc))
   }
 
   async findAll<T extends Doc> (
@@ -76,8 +54,8 @@ export class MongoAdapter extends TxProcessor implements DbAdapter {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy().getDomain(_class)
-    let cursor = this.db().collection(domain).find<T>(translateQuery(query))
+    const domain = this.hierarchy.getDomain(_class)
+    let cursor = this.db.collection(domain).find<T>(translateQuery(query))
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
@@ -90,8 +68,15 @@ export class MongoAdapter extends TxProcessor implements DbAdapter {
     }
     return await cursor.toArray()
   }
+}
 
-  getModel (): Promise<Tx[]> {
-    return this.db().collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
-  }
+/**
+ * @public
+ */
+export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<[DbAdapter, Tx[]]> {
+  const client = new MongoClient(url)
+  await client.connect()
+  const db = client.db(dbName)
+  const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
+  return [new MongoAdapter(db, hierarchy), txes]
 }

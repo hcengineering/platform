@@ -15,71 +15,46 @@
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
 import { ModelDb, TxDb, Hierarchy, DOMAIN_TX } from '@anticrm/core'
-import { DbAdapter } from '@anticrm/server-core'
+import type { DbAdapter } from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
 const txes = txJson as unknown as Tx[]
 
-/**
- * @public
- */
-export class InMemoryAdapter implements DbAdapter {
-  private _modeldb: ModelDb | undefined
-  private _txdb: TxDb | undefined
-  private _hierarchy: Hierarchy | undefined
-
-  async connect (url: string, db: string): Promise<void> {
-  }
-
-  private hierarchy (): Hierarchy {
-    if (this._hierarchy === undefined) {
-      throw new Error('hierarchy not set')
-    }
-    return this._hierarchy
-  }
-
-  private txdb (): TxDb {
-    if (this._txdb === undefined) {
-      throw new Error('hierarchy not set')
-    }
-    return this._txdb
-  }
-
-  private modeldb (): ModelDb {
-    if (this._modeldb === undefined) {
-      throw new Error('hierarchy not set')
-    }
-    return this._modeldb
-  }
-
-  setHierarchy (hierarchy: Hierarchy): void {
-    this._hierarchy = hierarchy
-    this._txdb = new TxDb(hierarchy)
-    this._modeldb = new ModelDb(hierarchy)
-    for (const tx of txes) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._txdb.tx(tx)
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._modeldb.tx(tx)
-    }
-  }
+class InMemoryAdapter implements DbAdapter {
+  constructor (
+    private readonly hierarchy: Hierarchy,
+    private readonly txdb: TxDb,
+    private readonly modeldb: ModelDb
+  ) {}
 
   async findAll<T extends Doc> (
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy().getDomain(_class)
-    if (domain === DOMAIN_TX) return await this.txdb().findAll(_class, query, options)
-    return await this.modeldb().findAll(_class, query, options)
+    const domain = this.hierarchy.getDomain(_class)
+    if (domain === DOMAIN_TX) return await this.txdb.findAll(_class, query, options)
+    return await this.modeldb.findAll(_class, query, options)
   }
 
   async tx (tx: Tx): Promise<void> {
-    await Promise.all([this.modeldb().tx(tx), this.txdb().tx(tx)])
+    await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
   }
 
-  async getModel (): Promise<Tx[]> {
-    return txes
+  async init (): Promise<void> {
+    for (const tx of txes) {
+      await this.txdb.tx(tx)
+      await this.modeldb.tx(tx)
+    }
   }
+}
+
+/**
+ * @public
+ */
+export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<[DbAdapter, Tx[]]> {
+  const txdb = new TxDb(hierarchy)
+  const modeldb = new ModelDb(hierarchy)
+  return [new InMemoryAdapter(hierarchy, txdb, modeldb), txes]
 }

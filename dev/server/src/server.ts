@@ -15,7 +15,7 @@
 //
 
 import { start as startJsonRpc } from '@anticrm/server-ws'
-import { InMemoryAdapter } from '@anticrm/dev-storage'
+import { createInMemoryAdapter } from '@anticrm/dev-storage'
 import { createServerStorage } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
@@ -27,5 +27,5 @@ import { serverChunterId } from '@anticrm/server-chunter'
 export async function start (port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc(() => createServerStorage(new InMemoryAdapter(), '', ''), port, host)
+  startJsonRpc(() => createServerStorage(createInMemoryAdapter, '', ''), port, host)
 }

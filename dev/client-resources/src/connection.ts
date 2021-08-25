@@ -14,7 +14,7 @@
 //
 
 import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage } from '@anticrm/core'
-import { InMemoryAdapter } from '@anticrm/dev-storage'
+import { createInMemoryAdapter } from '@anticrm/dev-storage'
 import { createServerStorage } from '@anticrm/server-core'
 
 class ServerStorageWrapper implements Storage {
@@ -31,6 +31,6 @@ class ServerStorageWrapper implements Storage {
 }
 
 export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
-  const serverStorage = await createServerStorage(new InMemoryAdapter(), '', '')
+  const serverStorage = await createServerStorage(createInMemoryAdapter, '', '')
   return new ServerStorageWrapper(serverStorage, handler)
 }

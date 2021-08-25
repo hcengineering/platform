@@ -63,14 +63,17 @@ export class Triggers {
  * @public
  */
 export interface DbAdapter extends Storage {
-  connect: (url: string, db: string) => Promise<void>
-  getModel: () => Promise<Tx[]>
-  setHierarchy: (hierarchy: Hierarchy) => void
+  init: () => Promise<void>
 }
+
+/**
+ * @public
+ */
+export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string) => Promise<[DbAdapter, Tx[]]>
 
 class TServerStorage implements ServerStorage {
   constructor (
-    private readonly dbAdapter: DbAdapter,
+    private readonly dbAdapter: Storage,
     private readonly hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly modeldb: ModelDb
@@ -108,23 +111,23 @@ class TServerStorage implements ServerStorage {
 /**
  * @public
  */
-export async function createServerStorage (dbAdapter: DbAdapter, url: string, db: string): Promise<ServerStorage> {
-  await dbAdapter.connect(url, db)
-
+export async function createServerStorage (factory: DbAdapterFactory, url: string, db: string): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
+  const model = new ModelDb(hierarchy)
   const triggers = new Triggers(new TxFactory(core.account.System))
 
-  const txes = await dbAdapter.getModel()
+  const [dbAdapter, txes] = await factory(hierarchy, url, db)
+
   for (const tx of txes) {
     hierarchy.tx(tx)
   }
-  dbAdapter.setHierarchy(hierarchy)
 
-  const model = new ModelDb(hierarchy)
   for (const tx of txes) {
     await model.tx(tx)
     await triggers.tx(tx)
   }
+
+  await dbAdapter.init()
 
   return new TServerStorage(dbAdapter, hierarchy, triggers, model)
 }
