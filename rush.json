@@ -722,6 +722,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/elastic",
+      "projectFolder": "server/elastic",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/workspace",
       "projectFolder": "server/workspace",
       "shouldPublish": true
