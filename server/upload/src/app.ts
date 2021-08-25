@@ -16,6 +16,7 @@
 
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
+import cors from 'cors'
 import { S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
 
@@ -42,6 +43,7 @@ async function awsUpload (file: UploadedFile): Promise<S3.ManagedUpload.SendData
 export function start (port: number): void {
   const app = express()
 
+  app.use(cors())
   app.use(fileUpload())
 
   app.post('/', (req, res) => {

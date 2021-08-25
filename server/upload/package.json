@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/upload",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -22,13 +22,15 @@
     "@types/express":"^4.17.13",
     "ts-node":"^10.2.0",
     "@types/express-fileupload":"^1.1.7",
-    "@types/uuid":"^8.3.1"
+    "@types/uuid":"^8.3.1",
+    "@types/cors":"^2.8.12"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "express": "^4.17.1",
     "express-fileupload":"^1.2.1",
     "aws-sdk":"^2.969.0",
-    "uuid":"^8.3.2" 
+    "uuid":"^8.3.2",
+    "cors":"^2.8.5" 
   }
 }

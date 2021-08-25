@@ -168,7 +168,7 @@ module.exports = {
         logLevel: 'debug'
       },
       '/upload': {
-        target: 'http://localhost:3000/',
+        target: 'https://anticrm-upload.herokuapp.com/',
         changeOrigin: true,
         pathRewrite: { '^/upload': '' },
         logLevel: 'debug'
