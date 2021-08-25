@@ -14,19 +14,19 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
-import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory, ServerStorage } from '@anticrm/core'
-import { Triggers } from '@anticrm/server-core'
+import { ModelDb, TxDb, Hierarchy, DOMAIN_TX } from '@anticrm/core'
+import type { DbAdapter } from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
-class DevStorage implements ServerStorage {
+const txes = txJson as unknown as Tx[]
+
+class InMemoryAdapter implements DbAdapter {
   constructor (
     private readonly hierarchy: Hierarchy,
-    private readonly triggers: Triggers,
     private readonly txdb: TxDb,
     private readonly modeldb: ModelDb
-  ) {
-  }
+  ) {}
 
   async findAll<T extends Doc> (
     _class: Ref<Class<T>>,
@@ -38,37 +38,23 @@ class DevStorage implements ServerStorage {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<Tx[]> {
-    if (tx.objectSpace === core.space.Model) {
-      this.hierarchy.tx(tx)
-      await this.triggers.tx(tx)
-    }
+  async tx (tx: Tx): Promise<void> {
     await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-    const derived = await this.triggers.apply(tx)
-    for (const tx of derived) {
-      await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
+  }
+
+  async init (): Promise<void> {
+    for (const tx of txes) {
+      await this.txdb.tx(tx)
+      await this.modeldb.tx(tx)
     }
-    return derived
   }
 }
 
 /**
  * @public
  */
-export async function createStorage (): Promise<ServerStorage> {
-  const txes = txJson as unknown as Tx[]
-  const hierarchy = new Hierarchy()
-  const triggers = new Triggers(new TxFactory(core.account.System))
-  for (const tx of txes) {
-    hierarchy.tx(tx)
-    await triggers.tx(tx)
-  }
-
-  const transactions = new TxDb(hierarchy)
-  const model = new ModelDb(hierarchy)
-  for (const tx of txes) {
-    await Promise.all([transactions.tx(tx), model.tx(tx)])
-  }
-
-  return new DevStorage(hierarchy, triggers, transactions, model)
+export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<[DbAdapter, Tx[]]> {
+  const txdb = new TxDb(hierarchy)
+  const modeldb = new ModelDb(hierarchy)
+  return [new InMemoryAdapter(hierarchy, txdb, modeldb), txes]
 }

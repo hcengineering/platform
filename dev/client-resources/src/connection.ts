@@ -13,19 +13,9 @@
 // limitations under the License.
 //
 
-import type {
-  Tx,
-  Storage,
-  Ref,
-  Doc,
-  Class,
-  DocumentQuery,
-  FindResult,
-  FindOptions,
-  TxHander,
-  ServerStorage
-} from '@anticrm/core'
-import { createStorage } from '@anticrm/dev-storage'
+import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage } from '@anticrm/core'
+import { createInMemoryAdapter } from '@anticrm/dev-storage'
+import { createServerStorage } from '@anticrm/server-core'
 
 class ServerStorageWrapper implements Storage {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
@@ -41,6 +31,6 @@ class ServerStorageWrapper implements Storage {
 }
 
 export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
-  const serverStorage = await createStorage()
+  const serverStorage = await createServerStorage(createInMemoryAdapter, '', '')
   return new ServerStorageWrapper(serverStorage, handler)
 }

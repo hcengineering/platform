@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import core, { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, ServerStorage, SortingOrder, DOMAIN_MODEL, TxProcessor, ModelDb, Hierarchy, DOMAIN_TX, TxFactory } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc } from '@anticrm/core'
+import core, { TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
+import type { DbAdapter } from '@anticrm/server-core'
 
-import { Triggers } from '@anticrm/server-core'
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
 function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<T> {
@@ -26,18 +27,19 @@ function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
-class MongoTxProcessor extends TxProcessor {
+class MongoAdapter extends TxProcessor implements DbAdapter {
   constructor (
     private readonly db: Db,
-    private readonly hierarchy: Hierarchy,
-    private readonly modeldb: ModelDb
+    private readonly hierarchy: Hierarchy
   ) {
     super()
   }
 
+  async init (): Promise<void> {}
+
   override async tx (tx: Tx): Promise<void> {
     const p1 = this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
-    const p2 = tx.objectSpace === core.space.Model ? this.modeldb.tx(tx) : super.tx(tx)
+    const p2 = super.tx(tx)
     await Promise.all([p1, p2])
   }
 
@@ -46,19 +48,6 @@ class MongoTxProcessor extends TxProcessor {
     const domain = this.hierarchy.getDomain(doc._class)
     await this.db.collection(domain).insertOne(translateDoc(doc))
   }
-}
-
-class MongoStorage implements ServerStorage {
-  private readonly txProcessor: TxProcessor
-
-  constructor (
-    private readonly db: Db,
-    private readonly hierarchy: Hierarchy,
-    private readonly triggers: Triggers,
-    private readonly modeldb: ModelDb
-  ) {
-    this.txProcessor = new MongoTxProcessor(db, hierarchy, modeldb)
-  }
 
   async findAll<T extends Doc> (
     _class: Ref<Class<T>>,
@@ -66,8 +55,6 @@ class MongoStorage implements ServerStorage {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
-    console.log('findAll', _class, domain, query)
-    if (domain === DOMAIN_MODEL) return await this.modeldb.findAll(_class, query, options)
     let cursor = this.db.collection(domain).find<T>(translateQuery(query))
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
@@ -81,42 +68,15 @@ class MongoStorage implements ServerStorage {
     }
     return await cursor.toArray()
   }
-
-  async tx (tx: Tx): Promise<Tx[]> {
-    if (tx.objectSpace === core.space.Model) {
-      this.hierarchy.tx(tx)
-      await this.triggers.tx(tx)
-    }
-    await this.txProcessor.tx(tx)
-    const derived = await this.triggers.apply(tx)
-    for (const tx of derived) {
-      await this.txProcessor.tx(tx)
-    }
-    return derived
-  }
 }
 
 /**
  * @public
  */
-export async function createStorage (url: string, dbName: string): Promise<ServerStorage> {
+export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<[DbAdapter, Tx[]]> {
   const client = new MongoClient(url)
   await client.connect()
   const db = client.db(dbName)
-
-  const hierarchy = new Hierarchy()
-  const triggers = new Triggers(new TxFactory(core.account.System))
-
   const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
-  for (const tx of txes) {
-    hierarchy.tx(tx)
-    await triggers.tx(tx)
-  }
-
-  const model = new ModelDb(hierarchy)
-  for (const tx of txes) {
-    await model.tx(tx)
-  }
-
-  return new MongoStorage(db, hierarchy, triggers, model)
+  return [new MongoAdapter(db, hierarchy), txes]
 }

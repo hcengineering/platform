@@ -14,4 +14,4 @@
 // limitations under the License.
 //
 
-export { createStorage } from './storage'
+export { createInMemoryAdapter } from './storage'

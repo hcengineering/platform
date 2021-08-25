@@ -14,11 +14,10 @@
 // limitations under the License.
 //
 
-import type { Doc, Tx, TxCreateDoc, TxFactory, Ref, Class } from '@anticrm/core'
+import type { Doc, Tx, TxCreateDoc, Ref, Class, ServerStorage, DocumentQuery, FindOptions, FindResult, Storage } from '@anticrm/core'
+import core, { Hierarchy, TxFactory, ModelDb, DOMAIN_MODEL } from '@anticrm/core'
 import type { Resource, Plugin } from '@anticrm/platform'
 import { getResource, plugin } from '@anticrm/platform'
-
-import core from '@anticrm/core'
 
 /**
  * @public
@@ -58,6 +57,79 @@ export class Triggers {
     const result = await Promise.all(derived)
     return result.flatMap(x => x)
   }
+}
+
+/**
+ * @public
+ */
+export interface DbAdapter extends Storage {
+  init: () => Promise<void>
+}
+
+/**
+ * @public
+ */
+export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string) => Promise<[DbAdapter, Tx[]]>
+
+class TServerStorage implements ServerStorage {
+  constructor (
+    private readonly dbAdapter: Storage,
+    private readonly hierarchy: Hierarchy,
+    private readonly triggers: Triggers,
+    private readonly modeldb: ModelDb
+  ) {
+  }
+
+  async findAll<T extends Doc> (
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const domain = this.hierarchy.getDomain(clazz)
+    console.log('findAll', clazz, domain, query)
+    if (domain === DOMAIN_MODEL) return await this.modeldb.findAll(clazz, query, options)
+    return await this.dbAdapter.findAll(clazz, query, options)
+  }
+
+  async tx (tx: Tx): Promise<Tx[]> {
+    if (tx.objectSpace === core.space.Model) {
+      this.hierarchy.tx(tx)
+      await this.modeldb.tx(tx)
+      await this.triggers.tx(tx)
+      return [] // we do not apply triggers on model changes?
+    } else {
+      await this.dbAdapter.tx(tx)
+      const derived = await this.triggers.apply(tx)
+      for (const tx of derived) {
+        await this.dbAdapter.tx(tx) // triggers does not generate changes to model objects?
+      }
+      return derived
+    }
+  }
+}
+
+/**
+ * @public
+ */
+export async function createServerStorage (factory: DbAdapterFactory, url: string, db: string): Promise<ServerStorage> {
+  const hierarchy = new Hierarchy()
+  const model = new ModelDb(hierarchy)
+  const triggers = new Triggers(new TxFactory(core.account.System))
+
+  const [dbAdapter, txes] = await factory(hierarchy, url, db)
+
+  for (const tx of txes) {
+    hierarchy.tx(tx)
+  }
+
+  for (const tx of txes) {
+    await model.tx(tx)
+    await triggers.tx(tx)
+  }
+
+  await dbAdapter.init()
+
+  return new TServerStorage(dbAdapter, hierarchy, triggers, model)
 }
 
 /**
