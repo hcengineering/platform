@@ -15,7 +15,8 @@
 //
 
 import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createStorage } from '@anticrm/mongo'
+import { MongoAdapter } from '@anticrm/mongo'
+import { createServerStorage } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
@@ -26,5 +27,5 @@ import { serverChunterId } from '@anticrm/server-chunter'
 export async function start (dbUrl: string, port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc((workspace: string) => createStorage(dbUrl, workspace), port, host)
+  startJsonRpc((workspace: string) => createServerStorage(new MongoAdapter(), dbUrl, workspace), port, host)
 }
