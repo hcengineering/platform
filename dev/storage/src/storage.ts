@@ -14,18 +14,55 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
-import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX, TxFactory, ServerStorage } from '@anticrm/core'
-import { Triggers } from '@anticrm/server-core'
+import { ModelDb, TxDb, Hierarchy, DOMAIN_TX } from '@anticrm/core'
+import { DbAdapter } from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
-class DevStorage implements ServerStorage {
-  constructor (
-    private readonly hierarchy: Hierarchy,
-    private readonly triggers: Triggers,
-    private readonly txdb: TxDb,
-    private readonly modeldb: ModelDb
-  ) {
+const txes = txJson as unknown as Tx[]
+
+/**
+ * @public
+ */
+export class InMemoryAdapter implements DbAdapter {
+  private _modeldb: ModelDb | undefined
+  private _txdb: TxDb | undefined
+  private _hierarchy: Hierarchy | undefined
+
+  async connect (url: string, db: string): Promise<void> {
+  }
+
+  private hierarchy (): Hierarchy {
+    if (this._hierarchy === undefined) {
+      throw new Error('hierarchy not set')
+    }
+    return this._hierarchy
+  }
+
+  private txdb (): TxDb {
+    if (this._txdb === undefined) {
+      throw new Error('hierarchy not set')
+    }
+    return this._txdb
+  }
+
+  private modeldb (): ModelDb {
+    if (this._modeldb === undefined) {
+      throw new Error('hierarchy not set')
+    }
+    return this._modeldb
+  }
+
+  setHierarchy (hierarchy: Hierarchy): void {
+    this._hierarchy = hierarchy
+    this._txdb = new TxDb(hierarchy)
+    this._modeldb = new ModelDb(hierarchy)
+    for (const tx of txes) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._txdb.tx(tx)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._modeldb.tx(tx)
+    }
   }
 
   async findAll<T extends Doc> (
@@ -33,42 +70,16 @@ class DevStorage implements ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(_class)
-    if (domain === DOMAIN_TX) return await this.txdb.findAll(_class, query, options)
-    return await this.modeldb.findAll(_class, query, options)
+    const domain = this.hierarchy().getDomain(_class)
+    if (domain === DOMAIN_TX) return await this.txdb().findAll(_class, query, options)
+    return await this.modeldb().findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<Tx[]> {
-    if (tx.objectSpace === core.space.Model) {
-      this.hierarchy.tx(tx)
-      await this.triggers.tx(tx)
-    }
-    await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-    const derived = await this.triggers.apply(tx)
-    for (const tx of derived) {
-      await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
-    }
-    return derived
-  }
-}
-
-/**
- * @public
- */
-export async function createStorage (): Promise<ServerStorage> {
-  const txes = txJson as unknown as Tx[]
-  const hierarchy = new Hierarchy()
-  const triggers = new Triggers(new TxFactory(core.account.System))
-  for (const tx of txes) {
-    hierarchy.tx(tx)
-    await triggers.tx(tx)
+  async tx (tx: Tx): Promise<void> {
+    await Promise.all([this.modeldb().tx(tx), this.txdb().tx(tx)])
   }
 
-  const transactions = new TxDb(hierarchy)
-  const model = new ModelDb(hierarchy)
-  for (const tx of txes) {
-    await Promise.all([transactions.tx(tx), model.tx(tx)])
+  async getModel (): Promise<Tx[]> {
+    return txes
   }
-
-  return new DevStorage(hierarchy, triggers, transactions, model)
 }
