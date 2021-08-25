@@ -41,8 +41,8 @@
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
     <div class="footer">
-      <Button label={'Cancel'} on:click={() => { dispatch('close') }} />
       <Button label={okLabel} primary />
+      <Button label={'Cancel'} on:click={() => { dispatch('close') }} />
     </div>
   </form>
 </div>
@@ -99,7 +99,8 @@
         flex-shrink: 0;
         display: grid;
         grid-auto-flow: column;
-        justify-content: end;
+        direction: rtl;
+        justify-content: start;
         align-items: center;
         column-gap: .75rem;
         padding: 0 2.5rem;
