@@ -18,7 +18,8 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import Label from '@anticrm/ui/src/components/Label.svelte'
+  import { Label, IconIFileUpload } from '@anticrm/ui'
+  import ImageButton from './ImageButton.svelte'
 
   let dragover = false
 
@@ -53,16 +54,21 @@
     <div class="title">Candidate title</div>
     <!-- <input type="file" name="file" id="file"/> -->
   </div>
+  <div class="resume-btn">
+    <ImageButton label={'Resume upload'} icon={IconIFileUpload} size={'small'} />
+  </div>
 </div>
 
 <style lang="scss">
 
   .header {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 40rem;
     min-height: 15rem;
+    height: 15rem;
     background-image: url(../../img/header-green.png);
     background-repeat: no-repeat;
     background-clip: border-box;
@@ -84,12 +90,18 @@
       font-size: 1rem;
       font-weight: 500;
       line-height: 150%;
-      color: var(--theme-caption-color);
+      color: #fff;
     }
     .title {
       font-size: .75rem;
       font-weight: 500;
-      color: var(--theme-content-color);
+      color: rgba(255, 255, 255, .8);
+    }
+
+    .resume-btn {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
     }
   }
 

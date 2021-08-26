@@ -65,6 +65,7 @@
   }
 
   .primary {
+    color: var(--primary-button-color);
     background-color: var(--primary-button-enabled);
     border-color: var(--primary-button-border);
 

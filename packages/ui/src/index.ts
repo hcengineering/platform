@@ -55,6 +55,8 @@ export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'
 export { default as IconToDo } from './components/icons/ToDo.svelte'
 export { default as IconComments } from './components/icons/Comments.svelte'
+export { default as IconIFile } from './components/icons/IFile.svelte'
+export { default as IconIFileUpload } from './components/icons/IFileUpload.svelte'
 
 export * from './utils'
 
