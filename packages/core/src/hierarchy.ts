@@ -169,6 +169,14 @@ export class Hierarchy {
     attributes.set(attribute.name, attribute)
   }
 
+  getAttributes (clazz: Ref<Class<Obj>>): Map<string, AnyAttribute> {
+    const attributes = this.attributes.get(clazz)
+    if (attributes === undefined) {
+      throw new Error('attributes not found for class ' + clazz)
+    }
+    return attributes
+  }
+
   getAttribute (_class: Ref<Class<Obj>>, name: string): AnyAttribute {
     const attribute = this.attributes.get(_class)?.get(name)
     if (attribute === undefined) {

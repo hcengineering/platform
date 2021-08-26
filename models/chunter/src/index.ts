@@ -14,8 +14,9 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, UX } from '@anticrm/model'
+import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
+import { IndexKind } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Backlink, Channel, Message, Comment } from '@anticrm/chunter'
 import type { AnyComponent } from '@anticrm/ui'
@@ -34,6 +35,8 @@ export class TChannel extends TSpace implements Channel {}
 
 @Model(chunter.class.Message, core.class.Doc, DOMAIN_CHUNTER)
 export class TMessage extends TDoc implements Message {
+  @Prop(TypeString(), 'Content' as IntlString)
+  @Index(IndexKind.FullText)
   content!: string
 }
 

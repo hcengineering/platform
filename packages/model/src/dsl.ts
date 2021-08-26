@@ -29,13 +29,28 @@ import type {
   Space,
   ExtendedAttributes
 } from '@anticrm/core'
-import { ClassifierKind, generateId, TxFactory } from '@anticrm/core'
+import { ClassifierKind, IndexKind, generateId, TxFactory } from '@anticrm/core'
 import type { IntlString, Asset } from '@anticrm/platform'
 import toposort from 'toposort'
 
 import core from './component'
 
 type NoIDs<T extends Tx> = Omit<T, '_id' | 'objectId'>
+
+const targets = new Map<any, Map<string, IndexKind>>()
+
+function setIndex (target: any, property: string, index: IndexKind): void {
+  let indexes = targets.get(target)
+  if (indexes === undefined) {
+    indexes = new Map<string, IndexKind>()
+    targets.set(target, indexes)
+  }
+  indexes.set(property, index)
+}
+
+function getIndex (target: any, property: string): IndexKind | undefined {
+  return targets.get(target)?.get(property)
+}
 
 interface ClassTxes {
   _id: Ref<Class<Obj>>
@@ -77,14 +92,24 @@ export function Prop (type: Type<PropertyType>, label?: IntlString, icon?: Asset
       objectSpace: core.space.Model,
       objectClass: core.class.Attribute,
       attributes: {
-        type,
         name: propertyKey,
+        index: getIndex(target, propertyKey),
+        type,
         label,
         icon,
         attributeOf: txes._id // undefined, need to fix later
       }
     }
     txes.txes.push(tx)
+  }
+}
+
+/**
+ * @public
+ */
+export function Index (kind: IndexKind) {
+  return function (target: any, propertyKey: string): void {
+    setIndex(target, propertyKey, kind)
   }
 }
 

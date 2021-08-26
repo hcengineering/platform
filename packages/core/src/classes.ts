@@ -70,10 +70,18 @@ export interface Type<T extends PropertyType> extends UXObject {}
 /**
  * @public
  */
+export enum IndexKind {
+  FullText
+}
+
+/**
+ * @public
+ */
 export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   attributeOf: Ref<Class<Obj>>
   name: string
   type: Type<T>
+  index?: IndexKind
 }
 
 /**
