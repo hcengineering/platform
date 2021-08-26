@@ -18,9 +18,8 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import { Label } from '@anticrm/ui'
+  import { EditBox, Label } from '@anticrm/ui'
   import ImageButton from './ImageButton.svelte'
-  import File from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
 
   let dragover = false
@@ -52,7 +51,7 @@
     on:drop|preventDefault|stopPropagation={drop}>
   <div class="flex-col-center">
     <div class="avatar"></div>
-    <div class="name">Candidate Name</div>
+    <div class="name"><EditBox placeholder="John"/><EditBox placeholder="Appleseed"/></div>
     <div class="title">Candidate title</div>
     <!-- <input type="file" name="file" id="file"/> -->
   </div>
