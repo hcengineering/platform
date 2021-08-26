@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Tx, TxCreateDoc, Ref, Class, ServerStorage, DocumentQuery, FindOptions, FindResult, Storage } from '@anticrm/core'
+import type { Doc, Tx, TxCreateDoc, Ref, Class, ServerStorage, DocumentQuery, FindOptions, FindResult, Storage, Account } from '@anticrm/core'
 import core, { Hierarchy, TxFactory, ModelDb, DOMAIN_MODEL } from '@anticrm/core'
 import type { Resource, Plugin } from '@anticrm/platform'
 import { getResource, plugin } from '@anticrm/platform'
@@ -37,10 +37,6 @@ export interface Trigger extends Doc {
 export class Triggers {
   private readonly triggers: TriggerFunc[] = []
 
-  constructor (private readonly txFactory: TxFactory) {
-
-  }
-
   async tx (tx: Tx): Promise<void> {
     if (tx._class === core.class.TxCreateDoc) {
       const createTx = tx as TxCreateDoc<Doc>
@@ -52,8 +48,8 @@ export class Triggers {
     }
   }
 
-  async apply (tx: Tx): Promise<Tx[]> {
-    const derived = this.triggers.map(trigger => trigger(tx, this.txFactory))
+  async apply (account: Ref<Account>, tx: Tx): Promise<Tx[]> {
+    const derived = this.triggers.map(trigger => trigger(tx, new TxFactory(account)))
     const result = await Promise.all(derived)
     return result.flatMap(x => x)
   }
@@ -99,7 +95,7 @@ class TServerStorage implements ServerStorage {
       return [] // we do not apply triggers on model changes?
     } else {
       await this.dbAdapter.tx(tx)
-      const derived = await this.triggers.apply(tx)
+      const derived = await this.triggers.apply(tx.modifiedBy, tx)
       for (const tx of derived) {
         await this.dbAdapter.tx(tx) // triggers does not generate changes to model objects?
       }
@@ -114,7 +110,7 @@ class TServerStorage implements ServerStorage {
 export async function createServerStorage (factory: DbAdapterFactory, url: string, db: string): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
   const model = new ModelDb(hierarchy)
-  const triggers = new Triggers(new TxFactory(core.account.System))
+  const triggers = new Triggers()
 
   const [dbAdapter, txes] = await factory(hierarchy, url, db)
 
