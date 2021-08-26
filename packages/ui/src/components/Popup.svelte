@@ -73,19 +73,13 @@
       <svelte:component this={$modal.is} {...$modal.props} on:close={close} />
     {/if}
   </div>
-  <!-- <div bind:this={arrowHTML} class="arrow" /> -->
   <div bind:this={modalOHTML} class="modal-overlay" on:click={close} />
 {/if}
 
 <style lang="scss">
   .popup {
     position: fixed;
-    padding: .5rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px -.5rem 1.25rem rgba(0, 0, 0, .25);
+    background-color: transparent;
     z-index: 1001;
   }
   .modal-overlay {
@@ -97,14 +91,4 @@
     background: transparent;
     z-index: 1000;
   }
-
-  // .arrow {
-  //   position: fixed;
-  //   width: 1.75rem;
-  //   height: .625rem;
-  //   clip-path: path('M8.3,4.4l2.4-2.7C11.8,0.6,12.8,0,14,0C13.1,0,0.9,0,0,0c1.2,0,2.2,0.6,3.2,1.7l2.5,2.7 c0.6,0.7,1.7,0.8,2.5,0.2C8.2,4.5,8.3,4.5,8.3,4.4z');
-  //   transform: translateX(-25%);
-  //   background-color: green;
-  //   z-index: 1002;
-  // }
 </style>
