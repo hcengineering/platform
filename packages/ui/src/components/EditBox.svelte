@@ -32,7 +32,7 @@
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + 8 + 'px'
+    target.style.width = text.clientWidth + 'px'
   }
 
   onMount(() => {
@@ -49,17 +49,43 @@
 >
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  {#if password}
-    <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
-  {:else}
-    <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
-  {/if}
+  <div class="wrap">
+    {#if password}
+      <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+    {:else}
+      <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
   .container {
     display: inline-flex;
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wrap {
+    position: relative;
+    &::after, &::before {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-button-enabled);
+    }
+    &::after {
+      bottom: -1px;
+      right: -4px;
+      clip-path: path('M0,6v-2h4v-4h2v6z');
+    }
+    &::before {
+      top: -1px;
+      left: -4px;
+      clip-path: path('M0,0h6v2h-4v4h-2z');
+    }
+    &:focus-within::before, &:focus-within::after {
+      content: '';
+    }
   }
 
   .label {
@@ -74,14 +100,11 @@
 
   input {
     height: 1.5rem;
-    margin: -4px;
-    padding: 2px;
-    border: 2px solid transparent;
+    margin: 0;
+    padding: 0;
+    border: none;
     border-radius: 2px;
 
-    &:focus {
-      border-color: var(--primary-button-enabled);
-    }
     &::placeholder {
       color: var(--theme-content-dark-color);
     }
