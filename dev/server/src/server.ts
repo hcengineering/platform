@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { DOMAIN_TX } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createInMemoryAdapter } from '@anticrm/dev-storage'
+import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage } from '@anticrm/server-core'
+import type { DbConfiguration } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
@@ -27,5 +29,24 @@ import { serverChunterId } from '@anticrm/server-chunter'
 export async function start (port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc(() => createServerStorage(createInMemoryAdapter, '', ''), port, host)
+  startJsonRpc(() => {
+    const conf: DbConfiguration = {
+      domains: {
+        [DOMAIN_TX]: 'InMemoryTx'
+      },
+      defaultAdapter: 'InMemory',
+      adapters: {
+        InMemoryTx: {
+          factory: createInMemoryTxAdapter,
+          url: ''
+        },
+        InMemory: {
+          factory: createInMemoryAdapter,
+          url: ''
+        }
+      },
+      workspace: ''
+    }
+    return createServerStorage(conf)
+  }, port, host)
 }
