@@ -49,4 +49,25 @@
   }
 </script>
 
-<DialogHeader />
+<Dialog label={recruit.string.CreateCandidate} 
+        okLabel={recruit.string.CreateCandidate} 
+        okAction={createCandidate}
+        on:close={() => { dispatch('close') }}>
+  <DialogHeader />
+  <Section icon={File} label={'Personal Information'}>
+    <Grid>
+      <EditBox label={'First name *'} placeholder={'John'} bind:value={firstName} focus/>
+      <EditBox label={'Last name *'} placeholder={'Smith'} bind:value={lastName}/>
+      <EditBox label={'Email *'} placeholder={'john.smith@gmail.com'} bind:value={email}/>
+      <EditBox label={'Phone *'} placeholder={'+00 (000) 000 00'} bind:value={phone}/>
+    </Grid>
+  </Section>
+  <Section icon={Address} label={'Address'}>
+    <Grid>
+      <EditBox label={'Street'} placeholder={'Broderick st'} />
+      <EditBox label={'City *'} placeholder={'Los Angeles'} bind:value={city}/>
+      <EditBox label={'ZIP / Postal code'} placeholder={'26892'} />
+      <EditBox label={'Country'} placeholder={'United States'} />
+    </Grid>
+  </Section>
+</Dialog>

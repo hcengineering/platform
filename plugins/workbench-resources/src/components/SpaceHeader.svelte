@@ -23,7 +23,7 @@
   import Star from './icons/Star.svelte'
 
   import { getClient, createQuery } from '@anticrm/presentation'
-  import { showModal } from '@anticrm/ui'
+  import { showPopup } from '@anticrm/ui'
   import { classIcon } from '../utils'
   import core from '@anticrm/core'
 
@@ -37,8 +37,8 @@
 
   $: query.query(core.class.Space, { _id: space }, result => { data = result[0] })
 
-  function showCreateDialog() {
-    showModal(createItemDialog as AnyComponent, { space })
+  function showCreateDialog(ev: Event) {
+    showPopup(createItemDialog as AnyComponent, { space }, ev.target as HTMLElement)
   }
 </script>
 
@@ -46,7 +46,7 @@
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
-      <Button label="Create" primary={true} size={'small'} on:click={showCreateDialog}/>
+      <Button label="Create" primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
     <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
     <ActionIcon label={'Create'} icon={Add} size={'small'}/>
