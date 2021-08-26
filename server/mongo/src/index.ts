@@ -14,4 +14,4 @@
 // limitations under the License.
 //
 
-export { createMongoAdapter } from './storage'
+export * from './storage'

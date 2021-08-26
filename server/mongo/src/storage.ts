@@ -15,7 +15,7 @@
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc } from '@anticrm/core'
 import core, { TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
-import type { DbAdapter } from '@anticrm/server-core'
+import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
@@ -27,27 +27,15 @@ function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
-class MongoAdapter extends TxProcessor implements DbAdapter {
+abstract class MongoAdapterBase extends TxProcessor {
   constructor (
-    private readonly db: Db,
-    private readonly hierarchy: Hierarchy
+    protected readonly db: Db,
+    protected readonly hierarchy: Hierarchy
   ) {
     super()
   }
 
   async init (): Promise<void> {}
-
-  override async tx (tx: Tx): Promise<void> {
-    const p1 = this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
-    const p2 = super.tx(tx)
-    await Promise.all([p1, p2])
-  }
-
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
-    const doc = TxProcessor.createDoc2Doc(tx)
-    const domain = this.hierarchy.getDomain(doc._class)
-    await this.db.collection(domain).insertOne(translateDoc(doc))
-  }
 
   async findAll<T extends Doc> (
     _class: Ref<Class<T>>,
@@ -70,13 +58,42 @@ class MongoAdapter extends TxProcessor implements DbAdapter {
   }
 }
 
+class MongoAdapter extends MongoAdapterBase {
+  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+    const doc = TxProcessor.createDoc2Doc(tx)
+    const domain = this.hierarchy.getDomain(doc._class)
+    console.log('mongo', domain, doc)
+    await this.db.collection(domain).insertOne(translateDoc(doc))
+  }
+}
+
+class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
+  override async tx (tx: Tx): Promise<void> {
+    console.log('mongotx', tx)
+    await this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
+  }
+
+  async getModel (): Promise<Tx[]> {
+    return await this.db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
+  }
+}
+
 /**
  * @public
  */
-export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<[DbAdapter, Tx[]]> {
+export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<DbAdapter> {
   const client = new MongoClient(url)
   await client.connect()
   const db = client.db(dbName)
-  const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
-  return [new MongoAdapter(db, hierarchy), txes]
+  return new MongoAdapter(db, hierarchy)
+}
+
+/**
+ * @public
+ */
+export async function createMongoTxAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<TxAdapter> {
+  const client = new MongoClient(url)
+  await client.connect()
+  const db = client.db(dbName)
+  return new MongoTxAdapter(db, hierarchy)
 }
