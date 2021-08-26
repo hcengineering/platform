@@ -15,113 +15,117 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
-  import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showModal, Loading, ScrollBox } from '@anticrm/ui'
-  import type { AnyComponent } from '@anticrm/ui'
 
-  import { createQuery } from '@anticrm/presentation'
+import { createEventDispatcher } from 'svelte'
+import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+import { buildModel } from '../utils'
+import { getClient } from '@anticrm/presentation'
+import { Label, showModal, Loading } from '@anticrm/ui'
+import type { AnyComponent } from '@anticrm/ui'
 
-  export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
-  export let open: AnyComponent
-  export let options: FindOptions<Doc> | undefined
-  export let config: string[]
+import { createQuery } from '@anticrm/presentation'
 
-  let objects: Doc[]
+export let _class: Ref<Class<Doc>>
+export let space: Ref<Space>
+export let open: AnyComponent
+export let options: FindOptions<Doc> | undefined
+export let config: string[]
 
-  const query = createQuery()
-  $: query.query(_class, { space }, result => { objects = result }, options)
+let objects: Doc[]
 
-  function getValue(doc: Doc, key: string): any {
-    if (key.length === 0)
-      return doc
-    const path = key.split('.')
-    const len = path.length
-    let obj = doc as any
-    for (let i=0; i<len; i++){
-      obj = obj?.[path[i]]
-    }
-    return obj
+const query = createQuery()
+$: query.query(_class, { space }, result => { objects = result }, options)
+
+function getValue(doc: Doc, key: string): any {
+  if (key.length === 0)
+    return doc
+  const path = key.split('.')
+  const len = path.length
+  let obj = doc as any
+  for (let i=0; i<len; i++){
+    obj = obj?.[path[i]]
   }
+  return obj
+}
 
-  const client = getClient()
+const client = getClient()
 
-  function onClick(object: Doc) {
-    showModal(open, { object, space })
-  }
+function onClick(object: Doc) {
+  showModal(open, { object, space })
+}
+
 </script>
 
 {#await buildModel(client, _class, config, options)}
  <Loading/>
 {:then model}
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <table class="table-body">
-      <thead>
-        <tr class="tr-head">
-          {#each model as attribute}
-            <th><Label label = {attribute.label}/></th>
-          {/each}
-        </tr>
-      </thead>
-      {#if objects}
-        <tbody>
-          {#each objects as object (object._id)}
-            <tr class="tr-body" on:click={() => onClick(object)}>
-            {#each model as attribute}
-              <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
-            {/each}
-            </tr>
-          {/each}
-        </tbody>
-      {/if}
-    </table>
-  </ScrollBox>
-</div>
+<table class="table-body">
+  <tr class="tr-head">
+    {#each model as attribute}
+      <th><Label label = {attribute.label}/></th>
+    {/each}
+  </tr>
+  {#if objects}
+    {#each objects as object (object._id)}
+      <tr class="tr-body" on:click={() => onClick(object)}>
+      {#each model as attribute}
+        <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
+      {/each}
+      </tr>
+    {/each}
+  {/if}
+</table>
 {/await}
 
 <style lang="scss">
-  .container {
-    flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
+.table-body {
+  display: table;
+  border-collapse: collapse;
 
-    &::before {
-      position: absolute;
-      content: '';
-      top: 2.5rem;
-      bottom: 0;
-      width: 100%;
-      background-color: var(--theme-table-bg-color);
-      border-radius: 0 0 1.25rem 1.25rem;
-    }
+  td {
+    align-items: center;
+    height: 4rem;
+    padding: .375rem 1.25rem;
+    color: var(--theme-content-accent-color);
   }
-
-  th, td {
-    padding: .5rem 1.5rem;
-    text-align: left;
-    &:first-child { padding-left: 2.5rem; }
-  }
-
   th {
+    align-items: center;
+    height: 3.125rem;
+    padding: 0 1.25rem;
+    font-weight: 500;
+    text-align: left;
+    color: var(--theme-content-trans-color);
+  }
+  .tr-head {
     position: sticky;
     top: 0;
-    height: 2.5rem;
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-dark-color);
     background-color: var(--theme-bg-color);
-    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    border-bottom: 1px solid var(--theme-bg-focused-color);
+    box-shadow: 0 1px 0 var(--theme-bg-focused-color);
+    z-index: 5;
   }
-
   .tr-body {
-    height: 3.75rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:last-child { border-bottom: none; }
-    &:hover { background-color: var(--theme-table-bg-hover); }
+    position: relative;
+    border-top: 1px solid var(--theme-bg-accent-hover);
+    &:nth-child(2) {
+      border-top: 1px solid transparent;
+    }
+    &:last-child {
+      border-bottom: 1px solid transparent;
+    }
   }
+  .tr-body:hover {
+    & > td {
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+      background-color: var(--theme-button-bg-enabled);
+      &:first-child {
+        border-radius: 12px 0 0 12px;
+      }
+      &:last-child {
+        border-radius: 0 12px 12px 0;
+      }
+    }
+  }
+}
 </style>
