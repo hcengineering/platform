@@ -88,6 +88,7 @@
     flex-grow: 1;
     position: relative;
     padding-bottom: 2.5rem;
+    height: 100%;
 
     &::before {
       position: absolute;
