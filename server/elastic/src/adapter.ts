@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import core, { TxProcessor, Hierarchy, DOMAIN_TX } from '@anticrm/core'
-import type { Tx, Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, TxCreateDoc } from '@anticrm/core'
+import { TxProcessor, Hierarchy } from '@anticrm/core'
+import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, TxCreateDoc } from '@anticrm/core'
 import type { DbAdapter } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
@@ -38,23 +38,20 @@ class ElasticAdapter extends TxProcessor implements DbAdapter {
   async init (): Promise<void> {}
 
   async findAll<T extends Doc> (
-    _class: Ref<Class<T>>,
+    clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    throw new Error('not implemented')
-  }
-
-  override async tx (tx: Tx): Promise<void> {
-    console.log(tx)
-    await this.client.index({
-      index: this.db + '_' + DOMAIN_TX,
+    const domain = this.hierarchy.getDomain(clazz)
+    const result = await this.client.search({
+      index: this.db + '_' + domain,
       type: '_doc',
-      body: translateDoc(tx)
+      body: {
+      }
     })
-    if (tx.objectSpace !== core.space.Tx && tx.objectSpace !== core.space.Model) {
-      await super.tx(tx)
-    }
+    const hits = result.body.hits.hits as []
+    console.log(hits)
+    return []
   }
 
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
@@ -71,16 +68,10 @@ class ElasticAdapter extends TxProcessor implements DbAdapter {
 /**
  * @public
  */
-export async function createElasticAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<[DbAdapter, Tx[]]> {
+export async function createElasticAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<DbAdapter> {
   const client = new Client({
     node: url
   })
 
-  return [new ElasticAdapter(client, dbName, hierarchy), []]
-
-  // const client = new MongoClient(url)
-  // await client.connect()
-  // const db = client.db(dbName)
-  // const txes = await db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
-  // return [new MongoAdapter(db, hierarchy), txes]
+  return new ElasticAdapter(client, dbName, hierarchy)
 }

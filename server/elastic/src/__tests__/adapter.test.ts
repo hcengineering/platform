@@ -14,13 +14,28 @@
 // limitations under the License.
 //
 
-import { Hierarchy } from '@anticrm/core'
+import core, { Hierarchy, TxFactory } from '@anticrm/core'
+import type { Tx } from '@anticrm/core'
 import { createElasticAdapter } from '../adapter'
 
+import * as txJson from './model.tx.json'
+
+const txes = txJson as unknown as Tx[]
+
 describe('client', () => {
-  it('should create adapter', async () => {
+  it('should create document', async () => {
     const hierarchy = new Hierarchy()
-    const [adapter, tx] = await createElasticAdapter(hierarchy, 'http://localhost:9200/', 'ws1')
-    console.log(adapter, tx)
+    for (const tx of txes) hierarchy.tx(tx)
+    const adapter = await createElasticAdapter(hierarchy, 'http://localhost:9200/', 'ws1')
+    const txFactory = new TxFactory(core.account.System)
+    const createTx = txFactory.createTxCreateDoc(core.class.Space, core.space.Model, {
+      name: 'name',
+      description: 'description',
+      private: false,
+      members: []
+    })
+    await adapter.tx(createTx)
+    const spaces = await adapter.findAll(core.class.Space, {})
+    console.log(spaces)
   })
 })

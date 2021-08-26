@@ -134,22 +134,24 @@ class TServerStorage implements ServerStorage {
   }
 
   async tx (tx: Tx): Promise<Tx[]> {
-    // maintain hiearachy and triggers
-    if (tx.objectSpace === core.space.Model) {
-      this.hierarchy.tx(tx)
-      await this.triggers.tx(tx)
-    }
-
     // store tx
     await this.getAdapter(DOMAIN_TX).tx(tx)
 
-    // store object
-    await this.routeTx(tx)
-    const derived = await this.triggers.apply(tx.modifiedBy, tx)
-    for (const tx of derived) {
+    if (tx.objectSpace === core.space.Model) {
+      // maintain hiearachy and triggers
+      this.hierarchy.tx(tx)
+      await this.triggers.tx(tx)
+      return []
+    } else {
+      // store object
       await this.routeTx(tx)
+      // invoke triggers and store derived objects
+      const derived = await this.triggers.apply(tx.modifiedBy, tx)
+      for (const tx of derived) {
+        await this.routeTx(tx)
+      }
+      return derived
     }
-    return derived
   }
 }
 
