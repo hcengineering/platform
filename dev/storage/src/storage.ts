@@ -14,37 +14,54 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
-import { ModelDb, TxDb, Hierarchy, DOMAIN_TX } from '@anticrm/core'
-import type { DbAdapter } from '@anticrm/server-core'
+import { ModelDb, TxDb, Hierarchy } from '@anticrm/core'
+import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import * as txJson from './model.tx.json'
 
-const txes = txJson as unknown as Tx[]
+class InMemoryTxAdapter implements TxAdapter {
+  private readonly txdb: TxDb
+
+  constructor (hierarchy: Hierarchy) {
+    this.txdb = new TxDb(hierarchy)
+  }
+
+  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+    return await this.txdb.findAll(_class, query, options)
+  }
+
+  tx (tx: Tx): Promise<void> {
+    return this.txdb.tx(tx)
+  }
+
+  async init (model: Tx[]): Promise<void> {
+    for (const tx of model) {
+      await this.txdb.tx(tx)
+    }
+  }
+
+  async getModel (): Promise<Tx[]> {
+    return txJson as unknown as Tx[]
+  }
+}
 
 class InMemoryAdapter implements DbAdapter {
-  constructor (
-    private readonly hierarchy: Hierarchy,
-    private readonly txdb: TxDb,
-    private readonly modeldb: ModelDb
-  ) {}
+  private readonly modeldb: TxDb
 
-  async findAll<T extends Doc> (
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(_class)
-    if (domain === DOMAIN_TX) return await this.txdb.findAll(_class, query, options)
+  constructor (hierarchy: Hierarchy) {
+    this.modeldb = new ModelDb(hierarchy)
+  }
+
+  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
   }
 
   async tx (tx: Tx): Promise<void> {
-    await Promise.all([this.modeldb.tx(tx), this.txdb.tx(tx)])
+    return await this.modeldb.tx(tx)
   }
 
-  async init (): Promise<void> {
-    for (const tx of txes) {
-      await this.txdb.tx(tx)
+  async init (model: Tx[]): Promise<void> {
+    for (const tx of model) {
       await this.modeldb.tx(tx)
     }
   }
@@ -53,8 +70,13 @@ class InMemoryAdapter implements DbAdapter {
 /**
  * @public
  */
-export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<[DbAdapter, Tx[]]> {
-  const txdb = new TxDb(hierarchy)
-  const modeldb = new ModelDb(hierarchy)
-  return [new InMemoryAdapter(hierarchy, txdb, modeldb), txes]
+export async function createInMemoryTxAdapter (hierarchy: Hierarchy, url: string, workspace: string): Promise<TxAdapter> {
+  return new InMemoryTxAdapter(hierarchy)
+}
+
+/**
+ * @public
+ */
+export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<DbAdapter> {
+  return new InMemoryAdapter(hierarchy)
 }

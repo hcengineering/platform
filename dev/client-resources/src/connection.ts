@@ -14,8 +14,10 @@
 //
 
 import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage } from '@anticrm/core'
-import { createInMemoryAdapter } from '@anticrm/dev-storage'
+import { DOMAIN_TX } from '@anticrm/core'
+import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage } from '@anticrm/server-core'
+import type { DbConfiguration } from '@anticrm/server-core'
 
 class ServerStorageWrapper implements Storage {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
@@ -31,6 +33,23 @@ class ServerStorageWrapper implements Storage {
 }
 
 export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
-  const serverStorage = await createServerStorage(createInMemoryAdapter, '', '')
+  const conf: DbConfiguration = {
+    domains: {
+      [DOMAIN_TX]: 'InMemoryTx'
+    },
+    defaultAdapter: 'InMemory',
+    adapters: {
+      InMemoryTx: {
+        factory: createInMemoryTxAdapter,
+        url: ''
+      },
+      InMemory: {
+        factory: createInMemoryAdapter,
+        url: ''
+      }
+    },
+    workspace: ''
+  }
+  const serverStorage = await createServerStorage(conf)
   return new ServerStorageWrapper(serverStorage, handler)
 }
