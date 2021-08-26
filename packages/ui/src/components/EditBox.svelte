@@ -77,7 +77,7 @@
     margin: -4px;
     padding: 2px;
     border: 2px solid transparent;
-    border-radius: .125rem;
+    border-radius: 2px;
 
     &:focus {
       border-color: var(--primary-button-enabled);

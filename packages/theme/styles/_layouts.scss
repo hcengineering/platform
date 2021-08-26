@@ -27,8 +27,7 @@ button {
   cursor: pointer;
 }
 input {
-  font-family: inherit;
-  font-size: inherit;
+  font: inherit;
   background-color: transparent;
   outline: none;
   color: var(--theme-caption-color);
