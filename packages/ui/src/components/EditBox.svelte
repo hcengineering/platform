@@ -44,7 +44,7 @@
   })
 </script>
 
-<div class="flex-col" style="{width ? 'width: ' + width : ''}"
+<div class="container" style="{width ? 'width: ' + width : ''}"
   on:click={() => { input.focus() }}
 >
   <div class="hidden-text" bind:this={text}></div>
@@ -57,6 +57,11 @@
 </div>
 
 <style lang="scss">
+  .container {
+    display: inline-flex;
+    flex-direction: column;
+  }
+
   .label {
     margin-bottom: .25rem;
     font-size: .75rem;
@@ -68,7 +73,7 @@
   }
 
   input {
-    height: 1.25rem;
+    height: 1.5rem;
     margin: -4px;
     padding: 2px;
     border: 2px solid transparent;

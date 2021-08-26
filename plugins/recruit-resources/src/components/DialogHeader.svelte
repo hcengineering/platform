@@ -51,7 +51,7 @@
     on:drop|preventDefault|stopPropagation={drop}>
   <div class="flex-col-center">
     <div class="avatar"></div>
-    <div class="name"><EditBox placeholder="John"/><EditBox placeholder="Appleseed"/></div>
+    <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div>
     <div class="title">Candidate title</div>
     <!-- <input type="file" name="file" id="file"/> -->
   </div>
