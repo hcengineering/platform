@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { DOMAIN_TX } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createMongoAdapter } from '@anticrm/mongo'
+import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { createServerStorage } from '@anticrm/server-core'
+import type { DbConfiguration } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
@@ -27,5 +29,24 @@ import { serverChunterId } from '@anticrm/server-chunter'
 export async function start (dbUrl: string, port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc((workspace: string) => createServerStorage(createMongoAdapter, dbUrl, workspace), port, host)
+  startJsonRpc((workspace: string) => {
+    const conf: DbConfiguration = {
+      domains: {
+        [DOMAIN_TX]: 'MongoTx'
+      },
+      defaultAdapter: 'Mongo',
+      adapters: {
+        MongoTx: {
+          factory: createMongoTxAdapter,
+          url: dbUrl
+        },
+        Mongo: {
+          factory: createMongoAdapter,
+          url: dbUrl
+        }
+      },
+      workspace
+    }
+    return createServerStorage(conf)
+  }, port, host)
 }

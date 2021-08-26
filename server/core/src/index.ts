@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { Doc, Tx, TxCreateDoc, Ref, Class, ServerStorage, DocumentQuery, FindOptions, FindResult, Storage, Account } from '@anticrm/core'
-import core, { Hierarchy, TxFactory, ModelDb, DOMAIN_MODEL } from '@anticrm/core'
+import type { Doc, Tx, TxCreateDoc, Ref, Class, ServerStorage, DocumentQuery, FindOptions, FindResult, Storage, Account, Domain, TxCUD } from '@anticrm/core'
+import core, { Hierarchy, TxFactory, DOMAIN_TX } from '@anticrm/core'
 import type { Resource, Plugin } from '@anticrm/platform'
 import { getResource, plugin } from '@anticrm/platform'
 
@@ -59,21 +59,69 @@ export class Triggers {
  * @public
  */
 export interface DbAdapter extends Storage {
-  init: () => Promise<void>
+  /**
+   * Method called after hierarchy is ready to use.
+   */
+  init: (model: Tx[]) => Promise<void>
 }
 
 /**
  * @public
  */
-export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string) => Promise<[DbAdapter, Tx[]]>
+export interface TxAdapter extends DbAdapter {
+  getModel: () => Promise<Tx[]>
+}
+
+/**
+ * @public
+ */
+export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string) => Promise<DbAdapter>
+
+/**
+ * @public
+ */
+export interface DbAdapterConfiguration {
+  factory: DbAdapterFactory
+  url: string
+}
+
+/**
+ * @public
+ */
+export interface DbConfiguration {
+  adapters: Record<string, DbAdapterConfiguration>
+  domains: Record<string, string>
+  defaultAdapter: string
+  workspace: string
+}
 
 class TServerStorage implements ServerStorage {
   constructor (
-    private readonly dbAdapter: Storage,
+    private readonly domains: Record<string, string>,
+    private readonly defaultAdapter: string,
+    private readonly adapters: Map<string, DbAdapter>,
     private readonly hierarchy: Hierarchy,
-    private readonly triggers: Triggers,
-    private readonly modeldb: ModelDb
+    private readonly triggers: Triggers
   ) {
+  }
+
+  private getAdapter (domain: Domain): DbAdapter {
+    const name = this.domains[domain] ?? this.defaultAdapter
+    const adapter = this.adapters.get(name)
+    if (adapter === undefined) {
+      throw new Error('adapter not provided: ' + name)
+    }
+    return adapter
+  }
+
+  private routeTx (tx: Tx): Promise<void> {
+    if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+      const txCUD = tx as TxCUD<Doc>
+      const domain = this.hierarchy.getDomain(txCUD.objectClass)
+      return this.getAdapter(domain).tx(txCUD)
+    } else {
+      throw new Error('not implemented (not derived from TxCUD)')
+    }
   }
 
   async findAll<T extends Doc> (
@@ -82,50 +130,59 @@ class TServerStorage implements ServerStorage {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(clazz)
-    console.log('findAll', clazz, domain, query)
-    if (domain === DOMAIN_MODEL) return await this.modeldb.findAll(clazz, query, options)
-    return await this.dbAdapter.findAll(clazz, query, options)
+    return await this.getAdapter(domain).findAll(clazz, query, options)
   }
 
   async tx (tx: Tx): Promise<Tx[]> {
+    // maintain hiearachy and triggers
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
-      await this.modeldb.tx(tx)
       await this.triggers.tx(tx)
-      return [] // we do not apply triggers on model changes?
-    } else {
-      await this.dbAdapter.tx(tx)
-      const derived = await this.triggers.apply(tx.modifiedBy, tx)
-      for (const tx of derived) {
-        await this.dbAdapter.tx(tx) // triggers does not generate changes to model objects?
-      }
-      return derived
     }
+
+    // store tx
+    await this.getAdapter(DOMAIN_TX).tx(tx)
+
+    // store object
+    await this.routeTx(tx)
+    const derived = await this.triggers.apply(tx.modifiedBy, tx)
+    for (const tx of derived) {
+      await this.routeTx(tx)
+    }
+    return derived
   }
 }
 
 /**
  * @public
  */
-export async function createServerStorage (factory: DbAdapterFactory, url: string, db: string): Promise<ServerStorage> {
+export async function createServerStorage (conf: DbConfiguration): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
-  const model = new ModelDb(hierarchy)
   const triggers = new Triggers()
+  const adapters = new Map<string, DbAdapter>()
 
-  const [dbAdapter, txes] = await factory(hierarchy, url, db)
-
-  for (const tx of txes) {
-    hierarchy.tx(tx)
+  for (const key in conf.adapters) {
+    const adapterConf = conf.adapters[key]
+    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace))
   }
 
-  for (const tx of txes) {
-    await model.tx(tx)
+  const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
+  if (txAdapter === undefined) {
+    console.log('no txadapter found')
+  }
+
+  const model = await txAdapter.getModel()
+
+  for (const tx of model) {
+    hierarchy.tx(tx)
     await triggers.tx(tx)
   }
 
-  await dbAdapter.init()
+  for (const [, adapter] of adapters) {
+    await adapter.init(model)
+  }
 
-  return new TServerStorage(dbAdapter, hierarchy, triggers, model)
+  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers)
 }
 
 /**
