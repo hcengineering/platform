@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,4 +14,13 @@
 // limitations under the License.
 //
 
-export { createElasticAdapter } from './adapter'
+import { Hierarchy } from '@anticrm/core'
+import { createElasticAdapter } from '../adapter'
+
+describe('client', () => {
+  it('should create adapter', async () => {
+    const hierarchy = new Hierarchy()
+    const [adapter, tx] = await createElasticAdapter(hierarchy, 'http://localhost:9200/', 'ws1')
+    console.log(adapter, tx)
+  })
+})
