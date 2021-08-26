@@ -18,8 +18,10 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import { Label, IconIFileUpload } from '@anticrm/ui'
+  import { Label } from '@anticrm/ui'
   import ImageButton from './ImageButton.svelte'
+  import File from './icons/File.svelte'
+  import FileUpload from './icons/FileUpload.svelte'
 
   let dragover = false
 
@@ -55,7 +57,7 @@
     <!-- <input type="file" name="file" id="file"/> -->
   </div>
   <div class="resume-btn">
-    <ImageButton label={'Resume upload'} icon={IconIFileUpload} size={'small'} />
+    <ImageButton label={'Upload resume'} icon={FileUpload} />
   </div>
 </div>
 

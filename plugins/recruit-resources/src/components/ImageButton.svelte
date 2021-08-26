@@ -21,16 +21,16 @@
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
-  export let size: 'small' | 'medium' | 'large'
-
 </script>
 
 <div class="flex-row-center container">
-  {#if typeof (icon) === 'string'}
-    <Icon {icon} {size}/>
-  {:else}
-    <svelte:component this={icon} size={size} />
-  {/if}
+  <div class="icon">
+    {#if typeof (icon) === 'string'}
+      <Icon {icon} size='small'/>
+    {:else}
+      <svelte:component this={icon} size='small' />
+    {/if}
+  </div>
   <span><Label {label} /></span>
 </div>
 
@@ -43,6 +43,11 @@
     border-radius: .5rem;
     backdrop-filter: blur(3px);
     cursor: pointer;
+
+    .icon {
+      transform-origin: center center;
+      transform: scale(.75);
+    }
 
     span {
       margin-left: 0.376rem;
