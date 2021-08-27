@@ -80,8 +80,7 @@
   .popup {
     position: fixed;
     background-color: transparent;
-    border-radius: 1.25rem;
-    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .35);
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
     z-index: 1001;
   }
   .modal-overlay {

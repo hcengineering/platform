@@ -22,10 +22,11 @@
   export let size: 'small' | 'medium' = 'medium'
   export let disabled: boolean = false
   export let loading: boolean = false
+  export let onImage: boolean = false
   export let width: string | undefined = undefined
 </script>
 
-<button class="button {size}" class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class="button {size}" class:primary class:onImage disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if loading}
     <Spinner />
   {:else}
@@ -88,6 +89,38 @@
       border-color: var(--primary-button-border);
       color: rgb(var(--theme-caption-color) / 60%);
       cursor: not-allowed;
+    }
+  }
+  
+  .onImage {
+    padding: 0 1.25rem;
+    font-weight: 500;
+    color: var(--image-button-color);
+    background-color: var(--image-button-bg);
+    border-color: var(--image-button-border);
+    border-radius: .5rem;
+
+    .primary {
+      color: var(--image-primary-button-color);
+      background-color: var(--image-primary-button-bg);
+      border-color: var(--image-button-primary-border);
+    }
+
+    &:hover {
+      background-color: var(--image-button-bg);
+      border-color: var(--image-button-border);
+    }
+    &:focus {
+      background-color: var(--image-button-bg);
+      border-color: var(--image-button-border);
+    }
+    &:active {
+      background-color: var(--image-button-bg);
+      border-color: var(--image-button-border);
+    }
+    &:disabled {
+      background-color: var(--image-button-bg);
+      border-color: var(--image-button-border);
     }
   }
 </style>
