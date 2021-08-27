@@ -49,13 +49,13 @@
 >
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  <div class="wrap">
+  <div class="shadow"><div class="wrap">
     {#if password}
       <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
       <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
-  </div>
+  </div></div>
 </div>
 
 <style lang="scss">
@@ -95,6 +95,19 @@
     opacity: .8;
     pointer-events: none;
     user-select: none;
+  }
+  // .wrap .wrap::before {
+  //   top: -1px;
+  //   left: -3px;
+  //   background: linear-gradient(135deg, rgba(0, 0, 0, .5) 0%, transparent 60%);
+  // }
+  // .wrap .wrap::after {
+  //   bottom: -1px;
+  //   right: -3px;
+  //   background: linear-gradient(-45deg, rgba(0, 0, 0, .5) 0%, transparent 60%);
+  // }
+  .shadow:focus-within {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 1));
   }
 
   input {
