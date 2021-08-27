@@ -18,7 +18,7 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import { EditBox, Label } from '@anticrm/ui'
+  import { EditBox, Button, Label } from '@anticrm/ui'
   import ImageButton from './ImageButton.svelte'
   import FileUpload from './icons/FileUpload.svelte'
 
@@ -57,6 +57,9 @@
   </div>
   <div class="resume-btn">
     <ImageButton label={'Upload resume'} icon={FileUpload} />
+  </div>
+  <div class="save-btn">
+    <Button label={'Save'} size={'small'} onImage />
   </div>
 </div>
 
@@ -104,6 +107,11 @@
       position: absolute;
       left: 1rem;
       bottom: 1rem;
+    }
+    .save-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
     }
   }
 
