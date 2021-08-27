@@ -55,6 +55,4 @@ export function configurePlatform() {
   addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
-  
-
 }
