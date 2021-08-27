@@ -34,9 +34,8 @@ class ElasticAdapter implements FullTextAdapter {
       body: {
       }
     })
-    const hits = result.body.hits.hits as []
-    console.log(hits)
-    return []
+    const hits = result.body.hits.hits as any[]
+    return hits.map(hit => hit._source)
   }
 
   async index (doc: IndexedDoc): Promise<void> {
@@ -45,7 +44,6 @@ class ElasticAdapter implements FullTextAdapter {
       type: '_doc',
       body: doc
     })
-    console.log('indexing this thing: ', doc)
   }
 }
 

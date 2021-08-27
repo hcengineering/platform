@@ -9005,7 +9005,7 @@ packages:
     dev: false
 
   file:projects/elastic.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-TJMFjRCKTFiVvTUmHZXH2Z6dFAqMiQiXrvRr33eIqL8/x3a8a3qXGfcoXUoC1tjPUPOLqU9lqxTcXBJDLPwKrg==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-ywnrb5JlC7rhYSRd+y+/YNf4qa61yvKdCuNb/ziAhTvk12tMUjUP/Hsek+HU2G74wsnF9CPq485JMfPmj+yWXQ==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
@@ -9017,7 +9017,11 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      ts-node: 10.2.1_typescript@4.3.5
     transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
       - '@typescript-eslint/parser'
       - supports-color
       - typescript
@@ -9576,7 +9580,7 @@ packages:
     dev: false
 
   file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-IXKKQtFZQA5Vw1Asc9H0qvs+4iwYCSXt8ozTaZ55xEg5CeMO9mE8sAVbTWA6TxP/4T+HRQMbzrI7LtwPgWI9xw==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-6XfixxRO1uisszjaBtMFoQCCvv2zWAknPVz3ZmES4q/keIWZuDDP667FpDMJ9maBB1AN7ImI9VBMXNbXDlVUuA==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
@@ -9841,7 +9845,7 @@ packages:
     dev: false
 
   file:projects/workspace.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-LyUaHX4Kqn0fMCMfSsN4nIqIFtRzbRruDdSv5bfyefDF4WUfrYUdy8IUwuWuwmq5NTr49jLg9oLCyAJZ059Ong==, tarball: file:projects/workspace.tgz}
+    resolution: {integrity: sha512-q2/1LqGkYRwsMNbjDjy4ngJlBDAefFWXuEdVyIN0DyBjmBibnEVZuQayjBh5O7xUQYKlT0A7TdVn99hpIwixOA==, tarball: file:projects/workspace.tgz}
     id: file:projects/workspace.tgz
     name: '@rush-temp/workspace'
     version: 0.0.0
@@ -9854,10 +9858,11 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
       mongodb: 4.1.0
-      ts-node: 10.2.1_f50b86b1778cd2aa4e5405c08bb39559
+      ts-node: 10.2.1_typescript@4.3.5
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
+      - '@types/node'
       - '@typescript-eslint/parser'
       - supports-color
       - typescript

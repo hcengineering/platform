@@ -14,26 +14,25 @@
 // limitations under the License.
 //
 
-// import type { Tx } from '@anticrm/core'
-
-// import * as txJson from './model.tx.json'
-
-// const txes = txJson as unknown as Tx[]
+import type { Ref, Doc, Class, Obj, Account, Space } from '@anticrm/core'
+import { createElasticAdapter } from '../adapter'
 
 describe('client', () => {
   it('should create document', async () => {
-    // const hierarchy = new Hierarchy()
-    // for (const tx of txes) hierarchy.tx(tx)
-    // const adapter = await createElasticAdapter(hierarchy, 'http://localhost:9200/', 'ws1')
-    // const txFactory = new TxFactory(core.account.System)
-    // const createTx = txFactory.createTxCreateDoc(core.class.Space, core.space.Model, {
-    //   name: 'name',
-    //   description: 'description',
-    //   private: false,
-    //   members: []
-    // })
-    // await adapter.tx(createTx)
-    // const spaces = await adapter.findAll(core.class.Space, {})
-    // console.log(spaces)
+    const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
+    await adapter.index({
+      id: 'doc1' as Ref<Doc>,
+      _class: 'class1' as Ref<Class<Obj>>,
+      modifiedBy: 'andrey' as Ref<Account>,
+      modifiedOn: 0,
+      space: 'space1' as Ref<Space>,
+      content: 'hey there!'
+    })
+    const hits = await adapter.search({})
+    console.log(hits)
   })
+
+  // it('should find document', async () => {
+  //   const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
+  // })
 })
