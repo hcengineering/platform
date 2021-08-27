@@ -70,23 +70,21 @@
 
     &::after, &::before {
       position: absolute;
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       background-color: transparent;
     }
     &::before {
-      top: -2px;
-      left: -4px;
-      clip-path: path('M0,6v-6h6v3h-3v3z');
-      box-shadow: inset 1px 1px 1px var(--primary-button-enabled),
-                  inset 2px 2px 2px rgba(0, 0, 0, .3);
+      top: -3px;
+      left: -3px;
+      background: linear-gradient(135deg, white 0%, var(--primary-button-enabled) 10%, rgba(68, 116, 246, 0) 50%);
+      clip-path: path('M0,8v-8h8v1h-7v1z');
     }
     &::after {
-      bottom: -2px;
-      right: -4px;
-      clip-path: path('M0,6h6v-6h-3v3h-3z');
-      box-shadow: inset -1px -1px 1px var(--primary-button-enabled),
-                  inset -2px -2px 2px rgba(0, 0, 0, .3);
+      bottom: -3px;
+      right: -3px;
+      background: linear-gradient(-45deg, white 0%, var(--primary-button-enabled) 10%, rgba(68, 116, 246, 0) 50%);
+      clip-path: path('M0,8h8v-8h-1v7h-7z');
     }
     &:focus-within::before, &:focus-within::after {
       content: '';
