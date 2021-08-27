@@ -75,7 +75,6 @@
     background-clip: border-box;
     background-size: cover;
     border-radius: 1.25rem;
-    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .35);
 
     &.dragover {
       border: 1px solid red;
@@ -95,6 +94,7 @@
       color: #fff;
     }
     .title {
+      margin-top: .25rem;
       font-size: .75rem;
       font-weight: 500;
       color: rgba(255, 255, 255, .8);

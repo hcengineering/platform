@@ -67,21 +67,26 @@
 
   .wrap {
     position: relative;
+
     &::after, &::before {
       position: absolute;
       width: 6px;
       height: 6px;
-      background-color: var(--primary-button-enabled);
-    }
-    &::after {
-      bottom: -1px;
-      right: -4px;
-      clip-path: path('M0,6v-2h4v-4h2v6z');
+      background-color: transparent;
     }
     &::before {
-      top: -1px;
+      top: -2px;
       left: -4px;
-      clip-path: path('M0,0h6v2h-4v4h-2z');
+      clip-path: path('M0,6v-6h6v3h-3v3z');
+      box-shadow: inset 1px 1px 1px var(--primary-button-enabled),
+                  inset 2px 2px 2px rgba(0, 0, 0, .3);
+    }
+    &::after {
+      bottom: -2px;
+      right: -4px;
+      clip-path: path('M0,6h6v-6h-3v3h-3z');
+      box-shadow: inset -1px -1px 1px var(--primary-button-enabled),
+                  inset -2px -2px 2px rgba(0, 0, 0, .3);
     }
     &:focus-within::before, &:focus-within::after {
       content: '';
@@ -99,7 +104,6 @@
   }
 
   input {
-    height: 1.5rem;
     margin: 0;
     padding: 0;
     border: none;

@@ -27,7 +27,6 @@
 <style lang="scss">
   .grid {
     display: grid;
-    justify-items: start;
     grid-template-columns: 1fr 1fr;
     row-gap: 2.5rem;
     column-gap: 1.5rem;
