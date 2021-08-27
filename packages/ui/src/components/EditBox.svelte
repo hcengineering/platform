@@ -49,13 +49,13 @@
 >
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  <div class="wrap">
+  <div class="wrap"><div class="wraps">
     {#if password}
       <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
       <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
-  </div>
+  </div></div>
 </div>
 
 <style lang="scss">
@@ -65,7 +65,7 @@
     align-items: flex-start;
   }
 
-  .wrap {
+  .wrap, .wraps {
     position: relative;
 
     &::after, &::before {
@@ -74,21 +74,29 @@
       height: 8px;
       background-color: transparent;
     }
-    &::before {
-      top: -3px;
-      left: -3px;
-      background: linear-gradient(135deg, white 0%, var(--primary-button-enabled) 10%, rgba(68, 116, 246, 0) 50%);
-      clip-path: path('M0,8v-8h8v1h-7v1z');
-    }
-    &::after {
-      bottom: -3px;
-      right: -3px;
-      background: linear-gradient(-45deg, white 0%, var(--primary-button-enabled) 10%, rgba(68, 116, 246, 0) 50%);
-      clip-path: path('M0,8h8v-8h-1v7h-7z');
-    }
-    &:focus-within::before, &:focus-within::after {
-      content: '';
-    }
+    &::before { clip-path: path('M0,8v-8h8v1h-7v1z'); }
+    &::after { clip-path: path('M0,8h8v-8h-1v7h-7z'); }
+    &:focus-within::before, &:focus-within::after { content: ''; }
+  }
+  .wrap::before {
+    top: -3px;
+    left: -3px;
+    background: linear-gradient(135deg, var(--primary-button-enabled) 0%, rgba(68, 116, 246, 0) 50%);
+  }
+  .wrap::after {
+    bottom: -3px;
+    right: -3px;
+    background: linear-gradient(-45deg, var(--primary-button-enabled) 0%, rgba(68, 116, 246, 0) 50%);
+  }
+  .wraps::before {
+    top: -2px;
+    left: -2px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, .5) 0%, transparent 50%);
+  }
+  .wraps::after {
+    bottom: -2px;
+    right: -2px;
+    background: linear-gradient(-45deg, rgba(0, 0, 0, .5) 0%, transparent 50%);
   }
 
   .label {
