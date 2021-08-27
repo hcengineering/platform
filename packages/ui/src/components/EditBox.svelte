@@ -49,13 +49,13 @@
 >
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  <div class="wrap"><div class="wraps">
+  <div class="wrap">
     {#if password}
       <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
       <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
-  </div></div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -65,38 +65,26 @@
     align-items: flex-start;
   }
 
-  .wrap, .wraps {
+  .wrap {
     position: relative;
 
     &::after, &::before {
       position: absolute;
-      width: 8px;
-      height: 8px;
-      background-color: transparent;
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-button-enabled);
     }
-    &::before { clip-path: path('M0,8v-8h8v1h-7v1z'); }
-    &::after { clip-path: path('M0,8h8v-8h-1v7h-7z'); }
+    &::before {
+      top: -2px;
+      left: -4px;
+      clip-path: path('M0,6v-6h6v1h-5v5z');
+    }
+    &::after {
+      bottom: -2px;
+      right: -4px;
+      clip-path: path('M0,6h6v-6h-1v5h-5z');
+    }
     &:focus-within::before, &:focus-within::after { content: ''; }
-  }
-  .wrap::before {
-    top: -3px;
-    left: -3px;
-    background: linear-gradient(135deg, var(--primary-button-enabled) 0%, rgba(68, 116, 246, 0) 50%);
-  }
-  .wrap::after {
-    bottom: -3px;
-    right: -3px;
-    background: linear-gradient(-45deg, var(--primary-button-enabled) 0%, rgba(68, 116, 246, 0) 50%);
-  }
-  .wraps::before {
-    top: -2px;
-    left: -2px;
-    background: linear-gradient(135deg, rgba(0, 0, 0, .5) 0%, transparent 50%);
-  }
-  .wraps::after {
-    bottom: -2px;
-    right: -2px;
-    background: linear-gradient(-45deg, rgba(0, 0, 0, .5) 0%, transparent 50%);
   }
 
   .label {
