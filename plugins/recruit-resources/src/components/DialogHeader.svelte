@@ -19,7 +19,6 @@
   import login from '@anticrm/login'
 
   import { EditBox, Button, Label } from '@anticrm/ui'
-  import ImageButton from './ImageButton.svelte'
   import FileUpload from './icons/FileUpload.svelte'
 
   let dragover = false
@@ -49,22 +48,21 @@
     on:dragover|preventDefault={ ()=>{} }
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
-  <div class="flex-col-center">
+  <div class="main-content">
     <div class="avatar"></div>
     <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div>
     <div class="title">Candidate title</div>
     <!-- <input type="file" name="file" id="file"/> -->
   </div>
-  <div class="resume-btn">
-    <ImageButton label={'Upload resume'} icon={FileUpload} />
+  <div class="lb-content">
+    <Button label={'Upload resume'} icon={FileUpload} size={'small'} transparent primary />
   </div>
-  <div class="save-btn">
-    <Button label={'Save'} size={'small'} onImage />
+  <div class="rt-content">
+    <Button label={'Save'} size={'small'} transparent />
   </div>
 </div>
 
 <style lang="scss">
-
   .header {
     position: relative;
     display: flex;
@@ -83,36 +81,46 @@
       border: 1px solid red;
     }
 
-    .avatar {
-      width: 5rem;
-      height: 5rem;
-      border-radius: 50%;
-      background-color: #C4C4C4;
-    }
-    .name {
-      margin-top: .625rem;
-      font-size: 1rem;
-      font-weight: 500;
-      line-height: 150%;
-      color: #fff;
-    }
-    .title {
-      margin-top: .25rem;
-      font-size: .75rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, .8);
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .avatar {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        background-color: #C4C4C4;
+      }
+      .name {
+        margin-top: .625rem;
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 150%;
+        color: #fff;
+      }
+      .title {
+        margin-top: .25rem;
+        font-size: .75rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, .8);
+      }
     }
 
-    .resume-btn {
+    .lb-content {
       position: absolute;
       left: 1rem;
       bottom: 1rem;
     }
-    .save-btn {
+    .rb-content {
+      position: absolute;
+      right: 1rem;
+      bottom: 1rem;
+    }
+    .rt-content {
       position: absolute;
       top: 1rem;
       right: 1rem;
     }
   }
-
 </style>

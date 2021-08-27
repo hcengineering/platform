@@ -13,20 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { AnySvelteComponent } from '@anticrm/ui'
   import Spinner from './Spinner.svelte'
   import Label from './Label.svelte'
+  import Icon from './Icon.svelte'
 
   export let label: IntlString
   export let primary: boolean = false
   export let size: 'small' | 'medium' = 'medium'
+  export let icon: Asset | AnySvelteComponent | undefined
   export let disabled: boolean = false
   export let loading: boolean = false
-  export let onImage: boolean = false
+  export let transparent: boolean = false
   export let width: string | undefined = undefined
 </script>
 
-<button class="button {size}" class:primary class:onImage disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class="button {size}" class:primary class:transparent disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+  {#if icon}
+    <div class="icon">
+      {#if typeof (icon) === 'string'}
+        <Icon {icon} size={'small'}/>
+      {:else}
+        <svelte:component this={icon} size={'small'} />
+      {/if}
+    </div>
+  {/if}
   {#if loading}
     <Spinner />
   {:else}
@@ -44,6 +56,12 @@
     color: var(--theme-caption-color);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: 0.75rem;
+
+    .icon {
+      margin-right: .375rem;
+      transform-origin: center center;
+      transform: scale(.75);
+    }
 
     &:hover {
       background-color: var(--theme-button-bg-hovered);
@@ -92,38 +110,59 @@
     }
   }
 
-  .onImage {
+  .transparent {
     padding: 0 1.25rem;
-    color: var(--image-button-color);
-    background-color: var(--image-button-bg);
-    border-color: var(--image-button-border);
+    font-weight: 500;
     border-radius: .5rem;
-    backdrop-filter: blur(3px);
-
-    .primary {
-      color: var(--image-primary-button-color);
-      background-color: var(--image-primary-button-bg);
-      border-color: var(--image-button-primary-border);
-    }
+    color: var(--trans-button-color);
+    background-color: var(--trans-button-bg);
+    border-color: var(--trans-button-border);
 
     &:hover {
-      background-color: var(--image-button-bg-hover);
-      border-color: var(--image-button-border-hover);
+      background-color: var(--trans-button-bg-hovered);
+      border-color: var(--trans-button-border-hovered);
       box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
     }
     &:focus {
-      background-color: var(--image-button-bg-hover);
-      border-color: var(--image-button-border-hover);
+      background-color: var(--trans-button-bg-hovered);
+      border-color: var(--primary-button-focused-border);
       box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
     }
     &:active {
-      background-color: var(--image-button-bg);
-      border-color: var(--image-button-border);
+      background-color: var(--trans-button-bg);
+      border-color: var(--trans-button-border);
       box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
     }
     &:disabled {
-      background-color: var(--image-button-bg);
-      border-color: var(--image-button-border);
+      background-color: var(--trans-button-bg);
+      border-color: var(--trans-button-border);
+    }
+
+    &.primary {
+      color: var(--trans-primary-button-color);
+      background-color: var(--trans-primary-button-bg);
+      border-color: var(--trans-primary-button-border);
+      backdrop-filter: blur(3px);
+
+      &:hover {
+        background-color: var(--trans-primary-button-bg-hovered);
+        border-color: var(--trans-primary-button-border-hovered);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      }
+      &:focus {
+        background-color: var(--trans-primary-button-bg-hovered);
+        border-color: var(--primary-button-focused-border);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      }
+      &:active {
+        background-color: var(--trans-primary-button-bg);
+        border-color: var(--trans-primary-button-border);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
+      }
+      &:disabled {
+        background-color: var(--trans-primary-button-bg);
+        border-color: var(--trans-primary-button-border);
+      }
     }
   }
 </style>
