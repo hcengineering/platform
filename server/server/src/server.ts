@@ -17,6 +17,7 @@
 import { DOMAIN_TX } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
+import { createElasticAdapter } from '@anticrm/elastic'
 import { createServerStorage } from '@anticrm/server-core'
 import type { DbConfiguration } from '@anticrm/server-core'
 
@@ -26,7 +27,7 @@ import { serverChunterId } from '@anticrm/server-chunter'
 /**
  * @public
  */
-export async function start (dbUrl: string, port: number, host?: string): Promise<void> {
+export async function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
   startJsonRpc((workspace: string) => {
@@ -44,6 +45,10 @@ export async function start (dbUrl: string, port: number, host?: string): Promis
           factory: createMongoAdapter,
           url: dbUrl
         }
+      },
+      fulltextAdapter: {
+        factory: createElasticAdapter,
+        url: fullTextUrl
       },
       workspace
     }

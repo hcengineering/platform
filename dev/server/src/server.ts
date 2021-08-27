@@ -17,11 +17,25 @@
 import { DOMAIN_TX } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createServerStorage } from '@anticrm/server-core'
+import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import type { DbConfiguration } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
+
+class NullFullTextAdapter implements FullTextAdapter {
+  async index (doc: IndexedDoc): Promise<void> {
+    console.log('noop full text indexer: ', doc)
+  }
+
+  async search (query: any): Promise<IndexedDoc[]> {
+    return []
+  }
+}
+
+async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
+  return new NullFullTextAdapter()
+}
 
 /**
  * @public
@@ -44,6 +58,10 @@ export async function start (port: number, host?: string): Promise<void> {
           factory: createInMemoryAdapter,
           url: ''
         }
+      },
+      fulltextAdapter: {
+        factory: createNullFullTextAdapter,
+        url: ''
       },
       workspace: ''
     }

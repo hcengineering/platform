@@ -16,7 +16,7 @@
 import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createServerStorage } from '@anticrm/server-core'
+import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import type { DbConfiguration } from '@anticrm/server-core'
 
 class ServerStorageWrapper implements Storage {
@@ -30,6 +30,20 @@ class ServerStorageWrapper implements Storage {
     const derived = await this.storage.tx(tx)
     for (const tx of derived) { this.handler(tx) }
   }
+}
+
+class NullFullTextAdapter implements FullTextAdapter {
+  async index (doc: IndexedDoc): Promise<void> {
+    console.log('noop full text indexer: ', doc)
+  }
+
+  async search (query: any): Promise<IndexedDoc[]> {
+    return []
+  }
+}
+
+async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
+  return new NullFullTextAdapter()
 }
 
 export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
@@ -47,6 +61,10 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
         factory: createInMemoryAdapter,
         url: ''
       }
+    },
+    fulltextAdapter: {
+      factory: createNullFullTextAdapter,
+      url: ''
     },
     workspace: ''
   }

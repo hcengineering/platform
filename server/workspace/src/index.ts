@@ -27,6 +27,7 @@ export async function createModel (url: string, dbName: string): Promise<number>
   try {
     await client.connect()
     const db = client.db(dbName)
+    await db.dropDatabase()
     const result = await db.collection(DOMAIN_TX).insertMany(txJson as Document[])
     return result.insertedCount
   } finally {

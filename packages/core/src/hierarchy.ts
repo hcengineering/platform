@@ -169,12 +169,20 @@ export class Hierarchy {
     attributes.set(attribute.name, attribute)
   }
 
-  getAttributes (clazz: Ref<Class<Obj>>): Map<string, AnyAttribute> {
-    const attributes = this.attributes.get(clazz)
-    if (attributes === undefined) {
-      throw new Error('attributes not found for class ' + clazz)
+  getAllAttributes (clazz: Ref<Class<Obj>>): Map<string, AnyAttribute> {
+    const result = new Map<string, AnyAttribute>()
+    const ancestors = this.getAncestors(clazz)
+
+    for (const cls of ancestors) {
+      const attributes = this.attributes.get(cls)
+      if (attributes !== undefined) {
+        for (const [name, attr] of attributes) {
+          result.set(name, attr)
+        }
+      }
     }
-    return attributes
+
+    return result
   }
 
   getAttribute (_class: Ref<Class<Obj>>, name: string): AnyAttribute {

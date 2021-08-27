@@ -14,37 +14,22 @@
 // limitations under the License.
 //
 
-import { TxProcessor, Hierarchy } from '@anticrm/core'
-import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, TxCreateDoc } from '@anticrm/core'
-import type { DbAdapter } from '@anticrm/server-core'
+import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
 
-function translateDoc (doc: Doc): any {
-  const obj = { id: doc._id, ...doc } as any
-  delete obj._id
-  return obj
-}
-
-class ElasticAdapter extends TxProcessor implements DbAdapter {
+class ElasticAdapter implements FullTextAdapter {
   constructor (
     private readonly client: Client,
-    private readonly db: string,
-    private readonly hierarchy: Hierarchy
+    private readonly db: string
   ) {
-    super()
   }
 
-  async init (): Promise<void> {}
-
-  async findAll<T extends Doc> (
-    clazz: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(clazz)
+  async search (
+    query: SearchQuery
+  ): Promise<IndexedDoc[]> {
     const result = await this.client.search({
-      index: this.db + '_' + domain,
+      index: this.db,
       type: '_doc',
       body: {
       }
@@ -54,24 +39,23 @@ class ElasticAdapter extends TxProcessor implements DbAdapter {
     return []
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
-    const doc = TxProcessor.createDoc2Doc(tx)
-    const domain = this.hierarchy.getDomain(doc._class)
+  async index (doc: IndexedDoc): Promise<void> {
     await this.client.index({
-      index: this.db + '_' + domain,
+      index: this.db,
       type: '_doc',
-      body: translateDoc(doc)
+      body: doc
     })
+    console.log('indexing this thing: ', doc)
   }
 }
 
 /**
  * @public
  */
-export async function createElasticAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<DbAdapter> {
+export async function createElasticAdapter (url: string, dbName: string): Promise<FullTextAdapter> {
   const client = new Client({
     node: url
   })
 
-  return new ElasticAdapter(client, dbName, hierarchy)
+  return new ElasticAdapter(client, dbName)
 }

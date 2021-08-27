@@ -17,11 +17,16 @@
 import { start } from '.'
 
 const url = process.env.MONGO_URL
-
 if (url === undefined) {
   console.error('please provide mongodb url')
   process.exit(1)
 }
 
+const elasticUrl = process.env.ELASTIC_URL
+if (elasticUrl === undefined) {
+  console.error('please provide elastic url')
+  process.exit(1)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-start(url, 3333)
+start(url, elasticUrl, 3333)

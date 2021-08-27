@@ -14,6 +14,24 @@
 // limitations under the License.
 //
 
-export * from './types'
-export * from './storage'
-export { default } from './plugin'
+import type { Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+
+import type { Ref, Class } from '@anticrm/core'
+import type { Trigger } from './types'
+
+/**
+ * @public
+ */
+export const serverCoreId = 'server-core' as Plugin
+
+/**
+  * @public
+  */
+const serverCore = plugin(serverCoreId, {
+  class: {
+    Trigger: '' as Ref<Class<Trigger>>
+  }
+})
+
+export default serverCore
