@@ -30,7 +30,7 @@
 </script>
 
 <button class="button {size}" class:primary class:transparent disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
-  {#if icon}
+  {#if icon && !loading}
     <div class="icon">
       {#if typeof (icon) === 'string'}
         <Icon {icon} size={'small'}/>
