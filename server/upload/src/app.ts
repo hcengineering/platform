@@ -75,10 +75,10 @@ export async function start (mongoUrl: string, elasticUrl: string, port: number)
           const payload = decode(token ?? '', 'secret', false) as Token          
           await awsUpload(file as UploadedFile)
 
-          const space = req.query.space
+          const space = req.query.space as Ref<Space>
           console.log('space', space)
           const db = mongo.db(payload.workspace)
-          createAttachment(db)
+          await createAttachment(db)
 
           res.status(200).send()
         } else {
