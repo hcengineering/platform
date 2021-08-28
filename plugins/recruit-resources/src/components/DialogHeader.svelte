@@ -18,8 +18,11 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import { EditBox, Button, Label } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
+  import Edit from './icons/Edit.svelte'
+  import Twitter from './icons/Twitter.svelte'
+  import User from './icons/User.svelte'
 
   let dragover = false
 
@@ -48,27 +51,40 @@
     on:dragover|preventDefault={ ()=>{} }
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
-  <div class="main-content">
-    <div class="avatar"></div>
-    <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div>
-    <div class="title">Candidate title</div>
-    <!-- <input type="file" name="file" id="file"/> -->
+  <div class="flex-row-center main-content">
+    <div class="avatar"><User /></div>
+    <div class="flex-col">
+      <div class="name">
+        <input type="text" placeholder="John" />
+        <input type="text" placeholder="Appleseed" />
+      </div>
+      <!-- <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div> -->
+      <div class="title"><EditBox placeholder="Los Angeles"/></div>
+      <!-- <input type="file" name="file" id="file"/> -->
+    </div>
   </div>
   <div class="lb-content">
     <Button label={'Upload resume'} icon={FileUpload} size={'small'} transparent primary />
   </div>
-  <div class="rt-content">
+  <div class="rb-content">
     <Button label={'Save'} size={'small'} transparent />
+  </div>
+  <div class="rt-content">
+    <Grid column={2} columnGap={.5}>
+      <CircleButton icon={Twitter} label={'Twitter'} />
+      <CircleButton icon={Edit} label={'Edit'} />
+    </Grid>
   </div>
 </div>
 
 <style lang="scss">
   .header {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 40rem;
+    // display: flex;
+    // justify-content: center;
+    // align-items: center;
+    padding: 1.5rem 1.5rem 0;
+    width: 37.5rem;
     min-height: 15rem;
     height: 15rem;
     background-image: url(../../img/header-green.png);
@@ -82,45 +98,53 @@
     }
 
     .main-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
       .avatar {
-        width: 5rem;
-        height: 5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 1.25rem;
+        width: 6rem;
+        height: 6rem;
         border-radius: 50%;
-        background-color: #C4C4C4;
+        background-color: rgba(255, 255, 255, .2);
+        backdrop-filter: blur(3px);
+        box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .3);
       }
       .name {
-        margin-top: .625rem;
-        font-size: 1rem;
+        display: flex;
+        flex-direction: column;
+        font-size: 1.25rem;
         font-weight: 500;
-        line-height: 150%;
         color: #fff;
+        input {
+          margin: 0;
+          padding: 0;
+          border: none;
+          &::placeholder { color: var(--theme-content-dark-color); }
+        }
       }
       .title {
-        margin-top: .25rem;
+        margin-top: .5rem;
         font-size: .75rem;
         font-weight: 500;
-        color: rgba(255, 255, 255, .8);
+        color: rgba(255, 255, 255, .6);
       }
     }
 
     .lb-content {
       position: absolute;
-      left: 1rem;
-      bottom: 1rem;
+      left: 1.5rem;
+      bottom: 1.5rem;
     }
     .rb-content {
       position: absolute;
-      right: 1rem;
-      bottom: 1rem;
+      right: 1.5rem;
+      bottom: 1.5rem;
     }
     .rt-content {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
+      top: 1.5rem;
+      right: 1.5rem;
     }
   }
 </style>
