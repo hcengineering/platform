@@ -23,6 +23,7 @@
     "jwt-simple": "^0.5.6",
     "ws": "^8.0.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11"
+    "@anticrm/core": "~0.6.11",
+    "@anticrm/server-core": "~0.6.1"
   }
 }

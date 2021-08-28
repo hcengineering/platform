@@ -59,3 +59,10 @@ export interface FullTextAdapter {
  * @public
  */
 export type FullTextAdapterFactory = (url: string, workspace: string) => Promise<FullTextAdapter>
+
+/**
+ * @public
+ */
+export interface Token {
+  workspace: string
+}

@@ -15,13 +15,13 @@
 //
 
 import { readResponse, serialize } from '@anticrm/platform'
-import { _Token } from '../server'
+import type { Token } from '@anticrm/server-core'
 import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
 describe('server', () => {
   function connect (): WebSocket {
-    const payload: _Token = {
+    const payload: Token = {
       workspace: 'ws1'
     }
     const token = encode(payload, 'secret')

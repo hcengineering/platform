@@ -15,6 +15,7 @@
 //
 
 import { readRequest, serialize, Response } from '@anticrm/platform'
+import type { Token } from '@anticrm/server-core'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
@@ -25,17 +26,10 @@ let LOGGING_ENABLED = true
 
 export function disableLogging (): void { LOGGING_ENABLED = false }
 
-/**
- * @internal
- */
-export interface _Token {
-  workspace: string
-}
-
 class Session implements Storage {
   constructor (
     private readonly manager: SessionManager,
-    private readonly token: _Token,
+    private readonly token: Token,
     private readonly storage: ServerStorage
   ) {}
 
@@ -62,7 +56,7 @@ interface Workspace {
 class SessionManager {
   private readonly workspaces = new Map<string, Workspace>()
 
-  async addSession (ws: WebSocket, token: _Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
+  async addSession (ws: WebSocket, token: Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       const storage = await storageFactory(token.workspace)
@@ -80,7 +74,7 @@ class SessionManager {
     }
   }
 
-  close (ws: WebSocket, token: _Token, code: number, reason: string): void {
+  close (ws: WebSocket, token: Token, code: number, reason: string): void {
     if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
@@ -93,7 +87,7 @@ class SessionManager {
     }
   }
 
-  broadcast (from: Session, token: _Token, resp: Response<any>): void {
+  broadcast (from: Session, token: Token, resp: Response<any>): void {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       throw new Error('internal: cannot find sessions')
@@ -127,7 +121,7 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
 
   const wss = new Server({ noServer: true })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  wss.on('connection', async (ws: WebSocket, request: any, token: _Token) => {
+  wss.on('connection', async (ws: WebSocket, request: any, token: Token) => {
     const buffer: string[] = []
 
     ws.on('message', (msg: string) => { buffer.push(msg) })

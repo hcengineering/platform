@@ -19,8 +19,8 @@ import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
-function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<T> {
-  return query as Filter<T>
+function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<Document> {
+  return query as Filter<Document>
 }
 
 function translateDoc (doc: Doc): Document {

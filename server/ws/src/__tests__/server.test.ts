@@ -15,7 +15,8 @@
 //
 
 import { readResponse, serialize } from '@anticrm/platform'
-import { start, _Token, disableLogging } from '../server'
+import { start, disableLogging } from '../server'
+import type { Token } from '@anticrm/server-core'
 import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
@@ -34,7 +35,7 @@ describe('server', () => {
   }), 3333)
 
   function connect (): WebSocket {
-    const payload: _Token = {
+    const payload: Token = {
       workspace: 'latest'
     }
     const token = encode(payload, 'secret')
