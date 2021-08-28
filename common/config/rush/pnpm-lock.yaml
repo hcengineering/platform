@@ -10,6 +10,7 @@ specifiers:
   '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/contact': file:./projects/contact.tgz
   '@rush-temp/contact-resources': file:./projects/contact-resources.tgz
+  '@rush-temp/contrib': file:./projects/contrib.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-account': file:./projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
@@ -111,7 +112,6 @@ specifiers:
   webpack-bundle-analyzer: ^4.4.1
   webpack-cli: ^4.6.0
   webpack-dev-server: ^3.11.2
-  ws: ^8.0.0
 
 dependencies:
   '@elastic/elasticsearch': 7.14.0
@@ -123,6 +123,7 @@ dependencies:
   '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
+  '@rush-temp/contrib': file:projects/contrib.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-account': file:projects/dev-account.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -224,7 +225,6 @@ dependencies:
   webpack-bundle-analyzer: 4.4.2
   webpack-cli: 4.7.2_954feff0479d53ccf5b533f71f40f1af
   webpack-dev-server: 3.11.2_webpack-cli@4.7.2+webpack@5.48.0
-  ws: 8.0.0
 
 packages:
 
@@ -8747,8 +8747,8 @@ packages:
         optional: true
     dev: false
 
-  /ws/8.0.0:
-    resolution: {integrity: sha512-6AcSIXpBlS0QvCVKk+3cWnWElLsA6SzC0lkQ43ciEglgXJXiCWK3/CGFEJ+Ybgp006CMibamAsqOlxE9s4AvYA==}
+  /ws/8.2.0:
+    resolution: {integrity: sha512-uYhVJ/m9oXwEI04iIVmgLmugh2qrZihkywG9y5FfZV2ATeLIzHf93qs+tUNqlttbQK957/VX3mtwAS+UfIwA4g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -8983,6 +8983,29 @@ packages:
       - '@typescript-eslint/parser'
       - supports-color
       - typescript
+    dev: false
+
+  file:projects/contrib.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-wW5bJ11QbwRxQHQ7+8UigQ+iCm1DPGVFVsmRA4F58Wz9a6WpJkD4mLSJbavVRG1MWrppR8psoezBBExtXvo38Q==, tarball: file:projects/contrib.tgz}
+    id: file:projects/contrib.tgz
+    name: '@rush-temp/contrib'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.7.1
+      '@types/ws': 7.4.7
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      ws: 8.2.0
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
     dev: false
 
   file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
@@ -9668,7 +9691,7 @@ packages:
       eslint-plugin-promise: 4.3.1
       jwt-simple: 0.5.6
       winston: 3.3.3
-      ws: 8.0.0
+      ws: 8.2.0
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - bufferutil
@@ -9823,7 +9846,7 @@ packages:
     dev: false
 
   file:projects/upload.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-GhrAvIFawc/nIYL6cLmGDhRAsfZwccqUmVrxC4+4KA2K8RkyCexEuBnaEyPPh8x+gRvxrwARetvSZBaMUaR+Ww==, tarball: file:projects/upload.tgz}
+    resolution: {integrity: sha512-StYlClUVsoxqeaYRM3BKSCnt2vfYSyxBobnnihP5f/6qVCazJTeCEDjZhYOOPNzJqQt+Z8iO63ajYuIV2c+1IA==, tarball: file:projects/upload.tgz}
     id: file:projects/upload.tgz
     name: '@rush-temp/upload'
     version: 0.0.0

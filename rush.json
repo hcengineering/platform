@@ -731,5 +731,10 @@
       "projectFolder": "server/workspace",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/contrib",
+      "projectFolder": "server/contrib",
+      "shouldPublish": true
+    },
   ]
 }
