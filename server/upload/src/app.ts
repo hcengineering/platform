@@ -19,6 +19,16 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
 import { S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
+import { MongoClient, Db } from 'mongodb'
+import { decode } from 'jwt-simple'
+
+import type { TxCreateDoc, Ref, Account } from '@anticrm/core'
+import { TxFactory } from '@anticrm/core'
+import type { Token } from '@anticrm/server-core'
+import type { Attachment } from '@anticrm/chunter'
+import chunter from '@anticrm/chunter'
+
+import { createElasticAdapter } from '@anticrm/elastic'
 
 const BUCKET = 'anticrm-upload-9e4e89c'
 
@@ -36,23 +46,48 @@ async function awsUpload (file: UploadedFile): Promise<S3.ManagedUpload.SendData
   return resp
 }
 
+async function createAttachment(db: Db) {
+  const txFactory = new TxFactory('core:account:System' as Ref<Account>)
+  txFactory.createTxCreateDoc(chunter.class.Attachment, )
+}
+
 /**
  * @public
  * @param port -
  */
-export function start (port: number): void {
+export async function start (mongoUrl: string, elasticUrl: string, port: number): Promise<void> {
   const app = express()
 
   app.use(cors())
   app.use(fileUpload())
 
-  app.post('/', (req, res) => {
+  const mongo = new MongoClient(mongoUrl)
+  await mongo.connect()
+
+  app.post('/', async (req, res) => {
     const file = req.files?.file
 
     if (file !== undefined) {
-      awsUpload(file as UploadedFile)
-        .then(() => res.status(200).send())
-        .catch(error => console.log(error))
+      try { 
+        const authHeader = req.headers.authorization
+        if (authHeader) {
+          const token = authHeader.split(' ')[1];
+          const payload = decode(token ?? '', 'secret', false) as Token          
+          await awsUpload(file as UploadedFile)
+
+          const space = req.query.space
+          console.log('space', space)
+          const db = mongo.db(payload.workspace)
+          createAttachment(db)
+
+          res.status(200).send()
+        } else {
+          res.status(403).send()
+        }
+      } catch (error) {
+        console.log(error)
+        res.status(500).send()
+      }
     } else {
       res.status(400).send()
     }
