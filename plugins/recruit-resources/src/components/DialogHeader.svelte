@@ -72,8 +72,8 @@
     <div class="avatar"><User /></div>
     <div class="flex-col">
       <div class="name">
-        <input type="text" placeholder="John" />
-        <input type="text" placeholder="Appleseed" />
+        <EditBox placeholder="John" />
+        <EditBox placeholder="Appleseed" />
       </div>
       <!-- <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div> -->
       <div class="title"><EditBox placeholder="Los Angeles"/></div>
