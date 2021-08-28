@@ -67,5 +67,5 @@ common/deploy/
 common/temp/
 common/autoinstallers/*/.npmrc
 **/.rush/temp/
-server/front/bundle.js
+bundle.js
 dist

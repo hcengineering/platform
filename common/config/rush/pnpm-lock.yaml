@@ -71,6 +71,7 @@ specifiers:
   '@tiptap/extension-typography': ~2.0.0-beta.13
   '@tiptap/starter-kit': ~2.0.0-beta.89
   '@types/cors': ^2.8.12
+  '@types/express': ^4.17.13
   '@types/express-fileupload': ^1.1.7
   '@types/heft-jest': ^1.0.2
   '@types/toposort': ^2.0.3
@@ -84,6 +85,7 @@ specifiers:
   cross-env: ^7.0.3
   css-loader: ^5.2.1
   dotenv-webpack: ^7.0.2
+  esbuild: ^0.12.24
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^20.0.0
   eslint-plugin-import: '2'
@@ -185,6 +187,7 @@ dependencies:
   '@tiptap/extension-typography': 2.0.0-beta.13_@tiptap+core@2.0.0-beta.93
   '@tiptap/starter-kit': 2.0.0-beta.89
   '@types/cors': 2.8.12
+  '@types/express': 4.17.13
   '@types/express-fileupload': 1.1.7
   '@types/heft-jest': 1.0.2
   '@types/toposort': 2.0.3
@@ -198,6 +201,7 @@ dependencies:
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
   dotenv-webpack: 7.0.3_webpack@5.48.0
+  esbuild: 0.12.24
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
   eslint-plugin-import: 2.23.4_eslint@7.32.0
@@ -9153,7 +9157,7 @@ packages:
     dev: false
 
   file:projects/front.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-LkPDbq5ryvnmz54MLr4Bj2L3G3vpBIoChyagXRYuwq3RVddY0BN0qVlNTafiapGztblj+mhH93NpKddrhMCEIA==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-XmgU22kXGEisU6bW4q3GuuqhzjWazpokQ+ASxb2Nu7M/cTM+xy9EY/fvessk79EXRTGFvoH4hM2jrbleWKP9ug==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
@@ -9727,7 +9731,7 @@ packages:
     dev: false
 
   file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-6XfixxRO1uisszjaBtMFoQCCvv2zWAknPVz3ZmES4q/keIWZuDDP667FpDMJ9maBB1AN7ImI9VBMXNbXDlVUuA==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-MEVHXm1K1YXXILA5Aq14mHsfYoFCd9Y43+vOFu6SHjXEphIn7J7neQm08DOqMWiSKbWK9uvkNjHEr5Fw12Mbog==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
@@ -9736,6 +9740,7 @@ packages:
       '@types/node': 16.7.1
       '@types/ws': 7.4.7
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      esbuild: 0.12.24
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
@@ -9995,7 +10000,7 @@ packages:
     dev: false
 
   file:projects/workspace.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-q2/1LqGkYRwsMNbjDjy4ngJlBDAefFWXuEdVyIN0DyBjmBibnEVZuQayjBh5O7xUQYKlT0A7TdVn99hpIwixOA==, tarball: file:projects/workspace.tgz}
+    resolution: {integrity: sha512-Ircelx/9snTrdceAfj7OBTqmR1tZ/cTtPtdf3zcmTJ+EwFh0rhWQJgd80CSeny6I8wMC+UXcKUk5mGHDqcmKcw==, tarball: file:projects/workspace.tgz}
     id: file:projects/workspace.tgz
     name: '@rush-temp/workspace'
     version: 0.0.0
@@ -10003,6 +10008,7 @@ packages:
       '@types/heft-jest': 1.0.2
       '@types/node': 16.7.1
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      esbuild: 0.12.24
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0

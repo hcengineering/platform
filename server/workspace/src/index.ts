@@ -19,6 +19,10 @@ import { DOMAIN_TX } from '@anticrm/core'
 
 import * as txJson from './model.tx.json'
 
+const txes = (txJson as any).default
+
+console.log(txes)
+
 /**
  * @public
  */
@@ -28,7 +32,7 @@ export async function createModel (url: string, dbName: string): Promise<number>
     await client.connect()
     const db = client.db(dbName)
     await db.dropDatabase()
-    const result = await db.collection(DOMAIN_TX).insertMany(txJson as Document[])
+    const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
     return result.insertedCount
   } finally {
     await client.close()

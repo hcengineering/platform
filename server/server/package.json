@@ -7,7 +7,10 @@
   "scripts": {
     "start": "ts-node src/__start.ts",
     "build": "heft build",
-    "lint:fix": "eslint --fix src"
+    "lint:fix": "eslint --fix src",
+    "bundle": "esbuild src/__start.ts --bundle --minify --platform=node > bundle.js",
+    "docker:build": "docker build -t anticrm/transactor .",
+    "docker:push": "docker push anticrm/transactor"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",
@@ -19,7 +22,8 @@
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
     "@types/ws":"^7.4.7",
-    "ts-node":"^10.2.1" 
+    "ts-node":"^10.2.1",
+    "esbuild":"^0.12.24" 
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",

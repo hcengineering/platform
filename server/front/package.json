@@ -7,7 +7,9 @@
   "scripts": {
     "build": "heft build",
     "lint:fix": "eslint --fix src",
-    "bundle": "esbuild src/index.ts --bundle --platform=node > bundle.js & cp -r ../../dev/prod/dist . & cp -r ../../dev/prod/public/* ./dist/"
+    "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js & cp -r ../../dev/prod/dist . & cp -r ../../dev/prod/public/* ./dist/",
+    "docker:build": "docker build -t anticrm/front .",
+    "docker:push": "docker push anticrm/front"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",

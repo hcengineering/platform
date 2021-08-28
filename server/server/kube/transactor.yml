@@ -2,31 +2,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: front
+  name: transactor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: front
+      app: transactor
   template:
     metadata:
       labels:
-        app: front
+        app: transactor
     spec:
       containers:
         - name: app
-          image: anticrm/front
+          image: anticrm/transactor
           ports:
-            - containerPort: 8080
+            - containerPort: 3333
           imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: front
+  name: transactor
 spec:
   selector:
-    app: front
+    app: transactor
   ports:
     - port: 80
-      targetPort: 8080
+      targetPort: 3333
