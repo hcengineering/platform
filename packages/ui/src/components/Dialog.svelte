@@ -60,7 +60,7 @@
     .dialog {
       display: flex;
       flex-direction: column;
-      width: 45rem;
+      width: 42.5rem;
       min-height: 100vh;
       max-height: 100vh;
       background-color: var(--theme-bg-color);

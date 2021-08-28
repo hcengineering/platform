@@ -50,6 +50,7 @@ export { default as CheckBoxList } from './components/CheckBoxList.svelte'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Popup } from './components/Popup.svelte'
+export { default as CircleButton } from './components/CircleButton.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'

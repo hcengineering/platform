@@ -100,6 +100,7 @@
   input {
     margin: 0;
     padding: 0;
+    color: inherit;
     border: none;
     border-radius: 2px;
 
