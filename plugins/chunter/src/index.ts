@@ -48,6 +48,16 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
+export interface Attachment extends Doc {
+  attachmentTo: Ref<Doc>
+  collection: string
+  name: string
+  file: string
+}
+
+/**
+ * @public
+ */
 export const chunterId = 'chunter' as Plugin
 
 export default plugin(chunterId, {
@@ -59,7 +69,8 @@ export default plugin(chunterId, {
   class: {
     Message: '' as Ref<Class<Message>>,
     Backlink: '' as Ref<Class<Backlink>>,
-    Comment: '' as Ref<Class<Comment>>
+    Comment: '' as Ref<Class<Comment>>,
+    Attachment: '' as Ref<Class<Attachment>>
   },
   space: {
     Backlinks: '' as Ref<Space>
