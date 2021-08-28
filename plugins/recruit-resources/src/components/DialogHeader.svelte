@@ -25,34 +25,46 @@
   import User from './icons/User.svelte'
 
   let dragover = false
+  let loading = false
+
+  function upload(file: File) {
+    console.log(file)
+    const uploadUrl = getMetadata(login.metadata.UploadUrl)
+    
+    const data = new FormData()
+    data.append('file', file)
+
+    loading = true
+    const url = `${uploadUrl}?collection=resume&name=${file.name}`
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + getMetadata(login.metadata.LoginToken)
+      },
+      body: data
+    })
+    .then(resonse => { console.log(resonse) })
+    .catch(error => { console.log(error) })
+    .finally(() => { loading = false })
+  }
 
   function drop(event: DragEvent) {
     dragover = false
     const droppedFile = event.dataTransfer?.files[0]
-    const uploadUrl = getMetadata(login.metadata.UploadUrl)
-    console.log(droppedFile)
-    
-    if (droppedFile !== undefined && uploadUrl !== undefined) {
-      const data = new FormData()
-      data.append('file', droppedFile)
+    if (droppedFile !== undefined) { upload(droppedFile) }
+  }
 
-      const url = `${uploadUrl}?collection=resume&name=${droppedFile.name}`
-      
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + getMetadata(login.metadata.LoginToken)
-        },
-        body: data
-      })
-      .then(resonse => { console.log(resonse) })
-      .catch(error => { console.log(error) })
-    }
+  let inputFile: HTMLInputElement
+
+  function fileSelected() {
+    console.log(inputFile.files)
+    const file = inputFile.files?.[0]
+    if (file !== undefined) { upload(file) }
   }
 </script>
 
 <div class="header" class:dragover={dragover} 
-    on:dragenter={ () => { console.log('dragenter'); dragover = true } }
+    on:dragenter={ () => { dragover = true } }
     on:dragover|preventDefault={ ()=>{} }
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
@@ -65,11 +77,11 @@
       </div>
       <!-- <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div> -->
       <div class="title"><EditBox placeholder="Los Angeles"/></div>
-      <!-- <input type="file" name="file" id="file"/> -->
     </div>
   </div>
   <div class="lb-content">
-    <Button label={'Upload resume'} icon={FileUpload} size={'small'} transparent primary />
+    <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
+    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
   <div class="rb-content">
     <Button label={'Save'} size={'small'} transparent />
