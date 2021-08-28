@@ -51,11 +51,11 @@
 
     &:hover {
       background-color: rgba(255, 255, 255, .25);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      box-shadow: 0 0 .5rem rgba(0, 0, 0, .3);
     }
     &:active {
       background-color: rgba(255, 255, 255, .15);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
+      box-shadow: 0 0 .5rem rgba(0, 0, 0, .1);
     }
   }
 </style>
