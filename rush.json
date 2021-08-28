@@ -736,5 +736,10 @@
       "projectFolder": "server/contrib",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/front",
+      "projectFolder": "server/front",
+      "shouldPublish": true
+    },
   ]
 }

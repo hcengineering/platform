@@ -1,12 +1,13 @@
 {
-  "name": "@anticrm/server-core",
-  "version": "0.6.1",
+  "name": "@anticrm/front",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
-    "lint:fix": "eslint --fix src"
+    "lint:fix": "eslint --fix src",
+    "bundle": "esbuild src/index.ts --bundle --platform=node > bundle.js & cp -r ../../dev/prod/dist . & cp -r ../../dev/prod/public/* ./dist/"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",
@@ -16,10 +17,13 @@
     "eslint-plugin-import":"2",
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
-    "eslint":"^7.32.0"
+    "eslint":"^7.32.0",
+    "@types/express":"^4.17.13",
+    "esbuild":"^0.12.24"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
-    "@anticrm/platform": "~0.6.5"
+    "@anticrm/platform": "~0.6.5",
+    "express": "^4.17.1"
   }
 }

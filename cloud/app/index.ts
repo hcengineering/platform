@@ -275,3 +275,13 @@ new aws.route53.Record("databaseRecord", {
     "xored.com"
   ]
 })
+
+new aws.route53.Record("frontRecord", {
+  name: "front.hc.engineering",
+  zoneId: zoneId,
+  type: "A",
+  ttl: 300,
+  records: [
+    "8.9.31.18"
+  ]
+})
