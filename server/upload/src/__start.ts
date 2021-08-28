@@ -16,4 +16,16 @@
 
 import { start } from './app'
 
-start(3000)
+const url = process.env.TRANSACTOR_URL
+if (url === undefined) {
+  console.error('please provide transactor url')
+  process.exit(1)
+}
+
+const elasticUrl = process.env.ELASTIC_URL
+if (elasticUrl === undefined) {
+  console.error('please provide elastic url')
+  process.exit(1)
+}
+
+start(url, elasticUrl, 3000)
