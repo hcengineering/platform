@@ -16,9 +16,9 @@
 
 import { start } from './app'
 
-const url = process.env.MONGO_URL
+const url = process.env.TRANSACTOR_URL
 if (url === undefined) {
-  console.error('please provide mongodb url')
+  console.error('please provide transactor url')
   process.exit(1)
 }
 

@@ -32,9 +32,14 @@
     if (droppedFile !== undefined && uploadUrl !== undefined) {
       const data = new FormData()
       data.append('file', droppedFile)
+
+      const url = `${uploadUrl}?collection=resume&name=${droppedFile.name}`
       
-      fetch(uploadUrl, {
+      fetch(url, {
         method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + getMetadata(login.metadata.LoginToken)
+        },
         body: data
       })
       .then(resonse => { console.log(resonse) })

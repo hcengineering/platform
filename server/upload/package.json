@@ -33,10 +33,10 @@
     "uuid":"^8.3.2",
     "cors":"^2.8.5",
     "@anticrm/elastic":"~0.6.0",
-    "mongodb":"^4.1.1",
     "jwt-simple":"^0.5.6",
     "@anticrm/server-core":"~0.6.1",
     "@anticrm/chunter":"~0.6.0",
-    "@anticrm/core":"~0.6.11"
+    "@anticrm/core":"~0.6.11",
+    "@anticrm/contrib":"~0.6.0"
   }
 }

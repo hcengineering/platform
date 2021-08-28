@@ -31,6 +31,10 @@ export class ContributingClient implements WithTx {
       params: [tx]
     }))
   }
+
+  close (): void {
+    this.websocket.close()
+  }
 }
 
 /**

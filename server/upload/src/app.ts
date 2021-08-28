@@ -19,77 +19,97 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
 import { S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
-import { MongoClient, Db } from 'mongodb'
-import { decode } from 'jwt-simple'
+// import { decode } from 'jwt-simple'
 
-import type { TxCreateDoc, Ref, Account } from '@anticrm/core'
+import type { Space, Ref, Account, Doc } from '@anticrm/core'
 import { TxFactory } from '@anticrm/core'
-import type { Token } from '@anticrm/server-core'
-import type { Attachment } from '@anticrm/chunter'
+// import type { Token } from '@anticrm/server-core'
 import chunter from '@anticrm/chunter'
+import { createContributingClient } from '@anticrm/contrib'
 
-import { createElasticAdapter } from '@anticrm/elastic'
+// import { createElasticAdapter } from '@anticrm/elastic'
 
 const BUCKET = 'anticrm-upload-9e4e89c'
 
-async function awsUpload (file: UploadedFile): Promise<S3.ManagedUpload.SendData> {
-  console.log(file)
+async function awsUpload (file: UploadedFile): Promise<string> {
+  const id = uuid()
   const s3 = new S3()
   const resp = await s3.upload({
     Bucket: BUCKET,
-    Key: uuid(),
+    Key: id,
     Body: file.data,
     ContentType: file.mimetype,
     ACL: 'public-read'
   }).promise()
   console.log(resp)
-  return resp
+  return id
 }
 
-async function createAttachment(db: Db) {
-  const txFactory = new TxFactory('core:account:System' as Ref<Account>)
-  txFactory.createTxCreateDoc(chunter.class.Attachment, )
+async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachmentTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
+  const txFactory = new TxFactory(account)
+  const tx = txFactory.createTxCreateDoc(chunter.class.Attachment, space, {
+    attachmentTo,
+    collection,
+    name,
+    file
+  })
+  const url = new URL(`/${token}`, endpoint)
+  const client = await createContributingClient(url.href)
+  await client.tx(tx)
+  client.close()
 }
 
 /**
  * @public
  * @param port -
  */
-export async function start (mongoUrl: string, elasticUrl: string, port: number): Promise<void> {
+export function start (transactorEndpoint: string, elasticUrl: string, port: number): void {
   const app = express()
 
   app.use(cors())
   app.use(fileUpload())
 
-  const mongo = new MongoClient(mongoUrl)
-  await mongo.connect()
-
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/', async (req, res) => {
     const file = req.files?.file
 
-    if (file !== undefined) {
-      try { 
-        const authHeader = req.headers.authorization
-        if (authHeader) {
-          const token = authHeader.split(' ')[1];
-          const payload = decode(token ?? '', 'secret', false) as Token          
-          await awsUpload(file as UploadedFile)
-
-          const space = req.query.space as Ref<Space>
-          console.log('space', space)
-          const db = mongo.db(payload.workspace)
-          await createAttachment(db)
-
-          res.status(200).send()
-        } else {
-          res.status(403).send()
-        }
-      } catch (error) {
-        console.log(error)
-        res.status(500).send()
-      }
-    } else {
+    if (file === undefined) {
       res.status(400).send()
+      return
+    }
+
+    const authHeader = req.headers.authorization
+    if (authHeader === undefined) {
+      res.status(403).send()
+      return
+    }
+
+    try {
+      const token = authHeader.split(' ')[1]
+      // const payload = decode(token ?? '', 'secret', false) as Token
+      const fileId = await awsUpload(file as UploadedFile)
+
+      const space = req.query.space as Ref<Space>
+      const attachmentTo = req.query.attachmentTo as Ref<Doc>
+      const name = req.query.name as string
+      const collection = req.query.collection as string
+      console.log('name', name)
+
+      await createAttachment(
+        transactorEndpoint,
+        token,
+        'core:account:System' as Ref<Account>,
+        space,
+        attachmentTo,
+        collection,
+        name,
+        fileId
+      )
+
+      res.status(200).send()
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
     }
   })
 
