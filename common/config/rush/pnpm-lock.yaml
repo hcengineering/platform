@@ -10,6 +10,7 @@ specifiers:
   '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/contact': file:./projects/contact.tgz
   '@rush-temp/contact-resources': file:./projects/contact-resources.tgz
+  '@rush-temp/contrib': file:./projects/contrib.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/dev-account': file:./projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:./projects/dev-client-resources.tgz
@@ -124,6 +125,7 @@ dependencies:
   '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
+  '@rush-temp/contrib': file:projects/contrib.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-account': file:projects/dev-account.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -8662,6 +8664,19 @@ packages:
         optional: true
     dev: false
 
+  /ws/8.2.0:
+    resolution: {integrity: sha512-uYhVJ/m9oXwEI04iIVmgLmugh2qrZihkywG9y5FfZV2ATeLIzHf93qs+tUNqlttbQK957/VX3mtwAS+UfIwA4g==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    dev: false
+
   /xml-name-validator/3.0.0:
     resolution: {integrity: sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==}
     dev: false
@@ -8887,6 +8902,29 @@ packages:
       - typescript
     dev: false
 
+  file:projects/contrib.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-TRDsaFqjTSL/z6QaCR7OY5xKYJlr936zX/c4ODZRBDSU3CH4wcpbux4ZW2p5wIbCGdx8r/p2CBjXjOj73xnrgQ==, tarball: file:projects/contrib.tgz}
+    id: file:projects/contrib.tgz
+    name: '@rush-temp/contrib'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.7.1
+      '@types/ws': 7.4.7
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      ws: 8.2.0
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
+    dev: false
+
   file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
     resolution: {integrity: sha512-fWkoCr8TR72MHkEELoLb1Gb1qp+mSrXOa0TlBvE4pPBdJ8nH1T96tmJ+1NYe3t2Q2PkZ/RueIqNrmgP5ky589A==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
@@ -9005,7 +9043,7 @@ packages:
     dev: false
 
   file:projects/elastic.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-ywnrb5JlC7rhYSRd+y+/YNf4qa61yvKdCuNb/ziAhTvk12tMUjUP/Hsek+HU2G74wsnF9CPq485JMfPmj+yWXQ==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-uoPGQmOAopNC8F64rYWrRDU1s3/u70CNQeBYz7EH/PE6mR0QsYIFJW3U6/LgeDWsMXNge+5fKkjwAJh0+EQtBA==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
@@ -9555,7 +9593,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-H1VGzXhd0bwjhPTgLipWT8+qeWPDN2cjTXLKy1dClGYuoeqBe2m9udt4hJU8DVvZn5Y8sPZcUcwSOMrjfYf+nQ==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-D4Gk6WhLEC6JSfzT/shF0G6me10SIGRK5UVtBN2t+Z/mi15VcGegrKDV0Q4yuQkfLYX1jSYJwok948W/3kyRtw==, tarball: file:projects/server-ws.tgz}
     id: file:projects/server-ws.tgz
     name: '@rush-temp/server-ws'
     version: 0.0.0
@@ -9570,7 +9608,7 @@ packages:
       eslint-plugin-promise: 4.3.1
       jwt-simple: 0.5.6
       winston: 3.3.3
-      ws: 8.0.0
+      ws: 8.2.0
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - bufferutil
