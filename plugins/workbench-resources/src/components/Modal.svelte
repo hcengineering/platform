@@ -62,7 +62,7 @@
   }
   @keyframes showOverlay {
     from { backdrop-filter: blur(0px); }
-    to { backdrop-filter: blur(3px); }
+    to { backdrop-filter: blur(1px); }
   }
   .modal {
     position: fixed;
@@ -72,7 +72,7 @@
   }
   .modal-overlay {
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, .5);
     position: fixed;
     top: 0;
     left: 0;

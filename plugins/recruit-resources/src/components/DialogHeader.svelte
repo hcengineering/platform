@@ -18,7 +18,8 @@
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
 
-  import { EditBox, Button, CircleButton, Grid, Label } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, showModal } from '@anticrm/ui'
+  import DialogAvatar from './DialogAvatar.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
@@ -69,24 +70,23 @@
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
   <div class="flex-row-center main-content">
-    <div class="avatar"><User /></div>
+    <div class="avatar" on:click|stopPropagation={() => showModal(DialogAvatar, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
         <EditBox placeholder="John" />
         <EditBox placeholder="Appleseed" />
       </div>
-      <!-- <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div> -->
       <div class="title"><EditBox placeholder="Los Angeles"/></div>
     </div>
   </div>
-  <div class="lb-content">
+  <div class="abs-lb-content">
     <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
-  <div class="rb-content">
+  <div class="abs-rb-content">
     <Button label={'Save'} size={'small'} transparent />
   </div>
-  <div class="rt-content">
+  <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>
       <CircleButton icon={Twitter} label={'Twitter'} />
       <CircleButton icon={Edit} label={'Edit'} />
@@ -97,9 +97,6 @@
 <style lang="scss">
   .header {
     position: relative;
-    // display: flex;
-    // justify-content: center;
-    // align-items: center;
     padding: 1.5rem 1.5rem 0;
     width: 37.5rem;
     min-height: 15rem;
@@ -126,6 +123,7 @@
         background-color: rgba(255, 255, 255, .2);
         backdrop-filter: blur(3px);
         box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .3);
+        cursor: pointer;
       }
       .name {
         display: flex;
@@ -146,22 +144,6 @@
         font-weight: 500;
         color: rgba(255, 255, 255, .6);
       }
-    }
-
-    .lb-content {
-      position: absolute;
-      left: 1.5rem;
-      bottom: 1.5rem;
-    }
-    .rb-content {
-      position: absolute;
-      right: 1.5rem;
-      bottom: 1.5rem;
-    }
-    .rt-content {
-      position: absolute;
-      top: 1.5rem;
-      right: 1.5rem;
     }
   }
 </style>
