@@ -19,7 +19,7 @@
   import login from '@anticrm/login'
 
   import { EditBox, Button, CircleButton, Grid, Label, showModal } from '@anticrm/ui'
-  import DialogAvatar from './DialogAvatar.svelte'
+  import AvatarEditor from './AvatarEditor.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
@@ -70,7 +70,7 @@
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
   <div class="flex-row-center main-content">
-    <div class="avatar" on:click|stopPropagation={() => showModal(DialogAvatar, { label: 'Profile photo' })}><User /></div>
+    <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
         <EditBox placeholder="John" />
