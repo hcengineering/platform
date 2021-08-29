@@ -106,7 +106,8 @@ const api = new awsx.apigateway.API("login", {
             body = Buffer.from(body as string, 'base64').toString()
         }
 
-        const result = handle(body, 'wss://pacific-refuge-43514.herokuapp.com/')
+        // const result = handle(body, 'wss://pacific-refuge-43514.herokuapp.com/')
+        const result = handle(body, 'wss://transactor.hc.engineering/')
         return { 
           statusCode: result.statusCode,
           headers: {
@@ -278,6 +279,16 @@ new aws.route53.Record("databaseRecord", {
 
 new aws.route53.Record("frontRecord", {
   name: "front.hc.engineering",
+  zoneId: zoneId,
+  type: "A",
+  ttl: 300,
+  records: [
+    "8.9.31.18"
+  ]
+})
+
+new aws.route53.Record("transactorRecord", {
+  name: "transactor.hc.engineering",
   zoneId: zoneId,
   type: "A",
   ttl: 300,
