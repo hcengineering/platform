@@ -57,6 +57,14 @@
         object,
         space
       }
+    },
+    {
+      label: 'Attachments',
+      component: 'recruit:component:Attachments',
+      props: {
+        object,
+        space
+      }
     }
   ]
 
