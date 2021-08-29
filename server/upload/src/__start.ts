@@ -15,6 +15,7 @@
 //
 
 import { start } from './app'
+import { Client } from 'minio'
 
 const url = process.env.TRANSACTOR_URL
 if (url === undefined) {
@@ -28,4 +29,30 @@ if (elasticUrl === undefined) {
   process.exit(1)
 }
 
-start(url, elasticUrl, 3000)
+const minioEndpoint = process.env.MINIO_ENDPOINT
+if (minioEndpoint === undefined) {
+  console.error('please provide minio endpoint')
+  process.exit(1)
+}
+
+const minioAccessKey = process.env.MINIO_ACCESS_KEY
+if (minioAccessKey === undefined) {
+  console.error('please provide minio access key')
+  process.exit(1)
+}
+
+const minioSecretKey = process.env.MINIO_SECRET_KEY
+if (minioSecretKey === undefined) {
+  console.error('please provide minio secret key')
+  process.exit(1)
+}
+
+const minio = new Client({
+  endPoint: minioEndpoint,
+  port: 9000,
+  useSSL: false,
+  accessKey: minioAccessKey,
+  secretKey: minioSecretKey
+})
+
+start(url, elasticUrl, minio, 3000)

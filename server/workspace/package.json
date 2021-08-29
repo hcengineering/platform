@@ -21,12 +21,14 @@
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
     "ts-node":"^10.2.1",
-    "esbuild":"~0.12.24"
+    "esbuild":"~0.12.24",
+    "@types/minio":"~7.0.10"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
     "mongodb": "^4.1.0",
     "@anticrm/contrib": "~0.6.0",
-    "jwt-simple": "~0.5.6"
+    "jwt-simple": "~0.5.6",
+    "minio": "~7.0.19"
   }
 }

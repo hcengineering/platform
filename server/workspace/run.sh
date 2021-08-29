@@ -15,4 +15,10 @@
 #
 
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace default mng-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
-kubectl run mng-mongodb-client --rm --tty -i --restart='Never' --env="MONGO_URL=mongodb://root:$MONGODB_ROOT_PASSWORD@mng-mongodb:27017/" --image anticrm/tools --command -- bash
+export MINIO_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.access-key}" | base64 --decode)
+export MINIO_SECRET_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secret-key}" | base64 --decode)
+
+kubectl run mng-mongodb-client --rm --tty -i --restart='Never' \
+  --env="MONGO_URL=mongodb://root:$MONGODB_ROOT_PASSWORD@mng-mongodb:27017/" \
+  --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
+  --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image anticrm/tools --command -- bash

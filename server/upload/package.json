@@ -7,7 +7,10 @@
   "scripts": {
     "start": "ts-node src/__start.ts",
     "build": "heft build",
-    "lint:fix": "eslint --fix src"
+    "lint:fix": "eslint --fix src",
+    "bundle": "esbuild src/__start.ts --bundle --minify --platform=node > bundle.js",
+    "docker:build": "docker build -t anticrm/upload .",
+    "docker:push": "docker push anticrm/upload"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",
@@ -23,7 +26,9 @@
     "ts-node":"^10.2.0",
     "@types/express-fileupload":"^1.1.7",
     "@types/uuid":"^8.3.1",
-    "@types/cors":"^2.8.12"
+    "@types/cors":"^2.8.12",
+    "@types/minio":"^7.0.10",
+    "esbuild":"^0.12.24"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
@@ -37,6 +42,7 @@
     "@anticrm/server-core":"~0.6.1",
     "@anticrm/chunter":"~0.6.0",
     "@anticrm/core":"~0.6.11",
-    "@anticrm/contrib":"~0.6.0"
+    "@anticrm/contrib":"~0.6.0",
+    "minio":"^7.0.19"
   }
 }

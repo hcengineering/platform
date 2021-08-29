@@ -1,0 +1,24 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/issuer: "letsencrypt-prod"
+  name: upload-ingress
+spec:
+  tls:
+  - hosts:
+    - upload.hc.engineering
+    secretName: upload-tls
+  rules:
+  - host: upload.hc.engineering
+    http:
+      paths:
+      - backend:
+          service:
+            name: upload
+            port: 
+              number: 80
+        path: /
+        pathType: Prefix

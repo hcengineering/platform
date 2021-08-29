@@ -18,6 +18,7 @@ import { MongoClient, Document } from 'mongodb'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import { createContributingClient } from '@anticrm/contrib'
 import { encode } from 'jwt-simple'
+import { Client } from 'minio'
 
 import * as txJson from './model.tx.json'
 
@@ -26,7 +27,7 @@ const txes = (txJson as any).default as Tx[]
 /**
  * @public
  */
-export async function createWorkspace (mongoUrl: string, dbName: string, clientUrl: string): Promise<void> {
+export async function createWorkspace (mongoUrl: string, dbName: string, clientUrl: string, minio: Client): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -49,6 +50,9 @@ export async function createWorkspace (mongoUrl: string, dbName: string, clientU
       await contrib.tx(tx)
     }
     contrib.close()
+
+    console.log('create minio bucket')
+    await minio.makeBucket(dbName, 'k8s')
   } finally {
     await client.close()
   }

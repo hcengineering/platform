@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upload
+  template:
+    metadata:
+      labels:
+        app: upload
+    spec:
+      containers:
+        - name: app
+          image: anticrm/upload
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+          env:
+          - name: TRANSACTOR_URL
+            value: ws://transactor/
+          - name: ELASTIC_URL
+            value: http://dev-elasticsearch-coordinating-only:9200/
+          - name: MINIO_ENDPOINT
+            value: minio
+          - name: MINIO_ACCESS_KEY
+            value: 22pYVftgFj
+          - name: MINIO_SECRET_KEY
+            value: l8FkhAXSbQBUpeYJ7APYOSXyWp4qEXR4Gccjb2zo

@@ -19,13 +19,15 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
 import { S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
-// import { decode } from 'jwt-simple'
+import { decode } from 'jwt-simple'
 
 import type { Space, Ref, Account, Doc } from '@anticrm/core'
 import { TxFactory } from '@anticrm/core'
-// import type { Token } from '@anticrm/server-core'
+import type { Token } from '@anticrm/server-core'
 import chunter from '@anticrm/chunter'
 import { createContributingClient } from '@anticrm/contrib'
+
+import { Client } from 'minio'
 
 // import { createElasticAdapter } from '@anticrm/elastic'
 
@@ -41,6 +43,15 @@ async function awsUpload (file: UploadedFile): Promise<string> {
     ContentType: file.mimetype,
     ACL: 'public-read'
   }).promise()
+  console.log(resp)
+  return id
+}
+
+async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
+  const id = uuid()
+
+  const resp = await minio.putObject(workspace, id, file.data)
+
   console.log(resp)
   return id
 }
@@ -63,7 +74,7 @@ async function createAttachment (endpoint: string, token: string, account: Ref<A
  * @public
  * @param port -
  */
-export function start (transactorEndpoint: string, elasticUrl: string, port: number): void {
+export function start (transactorEndpoint: string, elasticUrl: string, minio: Client, port: number): void {
   const app = express()
 
   app.use(cors())
@@ -86,8 +97,9 @@ export function start (transactorEndpoint: string, elasticUrl: string, port: num
 
     try {
       const token = authHeader.split(' ')[1]
-      // const payload = decode(token ?? '', 'secret', false) as Token
-      const fileId = await awsUpload(file as UploadedFile)
+      const payload = decode(token ?? '', 'secret', false) as Token
+      // const fileId = await awsUpload(file as UploadedFile)
+      const fileId = await minioUpload(minio, payload.workspace, file as UploadedFile)
 
       const space = req.query.space as Ref<Space>
       const attachmentTo = req.query.attachmentTo as Ref<Doc>

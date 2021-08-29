@@ -15,6 +15,7 @@
 //
 
 import { createWorkspace } from '.'
+import { Client } from 'minio'
 
 const mongoUrl = process.env.MONGO_URL
 if (mongoUrl === undefined) {
@@ -28,13 +29,39 @@ if (transactorUrl === undefined) {
   process.exit(1)
 }
 
+const minioEndpoint = process.env.MINIO_ENDPOINT
+if (minioEndpoint === undefined) {
+  console.error('please provide minio endpoint')
+  process.exit(1)
+}
+
+const minioAccessKey = process.env.MINIO_ACCESS_KEY
+if (minioAccessKey === undefined) {
+  console.error('please provide minio access key')
+  process.exit(1)
+}
+
+const minioSecretKey = process.env.MINIO_SECRET_KEY
+if (minioSecretKey === undefined) {
+  console.error('please provide minio secret key')
+  process.exit(1)
+}
+
 const db = process.argv[2]
 if (db === undefined) {
   console.error('Please specify the database.')
   process.exit(1)
 }
 
+const minio = new Client({
+  endPoint: minioEndpoint,
+  port: 9000,
+  useSSL: false,
+  accessKey: minioAccessKey,
+  secretKey: minioSecretKey
+})
+
 console.log('creating model...')
-createWorkspace(mongoUrl, db, transactorUrl).then(() => {
+createWorkspace(mongoUrl, db, transactorUrl, minio).then(() => {
   console.log(`done.`)
 }).catch(error => { console.error(error) })

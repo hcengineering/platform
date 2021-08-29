@@ -296,3 +296,13 @@ new aws.route53.Record("transactorRecord", {
     "8.9.31.18"
   ]
 })
+
+new aws.route53.Record("uploadRecord", {
+  name: "upload.hc.engineering",
+  zoneId: zoneId,
+  type: "A",
+  ttl: 300,
+  records: [
+    "8.9.31.18"
+  ]
+})
