@@ -39,7 +39,20 @@ export interface IndexedDoc {
   space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
+}
+
+/**
+ * @public
+ */
+export interface IndexedContent extends IndexedDoc {
   content: string
+}
+
+/**
+ * @public
+ */
+export interface IndexedAttachment extends IndexedDoc {
+  attachment: string
 }
 
 /**

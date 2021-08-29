@@ -16,8 +16,10 @@
 
 <script lang="ts">
   import { getMetadata } from '@anticrm/platform'
+  import type { Ref, Space, Doc } from '@anticrm/core'
+  import { generateId } from '@anticrm/core'
   import login from '@anticrm/login'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
 
   import { EditBox, Button, CircleButton, Grid, Label } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
@@ -27,6 +29,10 @@
 
   import chunter from '@anticrm/chunter'
 
+  import { uploadFile } from '../utils'
+
+  export let space: Ref<Space>
+
   const query = createQuery()
 
   $: query.query(chunter.class.Attachment, {}, result => { console.log('attachments',  result) })  
@@ -34,31 +40,27 @@
   let dragover = false
   let loading = false
 
-  function upload(file: File) {
-    console.log(file)
-    const uploadUrl = getMetadata(login.metadata.UploadUrl)
-    
-    const data = new FormData()
-    data.append('file', file)
-
+  async function createAttachment(file: File) {
     loading = true
-    const url = `${uploadUrl}?collection=resume&name=${file.name}`
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + getMetadata(login.metadata.LoginToken)
-      },
-      body: data
-    })
-    .then(resonse => { console.log(resonse) })
-    .catch(error => { console.log(error) })
-    .finally(() => { loading = false })
+    try {
+      const id = generateId()
+      const uuid = await uploadFile(id, file)
+      console.log('uploaded file uuid', uuid)
+      getClient().createDoc(chunter.class.Attachment, space, {
+        attachmentTo: 'xxxx' as Ref<Doc>,
+        collection: 'resume',
+        name: file.name,
+        file: uuid
+      })
+    } finally {
+      loading = false
+    }
   }
 
   function drop(event: DragEvent) {
     dragover = false
     const droppedFile = event.dataTransfer?.files[0]
-    if (droppedFile !== undefined) { upload(droppedFile) }
+    if (droppedFile !== undefined) { createAttachment(droppedFile) }
   }
 
   let inputFile: HTMLInputElement
@@ -66,7 +68,7 @@
   function fileSelected() {
     console.log(inputFile.files)
     const file = inputFile.files?.[0]
-    if (file !== undefined) { upload(file) }
+    if (file !== undefined) { createAttachment(file) }
   }
 </script>
 

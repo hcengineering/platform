@@ -174,9 +174,10 @@ export class TxOperations implements Storage {
   async createDoc<T extends Doc> (
     _class: Ref<Class<T>>,
     space: Ref<Space>,
-    attributes: Data<T>
+    attributes: Data<T>,
+    id?: Ref<T>
   ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxCreateDoc(_class, space, attributes)
+    const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id)
     await this.storage.tx(tx)
     return tx.objectId
   }

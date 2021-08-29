@@ -49,4 +49,4 @@
   }
 </script>
 
-<DialogHeader />
+<DialogHeader {space}/>

@@ -1,0 +1,2 @@
+FROM bitnami/elasticsearch:7.14.0-debian-10-r22
+RUN /opt/bitnami/elasticsearch/bin/elasticsearch-plugin install --batch ingest-attachment

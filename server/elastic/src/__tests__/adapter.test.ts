@@ -16,18 +16,20 @@
 
 import type { Ref, Doc, Class, Obj, Account, Space } from '@anticrm/core'
 import { createElasticAdapter } from '../adapter'
+import type { IndexedContent } from '@anticrm/server-core'
 
 describe('client', () => {
   it('should create document', async () => {
     const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
-    await adapter.index({
+    const doc: IndexedContent = {
       id: 'doc1' as Ref<Doc>,
       _class: 'class1' as Ref<Class<Obj>>,
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
       space: 'space1' as Ref<Space>,
       content: 'hey there!'
-    })
+    }
+    await adapter.index(doc)
     const hits = await adapter.search({})
     console.log(hits)
   })

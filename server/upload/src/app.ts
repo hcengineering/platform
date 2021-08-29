@@ -20,11 +20,12 @@ import cors from 'cors'
 import { v4 as uuid } from 'uuid'
 import { decode } from 'jwt-simple'
 
-import type { Space, Ref, Account, Doc } from '@anticrm/core'
-import { TxFactory } from '@anticrm/core'
-import type { Token } from '@anticrm/server-core'
+import type { Space, Ref, Doc, Account } from '@anticrm/core'
+// import { TxFactory } from '@anticrm/core'
+import type { Token, IndexedAttachment } from '@anticrm/server-core'
+import { createElasticAdapter } from '@anticrm/elastic'
 import chunter from '@anticrm/chunter'
-import { createContributingClient } from '@anticrm/contrib'
+// import { createContributingClient } from '@anticrm/contrib'
 
 import { Client } from 'minio'
 
@@ -55,19 +56,19 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
   return id
 }
 
-async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachmentTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
-  const txFactory = new TxFactory(account)
-  const tx = txFactory.createTxCreateDoc(chunter.class.Attachment, space, {
-    attachmentTo,
-    collection,
-    name,
-    file
-  })
-  const url = new URL(`/${token}`, endpoint)
-  const client = await createContributingClient(url.href)
-  await client.tx(tx)
-  client.close()
-}
+// async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachmentTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
+//   const txFactory = new TxFactory(account)
+//   const tx = txFactory.createTxCreateDoc(chunter.class.Attachment, space, {
+//     attachmentTo,
+//     collection,
+//     name,
+//     file
+//   })
+//   const url = new URL(`/${token}`, endpoint)
+//   const client = await createContributingClient(url.href)
+//   await client.tx(tx)
+//   client.close()
+// }
 
 /**
  * @public
@@ -81,7 +82,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/', async (req, res) => {
-    const file = req.files?.file
+    const file = req.files?.file as UploadedFile
 
     if (file === undefined) {
       res.status(400).send()
@@ -98,26 +99,37 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const token = authHeader.split(' ')[1]
       const payload = decode(token ?? '', 'secret', false) as Token
       // const fileId = await awsUpload(file as UploadedFile)
-      const fileId = await minioUpload(minio, payload.workspace, file as UploadedFile)
+      const uuid = await minioUpload(minio, payload.workspace, file)
 
+      const id = req.query.id as Ref<Doc>
       const space = req.query.space as Ref<Space>
-      const attachmentTo = req.query.attachmentTo as Ref<Doc>
-      const name = req.query.name as string
-      const collection = req.query.collection as string
-      console.log('name', name)
+      // const name = req.query.name as string
 
-      await createAttachment(
-        transactorEndpoint,
-        token,
-        'core:account:System' as Ref<Account>,
+      // await createAttachment(
+      //   transactorEndpoint,
+      //   token,
+      //   'core:account:System' as Ref<Account>,
+      //   space,
+      //   attachmentTo,
+      //   collection,
+      //   name,
+      //   fileId
+      // )
+
+      const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
+
+      const indexedDoc: IndexedAttachment = {
+        id,
+        _class: chunter.class.Attachment,
         space,
-        attachmentTo,
-        collection,
-        name,
-        fileId
-      )
+        modifiedOn: Date.now(),
+        modifiedBy: 'core:account:System' as Ref<Account>,
+        attachment: file.data.toString('base64')
+      }
 
-      res.status(200).send()
+      await elastic.index(indexedDoc)
+
+      res.status(200).send(uuid)
     } catch (error) {
       console.log(error)
       res.status(500).send()

@@ -16,7 +16,7 @@
 
 import type { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute } from '@anticrm/core'
 import { TxProcessor, IndexKind } from '@anticrm/core'
-import type { IndexedDoc, FullTextAdapter } from './types'
+import type { IndexedContent, FullTextAdapter } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = {} as AnyAttribute
@@ -52,7 +52,7 @@ export class FullTextIndex extends TxProcessor {
     if (attribute === undefined) return
     const doc = TxProcessor.createDoc2Doc(tx)
     const content = (doc as any)[attribute.name]
-    const indexedDoc: IndexedDoc = {
+    const indexedDoc: IndexedContent = {
       id: doc._id,
       _class: doc._class,
       modifiedBy: doc.modifiedBy,
