@@ -18,7 +18,7 @@ import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
-import type { Backlink, Channel, Message, Comment } from '@anticrm/chunter'
+import type { Backlink, Channel, Message, Comment, Attachment } from '@anticrm/chunter'
 import type { AnyComponent } from '@anticrm/ui'
 
 import workbench from '@anticrm/model-workbench'
@@ -28,6 +28,7 @@ import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
+export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 
 @Model(chunter.class.Channel, core.class.Space)
 @UX(chunter.string.Channel, chunter.icon.Hashtag)
@@ -52,8 +53,16 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
+@Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
+export class TAttachment extends TDoc implements Attachment {
+  attachmentTo!: Ref<Doc>
+  collection!: string
+  name!: string
+  file!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TComment, TBacklink)
+  builder.createModel(TChannel, TMessage, TComment, TBacklink, TAttachment)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message

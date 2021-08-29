@@ -17,7 +17,6 @@
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
-import { S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
 import { decode } from 'jwt-simple'
 
@@ -31,21 +30,21 @@ import { Client } from 'minio'
 
 // import { createElasticAdapter } from '@anticrm/elastic'
 
-const BUCKET = 'anticrm-upload-9e4e89c'
+// const BUCKET = 'anticrm-upload-9e4e89c'
 
-async function awsUpload (file: UploadedFile): Promise<string> {
-  const id = uuid()
-  const s3 = new S3()
-  const resp = await s3.upload({
-    Bucket: BUCKET,
-    Key: id,
-    Body: file.data,
-    ContentType: file.mimetype,
-    ACL: 'public-read'
-  }).promise()
-  console.log(resp)
-  return id
-}
+// async function awsUpload (file: UploadedFile): Promise<string> {
+//   const id = uuid()
+//   const s3 = new S3()
+//   const resp = await s3.upload({
+//     Bucket: BUCKET,
+//     Key: id,
+//     Body: file.data,
+//     ContentType: file.mimetype,
+//     ACL: 'public-read'
+//   }).promise()
+//   console.log(resp)
+//   return id
+// }
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()

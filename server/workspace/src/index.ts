@@ -32,15 +32,15 @@ export async function createWorkspace (mongoUrl: string, dbName: string, clientU
   try {
     await client.connect()
     const db = client.db(dbName)
-    
+
     console.log('dropping database...')
     await db.dropDatabase()
-    
+
     console.log('creating model...')
     const model = txes.filter(tx => tx.objectSpace === core.space.Model)
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${result.insertedCount} model transactions inserted.`)
-    
+
     console.log('creating data...')
     const data = txes.filter(tx => tx.objectSpace !== core.space.Model)
     const token = encode({ email: 'anticrm@hc.engineering', workspace: dbName }, 'secret')
@@ -52,7 +52,7 @@ export async function createWorkspace (mongoUrl: string, dbName: string, clientU
     contrib.close()
 
     console.log('create minio bucket')
-    await minio.makeBucket(dbName, 'k8s')
+    if (!await minio.bucketExists(dbName)) { await minio.makeBucket(dbName, 'k8s') }
   } finally {
     await client.close()
   }

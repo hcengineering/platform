@@ -17,12 +17,19 @@
 <script lang="ts">
   import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
+  import { createQuery } from '@anticrm/presentation'
 
   import { EditBox, Button, CircleButton, Grid, Label } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
   import User from './icons/User.svelte'
+
+  import chunter from '@anticrm/chunter'
+
+  const query = createQuery()
+
+  $: query.query(chunter.class.Attachment, {}, result => { console.log('attachments',  result) })  
 
   let dragover = false
   let loading = false
