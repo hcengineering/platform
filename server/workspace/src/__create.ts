@@ -14,11 +14,17 @@
 // limitations under the License.
 //
 
-import { createModel } from '.'
+import { createWorkspace } from '.'
 
-const url = process.env.MONGO_URL
-if (url === undefined) {
+const mongoUrl = process.env.MONGO_URL
+if (mongoUrl === undefined) {
   console.error('please provide mongodb url.')
+  process.exit(1)
+}
+
+const transactorUrl = process.env.TRANSACTOR_URL
+if (transactorUrl === undefined) {
+  console.error('please provide transactor url.')
   process.exit(1)
 }
 
@@ -29,6 +35,6 @@ if (db === undefined) {
 }
 
 console.log('creating model...')
-createModel(url, db).then(rows => {
-  console.log(`done, ${rows} rows inserted.`)
+createWorkspace(mongoUrl, db, transactorUrl).then(() => {
+  console.log(`done.`)
 }).catch(error => { console.error(error) })

@@ -15,25 +15,40 @@
 //
 
 import { MongoClient, Document } from 'mongodb'
-import { DOMAIN_TX } from '@anticrm/core'
+import core, { DOMAIN_TX, Tx } from '@anticrm/core'
+import { createContributingClient } from '@anticrm/contrib'
+import { encode } from 'jwt-simple'
 
 import * as txJson from './model.tx.json'
 
-const txes = (txJson as any).default
-
-console.log(txes)
+const txes = (txJson as any).default as Tx[]
 
 /**
  * @public
  */
-export async function createModel (url: string, dbName: string): Promise<number> {
-  const client = new MongoClient(url)
+export async function createWorkspace (mongoUrl: string, dbName: string, clientUrl: string): Promise<void> {
+  const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
     const db = client.db(dbName)
+    
+    console.log('dropping database...')
     await db.dropDatabase()
-    const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-    return result.insertedCount
+    
+    console.log('creating model...')
+    const model = txes.filter(tx => tx.objectSpace === core.space.Model)
+    const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
+    console.log(`${result.insertedCount} model transactions inserted.`)
+    
+    console.log('creating data...')
+    const data = txes.filter(tx => tx.objectSpace !== core.space.Model)
+    const token = encode({ email: 'anticrm@hc.engineering', workspace: dbName }, 'secret')
+    const url = new URL(`/${token}`, clientUrl)
+    const contrib = await createContributingClient(url.href)
+    for (const tx of data) {
+      await contrib.tx(tx)
+    }
+    contrib.close()
   } finally {
     await client.close()
   }

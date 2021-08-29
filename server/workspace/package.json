@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
-    "mongodb": "^4.1.0"
+    "mongodb": "^4.1.0",
+    "@anticrm/contrib": "~0.6.0",
+    "jwt-simple": "~0.5.6"
   }
 }

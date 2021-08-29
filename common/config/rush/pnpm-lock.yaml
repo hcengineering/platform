@@ -85,7 +85,6 @@ specifiers:
   cross-env: ^7.0.3
   css-loader: ^5.2.1
   dotenv-webpack: ^7.0.2
-  esbuild: ^0.12.24
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^20.0.0
   eslint-plugin-import: '2'
@@ -201,7 +200,6 @@ dependencies:
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
   dotenv-webpack: 7.0.3_webpack@5.48.0
-  esbuild: 0.12.24
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 20.0.0_2e482f375e273d762fe67cbd5e194b49
   eslint-plugin-import: 2.23.4_eslint@7.32.0
@@ -10000,7 +9998,7 @@ packages:
     dev: false
 
   file:projects/workspace.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-Ircelx/9snTrdceAfj7OBTqmR1tZ/cTtPtdf3zcmTJ+EwFh0rhWQJgd80CSeny6I8wMC+UXcKUk5mGHDqcmKcw==, tarball: file:projects/workspace.tgz}
+    resolution: {integrity: sha512-8vO7UTqdUdxIPbiMIKXV54zDnFD63L75+7Z9mTnVO5Ln6Nb5rf+ZfYloA2pDauRKp0Rf7ItIYPhjmEpp8QE+Ow==, tarball: file:projects/workspace.tgz}
     id: file:projects/workspace.tgz
     name: '@rush-temp/workspace'
     version: 0.0.0
@@ -10013,6 +10011,7 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      jwt-simple: 0.5.6
       mongodb: 4.1.1
       ts-node: 10.2.1_typescript@4.3.5
     transitivePeerDependencies:
