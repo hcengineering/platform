@@ -60,6 +60,7 @@
     height: 23.75rem;
     background-color: var(--theme-bg-color);
     border-radius: 1.25rem;
+    filter: drop-shadow(0 0 4rem rgba(0, 0, 0, .35));
 
     .label {
       font-weight: 500;
