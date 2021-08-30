@@ -21,7 +21,7 @@
 
   import { EditBox, Button, CircleButton, Grid, Label, showModal, Link } from '@anticrm/ui'
   import AvatarEditor from './AvatarEditor.svelte'
-  import File from './icons/File.svelte'
+  import FileIcon from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
@@ -106,7 +106,7 @@
   </div>
   <div class="abs-lb-content">
     {#if resumeName}
-      <Link label={resumeName} href={'#'} icon={File} />
+      <Link label={resumeName} href={'#'} icon={FileIcon} />
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
