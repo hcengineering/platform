@@ -19,7 +19,7 @@
   import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
-  import { Label, showModal, Loading, ScrollBox } from '@anticrm/ui'
+  import { Label, showPopup, Loading, ScrollBox } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
 
   import { createQuery } from '@anticrm/presentation'
@@ -50,7 +50,7 @@
   const client = getClient()
 
   function onClick(object: Doc) {
-    showModal(open, { object, space })
+    showPopup(open, { object, space })
   }
 </script>
 
