@@ -129,18 +129,6 @@
 </div>
 
 <style lang="scss">
-  a {
-    display: flex;
-    align-items: center;
-  }
-  a span {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: .5rem;
-    transform-origin: center center;
-    transform: scale(.75);
-  }
   .header {
     position: relative;
     padding: 1.5rem 1.5rem 0;

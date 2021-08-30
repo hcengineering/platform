@@ -22,7 +22,6 @@
   import Avatar from '../../img/avatar.png'
 
   export let label: IntlString
-  export let okAction: () => void
 
   const dispatch = createEventDispatcher()
 </script>
@@ -36,7 +35,7 @@
   </div>
 
   <div class="avatar">
-    <img src={Avatar} />
+    <img src={Avatar} alt={'Avatar'} />
   </div>
 
   <div class="abs-lb-content actions">
