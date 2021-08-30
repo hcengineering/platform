@@ -48,8 +48,6 @@
   let changed = false
 
   function isChanged(): void {
-    console.log(object)
-    console.log(newValue)
     for (const key in object) {
       if ((newValue as any)[key] !== (object as any)[key]) {
         changed = true
