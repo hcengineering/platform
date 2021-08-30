@@ -77,18 +77,12 @@
 
 </script>
 
-<Dialog label={recruit.string.CreateCandidate} 
-        okLabel={recruit.string.CreateCandidate} 
-        okAction={save}
-        on:close={() => { dispatch('close') }}>
+<div class="flex-col h-full">
   <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType}/>
-  <div class="tabs-container">
+  <Dialog label={recruit.string.CreateCandidate} 
+          okLabel={recruit.string.CreateCandidate} 
+          okAction={save}
+          on:close={() => { dispatch('close') }}>
     <Tabs model={tabModel}/>
-  </div>
-</Dialog>
-
-<style lang="scss">
-  .tabs-container {
-    margin: 0 2.5rem;
-  }
-</style>
+  </Dialog>
+</div>

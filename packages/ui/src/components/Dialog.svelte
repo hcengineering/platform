@@ -43,12 +43,13 @@
 
 <style lang="scss">
   .dialog {
+    flex-grow: 1;
+
     display: flex;
     flex-direction: column;
-    width: 45rem;
-    height: 100%;
+    margin: 0 1rem;
     background-color: var(--theme-bg-color);
-    border-radius: 1.875rem;
+    border-radius: 0 0 1rem 1rem;
     box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
 
     .header {
@@ -75,7 +76,7 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      // margin: 0 2.5rem;
+      padding: 0 2.5rem;
       height: fit-content;
     }
 
