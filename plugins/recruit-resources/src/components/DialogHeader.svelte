@@ -147,7 +147,7 @@
     width: 45rem;
     min-height: 12.5rem;
     height: 12.5rem;
-    background-image: url(../../img/header-pink.png);
+    background-image: url(../../img/bg-green-crop.png);
     background-repeat: no-repeat;
     background-clip: border-box;
     background-size: cover;
