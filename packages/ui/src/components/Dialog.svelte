@@ -35,22 +35,19 @@
   <div class="content">
     <ScrollBox vertical stretch><slot /></ScrollBox>
   </div>
-  <div class="footer">
+  <!-- <div class="footer">
     <Button label={okLabel} primary />
     <Button label={'Cancel'} on:click={() => { dispatch('close') }} />
-  </div>
+  </div> -->
 </form>
 
 <style lang="scss">
   .dialog {
-    flex-grow: 1;
-
     display: flex;
     flex-direction: column;
-    margin: 0 1rem;
+    height: 100%;
     background-color: var(--theme-bg-color);
-    border-radius: 0 0 1rem 1rem;
-    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
+    border-radius: 1.25rem;
 
     .header {
       flex-shrink: 0;
@@ -76,7 +73,7 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      padding: 0 2.5rem;
+      padding: 0 2.5rem 2.5rem;
       height: fit-content;
     }
 
