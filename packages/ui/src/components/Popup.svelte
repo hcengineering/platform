@@ -71,7 +71,7 @@
   .popup {
     position: fixed;
     background-color: transparent;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .5));
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .6));
     z-index: 501;
   }
   .modal-overlay {
@@ -82,5 +82,6 @@
     height: 100%;
     background: transparent;
     z-index: 500;
+    // backdrop-filter: blur(1px);
   }
 </style>
