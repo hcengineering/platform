@@ -19,6 +19,7 @@ import CreateCandidate from './components/CreateCandidate.svelte'
 import CreateApplication from './components/CreateApplication.svelte'
 import EditCandidate from './components/EditCandidate.svelte'
 import CandidateGeneral from './components/CandidateGeneral.svelte'
+import Attachments from './components/Attachments.svelte'
 
 export default async () => ({
   component: {
@@ -27,6 +28,7 @@ export default async () => ({
     CreateCandidate,
     CreateApplication,
     EditCandidate,
-    CandidateGeneral
+    CandidateGeneral,
+    Attachments
   },
 })

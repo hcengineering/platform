@@ -23,7 +23,7 @@
 </script>
 
 <div class="container">
-  <span class="label">{label}</span>
+  <span class="overflow-label label">{label}</span>
   <ActionIcon label={'More...'} icon={MoreH} size={'small'} {action}/>
 </div>
 
@@ -36,11 +36,6 @@
     height: 4.5rem;
 
     .label {
-      flex-grow: 1;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      user-select: none;
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);

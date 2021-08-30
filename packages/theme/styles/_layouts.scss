@@ -84,6 +84,7 @@ table {
 }
 
 .flex { display: flex; }
+.flex-grow { flex-grow: 1; }
 .flex-nowrap {
   display: flex;
   flex-wrap: nowrap;
@@ -178,6 +179,13 @@ table {
   overflow: hidden;
   white-space: pre-wrap;
 }
+.overflow-label {
+  flex-grow: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  user-select: none;
+}
 
 .focused-button {
   background-color: var(--theme-button-bg-focused);
@@ -209,6 +217,7 @@ table {
 
 .content-color { color: var(--theme-content-color); }
 .content-trans-color { color: var(--theme-content-trans-color); }
+.content-dark-color { color: var(--theme-content-dark-color); }
 .caption-color { color: var(--theme-caption-color); }
 
 .border-primary-button { border-color: var(--primary-button-border); }
