@@ -17,7 +17,6 @@
   import Component from './Component.svelte'
 
   let modalHTML: HTMLElement
-  let arrowHTML: HTMLElement
   let modalOHTML: HTMLElement
 
   function close () {
@@ -34,30 +33,21 @@
     if (modalHTML) {
       if ($modal.element) {
         const rect = $modal.element.getBoundingClientRect()
-        let style: string = 'popup-'
         if (rect.top > document.body.clientHeight - rect.bottom) {
-          // style += 'top-'
           modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
-          // arrowHTML.style.top = rect.top - convertRemToPx(.75) + 'px'
-          // arrowHTML.style.left = rect.left + rect.width / 2 + 'px'
-          // arrowHTML.classList.add('popup-top')
         } else {
-          // style += 'bottom-'
           modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-          // arrowHTML.style.top = '0px'
         }
         if (rect.left > document.body.clientWidth - rect.right) {
-          // style += 'left'
           modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
         } else {
-          // style += 'right'
           modalHTML.style.left = rect.left + 'px'
         }
-        // modalHTML.classList.add(style)
       } else {
-        modalHTML.style.top = '16px'
-        modalHTML.style.bottom = '16px'
-        modalHTML.style.right = '16px'
+        modalHTML.style.top = '4rem'
+        modalHTML.style.bottom = '4rem'
+        modalHTML.style.right = '4rem'
+        modalHTML.style.height = 'calc(100vh - 8rem)'
         // modalHTML.style.transform = 'translateY(-50%)'
       }
     }
