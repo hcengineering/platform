@@ -47,8 +47,6 @@
         modalHTML.style.top = '4rem'
         modalHTML.style.bottom = '4rem'
         modalHTML.style.right = '4rem'
-        // modalHTML.style.height = 'calc(100vh - 8rem)'
-        // modalHTML.style.transform = 'translateY(-50%)'
       }
     }
   }
@@ -82,6 +80,5 @@
     height: 100%;
     background: transparent;
     z-index: 500;
-    // backdrop-filter: blur(1px);
   }
 </style>

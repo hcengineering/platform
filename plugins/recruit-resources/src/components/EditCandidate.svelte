@@ -77,34 +77,27 @@
 
 </script>
 
-<div class="flex-col container">
+<div class="container">
   <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType}/>
-  <div class="dialog-container">
-    <Dialog label={recruit.string.CreateCandidate} 
-            okLabel={recruit.string.CreateCandidate} 
-            okAction={save}
-            on:close={() => { dispatch('close') }}>
-      <Tabs model={tabModel}/>
-    </Dialog>
+  <div class="tabs-container">
+    <Tabs model={tabModel}/>
   </div>
 </div>
 
 <style lang="scss">
-  @keyframes maxHeight {
-    from { max-height: 12.5rem; }
-    to { max-height: 100%; }
-  }
-
   .container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    max-height: 0;
     background-color: var(--theme-bg-color);
     border-radius: 1.25rem;
-    animation: maxHeight .5s forwards;
 
-    .dialog-container {
-      flex-shrink: 1;
+    .tabs-container {
       flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      height: fit-content;
+      padding: 0 2.5rem 2.5rem;
     }
   }
 </style>
