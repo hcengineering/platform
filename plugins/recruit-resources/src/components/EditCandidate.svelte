@@ -28,12 +28,13 @@
 
   const newValue = Object.assign({}, object)
 
-  let resumeId: Ref<Doc>
-  let resumeName: string | undefined
-  let resumeUuid: string
-  let resumeSize: number
-  let resumeType: string
-
+  let resume = {} as {
+    id: Ref<Doc> | undefined
+    name: string
+    uuid: string
+    size: number
+    type: string
+  }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -80,7 +81,7 @@
 </script>
 
 <div class="container">
-  <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} on:save={ save }/>
+  <DialogHeader {space} {object} {newValue} {resume} on:save={ save }/>
   <div class="tabs-container">
     <Tabs model={tabModel}/>
   </div>

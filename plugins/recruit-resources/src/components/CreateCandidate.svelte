@@ -37,11 +37,13 @@
   } as Candidate
   const newValue = Object.assign({}, object)
 
-  let resumeId: Ref<Doc>
-  let resumeName: string | undefined
-  let resumeUuid: string
-  let resumeSize: number
-  let resumeType: string
+  let resume = {} as {
+    id: Ref<Doc> | undefined
+    name: string
+    uuid: string
+    size: number
+    type: string
+  }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -57,16 +59,19 @@
       city: newValue.city,
     })
 
-    if (resumeName !== undefined) {
+    console.log('resume name', resume.name)
+
+    if (resume.id !== undefined) {
       // create attachment
+      console.log('creaing attachment space', space)
       client.createDoc(chunter.class.Attachment, space, {
         attachmentTo: candidateId,
         collection: 'resume',
-        name: resumeName,
-        file: resumeUuid,
-        type: resumeType,
-        size: resumeSize,
-      }, resumeId)
+        name: resume.name,
+        file: resume.uuid,
+        type: resume.type,
+        size: resume.size,
+      }, resume.id)
     }
 
     dispatch('close')
@@ -74,4 +79,4 @@
 
 </script>
 
-<DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} create={true} on:save={createCandidate}/>
+<DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/>

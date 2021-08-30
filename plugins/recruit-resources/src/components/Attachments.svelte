@@ -16,37 +16,31 @@
 <script lang="ts">
   import { ScrollBox, IconAdd } from '@anticrm/ui'
 
-  interface IFile {
-    id: number,
-    name: string,
-    ext: string,
-    description: string
-  }
+  import type { Doc, Ref, Space } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import type { Attachment } from '@anticrm/chunter'
 
-  export let files: Array<IFile> = [
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
-    { id: 3, name: 'Requirements', ext: 'doc', description: 'DOC / 2,5 MB' }
-  ]
+  import chunter from '@anticrm/chunter'
+
+  export let object: Doc
+  export let space: Ref<Space>
+
+  let files: Attachment[] = []
+
+  console.log('query space', space)
+
+  const query = createQuery()
+  $: query.query(chunter.class.Attachment, { space }, result => { files = result})
+
 </script>
 
 <ScrollBox vertical>
   {#each files as file}
     <div class="item flex-row-center">
-      <div class="flex-center file-icon">{file.ext}</div>
+      <div class="flex-center file-icon">pdf</div>
       <div class="flex-col flex-grow">
         <div class="overflow-label caption-color">{file.name}</div>
-        <div class="overflow-label file-desc">{file.description}</div>
+        <div class="overflow-label file-desc">{file.type}</div>
       </div>
     </div>
   {/each}

@@ -36,11 +36,13 @@
   export let object: Candidate
   export let newValue: Candidate
 
-  export let resumeId: Ref<Doc>
-  export let resumeName: string | undefined
-  export let resumeUuid: string
-  export let resumeSize: number
-  export let resumeType: string
+  export let resume: {
+    id: Ref<Doc> | undefined
+    name: string
+    uuid: string
+    size: number
+    type: string
+  }
 
   export let create = false
 
@@ -61,13 +63,14 @@
   async function createAttachment(file: File) {
     loading = true
     try {
-      resumeId = generateId()
-      resumeUuid = await uploadFile(resumeId, space, file)
-      resumeName = file.name
-      resumeSize = file.size
-      resumeType = file.type
+      const id = generateId()
+      resume.uuid = await uploadFile(id, space, file)
+      resume.id = id
+      resume.name = file.name
+      resume.size = file.size
+      resume.type = file.type
 
-      console.log('uploaded file uuid', resumeUuid)
+      console.log('uploaded file uuid', resume.uuid)
 
     } finally {
       loading = false
@@ -105,8 +108,8 @@
     </div>
   </div>
   <div class="abs-lb-content">
-    {#if resumeName}
-      <Link label={resumeName} href={'#'} icon={FileIcon} />
+    {#if resume.id}
+      <Link label={resume.name} href={'#'} icon={FileIcon} />
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
