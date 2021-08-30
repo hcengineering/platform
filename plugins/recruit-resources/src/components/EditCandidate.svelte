@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
+  import type { Ref, Space, Doc } from '@anticrm/core'
   import { Dialog, Tabs } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
@@ -26,10 +26,17 @@
   export let object: Candidate
   export let space: Ref<Space>
 
+  const newValue = Object.assign({}, object)
+
+  let resumeId: Ref<Doc>
+  let resumeName: string | undefined
+  let resumeUuid: string
+  let resumeSize: number
+  let resumeType: string
+
+
   const dispatch = createEventDispatcher()
   const client = getClient()
-
-  const newValue = Object.assign({}, object)
 
   async function save() {
     const attributes: Record<string, any> = {}
@@ -42,14 +49,14 @@
   }
 
   const tabModel = [
-    {
-      label: 'General',
-      component: 'recruit:component:CandidateGeneral',
-      props: {
-        object,
-        newValue,
-      }
-    },
+    // {
+    //   label: 'General',
+    //   component: 'recruit:component:CandidateGeneral',
+    //   props: {
+    //     object,
+    //     newValue,
+    //   }
+    // },
     {
       label: 'Activity',
       component: 'chunter:component:Activity',
@@ -74,7 +81,7 @@
         okLabel={recruit.string.CreateCandidate} 
         okAction={save}
         on:close={() => { dispatch('close') }}>
-  <DialogHeader />
+  <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType}/>
   <Tabs model={tabModel}/>
 </Dialog>
 

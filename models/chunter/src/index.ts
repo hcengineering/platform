@@ -59,6 +59,8 @@ export class TAttachment extends TDoc implements Attachment {
   collection!: string
   name!: string
   file!: string
+  size!: number
+  type!: string
 }
 
 export function createModel (builder: Builder): void {

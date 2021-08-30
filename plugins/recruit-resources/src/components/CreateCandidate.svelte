@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
+  import type { Ref, Space, Doc } from '@anticrm/core'
   import { TextArea, EditBox, Dialog, Tabs, Section, Grid } from '@anticrm/ui'
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
@@ -25,28 +25,53 @@
   import { getClient } from '@anticrm/presentation'
 
   import recruit from '../plugin'
+  import chunter from '@anticrm/chunter'
+  import { Candidate } from '@anticrm/recruit'
 
   export let space: Ref<Space>
 
+  const object: Candidate = {
+    lastName: '',
+    firstName: '',
+    city: ''
+  } as Candidate
+  const newValue = Object.assign({}, object)
+
+  let resumeId: Ref<Doc>
+  let resumeName: string | undefined
+  let resumeUuid: string
+  let resumeSize: number
+  let resumeType: string
+
   const dispatch = createEventDispatcher()
-
-  let firstName: string = ''
-  let lastName: string = ''
-  let email: string = ''
-  let phone: string = ''
-  let city: string = ''
-
   const client = getClient()
 
-  function createCandidate() {
-    client.createDoc(recruit.class.Candidate, space, {
-      firstName,
-      lastName,
-      email,
-      phone,
-      city,
+  async function createCandidate() {
+    console.log(newValue)
+    // create candidate      
+    const candidateId = await client.createDoc(recruit.class.Candidate, space, {
+      firstName: newValue.firstName,
+      lastName: newValue.lastName,
+      email: '',
+      phone: '',
+      city: newValue.city,
     })
+
+    if (resumeName !== undefined) {
+      // create attachment
+      client.createDoc(chunter.class.Attachment, space, {
+        attachmentTo: candidateId,
+        collection: 'resume',
+        name: resumeName,
+        file: resumeUuid,
+        type: resumeType,
+        size: resumeSize,
+      }, resumeId)
+    }
+
+    dispatch('close')
   }
+
 </script>
 
-<DialogHeader {space}/>
+<DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} on:save={createCandidate}/>

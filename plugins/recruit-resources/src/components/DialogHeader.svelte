@@ -16,11 +16,8 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { getMetadata } from '@anticrm/platform'
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import login from '@anticrm/login'
-  import { createQuery, getClient } from '@anticrm/presentation'
 
   import { EditBox, Button, CircleButton, Grid, Label, showModal } from '@anticrm/ui'
   import AvatarEditor from './AvatarEditor.svelte'
@@ -29,26 +26,20 @@
   import Twitter from './icons/Twitter.svelte'
   import User from './icons/User.svelte'
 
-  import chunter from '@anticrm/chunter'
-  import recruit from '../plugin'
-
   import { uploadFile } from '../utils'
+  import { Candidate } from '@anticrm/recruit'
 
   const dispatch = createEventDispatcher()
 
   export let space: Ref<Space>
+  export let object: Candidate
+  export let newValue: Candidate
 
-  let firstName = ''
-  let lastName = ''
-  let city = ''
-
-  let resumeId: Ref<Doc>
-  let resumeName: string | undefined
-  let resumeUuid: string
-  let resumeSize: number
-  let resumeType: string
-
-  const client = getClient()
+  export let resumeId: Ref<Doc>
+  export let resumeName: string | undefined
+  export let resumeUuid: string
+  export let resumeSize: number
+  export let resumeType: string
 
   let dragover = false
   let loading = false
@@ -67,29 +58,6 @@
     } finally {
       loading = false
     }
-  }
-
-  async function createCandidate() {
-    // create candidate      
-    const candidateId = await client.createDoc(recruit.class.Candidate, space, {
-      firstName,
-      lastName,
-      email: '',
-      phone: '',
-      city,
-    })
-
-    if (resumeName !== undefined) {
-      // create attachment
-      client.createDoc(chunter.class.Attachment, space, {
-        attachmentTo: candidateId,
-        collection: 'resume',
-        name: resumeName,
-        file: resumeUuid
-      }, resumeId)
-    }
-
-    dispatch('close')
   }
 
   function drop(event: DragEvent) {
@@ -116,10 +84,10 @@
     <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
-        <EditBox placeholder="John" bind:value={firstName}/>
-        <EditBox placeholder="Appleseed" bind:value={lastName}/>
+        <EditBox placeholder="John" bind:value={newValue.firstName}/>
+        <EditBox placeholder="Appleseed" bind:value={newValue.lastName}/>
       </div>
-      <div class="title"><EditBox placeholder="Los Angeles" bind:value={city}/></div>
+      <div class="title"><EditBox placeholder="Los Angeles" bind:value={newValue.city}/></div>
     </div>
   </div>
   <div class="abs-lb-content">
@@ -131,7 +99,7 @@
     {/if}
   </div>
   <div class="abs-rb-content">
-    <Button label={'Save'} size={'small'} transparent on:click={createCandidate}/>
+    <Button label={'Create'} size={'small'} transparent on:click={ () => { dispatch('save') } }/>
   </div>
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>

@@ -53,6 +53,8 @@ export interface Attachment extends Doc {
   collection: string
   name: string
   file: string
+  size: number
+  type: string
 }
 
 /**
