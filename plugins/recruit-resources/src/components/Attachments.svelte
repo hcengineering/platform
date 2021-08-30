@@ -20,39 +20,33 @@
     id: number,
     name: string,
     ext: string,
-    description: string,
-    tags: Array<string>
+    description: string
   }
 
   export let files: Array<IFile> = [
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB', tags: ['Description', 'Tag'] },
-    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB', tags: ['Benefits'] },
-    { id: 3, name: 'Requirements', ext: 'doc', description: 'DOC / 2,5 MB', tags: ['Requirements'] }
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 1, name: 'Application description.pdf', ext: 'pdf', description: 'PDF / 2,5 MB' },
+    { id: 2, name: 'Location', ext: 'jpg', description: 'JPG / 2,5 MB' },
+    { id: 3, name: 'Requirements', ext: 'doc', description: 'DOC / 2,5 MB' }
   ]
 </script>
 
 <ScrollBox vertical>
   {#each files as file}
-    <div class="item flex-between">
+    <div class="item flex-row-center">
       <div class="flex-center file-icon">{file.ext}</div>
       <div class="flex-col flex-grow">
         <div class="overflow-label caption-color">{file.name}</div>
         <div class="overflow-label file-desc">{file.description}</div>
-      </div>
-      <div class="flex-row-center">
-        {#each file.tags as tag}
-          <div class="tag">{tag}</div>
-        {/each}
       </div>
     </div>
   {/each}
@@ -86,14 +80,6 @@
   .file-desc {
     font-size: 0.75rem;
     color: var(--theme-content-dark-color);
-  }
-  .tag {
-    margin-left: 0.5rem;
-    padding: .25rem .75rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 1.875rem;
   }
   .item + .add-file, .item + .item { border-top: 1px solid var(--theme-bg-accent-hover); }
 </style>
