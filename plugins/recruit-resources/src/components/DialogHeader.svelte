@@ -41,8 +41,23 @@
   export let resumeSize: number
   export let resumeType: string
 
+  export let create = false
+
   let dragover = false
   let loading = false
+  let changed = false
+
+  function isChanged(): void {
+    console.log(object)
+    console.log(newValue)
+    for (const key in object) {
+      if ((newValue as any)[key] !== (object as any)[key]) {
+        changed = true
+        return
+      }
+    }
+    changed = false
+  }
 
   async function createAttachment(file: File) {
     loading = true
@@ -84,10 +99,10 @@
     <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
-        <EditBox placeholder="John" bind:value={newValue.firstName}/>
-        <EditBox placeholder="Appleseed" bind:value={newValue.lastName}/>
+        <EditBox placeholder="Jonny" bind:value={newValue.firstName} on:input={isChanged}/>
+        <EditBox placeholder="Appleseed" bind:value={newValue.lastName} on:input={isChanged}/>
       </div>
-      <div class="title"><EditBox placeholder="Los Angeles" bind:value={newValue.city}/></div>
+      <div class="title"><EditBox placeholder="Los Angeles" bind:value={newValue.city} on:input={isChanged}/></div>
     </div>
   </div>
   <div class="abs-lb-content">
@@ -99,7 +114,9 @@
     {/if}
   </div>
   <div class="abs-rb-content">
-    <Button label={'Create'} size={'small'} transparent on:click={ () => { dispatch('save') } }/>
+    {#if changed}
+      <Button label={ create ? 'Create' : 'Save' } size={'small'} transparent on:click={ () => { dispatch('save') } }/>
+    {/if}
   </div>
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>

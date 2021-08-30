@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import Label from './Label.svelte'
 
@@ -25,6 +25,8 @@
   export let password: boolean = false
   export let focus: boolean = false
 
+  const dispatch = createEventDispatcher()
+
   let text: HTMLElement
   let input: HTMLInputElement
 
@@ -33,6 +35,7 @@
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
     target.style.width = text.clientWidth + 'px'
+    dispatch('input')
   }
 
   onMount(() => {

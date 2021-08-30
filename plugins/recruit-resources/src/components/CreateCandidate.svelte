@@ -74,4 +74,4 @@
 
 </script>
 
-<DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} on:save={createCandidate}/>
+<DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} create={true} on:save={createCandidate}/>

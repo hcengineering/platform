@@ -46,6 +46,8 @@
       }
     }
     await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
+
+    dispatch('close')
   }
 
   const tabModel = [
@@ -78,7 +80,7 @@
 </script>
 
 <div class="container">
-  <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType}/>
+  <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType} on:save={ save }/>
   <div class="tabs-container">
     <Tabs model={tabModel}/>
   </div>
