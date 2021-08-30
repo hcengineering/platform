@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-import type { Ref, Doc } from '@anticrm/core'
+import type { Ref, Doc, Space } from '@anticrm/core'
 import { getMetadata } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
-export async function uploadFile(id: Ref<Doc>, file: File): Promise<string> {
+export async function uploadFile(id: Ref<Doc>, space: Ref<Space>, file: File): Promise<string> {
   console.log(file)
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
   
   const data = new FormData()
   data.append('file', file)
 
-  const url = `${uploadUrl}?id=${id}&space=space`
+  const url = `${uploadUrl}?id=${id}&space=${space}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: {

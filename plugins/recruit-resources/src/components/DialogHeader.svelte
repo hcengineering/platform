@@ -61,7 +61,7 @@
     loading = true
     try {
       resumeId = generateId()
-      resumeUuid = await uploadFile(resumeId, file)
+      resumeUuid = await uploadFile(resumeId, space, file)
       resumeName = file.name
       resumeSize = file.size
       resumeType = file.type
