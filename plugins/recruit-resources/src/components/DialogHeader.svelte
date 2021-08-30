@@ -99,7 +99,7 @@
     <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
-        <EditBox placeholder="Jonny" bind:value={newValue.firstName} on:input={isChanged}/>
+        <EditBox placeholder="John" bind:value={newValue.firstName} on:input={isChanged}/>
         <EditBox placeholder="Appleseed" bind:value={newValue.lastName} on:input={isChanged}/>
       </div>
       <div class="title"><EditBox placeholder="Los Angeles" bind:value={newValue.city} on:input={isChanged}/></div>
