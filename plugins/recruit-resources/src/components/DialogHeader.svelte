@@ -113,10 +113,10 @@
   .header {
     position: relative;
     padding: 1.5rem 1.5rem 0;
-    width: 37.5rem;
-    min-height: 15rem;
-    height: 15rem;
-    background-image: url(../../img/header-green.png);
+    width: 45rem;
+    min-height: 12.5rem;
+    height: 12.5rem;
+    background-image: url(../../img/header-pink.png);
     background-repeat: no-repeat;
     background-clip: border-box;
     background-size: cover;

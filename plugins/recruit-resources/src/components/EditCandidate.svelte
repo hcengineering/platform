@@ -82,6 +82,13 @@
         okAction={save}
         on:close={() => { dispatch('close') }}>
   <DialogHeader {space} {object} {newValue} {resumeId} {resumeName} {resumeUuid} {resumeSize} {resumeType}/>
-  <Tabs model={tabModel}/>
+  <div class="tabs-container">
+    <Tabs model={tabModel}/>
+  </div>
 </Dialog>
 
+<style lang="scss">
+  .tabs-container {
+    margin: 0 2.5rem;
+  }
+</style>
