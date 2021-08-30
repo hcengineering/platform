@@ -19,8 +19,9 @@
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
 
-  import { EditBox, Button, CircleButton, Grid, Label, showModal } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, showModal, Link } from '@anticrm/ui'
   import AvatarEditor from './AvatarEditor.svelte'
+  import File from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
@@ -105,7 +106,7 @@
   </div>
   <div class="abs-lb-content">
     {#if resumeName}
-      <a href="#">{resumeName}</a>
+      <Link label={resumeName} href={'#'} icon={File} />
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
@@ -125,6 +126,18 @@
 </div>
 
 <style lang="scss">
+  a {
+    display: flex;
+    align-items: center;
+  }
+  a span {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: .5rem;
+    transform-origin: center center;
+    transform: scale(.75);
+  }
   .header {
     position: relative;
     padding: 1.5rem 1.5rem 0;

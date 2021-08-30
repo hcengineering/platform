@@ -14,6 +14,13 @@
 //
 
 /* CLEAR */
+a {
+  font: inherit;
+  color: var(--theme-content-color);
+  &:hover { color: var(--theme-caption-color); }
+  &:active { color: var(--theme-content-color); }
+  &:visited { color: var(--theme-content-color); }
+}
 button {
   display: flex;
   justify-content: center;
