@@ -28,14 +28,17 @@
   import User from './icons/User.svelte'
 
   import chunter from '@anticrm/chunter'
+  import recruit from '../plugin'
 
   import { uploadFile } from '../utils'
 
   export let space: Ref<Space>
 
-  const query = createQuery()
+  let firstName = ''
+  let lastName = ''
+  let city = ''
 
-  $: query.query(chunter.class.Attachment, {}, result => { console.log('attachments',  result) })  
+  const client = getClient()
 
   let dragover = false
   let loading = false
@@ -46,8 +49,20 @@
       const id = generateId()
       const uuid = await uploadFile(id, file)
       console.log('uploaded file uuid', uuid)
-      getClient().createDoc(chunter.class.Attachment, space, {
-        attachmentTo: 'xxxx' as Ref<Doc>,
+
+      // create candidate
+      const candidateId = generateId()
+      client.createDoc(recruit.class.Candidate, space, {
+        firstName,
+        lastName,
+        email: '',
+        phone: '',
+        city,
+      }, candidateId)
+
+      // create attachment
+      client.createDoc(chunter.class.Attachment, space, {
+        attachmentTo: candidateId,
         collection: 'resume',
         name: file.name,
         file: uuid
@@ -81,11 +96,11 @@
     <div class="avatar"><User /></div>
     <div class="flex-col">
       <div class="name">
-        <EditBox placeholder="John" />
-        <EditBox placeholder="Appleseed" />
+        <EditBox placeholder="John" bind:value={firstName}/>
+        <EditBox placeholder="Appleseed" bind:value={lastName}/>
       </div>
       <!-- <div class="name"><EditBox placeholder="John"/>&nbsp;<EditBox placeholder="Appleseed"/></div> -->
-      <div class="title"><EditBox placeholder="Los Angeles"/></div>
+      <div class="title"><EditBox placeholder="Los Angeles" bind:value={city}/></div>
     </div>
   </div>
   <div class="lb-content">
