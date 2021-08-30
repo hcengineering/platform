@@ -81,7 +81,7 @@
     position: fixed;
     background-color: transparent;
     filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
-    z-index: 1001;
+    z-index: 501;
   }
   .modal-overlay {
     position: fixed;
@@ -90,6 +90,6 @@
     width: 100%;
     height: 100%;
     background: transparent;
-    z-index: 1000;
+    z-index: 500;
   }
 </style>
