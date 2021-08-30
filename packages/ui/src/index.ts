@@ -53,6 +53,7 @@ export { default as Popup } from './components/Popup.svelte'
 export { default as CircleButton } from './components/CircleButton.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
+export { default as IconClose } from './components/icons/Close.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'
 export { default as IconToDo } from './components/icons/ToDo.svelte'
 export { default as IconComments } from './components/icons/Comments.svelte'
