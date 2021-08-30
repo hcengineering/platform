@@ -47,7 +47,7 @@
         modalHTML.style.top = '4rem'
         modalHTML.style.bottom = '4rem'
         modalHTML.style.right = '4rem'
-        modalHTML.style.height = 'calc(100vh - 8rem)'
+        // modalHTML.style.height = 'calc(100vh - 8rem)'
         // modalHTML.style.transform = 'translateY(-50%)'
       }
     }
@@ -71,7 +71,7 @@
   .popup {
     position: fixed;
     background-color: transparent;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .5));
     z-index: 501;
   }
   .modal-overlay {
