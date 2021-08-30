@@ -61,15 +61,18 @@ function onMessage(event: CustomEvent) {
 
 <style lang="scss">
   .container {
+    flex-grow: 1;
+
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
+    height: max-content;
 
     .msg-board {
+      flex-grow: 1;
       margin-bottom: 1.5em;
       min-height: 2rem;
-      height: 100%;
+      height: max-content;
     }
   }
 </style>
