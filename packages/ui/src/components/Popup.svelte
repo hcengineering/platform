@@ -48,17 +48,17 @@
         }
         if (rect.left > document.body.clientWidth - rect.right) {
           // style += 'left'
-          // modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-          modalHTML.style.right = '0px'
+          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
         } else {
           // style += 'right'
           modalHTML.style.left = rect.left + 'px'
         }
         // modalHTML.classList.add(style)
       } else {
-        modalHTML.style.top = '50%'
-        modalHTML.style.left = '50%'
-        modalHTML.style.transform = 'translate(-50%, -50%)'
+        modalHTML.style.top = '16px'
+        modalHTML.style.bottom = '16px'
+        modalHTML.style.right = '16px'
+        // modalHTML.style.transform = 'translateY(-50%)'
       }
     }
   }
