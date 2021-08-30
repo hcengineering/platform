@@ -48,7 +48,8 @@
         }
         if (rect.left > document.body.clientWidth - rect.right) {
           // style += 'left'
-          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
+          // modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
+          modalHTML.style.right = '0px'
         } else {
           // style += 'right'
           modalHTML.style.left = rect.left + 'px'

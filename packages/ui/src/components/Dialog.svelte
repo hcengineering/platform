@@ -33,10 +33,10 @@
 
 <div class="dialog-container">
   <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
-    <div class="flex-between header">
+    <!-- <div class="flex-between header">
       <div class="title"><Label {label} /></div>
       <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'} /></div>
-    </div>
+    </div> -->
     <div class="content">
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
@@ -60,9 +60,10 @@
     .dialog {
       display: flex;
       flex-direction: column;
+      margin-top: 100px;
       width: 45rem;
-      min-height: 100vh;
-      max-height: 100vh;
+      min-height: calc(100vh - 100px);
+      max-height: calc(100vh - 100px);
       background-color: var(--theme-bg-color);
       border-radius: 1.875rem 0 0 1.875rem;
       box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
