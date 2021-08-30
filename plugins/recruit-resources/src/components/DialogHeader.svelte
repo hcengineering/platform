@@ -15,6 +15,7 @@
 -->
 
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { getMetadata } from '@anticrm/platform'
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
@@ -33,11 +34,19 @@
 
   import { uploadFile } from '../utils'
 
+  const dispatch = createEventDispatcher()
+
   export let space: Ref<Space>
 
   let firstName = ''
   let lastName = ''
   let city = ''
+
+  let resumeId: Ref<Doc>
+  let resumeName: string | undefined
+  let resumeUuid: string
+  let resumeSize: number
+  let resumeType: string
 
   const client = getClient()
 
@@ -47,30 +56,40 @@
   async function createAttachment(file: File) {
     loading = true
     try {
-      const id = generateId()
-      const uuid = await uploadFile(id, file)
-      console.log('uploaded file uuid', uuid)
+      resumeId = generateId()
+      resumeUuid = await uploadFile(resumeId, file)
+      resumeName = file.name
+      resumeSize = file.size
+      resumeType = file.type
 
-      // create candidate
-      const candidateId = generateId()
-      client.createDoc(recruit.class.Candidate, space, {
-        firstName,
-        lastName,
-        email: '',
-        phone: '',
-        city,
-      }, candidateId)
+      console.log('uploaded file uuid', resumeUuid)
 
+    } finally {
+      loading = false
+    }
+  }
+
+  async function createCandidate() {
+    // create candidate      
+    const candidateId = await client.createDoc(recruit.class.Candidate, space, {
+      firstName,
+      lastName,
+      email: '',
+      phone: '',
+      city,
+    })
+
+    if (resumeName !== undefined) {
       // create attachment
       client.createDoc(chunter.class.Attachment, space, {
         attachmentTo: candidateId,
         collection: 'resume',
-        name: file.name,
-        file: uuid
-      })
-    } finally {
-      loading = false
+        name: resumeName,
+        file: resumeUuid
+      }, resumeId)
     }
+
+    dispatch('close')
   }
 
   function drop(event: DragEvent) {
@@ -104,11 +123,15 @@
     </div>
   </div>
   <div class="abs-lb-content">
-    <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
-    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+    {#if resumeName}
+      <a href="#">{resumeName}</a>
+    {:else}
+      <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
+      <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+    {/if}
   </div>
   <div class="abs-rb-content">
-    <Button label={'Save'} size={'small'} transparent />
+    <Button label={'Save'} size={'small'} transparent on:click={createCandidate}/>
   </div>
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>
