@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
 // 
@@ -12,14 +12,15 @@
 // 
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import PersonPresenter from './components/PersonPresenter.svelte'
-import ChannelsPresenter from './components/ChannelsPresenter.svelte'
+<script lang="ts">
 
-export default async () => ({
-  component: {
-    PersonPresenter,
-    ChannelsPresenter
-  },
-})
+import type { Channel } from '@anticrm/contact'
+
+export let value: Channel[]
+
+</script>
+
+Channels: {value.length}
+

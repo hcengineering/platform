@@ -13,20 +13,39 @@
 // limitations under the License.
 //
 
-import type { Domain } from '@anticrm/core'
+import type { Domain, Type } from '@anticrm/core'
+import { DOMAIN_MODEL } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
-import type { IntlString } from '@anticrm/platform'
+import type { IntlString, Asset } from '@anticrm/platform'
 
-import core, { TDoc } from '@anticrm/model-core'
-import type { Contact, Person, Organization, Employee } from '@anticrm/contact'
+import core, { TDoc, TType } from '@anticrm/model-core'
+import type { Contact, Person, Organization, Employee, Channel, ChannelProvider } from '@anticrm/contact'
 
 import view from '@anticrm/model-view'
 import { ids as contact } from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
+@Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
+export class TChannelProvider extends TDoc implements ChannelProvider {
+  label!: IntlString
+  icon?: Asset
+}
+
+@Model(contact.class.TypeChannels, core.class.Type)
+export class TTypeChannels extends TType {}
+
+/**
+ * @public
+ */
+export function TypeChannels (): Type<Channel[]> {
+  return { _class: contact.class.TypeChannels }
+}
+
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 export class TContact extends TDoc implements Contact {
+  @Prop(TypeChannels(), 'Contact Info' as IntlString)
+  channels!: Channel[]
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -38,11 +57,11 @@ export class TPerson extends TContact implements Person {
   @Prop(TypeString(), 'Last name' as IntlString)
   lastName!: string
 
-  @Prop(TypeString(), 'Email' as IntlString)
-  email!: string
+  // @Prop(TypeString(), 'Email' as IntlString)
+  // email!: string
 
-  @Prop(TypeString(), 'Phone' as IntlString)
-  phone!: string
+  // @Prop(TypeString(), 'Phone' as IntlString)
+  // phone!: string
 
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
@@ -58,7 +77,15 @@ export class TEmployee extends TPerson implements Employee {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TContact, TPerson, TOrganization, TEmployee)
+  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TOrganization, TEmployee)
+
+  builder.mixin(contact.class.TypeChannels, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.ChannelsPresenter
+  })
+
+  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
+    label: 'Email' as IntlString
+  }, contact.channelProvider.Email)
 
   builder.createDoc(core.class.Space, core.space.Model, {
     name: 'Employees',

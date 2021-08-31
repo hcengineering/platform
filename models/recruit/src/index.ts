@@ -94,7 +94,7 @@ export function createModel (builder: Builder): void {
     attachTo: recruit.class.Candidate,
     descriptor: view.viewlet.Table,
     open: recruit.component.EditCandidate,
-    config: ['', 'email', 'phone', 'city']
+    config: ['', 'channels', 'city']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

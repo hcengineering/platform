@@ -15,12 +15,27 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class } from '@anticrm/core'
+import type { Doc, Ref, Class, UXObject } from '@anticrm/core'
+
+/**
+ * @public
+ */
+export interface ChannelProvider extends Doc, UXObject {
+}
+
+/**
+ * @public
+ */
+export interface Channel {
+  provider: Ref<ChannelProvider>
+  value: string
+}
 
 /**
  * @public
  */
 export interface Contact extends Doc {
+  channels: Channel[]
 }
 
 /**
@@ -29,8 +44,8 @@ export interface Contact extends Doc {
 export interface Person extends Contact {
   firstName: string
   lastName: string
-  email: string
-  phone: string
+  // email: string
+  // phone: string
   city: string
 }
 
@@ -55,6 +70,7 @@ export const contactId = 'contact' as Plugin
 
 export default plugin(contactId, {
   class: {
+    ChannelProvider: '' as Ref<Class<ChannelProvider>>,
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
     Organization: '' as Ref<Class<Organization>>,

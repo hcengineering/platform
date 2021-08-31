@@ -24,9 +24,8 @@ export function createDemo (builder: Builder): void {
   builder.createDoc(contact.class.Employee, contact.space.Employee, {
     firstName: 'Rosamund',
     lastName: 'Chen',
-    email: 'rosamund@hc.engineering',
-    phone: '+1 655 912 3424',
-    city: 'Mountain View'
+    city: 'Mountain View',
+    channels: []
   })
 
   builder.createDoc(core.class.Account, core.space.Model, {
@@ -36,9 +35,8 @@ export function createDemo (builder: Builder): void {
   builder.createDoc(contact.class.Employee, contact.space.Employee, {
     firstName: 'Elon',
     lastName: 'Musk',
-    email: 'elon@hc.engineering',
-    phone: '+1 655 843 3453',
-    city: 'Bel Air'
+    city: 'Bel Air',
+    channels: []
   })
 
   builder.createDoc(core.class.Account, core.space.Model, {
@@ -48,16 +46,24 @@ export function createDemo (builder: Builder): void {
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     firstName: 'Andrey',
     lastName: 'P.',
-    email: 'andrey@hc.engineering',
-    phone: '+1 646 667 6832',
-    city: 'Monte Carlo'
+    city: 'Monte Carlo',
+    channels: [
+      {
+        provider: contact.channelProvider.Email,
+        value: 'andrey@hc.engineering'
+      }
+    ]
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     firstName: 'Marina',
     lastName: 'M.',
-    email: 'marina@hc.engineering',
-    phone: '+1 646 777 3333',
-    city: 'Los Angeles'
+    city: 'Los Angeles',
+    channels: [
+      {
+        provider: contact.channelProvider.Email,
+        value: 'marina@hc.engineering'
+      }
+    ]
   })
 }
