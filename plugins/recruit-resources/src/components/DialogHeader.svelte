@@ -19,13 +19,15 @@
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
 
-  import { EditBox, Button, CircleButton, Grid, Label, showModal, Link } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, showModal, Link, showPopup } from '@anticrm/ui'
+  import type { AnyComponent } from '@anticrm/ui'
   import AvatarEditor from './AvatarEditor.svelte'
   import FileIcon from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'
   import User from './icons/User.svelte'
+  import SocialEditor from './SocialEditor.svelte'
 
   import { uploadFile } from '../utils'
   import { Candidate } from '@anticrm/recruit'
@@ -124,7 +126,7 @@
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>
       <CircleButton icon={Twitter} label={'Twitter'} />
-      <CircleButton icon={Edit} label={'Edit'} />
+      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, {}, ev.target)} />
     </Grid>
   </div>
 </div>

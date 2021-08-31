@@ -21,7 +21,7 @@
   export let icon: Asset | AnySvelteComponent
 </script>
 
-<div class="icon-button">
+<div class="icon-button" on:click>
   <div class="content">
     {#if typeof (icon) === 'string'}
       <Icon {icon} size={'small'}/>
@@ -46,6 +46,7 @@
     .content {
       transform-origin: center center;
       transform: scale(.75);
+      pointer-events: none;
     }
 
     &:hover {
