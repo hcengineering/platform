@@ -57,14 +57,4 @@
       <Row><ReferenceInput /></Row>
     </Grid>
   </Section>
-  <!-- <Section icon={IconComments} label={'Comments'}>
-    <CommentViewer />
-    <div class="reference"><ReferenceInput /></div>
-  </Section> -->
 </Dialog>
-
-<style lang="scss">
-  .reference {
-    margin-top: 24px;
-  }
-</style>

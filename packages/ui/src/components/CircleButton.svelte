@@ -19,7 +19,6 @@
   import Icon from './Icon.svelte'
 
   export let icon: Asset | AnySvelteComponent
-  export let label: IntlString | undefined
 </script>
 
 <div class="icon-button">
