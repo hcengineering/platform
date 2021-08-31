@@ -16,17 +16,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
-  import { TextArea, EditBox, Dialog, Tabs, Section, Grid } from '@anticrm/ui'
-  import File from './icons/File.svelte'
-  import Address from './icons/Address.svelte'
-  import Attachment from './icons/Attachment.svelte'
   import DialogHeader from './DialogHeader.svelte'
 
   import { getClient } from '@anticrm/presentation'
 
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
-  import { Candidate } from '@anticrm/recruit'
+  import type { Candidate } from '@anticrm/recruit'
+  import type { Attachment } from '@anticrm/chunter'
 
   export let space: Ref<Space>
 
@@ -38,7 +35,7 @@
   const newValue = Object.assign({}, object)
 
   let resume = {} as {
-    id: Ref<Doc> | undefined
+    id: Ref<Attachment> | undefined
     name: string
     uuid: string
     size: number
@@ -54,9 +51,8 @@
     const candidateId = await client.createDoc(recruit.class.Candidate, space, {
       firstName: newValue.firstName,
       lastName: newValue.lastName,
-      email: '',
-      phone: '',
       city: newValue.city,
+      channels: [],
     })
 
     console.log('resume name', resume.name)
@@ -72,6 +68,10 @@
         type: resume.type,
         size: resume.size,
       }, resume.id)
+
+      client.updateDoc(recruit.class.Candidate, space, candidateId, {
+        resume: resume.id
+      })
     }
 
     dispatch('close')

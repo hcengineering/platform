@@ -110,4 +110,8 @@ export function createModel (builder: Builder): void {
     private: false,
     members: []
   })
+
+  builder.mixin(chunter.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.AttachmentPresenter
+  })
 }

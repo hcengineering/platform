@@ -19,8 +19,12 @@ import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { Ref } from '@anticrm/core'
 import { ViewletDescriptor } from '@anticrm/view'
+import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(chunterId, chunter, {
+  component: {
+    AttachmentPresenter: '' as AnyComponent
+  },
   string: {
     ApplicationLabelChunter: '' as IntlString
   },

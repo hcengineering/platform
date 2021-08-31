@@ -18,13 +18,15 @@ import { Builder, Model, UX, Prop, TypeString } from '@anticrm/model'
 import type { Ref, FindOptions, Doc, Domain } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
+import type { Attachment } from '@anticrm/chunter'
 
 import workbench from '@anticrm/model-workbench'
 
 import view from '@anticrm/model-view'
 import contact, { TPerson } from '@anticrm/model-contact'
 import recruit from './plugin'
-import { Person } from '@anticrm/contact'
+import chunter from '@anticrm/chunter'
+import type { Person } from '@anticrm/contact'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
@@ -38,7 +40,10 @@ export class TCandidates extends TSpace implements Candidates {}
 
 @Model(recruit.class.Candidate, contact.class.Person)
 @UX('Candidate' as IntlString)
-export class TCandidate extends TPerson implements Candidate {}
+export class TCandidate extends TPerson implements Candidate {
+  @Prop(TypeString(), 'Resume' as IntlString)
+  resume?: Ref<Attachment>
+}
 
 @Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)
 export class TApplicant extends TDoc implements Applicant {
@@ -94,7 +99,13 @@ export function createModel (builder: Builder): void {
     attachTo: recruit.class.Candidate,
     descriptor: view.viewlet.Table,
     open: recruit.component.EditCandidate,
-    config: ['', 'channels', 'city']
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        resume: chunter.class.Attachment
+      }
+    } as FindOptions<Doc>, // TODO: fix
+    config: ['', '$lookup.resume', 'channels', 'city']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -106,7 +117,7 @@ export function createModel (builder: Builder): void {
       lookup: {
         candidate: recruit.class.Candidate
       }
-    } as FindOptions<Doc>,
+    } as FindOptions<Doc>, // TODO: fix
     config: ['$lookup.candidate', '$lookup.candidate.email', '$lookup.candidate.city']
   })
 }

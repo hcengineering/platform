@@ -84,7 +84,9 @@ export class MemDb extends TxProcessor {
       const result: LookupData<T> = {}
       for (const key in lookup) {
         const id = (doc as any)[key] as Ref<Doc>
-        (result as any)[key] = this.getObject(id)
+        if (id !== undefined) {
+          (result as any)[key] = this.getObject(id)
+        }
       }
       withLookup.push(Object.assign({}, doc, { $lookup: result }))
     }
