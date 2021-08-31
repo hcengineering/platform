@@ -14,71 +14,23 @@
 -->
 <script lang="ts">
   import { popupstore as modal } from '..'
-  import Component from './Component.svelte'
+  import PopupInstance from './PopupInstance.svelte'
 
-  let modalHTML: HTMLElement
-  let modalOHTML: HTMLElement
-
-  function close () {
-    modal.set({ is: undefined, props: {}, element: undefined })
-  }
+  // function close () {
+  //   console.log('closeX')
+  // }
 
   function handleKeydown (ev: KeyboardEvent) {
-    if (ev.key === 'Escape' && $modal.is) {
-      close()
-    }
+    // if (ev.key === 'Escape' && $modal.is) {
+    //   close()
+    // }
   }
 
-  $: {
-    if (modalHTML) {
-      if ($modal.element) {
-        const rect = $modal.element.getBoundingClientRect()
-        if (rect.top > document.body.clientHeight - rect.bottom) {
-          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
-        } else {
-          modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-        }
-        if (rect.left > document.body.clientWidth - rect.right) {
-          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-        } else {
-          modalHTML.style.left = rect.left + 'px'
-        }
-      } else {
-        modalHTML.style.top = '4rem'
-        modalHTML.style.bottom = '4rem'
-        modalHTML.style.right = '4rem'
-      }
-    }
-  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
-{#if $modal.is}
-  <div class="popup" bind:this={modalHTML}>
-    {#if typeof($modal.is) === 'string'}
-      <Component is={$modal.is} props={$modal.props} on:close={close}/>
-    {:else}
-      <svelte:component this={$modal.is} {...$modal.props} on:close={close} />
-    {/if}
-  </div>
-  <div bind:this={modalOHTML} class="modal-overlay" on:click={close} />
-{/if}
+{#each $modal as popup}
+  <PopupInstance is={popup.is} props={popup.props} element={popup.element} />
+{/each}
 
-<style lang="scss">
-  .popup {
-    position: fixed;
-    background-color: transparent;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .6));
-    z-index: 501;
-  }
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.25);
-    z-index: 500;
-  }
-</style>

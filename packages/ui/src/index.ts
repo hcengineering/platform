@@ -88,16 +88,18 @@ export function closeModal (): void {
   store.set({ is: undefined, props: {}, element: undefined })
 }
 
-export const popupstore = writable<CompAndProps>({
-  is: undefined,
-  props: {},
-  element: undefined
-})
+export const popupstore = writable<CompAndProps[]>([])
 
 export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement): void {
-  popupstore.set({ is: component, props, element: element })
+  popupstore.update(popups => {
+    popups.push({ is: component, props, element: element })
+    return popups
+  })
 }
 
 export function closePopup (): void {
-  popupstore.set({ is: undefined, props: {}, element: undefined })
+  popupstore.update(popups => {
+    popups.pop()
+    return popups
+  })
 }
