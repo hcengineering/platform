@@ -92,6 +92,7 @@
   }
 </script>
 
+<form on:submit|preventDefault={()=>{}}>
 <div class="header" class:dragover={dragover} 
     on:dragenter={ () => { dragover = true } }
     on:dragover|preventDefault={ ()=>{} }
@@ -127,6 +128,7 @@
     </Grid>
   </div>
 </div>
+</form>
 
 <style lang="scss">
   .header {
