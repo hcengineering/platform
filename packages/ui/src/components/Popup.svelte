@@ -30,7 +30,7 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-{#each $modal as popup}
-  <PopupInstance is={popup.is} props={popup.props} element={popup.element} />
+{#each $modal as popup, i}
+  <PopupInstance is={popup.is} props={popup.props} element={popup.element} zIndex={(i+1) * 500}/>
 {/each}
 
