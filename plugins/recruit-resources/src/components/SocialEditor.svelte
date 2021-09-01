@@ -23,7 +23,7 @@
   import contact, { ChannelProvider, Channel } from '@anticrm/contact'
 
   export let values: Channel[]
-  export let newValues: Channel[]
+  let newValues: Channel[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -64,7 +64,7 @@
     <EditBox label={'Twitter'} placeholder={'@rosychen'} />
     <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} />
   </div> -->
-  <Button label="Apply" on:click={() => { dispatch('close', 42) }}/>
+  <Button label="Apply" on:click={() => { dispatch('close', newValues) }}/>
 </div>
 
 <style lang="scss">

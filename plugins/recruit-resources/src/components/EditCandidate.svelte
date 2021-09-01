@@ -46,6 +46,7 @@
         attributes[key] = (newValue as any)[key]
       }
     }
+    console.log('update docs', attributes)
     await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
 
     dispatch('close')

@@ -32,16 +32,22 @@ interface Item {
   value: string
 }
 
-let displayItems: Item[] = []
-
 const client = getClient()
-client.findAll(contact.class.ChannelProvider, {}).then(providers => { 
+
+async function getProviders(): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
+  const providers = await client.findAll(contact.class.ChannelProvider, {})
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
   for (const provider of providers) { map.set(provider._id, provider) }
+  return map
+}
+
+async function update(value: Channel[]) {
+  const result = []
+  const map = await getProviders()
   for (const item of value) {
     const provider = map.get(item.provider)
     if (provider) {
-      displayItems.push({
+      result.push({
         label: provider.label as IntlString,
         icon: provider.icon as Asset,
         value: item.value,
@@ -50,11 +56,16 @@ client.findAll(contact.class.ChannelProvider, {}).then(providers => {
       console.log('provider not found: ', item.provider)
     }
   }
-})
+  displayItems = result
+}
+
+$: update(value)
+
+let displayItems: Item[] = []
 
 </script>
 
 {#each displayItems as item}
-  <Icon icon={item.icon} size={'small'}/>
+  {item.value}<Icon icon={item.icon} size={'small'}/>
 {/each}
 
