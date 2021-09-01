@@ -54,9 +54,9 @@
 
 <div class="popup">
   <div class="popup-block">
-    <span>Contact</span>
+    <span>Contact Links</span>
     {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'12.5rem'}/>
+      <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'14.5rem'}/>
     {/each}
   </div>
   <!-- <div class="popup-block">
@@ -72,8 +72,8 @@
     display: flex;
     flex-direction: column;
     padding: 1.5rem 1.25rem;
-    width: 15rem;
-    max-width: 15rem;
+    width: 17rem;
+    max-width: 17rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
