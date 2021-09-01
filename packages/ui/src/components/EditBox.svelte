@@ -19,7 +19,7 @@
   import Label from './Label.svelte'
 
   export let label: IntlString | undefined
-  export let width: string | undefined
+  export let maxWidth: string | undefined
   export let value: string | undefined
   export let placeholder: string = 'placeholder'
   export let password: boolean = false
@@ -29,6 +29,9 @@
 
   let text: HTMLElement
   let input: HTMLInputElement
+  let style: string
+
+  $: style = maxWidth ? `max-width: ${maxWidth};` : ''
 
   function computeSize(t: EventTarget | null) {
     const target = t as HTMLInputElement
@@ -47,16 +50,14 @@
   })
 </script>
 
-<div class="container" style="{width ? 'width: ' + width : ''}"
-  on:click={() => { input.focus() }}
->
+<div class="container" on:click={() => { input.focus() }}>
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   <div class="wrap">
     {#if password}
-      <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
-      <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
   </div>
 </div>

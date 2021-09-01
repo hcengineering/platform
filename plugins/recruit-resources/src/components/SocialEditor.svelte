@@ -56,13 +56,13 @@
   <div class="popup-block">
     <span>Contact</span>
     {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={newValues[i].value}/>
+      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={newValues[i].value} maxWidth={'12.5rem'}/>
     {/each}
   </div>
   <!-- <div class="popup-block">
     <span>SOCIAL LINKS</span>
-    <EditBox label={'Twitter'} placeholder={'@rosychen'} />
-    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} />
+    <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
+    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
   </div> -->
   <Button label="Apply" on:click={() => { dispatch('close', newValues) }}/>
 </div>
@@ -72,6 +72,8 @@
     display: flex;
     flex-direction: column;
     padding: 1.5rem 1.25rem;
+    width: 15rem;
+    max-width: 15rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
