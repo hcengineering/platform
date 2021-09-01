@@ -22,12 +22,15 @@ import { closePopup } from '..'
 export let is: AnyComponent | AnySvelteComponent
 export let props: object
 export let element: HTMLElement | undefined
+export let onClose: (result: any) => void | undefined
 export let zIndex: number
 
 let modalHTML: HTMLElement
 let modalOHTML: HTMLElement
 
-function close() {
+function close(ev: CustomEvent) {
+  console.log('got close, data', ev.detail)
+  if (onClose !== undefined) onClose(ev.detail)
   closePopup()
 }
 
