@@ -19,7 +19,7 @@
   
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup, Component } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
@@ -35,6 +35,7 @@
   import { Candidate } from '@anticrm/recruit'
 
   import chunter from '@anticrm/chunter'
+  import contact from '@anticrm/contact'
 
   const dispatch = createEventDispatcher()
 
@@ -141,7 +142,7 @@
   </div>
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>
-      <CircleButton icon={Twitter} label={'Twitter'} />
+      <div><Component is='contact:component:ChannelsPresenter' props={ { value: newValue.channels } }/></div>
       <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
     </Grid>
   </div>
