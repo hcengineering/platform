@@ -16,11 +16,13 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-
   import { EditBox, Button, CircleButton, Grid, Label, showModal, Link, showPopup } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+
   import AvatarEditor from './AvatarEditor.svelte'
   import FileIcon from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
@@ -32,12 +34,14 @@
   import { uploadFile } from '../utils'
   import { Candidate } from '@anticrm/recruit'
 
+  import chunter from '@anticrm/chunter'
+
   const dispatch = createEventDispatcher()
 
   export let space: Ref<Space>
   export let object: Candidate
   export let newValue: Candidate
-  export let focus = false
+  export let create = false
 
   export let resume: {
     id: Ref<Doc> | undefined
@@ -47,7 +51,18 @@
     type: string
   }
 
-  export let create = false
+  const client = getClient()
+  client.findOne(chunter.class.Attachment, { _id: newValue.resume }).then(result => { 
+    if (result !== undefined) {
+      resume = {
+        id: result._id,
+        name: result.name,
+        uuid: result.file,
+        size: result.size,
+        type: result.type,
+      }
+    }
+  })
 
   let dragover = false
   let loading = false
@@ -105,7 +120,7 @@
     <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
-        <EditBox placeholder="John" bind:value={newValue.firstName} on:input={isChanged} {focus}/>
+        <EditBox placeholder="John" bind:value={newValue.firstName} on:input={isChanged} focus={create}/>
         <EditBox placeholder="Appleseed" bind:value={newValue.lastName} on:input={isChanged}/>
       </div>
       <div class="title"><EditBox placeholder="Location" bind:value={newValue.city} on:input={isChanged}/></div>

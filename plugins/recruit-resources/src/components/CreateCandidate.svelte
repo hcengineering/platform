@@ -79,4 +79,4 @@
 
 </script>
 
-<DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate} focus/>
+<DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/>
