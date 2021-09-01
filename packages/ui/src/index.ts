@@ -61,7 +61,7 @@ export { default as IconComments } from './components/icons/Comments.svelte'
 
 export * from './utils'
 
-import type { AnySvelteComponent, AnyComponent } from './types'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment } from './types'
 import { writable } from 'svelte/store'
 
 export function createApp (target: HTMLElement): SvelteComponent {
@@ -71,7 +71,7 @@ export function createApp (target: HTMLElement): SvelteComponent {
 interface CompAndProps {
   is: AnySvelteComponent | AnyComponent | undefined
   props: any
-  element?: HTMLElement
+  element?: PopupAlignment
   onClose?: (result: any) => void
 }
 
@@ -80,17 +80,9 @@ export const store = writable<CompAndProps>({
   props: {},
 })
 
-export function showModal (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement): void {
-  store.set({ is: component, props, element: element })
-}
-
-export function closeModal (): void {
-  store.set({ is: undefined, props: {}, element: undefined })
-}
-
 export const popupstore = writable<CompAndProps[]>([])
 
-export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement, onClose?: (result: any) => void): void {
+export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: PopupAlignment, onClose?: (result: any) => void): void {
   popupstore.update(popups => {
     popups.push({ is: component, props, element, onClose })
     return popups

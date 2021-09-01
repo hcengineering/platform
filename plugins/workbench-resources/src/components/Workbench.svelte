@@ -26,7 +26,6 @@
   import workbench from '@anticrm/workbench'
 
   import Navigator from './Navigator.svelte'
-  import Modal from './Modal.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
@@ -92,7 +91,6 @@
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
-  <Modal />
   <Popup />
 {:else}
   No client

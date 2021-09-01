@@ -23,7 +23,7 @@
 
   import { IconAdd } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
-  import { showModal } from '@anticrm/ui'
+  import { showPopup } from '@anticrm/ui'
 
   import { classIcon } from '../../utils'
 
@@ -42,7 +42,7 @@
     label: model.addSpaceLabel,
     icon: IconAdd,
     action: async (): Promise<void> => {
-      showModal(model.createComponent, {})
+      showPopup(model.createComponent, {})
     }
   }
 
