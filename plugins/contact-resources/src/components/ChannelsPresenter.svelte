@@ -15,12 +15,46 @@
 -->
 
 <script lang="ts">
+import type { Ref } from '@anticrm/core'
+import type { IntlString, Asset } from '@anticrm/platform'
+import type { Channel, ChannelProvider } from '@anticrm/contact'
+import { getClient } from '@anticrm/presentation'
 
-import type { Channel } from '@anticrm/contact'
+import { Icon } from '@anticrm/ui'
+
+import contact from '@anticrm/contact'
 
 export let value: Channel[]
 
+interface Item {
+  label: IntlString,
+  icon: Asset,
+  value: string
+}
+
+let displayItems: Item[] = []
+
+const client = getClient()
+client.findAll(contact.class.ChannelProvider, {}).then(providers => { 
+  const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
+  for (const provider of providers) { map.set(provider._id, provider) }
+  for (const item of value) {
+    const provider = map.get(item.provider)
+    if (provider) {
+      displayItems.push({
+        label: provider.label as IntlString,
+        icon: provider.icon as Asset,
+        value: item.value,
+      })
+    } else {
+      console.log('provider not found: ', item.provider)
+    }
+  }
+})
+
 </script>
 
-Channels: {value.length}
+{#each displayItems as item}
+  <Icon icon={item.icon} size={'small'}/>
+{/each}
 

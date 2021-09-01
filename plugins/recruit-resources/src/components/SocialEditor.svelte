@@ -15,16 +15,37 @@
 -->
 
 <script lang="ts">
+  import type { Ref } from '@anticrm/core'
   import { EditBox } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
-  import contact, { ChannelProvider } from '@anticrm/contact'
+  import contact, { ChannelProvider, Channel } from '@anticrm/contact'
+
+  export let values: Channel[]
+  export let newValues: Channel[]
 
   let providers: ChannelProvider[] = []
-  let values: string[]
+
+  function findValue(provider: Ref<ChannelProvider>): number {
+    for (let i = 0; i<values.length; i++) {
+      if (values[i].provider === provider) return i
+    }
+    return -1
+  }
 
   const client = getClient()
-  client.findAll(contact.class.ChannelProvider, {}).then(result => { providers = result; values = new Array(result.length) })
+  client.findAll(contact.class.ChannelProvider, {}).then(result => { 
+    providers = result
+    for (const provider of providers) {
+      const i = findValue(provider._id)
+      if (i !== -1) {
+        newValues.push({ provider: provider._id, value: values[i].value })
+      } else {
+        newValues.push({ provider: provider._id, value: '' })
+      }
+    }
+  })
+
 
 </script>
 
@@ -32,7 +53,7 @@
   <div class="popup-block">
     <span>Contact</span>
     {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={values[i]}/>
+      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={newValues[i].value}/>
     {/each}
   </div>
   <!-- <div class="popup-block">

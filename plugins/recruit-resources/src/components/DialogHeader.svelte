@@ -142,7 +142,7 @@
   <div class="abs-rt-content">
     <Grid column={2} columnGap={.5}>
       <CircleButton icon={Twitter} label={'Twitter'} />
-      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, {}, ev.target)} />
+      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [], newValues: [] }, ev.target)} />
     </Grid>
   </div>
 </div>
