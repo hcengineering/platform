@@ -94,7 +94,7 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       const updatedDoc = q.result.find(p => p._id === tx.objectId)
       if (updatedDoc !== undefined) {
-        await this.__updateDoc(updatedDoc, tx)
+        await this.__updateDoc(q, updatedDoc, tx)
         this.sort(q, tx)
         await this.callback(updatedDoc, q)
       }
@@ -155,7 +155,8 @@ export class LiveQuery extends TxProcessor implements Client {
     await super.tx(tx)
   }
 
-  private async __updateDoc (updatedDoc: Doc, tx: TxUpdateDoc<Doc>): Promise<void> {
+  // why this is separate from txUpdateDoc?
+  private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -163,6 +164,12 @@ export class LiveQuery extends TxProcessor implements Client {
         operator(updatedDoc, ops[key])
       } else {
         (updatedDoc as any)[key] = ops[key]
+        if (q.options !== undefined) {
+          const lookup = (q.options.lookup as any)?.[key]
+          if (lookup !== undefined) {
+            (updatedDoc.$lookup as any)[key] = await this.client.findOne(lookup, { _id: ops[key] })
+          }
+        }
       }
     }
     updatedDoc.modifiedBy = tx.modifiedBy
