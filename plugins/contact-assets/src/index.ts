@@ -18,5 +18,16 @@ import chunter from '@anticrm/contact'
 
 const icons = require('../assets/icons.svg')
 loadMetadata(chunter.icon, {
-  Email: `${icons}#email`
+  Phone: `${icons}#phone`,
+  Email: `${icons}#email`,
+  Discord: `${icons}#discord`,
+  Facebook: `${icons}#facebook`,
+  Instagram: `${icons}#instagram`,
+  LinkedIn: `${icons}#linkedin`,
+  Telegram: `${icons}#telegram`,
+  Twitter: `${icons}#twitter`,
+  VK: `${icons}#vk`,
+  WhatsApp: `${icons}#whatsapp`,
+  Youtube: `${icons}#youtube`,
+  GitHub: `${icons}#github`
 })
