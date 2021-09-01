@@ -30,6 +30,7 @@ import '@anticrm/login-assets'
 import '@anticrm/task-assets'
 import '@anticrm/view-assets'
 import '@anticrm/chunter-assets'
+import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 
 import { setMetadata } from '@anticrm/platform'

@@ -14,7 +14,7 @@
 //
 
 import { plugin } from '@anticrm/platform'
-import type { Plugin } from '@anticrm/platform'
+import type { Plugin, Asset } from '@anticrm/platform'
 import type { Doc, Ref, Class, UXObject } from '@anticrm/core'
 
 /**
@@ -75,5 +75,8 @@ export default plugin(contactId, {
     Person: '' as Ref<Class<Person>>,
     Organization: '' as Ref<Class<Organization>>,
     Employee: '' as Ref<Class<Employee>>
+  },
+  icon: {
+    Email: '' as Asset
   }
 })

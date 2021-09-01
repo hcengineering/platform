@@ -9,6 +9,7 @@ specifiers:
   '@rush-temp/client': file:./projects/client.tgz
   '@rush-temp/client-resources': file:./projects/client-resources.tgz
   '@rush-temp/contact': file:./projects/contact.tgz
+  '@rush-temp/contact-assets': file:./projects/contact-assets.tgz
   '@rush-temp/contact-resources': file:./projects/contact-resources.tgz
   '@rush-temp/contrib': file:./projects/contrib.tgz
   '@rush-temp/core': file:./projects/core.tgz
@@ -81,7 +82,6 @@ specifiers:
   '@typescript-eslint/eslint-plugin': '4'
   '@typescript-eslint/parser': ^4.0.0
   autoprefixer: ^10.2.6
-  aws-sdk: ^2.969.0
   cors: ^2.8.5
   cross-env: ^7.0.3
   css-loader: ^5.2.1
@@ -127,6 +127,7 @@ dependencies:
   '@rush-temp/client': file:projects/client.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/client-resources': file:projects/client-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/contact': file:projects/contact.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/contact-assets': file:projects/contact-assets.tgz
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/contrib': file:projects/contrib.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/core': file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -199,7 +200,6 @@ dependencies:
   '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
   '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
   autoprefixer: 10.3.1_postcss@8.3.6
-  aws-sdk: 2.969.0
   cors: 2.8.5
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
@@ -9085,8 +9085,14 @@ packages:
       - typescript
     dev: false
 
+  file:projects/contact-assets.tgz:
+    resolution: {integrity: sha512-n3hBYq2eqfWSh2h5c66VYAQiLt+rEgIqej/c2MZ9+d8C3+0zSWPuQEo9s0hg4/d+Aej1R4E+RwPGObOHy1veTw==, tarball: file:projects/contact-assets.tgz}
+    name: '@rush-temp/contact-assets'
+    version: 0.0.0
+    dev: false
+
   file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-5kJqBwQFHnHh0j5SZ14iqTduEcGFaton84G7oleiUWutCJFzKAxfWlRN1s4HkY66r15i9Ci6911BJlHZRHi8bw==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-K7eN4fRxQXf0FvhCDECreRXrBHldk8q4JtqhXlFjzu1z+o0AeosaurtfF4tjMk/IfK/eX9UljXbT+YK2vK3MIg==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -9267,7 +9273,7 @@ packages:
     dev: false
 
   file:projects/elastic.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-IEQdOVDEl4SLQUo1mu4wppfdnbAyiAMp38TL1yfF+Xh7J99/R7uSqQq0pI+nsUXKAR0oSsmMoHPiEYo7Kc15Ig==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-uoPGQmOAopNC8F64rYWrRDU1s3/u70CNQeBYz7EH/PE6mR0QsYIFJW3U6/LgeDWsMXNge+5fKkjwAJh0+EQtBA==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
@@ -9280,10 +9286,11 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
-      ts-node: 10.2.1_eb14afb1492fcd444e277f1fdb668e87
+      ts-node: 10.2.1_typescript@4.3.5
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
+      - '@types/node'
       - '@typescript-eslint/parser'
       - supports-color
       - typescript
@@ -9449,7 +9456,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-M9K7FYtBIqHSdy/7PnsktYDgdSTH/sodWilGxw2tqAMAPSn1ctioGdhHXYo81Nu41xdKQgr0cEDYzQDB0+Trbw==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-ylv971t0n3lj8VGA0t6gjli0YgZ/JGfIYq0sEHEz6eiStCzNU/0JmvuNBVXNkzikP082v92hFoqTM5YSOp5b9g==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -9762,7 +9769,7 @@ packages:
     dev: false
 
   file:projects/recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-IbBV7ivDgBwb+hMOF3ihqvBQwKGweJeOQA3Q+Q/KFNtRQyadX+3OYrgYQ4VsOtkt3z7u49dCnbiPr7AwVHCkUA==, tarball: file:projects/recruit.tgz}
+    resolution: {integrity: sha512-CRnBSIpClWhHfIw4NjcVZwTAiJIdg5MPu9RkKlCQK55s43EdwV51XTIh2N9DHCNLma89yhFG6EIo4XYRQfWFmQ==, tarball: file:projects/recruit.tgz}
     id: file:projects/recruit.tgz
     name: '@rush-temp/recruit'
     version: 0.0.0
@@ -10010,7 +10017,7 @@ packages:
     dev: false
 
   file:projects/upload.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-rHxwiXBd/wGYiFnYh9IoX/2IIYFiLAK8aCeBtS08QB0zZRn8/f6V8QrbFDk1SoW9J5ZIimQx0jXX+ER3DnQo8w==, tarball: file:projects/upload.tgz}
+    resolution: {integrity: sha512-mlUwWOiAp5vvPFaPMEQHjv9XVotjAmTJqKmE536UUrRjwwSEo6p1iUXd8o+L9HRB35198Rk5peYnpyJIFVcP4g==, tarball: file:projects/upload.tgz}
     id: file:projects/upload.tgz
     name: '@rush-temp/upload'
     version: 0.0.0

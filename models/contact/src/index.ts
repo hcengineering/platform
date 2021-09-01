@@ -84,7 +84,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Email' as IntlString
+    label: 'Email' as IntlString,
+    icon: contact.icon.Email
   }, contact.channelProvider.Email)
 
   builder.createDoc(core.class.Space, core.space.Model, {

@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "6.12.0",
+  "pnpmVersion": "6.14.5",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -589,6 +589,11 @@
     {
       "packageName": "@anticrm/contact",
       "projectFolder": "plugins/contact",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/contact-assets",
+      "projectFolder": "plugins/contact-assets",
       "shouldPublish": true
     },
     {
