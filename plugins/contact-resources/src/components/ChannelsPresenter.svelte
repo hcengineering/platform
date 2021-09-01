@@ -67,14 +67,38 @@ let displayItems: Item[] = []
 
 <div class="container">
   {#each displayItems as item}
-    <Icon icon={item.icon} size={'medium'}/>
+    <div class="circle">
+      <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
+    </div>
   {/each}
 </div>
 
 <style lang="scss">
   .container {
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
-    :global(svg + svg) { margin-left: .25rem; }
+
+    .circle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 1px solid var(--theme-bg-focused-color);
+      border-radius: 50%;
+      cursor: pointer;
+
+      .icon {
+        // transform-origin: center center;
+        // transform: scale(.75);
+        opacity: .4;
+      }
+      &:hover {
+        border-color: var(--theme-bg-focused-border);
+        .icon { opacity: 1; }
+      }
+    }
+    .circle + .circle { margin-right: .25rem; }
   }
 </style>
