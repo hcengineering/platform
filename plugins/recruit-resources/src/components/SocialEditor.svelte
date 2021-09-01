@@ -21,13 +21,13 @@
 <div class="popup">
   <div class="popup-block">
     <span>Contact</span>
-    <EditBox label={'Phone'} placeholder={'+7 (000) 000-00-00'} />
-    <EditBox label={'Email'} placeholder={'rosamund.chen@gmail.com'} />
+    <EditBox label={'Phone'} placeholder={'+7 (000) 000-00-00'} maxWidth={'short'} />
+    <EditBox label={'Email'} placeholder={'rosamund.chen@gmail.com'} maxWidth={'short'} />
   </div>
   <div class="popup-block">
     <span>SOCIAL LINKS</span>
-    <EditBox label={'Twitter'} placeholder={'@rosychen'} />
-    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} />
+    <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'short'} />
+    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'short'} />
   </div>
 </div>
 
@@ -36,6 +36,8 @@
     display: flex;
     flex-direction: column;
     padding: 1.5rem 1.25rem;
+    width: 15rem;
+    max-width: 15rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);

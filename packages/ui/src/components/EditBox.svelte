@@ -19,7 +19,7 @@
   import Label from './Label.svelte'
 
   export let label: IntlString | undefined
-  export let width: string | undefined
+  export let maxWidth: 'none' | 'short' = 'none'
   export let value: string | undefined
   export let placeholder: string = 'placeholder'
   export let password: boolean = false
@@ -47,16 +47,14 @@
   })
 </script>
 
-<div class="container" style="{width ? 'width: ' + width : ''}"
-  on:click={() => { input.focus() }}
->
+<div class="container" on:click={() => { input.focus() }}>
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   <div class="wrap">
     {#if password}
-      <input bind:this={input} type="password" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="password" bind:value {placeholder} class="eb-{maxWidth}" on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
-      <input bind:this={input} type="text" bind:value {placeholder} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="text" bind:value {placeholder} class="eb-{maxWidth}" on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
   </div>
 </div>
@@ -67,6 +65,9 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .eb-none { max-width: none; }
+  .eb-short { max-width: 12.5rem; }
 
   .wrap {
     position: relative;
