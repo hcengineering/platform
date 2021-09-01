@@ -107,7 +107,7 @@
         <EditBox placeholder="John" bind:value={newValue.firstName} on:input={isChanged}/>
         <EditBox placeholder="Appleseed" bind:value={newValue.lastName} on:input={isChanged}/>
       </div>
-      <div class="title"><EditBox placeholder="Los Angeles" bind:value={newValue.city} on:input={isChanged}/></div>
+      <div class="title"><EditBox placeholder="Location" bind:value={newValue.city} on:input={isChanged}/></div>
     </div>
   </div>
   <div class="abs-lb-content">
