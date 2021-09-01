@@ -71,13 +71,13 @@ export function createApp (target: HTMLElement): SvelteComponent {
 interface CompAndProps {
   is: AnySvelteComponent | AnyComponent | undefined
   props: any
-  element: HTMLElement | undefined
+  element?: HTMLElement
+  onClose?: (result: any) => void
 }
 
 export const store = writable<CompAndProps>({
   is: undefined,
   props: {},
-  element: undefined
 })
 
 export function showModal (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement): void {
@@ -90,9 +90,9 @@ export function closeModal (): void {
 
 export const popupstore = writable<CompAndProps[]>([])
 
-export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement): void {
+export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: HTMLElement, onClose?: (result: any) => void): void {
   popupstore.update(popups => {
-    popups.push({ is: component, props, element: element })
+    popups.push({ is: component, props, element, onClose })
     return popups
   })
 }

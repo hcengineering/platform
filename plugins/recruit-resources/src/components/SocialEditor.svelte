@@ -16,13 +16,16 @@
 
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
-  import { EditBox } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import { EditBox, Button } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
   import contact, { ChannelProvider, Channel } from '@anticrm/contact'
 
   export let values: Channel[]
   export let newValues: Channel[]
+
+  const dispatch = createEventDispatcher()
 
   let providers: ChannelProvider[] = []
 
@@ -61,6 +64,7 @@
     <EditBox label={'Twitter'} placeholder={'@rosychen'} />
     <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} />
   </div> -->
+  <Button label="Apply" on:click={() => { dispatch('close', 42) }}/>
 </div>
 
 <style lang="scss">
