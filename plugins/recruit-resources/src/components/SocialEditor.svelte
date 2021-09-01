@@ -16,19 +16,30 @@
 
 <script lang="ts">
   import { EditBox } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+
+  import contact, { ChannelProvider } from '@anticrm/contact'
+
+  let providers: ChannelProvider[] = []
+  let values: string[]
+
+  const client = getClient()
+  client.findAll(contact.class.ChannelProvider, {}).then(result => { providers = result; values = new Array(result.length) })
+
 </script>
 
 <div class="popup">
   <div class="popup-block">
     <span>Contact</span>
-    <EditBox label={'Phone'} placeholder={'+7 (000) 000-00-00'} />
-    <EditBox label={'Email'} placeholder={'rosamund.chen@gmail.com'} />
+    {#each providers as provider, i}
+      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={values[i]}/>
+    {/each}
   </div>
-  <div class="popup-block">
+  <!-- <div class="popup-block">
     <span>SOCIAL LINKS</span>
     <EditBox label={'Twitter'} placeholder={'@rosychen'} />
     <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} />
-  </div>
+  </div> -->
 </div>
 
 <style lang="scss">
