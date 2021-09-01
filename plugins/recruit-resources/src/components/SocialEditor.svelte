@@ -56,7 +56,7 @@
   <div class="popup-block">
     <span>Contact</span>
     {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={newValues[i].value} maxWidth={'12.5rem'}/>
+      <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'12.5rem'}/>
     {/each}
   </div>
   <!-- <div class="popup-block">

@@ -30,6 +30,7 @@ export const DOMAIN_CONTACT = 'contact' as Domain
 export class TChannelProvider extends TDoc implements ChannelProvider {
   label!: IntlString
   icon?: Asset
+  placeholder!: string
 }
 
 @Model(contact.class.TypeChannels, core.class.Type)
@@ -85,8 +86,21 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'Email' as IntlString,
-    icon: contact.icon.Email
+    icon: contact.icon.Email,
+    placeholder: 'john.appleseed@apple.com'
   }, contact.channelProvider.Email)
+
+  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
+    label: 'Phone' as IntlString,
+    icon: contact.icon.Email,
+    placeholder: '+1 555 333 7777'
+  })
+
+  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
+    label: 'LinkedIn' as IntlString,
+    icon: contact.icon.Email,
+    placeholder: 'https://linkedin.com/in/jappleseed'
+  })
 
   builder.createDoc(core.class.Space, core.space.Model, {
     name: 'Employees',

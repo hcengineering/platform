@@ -66,6 +66,6 @@ let displayItems: Item[] = []
 </script>
 
 {#each displayItems as item}
-  {item.value}<Icon icon={item.icon} size={'small'}/>
+  <Icon icon={item.icon} size={'medium'}/>
 {/each}
 

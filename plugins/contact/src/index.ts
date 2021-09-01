@@ -21,6 +21,7 @@ import type { Doc, Ref, Class, UXObject } from '@anticrm/core'
  * @public
  */
 export interface ChannelProvider extends Doc, UXObject {
+  placeholder: string
 }
 
 /**
