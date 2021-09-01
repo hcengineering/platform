@@ -19,7 +19,7 @@
   import Label from './Label.svelte'
 
   export let label: IntlString | undefined
-  export let maxWidth: 'none' | 'short' = 'none'
+  export let maxWidth: string | undefined
   export let value: string | undefined
   export let placeholder: string = 'placeholder'
   export let password: boolean = false
@@ -29,6 +29,9 @@
 
   let text: HTMLElement
   let input: HTMLInputElement
+  let style: string
+
+  $: style = maxWidth ? `max-width: ${maxWidth};` : ''
 
   function computeSize(t: EventTarget | null) {
     const target = t as HTMLInputElement
@@ -52,9 +55,9 @@
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   <div class="wrap">
     {#if password}
-      <input bind:this={input} type="password" bind:value {placeholder} class="eb-{maxWidth}" on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {:else}
-      <input bind:this={input} type="text" bind:value {placeholder} class="eb-{maxWidth}" on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
     {/if}
   </div>
 </div>
@@ -65,9 +68,6 @@
     flex-direction: column;
     align-items: flex-start;
   }
-
-  .eb-none { max-width: none; }
-  .eb-short { max-width: 12.5rem; }
 
   .wrap {
     position: relative;

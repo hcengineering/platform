@@ -32,13 +32,13 @@
   <div class="popup-block">
     <span>Contact</span>
     {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={values[i]} maxWidth={'short'} />
+      <EditBox label={provider.label} placeholder={'+7 (000) 000-00-00'} bind:value={values[i]} maxWidth={'12.5rem'} />
     {/each}
   </div>
   <!-- <div class="popup-block">
     <span>SOCIAL LINKS</span>
-    <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'short'} />
-    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'short'} />
+    <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
+    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
   </div> -->
 </div>
 
