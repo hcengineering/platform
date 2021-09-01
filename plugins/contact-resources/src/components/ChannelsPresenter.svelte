@@ -65,7 +65,16 @@ let displayItems: Item[] = []
 
 </script>
 
-{#each displayItems as item}
-  <Icon icon={item.icon} size={'medium'}/>
-{/each}
+<div class="container">
+  {#each displayItems as item}
+    <Icon icon={item.icon} size={'medium'}/>
+  {/each}
+</div>
 
+<style lang="scss">
+  .container {
+    display: flex;
+    align-items: center;
+    :global(svg + svg) { margin-left: .25rem; }
+  }
+</style>

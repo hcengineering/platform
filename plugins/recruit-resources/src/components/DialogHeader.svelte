@@ -140,11 +140,9 @@
       <Button label={ create ? 'Create' : 'Save' } size={'small'} transparent on:click={ () => { dispatch('save') } }/>
     {/if}
   </div>
-  <div class="abs-rt-content">
-    <Grid column={2} columnGap={.5}>
-      <div><Component is='contact:component:ChannelsPresenter' props={ { value: newValue.channels } }/></div>
-      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
-    </Grid>
+  <div class="abs-rt-content flex-row-center">
+    <div style="margin-right: .25rem"><Component is='contact:component:ChannelsPresenter' props={ { value: newValue.channels } }/></div>
+    <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
   </div>
 </div>
 </form>
