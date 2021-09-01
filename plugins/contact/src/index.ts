@@ -78,6 +78,17 @@ export default plugin(contactId, {
     Employee: '' as Ref<Class<Employee>>
   },
   icon: {
-    Email: '' as Asset
+    Phone: '' as Asset,
+    Email: '' as Asset,
+    Discord: '' as Asset,
+    Facebook: '' as Asset,
+    Instagram: '' as Asset,
+    LinkedIn: '' as Asset,
+    Telegram: '' as Asset,
+    Twitter: '' as Asset,
+    VK: '' as Asset,
+    WhatsApp: '' as Asset,
+    Youtube: '' as Asset,
+    GitHub: '' as Asset
   }
 })

@@ -92,14 +92,20 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'Phone' as IntlString,
-    icon: contact.icon.Email,
+    icon: contact.icon.Phone,
     placeholder: '+1 555 333 7777'
   })
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'LinkedIn' as IntlString,
-    icon: contact.icon.Email,
+    icon: contact.icon.LinkedIn,
     placeholder: 'https://linkedin.com/in/jappleseed'
+  })
+
+  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
+    label: 'Twitter' as IntlString,
+    icon: contact.icon.Twitter,
+    placeholder: '@appleseed'
   })
 
   builder.createDoc(core.class.Space, core.space.Model, {
