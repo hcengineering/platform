@@ -19,7 +19,7 @@
   
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import { EditBox, Button, CircleButton, Grid, Label, showModal, Link, showPopup } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
@@ -117,7 +117,7 @@
     on:dragleave={ () => { dragover = false } }
     on:drop|preventDefault|stopPropagation={drop}>
   <div class="flex-row-center main-content">
-    <div class="avatar" on:click|stopPropagation={() => showModal(AvatarEditor, { label: 'Profile photo' })}><User /></div>
+    <div class="avatar" on:click|stopPropagation={() => showPopup(AvatarEditor, { label: 'Profile photo' })}><User /></div>
     <div class="flex-col">
       <div class="name">
         <EditBox placeholder="John" bind:value={newValue.firstName} on:input={isChanged} focus={create}/>

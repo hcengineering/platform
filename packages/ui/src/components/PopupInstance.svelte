@@ -16,12 +16,12 @@
 
 <script lang="ts">
 import Component from './Component.svelte'
-import type { AnySvelteComponent, AnyComponent } from '../types'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
 import { closePopup } from '..'
 
 export let is: AnyComponent | AnySvelteComponent
 export let props: object
-export let element: HTMLElement | undefined
+export let element: PopupAlignment | undefined
 export let onClose: (result: any) => void | undefined
 export let zIndex: number
 
@@ -37,26 +37,31 @@ function close(ev: CustomEvent) {
 $: {
   if (modalHTML) {
     if (element) {
-      const rect = element.getBoundingClientRect()
-      if (rect.top > document.body.clientHeight - rect.bottom) {
-        modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
-      } else {
-        modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-      }
-      if (rect.left > document.body.clientWidth - rect.right) {
-        modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-      } else {
-        modalHTML.style.left = rect.left + 'px'
+      if (typeof element !== 'string') {
+        const rect = element.getBoundingClientRect()
+        if (rect.top > document.body.clientHeight - rect.bottom) {
+          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
+        } else {
+          modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+        }
+        if (rect.left > document.body.clientWidth - rect.right) {
+          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
+        } else {
+          modalHTML.style.left = rect.left + 'px'
+        }
+      } else if (element === 'right') {
+        modalHTML.style.top = '4rem'
+        modalHTML.style.bottom = '4rem'
+        modalHTML.style.right = '4rem'
       }
     } else {
-      modalHTML.style.top = '4rem'
-      modalHTML.style.bottom = '4rem'
-      modalHTML.style.right = '4rem'
+      modalHTML.style.top = '50%'
+      modalHTML.style.left = '50%'
+      modalHTML.style.transform = 'translate(-50%, -50%)'
     }
   }
 }
 </script>
-
 
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   {#if typeof(is) === 'string'}

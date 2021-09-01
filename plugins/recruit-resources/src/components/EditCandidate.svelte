@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
-  import { Dialog, Tabs } from '@anticrm/ui'
+  import { FloatDialog, Tabs } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
