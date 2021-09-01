@@ -52,7 +52,7 @@
       firstName: newValue.firstName,
       lastName: newValue.lastName,
       city: newValue.city,
-      channels: [],
+      channels: newValue.channels,
     })
 
     console.log('resume name', resume.name)
