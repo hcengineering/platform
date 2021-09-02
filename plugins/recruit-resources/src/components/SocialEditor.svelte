@@ -63,13 +63,15 @@
         <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'14.5rem'}/>
       {/each}
     </div>
-    <div class="popup-block">
+    <!-- <div class="popup-block">
       <span>SOCIAL LINKS</span>
       <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
       <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
-    </div>
+    </div> -->
   </ScrollBox>
-  <div class="btn"><Button label="Apply" on:click={() => { dispatch('close', filterUndefined(newValues)) }}/></div>
+  <div class="buttons">
+    <div class="btn"><Button label="Apply" width={'100%'} on:click={() => { dispatch('close', filterUndefined(newValues)) }}/></div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -100,9 +102,11 @@
     }
   }
   .popup-block + .popup-block { margin-top: 2rem; }
-  .btn {
+  .buttons {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     margin-top: 1rem;
+    .btn { flex-grow: 1; }
+    .btn + .btn { margin-left: .75rem; }
   }
 </style>
