@@ -24,7 +24,7 @@ import { Icon } from '@anticrm/ui'
 
 import contact from '@anticrm/contact'
 
-export let value: Channel[]
+export let value: Channel[] | undefined
 
 interface Item {
   label: IntlString,
@@ -59,7 +59,7 @@ async function update(value: Channel[]) {
   displayItems = result
 }
 
-$: update(value)
+$: if (value !== undefined) update(value)
 
 let displayItems: Item[] = []
 

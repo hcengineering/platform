@@ -49,6 +49,9 @@
     }
   })
 
+  function filterUndefined(channels: Channel[]): Channel[] {
+    return channels.filter(channel => channel.value !== undefined && channel.value.length > 0)
+  }
 
 </script>
 
@@ -64,7 +67,7 @@
     <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
     <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
   </div> -->
-  <Button label="Apply" on:click={() => { dispatch('close', newValues) }}/>
+  <Button label="Apply" on:click={() => { dispatch('close', filterUndefined(newValues)) }}/>
 </div>
 
 <style lang="scss">
