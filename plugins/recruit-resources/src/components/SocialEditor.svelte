@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Button } from '@anticrm/ui'
+  import { EditBox, Button, ScrollBox } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
   import contact, { ChannelProvider, Channel } from '@anticrm/contact'
@@ -56,27 +56,30 @@
 </script>
 
 <div class="popup">
-  <div class="popup-block">
-    <span>Contact Links</span>
-    {#each providers as provider, i}
-      <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'14.5rem'}/>
-    {/each}
-  </div>
-  <!-- <div class="popup-block">
-    <span>SOCIAL LINKS</span>
-    <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
-    <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
-  </div> -->
-  <Button label="Apply" on:click={() => { dispatch('close', filterUndefined(newValues)) }}/>
+  <ScrollBox vertical stretch>
+    <div class="popup-block">
+      <span>Contact Links</span>
+      {#each providers as provider, i}
+        <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'14.5rem'}/>
+      {/each}
+    </div>
+    <div class="popup-block">
+      <span>SOCIAL LINKS</span>
+      <EditBox label={'Twitter'} placeholder={'@rosychen'} maxWidth={'12.5rem'} />
+      <EditBox label={'Facebook'} placeholder={'facebook/rosamundch'} maxWidth={'12.5rem'} />
+    </div>
+  </ScrollBox>
+  <div class="btn"><Button label="Apply" on:click={() => { dispatch('close', filterUndefined(newValues)) }}/></div>
 </div>
 
 <style lang="scss">
   .popup {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem 1.25rem;
+    padding: 1.5rem 1.25rem 1.25rem;
     width: 17rem;
     max-width: 17rem;
+    height: 22rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
@@ -96,7 +99,10 @@
       }
     }
   }
-  .popup-block + .popup-block {
-    margin-top: 2rem;
+  .popup-block + .popup-block { margin-top: 2rem; }
+  .btn {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
   }
 </style>
