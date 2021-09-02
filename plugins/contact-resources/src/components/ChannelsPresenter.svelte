@@ -80,7 +80,7 @@ let displayItems: Item[] = []
         <div class="overflow-label">{item.value}</div>
       </div>
       <div class="button" on:click|preventDefault={() => { alert('Copied: ' + item.value) }}>
-        <IconCopy size={'medium'}/>
+        <IconCopy size={'small'}/>
       </div>
     </div>
   {/each}
