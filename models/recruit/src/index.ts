@@ -105,7 +105,7 @@ export function createModel (builder: Builder): void {
         resume: chunter.class.Attachment
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '$lookup.resume', 'channels', 'city']
+    config: ['', 'city', '$lookup.resume', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -118,7 +118,7 @@ export function createModel (builder: Builder): void {
         candidate: recruit.class.Candidate
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.candidate', '$lookup.candidate.email', '$lookup.candidate.city']
+    config: ['$lookup.candidate', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
 }
 
