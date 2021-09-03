@@ -42,7 +42,7 @@
     label: model.addSpaceLabel,
     icon: IconAdd,
     action: async (): Promise<void> => {
-      showPopup(model.createComponent, {})
+      showPopup(model.createComponent, {}, 'right')
     }
   }
 

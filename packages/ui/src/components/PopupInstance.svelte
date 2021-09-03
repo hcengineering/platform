@@ -50,6 +50,10 @@ $: {
           modalHTML.style.left = rect.left + 'px'
         }
       } else if (element === 'right') {
+        modalHTML.style.top = '0'
+        modalHTML.style.bottom = '0'
+        modalHTML.style.right = '0'
+      } else if (element === 'float') {
         modalHTML.style.top = '4rem'
         modalHTML.style.bottom = '4rem'
         modalHTML.style.right = '4rem'
@@ -76,6 +80,7 @@ $: {
   .popup {
     position: fixed;
     background-color: transparent;
+    backdrop-filter: blur(1rem);
     filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .6));
   }
   .modal-overlay {
@@ -84,6 +89,6 @@ $: {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.25);
+    // background: rgba(0, 0, 0, 0.25);
   }
 </style>

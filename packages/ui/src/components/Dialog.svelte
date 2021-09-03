@@ -48,66 +48,57 @@
 </div>
 
 <style lang="scss">
-  .dialog-container {
-    position: relative;
+  .dialog {
     display: flex;
-    justify-content: space-between;
-    flex-direction: row-reverse;
-    width: 100vw;
+    flex-direction: column;
+    width: 45rem;
+    height: 100vh;
     min-height: 100vh;
     max-height: 100vh;
+    background-color: var(--theme-bg-color);
+    border-radius: 1.875rem 0 0 1.875rem;
+    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
 
-    .dialog {
-      display: flex;
-      flex-direction: column;
-      width: 45rem;
-      min-height: 100vh;
-      max-height: 100vh;
-      background-color: var(--theme-bg-color);
-      border-radius: 1.875rem 0 0 1.875rem;
-      box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
+    .header {
+      flex-shrink: 0;
+      padding: 0 2rem 0 2.5rem;
+      height: 4.5rem;
 
-      .header {
-        flex-shrink: 0;
-        padding: 0 2rem 0 2.5rem;
-        height: 4.5rem;
-
-        .title {
-          flex-grow: 1;
-          font-weight: 500;
-          font-size: 1.125rem;
-          color: var(--theme-caption-color);
-          user-select: none;
-        }
-
-        .tool {
-          margin-left: .75rem;
-          opacity: .4;
-          cursor: pointer;
-          &:hover { opacity: 1; }
-        }
-      }
-
-      .content {
-        flex-shrink: 0;
+      .title {
         flex-grow: 1;
-        margin: 0 2.5rem;
-        height: fit-content;
+        font-weight: 500;
+        font-size: 1.125rem;
+        color: var(--theme-caption-color);
+        user-select: none;
       }
 
-      .footer {
-        flex-shrink: 0;
-        display: grid;
-        grid-auto-flow: column;
-        direction: rtl;
-        justify-content: start;
-        align-items: center;
-        column-gap: .75rem;
-        padding: 0 2.5rem;
-        height: 6rem;
-        mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
-        overflow: hidden;
+      .tool {
+        margin-left: .75rem;
+        opacity: .4;
+        cursor: pointer;
+        &:hover { opacity: 1; }
       }
+    }
+
+    .content {
+      flex-shrink: 0;
+      flex-grow: 1;
+      margin: 0 2.5rem;
+      height: max-content;
+    }
+
+    .footer {
+      flex-shrink: 0;
+      display: grid;
+      grid-auto-flow: column;
+      direction: rtl;
+      justify-content: start;
+      align-items: center;
+      column-gap: .75rem;
+      padding: 0 2.5rem;
+      height: 6rem;
+      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
+      overflow: hidden;
     }
   }
 </style>
