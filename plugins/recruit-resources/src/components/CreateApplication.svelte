@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Button } from '@anticrm/ui'
+  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button } from '@anticrm/ui'
   import { UserBox, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Person } from '@anticrm/contact'
   import File from './icons/File.svelte'
@@ -48,10 +48,9 @@
       okLabel={'Save'} 
       okAction={createCandidate}
       on:close={() => { dispatch('close') }}>
-  <div style="margin-bottom: 1.5rem;">
-    <UserInfo value={{firstName: 'First', lastName: 'Last', city: 'Cityvech'}} size={'large'} subtitle={'Candidate'} />
-  </div>
-  <Grid>
+  <Grid rowGap={1.5}>
+    <Row><EditBox label={'Name'} placeholder={'John Connor'} /></Row>
+    <Row><UserInfo value={{firstName: 'First', lastName: 'Last', city: 'Cityvech'}} size={'large'} subtitle={'Candidate'} /></Row>
     <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
     <DatePicker title={'Pick due date'} />
   </Grid>

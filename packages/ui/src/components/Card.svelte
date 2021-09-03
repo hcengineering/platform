@@ -48,6 +48,7 @@
     padding: 0;
     background-color: transparent;
     border-radius: 1.25rem;
+    // box-shadow: 0 2rem 4.5rem rgba(0, 0, 0, .55);
 
     .header {
       flex-shrink: 0;
