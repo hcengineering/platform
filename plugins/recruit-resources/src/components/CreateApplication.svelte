@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid } from '@anticrm/ui'
+  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Button } from '@anticrm/ui'
   import { UserBox } from '@anticrm/presentation'
   import type { Person } from '@anticrm/contact'
   import File from './icons/File.svelte'
@@ -39,7 +39,9 @@
     client.createDoc(recruit.class.Applicant, space, {
       candidate,
     })
+    dispatch('close')
   }
+
 </script>
 
 <!-- <Dialog label={'Create Application'} 
@@ -47,6 +49,7 @@
         okAction={createCandidate}
         on:close={() => { dispatch('close') }}> -->
   <!-- <Section icon={File} label={'General Information'}> -->
+    <Button label="Save" on:click={createCandidate}/>
     <Grid>
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show />
       <DatePicker title={'Pick due date'} />
