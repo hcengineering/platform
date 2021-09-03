@@ -19,7 +19,8 @@ import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
-function translateQuery<T extends Doc> (query: DocumentQuery<T>): Filter<Document> {
+function translateQuery<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
+  // return Object.assign({}, query, { _class: clazz })
   return query as Filter<Document>
 }
 
@@ -37,13 +38,45 @@ abstract class MongoAdapterBase extends TxProcessor {
 
   async init (): Promise<void> {}
 
+  private async lookup<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options: FindOptions<T>): Promise<FindResult<T>> {
+    const pipeline = []
+    pipeline.push({ $match: translateQuery(clazz, query) })
+    const lookups = options.lookup as any
+    for (const key in lookups) {
+      const clazz = lookups[key]
+      const step = {
+        from: this.hierarchy.getDomain(clazz),
+        localField: key,
+        foreignField: '_id',
+        as: key + '_lookup'
+      }
+      pipeline.push({ $lookup: step })
+    }
+    const domain = this.hierarchy.getDomain(clazz)
+    const cursor = this.db.collection(domain).aggregate(pipeline)
+    const result = await cursor.toArray() as FindResult<T>
+    for (const row of result) {
+      const object = row as any
+      object.$lookup = {}
+      for (const key in lookups) {
+        const arr = object[key + '_lookup']
+        object.$lookup[key] = arr[0]
+      }
+    }
+    return result
+  }
+
   async findAll<T extends Doc> (
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    // TODO: rework this
+    if (options !== null && options !== undefined) {
+      if (options.lookup !== undefined) { return await this.lookup(_class, query, options) }
+    }
     const domain = this.hierarchy.getDomain(_class)
-    let cursor = this.db.collection(domain).find<T>(translateQuery(query))
+    let cursor = this.db.collection(domain).find<T>(translateQuery(_class, query))
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}

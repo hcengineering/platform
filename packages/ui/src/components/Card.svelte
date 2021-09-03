@@ -35,7 +35,7 @@
   <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
-    <div class="tool"><Button label={okLabel} size={'small'} transparent on:click={() => { dispatch('close') }} /></div>
+    <div class="tool"><Button label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
   </div>
   <div class="content"><slot /></div>
 </form>
