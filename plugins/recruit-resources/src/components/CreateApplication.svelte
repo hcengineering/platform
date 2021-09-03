@@ -48,10 +48,8 @@
       okLabel={'Save'} 
       okAction={createCandidate}
       on:close={() => { dispatch('close') }}>
-  <Grid rowGap={1.5}>
-    <Row><EditBox label={'Name'} placeholder={'John Connor'} /></Row>
-    <Row><UserInfo value={{firstName: 'First', lastName: 'Last', city: 'Cityvech'}} size={'large'} subtitle={'Candidate'} /></Row>
+  <Grid column={1} rowGap={1.75}>
     <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
-    <DatePicker title={'Pick due date'} />
+    <UserBox _class={recruit.class.Candidate} title='Assigned recruiter' caption='Recruiters' bind:value={candidate} />
   </Grid>
 </Card>

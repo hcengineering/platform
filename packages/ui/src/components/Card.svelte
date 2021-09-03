@@ -23,6 +23,7 @@
   // import ScrollBox from './ScrollBox.svelte'
   import Button from './Button.svelte'
   import Label from './Label.svelte'
+  import IconFolder from './icons/Folder.svelte'
 
   export let label: IntlString
   export let okLabel: IntlString
@@ -38,6 +39,14 @@
     <div class="tool"><Button label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
   </div>
   <div class="content"><slot /></div>
+  <div class="flex-col pool">
+    <div class="separator" />
+    <div class="overflow-label label">Project</div>
+    <div class="flex-row-center">
+      <span class="icon"><IconFolder size={'small'} /></span>
+      <span class="overflow-label">Select Project</span>
+    </div>
+  </div>
 </form>
 
 <style lang="scss">
@@ -45,15 +54,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0;
-    background-color: transparent;
+    min-width: 20rem;
     border-radius: 1.25rem;
-    // box-shadow: 0 2rem 4.5rem rgba(0, 0, 0, .55);
 
     .header {
       flex-shrink: 0;
       padding: 1rem 1.25rem 1rem 1.75rem;
-
       .label {
         font-weight: 500;
         font-size: 1rem;
@@ -65,8 +71,30 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      margin: 0 1.75rem 1.75rem;
+      margin: 0 1.75rem;
       height: fit-content;
+    }
+
+    .pool {
+      margin: 0 1.75rem 1.5rem;
+      color: var(--theme-caption-color);
+      .separator {
+        margin: 1rem 0;
+        height: 1px;
+        background-color: #fff;
+        opacity: .1;
+      }
+      .label {
+        margin-bottom: .125rem;
+        font-weight: 500;
+        font-size: .75rem;
+        color: var(--theme-content-accent-color);
+      }
+      .icon {
+        transform-origin: center center;
+        transform: scale(.75);
+        margin-right: .25rem;
+      }
     }
 
     .card-bg {
