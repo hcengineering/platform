@@ -48,7 +48,7 @@
         on:close={() => { dispatch('close') }}>
   <Section icon={File} label={'General Information'}>
     <Grid>
-      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show/>
+      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show />
       <DatePicker title={'Pick due date'} />
     </Grid>
   </Section>
