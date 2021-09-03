@@ -42,14 +42,14 @@
   }
 </script>
 
-<Dialog label={'Create Application'} 
+<!-- <Dialog label={'Create Application'} 
         okLabel={'Create Application'} 
         okAction={createCandidate}
-        on:close={() => { dispatch('close') }}>
-  <Section icon={File} label={'General Information'}>
+        on:close={() => { dispatch('close') }}> -->
+  <!-- <Section icon={File} label={'General Information'}> -->
     <Grid>
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show />
       <DatePicker title={'Pick due date'} />
     </Grid>
-  </Section>
-</Dialog>
+  <!-- </Section> -->
+<!-- </Dialog> -->

@@ -28,9 +28,9 @@ export let zIndex: number
 let modalHTML: HTMLElement
 let modalOHTML: HTMLElement
 
-function close(ev: CustomEvent) {
-  console.log('got close, data', ev.detail)
-  if (onClose !== undefined) onClose(ev.detail)
+function close(result: any) {
+  console.log('popup close result', result)
+  if (onClose !== undefined) onClose(result)
   closePopup()
 }
 
@@ -65,12 +65,12 @@ $: {
 
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   {#if typeof(is) === 'string'}
-    <Component is={is} props={props} on:close={close}/>
+    <Component is={is} props={props} on:close={ (ev) => close(ev.detail) }/>
   {:else}
-    <svelte:component this={is} {...props} on:close={close} />
+    <svelte:component this={is} {...props} on:close={ (ev) => close(ev.detail) } />
   {/if}
 </div>
-<div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={close} />
+<div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 
 <style lang="scss">
   .popup {
