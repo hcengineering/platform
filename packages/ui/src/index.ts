@@ -59,6 +59,7 @@ export { default as IconClose } from './components/icons/Close.svelte'
 export { default as IconSearch } from './components/icons/Search.svelte'
 export { default as IconToDo } from './components/icons/ToDo.svelte'
 export { default as IconComments } from './components/icons/Comments.svelte'
+export { default as IconFolder } from './components/icons/Folder.svelte'
 
 export * from './utils'
 
