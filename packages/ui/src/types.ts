@@ -54,4 +54,4 @@ export interface Tab {
 
 export type TabModel = Tab[]
 
-export type PopupAlignment = HTMLElement | 'right'
+export type PopupAlignment = HTMLElement | 'right' | 'float'

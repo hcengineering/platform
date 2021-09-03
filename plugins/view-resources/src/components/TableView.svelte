@@ -50,7 +50,7 @@
   const client = getClient()
 
   function onClick(object: Doc) {
-    showPopup(open, { object, space }, 'right')
+    showPopup(open, { object, space }, 'float')
   }
 </script>
 

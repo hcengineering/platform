@@ -52,6 +52,7 @@ export { default as Loading } from './components/Loading.svelte'
 export { default as Popup } from './components/Popup.svelte'
 export { default as CircleButton } from './components/CircleButton.svelte'
 export { default as Link } from './components/Link.svelte'
+export { default as Card } from './components/Card.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconClose } from './components/icons/Close.svelte'

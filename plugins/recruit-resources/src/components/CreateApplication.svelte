@@ -16,8 +16,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Button } from '@anticrm/ui'
-  import { UserBox } from '@anticrm/presentation'
+  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button } from '@anticrm/ui'
+  import { UserBox, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Person } from '@anticrm/contact'
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
@@ -44,15 +44,14 @@
 
 </script>
 
-<!-- <Dialog label={'Create Application'} 
-        okLabel={'Create Application'} 
-        okAction={createCandidate}
-        on:close={() => { dispatch('close') }}> -->
-  <!-- <Section icon={File} label={'General Information'}> -->
-    <Button label="Save" on:click={createCandidate}/>
-    <Grid>
-      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} show />
-      <DatePicker title={'Pick due date'} />
-    </Grid>
-  <!-- </Section> -->
-<!-- </Dialog> -->
+<Card label={'Create Application'} 
+      okLabel={'Save'} 
+      okAction={createCandidate}
+      on:close={() => { dispatch('close') }}>
+  <Grid rowGap={1.5}>
+    <Row><EditBox label={'Name'} placeholder={'John Connor'} /></Row>
+    <Row><UserInfo value={{firstName: 'First', lastName: 'Last', city: 'Cityvech'}} size={'large'} subtitle={'Candidate'} /></Row>
+    <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
+    <DatePicker title={'Pick due date'} />
+  </Grid>
+</Card>
