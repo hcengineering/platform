@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
 
-  import { PopupMenu, Label, EditWithIcon, IconSearch } from '@anticrm/ui'
+  import { Label, showPopup } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
-  import UserInfo from './UserInfo.svelte'
+  import UsersPopup from './UsersPopup.svelte'
   import Add from './icons/Add.svelte'
   import Close from './icons/Close.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
   import type { Person } from '@anticrm/contact'
-  import { createQuery } from '../utils'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
@@ -31,48 +31,39 @@
   export let value: Ref<Person>
   export let show: boolean = false
 
-  let search: string = ''
   let selected: Person | undefined
+  let btn: HTMLElement
 
-  let objects: Person[] = []
-
-  const query = createQuery()
-  $: query.query(_class, {}, result => { objects = result })
+  onMount(() => {
+    if (btn && show) {
+      btn.click()
+      show = false
+    }
+  })
 </script>
 
 <div class="flex-row-center">
-  <PopupMenu bind:show={show}>
-    <button
-      slot="trigger"
-      class="focused-button btn"
-      class:selected={show}
-      on:click|preventDefault={() => {
-        show = !show
-      }}
-    >
-      {#if selected}
-        <Avatar size={'medium'} />
-      {:else}
-        <div class="icon">
-          {#if show}<Close size={'small'} />{:else}<Add size={'small'} />{/if}
-        </div>
-      {/if}
-    </button>
-
-    <div class="header">
-      <div class="title"><Label label={title} /></div>
-      <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-      <div class="caption"><Label label={caption} /></div>
-    </div>
-
-    {#each objects as person}
-      <button class="menu-item" on:click={() => {
-        selected = person
-        value = person._id
-        show = !show
-      }}><UserInfo size={'medium'} value={person} /></button>
-    {/each}
-  </PopupMenu>
+  <button
+    class="focused-button btn"
+    class:selected={show}
+    bind:this={btn}
+    on:click|preventDefault={(ev) => {
+      showPopup(UsersPopup, { _class, title, caption }, ev.target, (result) => {
+        if (result) {
+          selected = result
+          value = result._id
+        }
+      })
+    }}
+  >
+    {#if selected}
+      <Avatar size={'medium'} />
+    {:else}
+      <div class="icon">
+        {#if show}<Close size={'small'} />{:else}<Add size={'small'} />{/if}
+      </div>
+    {/if}
+  </button>
 
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
@@ -88,38 +79,6 @@
     height: 2.25rem;
     border-radius: 50%;
     border: none;
-  }
-
-  .header {
-    text-align: left;
-    .title {
-      margin-bottom: 1rem;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-    }
-    .caption {
-      margin: 1rem 0 .625rem .375rem;
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--theme-content-dark-color);
-    }
-  }
-
-  .menu-item {
-    justify-content: start;
-    padding: .375rem;
-    border-radius: .5rem;
-
-    &:hover {
-      background-color: var(--theme-button-bg-pressed);
-      border: 1px solid var(--theme-bg-accent-color);
-    }
-    &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
-      z-index: 1;
-    }
   }
 
   .selectUser {
