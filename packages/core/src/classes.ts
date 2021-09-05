@@ -186,3 +186,12 @@ export interface Space extends Doc {
 export interface Account extends Doc {
   email: string
 }
+
+// S T A T E
+
+/**
+ * @public
+ */
+export interface State extends Doc, UXObject {
+  machine: Ref<Space>
+}

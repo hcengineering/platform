@@ -15,12 +15,14 @@
 
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import StatePresenter from './components/StatePresenter.svelte'
 import TableView from './components/TableView.svelte'
 
 export default async () => ({
   component: {
     StringEditor,
     StringPresenter,
+    StatePresenter,
     TableView
   },
 })

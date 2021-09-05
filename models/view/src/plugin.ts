@@ -21,6 +21,7 @@ export default mergeIds(viewId, view, {
   component: {
     StringEditor: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,
+    StatePresenter: '' as AnyComponent,
 
     TableView: '' as AnyComponent
   }

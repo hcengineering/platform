@@ -31,12 +31,24 @@
 
   const client = getClient()
 
-  function createVacancy() {
-    client.createDoc(recruit.class.Vacancy, core.space.Model, {
+  async function createVacancy() {
+    const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
       name,
       description,
       private: false,
       members: []
+    })
+    await client.createDoc(core.class.State, id, {
+      machine: id,
+      label: 'Initial'
+    })
+    await client.createDoc(core.class.State, id, {
+      machine: id,
+      label: 'Interview'
+    })
+    await client.createDoc(core.class.State, id, {
+      machine: id,
+      label: 'Final'
     })
   }
 </script>

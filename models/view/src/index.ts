@@ -58,6 +58,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringPresenter
   })
 
+  builder.mixin(core.class.State, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.StatePresenter
+  })
+
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
     label: 'Table' as IntlString,
     icon: view.icon.Table,

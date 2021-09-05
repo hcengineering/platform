@@ -15,7 +15,7 @@
 
 import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, UX, Prop, TypeString } from '@anticrm/model'
-import type { Ref, FindOptions, Doc, Domain } from '@anticrm/core'
+import type { Ref, FindOptions, Doc, Domain, State } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import type { Attachment } from '@anticrm/chunter'
@@ -49,6 +49,9 @@ export class TCandidate extends TPerson implements Candidate {
 export class TApplicant extends TDoc implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
   candidate!: Ref<Person>
+
+  @Prop(TypeString(), 'State' as IntlString)
+  state!: Ref<State>
 }
 
 export function createModel (builder: Builder): void {
@@ -115,10 +118,11 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        candidate: recruit.class.Candidate
+        candidate: recruit.class.Candidate,
+        state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.candidate', '$lookup.candidate.city', '$lookup.candidate.channels']
+    config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
 }
 

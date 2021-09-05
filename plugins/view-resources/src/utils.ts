@@ -28,6 +28,7 @@ export interface AttributeModel {
 }
 
 async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> { 
+  console.log('getting object presenter for class', _class, 'key', preserveKey)
   const clazz = client.getHierarchy().getClass(_class) 
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   if (presenterMixin.presenter === undefined) {
@@ -45,7 +46,8 @@ async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, prese
   } as AttributeModel
 }
 
-async function getAttributePresenter(client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string) { 
+async function getAttributePresenter(client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string) {
+  console.log('getting attribute presenter for class', _class)
   const attribute = client.getHierarchy().getAttribute(_class, key)
   const clazz = client.getHierarchy().getClass(attribute.type._class) 
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
@@ -83,7 +85,8 @@ async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string
 }
 
 export async function buildModel(client: Client, _class: Ref<Class<Obj>>, keys: string[], options?: FindOptions<Doc>): Promise<AttributeModel[]> {
+  console.log('building table model for', _class)
   const model = keys.map(key => getPresenter(client, _class, key, key, options))
   console.log(model)
-  return Promise.all(model)
+  return await Promise.all(model)
 }

@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, Doc, Ref } from '@anticrm/core'
+import type { Space, Doc, Ref, State } from '@anticrm/core'
 import type { Person } from '@anticrm/contact'
 import type { Attachment } from '@anticrm/chunter'
 
@@ -41,6 +41,7 @@ export interface Candidate extends Person {
  */
 export interface Applicant extends Doc {
   candidate: Ref<Candidate>
+  state: Ref<State>
 }
 
 /**

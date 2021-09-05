@@ -25,6 +25,7 @@
 
   import { getClient } from '@anticrm/presentation'
 
+  import core from '@anticrm/core'
   import recruit from '../plugin'
 
   export let space: Ref<Space>
@@ -35,9 +36,11 @@
 
   const client = getClient()
 
-  function createCandidate() {
-    client.createDoc(recruit.class.Applicant, space, {
+  async function createCandidate() {
+    const state = client.findOne(core.class.State, { space })
+    await client.createDoc(recruit.class.Applicant, space, {
       candidate,
+      state
     })
     dispatch('close')
   }

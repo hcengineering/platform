@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Ref, Space } from '@anticrm/core'
+import type { Account, Arr, Ref, Space, Domain, UXObject } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
+
+export const DOMAIN_STATE = 'state' as Domain
 
 // S E C U R I T Y
 
@@ -32,4 +34,9 @@ export class TSpace extends TDoc implements Space {
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
 export class TAccount extends TDoc implements Account {
   email!: string
+}
+
+@Model(core.class.State, core.class.Doc, DOMAIN_STATE)
+export class TState extends TDoc implements UXObject {
+  machine!: Ref<Space>
 }
