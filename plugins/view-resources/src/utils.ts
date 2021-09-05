@@ -28,7 +28,6 @@ export interface AttributeModel {
 }
 
 async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> { 
-  console.log('getting object presenter for class', _class, 'key', preserveKey)
   const clazz = client.getHierarchy().getClass(_class) 
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   if (presenterMixin.presenter === undefined) {
@@ -47,7 +46,6 @@ async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, prese
 }
 
 async function getAttributePresenter(client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string) {
-  console.log('getting attribute presenter for class', _class)
   const attribute = client.getHierarchy().getAttribute(_class, key)
   const clazz = client.getHierarchy().getClass(attribute.type._class) 
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
@@ -69,6 +67,9 @@ async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string
     const split = key.split('.')
     if (split[0] === '$lookup') {
       const lookupClass = (options?.lookup as any)[split[1]] as Ref<Class<Obj>>
+      if (lookupClass === undefined) {
+        throw new Error('lookup class does not provided for ' + split[1])
+      }
       const lookupKey = split[2] ?? ''
       const model = await getPresenter(client, lookupClass, lookupKey, preserveKey)
       if (lookupKey === '') {
