@@ -81,6 +81,9 @@
   background-color: var(--theme-scroll-bar);
   border-radius: .25rem;
 }
+.kanban-container .scroll::-webkit-scrollbar-track {
+  margin: 2.5rem;
+}
 
 .normal-font { font-size: 16px; }
 .small-font { font-size: 14px; }

@@ -16,10 +16,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button } from '@anticrm/ui'
+  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button, IconFile } from '@anticrm/ui'
   import { UserBox, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Employee, Person } from '@anticrm/contact'
-  import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
 

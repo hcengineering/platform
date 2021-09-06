@@ -16,11 +16,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Row, TextArea, IconComments } from '@anticrm/ui'
+  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Row, TextArea, IconFile } from '@anticrm/ui'
   import { UserBox } from '@anticrm/presentation'
   import { ReferenceInput } from '@anticrm/text-editor'
   import type { Person } from '@anticrm/contact'
-  import File from './icons/File.svelte'
   
   import { getClient } from '@anticrm/presentation'
 
@@ -49,7 +48,7 @@
         okAction={createCandidate}
         on:close={() => { dispatch('close') }}>
   <Tabs/>
-  <Section icon={File} label={'General Information'}>
+  <Section icon={IconFile} label={'General Information'}>
     <Grid>
       <Row><EditBox label={'Title *'} placeholder={'The Secret Project'} bind:value={title} focus /></Row>
       <UserBox _class={contact.class.Person} title='Assignee' caption='Employees' bind:value={assignee} />

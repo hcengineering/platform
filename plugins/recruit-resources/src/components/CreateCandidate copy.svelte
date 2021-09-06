@@ -16,8 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { TextArea, EditBox, Dialog, Tabs, Section, Grid } from '@anticrm/ui'
-  import File from './icons/File.svelte'
+  import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
   import DialogHeader from './DialogHeader.svelte'
@@ -54,7 +53,7 @@
         okAction={createCandidate}
         on:close={() => { dispatch('close') }}>
   <DialogHeader />
-  <Section icon={File} label={'Personal Information'}>
+  <Section icon={IconFile} label={'Personal Information'}>
     <Grid>
       <EditBox label={'First name *'} placeholder={'John'} bind:value={firstName} focus/>
       <EditBox label={'Last name *'} placeholder={'Smith'} bind:value={lastName}/>

@@ -15,10 +15,9 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, Dialog, ToggleWithLabel, Tabs, Section, Grid } from '@anticrm/ui'
+  import { TextArea, EditBox, Dialog, ToggleWithLabel, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
 
   import { getClient } from '@anticrm/presentation'
-  import File from './icons/File.svelte'
   import Recruiting from './icons/Recruiting.svelte'
 
   import recruit from '../plugin'
@@ -57,7 +56,7 @@
         okLabel={recruit.string.CreateVacancy} 
         okAction={createVacancy}
         on:close={() => { dispatch('close') }}>
-  <Section icon={File} label={'General Information'}>
+  <Section icon={IconFile} label={'General Information'}>
     <Grid column={1}>
       <EditBox label={recruit.string.VacancyName} bind:value={name} placeholder="Software Engineer" focus/>
       <TextArea label={recruit.string.VacancyDescription} bind:value={description} placeholder="Start typing..."/>

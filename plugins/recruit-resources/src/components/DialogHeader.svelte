@@ -19,12 +19,11 @@
   
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup, Component } from '@anticrm/ui'
+  import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup, Component, IconFile as FileIcon } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
   import AvatarEditor from './AvatarEditor.svelte'
-  import FileIcon from './icons/File.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
   import Twitter from './icons/Twitter.svelte'

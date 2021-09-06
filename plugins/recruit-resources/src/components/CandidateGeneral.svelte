@@ -16,13 +16,11 @@
 
 <script lang="ts">
 
-import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconComments } from '@anticrm/ui'
+import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
 import { AttributeEditor, getClient, CommentViewer } from '@anticrm/presentation'
 import type { Candidate } from '@anticrm/recruit'
 
-import File from './icons/File.svelte'
 import Address from './icons/Address.svelte'
-
 
 import contact from '@anticrm/contact'
 
@@ -31,7 +29,7 @@ export let newValue: Candidate
 
 </script>
 
-<Section icon={File} label={'Personal Information'}>
+<Section icon={IconFile} label={'Personal Information'}>
   <Grid>
     <AttributeEditor _class={contact.class.Person} key={'firstName'} {newValue} oldValue={object} focus/>
     <AttributeEditor _class={contact.class.Person} key={'lastName'} {newValue} oldValue={object}/>

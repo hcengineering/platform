@@ -15,10 +15,9 @@
 
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, ActionIcon, Button } from '@anticrm/ui'
+  import { Icon, ActionIcon, Button, IconMoreH } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import Header from './Header.svelte'
-  import MoreH from './icons/MoreH.svelte'
   import Add from './icons/Add.svelte'
   import Star from './icons/Star.svelte'
 
@@ -50,7 +49,7 @@
     {/if}
     <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
     <ActionIcon label={'Create'} icon={Add} size={'small'}/>
-    <ActionIcon label={'More...'} icon={MoreH} size={'small'}/>
+    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/>
   {/if}
 </div>
 
