@@ -57,6 +57,7 @@
 {#await buildModel(client, _class, config, options)}
  <Loading/>
 {:then model}
+KANBAN
 <div class="container">
   <ScrollBox vertical stretch noShift>
     <table class="table-body">
