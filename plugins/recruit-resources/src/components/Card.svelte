@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
+  import { IconFile } from '@anticrm/ui'
   import LabelStatus from './LabelStatus.svelte'
   import Tag from './Tag.svelte'
-  import File from './icons/File.svelte'
 
   interface Person {
     firstName: string
@@ -38,7 +38,7 @@
   <div class="name">{user.lastName} {user.firstName}</div>
   <div class="description">{user.description}</div>
   <div class="city">{user.city}</div>
-  <Tag icon={File} label={'Application'} />
+  <Tag icon={IconFile} label={'Application'} />
 </div>
 
 <style lang="scss">

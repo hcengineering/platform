@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,29 +15,40 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { ActionIcon, IconMoreH } from '@anticrm/ui'
+  import { Label } from '@anticrm/ui'
+  import { IconAdd } from '@anticrm/ui'
 
   export let label: IntlString
-  export let action: () => Promise<void>
 </script>
 
-<div class="container">
-  <span class="overflow-label label">{label}</span>
-  <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} {action}/>
+<div class="card-container">
+  <div class="icon">
+    <IconAdd size={'small'} />
+  </div>
+  <Label {label} />
 </div>
 
 <style lang="scss">
-  .container {
+  .card-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding: 0 1.75rem;
-    height: 4.5rem;
+    padding: .75rem 1.5rem;
+    color: var(--theme-content-dark-color);
+    background-color: var(--theme-button-bg-hovered);
+    border: 1px dotted var(--theme-bg-accent-color);
+    border-radius: .75rem;
+    cursor: pointer;
 
-    .label {
-      font-weight: 500;
-      font-size: 1rem;
+    .icon {
+      margin-bottom: .25rem;
+      opacity: .4;
+    }
+
+    &:hover {
       color: var(--theme-caption-color);
+      .icon { opacity: 1; }
     }
   }
 </style>

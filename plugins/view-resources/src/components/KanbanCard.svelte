@@ -15,9 +15,7 @@
 
 <script lang="ts">
   import { UserInfo } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, IconFile } from '@anticrm/ui'
-  import IconWithLabel from './IconWithLabel.svelte'
-  import Tag from './Tag.svelte'
+  import { ActionIcon, Label, IconMoreH, IconFile } from '@anticrm/ui'
 
   interface ICard {
     _id: number
@@ -38,10 +36,16 @@
     <ActionIcon icon={IconMoreH} label={'More..'} direction={'left'} />
   </div>
   <div class="content">
-    <IconWithLabel icon={IconFile} label={'Team Interview'} />
+    <div class="flex-row-center item">
+      <IconFile size={'large'} />
+      <span>Team Interview</span>
+    </div>
     <div class="description">{card.description}</div>
     <div class="tags">
-      <Tag icon={IconFile} label={'Application'} />
+      <div class="tag">
+        <IconFile size={'small'} />
+        <span><Label label={'Application'} /></span>
+      </div>
     </div>
   </div>
 </div>
@@ -60,25 +64,44 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
+      padding: .75rem 1rem;
       width: 100%;
-      min-height: 60px;
+      min-height: 3.75rem;
       background-color: var(--theme-button-bg-focused);
-      border-radius: 11px 11px 0 0;
+      border-radius: .75rem .75rem 0 0;
     }
     .content {
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      padding: 16px;
+      padding: 1rem;
 
+      .item {
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--theme-caption-color);
+        span { margin-left: .5em; }
+      }
       .description {
-        margin-top: 8px;
+        margin-top: .5rem;
       }
       .tags {
         display: flex;
-        gap: 8px;
-        margin-top: 16px;
+        margin-top: 1rem;
+
+        .tag {
+          display: flex;
+          align-items: center;
+          padding: .5rem .75rem;
+          font-size: .75rem;
+          text-align: center;
+          background-color: var(--theme-bg-accent-color);
+          color: var(--theme-caption-color);
+          border-radius: .5rem;
+
+          span { margin-left: .3em; }
+        }
+        .tag + .tag { margin-left: .75rem; }
       }
     }
 
@@ -86,4 +109,6 @@
       cursor: grab;
     }
   }
+
+  :global(.card-container + .card-container) { margin-top: .75rem; }
 </style>

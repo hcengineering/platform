@@ -16,11 +16,10 @@
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
-  import { ActionIcon } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH } from '@anticrm/ui'
   import Emoji from './icons/Emoji.svelte'
   import Share from './icons/Share.svelte'
   import Bookmark from './icons/Bookmark.svelte'
-  import MoreH from './icons/MoreH.svelte'
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
 
@@ -49,7 +48,7 @@
   </div>
   {#if !thread}
     <div class="buttons">
-      <div class="tool"><ActionIcon icon={MoreH} size={'medium'} direction={'left'}/></div>
+      <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} direction={'left'}/></div>
       <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} direction={'left'}/></div>
       <div class="tool"><ActionIcon icon={Share} size={'medium'} direction={'left'}/></div>
       <div class="tool"><ActionIcon icon={Emoji} size={'medium'} direction={'left'}/></div>

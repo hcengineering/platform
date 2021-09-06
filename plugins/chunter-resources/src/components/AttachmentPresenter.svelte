@@ -17,12 +17,12 @@
 <script lang="ts">
 
 import type { Attachment } from '@anticrm/chunter'
-import File from './icons/File.svelte'
+import { IconFile } from '@anticrm/ui'
 
 export let value: Attachment
 
 </script>
 
 {#if value}
-  <File size={'small'}/>
+  <IconFile size={'small'}/>
 {/if}

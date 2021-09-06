@@ -24,6 +24,11 @@
 
   import { createQuery } from '@anticrm/presentation'
 
+  import KanbanPanel from './KanbanPanel.svelte'
+  import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
+  import KanbanCard from './KanbanCard.svelte'
+  import KanbanCardEmpty from './KanbanCardEmpty.svelte'
+
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
   export let open: AnyComponent
@@ -52,78 +57,79 @@
   function onClick(object: Doc) {
     showPopup(open, { object, space }, 'float')
   }
+
+  interface ICard {
+    _id: number
+    firstName: string
+    lastName: string
+    description: string
+    state: number
+  }
+  let dragCard: ICard
+  let states: Array<Object> = [
+    { _id: 0, label: 'In progress', color: '#7C6FCD' },
+    { _id: 1, label: 'Under review', color: '#6F7BC5' },
+    { _id: 2, label: 'Interview', color: '#A5D179' },
+    { _id: 3, label: 'Offer', color: '#77C07B' },
+    { _id: 4, label: 'Assigned', color: '#F28469' }
+  ]
+  const cards: Array<ICard> = [
+    { _id: 0, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
+    { _id: 1, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
+    { _id: 2, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
+    { _id: 3, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 1 },
+    { _id: 4, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 1 },
+    { _id: 5, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 2 },
+    { _id: 6, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 3 },
+  ]
 </script>
 
 {#await buildModel(client, _class, config, options)}
  <Loading/>
 {:then model}
-KANBAN
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <table class="table-body">
-      <thead>
-        <tr class="tr-head">
-          {#each model as attribute}
-            <th><Label label = {attribute.label}/></th>
+<div class="kanban-container">
+  <ScrollBox>
+    <div class="kanban-content">
+      {#each states as state}
+        <KanbanPanel label={state.label} color={state.color} counter={4}
+          on:dragover={(event) => {
+            event.preventDefault()
+          }}
+          on:drop={(event) => {
+            event.preventDefault()
+            if (dragCard) {
+              dragCard.state = state._id
+              dragCard = undefined
+            }
+          }}
+        >
+          <KanbanCardEmpty label={'Create new application'} />
+          {#each cards.filter((c) => c.state === state._id) as card}
+            <KanbanCard {card} draggable={true}
+              on:dragstart={() => {
+                dragCard = card
+              }}
+              on:dragend={() => {
+                dragCard = undefined
+              }}
+            />
           {/each}
-        </tr>
-      </thead>
-      {#if objects}
-        <tbody>
-          {#each objects as object (object._id)}
-            <tr class="tr-body" on:click={() => onClick(object)}>
-            {#each model as attribute}
-              <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
-            {/each}
-            </tr>
-          {/each}
-        </tbody>
-      {/if}
-    </table>
+        </KanbanPanel>
+      {/each}
+      <KanbanPanelEmpty label={'Add new column'} />
+    </div>
   </ScrollBox>
 </div>
 {/await}
 
 <style lang="scss">
-  .container {
-    flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
+  .kanban-container {
+    margin-bottom: 1.25rem;
     height: 100%;
-
-    &::before {
-      position: absolute;
-      content: '';
-      top: 2.5rem;
-      bottom: 0;
-      width: 100%;
-      background-color: var(--theme-table-bg-color);
-      border-radius: 0 0 1.25rem 1.25rem;
-    }
   }
-
-  th, td {
-    padding: .5rem 1.5rem;
-    text-align: left;
-    &:first-child { padding-left: 2.5rem; }
-  }
-
-  th {
-    position: sticky;
-    top: 0;
-    height: 2.5rem;
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-dark-color);
-    background-color: var(--theme-bg-color);
-    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
-  }
-
-  .tr-body {
-    height: 3.75rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:last-child { border-bottom: none; }
-    &:hover { background-color: var(--theme-table-bg-hover); }
+  .kanban-content {
+    display: flex;
+    margin: 0 2.5rem;
+    height: 100%;
   }
 </style>
