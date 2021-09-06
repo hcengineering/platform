@@ -105,6 +105,7 @@
       right: 0;
       background-color: var(--theme-card-bg);
       border-radius: 1.25rem;
+      opacity: .2;
       z-index: -1;
     }
   }

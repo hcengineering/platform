@@ -62,6 +62,8 @@ export { default as IconComments } from './components/icons/Comments.svelte'
 export { default as IconFolder } from './components/icons/Folder.svelte'
 export { default as IconMoreH } from './components/icons/MoreH.svelte'
 export { default as IconFile } from './components/icons/File.svelte'
+export { default as IconAttachment } from './components/icons/Attachment.svelte'
+export { default as IconThread } from './components/icons/Thread.svelte'
 
 export * from './utils'
 
