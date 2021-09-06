@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc } from '@anticrm/core'
 import core, { TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
@@ -95,8 +95,13 @@ class MongoAdapter extends MongoAdapterBase {
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
     const doc = TxProcessor.createDoc2Doc(tx)
     const domain = this.hierarchy.getDomain(doc._class)
-    console.log('mongo', domain, doc)
     await this.db.collection(domain).insertOne(translateDoc(doc))
+  }
+
+  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+    const domain = this.hierarchy.getDomain(tx.objectClass)
+    const result = await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+    console.log('update result', result)
   }
 }
 

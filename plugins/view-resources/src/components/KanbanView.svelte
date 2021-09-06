@@ -39,7 +39,7 @@ import { _ID_SEPARATOR } from '@anticrm/platform';
   export let config: string[]
 
   let states: State[] = []
-  let objects: (Doc & { state: Ref<State> })[]
+  let objects: (Doc & { state: Ref<State> })[] = []
 
   const statesQuery = createQuery()
   $: statesQuery.query(core.class.State, { space }, result => { states = result })
