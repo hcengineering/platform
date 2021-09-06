@@ -67,9 +67,11 @@ export default plugin(viewId, {
     Viewlet: '' as Ref<Class<Viewlet>>
   },
   viewlet: {
-    Table: '' as Ref<ViewletDescriptor>
+    Table: '' as Ref<ViewletDescriptor>,
+    Kanban: '' as Ref<ViewletDescriptor>
   },
   icon: {
-    Table: '' as Asset
+    Table: '' as Asset,
+    Kanban: '' as Asset
   }
 })

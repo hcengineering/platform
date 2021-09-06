@@ -18,7 +18,7 @@
   import type { Ref, Space } from '@anticrm/core'
   import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button } from '@anticrm/ui'
   import { UserBox, UserInfo, Avatar } from '@anticrm/presentation'
-  import type { Person } from '@anticrm/contact'
+  import type { Employee, Person } from '@anticrm/contact'
   import File from './icons/File.svelte'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
@@ -27,12 +27,14 @@
 
   import core from '@anticrm/core'
   import recruit from '../plugin'
+  import contact from '@anticrm/contact'
 
   export let space: Ref<Space>
 
   const dispatch = createEventDispatcher()
 
   let candidate: Ref<Person>
+  let employee: Ref<Employee>
 
   const client = getClient()
 
@@ -53,6 +55,6 @@
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
     <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
-    <UserBox _class={recruit.class.Candidate} title='Assigned recruiter' caption='Recruiters' bind:value={candidate} />
+    <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={employee} />
   </Grid>
 </Card>

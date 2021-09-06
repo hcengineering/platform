@@ -19,4 +19,5 @@ import view from '@anticrm/view'
 const icons = require('../assets/icons.svg')
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
+  Kanban: `${icons}#kanban`
 })

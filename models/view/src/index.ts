@@ -67,6 +67,12 @@ export function createModel (builder: Builder): void {
     icon: view.icon.Table,
     component: view.component.TableView
   }, view.viewlet.Table)
+
+  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
+    label: 'Kanban' as IntlString,
+    icon: view.icon.Kanban,
+    component: view.component.KanbanView
+  }, view.viewlet.Kanban)
 }
 
 export default view

@@ -23,6 +23,7 @@ export default mergeIds(viewId, view, {
     StringPresenter: '' as AnyComponent,
     StatePresenter: '' as AnyComponent,
 
-    TableView: '' as AnyComponent
+    TableView: '' as AnyComponent,
+    KanbanView: '' as AnyComponent
   }
 })
