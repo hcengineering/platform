@@ -42,6 +42,12 @@ async function getViewlets(client: Connection, _class: Ref<Class<Obj>>): Promise
 
 let selected = 0
 
+function onSpace(space: Ref<Space>) {
+  selected = 0
+}
+
+$: onSpace(space)
+
 </script>
 
 {#await getViewlets(client, _class)}
