@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, FindOptions, State } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
   import { Label, showPopup, Loading, ScrollBox } from '@anticrm/ui'
@@ -29,13 +29,20 @@
   import KanbanCard from './KanbanCard.svelte'
   import KanbanCardEmpty from './KanbanCardEmpty.svelte'
 
-  export let _class: Ref<Class<Doc>>
+  import core from '@anticrm/core'
+import { _ID_SEPARATOR } from '@anticrm/platform';
+
+  export let _class: Ref<Class<(Doc & { state: Ref<State> })>>
   export let space: Ref<Space>
   export let open: AnyComponent
   export let options: FindOptions<Doc> | undefined
   export let config: string[]
 
-  let objects: Doc[]
+  let states: State[] = []
+  let objects: (Doc & { state: Ref<State> })[]
+
+  const statesQuery = createQuery()
+  $: statesQuery.query(core.class.State, { space }, result => { states = result })
 
   const query = createQuery()
   $: query.query(_class, { space }, result => { objects = result }, options)
@@ -58,30 +65,16 @@
     showPopup(open, { object, space }, 'float')
   }
 
-  interface ICard {
-    _id: number
-    firstName: string
-    lastName: string
-    description: string
-    state: number
-  }
-  let dragCard: ICard
-  let states: Array<Object> = [
-    { _id: 0, label: 'In progress', color: '#7C6FCD' },
-    { _id: 1, label: 'Under review', color: '#6F7BC5' },
-    { _id: 2, label: 'Interview', color: '#A5D179' },
-    { _id: 3, label: 'Offer', color: '#77C07B' },
-    { _id: 4, label: 'Assigned', color: '#F28469' }
+  const colors = [
+    '#7C6FCD',
+    '#6F7BC5',
+    '#A5D179',
+    '#77C07B',
+    '#F28469'
   ]
-  const cards: Array<ICard> = [
-    { _id: 0, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
-    { _id: 1, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
-    { _id: 2, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 0 },
-    { _id: 3, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 1 },
-    { _id: 4, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 1 },
-    { _id: 5, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 2 },
-    { _id: 6, firstName: 'Chen', lastName: 'Rosamund', description: '8:30AM, July 12 Voltron, San Francisco', state: 3 },
-  ]
+
+  let dragCard: (Doc & { state: Ref<State>}) | undefined
+
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -90,21 +83,21 @@
 <div class="kanban-container">
   <ScrollBox>
     <div class="kanban-content">
-      {#each states as state}
-        <KanbanPanel label={state.label} color={state.color} counter={4}
+      {#each states as state, i}
+        <KanbanPanel label={state.label} color={colors[i]} counter={4}
           on:dragover={(event) => {
             event.preventDefault()
           }}
           on:drop={(event) => {
             event.preventDefault()
             if (dragCard) {
-              dragCard.state = state._id
+              client.updateDoc(_class, space, dragCard._id, { state: state._id })
               dragCard = undefined
             }
           }}
         >
           <KanbanCardEmpty label={'Create new application'} />
-          {#each cards.filter((c) => c.state === state._id) as card}
+          {#each objects.filter((c) => c.state === state._id) as card}
             <KanbanCard {card} draggable={true}
               on:dragstart={() => {
                 dragCard = card
