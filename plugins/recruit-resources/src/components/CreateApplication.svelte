@@ -38,11 +38,14 @@
 
   const client = getClient()
 
-  async function createCandidate() {
-    const state = client.findOne(core.class.State, { space })
+  async function createApplication() {
+    const state = await client.findOne(core.class.State, { space })
+    if (state === undefined) {
+      throw new Error('create application: state not found')
+    }
     await client.createDoc(recruit.class.Applicant, space, {
       candidate,
-      state
+      state: state._id
     })
     dispatch('close')
   }
@@ -51,7 +54,7 @@
 
 <Card label={'Create Application'} 
       okLabel={'Save'} 
-      okAction={createCandidate}
+      okAction={createApplication}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
     <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
