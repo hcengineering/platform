@@ -54,8 +54,8 @@ let selected = 0
 
       <div class="flex">
         {#each viewlets as viewlet, i}
-          <div class="btn" class:selected={selected === i}>
-            <div class="icon" on:click={()=>{ selected = i }}><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+          <div class="btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
+            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
           </div>
         {/each}
       </div>
