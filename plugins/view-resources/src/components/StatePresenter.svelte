@@ -15,11 +15,30 @@
 -->
 
 <script lang="ts">
+  import type { State } from '@anticrm/core'
 
-import type { State } from '@anticrm/core'
+  export let value: State
 
-export let value: State
-
+  const bgColor: string = '#7C6FCD'
 </script>
 
-{value.label}
+<div class="state-container" style="background-color: {bgColor}">
+  {value.label}
+</div>
+
+<style lang="scss">
+  .state-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .375rem 1rem;
+    width: min-content;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: .5px;
+    font-size: .625rem;
+    color: #fff;
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .5rem;
+  }
+</style>
