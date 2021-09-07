@@ -100,6 +100,7 @@ specifiers:
   minio: ^7.0.19
   mongodb: ^4.1.0
   node-html-parser: ^4.1.3
+  pdfjs-dist: ~2.9.359
   postcss: ^8.3.4
   postcss-load-config: ^3.1.0
   postcss-loader: ^6.1.0
@@ -218,6 +219,7 @@ dependencies:
   minio: 7.0.19
   mongodb: 4.1.1
   node-html-parser: 4.1.3
+  pdfjs-dist: 2.9.359
   postcss: 8.3.6
   postcss-load-config: 3.1.0
   postcss-loader: 6.1.1_postcss@8.3.6+webpack@5.48.0
@@ -1526,6 +1528,10 @@ packages:
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
+    dev: false
+
+  /@types/pdfjs-dist/2.7.4:
+    resolution: {integrity: sha512-X4CpJgsDr44/xq/SK8NukTV2uyRAMz9dXAVHMUtJrBPtpf4CYnbQevmD95G9fbNwsjJNItOlgsS+yECrBJLUHw==}
     dev: false
 
   /@types/prettier/1.19.1:
@@ -6460,6 +6466,12 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /pdfjs-dist/2.9.359:
+    resolution: {integrity: sha512-P2nYtkacdlZaNNwrBLw1ZyMm0oE2yY/5S/GDCAmMJ7U4+ciL/D0mrlEC/o4HZZc/LNE3w8lEVzBEyVgEQlPVKQ==}
+    peerDependencies:
+      worker-loader: ^3.0.7
+    dev: false
+
   /performance-now/2.1.0:
     resolution: {integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=}
     dev: false
@@ -9683,7 +9695,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5:
-    resolution: {integrity: sha512-G3BL3t90DKvIe4q8KAJxSZorpHF40el2hDey8ZQVnAXiax7Eb0kIVVWBuWgAGPnw7vgiE0nNJ3+XRMqz4Y64+g==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-AWA9mq0Y9LG3jOjY+7OnWnUVjK1EVeIIYYOLYx6+MeZQ/AJR4rXtfupyICWRxDtZpqKc1dfwW9jd/KzI75KMqA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -9746,11 +9758,13 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-ZHEMy8SOs9qPwWBjWKnS9eFirCDcIMDFiDvVSYanumEIEnJ6A/lkMZj1Lcj/6ZIssCTDl9cTSmPi2Yl2jejW3Q==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-sshlnbz7EH+jFgvs6H/ydSr4wDXXcSNmuQtiyObN3k46huKfy5NSsoVyejK3T+Rh17cTd5r2FGRiog7DlLaQNg==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
     dependencies:
+      '@types/pdfjs-dist': 2.7.4
+      pdfjs-dist: 2.9.359
       sass: 1.37.5
       svelte: 3.42.1
       svelte-loader: 3.1.2_svelte@3.42.1
@@ -9766,6 +9780,7 @@ packages:
       - stylus
       - sugarss
       - typescript
+      - worker-loader
     dev: false
 
   file:projects/recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b:

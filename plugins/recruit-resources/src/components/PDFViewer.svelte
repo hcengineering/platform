@@ -14,11 +14,27 @@
 -->
 
 <script lang="ts">
+  import { onMount } from 'svelte'
+
   import { Button, CircleButton, IconClose } from '@anticrm/ui'
   import { Avatar } from '@anticrm/presentation'
   import ArrowLeft from './icons/ArrowLeft.svelte'
   import ExpandUp from './icons/ExpandUp.svelte'
   import ExpandDown from './icons/ExpandDown.svelte'
+
+  import { getMetadata } from '@anticrm/platform'
+
+  import login from '@anticrm/login'
+
+  export let file: string
+
+  function getSource(): string {
+    const uploadUrl = getMetadata(login.metadata.UploadUrl)
+    const token = getMetadata(login.metadata.LoginToken)
+    const url = `${uploadUrl}?file=${file}&token=${token}`
+    return url
+  }
+
 </script>
 
 <div class="pdfviewer-container">
@@ -39,9 +55,7 @@
     </div>
   </div>
 
-  <div class="flex-grow content">
-
-  </div>
+  <iframe class="flex-grow content" src={getSource()}/>
 
   <div class="flex-between footer">
     <div class="flex-row-reverse">
@@ -57,6 +71,7 @@
 </div>
 
 <style lang="scss">
+
   .pdfviewer-container {
     display: flex;
     flex-direction: column;

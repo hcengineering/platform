@@ -132,7 +132,7 @@
   </div>
   <div class="abs-lb-content flex-row-center">
     {#if resume.id}
-      <Link label={resume.name} href={'#'} icon={FileIcon} />
+      <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>

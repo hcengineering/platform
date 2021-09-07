@@ -22,7 +22,7 @@
   export let icon: Asset | AnySvelteComponent | undefined
 </script>
 
-<span class="container">
+<span class="container" on:click>
   {#if icon}
     <span class="icon">
       {#if typeof (icon) === 'string'}

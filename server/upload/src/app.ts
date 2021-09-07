@@ -81,6 +81,35 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
   app.use(fileUpload())
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/', async (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decode(token, 'secret', false) as Token
+      const uuid = req.query.file as string
+
+      minio.getObject(payload.workspace, uuid, function (err, dataStream) {
+        if (err !== null) {
+          return console.log(err)
+        }
+        res.status(200)
+        res.setHeader('Content-Type', 'application/pdf')
+        dataStream.on('data', function (chunk) {
+          res.write(chunk)
+        })
+        dataStream.on('end', function () {
+          res.end()
+        })
+        dataStream.on('error', function (err) {
+          console.log(err)
+        })
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/', async (req, res) => {
     const file = req.files?.file as UploadedFile
 
@@ -100,6 +129,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const payload = decode(token ?? '', 'secret', false) as Token
       // const fileId = await awsUpload(file as UploadedFile)
       const uuid = await minioUpload(minio, payload.workspace, file)
+      console.log('uploaded uuid', uuid)
 
       const id = req.query.id as Ref<Doc>
       const space = req.query.space as Ref<Space>
