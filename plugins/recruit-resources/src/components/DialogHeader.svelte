@@ -52,17 +52,22 @@
   }
 
   const client = getClient()
-  client.findOne(chunter.class.Attachment, { _id: newValue.resume }).then(result => { 
-    if (result !== undefined) {
-      resume = {
-        id: result._id,
-        name: result.name,
-        uuid: result.file,
-        size: result.size,
-        type: result.type,
+
+  console.log('newValue.resume', newValue.resume)
+
+  if (newValue.resume !== undefined) {
+    client.findOne(chunter.class.Attachment, { _id: newValue.resume }).then(result => { 
+      if (result !== undefined) {
+        resume = {
+          id: result._id,
+          name: result.name,
+          uuid: result.file,
+          size: result.size,
+          type: result.type,
+        }
       }
-    }
-  })
+    })
+  }
 
   let dragover = false
   let loading = false
