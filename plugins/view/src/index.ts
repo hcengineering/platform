@@ -37,6 +37,13 @@ export interface AttributePresenter extends Class<Doc> {
 /**
  * @public
  */
+export interface KanbanCard extends Class<Doc> {
+  card: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
@@ -60,7 +67,8 @@ export const viewId = 'view' as Plugin
 export default plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
-    AttributePresenter: '' as Ref<Mixin<AttributePresenter>>
+    AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
+    KanbanCard: '' as Ref<Mixin<KanbanCard>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,

@@ -138,6 +138,10 @@ export function createModel (builder: Builder): void {
     } as FindOptions<Doc>, // TODO: fix
     config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
+    card: recruit.component.KanbanCard
+  })
 }
 
 export { default } from './plugin'

@@ -20,6 +20,7 @@ import CreateApplication from './components/CreateApplication.svelte'
 import EditCandidate from './components/EditCandidate.svelte'
 import CandidateGeneral from './components/CandidateGeneral.svelte'
 import Attachments from './components/Attachments.svelte'
+import KanbanCard from './components/KanbanCard.svelte'
 
 export default async () => ({
   component: {
@@ -29,6 +30,7 @@ export default async () => ({
     CreateApplication,
     EditCandidate,
     CandidateGeneral,
-    Attachments
+    Attachments,
+    KanbanCard
   },
 })

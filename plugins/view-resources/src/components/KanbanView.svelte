@@ -17,20 +17,20 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Class, Doc, Space, FindOptions, State } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox } from '@anticrm/ui'
-  import type { AnyComponent } from '@anticrm/ui'
+  import { Label, showPopup, Loading, ScrollBox, AnyComponent } from '@anticrm/ui'
+  import type { AnySvelteComponent } from '@anticrm/ui'
 
   import { createQuery } from '@anticrm/presentation'
 
   import KanbanPanel from './KanbanPanel.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
-  import KanbanCard from './KanbanCard.svelte'
   import KanbanCardEmpty from './KanbanCardEmpty.svelte'
 
   import core from '@anticrm/core'
-import { _ID_SEPARATOR } from '@anticrm/platform';
+  import view from '@anticrm/view'
 
   export let _class: Ref<Class<(Doc & { state: Ref<State> })>>
   export let space: Ref<Space>
@@ -75,11 +75,17 @@ import { _ID_SEPARATOR } from '@anticrm/platform';
 
   let dragCard: (Doc & { state: Ref<State>}) | undefined
 
+  async function cardPresenter(_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
+    const clazz = client.getHierarchy().getClass(_class) 
+    const presenterMixin = client.getHierarchy().as(clazz, view.mixin.KanbanCard)
+    return await getResource(presenterMixin.card)
+  }
+
 </script>
 
-{#await buildModel(client, _class, config, options)}
+{#await cardPresenter(_class)}
  <Loading/>
-{:then model}
+{:then presenter}
 <div class="kanban-container">
   <ScrollBox>
     <div class="kanban-content">
@@ -97,15 +103,14 @@ import { _ID_SEPARATOR } from '@anticrm/platform';
           }}
         >
           <KanbanCardEmpty label={'Create new application'} />
-          {#each objects.filter((c) => c.state === state._id) as card}
-            <KanbanCard {card} draggable={true}
-              on:dragstart={() => {
-                dragCard = card
-              }}
-              on:dragend={() => {
-                dragCard = undefined
-              }}
-            />
+          {#each objects.filter((c) => c.state === state._id) as object}
+            <svelte:component this={presenter} {object} draggable={true}
+            on:dragstart={() => {
+              dragCard = object
+            }}
+            on:dragend={() => {
+              dragCard = undefined
+            }}/>
           {/each}
         </KanbanPanel>
       {/each}

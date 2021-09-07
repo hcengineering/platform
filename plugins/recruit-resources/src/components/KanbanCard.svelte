@@ -14,10 +14,10 @@
 -->
 
 <script lang="ts">
-  import { UserInfo } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, IconFile } from '@anticrm/ui'
-  import IconWithLabel from './IconWithLabel.svelte'
-  import Tag from './Tag.svelte'
+  import { UserInfo, Avatar } from '@anticrm/presentation'
+  import { Icon, Label, IconThread, IconAttachment } from '@anticrm/ui'
+  import type { WithLookup } from '@anticrm/core'
+  import type { Applicant } from '@anticrm/recruit'
 
   interface ICard {
     _id: number
@@ -27,63 +27,139 @@
     state: number
   }
 
-  export let card: ICard
+  export let object: WithLookup<Applicant>
   export let draggable: boolean
 
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
-  <div class="header">
-    <UserInfo value={{firstName: card.firstName, lastName: card.lastName }} subtitle={'Candidate'} size={'small'} />
-    <ActionIcon icon={IconMoreH} label={'More..'} direction={'left'} />
-  </div>
+  <div class="card-bg" />
   <div class="content">
-    <IconWithLabel icon={IconFile} label={'Team Interview'} />
-    <div class="description">{card.description}</div>
-    <div class="tags">
-      <Tag icon={IconFile} label={'Application'} />
+    <div class="flex-center">
+      <div class="avatar">
+        <Avatar size={'large'} />
+      </div>
+    </div>
+    <div class="flex-col">
+      <div class="name">{object.$lookup?.candidate?.firstName} {object.$lookup?.candidate?.lastName}</div>
+      <div class="city">{object.$lookup?.candidate?.city}</div>
+      <div class="tags">
+        <div class="tag"><Label label={'Application'} /></div>
+        <div class="tag"><Label label={'Resume'} /></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <Avatar size={'small'} />
+    <div class="flex-row-center">
+      <div class="flex-row-center caption-color tool">
+        <span class="icon"><IconAttachment size={'small'} /></span>
+        4
+      </div>
+      <div class="flex-row-center caption-color tool">
+        <span class="icon"><IconThread size={'small'} /></span>
+        5
+      </div>
     </div>
   </div>
 </div>
 
 <style lang="scss">
+  @import '../../../../packages/theme/styles/mixins.scss';
+
   .card-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
+    overflow: hidden;
     user-select: none;
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      width: 100%;
-      min-height: 60px;
-      background-color: var(--theme-button-bg-focused);
-      border-radius: 11px 11px 0 0;
-    }
     .content {
       display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      padding: 16px;
+      align-items: center;
+      padding: 1.25rem;
 
-      .description {
-        margin-top: 8px;
+      .avatar {
+        position: relative;
+        margin-right: 1rem;
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        filter: drop-shadow(0px 24px 94px rgba(50, 53, 47, 1));
+
+        &::after {
+          content: '';
+          @include bg-layer(transparent, .1);
+          border: 2px solid #fff;
+          border-radius: 50%;
+        }
+      }
+
+      .name {
+        margin: .25rem 0;
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--theme-caption-color);
+      }
+      .city {
+        font-weight: 500;
+        font-size: .75rem;
       }
       .tags {
         display: flex;
-        gap: 8px;
-        margin-top: 16px;
+        margin-top: .5rem;
+
+        .tag {
+          position: relative;
+          display: flex;
+          align-items: center;
+          padding: .375rem .5rem;
+          font-weight: 500;
+          font-size: .625rem;
+          text-align: center;
+          color: var(--theme-caption-color);
+
+          &::after {
+            content: '';
+            @include bg-layer(#fff, .04);
+            border-radius: .5rem;
+          }
+        }
+        .tag + .tag { margin-left: .5rem; }
+      }
+    }
+    .footer {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .75rem 1.25rem;
+      width: 100%;
+      min-height: 3rem;
+      &::after {
+        content: '';
+        @include bg-layer(#fff, .04);
+      }
+
+      .tool .icon {
+        margin-right: .25rem;
+        opacity: .4;
+      }
+      .tool + .tool {
+        margin-left: .75rem;
       }
     }
 
     &.draggable {
       cursor: grab;
     }
+
+    .card-bg {
+      @include bg-layer(var(--theme-card-bg), .06);
+    }
   }
+
+  :global(.card-container + .card-container) { margin-top: .75rem; }
 </style>
