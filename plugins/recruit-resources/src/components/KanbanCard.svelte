@@ -75,6 +75,7 @@
     border-radius: .75rem;
     overflow: hidden;
     user-select: none;
+    backdrop-filter: blur(30px);
 
     .content {
       display: flex;
@@ -87,7 +88,6 @@
         width: 5rem;
         height: 5rem;
         border-radius: 50%;
-        filter: drop-shadow(0px 24px 94px rgba(50, 53, 47, 1));
 
         &::after {
           content: '';
