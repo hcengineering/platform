@@ -53,8 +53,6 @@
 
   const client = getClient()
 
-  console.log('newValue.resume', newValue.resume)
-
   if (newValue.resume !== undefined) {
     client.findOne(chunter.class.Attachment, { _id: newValue.resume }).then(result => { 
       if (result !== undefined) {
