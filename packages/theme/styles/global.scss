@@ -15,6 +15,7 @@
 
 @import "./_colors.scss";
 @import "./_layouts.scss";
+@import "./mixins.scss";
 
 @font-face {
   font-family: 'IBM Plex Sans';
@@ -65,7 +66,7 @@
 ::-webkit-scrollbar:horizontal {
   height: 6px;
 }
-::-webkit-scrollbar-track {
+::-webkit-scrollbar-track, .panel-container .scroll .scroll::-webkit-scrollbar-track {
   margin: 6px;
   // background-color: var(--theme-scroll-bar);
 }
