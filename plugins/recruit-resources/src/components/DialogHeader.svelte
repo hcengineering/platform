@@ -29,6 +29,7 @@
   import Twitter from './icons/Twitter.svelte'
   import User from './icons/User.svelte'
   import SocialEditor from './SocialEditor.svelte'
+  import PDFViewer from './PDFViewer.svelte'
 
   import { uploadFile } from '../utils'
   import { Candidate } from '@anticrm/recruit'
@@ -126,12 +127,13 @@
       <div class="title"><EditBox placeholder="Location" bind:value={newValue.city} on:input={isChanged}/></div>
     </div>
   </div>
-  <div class="abs-lb-content">
+  <div class="abs-lb-content flex-row-center">
     {#if resume.id}
       <Link label={resume.name} href={'#'} icon={FileIcon} />
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+      <Button label={'PDF'} size={'small'} transparent primary on:click={() => { showPopup(PDFViewer, {}, 'right') }}/>
     {/if}
   </div>
   <div class="abs-rb-content">
