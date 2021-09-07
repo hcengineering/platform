@@ -52,8 +52,9 @@
 </script>
 
 <Card label={'Create Application'} 
-      okLabel={'Save'} 
+      okLabel={'Save'}
       okAction={createApplication}
+      canSave={candidate !== undefined}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
     <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />

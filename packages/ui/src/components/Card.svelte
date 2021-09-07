@@ -28,6 +28,7 @@
   export let label: IntlString
   export let okLabel: IntlString
   export let okAction: () => void
+  export let canSave: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -36,7 +37,7 @@
   <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
-    <div class="tool"><Button label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
+    <div class="tool"><Button disabled={!canSave} label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
   </div>
   <div class="content"><slot /></div>
   <div class="flex-col pool">
