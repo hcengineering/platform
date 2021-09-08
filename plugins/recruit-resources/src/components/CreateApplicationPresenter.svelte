@@ -27,7 +27,7 @@
 </script>
 
 <div class="flex-center presenter-container" bind:this={button}
-  on:click={() => { showPopup(CreateApplication, { candidate: object._id }, button) }}
+  on:click={() => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, button) }}
 >
   <Label label="Create Application" />
 </div>

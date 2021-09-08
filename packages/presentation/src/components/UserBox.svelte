@@ -15,6 +15,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
+  import { getClient } from '../utils'
 
   import { Label, showPopup } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
@@ -25,6 +26,8 @@
   import type { Ref, Class } from '@anticrm/core'
   import type { Person } from '@anticrm/contact'
 
+  import contact from '@anticrm/contact'
+
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
@@ -33,6 +36,14 @@
 
   let selected: Person | undefined
   let btn: HTMLElement
+
+  const client = getClient()
+
+  async function updateSelected(value: Ref<Person>) {
+    selected = await client.findOne(contact.class.Person, { _id: value })
+  }
+
+  $: updateSelected(value)
 
   onMount(() => {
     if (btn && show) {
@@ -50,7 +61,6 @@
     on:click|preventDefault={(ev) => {
       showPopup(UsersPopup, { _class, title, caption }, ev.target, (result) => {
         if (result) {
-          selected = result
           value = result._id
         }
       })

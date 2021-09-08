@@ -32,6 +32,8 @@
   export let candidate: Ref<Person>
   export let employee: Ref<Employee>
 
+  export let preserveCandidate = false
+
   const dispatch = createEventDispatcher()
   const client = getClient()
 
@@ -55,7 +57,9 @@
       canSave={candidate !== undefined}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
-    <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
+    {#if !preserveCandidate}
+      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
+    {/if}
     <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={employee} />
   </Grid>
 </Card>

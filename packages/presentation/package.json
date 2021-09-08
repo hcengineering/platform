@@ -24,6 +24,7 @@
     "@anticrm/query": "~0.6.1",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/view": "~0.6.0",
-    "svelte": "^3.37.0"
+    "svelte": "^3.37.0",
+    "@anticrm/contact": "~0.6.0"
   }
 }
