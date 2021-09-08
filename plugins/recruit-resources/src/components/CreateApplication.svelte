@@ -16,8 +16,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Card, Tabs, Section, Grid, Row, Button, IconFile } from '@anticrm/ui'
-  import { UserBox, UserInfo, Avatar } from '@anticrm/presentation'
+  import { DatePicker, EditBox, Tabs, Section, Grid, Row, Button, IconFile } from '@anticrm/ui'
+  import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Employee, Person } from '@anticrm/contact'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
@@ -55,6 +55,7 @@
       okLabel={'Save'}
       okAction={createApplication}
       canSave={candidate !== undefined}
+      spaceClass={recruit.class.Vacancy}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}

@@ -18,13 +18,16 @@
   import type { IntlString } from '@anticrm/platform'
 
   import { createEventDispatcher } from 'svelte'
+  import type { Ref, Class, Space } from '@anticrm/core'
 
   // import Close from './internal/icons/Close.svelte'
   // import ScrollBox from './ScrollBox.svelte'
-  import Button from './Button.svelte'
-  import Label from './Label.svelte'
-  import IconFolder from './icons/Folder.svelte'
+  import Button from '@anticrm/ui/src/components/Button.svelte'
+  import Label from '@anticrm/ui/src/components/Label.svelte'
+  import IconFolder from '@anticrm/ui/src/components/icons/Folder.svelte'
+  import SpaceSelect from './SpaceSelect.svelte'
 
+  export let spaceClass: Ref<Class<Space>>
   export let label: IntlString
   export let okLabel: IntlString
   export let okAction: () => void
@@ -47,6 +50,7 @@
       <span class="icon"><IconFolder size={'small'} /></span>
       <span class="overflow-label">Select Project</span>
     </div>
+    <SpaceSelect _class={spaceClass} title="Title" caption="Caption"/>
   </div>
 </form>
 

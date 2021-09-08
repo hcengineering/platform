@@ -19,25 +19,24 @@
 
   import { Label, showPopup } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
-  import UsersPopup from './UsersPopup.svelte'
+  import SpacesPopup from './SpacesPopup.svelte'
   import Add from './icons/Add.svelte'
   import Close from './icons/Close.svelte'
 
-  import type { Ref, Class } from '@anticrm/core'
-  import type { Person } from '@anticrm/contact'
+  import type { Ref, Class, Space } from '@anticrm/core'
 
-  export let _class: Ref<Class<Person>>
+  export let _class: Ref<Class<Space>>
   export let title: IntlString
   export let caption: IntlString
-  export let value: Ref<Person>
+  export let value: Ref<Space>
   export let show: boolean = false
 
-  let selected: Person | undefined
+  let selected: Space | undefined
   let btn: HTMLElement
 
   const client = getClient()
 
-  async function updateSelected(value: Ref<Person>) {
+  async function updateSelected(value: Ref<Space>) {
     selected = await client.findOne(_class, { _id: value })
   }
 
@@ -57,7 +56,7 @@
     class:selected={show}
     bind:this={btn}
     on:click|preventDefault={(ev) => {
-      showPopup(UsersPopup, { _class, title, caption }, ev.target, (result) => {
+      showPopup(SpacesPopup, { _class, title, caption }, ev.target, (result) => {
         if (result) {
           value = result._id
         }
@@ -76,7 +75,7 @@
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
     <div class="caption-color">
-      {#if selected}{selected.firstName + ' ' + selected.lastName}{:else}<Label label={'Not selected'} />{/if}
+      {#if selected}{selected.name}{:else}<Label label={'Not selected'} />{/if}
     </div>
   </div>
 </div>
