@@ -24,16 +24,14 @@
   export let notify: boolean
 </script>
 
-<button class="app" class:selected={selected} on:click={action}>
-  <Tooltip label={label} direction="right">
+<Tooltip {label}>
+  <button class="app" class:selected={selected} on:click={action}>
     <div class="icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
-  </Tooltip>
-  {#if notify}
-    <div class="marker"/>
-  {/if}
-</button>
+    {#if notify}<div class="marker"/>{/if}
+  </button>
+</Tooltip>
 
 <style lang="scss">
   .app {

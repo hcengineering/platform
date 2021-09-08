@@ -29,7 +29,7 @@
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, location, Popup, showPopup } from '@anticrm/ui'
+  import { AnyComponent, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
   import core from '@anticrm/core'
   import CreateUser from './CreateUser.svelte'
 
@@ -92,6 +92,7 @@
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
   <Popup />
+  <TooltipInstance />
 {:else}
   No client
 {/if}
