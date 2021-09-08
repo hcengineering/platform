@@ -57,6 +57,8 @@
     flex-direction: column;
     min-width: 20rem;
     border-radius: 1.25rem;
+    backdrop-filter: blur(30px);
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .6));
 
     .header {
       flex-shrink: 0;

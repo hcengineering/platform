@@ -80,8 +80,6 @@ $: {
   .popup {
     position: fixed;
     background-color: transparent;
-    backdrop-filter: blur(30px);
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .6));
   }
   .modal-overlay {
     position: fixed;

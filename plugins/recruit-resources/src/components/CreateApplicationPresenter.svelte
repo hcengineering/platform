@@ -17,7 +17,7 @@
 <script lang="ts">
 
   import type { Doc } from '@anticrm/core'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Label, showPopup } from '@anticrm/ui'
   import CreateApplication from './CreateApplication.svelte'
 
   export let object: Doc
@@ -26,4 +26,20 @@
 
 </script>
 
-<div bind:this={button}><Button label="Create Application" size="small" on:click={ () => { showPopup(CreateApplication, { candidate: object._id }, button) } }/></div>
+<div class="flex-center presenter-container" bind:this={button}
+  on:click={() => { showPopup(CreateApplication, { candidate: object._id }, button) }}
+>
+  <Label label="Create Application" />
+</div>
+
+<style lang="scss">
+  .presenter-container {
+    padding: .25rem .75rem;
+    width: max-content;
+    font-size: .75rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .5rem;
+  }
+</style>
