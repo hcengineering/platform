@@ -19,11 +19,6 @@ import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
 
-function translateQuery<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
-  // return Object.assign({}, query, { _class: clazz })
-  return query as Filter<Document>
-}
-
 function translateDoc (doc: Doc): Document {
   return doc as Document
 }
@@ -38,9 +33,14 @@ abstract class MongoAdapterBase extends TxProcessor {
 
   async init (): Promise<void> {}
 
+  private translateQuery<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
+    const classes = this.hierarchy.getDescendants(clazz)
+    return Object.assign({}, query, { _class: { $in: classes } })
+  }
+
   private async lookup<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options: FindOptions<T>): Promise<FindResult<T>> {
     const pipeline = []
-    pipeline.push({ $match: translateQuery(clazz, query) })
+    pipeline.push({ $match: this.translateQuery(clazz, query) })
     const lookups = options.lookup as any
     for (const key in lookups) {
       const clazz = lookups[key]
@@ -76,7 +76,7 @@ abstract class MongoAdapterBase extends TxProcessor {
       if (options.lookup !== undefined) { return await this.lookup(_class, query, options) }
     }
     const domain = this.hierarchy.getDomain(_class)
-    let cursor = this.db.collection(domain).find<T>(translateQuery(_class, query))
+    let cursor = this.db.collection(domain).find<T>(this.translateQuery(_class, query))
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
