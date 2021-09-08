@@ -136,7 +136,6 @@
     {:else}
       <Button label={'Upload resume'} {loading} icon={FileUpload} size={'small'} transparent primary on:click={() => { inputFile.click() }}/>
       <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
-      <Button label={'PDF'} size={'small'} transparent primary on:click={() => { showPopup(PDFViewer, {}, 'right') }}/>
     {/if}
   </div>
   <div class="abs-rb-content">
