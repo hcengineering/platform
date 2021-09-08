@@ -94,6 +94,7 @@
     height: 100%;
     background-color: var(--theme-bg-color);
     border-radius: 1.25rem;
+    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
 
     .tabs-container {
       flex-grow: 1;
