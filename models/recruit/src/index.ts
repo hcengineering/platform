@@ -108,7 +108,7 @@ export function createModel (builder: Builder): void {
         resume: chunter.class.Attachment
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', 'city', '$lookup.resume', 'channels']
+    config: ['', '#' + recruit.component.CreateApplicationPresenter, 'city', '$lookup.resume', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

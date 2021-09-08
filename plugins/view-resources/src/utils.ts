@@ -17,7 +17,7 @@
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import type { Ref, Class, Obj, FindOptions, Doc, Client } from '@anticrm/core'
-import type { AnySvelteComponent } from '@anticrm/ui'
+import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
 import view from '@anticrm/view'
 
@@ -64,6 +64,13 @@ async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string
   if (key.length === 0) {
     return getObjectPresenter(client, _class, preserveKey)
   } else {
+    if (key.startsWith('#')) {
+      return {
+        key: '',
+        label: '' as IntlString,
+        presenter: await getResource(key.substring(1) as AnyComponent)
+      }
+    }
     const split = key.split('.')
     if (split[0] === '$lookup') {
       const lookupClass = (options?.lookup as any)[split[1]] as Ref<Class<Obj>>

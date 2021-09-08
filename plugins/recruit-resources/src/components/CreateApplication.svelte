@@ -29,12 +29,10 @@
   import contact from '@anticrm/contact'
 
   export let space: Ref<Space>
+  export let candidate: Ref<Person>
+  export let employee: Ref<Employee>
 
   const dispatch = createEventDispatcher()
-
-  let candidate: Ref<Person>
-  let employee: Ref<Employee>
-
   const client = getClient()
 
   async function createApplication() {
