@@ -15,14 +15,24 @@
 -->
 
 <script lang="ts">
-
+import { getResource } from '@anticrm/platform'
 import type { Person } from '@anticrm/contact'
-import { UserInfo } from '@anticrm/presentation'
+import { UserInfo, getClient } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
+import view from '@anticrm/view'
 
 export let value: Person
 
+async function onClick() {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(value._class)
+  const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+  const editor = await getResource(editorMixin.editor) 
+  showPopup(editor, { object: value }, 'float')
+}
+
 </script>
 
-<UserInfo size={'x-small'} {value}/>
+<UserInfo size={'x-small'} {value} on:click={onClick}/>
 
-  

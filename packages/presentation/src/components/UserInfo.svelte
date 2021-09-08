@@ -23,7 +23,7 @@
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 </script>
 
-<div class="flex-row-center">
+<div class="flex-row-center" on:click>
   <Avatar {size} />
   <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}

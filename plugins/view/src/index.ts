@@ -44,6 +44,13 @@ export interface KanbanCard extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectEditor extends Class<Doc> {
+  editor: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
@@ -68,7 +75,8 @@ export default plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
-    KanbanCard: '' as Ref<Mixin<KanbanCard>>
+    KanbanCard: '' as Ref<Mixin<KanbanCard>>,
+    ObjectEditor: '' as Ref<Mixin<ObjectEditor>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,

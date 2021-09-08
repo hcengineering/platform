@@ -18,7 +18,7 @@ import type { Ref, Class, Space } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard } from '@anticrm/view'
+import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor } from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 
@@ -39,6 +39,11 @@ export class TKanbanCard extends TClass implements KanbanCard {
   card!: AnyComponent
 }
 
+@Mixin(view.mixin.ObjectEditor, core.class.Class)
+export class TObjectEditor extends TClass implements ObjectEditor {
+  editor!: AnyComponent
+}
+
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
 export class TViewletDescriptor extends TDoc implements ViewletDescriptor {
   component!: AnyComponent
@@ -53,7 +58,7 @@ export class TViewlet extends TDoc implements Viewlet {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TViewletDescriptor, TViewlet)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor

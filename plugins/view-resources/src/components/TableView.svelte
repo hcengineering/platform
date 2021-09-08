@@ -20,13 +20,11 @@
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
   import { Label, showPopup, Loading, ScrollBox } from '@anticrm/ui'
-  import type { AnyComponent } from '@anticrm/ui'
 
   import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
-  export let open: AnyComponent
   export let options: FindOptions<Doc> | undefined
   export let config: string[]
 
@@ -49,9 +47,6 @@
 
   const client = getClient()
 
-  function onClick(object: Doc) {
-    showPopup(open, { object, space }, 'float')
-  }
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -70,7 +65,7 @@
       {#if objects}
         <tbody>
           {#each objects as object (object._id)}
-            <tr class="tr-body" on:click={() => onClick(object)}>
+            <tr class="tr-body">
             {#each model as attribute}
               <td><svelte:component this={attribute.presenter} {object} value={getValue(object, attribute.key)}/></td>
             {/each}

@@ -142,6 +142,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })
+
+  builder.mixin(recruit.class.Candidate, core.class.Class, view.mixin.ObjectEditor, {
+    editor: recruit.component.EditCandidate
+  })
 }
 
 export { default } from './plugin'
