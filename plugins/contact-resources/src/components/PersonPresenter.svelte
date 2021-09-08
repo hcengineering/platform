@@ -17,7 +17,7 @@
 <script lang="ts">
 import { getResource } from '@anticrm/platform'
 import type { Person } from '@anticrm/contact'
-import { UserInfo, getClient } from '@anticrm/presentation'
+import { Avatar, getClient } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
 import view from '@anticrm/view'
 
@@ -34,5 +34,24 @@ async function onClick() {
 
 </script>
 
-<UserInfo size={'x-small'} {value} on:click={onClick}/>
+<div class="flex-row-center user-container" on:click={onClick}>
+  <Avatar size={'x-small'} />
+  <div class="overflow-label user">{value.firstName + ' ' + value.lastName}</div>
+</div>
 
+<style lang="scss">
+  .user-container {
+    cursor: pointer;
+    
+    .user {
+      margin-left: .5rem;
+      font-weight: 500;
+      text-align: left;
+      color: var(--theme-content-accent-color);
+    }
+    &:hover .user {
+      text-decoration: underline;
+      color: var(--theme-caption-color);
+    }
+  }
+</style>
