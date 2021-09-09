@@ -3469,6 +3469,12 @@ packages:
     requiresBuild: true
     dev: false
 
+  /esbuild/0.12.26:
+    resolution: {integrity: sha512-YmTkhPKjvTJ+G5e96NyhGf69bP+hzO0DscqaVJTi5GM34uaD4Ecj7omu5lJO+NrxCUBRhy2chONLK1h/2LwoXA==}
+    hasBin: true
+    requiresBuild: true
+    dev: false
+
   /escalade/3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
     engines: {node: '>=6'}
@@ -10004,7 +10010,7 @@ packages:
       '@types/node': 16.7.5
       '@types/ws': 7.4.7
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
-      esbuild: 0.12.24
+      esbuild: 0.12.26
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
@@ -10118,7 +10124,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-ZofT4DyGFGWG0s/geyBOmQalsgWxw6y563CJnfSX1NPSgQ9rkuWIfe2MyoTS1sOA5PhmNSzcBr//La4ZjR0gyw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-Z0BaX1B1yinHaiai353t9rj20BUpViVPFU9rX9LC0dA8wvHQ/5WY8jgEmhwrHYhq/+iauybdXG8tBCJLBQTeBQ==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -10126,6 +10132,7 @@ packages:
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       commander: 8.1.0
+      esbuild: 0.12.26
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
@@ -10183,7 +10190,7 @@ packages:
       aws-sdk: 2.969.0
       body-parser: 1.19.0
       cors: 2.8.5
-      esbuild: 0.12.24
+      esbuild: 0.12.26
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
@@ -10302,7 +10309,7 @@ packages:
       '@types/minio': 7.0.10
       '@types/node': 16.7.5
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
-      esbuild: 0.12.24
+      esbuild: 0.12.26
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0

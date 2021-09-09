@@ -18,7 +18,7 @@ import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
 import { getAccount, createAccount, assignWorkspace, createWorkspace } from '@anticrm/account'
 
-const mongodbUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017'
+const mongodbUri = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
 
 async function withDatabase (uri: string, f: (db: Db) => Promise<any>): Promise<void> {
   console.log(`connecting to database '${uri}'...`)

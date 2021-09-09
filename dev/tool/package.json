@@ -7,7 +7,10 @@
   "scripts": {
     "build": "heft build",
     "lint:fix": "eslint --fix src",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
+    "docker:build": "docker build -t anticrm/tool .",
+    "docker:push": "docker push anticrm/tool"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",
@@ -17,7 +20,8 @@
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
-    "ts-node":"^10.2.1"
+    "ts-node":"^10.2.1",
+    "esbuild":"^0.12.26"
   },
   "dependencies": {
     "mongodb":"^4.1.1",
