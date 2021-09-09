@@ -27,6 +27,7 @@
   import SpaceSelect from './SpaceSelect.svelte'
 
   export let spaceClass: Ref<Class<Space>>
+  export let space: Ref<Space>
   export let label: IntlString
   export let okLabel: IntlString
   export let okAction: () => void
@@ -44,7 +45,7 @@
   <div class="content"><slot /></div>
   <div class="flex-col pool">
     <div class="separator" />
-    <SpaceSelect _class={spaceClass} label={'Title'} placeholder={'Select Project'} />
+    <SpaceSelect _class={spaceClass} label={'Title'} placeholder={'Select Project'} bind:value={space} />
   </div>
 </form>
 

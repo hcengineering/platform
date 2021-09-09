@@ -34,15 +34,17 @@
 
   export let preserveCandidate = false
 
+  let _space = space
+
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   async function createApplication() {
-    const state = await client.findOne(core.class.State, { space })
+    const state = await client.findOne(core.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
-    await client.createDoc(recruit.class.Applicant, space, {
+    await client.createDoc(recruit.class.Applicant, _space, {
       candidate,
       state: state._id
     })
@@ -56,6 +58,7 @@
       okAction={createApplication}
       canSave={candidate !== undefined}
       spaceClass={recruit.class.Vacancy}
+      bind:space={_space}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
