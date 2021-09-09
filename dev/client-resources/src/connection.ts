@@ -18,16 +18,19 @@ import { DOMAIN_TX } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import type { DbConfiguration } from '@anticrm/server-core'
+import { protoSerialize, protoDeserialize } from '@anticrm/platform'
 
 class ServerStorageWrapper implements Storage {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
 
   findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
-    return this.storage.findAll(_class, query, options)
+    const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
+    return this.storage.findAll(c, q, o)
   }
 
   async tx (tx: Tx): Promise<void> {
-    const derived = await this.storage.tx(tx)
+    const _tx = protoDeserialize(protoSerialize(tx))
+    const derived = await this.storage.tx(_tx)
     for (const tx of derived) { this.handler(tx) }
   }
 }

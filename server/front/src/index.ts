@@ -24,7 +24,7 @@ const dist = resolve(__dirname, 'dist')
 
 console.log('serving static files from', dist)
 
-app.use(express.static(dist, { maxAge: '10m' }))
+app.use(express.static(dist, { /* maxAge: '10m' */ }))
 
 app.get('*', function (request, response) {
   response.sendFile(join(dist, 'index.html'))

@@ -47,8 +47,26 @@ export interface Response<R> {
  * @param object -
  * @returns
  */
+export function protoSerialize (object: object): string {
+  return JSON.stringify(object, (key, value) => { return value ?? null })
+}
+
+/**
+ * @public
+ * @param data -
+ * @returns
+ */
+export function protoDeserialize (data: string): any {
+  return JSON.parse(data)
+}
+
+/**
+ * @public
+ * @param object -
+ * @returns
+ */
 export function serialize (object: Request<any> | Response<any>): string {
-  return JSON.stringify(object)
+  return protoSerialize(object)
 }
 
 /**
@@ -57,7 +75,7 @@ export function serialize (object: Request<any> | Response<any>): string {
  * @returns
  */
 export function readResponse<D> (response: string): Response<D> {
-  return JSON.parse(response)
+  return protoDeserialize(response)
 }
 
 /**
@@ -66,7 +84,7 @@ export function readResponse<D> (response: string): Response<D> {
  * @returns
  */
 export function readRequest<P extends any[]> (request: string): Request<P> {
-  const result: Request<P> = JSON.parse(request)
+  const result: Request<P> = protoDeserialize(request)
   if (typeof result.method !== 'string') {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.BadRequest, {})
