@@ -48,7 +48,7 @@
         <svelte:component this={component} {...item.props}/>
       {/if}
     </div>
-    <div class="icon"><ActionIcon label={'Remove'} direction={'top'} icon={Close} size={'small'} action={async () => { item.selected = false }}/></div>
+    <div class="icon"><ActionIcon label={'Remove'} icon={Close} size={'small'} action={async () => { item.selected = false }}/></div>
   </button>
   {#if byTitle }
     <PopupItem bind:title={item.title} selectable bind:selected={item.selected}/>

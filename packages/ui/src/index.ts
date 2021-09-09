@@ -14,10 +14,12 @@
 //
 
 import { SvelteComponent } from 'svelte'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
+import type { IntlString } from '@anticrm/platform'
 
 import Root from './components/internal/Root.svelte'
 
-export type { AnyComponent, AnySvelteComponent, Action } from './types'
+export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, navigate, location } from './location'
 
@@ -32,6 +34,7 @@ export { default as Toggle } from './components/Toggle.svelte'
 export { default as Dialog } from './components/Dialog.svelte'
 export { default as ToggleWithLabel } from './components/ToggleWithLabel.svelte'
 export { default as Tooltip } from './components/Tooltip.svelte'
+export { default as TooltipInstance } from './components/TooltipInstance.svelte'
 export { default as CheckBox } from './components/CheckBox.svelte'
 export { default as Progress } from './components/Progress.svelte'
 export { default as Tabs } from './components/Tabs.svelte'
@@ -66,7 +69,6 @@ export { default as IconThread } from './components/icons/Thread.svelte'
 
 export * from './utils'
 
-import type { AnySvelteComponent, AnyComponent, PopupAlignment } from './types'
 import { writable } from 'svelte/store'
 
 export function createApp (target: HTMLElement): SvelteComponent {
@@ -99,4 +101,18 @@ export function closePopup (): void {
     popups.pop()
     return popups
   })
+}
+
+export const tooltipstore = writable<LabelAndProps>({
+  label: undefined,
+  element: undefined,
+  direction: undefined
+})
+
+export function showTooltip (label: IntlString, element: HTMLElement, direction?: TooltipAligment): void {
+  tooltipstore.set({ label: label, element: element, direction: direction })
+}
+
+export function closeTooltip (): void {
+  tooltipstore.set({ label: undefined, element: undefined, direction: undefined })
 }

@@ -15,20 +15,20 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '../types'
+  import type { AnySvelteComponent, TooltipAligment } from '../types'
 
   import Icon from './Icon.svelte'
   import Tooltip from './Tooltip.svelte'
 
   export let label: IntlString
-  export let direction: string = 'top'
+  export let direction: TooltipAligment | undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
   export let action: () => Promise<void>
   export let invisible: boolean = false
 </script>
 
-<Tooltip label={label} direction={direction}>
+<Tooltip {label} {direction}>
   <button class="button {size}" on:click|stopPropagation={action}>
     <div class="icon {size}" class:invisible={invisible}>
       {#if typeof (icon) === 'string'}
