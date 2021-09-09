@@ -56,6 +56,7 @@ specifiers:
   '@rush-temp/task-resources': file:./projects/task-resources.tgz
   '@rush-temp/text-editor': file:./projects/text-editor.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
+  '@rush-temp/tool': file:./projects/tool.tgz
   '@rush-temp/ui': file:./projects/ui.tgz
   '@rush-temp/upload': file:./projects/upload.tgz
   '@rush-temp/view': file:./projects/view.tgz
@@ -84,6 +85,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': '4'
   '@typescript-eslint/parser': ^4.0.0
   autoprefixer: ^10.2.6
+  commander: ^8.1.0
   cors: ^2.8.5
   cross-env: ^7.0.3
   css-loader: ^5.2.1
@@ -176,6 +178,7 @@ dependencies:
   '@rush-temp/task-resources': file:projects/task-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/text-editor': file:projects/text-editor.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/theme': file:projects/theme.tgz_c38cf1a7a413db8918b0b4754c21e4c5
+  '@rush-temp/tool': file:projects/tool.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/ui': file:projects/ui.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/upload': file:projects/upload.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/view': file:projects/view.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -204,6 +207,7 @@ dependencies:
   '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
   '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
   autoprefixer: 10.3.1_postcss@8.3.6
+  commander: 8.1.0
   cors: 2.8.5
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
@@ -2796,6 +2800,11 @@ packages:
   /commander/7.2.0:
     resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
     engines: {node: '>= 10'}
+    dev: false
+
+  /commander/8.1.0:
+    resolution: {integrity: sha512-mf45ldcuHSYShkplHHGKWb4TrmwQadxOn7v4WuhDJy0ZVoY5JFajaRDKD0PNe5qXzBX0rhovjTnP6Kz9LETcuA==}
+    engines: {node: '>= 12'}
     dev: false
 
   /component-emitter/1.3.0:
@@ -10105,6 +10114,30 @@ packages:
       - pug
       - stylus
       - sugarss
+      - typescript
+    dev: false
+
+  file:projects/tool.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-ZofT4DyGFGWG0s/geyBOmQalsgWxw6y563CJnfSX1NPSgQ9rkuWIfe2MyoTS1sOA5PhmNSzcBr//La4ZjR0gyw==, tarball: file:projects/tool.tgz}
+    id: file:projects/tool.tgz
+    name: '@rush-temp/tool'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      commander: 8.1.0
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+      mongodb: 4.1.1
+      ts-node: 10.2.1_typescript@4.3.5
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - '@typescript-eslint/parser'
+      - supports-color
       - typescript
     dev: false
 
