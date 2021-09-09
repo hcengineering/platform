@@ -22,6 +22,7 @@
   import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup, Component, IconFile as FileIcon } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
+  import type { Attachment } from '@anticrm/chunter'
 
   import AvatarEditor from './AvatarEditor.svelte'
   import FileUpload from './icons/FileUpload.svelte'
@@ -87,12 +88,15 @@
   async function createAttachment(file: File) {
     loading = true
     try {
-      const id = generateId()
+      const id = generateId<Attachment>()
       resume.uuid = await uploadFile(id, space, file)
       resume.id = id
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type
+
+      newValue.resume = id
+      isChanged()
 
       console.log('uploaded file uuid', resume.uuid)
 

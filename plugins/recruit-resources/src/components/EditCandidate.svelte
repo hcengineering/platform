@@ -20,6 +20,8 @@
   import { getClient } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
+
+  import chunter from '@anticrm/chunter'
   
   import recruit from '../plugin'
 
@@ -40,12 +42,27 @@
   const client = getClient()
 
   async function save() {
+
+    if (resume.id !== undefined) {
+      // create attachment
+      console.log('creaing attachment space', space)
+      client.createDoc(chunter.class.Attachment, space, {
+        attachmentTo: object._id,
+        collection: 'resume',
+        name: resume.name,
+        file: resume.uuid,
+        type: resume.type,
+        size: resume.size,
+      }, resume.id)
+    }
+
     const attributes: Record<string, any> = {}
-    for (const key in object) {
+    for (const key in newValue) {
       if ((newValue as any)[key] !== (object as any)[key]) {
         attributes[key] = (newValue as any)[key]
       }
     }
+    console.log('update attributes', attributes)
     await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
 
     dispatch('close')

@@ -25,7 +25,7 @@ import IconCopy from './icons/Copy.svelte'
 
 import contact from '@anticrm/contact'
 
-export let value: Channel[] | undefined
+export let value: Channel[] | null
 
 interface Item {
   label: IntlString,
@@ -60,7 +60,7 @@ async function update(value: Channel[]) {
   displayItems = result
 }
 
-$: if (value !== undefined) update(value)
+$: if (value) update(value)
 
 let displayItems: Item[] = []
 
