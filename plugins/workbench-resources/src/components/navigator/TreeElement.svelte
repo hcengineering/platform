@@ -28,12 +28,13 @@
   export let notifications = 0
   export let node = false
   export let collapsed = false
+  export let selected = false
   export let actions: Action[] = []
 
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="container"
+<div class="container" class:selected
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
@@ -58,10 +59,8 @@
     <div class="counter">{notifications}</div>
   {/if}
 </div>
-{#if node && !icon}
-  <div class="dropbox" class:hidden={collapsed}>
-    <slot/>
-  </div>
+{#if node && !icon && !collapsed}
+  <div class="dropbox"><slot/></div>
 {/if}
 
 <style lang="scss">
@@ -111,16 +110,15 @@
         visibility: visible;
       }
     }
+    
+    &.selected {
+      background-color: var(--theme-menu-selection);
+      &:hover { background-color: var(--theme-button-bg-enabled); }
+    }
   }
 
   .dropbox {
     height: auto;
     margin-bottom: .5rem;
-    visibility: visible;
-
-    &.hidden {
-      height: auto;
-      visibility: hidden;
-    }
   }
 </style>

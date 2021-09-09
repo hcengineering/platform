@@ -41,5 +41,6 @@
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .5rem;
+    cursor: pointer;
   }
 </style>

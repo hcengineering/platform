@@ -21,9 +21,10 @@
   export let icon: Asset
   export let title: string
   export let notifications = 0
+  export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<TreeElement {icon} {title} {notifications} collapsed on:click={() => {dispatch('click')}}/>
+<TreeElement {icon} {title} {notifications} {selected} collapsed on:click={() => {dispatch('click')}}/>
