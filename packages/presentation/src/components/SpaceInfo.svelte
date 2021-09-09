@@ -14,17 +14,17 @@
 -->
 
 <script lang="ts">
-  import Avatar from './Avatar.svelte'
+  import { IconFolder } from '@anticrm/ui'
 
   import type { Space } from '@anticrm/core'
 
   export let value: Space
   export let subtitle: string | undefined = undefined
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: 'medium' | 'large'
 </script>
 
 <div class="flex-row-center">
-  <Avatar {size} />
+  <div class="flex-center {size}"><IconFolder size={'small'} /></div>
   <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
     <div class="title">{value.name}</div>
@@ -32,6 +32,14 @@
 </div>
 
 <style lang="scss">
+  .medium {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .large {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
   .user-info {
     margin-left: .5rem;
     color: var(--theme-content-accent-color);

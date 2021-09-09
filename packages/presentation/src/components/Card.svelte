@@ -24,7 +24,6 @@
   // import ScrollBox from './ScrollBox.svelte'
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import Label from '@anticrm/ui/src/components/Label.svelte'
-  import IconFolder from '@anticrm/ui/src/components/icons/Folder.svelte'
   import SpaceSelect from './SpaceSelect.svelte'
 
   export let spaceClass: Ref<Class<Space>>
@@ -45,12 +44,7 @@
   <div class="content"><slot /></div>
   <div class="flex-col pool">
     <div class="separator" />
-    <div class="overflow-label label">Project</div>
-    <div class="flex-row-center">
-      <span class="icon"><IconFolder size={'small'} /></span>
-      <span class="overflow-label">Select Project</span>
-    </div>
-    <SpaceSelect _class={spaceClass} title="Title" caption="Caption"/>
+    <SpaceSelect _class={spaceClass} label={'Title'} placeholder={'Select Project'} />
   </div>
 </form>
 
@@ -90,17 +84,6 @@
         height: 1px;
         background-color: #fff;
         opacity: .1;
-      }
-      .label {
-        margin-bottom: .125rem;
-        font-weight: 500;
-        font-size: .75rem;
-        color: var(--theme-content-accent-color);
-      }
-      .icon {
-        transform-origin: center center;
-        transform: scale(.75);
-        margin-right: .25rem;
       }
     }
 

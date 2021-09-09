@@ -58,6 +58,7 @@
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     user-select: none;
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
   }
 
   .header {

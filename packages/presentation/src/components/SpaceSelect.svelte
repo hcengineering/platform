@@ -17,17 +17,14 @@
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 
-  import { Label, showPopup } from '@anticrm/ui'
-  import Avatar from './Avatar.svelte'
+  import { Label, showPopup, IconFolder } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
-  import Add from './icons/Add.svelte'
-  import Close from './icons/Close.svelte'
 
   import type { Ref, Class, Space } from '@anticrm/core'
 
   export let _class: Ref<Class<Space>>
-  export let title: IntlString
-  export let caption: IntlString
+  export let label: IntlString
+  export let placeholder: IntlString
   export let value: Ref<Space>
   export let show: boolean = false
 
@@ -50,50 +47,47 @@
   })
 </script>
 
-<div class="flex-row-center">
-  <button
-    class="focused-button btn"
-    class:selected={show}
-    bind:this={btn}
-    on:click|preventDefault={(ev) => {
-      showPopup(SpacesPopup, { _class, title, caption }, ev.target, (result) => {
-        if (result) {
-          value = result._id
-        }
-      })
-    }}
-  >
-    {#if selected}
-      <Avatar size={'medium'} />
-    {:else}
-      <div class="icon">
-        {#if show}<Close size={'small'} />{:else}<Add size={'small'} />{/if}
-      </div>
-    {/if}
-  </button>
-
-  <div class="selectUser">
-    <div class="title"><Label label={title} /></div>
-    <div class="caption-color">
-      {#if selected}{selected.name}{:else}<Label label={'Not selected'} />{/if}
-    </div>
+<div class="flex-col spaceselect-container"
+  bind:this={btn}
+  on:click|preventDefault={() => {
+    showPopup(SpacesPopup, { _class }, btn, (result) => {
+      if (result) {
+        value = result._id
+      }
+    })
+  }}
+>
+  <div class="overflow-label label"><Label {label} /></div>
+  <div class="flex-row-center space" class:selected={selected}>
+    <span class="icon"><IconFolder size={'small'} /></span>
+    <span class="overflow-label">
+      {#if selected}
+        {selected.name}
+      {:else}
+        <Label label={placeholder} />
+      {/if}
+    </span>
   </div>
 </div>
 
 <style lang="scss">
-  .btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    border: none;
-  }
-
-  .selectUser {
-    margin-left: .75rem;
-    .title {
-      font-size: .75rem;
+  .spaceselect-container {
+    cursor: pointer;
+    .label {
+      margin-bottom: .125rem;
       font-weight: 500;
+      font-size: .75rem;
       color: var(--theme-content-accent-color);
+    }
+    .space {
+      opacity: .3;
+
+      .icon {
+        transform-origin: center center;
+        transform: scale(.75);
+        margin-right: .25rem;
+      }
+      &.selected { opacity: 1; }
     }
   }
 </style>

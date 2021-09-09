@@ -23,8 +23,6 @@
   import { createQuery } from '../utils'
 
   export let _class: Ref<Class<Space>>
-  export let title: IntlString
-  export let caption: IntlString
 
   let search: string = ''
   let objects: Space[] = []
@@ -35,14 +33,13 @@
 </script>
 
 <div class="popup">
-  <div class="header">
-    <div class="title"><Label label={title} /></div>
+  <div class="flex-col">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-    <div class="caption"><Label label={caption} /></div>
+    <div class="label"><Label label={'SUGGESTED'} /></div>
   </div>
   {#each objects as space}
     <button class="menu-item" on:click={() => { dispatch('close', space) }}>
-      <SpaceInfo size={'medium'} value={space} />
+      <SpaceInfo size={'large'} value={space} />
     </button>
   {/each}
 </div>
@@ -57,22 +54,15 @@
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     user-select: none;
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
   }
 
-  .header {
-    text-align: left;
-    .title {
-      margin-bottom: 1rem;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-    }
-    .caption {
-      margin: 1rem 0 .625rem .375rem;
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--theme-content-dark-color);
-    }
+  .label {
+    margin: 1rem 0 .625rem .375rem;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--theme-content-dark-color);
   }
 
   .menu-item {
