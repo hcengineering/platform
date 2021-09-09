@@ -20,7 +20,8 @@
   export let icon: Asset
   export let title: string
   export let notifications = 0
+  export let selected: boolean = false
 
 </script>
 
-<TreeElement {icon} {title} {notifications} node/>
+<TreeElement {icon} {title} {notifications} {selected} node/>

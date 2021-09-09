@@ -35,6 +35,7 @@
   const client = getClient()
   const query = createQuery()
   let spaces: Space[] = []
+  let selected: Ref<Space> | undefined = undefined
 
   $: query.query(model.spaceClass, {}, result => { spaces = result })
 
@@ -47,6 +48,7 @@
   }
 
   function selectSpace(id: Ref<Space>) {
+    selected = id
     const loc = getCurrentLocation()
     loc.path[2] = id
     loc.path.length = 3
@@ -57,7 +59,7 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem title={space.name} icon={classIcon(client, space._class)} on:click={() => { selectSpace(space._id) }}/>
+      <TreeItem title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} on:click={() => { selectSpace(space._id) }}/>
     {/each}
   </TreeNode>
 </div>
