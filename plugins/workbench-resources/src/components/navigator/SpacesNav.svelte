@@ -19,7 +19,7 @@
   import type { Asset } from '@anticrm/platform'
   import type { Ref, Space } from '@anticrm/core'
   import type { SpacesNavModel } from '@anticrm/workbench'
-  import { Action, navigate, getCurrentLocation } from '@anticrm/ui'
+  import { Action, navigate, getCurrentLocation, location } from '@anticrm/ui'
 
   import { IconAdd } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
@@ -48,12 +48,15 @@
   }
 
   function selectSpace(id: Ref<Space>) {
-    selected = id
     const loc = getCurrentLocation()
     loc.path[2] = id
     loc.path.length = 3
     navigate(loc)
   }
+
+  onDestroy(location.subscribe(async (loc) => {
+    selected = loc.path[2] as Ref<Space>
+  }))
 </script>
 
 <div>
