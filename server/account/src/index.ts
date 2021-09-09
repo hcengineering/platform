@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Plugin, StatusCode } from '@anticrm/platform'
-import { PlatformError, Severity, Status, plugin } from '@anticrm/platform'
+import type { Plugin, StatusCode, Request, Response } from '@anticrm/platform'
+import { PlatformError, Severity, Status, plugin, unknownStatus } from '@anticrm/platform'
 import { Binary, Db, ObjectId } from 'mongodb'
-import { pbkdf2Sync } from 'crypto'
+import { pbkdf2Sync, randomBytes } from 'crypto'
 import { encode } from 'jwt-simple'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -37,12 +37,18 @@ export const accountId = 'account' as Plugin
 const accountPlugin = plugin(accountId, {
   status: {
     AccountNotFound: '' as StatusCode<{account: string}>,
+    WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
     InvalidPassword: '' as StatusCode<{account: string}>,
+    AccountAlreadyExists: '' as StatusCode<{account: string}>,
+    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>,
     Forbidden: '' as StatusCode
   }
 })
 
-interface Account {
+/**
+ * @public
+ */
+export interface Account {
   _id: ObjectId
   email: string
   hash: Binary
@@ -50,7 +56,10 @@ interface Account {
   workspaces: ObjectId[]
 }
 
-interface Workspace {
+/**
+ * @public
+ */
+export interface Workspace {
   _id: ObjectId
   workspace: string
   organisation: string
@@ -66,7 +75,10 @@ export interface LoginInfo {
   endpoint: string
 }
 
-type AccountInfo = Omit<Account, 'hash' | 'salt'>
+/**
+ * @public
+ */
+export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
 function hashWithSalt (password: string, salt: Buffer): Buffer {
   return pbkdf2Sync(password, salt, 1000, 32, 'sha256')
@@ -76,11 +88,20 @@ function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean 
   return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
 }
 
-async function getAccount (db: Db, email: string): Promise<Account | null> {
+/**
+ * @public
+ */
+export async function getAccount (db: Db, email: string): Promise<Account | null> {
   return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email })
 }
 
-async function getWorkspace (db: Db, workspace: string): Promise<Workspace | null> {
+/**
+ * @public
+ * @param db -
+ * @param workspace -
+ * @returns
+ */
+export async function getWorkspace (db: Db, workspace: string): Promise<Workspace | null> {
   return await db.collection(WORKSPACE_COLLECTION).findOne<Workspace>({
     workspace
   })
@@ -135,6 +156,108 @@ export async function login (db: Db, email: string, password: string, workspace:
   }
 
   throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.Forbidden, {}))
+}
+
+/**
+ * @public
+ */
+export async function createAccount (db: Db, email: string, password: string): Promise<AccountInfo> {
+  const salt = randomBytes(32)
+  const hash = hashWithSalt(password, salt)
+
+  const account = await getAccount(db, email)
+  if (account !== null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
+  }
+
+  const insert = await db.collection(ACCOUNT_COLLECTION).insertOne({
+    email,
+    hash,
+    salt,
+    workspaces: []
+  })
+
+  return {
+    _id: insert.insertedId,
+    email,
+    workspaces: []
+  }
+}
+
+/**
+ * @public
+ */
+export async function createWorkspace (db: Db, workspace: string, organisation: string): Promise<string> {
+  if ((await getWorkspace(db, workspace)) !== null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))
+  }
+  return await db
+    .collection(WORKSPACE_COLLECTION)
+    .insertOne({
+      workspace,
+      organisation
+    })
+    .then((e) => e.insertedId.toHexString())
+}
+
+async function getWorkspaceAndAccount (db: Db, email: string, workspace: string): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+  const wsPromise = await getWorkspace(db, workspace)
+  if (wsPromise === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
+  }
+  const workspaceId = wsPromise._id
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+  const accountId = account._id
+  return { accountId, workspaceId }
+}
+
+/**
+ * @public
+ */
+export async function assignWorkspace (db: Db, email: string, workspace: string): Promise<void> {
+  const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
+  // Add account into workspace.
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $push: { accounts: accountId } })
+
+  // Add workspace to account
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $push: { workspaces: workspaceId } })
+}
+
+/**
+ * @public
+ */
+export async function removeWorkspace (db: Db, email: string, workspace: string): Promise<void> {
+  const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
+
+  // Add account into workspace.
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $pull: { accounts: accountId } })
+
+  // Add account a workspace
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
+}
+
+function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
+  return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
+    return await f(db, ...request.params)
+      .then((result) => ({ id: request.id, result }))
+      .catch((err) => ({ error: unknownStatus(err) }))
+  }
+}
+
+/**
+ * @public
+ */
+export const methods = {
+  login: wrap(login),
+  getAccountInfo: wrap(getAccountInfo),
+  createAccount: wrap(createAccount),
+  createWorkspace: wrap(createWorkspace),
+  assignWorkspace: wrap(assignWorkspace),
+  removeWorkspace: wrap(removeWorkspace)
+  // updateAccount: wrap(updateAccount)
 }
 
 export default accountPlugin
