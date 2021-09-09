@@ -746,5 +746,10 @@
       "projectFolder": "server/front",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/account",
+      "projectFolder": "server/account",
+      "shouldPublish": true
+    },
   ]
 }
