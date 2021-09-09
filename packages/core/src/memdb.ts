@@ -101,7 +101,7 @@ export class MemDb extends TxProcessor {
     let result: Doc[]
     if (
       Object.prototype.hasOwnProperty.call(query, '_id') &&
-      (typeof query._id === 'string' || query._id?.$in !== undefined || query._id === undefined)
+      (typeof query._id === 'string' || query._id?.$in !== undefined || query._id === undefined || query._id === null)
     ) {
       result = this.getByIdQuery(query, _class)
     } else {

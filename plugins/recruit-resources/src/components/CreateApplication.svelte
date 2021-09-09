@@ -29,8 +29,8 @@
   import contact from '@anticrm/contact'
 
   export let space: Ref<Space>
-  export let candidate: Ref<Person>
-  export let employee: Ref<Employee>
+  export let candidate: Ref<Person> | null = null
+  export let employee: Ref<Employee> | null = null
 
   export let preserveCandidate = false
 
