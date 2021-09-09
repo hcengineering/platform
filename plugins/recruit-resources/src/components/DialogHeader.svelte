@@ -37,6 +37,8 @@
   import chunter from '@anticrm/chunter'
   import contact from '@anticrm/contact'
 
+  import equals from 'deep-equal'
+
   const dispatch = createEventDispatcher()
 
   export let space: Ref<Space>
@@ -74,7 +76,7 @@
 
   function isChanged(): void {
     for (const key in object) {
-      if ((newValue as any)[key] !== (object as any)[key]) {
+      if (!equals((newValue as any)[key], (object as any)[key])) {
         changed = true
         return
       }

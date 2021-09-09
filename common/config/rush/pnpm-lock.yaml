@@ -82,10 +82,10 @@ specifiers:
   '@typescript-eslint/eslint-plugin': '4'
   '@typescript-eslint/parser': ^4.0.0
   autoprefixer: ^10.2.6
-  body-parser: ~1.19.0
   cors: ^2.8.5
   cross-env: ^7.0.3
   css-loader: ^5.2.1
+  deep-equal: ^2.0.5
   dotenv-webpack: ^7.0.2
   esbuild: ^0.12.24
   eslint: ^7.32.0
@@ -201,10 +201,10 @@ dependencies:
   '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
   '@typescript-eslint/parser': 4.28.5_eslint@7.32.0+typescript@4.3.5
   autoprefixer: 10.3.1_postcss@8.3.6
-  body-parser: 1.19.0
   cors: 2.8.5
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.48.0
+  deep-equal: 2.0.5
   dotenv-webpack: 7.0.3_webpack@5.48.0
   esbuild: 0.12.24
   eslint: 7.32.0
@@ -1388,6 +1388,10 @@ packages:
 
   /@types/cors/2.8.12:
     resolution: {integrity: sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==}
+    dev: false
+
+  /@types/deep-equal/1.0.1:
+    resolution: {integrity: sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==}
     dev: false
 
   /@types/eslint-scope/3.7.1:
@@ -3073,6 +3077,32 @@ packages:
       regexp.prototype.flags: 1.3.1
     dev: false
 
+  /deep-equal/2.0.5:
+    resolution: {integrity: sha512-nPiRgmbAtm1a3JsnLCf6/SLfXcjyN5v8L1TXzdCmHrXJ4hx+gW/w1YCcn7z8gJtSiDArZCgYtbao3QqLm/N1Sw==}
+    dependencies:
+      call-bind: 1.0.2
+      es-get-iterator: 1.1.2
+      get-intrinsic: 1.1.1
+      is-arguments: 1.1.0
+      is-date-object: 1.0.4
+      is-regex: 1.1.3
+      isarray: 2.0.5
+      object-is: 1.1.5
+      object-keys: 1.1.1
+      object.assign: 4.1.2
+      regexp.prototype.flags: 1.3.1
+      side-channel: 1.0.4
+      which-boxed-primitive: 1.0.2
+      which-collection: 1.0.1
+      which-typed-array: 1.1.6
+    dev: false
+
+  /deep-equals/0.0.2:
+    resolution: {integrity: sha1-IcFkxV0aUIAtFdlPgB0yWFqZ8M4=}
+    dependencies:
+      ramda: 0.23.0
+    dev: false
+
   /deep-is/0.1.3:
     resolution: {integrity: sha1-s2nW+128E+7PUk+RsHD+7cNXzzQ=}
     dev: false
@@ -3390,6 +3420,19 @@ packages:
       string.prototype.trimend: 1.0.4
       string.prototype.trimstart: 1.0.4
       unbox-primitive: 1.0.1
+    dev: false
+
+  /es-get-iterator/1.1.2:
+    resolution: {integrity: sha512-+DTO8GYwbMCwbywjimwZMHp8AuYXOS2JZFWoi2AlPOS3ebnII9w/NLpNZtA7A0YLaVDw+O7KFCeoIV7OPvM7hQ==}
+    dependencies:
+      call-bind: 1.0.2
+      get-intrinsic: 1.1.1
+      has-symbols: 1.0.2
+      is-arguments: 1.1.0
+      is-map: 2.0.2
+      is-set: 2.0.2
+      is-string: 1.0.6
+      isarray: 2.0.5
     dev: false
 
   /es-module-lexer/0.7.1:
@@ -4813,6 +4856,10 @@ packages:
       is-extglob: 2.1.1
     dev: false
 
+  /is-map/2.0.2:
+    resolution: {integrity: sha512-cOZFQQozTha1f4MxLFzlgKYPTyj26picdZTx82hbc/Xf4K/tZOOXSCkMvU4pKioRXGDLJRn0GM7Upe7kR721yg==}
+    dev: false
+
   /is-negative-zero/2.0.1:
     resolution: {integrity: sha512-2z6JzQvZRa9A2Y7xC6dQQm4FSTSTNWjKIYYTt4246eMTJmIo0Q+ZyOsU66X8lxK1AbB92dFeglPLrhwpeRKO6w==}
     engines: {node: '>= 0.4'}
@@ -4869,6 +4916,10 @@ packages:
       has-symbols: 1.0.2
     dev: false
 
+  /is-set/2.0.2:
+    resolution: {integrity: sha512-+2cnTEZeY5z/iXGbLhPrOAaK/Mau5k5eXq9j14CpRTftq0pAJu2MwVRSZhyZWBzx3o6X795Lz6Bpb6R0GKf37g==}
+    dev: false
+
   /is-stream/1.1.0:
     resolution: {integrity: sha1-EtSj3U5o4Lec6428hBc66A2RykQ=}
     engines: {node: '>=0.10.0'}
@@ -4906,6 +4957,14 @@ packages:
     resolution: {integrity: sha1-5HnICFjfDBsR3dppQPlgEfzaSpo=}
     dev: false
 
+  /is-weakmap/2.0.1:
+    resolution: {integrity: sha512-NSBR4kH5oVj1Uwvv970ruUkCV7O1mzgVFO4/rev2cLRda9Tm9HrL70ZPut4rOHgY0FNrUu9BCbXA2sdQ+x0chA==}
+    dev: false
+
+  /is-weakset/2.0.1:
+    resolution: {integrity: sha512-pi4vhbhVHGLxohUw7PhGsueT4vRGFoXhP7+RGN0jKIv9+8PWYCQTqtADngrxOm2g46hoH0+g8uZZBzMrvVGDmw==}
+    dev: false
+
   /is-windows/1.0.2:
     resolution: {integrity: sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA==}
     engines: {node: '>=0.10.0'}
@@ -4930,6 +4989,10 @@ packages:
 
   /isarray/1.0.0:
     resolution: {integrity: sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=}
+    dev: false
+
+  /isarray/2.0.5:
+    resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
     dev: false
 
   /isexe/2.0.0:
@@ -6831,6 +6894,10 @@ packages:
 
   /queue-microtask/1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+    dev: false
+
+  /ramda/0.23.0:
+    resolution: {integrity: sha1-zNE//3NJepOXTj6GMnv9h71ujis=}
     dev: false
 
   /random-bytes/1.0.0:
@@ -8783,6 +8850,15 @@ packages:
       is-symbol: 1.0.4
     dev: false
 
+  /which-collection/1.0.1:
+    resolution: {integrity: sha512-W8xeTUwaln8i3K/cY1nGXzdnVZlidBcagyNFtBdD5kxnb4TvGKR7FfSIS3mYpwWS1QUCutfKz8IY8RjftB0+1A==}
+    dependencies:
+      is-map: 2.0.2
+      is-set: 2.0.2
+      is-weakmap: 2.0.1
+      is-weakset: 2.0.1
+    dev: false
+
   /which-module/2.0.0:
     resolution: {integrity: sha1-2e8H3Od7mQK4o6j6SzHD4/fm6Ho=}
     dev: false
@@ -9104,7 +9180,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-K7eN4fRxQXf0FvhCDECreRXrBHldk8q4JtqhXlFjzu1z+o0AeosaurtfF4tjMk/IfK/eX9UljXbT+YK2vK3MIg==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-XAWYrVWhXaF9JCvEM8J2lj6+XssbzcPTC3ZYkRYF3w2Tfv3rSJEfZur36y2VUM1XarSPSSKoyS6OIV1qp5R9+w==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -9672,7 +9748,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-3Uu+AOY0vJh1eedEeKLq97X9MthuoqhBvZM1LkjF/sUqqnnpUBN1b7f5Uy/w0MrHih18GnKh7FmH1e0WQk+mhg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-40ahmahal+a+1hgyBS7oEkNiw/KUOxVlUjK/lT3isHWjdrjkU81GiX6Bs1MQqpptXh+HImYoJ8TLCRPryCztJA==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -9758,12 +9834,15 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-ZHEMy8SOs9qPwWBjWKnS9eFirCDcIMDFiDvVSYanumEIEnJ6A/lkMZj1Lcj/6ZIssCTDl9cTSmPi2Yl2jejW3Q==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-ZTxU5DPTttq85I1jEwAbJ+RCuL1t9sFCQ0gJo/ax4VzfEN6M/6inkXZ5HQF812UD9vGcYlRF2+zqfnuoAfZxmA==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
     dependencies:
+      '@types/deep-equal': 1.0.1
       '@types/pdfjs-dist': 2.7.4
+      deep-equal: 2.0.5
+      deep-equals: 0.0.2
       pdfjs-dist: 2.9.359
       sass: 1.37.5
       svelte: 3.42.1
@@ -10031,7 +10110,7 @@ packages:
     dev: false
 
   file:projects/upload.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-byTX4zxyU1KC18JALae6QbuZvlaJYQZrEAa8AugxEIG5v6UiKdiljDB/LuR7Zpzran0s+K5LtPuN7fkyF9byMA==, tarball: file:projects/upload.tgz}
+    resolution: {integrity: sha512-mlUwWOiAp5vvPFaPMEQHjv9XVotjAmTJqKmE536UUrRjwwSEo6p1iUXd8o+L9HRB35198Rk5peYnpyJIFVcP4g==, tarball: file:projects/upload.tgz}
     id: file:projects/upload.tgz
     name: '@rush-temp/upload'
     version: 0.0.0

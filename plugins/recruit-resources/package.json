@@ -16,7 +16,8 @@
   "devDependencies": {
     "svelte-loader":"^3.1.2",
     "sass":"^1.37.5",
-    "svelte-preprocess":"^4.7.4"
+    "svelte-preprocess":"^4.7.4",
+    "@types/deep-equal":"^1.0.1"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
@@ -28,6 +29,7 @@
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/chunter": "~0.6.0",
     "@anticrm/contact": "~0.6.0",
-    "@anticrm/login": "~0.6.0"
+    "@anticrm/login": "~0.6.0",
+    "deep-equal": "^2.0.5"
   }
 }
