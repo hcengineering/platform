@@ -75,7 +75,7 @@
   let changed = false
 
   function isChanged(): void {
-    for (const key in object) {
+    for (const key in newValue) {
       if (!equals((newValue as any)[key], (object as any)[key])) {
         changed = true
         return
