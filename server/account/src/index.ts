@@ -51,6 +51,8 @@ const accountPlugin = plugin(accountId, {
 export interface Account {
   _id: ObjectId
   email: string
+  first: string
+  last: string
   hash: Binary
   salt: Binary
   workspaces: ObjectId[]
@@ -161,7 +163,7 @@ export async function login (db: Db, email: string, password: string, workspace:
 /**
  * @public
  */
-export async function createAccount (db: Db, email: string, password: string): Promise<AccountInfo> {
+export async function createAccount (db: Db, email: string, password: string, first: string, last: string): Promise<AccountInfo> {
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -174,11 +176,15 @@ export async function createAccount (db: Db, email: string, password: string): P
     email,
     hash,
     salt,
+    first,
+    last,
     workspaces: []
   })
 
   return {
     _id: insert.insertedId,
+    first,
+    last,
     email,
     workspaces: []
   }

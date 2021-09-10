@@ -21,11 +21,19 @@
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
     "ts-node":"^10.2.1",
-    "esbuild":"^0.12.26"
+    "esbuild":"^0.12.26",
+    "@types/minio":"^7.0.10",
+    "@types/node":"^16.7.5"
   },
   "dependencies": {
     "mongodb":"^4.1.1",
     "commander":"^8.1.0",
-    "@anticrm/account":"~0.6.0"
+    "@anticrm/account":"~0.6.0",
+    "jwt-simple":"^0.5.6",
+    "@anticrm/contrib":"~0.6.0",
+    "@anticrm/core":"~0.6.11",
+    "@anticrm/contact":"~0.6.0",
+    "@anticrm/workspace":"~0.6.0",
+    "minio":"^7.0.19"
   }
 }

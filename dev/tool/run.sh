@@ -20,5 +20,7 @@ export MINIO_SECRET_KEY=$(kubectl get secret --namespace default minio -o jsonpa
 
 kubectl run anticrm-tool --rm --tty -i --restart='Never' \
   --env="MONGO_URL=mongodb://root:$MONGODB_ROOT_PASSWORD@mng-mongodb:27017/" \
+  --env="TRANSACTOR_URL=ws://transactor/" \
+  --env="MINIO_ENDPOINT=minio" \
   --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
   --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image anticrm/tool --command -- bash

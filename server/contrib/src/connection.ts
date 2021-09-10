@@ -14,15 +14,19 @@
 // limitations under the License.
 //
 
-import type { Tx, WithTx } from '@anticrm/core'
+import { Tx, Storage, Class, Doc, DocumentQuery, FindOptions, Ref, FindResult } from '@anticrm/core'
 import { serialize } from '@anticrm/platform'
 import WebSocket from 'ws'
 
 /**
  * @public
  */
-export class ContributingClient implements WithTx {
+export class ContributingClient implements Storage {
   constructor (private readonly websocket: WebSocket) {
+  }
+
+  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
+    throw new Error('findAll not implemeneted for contributing client')
   }
 
   async tx (tx: Tx): Promise<void> {

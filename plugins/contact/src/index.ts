@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Doc, Ref, Class, UXObject } from '@anticrm/core'
+import type { Doc, Ref, Class, UXObject, Space } from '@anticrm/core'
 
 /**
  * @public
@@ -90,5 +90,8 @@ export default plugin(contactId, {
     WhatsApp: '' as Asset,
     Youtube: '' as Asset,
     GitHub: '' as Asset
+  },
+  space: {
+    Employee: '' as Ref<Space>
   }
 })

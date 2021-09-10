@@ -17,8 +17,51 @@
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
 import { getAccount, createAccount, assignWorkspace, createWorkspace } from '@anticrm/account'
+import { createContributingClient } from '@anticrm/contrib'
+import core, { TxOperations } from '@anticrm/core'
+import { encode } from 'jwt-simple'
+import { Client } from 'minio'
+import { initWorkspace } from './workspace'
 
-const mongodbUri = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
+import contact from '@anticrm/contact'
+
+const mongodbUri = process.env.MONGO_URL
+if (mongodbUri === undefined) {
+  console.error('please provide mongodb url.')
+  process.exit(1)
+}
+
+const transactorUrl = process.env.TRANSACTOR_URL
+if (transactorUrl === undefined) {
+  console.error('please provide transactor url.')
+  process.exit(1)
+}
+
+const minioEndpoint = process.env.MINIO_ENDPOINT
+if (minioEndpoint === undefined) {
+  console.error('please provide minio endpoint')
+  process.exit(1)
+}
+
+const minioAccessKey = process.env.MINIO_ACCESS_KEY
+if (minioAccessKey === undefined) {
+  console.error('please provide minio access key')
+  process.exit(1)
+}
+
+const minioSecretKey = process.env.MINIO_SECRET_KEY
+if (minioSecretKey === undefined) {
+  console.error('please provide minio secret key')
+  process.exit(1)
+}
+
+const minio = new Client({
+  endPoint: minioEndpoint,
+  port: 9000,
+  useSSL: false,
+  accessKey: minioAccessKey,
+  secretKey: minioSecretKey
+})
 
 async function withDatabase (uri: string, f: (db: Db) => Promise<any>): Promise<void> {
   console.log(`connecting to database '${uri}'...`)
@@ -35,21 +78,40 @@ program
   .command('create-user <email>')
   .description('create user and corresponding account in master database')
   .requiredOption('-p, --password <password>', 'user password')
-  .requiredOption('-f, --fullname <fullname>', 'full user name')
-  .action(async (email, cmd) => {
+  .requiredOption('-f, --first <firstname>', 'first name')
+  .requiredOption('-l, --last <lastname>', 'first name')
+  .action(async (email: string, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
-      await createAccount(db, email, cmd.password)
-      // await createContact(withTenant(client, cmd.workspace), email, cmd.fullname)
+      console.log(`creating account ${cmd.firstname as string} ${cmd.lastname as string} (${email})...`)
+      await createAccount(db, email, cmd.password, cmd.firstname, cmd.lastname)
     })
   })
 
 program
   .command('assign-workspace <email> <workspace>')
   .description('assign workspace')
-  .action(async (email, workspace, cmd) => {
+  .action(async (email: string, workspace: string, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
-      console.log(`assigning user ${email as string} to ${workspace as string}...`)
+      console.log(`retrieveing account from ${email}...`)
+      const account = await getAccount(db, email)
+      if (account === null) {
+        throw new Error('account not found')
+      }
+      console.log(`assigning user ${email} to ${workspace}...`)
       await assignWorkspace(db, email, workspace)
+      const token = encode({ email: 'anticrm@hc.engineering', workspace }, 'secret')
+      const url = new URL(`/${token}`, transactorUrl)
+      const contrib = await createContributingClient(url.href)
+      const txop = new TxOperations(contrib, core.account.System)
+      await txop.createDoc(contact.class.Employee, contact.space.Employee, {
+        firstName: account.first,
+        lastName: account.last,
+        city: 'Mountain View',
+        channels: []
+      })
+      await txop.createDoc(core.class.Account, core.space.Model, {
+        email
+      })
     })
   })
 
@@ -70,8 +132,7 @@ program
   .action(async (workspace, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
       await createWorkspace(db, workspace, cmd.organization)
-
-      // await initDatabase(withTenant(client, workspace))
+      await initWorkspace(mongodbUri, workspace, transactorUrl, minio)
     })
   })
 
