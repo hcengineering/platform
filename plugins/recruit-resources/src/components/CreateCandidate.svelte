@@ -16,8 +16,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
+  import { generateId } from '@anticrm/core'
 
   import { getClient, Card, Channels } from '@anticrm/presentation'
+  import { uploadFile } from '../utils'
 
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
@@ -38,12 +40,13 @@
 
   export let space: Ref<Space>
 
+  let _space = space
+
   const object: Candidate = {
     lastName: '',
     firstName: '',
     city: ''
   } as Candidate
-  const newValue = Object.assign({}, object)
 
   let resume = {} as {
     id: Ref<Attachment> | undefined
@@ -57,21 +60,21 @@
   const client = getClient()
 
   async function createCandidate() {
-    console.log(newValue)
+    console.log(_space)
     // create candidate      
-    const candidateId = await client.createDoc(recruit.class.Candidate, space, {
-      firstName: newValue.firstName,
-      lastName: newValue.lastName,
-      city: newValue.city,
-      channels: newValue.channels,
+    const candidateId = await client.createDoc(recruit.class.Candidate, _space, {
+      firstName: object.firstName,
+      lastName: object.lastName,
+      city: object.city,
+      channels: object.channels,
     })
 
     console.log('resume name', resume.name)
 
     if (resume.id !== undefined) {
       // create attachment
-      console.log('creaing attachment space', space)
-      client.createDoc(chunter.class.Attachment, space, {
+      console.log('creaing attachment space', _space)
+      client.createDoc(chunter.class.Attachment, _space, {
         attachmentTo: candidateId,
         collection: 'resume',
         name: resume.name,
@@ -80,7 +83,7 @@
         size: resume.size,
       }, resume.id)
 
-      client.updateDoc(recruit.class.Candidate, space, candidateId, {
+      client.updateDoc(recruit.class.Candidate, _space, candidateId, {
         resume: resume.id
       })
     }
@@ -89,18 +92,34 @@
   }
 
   let inputFile: HTMLInputElement
-  let kl: number = 0
-  let changed = false
+  let loading = false
 
-  function isChanged(): void {
-    for (const key in newValue) {
-      if (!equals((newValue as any)[key], (object as any)[key])) {
-        changed = true
-        return
-      }
+  async function createAttachment(file: File) {
+    loading = true
+    try {
+      const id = generateId<Attachment>()
+      resume.uuid = await uploadFile(id, space, file)
+      resume.id = id
+      resume.name = file.name
+      resume.size = file.size
+      resume.type = file.type
+
+      object.resume = id
+
+      console.log('uploaded file uuid', resume.uuid)
+
+    } finally {
+      loading = false
     }
-    changed = false
   }
+
+  function fileSelected() {
+    console.log(inputFile.files)
+    const file = inputFile.files?.[0]
+    if (file !== undefined) { createAttachment(file) }
+  }
+
+  let kl: number = 0
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -108,7 +127,9 @@
 <Card label={'Create Candidate'} 
       okLabel={'Save'}
       okAction={createCandidate}
-      bind:space={space}
+      canSave={object.firstName.length > 0 && object.lastName.length > 0}
+      spaceClass={recruit.class.Candidates}
+      bind:space={_space}
       on:close={() => { dispatch('close') }}>
 
   <div class="flex">
@@ -126,22 +147,22 @@
     </div>
 
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="Name*" maxWidth="9.5rem"/></div>
-      <div class="name"><EditBox placeholder="Surname*" maxWidth="9.5rem" /></div>
-      <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" /></div>
+      <div class="name"><EditBox placeholder="John" maxWidth="9.5rem" bind:value={object.firstName}/></div>
+      <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={object.lastName}/></div>
+      <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
       <div class="flex resume">
-        {#if kl === 0}
-          <a href={'#'} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }>Upload resume</a>
+        {#if resume.id}
+          <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
         {:else}
-          <a href={'#'} on:click={ () => { inputFile.click() } }>Resume</a>
-          <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change/>
+          <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
+          <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
         {/if}
       </div>
     </div>
   </div>
   <svelte:fragment slot="contacts">
-    <Channels value={newValue.channels} />
-    <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
+    <Channels value={object.channels} />
+    <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
   </svelte:fragment>
 </Card>
 
