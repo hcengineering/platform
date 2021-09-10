@@ -15,11 +15,26 @@
 //
 
 import { Builder } from '@anticrm/model'
+import core, { generateId } from '@anticrm/core'
 
 import contact from '@anticrm/model-contact'
 import recruit from '@anticrm/model-recruit'
 
 export function createDemo (builder: Builder): void {
+  const rosamund = generateId()
+
+  builder.createDoc(contact.class.Employee, contact.space.Employee, {
+    firstName: 'Rosamund',
+    lastName: 'Chen',
+    city: 'Mountain View',
+    channels: []
+  }, rosamund)
+
+  builder.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+    email: 'rosamund@hc.engineering',
+    employee: rosamund as any
+  })
+
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     firstName: 'Andrey',
     lastName: 'P.',
