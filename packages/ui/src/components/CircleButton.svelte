@@ -38,7 +38,7 @@
     align-items: center;
     width: 2rem;
     height: 2rem;
-    background-color: rgba(255, 255, 255, .2);
+    border: 1px solid var(--theme-card-divider);
     border-radius: 50%;
     backdrop-filter: blur(3px);
     cursor: pointer;
@@ -48,14 +48,7 @@
       transform: scale(.75);
       pointer-events: none;
     }
-
-    &:hover {
-      background-color: rgba(255, 255, 255, .25);
-      box-shadow: 0 0 .5rem rgba(0, 0, 0, .3);
-    }
-    &:active {
-      background-color: rgba(255, 255, 255, .15);
-      box-shadow: 0 0 .5rem rgba(0, 0, 0, .1);
-    }
+    &:hover { background-color: var(--theme-bg-accent-hover); }
+    &:active { background-color: var(--theme-bg-accent-color); }
   }
 </style>

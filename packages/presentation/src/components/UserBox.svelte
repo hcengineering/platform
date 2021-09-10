@@ -20,8 +20,7 @@
   import { Label, showPopup } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
   import UsersPopup from './UsersPopup.svelte'
-  import Add from './icons/Add.svelte'
-  import Close from './icons/Close.svelte'
+  import IconAvatar from './icons/Avatar.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
   import type { Person } from '@anticrm/contact'
@@ -54,7 +53,7 @@
 <div class="flex-row-center">
   <button
     class="focused-button btn"
-    class:selected={show}
+    class:selected
     bind:this={btn}
     on:click|preventDefault={(ev) => {
       showPopup(UsersPopup, { _class, title, caption }, ev.target, (result) => {
@@ -67,9 +66,7 @@
     {#if selected}
       <Avatar size={'medium'} />
     {:else}
-      <div class="icon">
-        {#if show}<Close size={'small'} />{:else}<Add size={'small'} />{/if}
-      </div>
+      <IconAvatar />
     {/if}
   </button>
 
@@ -85,9 +82,11 @@
   .btn {
     width: 2.25rem;
     height: 2.25rem;
+    background-color: transparent;
+    border: 1px solid var(--theme-card-divider);
     border-radius: 50%;
-    border: none;
   }
+  .selected { border: none; }
 
   .selectUser {
     margin-left: .75rem;
