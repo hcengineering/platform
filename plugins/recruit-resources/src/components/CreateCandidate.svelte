@@ -17,20 +17,24 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
 
-  import { getClient, Card } from '@anticrm/presentation'
+  import { getClient, Card, Channels } from '@anticrm/presentation'
 
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
   import type { Candidate } from '@anticrm/recruit'
   import type { Attachment } from '@anticrm/chunter'
 
-  import { EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
+  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Avatar from './icons/Avatar.svelte'
+  import Edit from './icons/Edit.svelte'
+  import SocialEditor from './SocialEditor.svelte'
   import PDFViewer from './PDFViewer.svelte'
   import Girl from '../../img/girl.png'
   import Elon from '../../img/elon.png'
   import Bond from '../../img/bond.png'
+
+  import equals from 'deep-equal'
 
   export let space: Ref<Space>
 
@@ -86,6 +90,17 @@
 
   let inputFile: HTMLInputElement
   let kl: number = 0
+  let changed = false
+
+  function isChanged(): void {
+    for (const key in newValue) {
+      if (!equals((newValue as any)[key], (object as any)[key])) {
+        changed = true
+        return
+      }
+    }
+    changed = false
+  }
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -111,9 +126,9 @@
     </div>
 
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="Name*" /></div>
-      <div class="name"><EditBox placeholder="Surname*" /></div>
-      <div class="city"><EditBox placeholder="Location" /></div>
+      <div class="name"><EditBox placeholder="Name*" maxWidth="9.5rem"/></div>
+      <div class="name"><EditBox placeholder="Surname*" maxWidth="9.5rem" /></div>
+      <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" /></div>
       <div class="flex resume">
         {#if kl === 0}
           <a href={'#'} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }>Upload resume</a>
@@ -124,12 +139,17 @@
       </div>
     </div>
   </div>
+  <svelte:fragment slot="contacts">
+    <Channels value={newValue.channels} />
+    <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
+  </svelte:fragment>
 </Card>
 
 <style lang="scss">
   @import '../../../../packages/theme/styles/mixins.scss';
 
   .avatar {
+    flex-shrink: 0;
     overflow: hidden;
     position: relative;
     display: flex;
