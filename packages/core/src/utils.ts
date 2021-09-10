@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from './classes'
+import type { Doc, Ref, Account } from './classes'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -42,4 +42,20 @@ function count (): string {
  */
 export function generateId<T extends Doc> (): Ref<T> {
   return (timestamp() + random + count()) as Ref<T>
+}
+
+let currentAccount: Account
+
+/**
+ * @public
+ * @returns
+ */
+export function getCurrentAccount (): Account { return currentAccount }
+
+/**
+ * @public
+ * @param account -
+ */
+export function setCurrentAccount (account: Account): void {
+  currentAccount = account
 }

@@ -15,18 +15,34 @@
 
 <script lang="ts">
   import type { Comment } from '@anticrm/chunter'
-  import MessageViewer from '@anticrm/presentation/src/components/MessageViewer.svelte'
+  import { getClient } from '@anticrm/presentation'
+  import type { Ref } from '@anticrm/core'
 
+  import MessageViewer from '@anticrm/presentation/src/components/MessageViewer.svelte'
   import Avatar from '@anticrm/presentation/src/components/Avatar.svelte'
 
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+
   export let comment: Comment
+
+  let employee: Employee | undefined
+
+  console.log('comment modified by', comment.modifiedBy)
+
+  const client = getClient()
+  client.findOne(contact.class.EmployeeAccount, { _id: comment.modifiedBy as Ref<EmployeeAccount> })
+    .then(account => client.findOne(contact.class.Employee, { _id: account?.employee }))
+    .then(result => {
+      console.log('comment', result)
+      employee = result
+    })
 
 </script>
 
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">Rosamund Chen<span>July 28th</span></div>
+    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span>July 28th</span></div>
     <div class="text"><MessageViewer message={comment.message} /></div>
   </div>
 </div>

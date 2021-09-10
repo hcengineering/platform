@@ -17,6 +17,7 @@
 
 import { getResource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
+import { setCurrentAccount } from '@anticrm/core'
 import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
 
 import client from '@anticrm/client'
@@ -24,7 +25,6 @@ import login from '@anticrm/login'
 import contact from '@anticrm/contact'
 
 import Workbench from './Workbench.svelte'
-import { setCurrentAccount } from '../utils'
 
 async function connect(): Promise<Client | undefined> {
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)

@@ -22,11 +22,3 @@ import type { EmployeeAccount } from '@anticrm/contact'
 export function classIcon(client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
-
-let currentAccount: EmployeeAccount
-
-export function getCurrentAccount(): EmployeeAccount { return currentAccount }
-
-export function setCurrentAccount(account: EmployeeAccount): void { 
-  currentAccount = account 
-}
