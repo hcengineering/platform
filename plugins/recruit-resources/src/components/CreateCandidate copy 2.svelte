@@ -1,0 +1,82 @@
+<!--
+// Copyright © 2020 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import type { Ref, Space, Doc } from '@anticrm/core'
+  import DialogHeader from './DialogHeader.svelte'
+
+  import { getClient } from '@anticrm/presentation'
+
+  import recruit from '../plugin'
+  import chunter from '@anticrm/chunter'
+  import type { Candidate } from '@anticrm/recruit'
+  import type { Attachment } from '@anticrm/chunter'
+
+  export let space: Ref<Space>
+
+  const object: Candidate = {
+    lastName: '',
+    firstName: '',
+    city: ''
+  } as Candidate
+  const newValue = Object.assign({}, object)
+
+  let resume = {} as {
+    id: Ref<Attachment> | undefined
+    name: string
+    uuid: string
+    size: number
+    type: string
+  }
+
+  const dispatch = createEventDispatcher()
+  const client = getClient()
+
+  async function createCandidate() {
+    console.log(newValue)
+    // create candidate      
+    const candidateId = await client.createDoc(recruit.class.Candidate, space, {
+      firstName: newValue.firstName,
+      lastName: newValue.lastName,
+      city: newValue.city,
+      channels: newValue.channels,
+    })
+
+    console.log('resume name', resume.name)
+
+    if (resume.id !== undefined) {
+      // create attachment
+      console.log('creaing attachment space', space)
+      client.createDoc(chunter.class.Attachment, space, {
+        attachmentTo: candidateId,
+        collection: 'resume',
+        name: resume.name,
+        file: resume.uuid,
+        type: resume.type,
+        size: resume.size,
+      }, resume.id)
+
+      client.updateDoc(recruit.class.Candidate, space, candidateId, {
+        resume: resume.id
+      })
+    }
+
+    dispatch('close')
+  }
+
+</script>
+
+<DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/>
