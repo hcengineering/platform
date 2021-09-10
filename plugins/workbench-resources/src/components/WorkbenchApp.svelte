@@ -38,9 +38,12 @@ async function connect(): Promise<Client | undefined> {
 
   const getClient = await getResource(client.function.GetClient)
   const instance = await getClient(token, endpoint)
-  const me = await instance.findOne(contact.class.Employee, { email })
+  const me = await instance.findOne(contact.class.EmployeeAccount, { email })
   if (me !== undefined) {
-    setCurrentAccount(me._id)
+    console.log('login: employee account', me)
+    setCurrentAccount(me)
+  } else {
+    console.log('WARNING: no employee account found.')
   }
   return instance
 }

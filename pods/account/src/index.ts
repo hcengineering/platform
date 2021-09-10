@@ -24,7 +24,12 @@ import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
 import cors from '@koa/cors'
 
-const dbUri = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
+const dbUri = process.env.MONGO_URL
+if (dbUri === undefined) {
+  console.log('Please provide mongodb url')
+  process.exit(1)
+}
+
 let client: MongoClient
 
 const app = new Koa()

@@ -17,17 +17,16 @@
 import type { Ref, Obj, Class } from '@anticrm/core'
 import type { Asset } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
-import type { Employee } from '@anticrm/contact'
+import type { EmployeeAccount } from '@anticrm/contact'
 
 export function classIcon(client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
 
-let currentAccount: Ref<Employee>
+let currentAccount: EmployeeAccount
 
-export function getCurrentAccount(): Ref<Employee> { return currentAccount }
+export function getCurrentAccount(): EmployeeAccount { return currentAccount }
 
-export function setCurrentAccount(account: Ref<Employee>): void { 
+export function setCurrentAccount(account: EmployeeAccount): void { 
   currentAccount = account 
-  console.log('current account', currentAccount)
 }

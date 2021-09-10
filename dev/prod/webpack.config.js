@@ -162,7 +162,8 @@ module.exports = {
     },
     proxy: {
       '/account': {
-        target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
+        // target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
+        target: 'https://account.hc.engineering/',
         changeOrigin: true,
         pathRewrite: { '^/account': '' },
         logLevel: 'debug'

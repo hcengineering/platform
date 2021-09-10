@@ -19,5 +19,5 @@ spec:
             - containerPort: 3000
           imagePullPolicy: Always
           env:
-          - name: MONGO_URL
-            value: mongodb://root:WZCwnHRazX@mng-mongodb:27017/
+            - name: MONGO_URL
+              value: mongodb://root:WZCwnHRazX@mng-mongodb:27017/

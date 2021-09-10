@@ -18,7 +18,7 @@ import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
 import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB } from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
-import core, { TxOperations } from '@anticrm/core'
+import core, { TxOperations, TxFactory, DOMAIN_TX } from '@anticrm/core'
 import { encode } from 'jwt-simple'
 import { Client } from 'minio'
 import { initWorkspace } from './workspace'
@@ -63,11 +63,11 @@ const minio = new Client({
   secretKey: minioSecretKey
 })
 
-async function withDatabase (uri: string, f: (db: Db) => Promise<any>): Promise<void> {
+async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
   console.log(`connecting to database '${uri}'...`)
 
   const client = await MongoClient.connect(uri)
-  await f(client.db(ACCOUNT_DB))
+  await f(client.db(ACCOUNT_DB), client)
   await client.close()
 }
 
@@ -75,15 +75,15 @@ program.version('0.0.1')
 
 // create-user john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
 program
-  .command('create-user <email>')
+  .command('create-account <email>')
   .description('create user and corresponding account in master database')
   .requiredOption('-p, --password <password>', 'user password')
-  .requiredOption('-f, --first <firstname>', 'first name')
-  .requiredOption('-l, --last <lastname>', 'first name')
+  .requiredOption('-f, --first <first>', 'first name')
+  .requiredOption('-l, --last <last>', 'first name')
   .action(async (email: string, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
-      console.log(`creating account ${cmd.firstname as string} ${cmd.lastname as string} (${email})...`)
-      await createAccount(db, email, cmd.password, cmd.firstname, cmd.lastname)
+      console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
+      await createAccount(db, email, cmd.password, cmd.first, cmd.last)
     })
   })
 
@@ -91,28 +91,37 @@ program
   .command('assign-workspace <email> <workspace>')
   .description('assign workspace')
   .action(async (email: string, workspace: string, cmd) => {
-    return await withDatabase(mongodbUri, async (db) => {
+    return await withDatabase(mongodbUri, async (db, client) => {
       console.log(`retrieveing account from ${email}...`)
       const account = await getAccount(db, email)
       if (account === null) {
         throw new Error('account not found')
       }
+
       console.log(`assigning user ${email} to ${workspace}...`)
       await assignWorkspace(db, email, workspace)
+
+      console.log('connecting to transactor...')
       const token = encode({ email: 'anticrm@hc.engineering', workspace }, 'secret')
       const url = new URL(`/${token}`, transactorUrl)
       const contrib = await createContributingClient(url.href)
       const txop = new TxOperations(contrib, core.account.System)
+
+      console.log('create user in target workspace...')
       const employee = await txop.createDoc(contact.class.Employee, contact.space.Employee, {
         firstName: account.first,
         lastName: account.last,
         city: 'Mountain View',
         channels: []
       })
+
+      console.log('create account in target workspace...')
       await txop.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email,
         employee
       })
+
+      contrib.close()
     })
   })
 

@@ -19,3 +19,4 @@ import { writeFileSync } from 'fs'
 const content = JSON.stringify(builder.getTxes(), undefined, 2)
 writeFileSync('../../dev/storage/src/model.tx.json', content)
 writeFileSync('../../server/workspace/src/model.tx.json', content)
+writeFileSync('../../dev/tool/src/model.tx.json', content)
