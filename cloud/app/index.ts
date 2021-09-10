@@ -306,3 +306,13 @@ new aws.route53.Record("uploadRecord", {
     "8.9.31.18"
   ]
 })
+
+new aws.route53.Record("accountRecord", {
+  name: "account.hc.engineering",
+  zoneId: zoneId,
+  type: "A",
+  ttl: 300,
+  records: [
+    "8.9.31.18"
+  ]
+})

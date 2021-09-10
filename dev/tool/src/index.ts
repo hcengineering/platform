@@ -16,7 +16,7 @@
 
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
-import { getAccount, createAccount, assignWorkspace, createWorkspace } from '@anticrm/account'
+import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB } from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
@@ -67,7 +67,7 @@ async function withDatabase (uri: string, f: (db: Db) => Promise<any>): Promise<
   console.log(`connecting to database '${uri}'...`)
 
   const client = await MongoClient.connect(uri)
-  await f(client.db('account'))
+  await f(client.db(ACCOUNT_DB))
   await client.close()
 }
 

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: account
+  template:
+    metadata:
+      labels:
+        app: account
+    spec:
+      containers:
+        - name: app
+          image: anticrm/account
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+          env:
+          - name: MONGO_URL
+            value: mongodb://root:WZCwnHRazX@mng-mongodb:27017/

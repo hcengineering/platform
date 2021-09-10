@@ -756,5 +756,10 @@
       "projectFolder": "dev/tool",
       "shouldPublish": false
     },
+    {
+      "packageName": "@anticrm/pod-account",
+      "projectFolder": "pods/account",
+      "shouldPublish": false
+    },
   ]
 }

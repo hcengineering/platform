@@ -29,6 +29,11 @@ const secret = 'secret'
 /**
  * @public
  */
+export const ACCOUNT_DB = 'account'
+
+/**
+ * @public
+ */
 export const accountId = 'account' as Plugin
 
 /**
