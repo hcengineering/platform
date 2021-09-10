@@ -16,7 +16,7 @@
 
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
-import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB } from '@anticrm/account'
+import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB, dropWorkspace, dropAccount } from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
@@ -145,6 +145,24 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       await createWorkspace(db, workspace, cmd.organization)
       await initWorkspace(mongodbUri, workspace, transactorUrl, minio)
+    })
+  })
+
+program
+  .command('drop-workspace <name>')
+  .description('drop workspace')
+  .action(async (workspace, cmd) => {
+    return await withDatabase(mongodbUri, async (db) => {
+      await dropWorkspace(db, workspace)
+    })
+  })
+
+program
+  .command('drop-account <name>')
+  .description('drop account')
+  .action(async (email, cmd) => {
+    return await withDatabase(mongodbUri, async (db) => {
+      await dropAccount(db, email)
     })
   })
 
