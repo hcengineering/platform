@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import type { Domain, Type } from '@anticrm/core'
+import type { Domain, Type, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 
-import core, { TDoc, TType } from '@anticrm/model-core'
-import type { Contact, Person, Organization, Employee, Channel, ChannelProvider } from '@anticrm/contact'
+import core, { TAccount, TDoc, TType } from '@anticrm/model-core'
+import type { Contact, Person, Organization, Employee, Channel, ChannelProvider, EmployeeAccount } from '@anticrm/contact'
 
 import view from '@anticrm/model-view'
 import { ids as contact } from './plugin'
@@ -77,8 +77,13 @@ export class TOrganization extends TContact implements Organization {
 export class TEmployee extends TPerson implements Employee {
 }
 
+@Model(contact.class.EmployeeAccount, core.class.Account)
+export class TEmployeeAccount extends TAccount implements EmployeeAccount {
+  employee!: Ref<Employee>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TOrganization, TEmployee)
+  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TOrganization, TEmployee, TEmployeeAccount)
 
   builder.mixin(contact.class.TypeChannels, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter

@@ -103,14 +103,15 @@ program
       const url = new URL(`/${token}`, transactorUrl)
       const contrib = await createContributingClient(url.href)
       const txop = new TxOperations(contrib, core.account.System)
-      await txop.createDoc(contact.class.Employee, contact.space.Employee, {
+      const employee = await txop.createDoc(contact.class.Employee, contact.space.Employee, {
         firstName: account.first,
         lastName: account.last,
         city: 'Mountain View',
         channels: []
       })
-      await txop.createDoc(core.class.Account, core.space.Model, {
-        email
+      await txop.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+        email,
+        employee
       })
     })
   })

@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Doc, Ref, Class, UXObject, Space } from '@anticrm/core'
+import type { Doc, Ref, Class, UXObject, Space, Account } from '@anticrm/core'
 
 /**
  * @public
@@ -61,7 +61,13 @@ export interface Organization extends Contact {
  * @public
  */
 export interface Employee extends Person {
+}
 
+/**
+ * @public
+ */
+export interface EmployeeAccount extends Account {
+  employee: Ref<Employee>
 }
 
 /**
@@ -75,7 +81,8 @@ export default plugin(contactId, {
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
     Organization: '' as Ref<Class<Organization>>,
-    Employee: '' as Ref<Class<Employee>>
+    Employee: '' as Ref<Class<Employee>>,
+    EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
   },
   icon: {
     Phone: '' as Asset,
