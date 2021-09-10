@@ -26,6 +26,8 @@ import IconCopy from './icons/Copy.svelte'
 import contact from '@anticrm/contact'
 
 export let value: Channel[] | null
+export let size: 'small' | 'medium' = 'medium'
+export let reverse: boolean = false
 
 interface Item {
   label: IntlString,
@@ -66,9 +68,9 @@ let displayItems: Item[] = []
 
 </script>
 
-<div class="container" on:click|stopPropagation={() => {}}>
+<div class="container" class:reverse on:click|stopPropagation={() => {}}>
   {#each displayItems as item}
-    <div class="circle list">
+    <div class="circle list list-{size}">
       <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
     </div>
     <div class="window">
@@ -90,8 +92,9 @@ let displayItems: Item[] = []
   .container {
     position: relative;
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
     align-items: center;
+    &.reverse { flex-direction: row-reverse; }
 
     .circle {
       position: relative;
@@ -121,10 +124,6 @@ let displayItems: Item[] = []
     }
 
     .list {
-      margin-right: .25rem;
-      width: 1.5rem;
-      height: 1.5rem;
-
       &:hover {
         border-color: var(--theme-bg-focused-border);
         z-index: 5;
@@ -143,6 +142,16 @@ let displayItems: Item[] = []
         right: 0;
         bottom: -1rem;
       }
+    }
+    .list-small {
+      margin-right: .25rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    .list-medium {
+      margin-right: .5rem;
+      width: 2rem;
+      height: 2rem;
     }
 
     .window {

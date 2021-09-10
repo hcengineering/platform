@@ -22,10 +22,8 @@
 
   // import Close from './internal/icons/Close.svelte'
   // import ScrollBox from './ScrollBox.svelte'
-  import { Button, Label, CircleButton } from '@anticrm/ui'
+  import { Button, Label } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
-  import Edit from './icons/Edit.svelte'
-  import Mail from './icons/Mail.svelte'
 
   export let spaceClass: Ref<Class<Space>>
   export let space: Ref<Space>
@@ -33,7 +31,6 @@
   export let okLabel: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
-  export let contacts: boolean = true
 
   const dispatch = createEventDispatcher()
 </script>
@@ -45,17 +42,13 @@
     <div class="tool"><Button disabled={!canSave} label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
   </div>
   <div class="content"><slot /></div>
-  <div class="flex-col pool" class:shrink={contacts}>
+  <div class="flex-col pool" class:shrink={$$slots.contacts}>
     <div class="separator" />
     <SpaceSelect _class={spaceClass} label={'Title'} placeholder={'Select Project'} bind:value={space} />
   </div>
-  {#if contacts}
+  {#if $$slots.contacts}
     <div class="flex-between contacts">
-      <div class="flex-row-center">
-        <CircleButton icon={Mail} />
-        <CircleButton icon={Edit} />
-      </div>
-      <CircleButton icon={Edit} />
+      <slot name="contacts" />
     </div>
   {/if}
 </form>
