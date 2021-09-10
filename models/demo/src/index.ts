@@ -32,7 +32,9 @@ export function createDemo (builder: Builder): void {
 
   builder.createDoc(contact.class.EmployeeAccount, core.space.Model, {
     email: 'rosamund@hc.engineering',
-    employee: rosamund as any
+    employee: rosamund as any,
+    firstName: 'Rosamund',
+    lastName: 'Chen'
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {

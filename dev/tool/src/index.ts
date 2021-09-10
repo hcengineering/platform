@@ -118,7 +118,9 @@ program
       console.log('create account in target workspace...')
       await txop.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email,
-        employee
+        employee,
+        firstName: account.first,
+        lastName: account.last
       })
 
       contrib.close()

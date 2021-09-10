@@ -25,24 +25,19 @@
 
   export let comment: Comment
 
-  let employee: Employee | undefined
+  let employee: EmployeeAccount | undefined
 
   console.log('comment modified by', comment.modifiedBy)
 
   const client = getClient()
-  client.findOne(contact.class.EmployeeAccount, { _id: comment.modifiedBy as Ref<EmployeeAccount> })
-    .then(account => client.findOne(contact.class.Employee, { _id: account?.employee }))
-    .then(result => {
-      console.log('comment', result)
-      employee = result
-    })
+  client.findOne(contact.class.EmployeeAccount, { _id: comment.modifiedBy as Ref<EmployeeAccount> }).then(account => {employee = account})
 
 </script>
 
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span>July 28th</span></div>
+    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span>{comment.modifiedOn}</span></div>
     <div class="text"><MessageViewer message={comment.message} /></div>
   </div>
 </div>
