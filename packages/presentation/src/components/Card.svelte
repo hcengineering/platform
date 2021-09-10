@@ -58,7 +58,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    width: 20rem;
     min-width: 20rem;
+    max-width: 20rem;
     border-radius: 1.25rem;
 
     .header {

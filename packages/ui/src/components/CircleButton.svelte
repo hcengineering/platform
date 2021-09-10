@@ -48,7 +48,7 @@
       transform: scale(.75);
       pointer-events: none;
     }
-    &:hover { background-color: var(--theme-bg-accent-hover); }
+    &:hover { border-color: var(--theme-bg-focused-border); }
     &:active { background-color: var(--theme-bg-accent-color); }
   }
 </style>

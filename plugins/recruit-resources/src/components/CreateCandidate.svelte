@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
 
-  import { getClient, Card } from '@anticrm/presentation'
+  import { getClient, Card, Channels } from '@anticrm/presentation'
 
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
@@ -126,9 +126,9 @@
     </div>
 
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="Name*" /></div>
-      <div class="name"><EditBox placeholder="Surname*" /></div>
-      <div class="city"><EditBox placeholder="Location" /></div>
+      <div class="name"><EditBox placeholder="Name*" maxWidth="9.5rem"/></div>
+      <div class="name"><EditBox placeholder="Surname*" maxWidth="9.5rem" /></div>
+      <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" /></div>
       <div class="flex resume">
         {#if kl === 0}
           <a href={'#'} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }>Upload resume</a>
@@ -140,7 +140,7 @@
     </div>
   </div>
   <svelte:fragment slot="contacts">
-    <Component is='contact:component:ChannelsPresenter' props={ { value: newValue.channels } }/>
+    <Channels value={newValue.channels} />
     <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: newValue.channels ?? [] }, ev.target, (result) => { newValue.channels = result; isChanged() })} />
   </svelte:fragment>
 </Card>
@@ -149,6 +149,7 @@
   @import '../../../../packages/theme/styles/mixins.scss';
 
   .avatar {
+    flex-shrink: 0;
     overflow: hidden;
     position: relative;
     display: flex;
