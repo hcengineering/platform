@@ -24,13 +24,13 @@
   import Button from './Button.svelte'
   import Label from './Label.svelte'
 
+  import ui from '../plugin'
+
   export let label: IntlString
   export let okLabel: IntlString
   export let okAction: () => void
 
   const dispatch = createEventDispatcher()
-
-  const cancel = 'Cancel' as IntlString
 </script>
 
 <div class="dialog-container">
@@ -44,7 +44,7 @@
     </div>
     <div class="footer">
       <Button label={okLabel} primary />
-      <Button label={cancel} on:click={() => { dispatch('close') }} />
+      <Button label={ui.string.Cancel} on:click={() => { dispatch('close') }} />
     </div>
   </form>
 </div>

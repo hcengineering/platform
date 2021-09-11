@@ -20,6 +20,7 @@
 
   import MessageViewer from '@anticrm/presentation/src/components/MessageViewer.svelte'
   import Avatar from '@anticrm/presentation/src/components/Avatar.svelte'
+  import { TimeSince } from '@anticrm/ui'
 
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
 
@@ -37,7 +38,7 @@
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span>{comment.modifiedOn}</span></div>
+    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span><TimeSince value={comment.modifiedOn}/></span></div>
     <div class="text"><MessageViewer message={comment.message} /></div>
   </div>
 </div>

@@ -16,6 +16,8 @@
 import { SvelteComponent } from 'svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
 import type { IntlString } from '@anticrm/platform'
+import { addStringsLoader } from '@anticrm/platform'
+import { uiId } from './plugin' 
 
 import Root from './components/internal/Root.svelte'
 
@@ -54,6 +56,7 @@ export { default as Loading } from './components/Loading.svelte'
 export { default as Popup } from './components/Popup.svelte'
 export { default as CircleButton } from './components/CircleButton.svelte'
 export { default as Link } from './components/Link.svelte'
+export { default as TimeSince } from './components/TimeSince.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconClose } from './components/icons/Close.svelte'
@@ -68,7 +71,7 @@ export { default as IconThread } from './components/icons/Thread.svelte'
 
 export * from './utils'
 
-import { writable } from 'svelte/store'
+import { writable, readable } from 'svelte/store'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
@@ -115,3 +118,13 @@ export function showTooltip (label: IntlString, element: HTMLElement, direction?
 export function closeTooltip (): void {
   tooltipstore.set({ label: undefined, element: undefined, direction: undefined })
 }
+
+export const ticker = readable(Date.now(), set => {
+	const interval = setInterval(() => {
+		set(Date.now())
+	}, 10000)
+})
+
+addStringsLoader(uiId, async (lang: string) => {
+  return await import(`../lang/${lang}.json`)
+})
