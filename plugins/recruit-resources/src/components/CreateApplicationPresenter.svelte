@@ -20,14 +20,14 @@
   import { Label, showPopup } from '@anticrm/ui'
   import CreateApplication from './CreateApplication.svelte'
 
-  export let object: Doc
+  export let value: Doc
 
   let button: HTMLElement
 
 </script>
 
 <div class="flex-center presenter-container" bind:this={button}
-  on:click={() => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, button) }}
+  on:click={() => { showPopup(CreateApplication, { candidate: value._id, preserveCandidate: true }, button) }}
 >
   <Label label="Create Application" />
 </div>

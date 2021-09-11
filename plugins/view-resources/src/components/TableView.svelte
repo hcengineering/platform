@@ -67,7 +67,7 @@
           {#each objects as object (object._id)}
             <tr class="tr-body">
             {#each model as attribute}
-              <td><svelte:component this={attribute.presenter} {object} value={getValue(object, attribute.key)}/></td>
+              <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
             {/each}
             </tr>
           {/each}

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import type { AnySvelteComponent } from '../types'
   import Spinner from './Spinner.svelte'
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
@@ -22,7 +22,7 @@
   export let label: IntlString
   export let primary: boolean = false
   export let size: 'small' | 'medium' = 'medium'
-  export let icon: Asset | AnySvelteComponent | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
   export let loading: boolean = false
   export let transparent: boolean = false

@@ -68,6 +68,8 @@ export interface Employee extends Person {
  */
 export interface EmployeeAccount extends Account {
   employee: Ref<Employee>
+  firstName: string
+  lastName: string
 }
 
 /**

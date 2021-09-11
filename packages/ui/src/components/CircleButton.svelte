@@ -14,8 +14,8 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import type { Asset } from '@anticrm/platform'
+  import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
 
   export let icon: Asset | AnySvelteComponent

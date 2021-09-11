@@ -250,6 +250,30 @@ export async function removeWorkspace (db: Db, email: string, workspace: string)
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
 }
 
+/**
+ * @public
+ */
+export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
+  const ws = await getWorkspace(db, workspace)
+  if (ws === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
+  }
+  await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
+  await db.collection<Account>(ACCOUNT_COLLECTION).updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
+}
+
+/**
+ * @public
+ */
+export async function dropAccount (db: Db, email: string): Promise<void> {
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+  await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
+  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
+}
+
 function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
   return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
     return await f(db, ...request.params)

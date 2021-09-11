@@ -108,7 +108,7 @@ export function createModel (builder: Builder): void {
         resume: chunter.class.Attachment
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '#' + recruit.component.CreateApplicationPresenter, 'city', '$lookup.resume', 'channels']
+    config: ['', '#' + recruit.component.CreateApplicationPresenter + '/Action', 'city', '$lookup.resume', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -122,7 +122,7 @@ export function createModel (builder: Builder): void {
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
+    config: ['$lookup.candidate', '#' + recruit.component.ApplicationPresenter + '/Application', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

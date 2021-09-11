@@ -80,6 +80,8 @@ export class TEmployee extends TPerson implements Employee {
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
   employee!: Ref<Employee>
+  firstName!: string
+  lastName!: string
 }
 
 export function createModel (builder: Builder): void {

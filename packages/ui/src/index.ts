@@ -16,6 +16,8 @@
 import { SvelteComponent } from 'svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
 import type { IntlString } from '@anticrm/platform'
+import { addStringsLoader } from '@anticrm/platform'
+import { uiId } from './plugin' 
 
 import Root from './components/internal/Root.svelte'
 
@@ -40,21 +42,21 @@ export { default as Progress } from './components/Progress.svelte'
 export { default as Tabs } from './components/Tabs.svelte'
 export { default as ScrollBox } from './components/ScrollBox.svelte'
 export { default as PopupMenu } from './components/PopupMenu.svelte'
-export { default as PopupItem } from './components/PopupItem.svelte'
-export { default as SelectItem } from './components/SelectItem.svelte'
+// export { default as PopupItem } from './components/PopupItem.svelte'
 export { default as TextArea } from './components/TextArea.svelte'
 export { default as Section } from './components/Section.svelte'
 export { default as DatePicker } from './components/DatePicker.svelte'
 export { default as StylishEdit } from './components/StylishEdit.svelte'
 export { default as Grid } from './components/Grid.svelte'
 export { default as Row } from './components/Row.svelte'
-export { default as CheckBoxWithLabel } from './components/CheckBoxWithLabel.svelte'
-export { default as CheckBoxList } from './components/CheckBoxList.svelte'
+// export { default as CheckBoxWithLabel } from './components/CheckBoxWithLabel.svelte'
+// export { default as CheckBoxList } from './components/CheckBoxList.svelte.txt'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Popup } from './components/Popup.svelte'
 export { default as CircleButton } from './components/CircleButton.svelte'
 export { default as Link } from './components/Link.svelte'
+export { default as TimeSince } from './components/TimeSince.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconClose } from './components/icons/Close.svelte'
@@ -71,23 +73,23 @@ export { default as IconActivity } from './components/icons/Activity.svelte'
 
 export * from './utils'
 
-import { writable } from 'svelte/store'
+import { writable, readable } from 'svelte/store'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
 
 interface CompAndProps {
-  is: AnySvelteComponent | AnyComponent | undefined
+  is: AnySvelteComponent | AnyComponent
   props: any
   element?: PopupAlignment
   onClose?: (result: any) => void
 }
 
-export const store = writable<CompAndProps>({
-  is: undefined,
-  props: {},
-})
+// export const store = writable<CompAndProps>({
+//   is: undefined,
+//   props: {},
+// })
 
 export const popupstore = writable<CompAndProps[]>([])
 
@@ -118,3 +120,13 @@ export function showTooltip (label: IntlString, element: HTMLElement, direction?
 export function closeTooltip (): void {
   tooltipstore.set({ label: undefined, element: undefined, direction: undefined })
 }
+
+export const ticker = readable(Date.now(), set => {
+	const interval = setInterval(() => {
+		set(Date.now())
+	}, 10000)
+})
+
+addStringsLoader(uiId, async (lang: string) => {
+  return await import(`../lang/${lang}.json`)
+})

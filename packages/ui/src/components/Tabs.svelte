@@ -26,14 +26,14 @@
   {#each model as tab, i}
     <div class="flex-row-center tab" class:selected={i === selected}
          on:click={() => { selected = i }}>
-      <Label label={model[i].label}/>
+      <Label label={tab.label}/>
     </div>
   {/each}
   <div class="grow"/>
 </div>
 {#each model as tab, i}
   {#if selected === i}
-    <Component is = {model[i].component} props={model[i].props}/>
+    <Component is = {tab.component} props={tab.props}/>
   {/if}
 {/each}
 

@@ -20,7 +20,7 @@
   import Add from './icons/Add.svelte'
 
   export let label: IntlString
-  export let items: Array<Object>
+  export let items: Array<{description: IntlString, done: boolean}>
   = [
     { description: '15 minute phone call', done: true },
     { description: 'Follow up email', done: false },
