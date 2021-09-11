@@ -17,9 +17,10 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { Tabs } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, Panel } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
+  import Contact from './icons/Contact.svelte'
 
   import chunter from '@anticrm/chunter'
   
@@ -97,28 +98,32 @@
 
 </script>
 
-<div class="container">
+<!-- <div class="container">
   <DialogHeader {space} {object} {newValue} {resume} on:save={ save }/>
   <div class="tabs-container">
     <Tabs model={tabModel}/>
   </div>
-</div>
+</div> -->
+
+<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} on:save={ save } on:close={() => { dispatch('close') }}>
+
+</Panel>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background-color: var(--theme-bg-color);
-    border-radius: 1.25rem;
-    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
+  // .container {
+  //   display: flex;
+  //   flex-direction: column;
+  //   height: 100%;
+  //   background-color: var(--theme-bg-color);
+  //   border-radius: 1.25rem;
+  //   box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
 
-    .tabs-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      height: fit-content;
-      padding: 0 2.5rem 2.5rem;
-    }
-  }
+  //   .tabs-container {
+  //     flex-grow: 1;
+  //     display: flex;
+  //     flex-direction: column;
+  //     height: fit-content;
+  //     padding: 0 2.5rem 2.5rem;
+  //   }
+  // }
 </style>

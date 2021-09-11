@@ -163,6 +163,7 @@
       padding: 1rem;
       top: 2.25rem;
       right: 0;
+      min-width: 100%;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);
       border-radius: .75rem;

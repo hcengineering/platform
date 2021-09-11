@@ -57,6 +57,11 @@ $: {
         modalHTML.style.top = '4rem'
         modalHTML.style.bottom = '4rem'
         modalHTML.style.right = '4rem'
+      } else if (element === 'full') {
+        modalHTML.style.top = '0'
+        modalHTML.style.bottom = '0'
+        modalHTML.style.left = '0'
+        modalHTML.style.right = '0'
       }
     } else {
       modalHTML.style.top = '50%'
