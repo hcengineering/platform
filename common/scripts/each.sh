@@ -25,8 +25,8 @@ for i in $roots
 do  
   pushd ${i}
   echo ${runScript}
-  node ${runScript}
-  checkScript=$(node ${runScript} | grep $1: | wc -l)
+  node ${runScript} -h
+  checkScript=$(node ${runScript} -h | grep $1: | wc -l)
   if [ $checkScript -gt 0 ]; then
     node ${runScript} $@  
     retVal=$?  
