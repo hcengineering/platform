@@ -24,9 +24,7 @@ roots=$(node $sourceDir/install-run-rush.js list -f --json | grep "fullPath" | c
 for i in $roots
 do  
   pushd ${i}
-  echo ${runScript}
-  node ${runScript} -h
-  checkScript=$(node ${runScript} -h | grep $1: | wc -l)
+  checkScript=$(cat package.json | grep \"$1\": | wc -l)
   if [ $checkScript -gt 0 ]; then
     node ${runScript} $@  
     retVal=$?  
