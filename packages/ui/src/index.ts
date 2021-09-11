@@ -40,15 +40,15 @@ export { default as Progress } from './components/Progress.svelte'
 export { default as Tabs } from './components/Tabs.svelte'
 export { default as ScrollBox } from './components/ScrollBox.svelte'
 export { default as PopupMenu } from './components/PopupMenu.svelte'
-export { default as PopupItem } from './components/PopupItem.svelte'
+// export { default as PopupItem } from './components/PopupItem.svelte'
 export { default as TextArea } from './components/TextArea.svelte'
 export { default as Section } from './components/Section.svelte'
 export { default as DatePicker } from './components/DatePicker.svelte'
 export { default as StylishEdit } from './components/StylishEdit.svelte'
 export { default as Grid } from './components/Grid.svelte'
 export { default as Row } from './components/Row.svelte'
-export { default as CheckBoxWithLabel } from './components/CheckBoxWithLabel.svelte'
-export { default as CheckBoxList } from './components/CheckBoxList.svelte'
+// export { default as CheckBoxWithLabel } from './components/CheckBoxWithLabel.svelte'
+// export { default as CheckBoxList } from './components/CheckBoxList.svelte.txt'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Popup } from './components/Popup.svelte'
@@ -75,16 +75,16 @@ export function createApp (target: HTMLElement): SvelteComponent {
 }
 
 interface CompAndProps {
-  is: AnySvelteComponent | AnyComponent | undefined
+  is: AnySvelteComponent | AnyComponent
   props: any
   element?: PopupAlignment
   onClose?: (result: any) => void
 }
 
-export const store = writable<CompAndProps>({
-  is: undefined,
-  props: {},
-})
+// export const store = writable<CompAndProps>({
+//   is: undefined,
+//   props: {},
+// })
 
 export const popupstore = writable<CompAndProps[]>([])
 

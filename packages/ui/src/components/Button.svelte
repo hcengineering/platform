@@ -22,7 +22,7 @@
   export let label: IntlString
   export let primary: boolean = false
   export let size: 'small' | 'medium' = 'medium'
-  export let icon: Asset | AnySvelteComponent | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
   export let loading: boolean = false
   export let transparent: boolean = false

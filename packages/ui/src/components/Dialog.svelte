@@ -29,6 +29,8 @@
   export let okAction: () => void
 
   const dispatch = createEventDispatcher()
+
+  const cancel = 'Cancel' as IntlString
 </script>
 
 <div class="dialog-container">
@@ -42,7 +44,7 @@
     </div>
     <div class="footer">
       <Button label={okLabel} primary />
-      <Button label={'Cancel'} on:click={() => { dispatch('close') }} />
+      <Button label={cancel} on:click={() => { dispatch('close') }} />
     </div>
   </form>
 </div>

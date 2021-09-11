@@ -66,10 +66,10 @@
     } else popup.style.left = `${rectT.left}px`
   }
 
-  const findNode = (el: Node, name: string): any => {
+  const findNode = (el: HTMLElement, name: string): any => {
     while (el.parentNode !== null) {
       if (el.classList.contains(name)) return el
-      el = el.parentNode
+      el = el.parentNode as HTMLElement
     }
     return false
   }

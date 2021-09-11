@@ -22,7 +22,7 @@ import { closePopup } from '..'
 export let is: AnyComponent | AnySvelteComponent
 export let props: object
 export let element: PopupAlignment | undefined
-export let onClose: (result: any) => void | undefined
+export let onClose: ((result: any) => void) | undefined
 export let zIndex: number
 
 let modalHTML: HTMLElement

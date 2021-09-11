@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, Dialog, ToggleWithLabel, Grid, Section, IconToDo, CheckBoxList } from '@anticrm/ui'
+  import { TextArea, EditBox, Dialog, ToggleWithLabel, Grid, Section, IconToDo } from '@anticrm/ui'
 
   import { getClient } from '@anticrm/presentation'
 
@@ -47,7 +47,7 @@
     <TextArea label={chunter.string.ChannelDescription} bind:value={description}/>
     <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription}/>
   </Grid>
-  <Section icon={IconToDo} label={`To Do's`}>
+  <!-- <Section icon={IconToDo} label={`To Do's`}>
     <CheckBoxList label={'Add a To Do'} editable />
-  </Section>
+  </Section> -->
 </Dialog>
