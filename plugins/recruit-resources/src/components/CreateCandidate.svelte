@@ -129,6 +129,8 @@
       okAction={createCandidate}
       canSave={object.firstName.length > 0 && object.lastName.length > 0}
       spaceClass={recruit.class.Candidates}
+      spaceLabel={'Talent Pool'}
+      spacePlaceholder={'Select pool'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
 

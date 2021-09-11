@@ -27,6 +27,8 @@
 
   export let spaceClass: Ref<Class<Space>>
   export let space: Ref<Space>
+  export let spaceLabel: IntlString
+  export let spacePlaceholder: IntlString
   export let label: IntlString
   export let okLabel: IntlString
   export let okAction: () => void
@@ -44,7 +46,7 @@
   <div class="content"><slot /></div>
   <div class="flex-col pool" class:shrink={$$slots.contacts}>
     <div class="separator" />
-    <SpaceSelect _class={spaceClass} label={'Title'} placeholder={'Select Project'} bind:value={space} />
+    <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
   </div>
   {#if $$slots.contacts}
     <div class="flex-between contacts">

@@ -58,6 +58,8 @@
       okAction={createApplication}
       canSave={candidate !== undefined}
       spaceClass={recruit.class.Vacancy}
+      spaceLabel={'Vacancy'}
+      spacePlaceholder={'Select vacancy'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.75}>
