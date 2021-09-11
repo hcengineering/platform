@@ -24,6 +24,7 @@ roots=$(node $sourceDir/install-run-rush.js list -f --json | grep "fullPath" | c
 for i in $roots
 do  
   pushd ${i}
+  node ${runscript}
   checkScript=$(node ${runscript} | grep $1: | wc -l)
   echo "Check script ${i} ${checkScript}..."
   if [ $checkScript -gt 0 ]; then
