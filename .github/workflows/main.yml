@@ -38,3 +38,6 @@ jobs:
 
       - name: Building...
         run: node common/scripts/install-run-rush.js rebuild --verbose
+
+      - name: Checking svelte sources...
+        run: common/scripts/each.sh svelte-check
