@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
-  // import { ReferenceInput } from '@anticrm/text-editor'
+  import { ReferenceInput } from '@anticrm/text-editor'
   import { IconClose, IconExpand, IconActivity, ScrollBox, Button, Label, Icon } from '@anticrm/ui'
 
   import { createEventDispatcher } from 'svelte'
@@ -44,6 +44,9 @@
       </div>
       <div class="title"><Label {label} /></div>
     </div>
+    {#if $$slots.subtitle}
+      <div class="subtitle"><slot name="subtitle" /></div>
+    {/if}
     <div class="content">
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
@@ -55,8 +58,18 @@
       <div class="title">Activity</div>
     </div>
     <div class="content">
-      <ScrollBox vertical stretch></ScrollBox>
+      <ScrollBox vertical stretch>
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+      </ScrollBox>
     </div>
+    <div class="ref-input"><ReferenceInput /></div>
   </div>
 
   <div class="tools">
@@ -89,6 +102,7 @@
       height: 4.5rem;
       border-bottom: 1px solid var(--theme-card-divider);
 
+      .icon { opacity: .6; }
       .title {
         flex-grow: 1;
         margin-left: .5rem;
@@ -97,6 +111,14 @@
         color: var(--theme-caption-color);
         user-select: none;
       }
+    }
+
+    .subtitle {
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      height: 3.5rem;
+      border-bottom: 1px solid var(--theme-card-divider);
     }
 
     .footer {
@@ -127,11 +149,24 @@
   }
 
   .content {
+    overflow: visible;
     flex-shrink: 0;
     flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
     padding: 0 2.5rem;
     height: max-content;
   }
+  .ref-input { padding: 1.5rem 2.5rem; }
+  .content-bar {
+    flex-shrink: 0;
+    height: 100px;
+    background-color: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 1rem;
+  }
+  .content-bar + .content-bar { margin-top: 1rem; }
 
   .fullSize {
     flex-direction: row;
@@ -143,7 +178,11 @@
     .rightSection {
       background-color: transparent;
       .header { border-bottom: 1px solid var(--theme-card-divider); }
-      .content { background-color: var(--theme-bg-accent-color); }
+      .content {
+        padding-top: 1.5rem;
+        background-color: var(--theme-bg-accent-color);
+      }
+      .ref-input { background-color: var(--theme-bg-accent-color); }
     }
   }
 
