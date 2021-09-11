@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/recruit-resources",
+  "name": "@anticrm/panel",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -15,21 +15,11 @@
   "devDependencies": {
     "svelte-loader":"^3.1.2",
     "sass":"^1.37.5",
-    "svelte-preprocess":"^4.7.4",
-    "@types/deep-equal":"^1.0.1"
+    "svelte-preprocess":"^4.7.4"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11",
-    "svelte": "^3.37.0",
-    "@anticrm/recruit": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.1",
     "@anticrm/text-editor": "~0.6.0",
-    "@anticrm/chunter": "~0.6.0",
-    "@anticrm/contact": "~0.6.0",
-    "@anticrm/login": "~0.6.0",
-    "deep-equal": "^2.0.5",
-    "@anticrm/panel": "~0.6.0"
+    "svelte": "^3.37.0"
   }
 }

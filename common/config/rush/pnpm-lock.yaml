@@ -39,6 +39,7 @@ specifiers:
   '@rush-temp/model-view': file:./projects/model-view.tgz
   '@rush-temp/model-workbench': file:./projects/model-workbench.tgz
   '@rush-temp/mongo': file:./projects/mongo.tgz
+  '@rush-temp/panel': file:./projects/panel.tgz
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
@@ -119,6 +120,7 @@ specifiers:
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
   style-loader: ^3.2.1
+  svelte-check: ^2.2.5
   svelte-preprocess: ^4.7.4
   svgo-loader: ^3.0.0
   toposort: ^2.0.2
@@ -169,6 +171,7 @@ dependencies:
   '@rush-temp/model-view': file:projects/model-view.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/model-workbench': file:projects/model-workbench.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/mongo': file:projects/mongo.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/panel': file:projects/panel.tgz_c38cf1a7a413db8918b0b4754c21e4c5
   '@rush-temp/platform': file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5
   '@rush-temp/pod-account': file:projects/pod-account.tgz_6c259fadfeb3a4b20890aefe87070b8b
@@ -249,6 +252,7 @@ dependencies:
   sass-loader: 12.1.0_sass@1.37.5+webpack@5.48.0
   simplytyped: 3.3.0_typescript@4.3.5
   style-loader: 3.2.1_webpack@5.48.0
+  svelte-check: 2.2.5_8d5e7d8774dfc5d41599a7408187eba0
   svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
   svgo-loader: 3.0.0
   toposort: 2.0.2
@@ -8196,6 +8200,34 @@ packages:
       - sugarss
     dev: false
 
+  /svelte-check/2.2.5_8d5e7d8774dfc5d41599a7408187eba0:
+    resolution: {integrity: sha512-EstDoqxjqWStWELh7Z0qytqUDl/ikdNEr21dveNc4fUDnhnqO2F2jHEufqoNnC3GfBji3GIUHvoXsp/I5lMbCg==}
+    hasBin: true
+    peerDependencies:
+      svelte: ^3.24.0
+    dependencies:
+      chalk: 4.1.2
+      chokidar: 3.4.3
+      glob: 7.1.7
+      import-fresh: 3.3.0
+      minimist: 1.2.5
+      sade: 1.7.4
+      source-map: 0.7.3
+      svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
+      typescript: 4.3.5
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+    dev: false
+
   /svelte-dev-helper/1.1.9:
     resolution: {integrity: sha1-fRh9tcbNu9ZNdaMvkbiZi94yc8M=}
     dev: false
@@ -10035,6 +10067,29 @@ packages:
       - typescript
     dev: false
 
+  file:projects/panel.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
+    resolution: {integrity: sha512-S2iwMIfXT+j9Nr0QPUxF6KK1xAZhcMMO9kmGDaiRMHmcHIPGVh/mzpS+LiyDOqVpSzr99s1MgR2gL5VO9CVbeA==, tarball: file:projects/panel.tgz}
+    id: file:projects/panel.tgz
+    name: '@rush-temp/panel'
+    version: 0.0.0
+    dependencies:
+      sass: 1.37.5
+      svelte: 3.42.1
+      svelte-loader: 3.1.2_svelte@3.42.1
+      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - typescript
+    dev: false
+
   file:projects/platform-rig.tgz_6ab28797e7a22071465f7d680ae81ae5:
     resolution: {integrity: sha512-VwGZVPcf2apIoa4sxQkIvW90B4otxf7ayw1jlTiZKQsQfwnLRKXvInMbIIAP0zCPRWIZdXXBYpUDm3dOJ/2bYQ==, tarball: file:projects/platform-rig.tgz}
     id: file:projects/platform-rig.tgz
@@ -10475,7 +10530,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-0c3Kif2z3qzO+oqkrK7BCL5USvkS4YwBBOzFIFW+RK2fiEeAQJydTYSm8hcgpBHDi1+GhuFKxZt3/ok7HVqBjg==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-aNedEBeCrIE78QZzx+gTq/2Ui7Ba5Kh7QAvW+U2ineXL8cBnjhMl9mf8eD3YwQyEx6qCGy0PAMaEYKFedoWWAQ==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0

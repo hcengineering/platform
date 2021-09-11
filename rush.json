@@ -761,5 +761,10 @@
       "projectFolder": "pods/account",
       "shouldPublish": false
     },
+    {
+      "packageName": "@anticrm/panel",
+      "projectFolder": "packages/panel",
+      "shouldPublish": true
+    },
   ]
 }

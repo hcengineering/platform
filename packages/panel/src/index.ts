@@ -14,12 +14,4 @@
 // limitations under the License.
 //
 
-export * from './utils'
-
-export { default as UserBox } from './components/UserBox.svelte'
-export { default as UserInfo } from './components/UserInfo.svelte'
-export { default as Avatar } from './components/Avatar.svelte'
-export { default as MessageViewer } from './components/MessageViewer.svelte'
-export { default as AttributeEditor } from './components/AttributeEditor.svelte'
-export { default as Card } from './components/Card.svelte'
-export { default as Channels } from './components/Channels.svelte'
+export { default as Panel } from './components/Panel.svelte'
