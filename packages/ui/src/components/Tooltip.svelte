@@ -27,7 +27,7 @@
 <div
   class="tooltip-trigger"
   bind:this={triggerHTML}
-  on:mouseenter={(ev) => {
+  on:mouseenter={() => {
     showTooltip(label, triggerHTML, direction)
   }}
   on:mouseleave={() => {
