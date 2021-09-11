@@ -65,10 +65,11 @@ async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string
     return getObjectPresenter(client, _class, preserveKey)
   } else {
     if (key.startsWith('#')) {
+      const [presenter, label] = key.substring(1).split('/')
       return {
         key: '',
-        label: '' as IntlString,
-        presenter: await getResource(key.substring(1) as AnyComponent)
+        label: label as IntlString,
+        presenter: await getResource(presenter as AnyComponent)
       }
     }
     const split = key.split('.')
