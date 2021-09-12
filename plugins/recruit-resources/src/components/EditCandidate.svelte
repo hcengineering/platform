@@ -49,9 +49,9 @@
 
 <Panel icon={Contact} title={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
-    <div class="flex-row-reverse" style="width: 100%">
-      <Channels value={object.channels}/>
+    <div class="flex-between flex-reverse" style="width: 100%">
       <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />      
+      <Channels value={object.channels}/>
     </div>
   </svelte:fragment>
 
