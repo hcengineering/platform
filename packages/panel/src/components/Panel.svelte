@@ -33,6 +33,7 @@
 <div class="overlay"/>
 <div class="dialog-container" class:fullSize>
 
+{#if fullSize}
   <div class="leftSection">
     <div class="flex-row-center header">
       <div class="icon">
@@ -44,14 +45,9 @@
       </div>
       <div class="title"><Label {label} /></div>
     </div>
-    {#if $$slots.subtitle}
-      <div class="subtitle"><slot name="subtitle" /></div>
-    {/if}
-    <div class="content">
-      <ScrollBox vertical stretch><slot /></ScrollBox>
-    </div>
+    {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
+    <div class="content"><ScrollBox vertical stretch><slot /></ScrollBox></div>
   </div>
-
   <div class="rightSection">
     <div class="flex-row-center header">
       <div class="icon"><IconActivity size={'small'} /></div>
@@ -71,6 +67,39 @@
     </div>
     <div class="ref-input"><ReferenceInput /></div>
   </div>
+{:else}
+  <div class="unionSection">
+    <div class="flex-row-center header">
+      <div class="icon">
+        {#if typeof (icon) === 'string'}
+          <Icon {icon} size={'small'} />
+        {:else}
+          <svelte:component this={icon} size={'small'} />
+        {/if}
+      </div>
+      <div class="title"><Label {label} /></div>
+    </div>
+    {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
+    <ScrollBox vertical stretch noShift>
+      <div class="content"><slot /></div>
+      <div class="flex-row-center activity header">
+        <div class="icon"><IconActivity size={'small'} /></div>
+        <div class="title">Activity</div>
+      </div>
+      <div class="activity content">
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+        <div class="content-bar" />
+      </div>
+    </ScrollBox>
+    <div class="ref-input"><ReferenceInput /></div>
+  </div>
+{/if}
 
   <div class="tools">
     <div class="tool" on:click={() => { fullSize = !fullSize }}><div class="icon"><IconExpand size={'small'} /></div></div>
@@ -86,7 +115,6 @@
     bottom: 1.5rem;
     left: 50%;
     right: 1.5rem;
-    // transition: all .2s;
 
     display: flex;
     flex-direction: column;
@@ -114,40 +142,22 @@
     }
 
     .subtitle {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       padding: 0 2rem;
       height: 3.5rem;
       border-bottom: 1px solid var(--theme-card-divider);
     }
-
-    .footer {
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: start;
-      align-items: center;
-      column-gap: .75rem;
-      padding: 0 2.5rem;
-      height: 6rem;
-      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
-      overflow: hidden;
-    }
   }
 
-  .leftSection, .rightSection {
-    flex-basis: 50%;
+  .unionSection {
+    flex-grow: 1;
 
     display: flex;
     flex-direction: column;
+    height: max-content;
   }
-  .rightSection {
-    background-color: var(--theme-bg-accent-color);
-    .header { border-bottom: none; }
-    .content { background-color: transparent; }
-  }
-
   .content {
     overflow: visible;
     flex-shrink: 0;
@@ -158,20 +168,23 @@
     padding: 0 2.5rem;
     height: max-content;
   }
-  .ref-input { padding: 1.5rem 2.5rem; }
-  .content-bar {
-    flex-shrink: 0;
-    height: 100px;
-    background-color: rgba(255, 255, 255, .1);
-    border: 1px solid rgba(255, 255, 255, .5);
-    border-radius: 1rem;
+  .activity {
+    background-color: var(--theme-bg-accent-color);
+    &.header { border-bottom: none; }
+    &.content {
+      background-color: var(--theme-bg-accent-color);
+    }
   }
-  .content-bar + .content-bar { margin-top: 1rem; }
 
   .fullSize {
     flex-direction: row;
     left: 1.5rem;
 
+    .leftSection, .rightSection {
+      flex-basis: 50%;
+      display: flex;
+      flex-direction: column;
+    }
     .leftSection {
       border-right: 1px solid var(--theme-bg-accent-hover);
     }
@@ -182,8 +195,12 @@
         padding-top: 1.5rem;
         background-color: var(--theme-bg-accent-color);
       }
-      .ref-input { background-color: var(--theme-bg-accent-color); }
     }
+  }
+  
+  .ref-input {
+    background-color: var(--theme-bg-accent-color);
+    padding: 1.5rem 2.5rem;
   }
 
   .tools {
@@ -214,4 +231,13 @@
     background: var(--theme-menu-color);
     opacity: .7;
   }
+
+  .content-bar {
+    flex-shrink: 0;
+    height: 100px;
+    background-color: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 1rem;
+  }
+  .content-bar + .content-bar { margin-top: 1rem; }
 </style>
