@@ -55,7 +55,7 @@
     <div class="flex-col">
       <div class="name"><EditBox placeholder="Name" maxWidth="15rem" bind:value={object.firstName}/></div>
       <div class="name"><EditBox placeholder="Surname" maxWidth="15rem" bind:value={object.lastName}/></div>
-      <div class="city"><EditBox placeholder="Title" maxWidth="15rem" bind:value={object.title}/></div>
+      <div class="title"><EditBox placeholder="Title" maxWidth="15rem" bind:value={object.title}/></div>
       <div class="city"><EditBox placeholder="Location" maxWidth="15rem" bind:value={object.city}/></div>
     </div>
   </div>
@@ -109,12 +109,12 @@
     font-size: 1.25rem;
     color: var(--theme-caption-color);
   }
-  .city {
-    margin: .75rem 0 .125rem;
+  .title, .city {
     font-weight: 500;
     font-size: .75rem;
     color: var(--theme-content-color);
   }
+  .title { margin-top: .75rem; }
   .resume a {
     font-size: .75rem;
     color: var(--theme-content-dark-color);
