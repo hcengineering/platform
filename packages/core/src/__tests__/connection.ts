@@ -48,7 +48,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
         hierarchy.tx(tx)
       }
       await Promise.all([model.tx(tx), transactions.tx(tx)])
-      handler(tx)
+      // handler(tx) - we have only one client, should not update?
     }
   }
 }

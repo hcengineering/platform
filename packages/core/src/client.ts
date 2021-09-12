@@ -74,14 +74,14 @@ class ClientImpl implements Client {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
-    } else {
-      await this.conn.tx(tx)
     }
+    await this.conn.tx(tx)
     this.notify?.(tx)
   }
 
   async updateFromRemote (tx: Tx): Promise<void> {
     if (tx.objectSpace === core.space.Model) {
+      console.log('update from remote')
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
     }
