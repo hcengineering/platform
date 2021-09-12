@@ -47,7 +47,7 @@
     </div>
   </svelte:fragment>
 
-  <div class="flex-row-center user-container">
+  <div class="flex-row-center">
     <div class="avatar">
       <div class="border"/>
       <Avatar />
@@ -69,9 +69,6 @@
 <style lang="scss">
   @import '../../../../packages/theme/styles/mixins.scss';
 
-  .user-container {
-    margin-top: 2.5rem;
-  }
   .avatar {
     flex-shrink: 0;
     overflow: hidden;

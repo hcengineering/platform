@@ -29,7 +29,6 @@
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
-  export let okAction: () => void
   export let fullSize: boolean = false
   export let object: Doc
 
@@ -50,7 +49,7 @@
   }  
 </script>
 
-<div class="overlay"/>
+<div class="overlay" on:click={() => { dispatch('close') }}/>
 <div class="dialog-container" class:fullSize>
 
 {#if fullSize}
@@ -183,13 +182,14 @@
 
     display: flex;
     flex-direction: column;
-    padding: 0 2.5rem;
+    padding: 1.5rem 2.5rem;
     height: max-content;
   }
   .activity {
     background-color: var(--theme-bg-accent-color);
     &.header { border-bottom: none; }
     &.content {
+      padding-bottom: 0;
       background-color: var(--theme-bg-accent-color);
     }
   }
@@ -205,12 +205,14 @@
     }
     .leftSection {
       border-right: 1px solid var(--theme-bg-accent-hover);
+      .content { margin-top: 2.5rem; }
     }
     .rightSection {
       background-color: transparent;
       .header { border-bottom: 1px solid var(--theme-card-divider); }
       .content {
-        padding-top: 1.5rem;
+        padding-top: 2.5rem;
+        padding-bottom: 0;
         background-color: var(--theme-bg-accent-color);
       }
     }
@@ -249,13 +251,4 @@
     background: var(--theme-menu-color);
     opacity: .7;
   }
-
-  .content-bar {
-    flex-shrink: 0;
-    height: 100px;
-    background-color: rgba(255, 255, 255, .1);
-    border: 1px solid rgba(255, 255, 255, .5);
-    border-radius: 1rem;
-  }
-  .content-bar + .content-bar { margin-top: 1rem; }
 </style>
