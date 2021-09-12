@@ -16,12 +16,15 @@
     "svelte-loader":"^3.1.2",
     "sass":"^1.37.5",
     "svelte-preprocess":"^4.7.4",
-    "svelte-check": "~2.2.6"
+    "svelte-check": "^2.2.6"
   },
   "dependencies": {
     "@anticrm/ui": "~0.6.0",
     "@anticrm/text-editor": "~0.6.0",
     "svelte": "^3.37.0",
-    "@anticrm/platform": "~0.6.5"
+    "@anticrm/platform": "~0.6.5",
+    "@anticrm/core": "~0.6.11",
+    "@anticrm/chunter": "~0.6.0",
+    "@anticrm/presentation": "~0.6.1"
   }
 }

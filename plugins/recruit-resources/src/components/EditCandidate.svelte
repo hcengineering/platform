@@ -40,7 +40,7 @@
 
 </script>
 
-<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} on:close={() => { dispatch('close') }}>
+<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
     <div class="flex-row-reverse" style="width: 100%">
       <Channels value={object.channels} reverse />

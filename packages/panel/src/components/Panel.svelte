@@ -16,18 +16,38 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
+  import type { Doc } from '@anticrm/core'
+  import { getClient, createQuery, Backlink } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { IconClose, IconExpand, IconActivity, ScrollBox, Button, Label, Icon } from '@anticrm/ui'
+  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Label, Icon } from '@anticrm/ui'
+  import type { Comment } from '@anticrm/chunter'
 
   import { createEventDispatcher } from 'svelte'
+
+  import chunter from '@anticrm/chunter'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
   export let okAction: () => void
   export let fullSize: boolean = false
+  export let object: Doc
 
   const dispatch = createEventDispatcher()
+
+  let comments: Comment[]
+
+  const client = getClient()
+  const query = createQuery()
+  $: query.query(chunter.class.Comment, { objectId: object._id }, result => { comments = result })
+
+  function onMessage(event: CustomEvent) {
+    client.createDoc(chunter.class.Comment, object.space, {
+      objectId: object._id,
+      message: event.detail
+    })
+    console.log(event.detail)
+  }  
 </script>
 
 <div class="overlay"/>
@@ -55,17 +75,16 @@
     </div>
     <div class="content">
       <ScrollBox vertical stretch>
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
+        {#if comments}
+        <Grid column={1} rowGap={1.5}>
+          {#each comments as comment}
+            <Backlink {comment} />
+          {/each}
+        </Grid>
+        {/if}
       </ScrollBox>
     </div>
-    <div class="ref-input"><ReferenceInput /></div>
+    <div class="ref-input"><ReferenceInput on:message={onMessage}/></div>
   </div>
 {:else}
   <div class="unionSection">
@@ -87,17 +106,16 @@
         <div class="title">Activity</div>
       </div>
       <div class="activity content">
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
-        <div class="content-bar" />
+        {#if comments}
+        <Grid column={1} rowGap={1.5}>
+          {#each comments as comment}
+            <Backlink {comment} />
+          {/each}
+        </Grid>
+        {/if}
       </div>
     </ScrollBox>
-    <div class="ref-input"><ReferenceInput /></div>
+    <div class="ref-input"><ReferenceInput on:message={onMessage}/></div>
   </div>
 {/if}
 
