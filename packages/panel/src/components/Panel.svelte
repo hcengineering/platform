@@ -177,9 +177,6 @@
   }
   .content {
     overflow: visible;
-    flex-shrink: 0;
-    flex-grow: 1;
-
     display: flex;
     flex-direction: column;
     padding: 1.5rem 2.5rem;
@@ -189,6 +186,7 @@
     background-color: var(--theme-bg-accent-color);
     &.header { border-bottom: none; }
     &.content {
+      flex-grow: 1;
       padding-bottom: 0;
       background-color: var(--theme-bg-accent-color);
     }
@@ -205,12 +203,16 @@
     }
     .leftSection {
       border-right: 1px solid var(--theme-bg-accent-hover);
-      .content { margin-top: 2.5rem; }
+      .content {
+        flex-grow: 1;
+        margin-top: 2.5rem;
+      }
     }
     .rightSection {
       background-color: transparent;
       .header { border-bottom: 1px solid var(--theme-card-divider); }
       .content {
+        flex-grow: 1;
         padding-top: 2.5rem;
         padding-bottom: 0;
         background-color: var(--theme-bg-accent-color);
