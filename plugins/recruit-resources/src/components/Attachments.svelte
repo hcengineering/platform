@@ -17,8 +17,11 @@
   import { CircleButton, IconAdd } from '@anticrm/ui'
 
   import type { Doc, Ref, Space } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { generateId } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
+
+  import { uploadFile } from '../utils'
 
   import chunter from '@anticrm/chunter'
 
@@ -30,12 +33,43 @@
   const query = createQuery()
   $: query.query(chunter.class.Attachment, { attachmentTo: object._id }, result => { files = result})
 
+  let inputFile: HTMLInputElement
+  let loading = false
+
+  const client = getClient()
+
+  async function createAttachment(file: File) {
+    loading = true
+    try {
+      const id = generateId<Attachment>()
+      const uuid = await uploadFile(id, object.space, file)
+      console.log('uploaded file uuid', uuid)
+      client.createDoc(chunter.class.Attachment, object.space, {
+        attachmentTo: object._id,
+        collection: 'attachment',
+        name: file.name,
+        file: uuid,
+        type: file.type,
+        size: file.size,
+      })      
+    } finally {
+      loading = false
+    }
+  }
+
+  function fileSelected() {
+    console.log(inputFile.files)
+    const file = inputFile.files?.[0]
+    if (file !== undefined) { createAttachment(file) }
+  }
+
 </script>
 
 <div class="attachments-container">
   <div class="flex-row-center">
     <span class="title">Attachments</span>
-    <CircleButton icon={IconAdd} size={'small'} />
+    <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
   <table class="table-body">
     <thead>

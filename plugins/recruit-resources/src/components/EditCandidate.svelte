@@ -17,6 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
   import { Tabs, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
+  import type { Attachment } from '@anticrm/chunter'
   import FileUpload from './icons/FileUpload.svelte'
   import PDFViewer from './PDFViewer.svelte'
   import { getClient, Channels } from '@anticrm/presentation'
@@ -32,87 +33,14 @@
   import recruit from '../plugin'
 
   export let object: Candidate
-  export let space: Ref<Space>
 
-  const newValue = Object.assign({}, object)
-
-  let resume = {} as {
-    id: Ref<Doc> | undefined
-    name: string
-    uuid: string
-    size: number
-    type: string
-  }
-
-  const dispatch = createEventDispatcher()
   const client = getClient()
 
-  async function save() {
-
-    if (resume.id !== undefined) {
-      // create attachment
-      console.log('creaing attachment space', space)
-      client.createDoc(chunter.class.Attachment, space, {
-        attachmentTo: object._id,
-        collection: 'resume',
-        name: resume.name,
-        file: resume.uuid,
-        type: resume.type,
-        size: resume.size,
-      }, resume.id)
-    }
-
-    const attributes: Record<string, any> = {}
-    for (const key in newValue) {
-      if ((newValue as any)[key] !== (object as any)[key]) {
-        attributes[key] = (newValue as any)[key]
-      }
-    }
-    console.log('update attributes', attributes)
-    await client.updateDoc(recruit.class.Candidate, object.space, object._id, attributes)
-
-    dispatch('close')
-  }
-
-  const tabModel = [
-    // {
-    //   label: 'General',
-    //   component: 'recruit:component:CandidateGeneral',
-    //   props: {
-    //     object,
-    //     newValue,
-    //   }
-    // },
-    {
-      label: 'Activity',
-      component: 'chunter:component:Activity',
-      props: {
-        object,
-        space
-      }
-    },
-    {
-      label: 'Attachments',
-      component: 'recruit:component:Attachments',
-      props: {
-        object,
-        space
-      }
-    }
-  ]
-
-  let inputFile: HTMLInputElement
+  const dispatch = createEventDispatcher()
 
 </script>
 
-<!-- <div class="container">
-  <DialogHeader {space} {object} {newValue} {resume} on:save={ save }/>
-  <div class="tabs-container">
-    <Tabs model={tabModel}/>
-  </div>
-</div> -->
-
-<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} on:save={ save } on:close={() => { dispatch('close') }}>
+<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
     <div class="flex-row-reverse" style="width: 100%">
       <Channels value={object.channels} reverse />
@@ -127,15 +55,8 @@
     <div class="flex-col">
       <div class="name"><EditBox placeholder="Name" maxWidth="15rem" bind:value={object.firstName}/></div>
       <div class="name"><EditBox placeholder="Surname" maxWidth="15rem" bind:value={object.lastName}/></div>
+      <div class="city"><EditBox placeholder="Title" maxWidth="15rem" bind:value={object.title}/></div>
       <div class="city"><EditBox placeholder="Location" maxWidth="15rem" bind:value={object.city}/></div>
-      <div class="flex resume">
-        {#if resume.id}
-          <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
-        {:else}
-          <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
-          <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" />
-        {/if}
-      </div>
     </div>
   </div>
 

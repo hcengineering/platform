@@ -43,6 +43,9 @@ export class TCandidates extends TSpace implements Candidates {}
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Resume' as IntlString)
   resume?: Ref<Attachment>
+
+  @Prop(TypeString(), 'Title' as IntlString)
+  title?: Ref<Attachment>
 }
 
 @Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)

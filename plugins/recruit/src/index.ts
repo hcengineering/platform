@@ -34,6 +34,7 @@ export interface Candidates extends Space {}
  */
 export interface Candidate extends Person {
   resume?: Ref<Attachment>
+  title?: string
 }
 
 /**
