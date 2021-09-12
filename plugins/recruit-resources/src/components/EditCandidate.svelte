@@ -140,7 +140,7 @@
   </div>
 
   <div class="attachments">
-    <Attachments />
+    <Attachments {object}/>
   </div>
 
 </Panel>

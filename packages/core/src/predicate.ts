@@ -47,7 +47,7 @@ const predicates: Record<string, PredicateFactory> = {
 }
 
 export function isPredicate (o: Record<string, any>): boolean {
-  if (typeof o !== 'object') { return false }
+  if (o === null || typeof o !== 'object') { return false }
   const keys = Object.keys(o)
   return keys.length > 0 && keys.every((key) => key.startsWith('$'))
 }

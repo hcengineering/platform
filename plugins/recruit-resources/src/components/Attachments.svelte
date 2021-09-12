@@ -23,14 +23,12 @@
   import chunter from '@anticrm/chunter'
 
   export let object: Doc
-  export let space: Ref<Space>
+  // export let space: Ref<Space>
 
-  let files: Attachment[] = [{ name: 'Application description.pdf', type: 'PDF / 2,5 MB' }, { name: 'Application description.pdf', type: 'PDF / 2,5 MB' }]
-
-  console.log('query space', space)
+  let files: Attachment[] = []
 
   const query = createQuery()
-  // $: query.query(chunter.class.Attachment, { space }, result => { files = result})
+  $: query.query(chunter.class.Attachment, { attachmentTo: object._id }, result => { files = result})
 
 </script>
 
@@ -42,7 +40,7 @@
   <table class="table-body">
     <thead>
       <tr class="tr-head">
-        <th>Attachments (2)</th>
+        <th>Attachments</th>
         <th>Time</th>
       </tr>
     </thead>
