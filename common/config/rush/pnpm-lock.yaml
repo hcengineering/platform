@@ -1015,6 +1015,15 @@ packages:
       jsonpath-plus: 4.0.0
     dev: false
 
+  /@rushstack/heft-config-file/0.6.4:
+    resolution: {integrity: sha512-chVrwZ3V2t5be1jO2h1SnyHo6gyipaMdZ+IgXWgLl16YeCHXc1z/BWqxx7CzGS9sMrC8akJFaVkrplVxvsdfmg==}
+    engines: {node: '>=10.13.0'}
+    dependencies:
+      '@rushstack/node-core-library': 3.40.0
+      '@rushstack/rig-package': 0.3.0
+      jsonpath-plus: 4.0.0
+    dev: false
+
   /@rushstack/heft-jest-plugin/0.1.15_@rushstack+heft@0.35.0:
     resolution: {integrity: sha512-uWJ+wQPHW9LY+74jICdtRe/wvwbQPbq61p1BgNwY0alSoNeovv/J6K6QR6y9Ci8PYzwNiegtqkdoyFg9g4TtMQ==}
     peerDependencies:
@@ -1058,8 +1067,44 @@ packages:
       true-case-path: 2.2.1
     dev: false
 
+  /@rushstack/heft/0.37.3:
+    resolution: {integrity: sha512-BUbr4WbL3maxODyWhbNMqR9bDOipsY65Z9KyjCLMrLKjDiWVG7hw28V54wa1W22wvDXrEsafka1j0661zALWoA==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    dependencies:
+      '@rushstack/heft-config-file': 0.6.4
+      '@rushstack/node-core-library': 3.40.0
+      '@rushstack/rig-package': 0.3.0
+      '@rushstack/ts-command-line': 4.9.0
+      '@rushstack/typings-generator': 0.3.9
+      '@types/tapable': 1.0.6
+      argparse: 1.0.10
+      chokidar: 3.4.3
+      fast-glob: 3.2.7
+      glob: 7.0.6
+      glob-escape: 0.0.2
+      prettier: 2.3.2
+      semver: 7.3.5
+      tapable: 1.1.3
+      true-case-path: 2.2.1
+    dev: false
+
   /@rushstack/node-core-library/3.39.1:
     resolution: {integrity: sha512-HHgMEHZTXQ3NjpQzWd5+fSt2Eod9yFwj6qBPbaeaNtDNkOL8wbLoxVimQNtcH0Qhn4wxF5u2NTDNFsxf2yd1jw==}
+    dependencies:
+      '@types/node': 10.17.13
+      colors: 1.2.5
+      fs-extra: 7.0.1
+      import-lazy: 4.0.0
+      jju: 1.4.0
+      resolve: 1.17.0
+      semver: 7.3.5
+      timsort: 0.3.0
+      z-schema: 3.18.4
+    dev: false
+
+  /@rushstack/node-core-library/3.40.0:
+    resolution: {integrity: sha512-P6uMPI7cqTdawLSPAG5BQrBu1MHlGRPqecp7ruIRgyukIEzkmh0QAnje4jAL/l1r3hw0qe4e+Dz5ZSnukT/Egg==}
     dependencies:
       '@types/node': 10.17.13
       colors: 1.2.5
@@ -1079,8 +1124,24 @@ packages:
       strip-json-comments: 3.1.1
     dev: false
 
+  /@rushstack/rig-package/0.3.0:
+    resolution: {integrity: sha512-Lj6noF7Q4BBm1hKiBDw94e6uZvq1xlBwM/d2cBFaPqXeGdV+G6r3qaCWfRiSXK0pcHpGGpV5Tb2MdfhVcO6G/g==}
+    dependencies:
+      resolve: 1.17.0
+      strip-json-comments: 3.1.1
+    dev: false
+
   /@rushstack/ts-command-line/4.8.1:
     resolution: {integrity: sha512-rmxvYdCNRbyRs+DYAPye3g6lkCkWHleqO40K8UPvUAzFqEuj6+YCVssBiOmrUDCoM5gaegSNT0wFDYhz24DWtw==}
+    dependencies:
+      '@types/argparse': 1.0.38
+      argparse: 1.0.10
+      colors: 1.2.5
+      string-argv: 0.3.1
+    dev: false
+
+  /@rushstack/ts-command-line/4.9.0:
+    resolution: {integrity: sha512-kmT8t+JfnvphISF1C5WwY56RefjwgajhSjs9J4ckvAFXZDXR6F5cvF5/RTh7fGCzIomg8esy2PHO/b52zFoZvA==}
     dependencies:
       '@types/argparse': 1.0.38
       argparse: 1.0.10
@@ -1092,6 +1153,15 @@ packages:
     resolution: {integrity: sha512-IiVzwZKlAzAyFIG8SXzBlpZ8EjPDNdioiGcefsIBR4SPXXYoy/HgXdMTj0X1gdpq0Ro4CyRaJ+5Hj+MhQ/OZEA==}
     dependencies:
       '@rushstack/node-core-library': 3.39.1
+      '@types/node': 10.17.13
+      chokidar: 3.4.3
+      glob: 7.0.6
+    dev: false
+
+  /@rushstack/typings-generator/0.3.9:
+    resolution: {integrity: sha512-902W26+kTfrFRpoQdviZwc3mcT33F7uVLfN981elFmn/10VEgXAZgDss+/RH+XamcUIN8GGbI0KRSyU3zStPVg==}
+    dependencies:
+      '@rushstack/node-core-library': 3.40.0
       '@types/node': 10.17.13
       chokidar: 3.4.3
       glob: 7.0.6
@@ -10068,7 +10138,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-S2iwMIfXT+j9Nr0QPUxF6KK1xAZhcMMO9kmGDaiRMHmcHIPGVh/mzpS+LiyDOqVpSzr99s1MgR2gL5VO9CVbeA==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-H4STr88YUkXqz8bheNEW4EBqfGh0C+C2iAvH2zpmN9QYrJBBWwKZHJBDf0l92KUx1YVIKiCFBWmrrOQyoOnLaA==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
@@ -10115,11 +10185,12 @@ packages:
     dev: false
 
   file:projects/platform.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-ns2pvtr7PGSfs03rSNYXhC1HH7/2912s9f95jf8L1eakYalR0/d1f9sfNGgDrEqF7+q/tpQCmUoaExF5HndL6g==, tarball: file:projects/platform.tgz}
+    resolution: {integrity: sha512-qN1GUhoW5AKVG6OxU86jqW1tdEajr3B2LATe7GtpVTo7TzwZZZjXMFYo9QiXaHhwXZbNTGhS+5OetF0vItfUbQ==, tarball: file:projects/platform.tgz}
     id: file:projects/platform.tgz
     name: '@rush-temp/platform'
     version: 0.0.0
     dependencies:
+      '@rushstack/heft': 0.37.3
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       eslint: 7.32.0
@@ -10249,7 +10320,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-vsSwhXuC8vyxhYf1emb/0aTu4FCsXtuz2MPwgUskCveuUBtF2ROAqzo9Qy9HXZNHX1eOeDWVDcjbFmRuU4Peqg==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-NZIT85JNysKCeQsNuixboDXKqKUZL+3bqrPGWEHiND9FXlRgyq0kibX71TyF8xRtEPKO/ARe32oQKfHKIRvN1Q==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
