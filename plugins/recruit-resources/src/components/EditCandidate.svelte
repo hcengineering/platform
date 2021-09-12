@@ -16,17 +16,19 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
-  import { Tabs, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
+  import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
   import type { Attachment } from '@anticrm/chunter'
   import FileUpload from './icons/FileUpload.svelte'
   import PDFViewer from './PDFViewer.svelte'
-  import { getClient, Channels } from '@anticrm/presentation'
+  import { getClient, Channels, AttributeEditor } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
+  import Edit from './icons/Edit.svelte'
+  import SocialEditor from './SocialEditor.svelte'
 
   import chunter from '@anticrm/chunter'
   
@@ -38,12 +40,18 @@
 
   const dispatch = createEventDispatcher()
 
+  function saveChannels(result: any) {
+    object.channels = result
+    client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
+  }
+
 </script>
 
-<Panel icon={Contact} label={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
+<Panel icon={Contact} title={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
     <div class="flex-row-reverse" style="width: 100%">
-      <Channels value={object.channels} reverse />
+      <Channels value={object.channels}/>
+      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />      
     </div>
   </svelte:fragment>
 
@@ -53,10 +61,10 @@
       <Avatar />
     </div>
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="Name" maxWidth="15rem" bind:value={object.firstName}/></div>
-      <div class="name"><EditBox placeholder="Surname" maxWidth="15rem" bind:value={object.lastName}/></div>
-      <div class="title"><EditBox placeholder="Title" maxWidth="15rem" bind:value={object.title}/></div>
-      <div class="city"><EditBox placeholder="Location" maxWidth="15rem" bind:value={object.city}/></div>
+      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="firstName"/></div>
+      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="lastName"/></div>
+      <div class="title"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="title"/></div>
+      <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="city"/></div>
     </div>
   </div>
 

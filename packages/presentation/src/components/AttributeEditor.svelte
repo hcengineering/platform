@@ -20,12 +20,11 @@
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { getClient } from '../utils'
   import view from '@anticrm/view'
-  import core from '@anticrm/core'
 
   export let _class: Ref<Class<Doc>>
   export let key: string
-  export let newValue: any
-  export let oldValue: any
+  export let object: any
+  export let maxWidth: string
   export let focus: boolean = false
 
   const client = getClient()
@@ -41,14 +40,18 @@
     const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
     editor = getResource(editorMixin.editor)
   }
+
+  function onChange(value: any) {
+    const doc = object as Doc
+    client.updateDoc(_class, doc.space, doc._id, { [key]: value })
+  }
 </script>
 
 {#if editor}
   {#await editor}
     ...
   {:then instance}
-    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} bind:value={newValue[key]} {focus}/>
+    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/>
   {/await}
 {/if}
-
 

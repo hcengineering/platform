@@ -27,7 +27,7 @@
 
   import chunter from '@anticrm/chunter'
 
-  export let label: IntlString
+  export let title: string
   export let icon: Asset | AnySvelteComponent
   export let fullSize: boolean = false
   export let object: Doc
@@ -62,7 +62,7 @@
           <svelte:component this={icon} size={'small'} />
         {/if}
       </div>
-      <div class="title"><Label {label} /></div>
+      <div class="title">{title}</div>
     </div>
     {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
     <div class="content"><ScrollBox vertical stretch><slot /></ScrollBox></div>
@@ -95,7 +95,7 @@
           <svelte:component this={icon} size={'small'} />
         {/if}
       </div>
-      <div class="title"><Label {label} /></div>
+      <div class="title">{title}</div>
     </div>
     {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
     <ScrollBox vertical stretch noShift>

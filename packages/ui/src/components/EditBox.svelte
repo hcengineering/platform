@@ -55,9 +55,9 @@
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   <div class="wrap">
     {#if password}
-      <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
     {:else}
-      <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} />
+      <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
     {/if}
   </div>
 </div>

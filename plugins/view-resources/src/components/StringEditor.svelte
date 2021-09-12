@@ -23,7 +23,13 @@ export let label: IntlString
 export let placeholder: IntlString
 export let value: any
 export let focus: boolean
+export let maxWidth: string
+export let onChange: (value: string) => void
+
+function _onchange(ev: Event) {
+  onChange((ev.target as HTMLInputElement).value)
+}
 
 </script>
 
-<EditBox {label} {placeholder} bind:value={value} {focus} />
+<EditBox {placeholder} {maxWidth} bind:value={value} {focus} on:change={ _onchange }/>
