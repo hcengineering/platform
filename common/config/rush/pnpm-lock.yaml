@@ -8171,35 +8171,6 @@ packages:
       supports-color: 7.2.0
     dev: false
 
-  /svelte-check/2.2.5_635b56cd8c077c5dd126b6e20db90d4b:
-    resolution: {integrity: sha512-EstDoqxjqWStWELh7Z0qytqUDl/ikdNEr21dveNc4fUDnhnqO2F2jHEufqoNnC3GfBji3GIUHvoXsp/I5lMbCg==}
-    hasBin: true
-    peerDependencies:
-      svelte: ^3.24.0
-    dependencies:
-      chalk: 4.1.2
-      chokidar: 3.4.3
-      glob: 7.1.7
-      import-fresh: 3.3.0
-      minimist: 1.2.5
-      sade: 1.7.4
-      source-map: 0.7.3
-      svelte: 3.42.1
-      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
-      typescript: 4.3.5
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - node-sass
-      - postcss
-      - postcss-load-config
-      - pug
-      - sass
-      - stylus
-      - sugarss
-    dev: false
-
   /svelte-check/2.2.5_8d5e7d8774dfc5d41599a7408187eba0:
     resolution: {integrity: sha512-EstDoqxjqWStWELh7Z0qytqUDl/ikdNEr21dveNc4fUDnhnqO2F2jHEufqoNnC3GfBji3GIUHvoXsp/I5lMbCg==}
     hasBin: true
@@ -8214,6 +8185,35 @@ packages:
       sade: 1.7.4
       source-map: 0.7.3
       svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
+      typescript: 4.3.5
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+    dev: false
+
+  /svelte-check/2.2.6_635b56cd8c077c5dd126b6e20db90d4b:
+    resolution: {integrity: sha512-oJux/afbmcZO+N+ADXB88h6XANLie8Y2rh2qBlhgfkpr2c3t/q/T0w2JWrHqagaDL8zeNwO8a8RVFBkrRox8gg==}
+    hasBin: true
+    peerDependencies:
+      svelte: ^3.24.0
+    dependencies:
+      chalk: 4.1.2
+      chokidar: 3.4.3
+      fast-glob: 3.2.7
+      import-fresh: 3.3.0
+      minimist: 1.2.5
+      sade: 1.7.4
+      source-map: 0.7.3
+      svelte: 3.42.1
+      svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
       typescript: 4.3.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -10069,13 +10069,14 @@ packages:
     dev: false
 
   file:projects/panel.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-H4STr88YUkXqz8bheNEW4EBqfGh0C+C2iAvH2zpmN9QYrJBBWwKZHJBDf0l92KUx1YVIKiCFBWmrrOQyoOnLaA==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-qi/4kQnD9wGgk340sL69M3J1yRd6ffnE1khsB3cHG9csUoI1GiCYiP5pXsi1292rRhO7aEjuJfuylHhYbvdLdw==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
     dependencies:
       sass: 1.37.5
       svelte: 3.42.1
+      svelte-check: 2.2.6_635b56cd8c077c5dd126b6e20db90d4b
       svelte-loader: 3.1.2_svelte@3.42.1
       svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
     transitivePeerDependencies:
@@ -10540,7 +10541,7 @@ packages:
     dependencies:
       sass: 1.37.5
       svelte: 3.42.1
-      svelte-check: 2.2.5_635b56cd8c077c5dd126b6e20db90d4b
+      svelte-check: 2.2.6_635b56cd8c077c5dd126b6e20db90d4b
       svelte-loader: 3.1.2_svelte@3.42.1
       svelte-preprocess: 4.7.4_c407529626dbb58d14a718f48c7fa84c
     transitivePeerDependencies:

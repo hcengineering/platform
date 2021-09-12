@@ -71,6 +71,7 @@
     <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
+  {#if files.length > 0}
   <table class="table-body">
     <thead>
       <tr class="tr-head">
@@ -93,6 +94,7 @@
       {/each}
     </tbody>
   </table>
+  {/if}
 </div>
 
 <style lang="scss">
