@@ -6,6 +6,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
+    "test": "heft test",
     "lint:fix": "eslint --fix src"
   },
   "devDependencies": {
@@ -16,7 +17,8 @@
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
-    "simplytyped": "^3.3.0"
+    "simplytyped": "^3.3.0",
+    "@rushstack/heft": "^0.35.0"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5"

@@ -41,6 +41,27 @@ describe('memdb', () => {
     expect(result.length).toBe(txes.filter((tx) => tx._class === core.class.TxCreateDoc).length)
   })
 
+  it('should create space', async () => {
+    const { model } = await createModel()
+
+    const client = new TxOperations(model, core.account.System)
+    const result = await client.findAll(core.class.Space, {})
+    expect(result).toHaveLength(2)
+
+    await client.createDoc(core.class.Space, core.space.Model, {
+      private: false,
+      name: 'NewSpace',
+      description: '',
+      members: []
+    })
+    const result2 = await client.findAll(core.class.Space, {})
+    expect(result2).toHaveLength(3)
+
+    await client.createDoc(core.class.Space, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [] })
+    const result3 = await client.findAll(core.class.Space, {})
+    expect(result3).toHaveLength(4)
+  })
+
   it('should query model', async () => {
     const { model } = await createModel()
     const result = await model.findAll(core.class.Class, {})
