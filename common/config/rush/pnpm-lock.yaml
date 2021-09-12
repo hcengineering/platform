@@ -10355,11 +10355,12 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-D4Gk6WhLEC6JSfzT/shF0G6me10SIGRK5UVtBN2t+Z/mi15VcGegrKDV0Q4yuQkfLYX1jSYJwok948W/3kyRtw==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-2g/EdTVTXnGA98667Tow9pXEthXzrp4PnkDiic31vMJHuEMTdQ4CUBdF2N+lDz6OiFXDP8/Ak0MfSKNawXY3Ug==, tarball: file:projects/server-ws.tgz}
     id: file:projects/server-ws.tgz
     name: '@rush-temp/server-ws'
     version: 0.0.0
     dependencies:
+      '@rushstack/heft': 0.35.0
       '@types/heft-jest': 1.0.2
       '@types/node': 16.7.5
       '@types/ws': 7.4.7

@@ -18,7 +18,8 @@
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
-    "@types/ws":"^7.4.7"
+    "@types/ws":"^7.4.7",
+    "@rushstack/heft": "^0.35.0"
   },
   "dependencies": {
     "jwt-simple": "^0.5.6",
