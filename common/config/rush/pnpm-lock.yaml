@@ -9607,11 +9607,12 @@ packages:
     dev: false
 
   file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-fWkoCr8TR72MHkEELoLb1Gb1qp+mSrXOa0TlBvE4pPBdJ8nH1T96tmJ+1NYe3t2Q2PkZ/RueIqNrmgP5ky589A==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-ysnlXH1pr2scWoJZmFim7f6kkIJjEDaYdgWWjEVGzVqt8OGASxitVlXqkEqN+wtzAkm5rV+z5iaOiPubJuB78A==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
     name: '@rush-temp/core'
     version: 0.0.0
     dependencies:
+      '@rushstack/heft': 0.35.0
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       eslint: 7.32.0
