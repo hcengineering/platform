@@ -14,12 +14,13 @@
 -->
 
 <script lang="ts">
-  import { CircleButton, IconAdd } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup } from '@anticrm/ui'
 
   import type { Doc, Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
+  import PDFViewer from './PDFViewer.svelte'
 
   import { uploadFile } from '../utils'
 
@@ -84,7 +85,7 @@
         <tr class="tr-body">
           <td class="item flex-row-center">
             <div class="flex-center file-icon">pdf</div>
-            <div class="flex-col flex-grow">
+            <div class="flex-col flex-grow" style="cursor: pointer" on:click={ () => { showPopup(PDFViewer, { file: file.file }, 'right') } }>
               <div class="overflow-label caption-color">{file.name}</div>
               <div class="overflow-label file-desc">{file.type}</div>
             </div>
