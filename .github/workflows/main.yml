@@ -50,3 +50,4 @@ jobs:
           coverageCommand: common/scripts/each.sh test
           coverageLocations: |
             ${{github.workspace}}/packages/*/coverage/lcov.info:lcov
+            ${{github.workspace}}/server/*/coverage/lcov.info:lcov
