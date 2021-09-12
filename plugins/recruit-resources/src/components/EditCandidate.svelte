@@ -16,12 +16,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc } from '@anticrm/core'
-  import { Tabs } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { Tabs, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
+  import FileUpload from './icons/FileUpload.svelte'
+  import PDFViewer from './PDFViewer.svelte'
+  import { getClient, Channels } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
   import Contact from './icons/Contact.svelte'
+  import Avatar from './icons/Avatar.svelte'
+  import Attachments from './Attachments.svelte'
 
   import chunter from '@anticrm/chunter'
   
@@ -97,6 +101,8 @@
     }
   ]
 
+  let inputFile: HTMLInputElement
+
 </script>
 
 <!-- <div class="container">
@@ -107,10 +113,97 @@
 </div> -->
 
 <Panel icon={Contact} label={object.firstName + ' ' + object.lastName} on:save={ save } on:close={() => { dispatch('close') }}>
+  <svelte:fragment slot="subtitle">
+    <div class="flex-row-reverse" style="width: 100%">
+      <Channels value={object.channels} reverse />
+    </div>
+  </svelte:fragment>
+
+  <div class="flex-row-center user-container">
+    <div class="avatar">
+      <div class="border"/>
+      <Avatar />
+    </div>
+    <div class="flex-col">
+      <div class="name"><EditBox placeholder="Name" maxWidth="15rem" bind:value={object.firstName}/></div>
+      <div class="name"><EditBox placeholder="Surname" maxWidth="15rem" bind:value={object.lastName}/></div>
+      <div class="city"><EditBox placeholder="Location" maxWidth="15rem" bind:value={object.city}/></div>
+      <div class="flex resume">
+        {#if resume.id}
+          <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
+        {:else}
+          <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
+          <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" />
+        {/if}
+      </div>
+    </div>
+  </div>
+
+  <div class="attachments">
+    <Attachments />
+  </div>
 
 </Panel>
 
 <style lang="scss">
+  @import '../../../../packages/theme/styles/mixins.scss';
+
+  .user-container {
+    margin-top: 2.5rem;
+  }
+  .avatar {
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 1.5rem;
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    filter: drop-shadow(0px 14px 44px rgba(28, 23, 22, .8));
+    cursor: pointer;
+
+    &::after {
+      content: '';
+      @include bg-layer(var(--theme-avatar-hover), .5);
+      z-index: -1;
+    }
+    &::before {
+      content: '';
+      @include bg-layer(var(--theme-avatar-bg), .1);
+      backdrop-filter: blur(25px);
+      z-index: -2;
+    }
+    .border {
+      @include bg-fullsize;
+      border: 2px solid var(--theme-avatar-border);
+      border-radius: 50%;
+    }
+  }
+
+  .name {
+    font-weight: 500;
+    font-size: 1.25rem;
+    color: var(--theme-caption-color);
+  }
+  .city {
+    margin: .75rem 0 .125rem;
+    font-weight: 500;
+    font-size: .75rem;
+    color: var(--theme-content-color);
+  }
+  .resume a {
+    font-size: .75rem;
+    color: var(--theme-content-dark-color);
+    &:hover { color: var(--theme-content-color); }
+  }
+
+  .attachments {
+    margin-top: 3.5rem;
+  }
+
   // .container {
   //   display: flex;
   //   flex-direction: column;

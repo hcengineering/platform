@@ -19,9 +19,10 @@
   import Icon from './Icon.svelte'
 
   export let icon: Asset | AnySvelteComponent
+  export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<div class="icon-button" on:click>
+<div class="icon-button icon-{size}" on:click>
   <div class="content">
     {#if typeof (icon) === 'string'}
       <Icon {icon} size={'small'}/>
@@ -36,8 +37,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 2rem;
-    height: 2rem;
     border: 1px solid var(--theme-card-divider);
     border-radius: 50%;
     backdrop-filter: blur(3px);
@@ -50,5 +49,13 @@
     }
     &:hover { border-color: var(--theme-bg-focused-border); }
     &:active { background-color: var(--theme-bg-accent-color); }
+  }
+  .icon-small {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .icon-medium {
+    width: 2rem;
+    height: 2rem;
   }
 </style>
