@@ -100,6 +100,10 @@ class TServerStorage implements ServerStorage {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(clazz)
+    console.log('server findall', query)
+    if (Object.keys(query)[0] === '$search') {
+      return await this.fulltext.findAll(clazz, query, options)
+    }
     return await this.getAdapter(domain).findAll(clazz, query, options)
   }
 

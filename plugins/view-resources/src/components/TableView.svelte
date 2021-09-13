@@ -27,11 +27,12 @@
   export let space: Ref<Space>
   export let options: FindOptions<Doc> | undefined
   export let config: string[]
+  export let search: string
 
   let objects: Doc[]
 
   const query = createQuery()
-  $: query.query(_class, { space }, result => { objects = result }, options)
+  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, options)
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)

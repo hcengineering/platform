@@ -48,6 +48,12 @@ function onSpace(space: Ref<Space>) {
 
 $: onSpace(space)
 
+let search = ''
+
+function onSearch(ev: Event) {
+  search = (ev.target as HTMLInputElement).value
+}
+
 </script>
 
 {#await getViewlets(client, _class)}
@@ -56,7 +62,7 @@ $: onSpace(space)
 
   {#if viewlets.length > 0}
     <div class="toolbar">
-      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} />
+      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} on:change={onSearch}/>
 
       <div class="flex">
         {#each viewlets as viewlet, i}
@@ -75,7 +81,8 @@ $: onSpace(space)
       space,
       open: viewlets[selected].open,
       options: viewlets[selected].options, 
-      config: viewlets[selected].config
+      config: viewlets[selected].config,
+      search
     } } />
   </div>
 

@@ -24,7 +24,7 @@
 </script>
 
 <div class="editbox" style={width ? 'width: ' + width : ''}>
-  <input type="text" bind:value {placeholder} />
+  <input type="text" bind:value {placeholder} on:change/>
   <div class="icon">
     {#if typeof (icon) === 'string'}
       <Icon {icon} size={'small'} />

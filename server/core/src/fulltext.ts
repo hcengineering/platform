@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import type { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute } from '@anticrm/core'
-import { TxProcessor, IndexKind } from '@anticrm/core'
+import { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, IndexKind } from '@anticrm/core'
+
 import type { IndexedContent, FullTextAdapter } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = {} as AnyAttribute
 
-export class FullTextIndex extends TxProcessor {
+export class FullTextIndex extends TxProcessor implements Storage {
   private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute>()
 
   constructor (
@@ -29,6 +29,13 @@ export class FullTextIndex extends TxProcessor {
     private readonly adapter: FullTextAdapter
   ) {
     super()
+  }
+
+  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+    console.log('search', query)
+    const docs = await this.adapter.search(query)
+    console.log('indexed docs', docs)
+    return []
   }
 
   private findFullTextAttribute (clazz: Ref<Class<Obj>>): AnyAttribute | undefined {

@@ -36,6 +36,8 @@ export type ObjQueryType<T> = T | QuerySelector<T>
  */
 export type DocumentQuery<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]>
+} & {
+  $search?: string
 }
 
 /**

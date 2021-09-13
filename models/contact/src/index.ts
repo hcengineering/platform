@@ -14,8 +14,8 @@
 //
 
 import type { Domain, Type, Ref } from '@anticrm/core'
-import { DOMAIN_MODEL } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
+import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
+import { Builder, Model, Prop, TypeString, UX, Index } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 
 import core, { TAccount, TDoc, TType } from '@anticrm/model-core'
@@ -53,6 +53,7 @@ export class TContact extends TDoc implements Contact {
 @UX('Person' as IntlString)
 export class TPerson extends TContact implements Person {
   @Prop(TypeString(), 'First name' as IntlString)
+  @Index(IndexKind.FullText)
   firstName!: string
 
   @Prop(TypeString(), 'Last name' as IntlString)
