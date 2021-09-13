@@ -16,7 +16,7 @@
 
 import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage } from '@anticrm/core'
 import core, { Hierarchy, DOMAIN_TX } from '@anticrm/core'
-import type { FullTextAdapterFactory } from './types'
+import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
 import { Triggers } from './triggers'
 
@@ -65,14 +65,17 @@ export interface DbConfiguration {
 }
 
 class TServerStorage implements ServerStorage {
+  private readonly fulltext: FullTextIndex
+
   constructor (
     private readonly domains: Record<string, string>,
     private readonly defaultAdapter: string,
     private readonly adapters: Map<string, DbAdapter>,
     private readonly hierarchy: Hierarchy,
     private readonly triggers: Triggers,
-    private readonly fulltext: FullTextIndex
+    fulltextAdapter: FullTextAdapter
   ) {
+    this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this)
   }
 
   private getAdapter (domain: Domain): DbAdapter {
@@ -166,7 +169,6 @@ export async function createServerStorage (conf: DbConfiguration): Promise<Serve
   }
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
-  const fulltext = new FullTextIndex(hierarchy, fulltextAdapter)
 
-  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltext)
+  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter)
 }

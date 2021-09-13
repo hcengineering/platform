@@ -33,8 +33,8 @@ class ElasticAdapter implements FullTextAdapter {
       body: {
         query: {
           match: {
-            // content: query.$search,
-            'attachment.content': query.$search
+            content: query.$search
+            // 'attachment.content': query.$search
           }
         }
       }

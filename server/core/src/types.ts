@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, Space, Timestamp, Account } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions } from '@anticrm/core'
 import { TxFactory } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
@@ -78,4 +78,11 @@ export type FullTextAdapterFactory = (url: string, workspace: string) => Promise
  */
 export interface Token {
   workspace: string
+}
+
+/**
+ * @public
+ */
+export interface WithFind {
+  findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
 }
