@@ -54,15 +54,19 @@
 </div>
 
 <style lang="scss">
+  // .container {
+  //   display: flex;
+  // }
   .container {
     display: grid;
     grid-template-columns: auto;
     grid-auto-flow: column;
-    grid-auto-columns: min-content;
+    grid-auto-columns: minmax(min-content, auto);
     gap: .75rem;
     align-items: center;
     padding: 0 2rem 0 2.5rem;
     height: 4.5rem;
     min-height: 4.5rem;
+    max-width: max-content;
   }
 </style>

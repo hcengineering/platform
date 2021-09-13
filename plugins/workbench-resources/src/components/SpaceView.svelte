@@ -22,7 +22,7 @@ import type { Viewlet } from '@anticrm/view'
 
 import { getClient } from '@anticrm/presentation'
 
-import { Icon, Component } from '@anticrm/ui'
+import { Icon, Component, EditWithIcon, IconSearch } from '@anticrm/ui'
 
 import view from '@anticrm/view'
 import core from '@anticrm/core'
@@ -56,7 +56,7 @@ $: onSpace(space)
 
   {#if viewlets.length > 0}
     <div class="toolbar">
-      <div style="flex-grow: 1;" />
+      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} />
 
       <div class="flex">
         {#each viewlets as viewlet, i}
