@@ -23,7 +23,7 @@
 </script>
 
 <div class="header-container">
-  <div class="flex-center">
+  <div class="flex-row-center">
     {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
     <span class="label">{label}</span>
   </div>
@@ -35,7 +35,6 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    width: 100%;
 
     .icon {
       margin-right: .5rem;
@@ -46,6 +45,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
+      max-width: 35rem;
     }
     .label {
       font-weight: 500;
