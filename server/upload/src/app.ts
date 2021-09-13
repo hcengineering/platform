@@ -154,7 +154,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
         space,
         modifiedOn: Date.now(),
         modifiedBy: 'core:account:System' as Ref<Account>,
-        attachment: file.data.toString('base64')
+        data: file.data.toString('base64')
       }
 
       await elastic.index(indexedDoc)

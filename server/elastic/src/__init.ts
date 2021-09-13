@@ -28,8 +28,8 @@ client.ingest.putPipeline({
   id: 'anticrm-pipeline',
   body: {
     processors: [
-      { attachment: { field: 'attachment' } },
-      { remove: { field: 'attachment' } }
+      { attachment: { field: 'data' } },
+      { remove: { field: 'data' } }
     ]
   }
 })

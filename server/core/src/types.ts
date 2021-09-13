@@ -52,7 +52,7 @@ export interface IndexedContent extends IndexedDoc {
  * @public
  */
 export interface IndexedAttachment extends IndexedDoc {
-  attachment: string
+  data: string
 }
 
 /**

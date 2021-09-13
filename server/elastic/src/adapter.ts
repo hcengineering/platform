@@ -34,7 +34,7 @@ class ElasticAdapter implements FullTextAdapter {
         query: {
           match: {
             // content: query.$search,
-            'att.content': query.$search
+            'attachment.content': query.$search
           }
         }
       }
@@ -46,7 +46,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async index (doc: IndexedDoc): Promise<void> {
     console.log('eastic: index', doc)
-    if ((doc as IndexedAttachment).attachment === undefined) {
+    if ((doc as IndexedAttachment).data === undefined) {
       const resp = await this.client.index({
         index: this.db,
         type: '_doc',
