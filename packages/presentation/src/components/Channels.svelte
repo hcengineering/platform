@@ -74,7 +74,7 @@
         <Icon icon={item.icon} size={'small'}/>
       </div>
     </div>
-    <div class="window">
+    <div class="window {reverse ? 'right' : 'left'}">
       <div class="circle circle-icon">
         <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
       </div>
@@ -162,7 +162,6 @@
       justify-content: space-between;
       padding: 1rem;
       top: 2.25rem;
-      right: 0;
       min-width: 100%;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);
@@ -174,6 +173,8 @@
         z-index: 4;
         visibility: visible;
       }
+      &.right { right: 0; }
+      &.left { left: 0; }
     }
   }
   .label {

@@ -64,15 +64,21 @@
       </div>
       <div class="title">{title}</div>
     </div>
-    {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
-    <div class="content"><ScrollBox vertical stretch><slot /></ScrollBox></div>
+    {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
+    <div class="flex-col h-full scroll-container">
+      <ScrollBox vertical stretch>
+        <div class="flex-col content">
+          <slot />
+        </div>
+      </ScrollBox>
+    </div>
   </div>
   <div class="rightSection">
     <div class="flex-row-center header">
       <div class="icon"><IconActivity size={'small'} /></div>
       <div class="title">Activity</div>
     </div>
-    <div class="content">
+    <div class="flex-col h-full content">
       <ScrollBox vertical stretch>
         {#if comments}
         <Grid column={1} rowGap={1.5}>
@@ -97,14 +103,16 @@
       </div>
       <div class="title">{title}</div>
     </div>
-    {#if $$slots.subtitle}<div class="subtitle"><slot name="subtitle" /></div>{/if}
+    {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
     <ScrollBox vertical stretch noShift>
-      <div class="content"><slot /></div>
+      <div class="flex-col content">
+        <slot />
+      </div>
       <div class="flex-row-center activity header">
         <div class="icon"><IconActivity size={'small'} /></div>
         <div class="title">Activity</div>
       </div>
-      <div class="activity content">
+      <div class="flex-col activity content">
         {#if comments}
         <Grid column={1} rowGap={1.5}>
           {#each comments as comment}
@@ -160,8 +168,6 @@
 
     .subtitle {
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
       padding: 0 2rem;
       height: 3.5rem;
       border-bottom: 1px solid var(--theme-card-divider);
@@ -174,52 +180,56 @@
     display: flex;
     flex-direction: column;
     height: max-content;
-  }
-  .content {
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem 2.5rem;
-    height: max-content;
-  }
-  .activity {
-    background-color: var(--theme-bg-accent-color);
-    &.header { border-bottom: none; }
-    &.content {
-      flex-grow: 1;
-      padding-bottom: 0;
+
+    .content {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 2.5rem;
+      height: max-content;
+    }
+    .activity {
       background-color: var(--theme-bg-accent-color);
+      &.header { border-bottom: none; }
+      &.content {
+        flex-grow: 1;
+        padding-bottom: 0;
+        background-color: var(--theme-bg-accent-color);
+      }
     }
   }
 
   .fullSize {
     flex-direction: row;
     left: 1.5rem;
+  }
 
-    .leftSection, .rightSection {
-      flex-basis: 50%;
-      display: flex;
-      flex-direction: column;
-    }
-    .leftSection {
-      border-right: 1px solid var(--theme-bg-accent-hover);
+  .leftSection, .rightSection {
+    flex-basis: 50%;
+    display: flex;
+    flex-direction: column;
+  }
+  .leftSection {
+    border-right: 1px solid var(--theme-bg-accent-hover);
+    .scroll-container {
+      flex-grow: 1;
+      padding: 2rem 2rem 1rem;
       .content {
         flex-grow: 1;
-        margin-top: 2.5rem;
-      }
-    }
-    .rightSection {
-      background-color: transparent;
-      .header { border-bottom: 1px solid var(--theme-card-divider); }
-      .content {
-        flex-grow: 1;
-        padding-top: 2.5rem;
-        padding-bottom: 0;
-        background-color: var(--theme-bg-accent-color);
+        padding: .5rem .5rem .5rem;
       }
     }
   }
-  
+  .rightSection {
+    background-color: transparent;
+    .header { border-bottom: 1px solid var(--theme-card-divider); }
+    .content {
+      flex-grow: 1;
+      padding: 2.5rem 2.5rem 0;
+      background-color: var(--theme-bg-accent-color);
+    }
+  }
+
   .ref-input {
     background-color: var(--theme-bg-accent-color);
     padding: 1.5rem 2.5rem;
