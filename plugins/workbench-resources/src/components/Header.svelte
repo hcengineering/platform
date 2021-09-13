@@ -22,7 +22,7 @@
   export let description: IntlString | undefined
 </script>
 
-<div class="container">
+<div class="header-container">
   <div class="flex-center">
     {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
     <span class="label">{label}</span>
@@ -31,7 +31,7 @@
 </div>
 
 <style lang="scss">
-  .container {
+  .header-container {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -46,7 +46,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
-      user-select: none;
     }
     .label {
       font-weight: 500;
