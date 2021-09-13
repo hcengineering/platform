@@ -41,7 +41,7 @@
   }
 </script>
 
-<div class="container" class:bottom-divider={divider}>
+<div class="spaceheader-container" class:bottom-divider={divider}>
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
@@ -54,19 +54,15 @@
 </div>
 
 <style lang="scss">
-  // .container {
-  //   display: flex;
-  // }
-  .container {
+  .spaceheader-container {
     display: grid;
     grid-template-columns: auto;
     grid-auto-flow: column;
-    grid-auto-columns: minmax(min-content, auto);
+    grid-auto-columns: min-content;
     gap: .75rem;
     align-items: center;
     padding: 0 2rem 0 2.5rem;
     height: 4.5rem;
     min-height: 4.5rem;
-    max-width: max-content;
   }
 </style>
