@@ -43,7 +43,7 @@ export class TMessage extends TDoc implements Message {
 
 @Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
 export class TComment extends TDoc implements Comment {
-  objectId!: Ref<Doc>
+  attachedTo!: Ref<Doc>
   message!: string
 }
 
@@ -55,7 +55,7 @@ export class TBacklink extends TComment implements Backlink {
 
 @Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
 export class TAttachment extends TDoc implements Attachment {
-  attachmentTo!: Ref<Doc>
+  attachedTo!: Ref<Doc>
   collection!: string
   name!: string
   file!: string

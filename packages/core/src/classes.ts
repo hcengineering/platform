@@ -64,6 +64,13 @@ export interface UXObject extends Obj {
 /**
  * @public
  */
+export interface AttachedDoc extends Doc {
+  attachedTo: Ref<Doc>
+}
+
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Type<T extends PropertyType> extends UXObject {}
 

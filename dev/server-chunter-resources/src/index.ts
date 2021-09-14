@@ -25,7 +25,7 @@ function extractBacklinks (backlinkId: Ref<Doc>, message: string, kids: NodeList
   for (const kid of kids) {
     if (kid.nodeName === 'span') {
       result.push({
-        objectId: kid.getAttribute('data-id') as Ref<Doc>,
+        attachedTo: kid.getAttribute('data-id') as Ref<Doc>,
         backlinkId,
         backlinkClass: chunter.class.Message,
         message

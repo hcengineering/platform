@@ -32,7 +32,7 @@
   let files: Attachment[] = []
 
   const query = createQuery()
-  $: query.query(chunter.class.Attachment, { attachmentTo: object._id }, result => { files = result})
+  $: query.query(chunter.class.Attachment, { attachedTo: object._id }, result => { files = result})
 
   let inputFile: HTMLInputElement
   let loading = false
@@ -46,7 +46,7 @@
       const uuid = await uploadFile(id, object.space, file)
       console.log('uploaded file uuid', uuid)
       client.createDoc(chunter.class.Attachment, object.space, {
-        attachmentTo: object._id,
+        attachedTo: object._id,
         collection: 'attachment',
         name: file.name,
         file: uuid,

@@ -38,11 +38,11 @@
 
   const client = getClient()
   const query = createQuery()
-  $: query.query(chunter.class.Comment, { objectId: object._id }, result => { comments = result })
+  $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result })
 
   function onMessage(event: CustomEvent) {
     client.createDoc(chunter.class.Comment, object.space, {
-      objectId: object._id,
+      attachedTo: object._id,
       message: event.detail
     })
     console.log(event.detail)

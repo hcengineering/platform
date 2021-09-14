@@ -56,10 +56,10 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
   return id
 }
 
-// async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachmentTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
+// async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachedTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
 //   const txFactory = new TxFactory(account)
 //   const tx = txFactory.createTxCreateDoc(chunter.class.Attachment, space, {
-//     attachmentTo,
+//     attachedTo,
 //     collection,
 //     name,
 //     file
@@ -140,7 +140,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       //   token,
       //   'core:account:System' as Ref<Account>,
       //   space,
-      //   attachmentTo,
+      //   attachedTo,
       //   collection,
       //   name,
       //   fileId

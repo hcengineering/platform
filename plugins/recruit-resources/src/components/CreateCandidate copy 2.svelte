@@ -61,7 +61,7 @@
       // create attachment
       console.log('creaing attachment space', space)
       client.createDoc(chunter.class.Attachment, space, {
-        attachmentTo: candidateId,
+        attachedTo: candidateId,
         collection: 'resume',
         name: resume.name,
         file: resume.uuid,
