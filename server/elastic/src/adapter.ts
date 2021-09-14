@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import type { Doc, Ref } from '@anticrm/core'
 import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
@@ -34,13 +35,26 @@ class ElasticAdapter implements FullTextAdapter {
         query: {
           multi_match: {
             query: query.$search,
-            fields: ['content', 'attachment.content']
+            fields: [
+              'content0',
+              'content1',
+              'content2',
+              'content3',
+              'content4',
+              'content5',
+              'content6',
+              'content7',
+              'content8',
+              'content9',
+              'attachment.content'
+            ]
           }
         }
       }
     })
     console.log(result)
     const hits = result.body.hits.hits as any[]
+    console.log('hits', hits)
     return hits.map(hit => hit._source)
   }
 
@@ -49,6 +63,7 @@ class ElasticAdapter implements FullTextAdapter {
     if (doc.data === undefined) {
       const resp = await this.client.index({
         index: this.db,
+        id: doc.id,
         type: '_doc',
         body: doc
       })
@@ -58,6 +73,7 @@ class ElasticAdapter implements FullTextAdapter {
       console.log('attachment pipeline')
       const resp = await this.client.index({
         index: this.db,
+        id: doc.id,
         type: '_doc',
         pipeline: 'attachment',
         body: doc
@@ -65,6 +81,17 @@ class ElasticAdapter implements FullTextAdapter {
       console.log('resp', resp)
       console.log('error', (resp.meta as any)?.body?.error)
     }
+  }
+
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<void> {
+    const resp = await this.client.update({
+      index: this.db,
+      id,
+      body: {
+        doc: update
+      }
+    })
+    console.log('update', resp)
   }
 }
 

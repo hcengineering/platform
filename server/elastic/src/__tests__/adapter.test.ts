@@ -27,7 +27,7 @@ describe('client', () => {
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
       space: 'space1' as Ref<Space>,
-      content: 'hey there!'
+      content0: 'hey there!'
     }
     await adapter.index(doc)
     const hits = await adapter.search({})

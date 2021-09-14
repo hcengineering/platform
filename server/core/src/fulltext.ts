@@ -14,25 +14,13 @@
 // limitations under the License.
 //
 
-import core, { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor } from '@anticrm/core'
-import type { AttachedDoc } from '@anticrm/core'
+import core, { Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor } from '@anticrm/core'
+import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj } from '@anticrm/core'
 
 import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = [] as AnyAttribute[]
-
-function buildContent (doc: any, attributes: AnyAttribute[]): string {
-  let result = ''
-  for (const attr of attributes) {
-    const value = doc[attr.name]
-    if (value !== undefined) {
-      result += value as string
-      result += ' '  
-    }
-  }
-  return result
-}
 
 export class FullTextIndex extends TxProcessor implements Storage {
   private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute[]>()
@@ -78,7 +66,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     if (attributes === undefined) return
     const doc = TxProcessor.createDoc2Doc(tx)
-    const content = buildContent(doc, attributes) // (doc as any)[attribute.name]
+    const content = attributes.map(attr => (doc as any)[attr.name]) // buildContent(doc, attributes) // (doc as any)[attribute.name]
     const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,
@@ -86,8 +74,36 @@ export class FullTextIndex extends TxProcessor implements Storage {
       modifiedOn: doc.modifiedOn,
       space: doc.space,
       attachedTo: (doc as AttachedDoc).attachedTo,
-      content
+      content0: content[0],
+      content1: content[1],
+      content2: content[2],
+      content3: content[3],
+      content4: content[4],
+      content5: content[5],
+      content6: content[6],
+      content7: content[7],
+      content8: content[8],
+      content9: content[9]
     }
     return await this.adapter.index(indexedDoc)
+  }
+
+  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+    const attributes = this.getFullTextAttributes(tx.objectClass)
+    if (attributes === undefined) return
+    const ops: any = tx.operations
+    const update: any = {}
+    let i = 0
+    let shouldUpdate = false
+    for (const attr of attributes) {
+      if (ops[attr.name] !== undefined) {
+        update[`content${i}`] = ops[attr.name]
+        shouldUpdate = true
+        i++
+      }
+    }
+    if (shouldUpdate) {
+      return await this.adapter.update(tx.objectId, update)
+    }
   }
 }

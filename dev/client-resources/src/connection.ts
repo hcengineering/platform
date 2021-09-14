@@ -40,6 +40,9 @@ class NullFullTextAdapter implements FullTextAdapter {
     console.log('noop full text indexer: ', doc)
   }
 
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<void> {
+  }
+
   async search (query: any): Promise<IndexedDoc[]> {
     return []
   }
