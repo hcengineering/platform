@@ -8,7 +8,7 @@
     "start": "ts-node src/__start.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src",
-    "bundle": "esbuild src/__start.ts --bundle --minify --platform=node > bundle.js",
+    "bundle": "esbuild src/__start.ts --bundle --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/upload .",
     "docker:push": "docker push anticrm/upload"
   },

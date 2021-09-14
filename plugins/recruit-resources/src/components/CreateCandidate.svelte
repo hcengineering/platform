@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Doc } from '@anticrm/core'
+  import type { Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
 
   import { getClient, Card, Channels } from '@anticrm/presentation'
@@ -58,16 +58,17 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const candidateId = generateId<Candidate>()
 
   async function createCandidate() {
     console.log(_space)
     // create candidate      
-    const candidateId = await client.createDoc(recruit.class.Candidate, _space, {
+    await client.createDoc(recruit.class.Candidate, _space, {
       firstName: object.firstName,
       lastName: object.lastName,
       city: object.city,
       channels: object.channels,
-    })
+    }, candidateId)
 
     console.log('resume name', resume.name)
 
@@ -98,7 +99,7 @@
     loading = true
     try {
       const id = generateId<Attachment>()
-      resume.uuid = await uploadFile(id, space, file)
+      resume.uuid = await uploadFile(id, space, file, candidateId)
       resume.id = id
       resume.name = file.name
       resume.size = file.size

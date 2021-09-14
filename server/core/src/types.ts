@@ -39,26 +39,15 @@ export interface IndexedDoc {
   space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
+  attachedTo?: Ref<Doc>
+  content?: string
+  data?: string
 }
 
 /**
  * @public
  */
-export interface IndexedContent extends IndexedDoc {
-  content: string
-}
-
-/**
- * @public
- */
-export interface IndexedAttachment extends IndexedDoc {
-  data: string
-}
-
-/**
- * @public
- */
-export type SearchQuery = any
+export type SearchQuery = any // TODO: replace with DocumentQuery
 
 /**
  * @public

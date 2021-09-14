@@ -22,7 +22,7 @@ import { decode } from 'jwt-simple'
 
 import type { Space, Ref, Doc, Account } from '@anticrm/core'
 // import { TxFactory } from '@anticrm/core'
-import type { Token, IndexedAttachment } from '@anticrm/server-core'
+import type { Token, IndexedDoc } from '@anticrm/server-core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import chunter from '@anticrm/chunter'
 // import { createContributingClient } from '@anticrm/contrib'
@@ -133,6 +133,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
       const id = req.query.id as Ref<Doc>
       const space = req.query.space as Ref<Space>
+      const attachedTo = req.query.attachedTo as Ref<Doc>
       // const name = req.query.name as string
 
       // await createAttachment(
@@ -148,12 +149,13 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
       const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
 
-      const indexedDoc: IndexedAttachment = {
+      const indexedDoc: IndexedDoc = {
         id,
         _class: chunter.class.Attachment,
         space,
         modifiedOn: Date.now(),
         modifiedBy: 'core:account:System' as Ref<Account>,
+        attachedTo,
         data: file.data.toString('base64')
       }
 

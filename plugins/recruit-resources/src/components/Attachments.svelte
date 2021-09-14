@@ -40,10 +40,11 @@
   const client = getClient()
 
   async function createAttachment(file: File) {
+    console.log('CREATE ATTACHMENT')
     loading = true
     try {
       const id = generateId<Attachment>()
-      const uuid = await uploadFile(id, object.space, file)
+      const uuid = await uploadFile(id, object.space, file, object._id)
       console.log('uploaded file uuid', uuid)
       client.createDoc(chunter.class.Attachment, object.space, {
         attachedTo: object._id,

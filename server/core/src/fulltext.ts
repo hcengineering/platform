@@ -15,8 +15,9 @@
 //
 
 import { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, IndexKind } from '@anticrm/core'
+import type { AttachedDoc } from '@anticrm/core'
 
-import type { IndexedContent, FullTextAdapter, WithFind } from './types'
+import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = {} as AnyAttribute
@@ -35,8 +36,9 @@ export class FullTextIndex extends TxProcessor implements Storage {
   async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     console.log('search', query)
     const docs = await this.adapter.search(query)
-    const ids = docs.map(doc => doc.id as Ref<T>)
-    return this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options)
+    console.log(docs)
+    const ids = docs.map(doc => (doc.attachedTo ?? doc.id) as Ref<T>)
+    return this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
   }
 
   private findFullTextAttribute (clazz: Ref<Class<Obj>>): AnyAttribute | undefined {
@@ -60,12 +62,13 @@ export class FullTextIndex extends TxProcessor implements Storage {
     if (attribute === undefined) return
     const doc = TxProcessor.createDoc2Doc(tx)
     const content = (doc as any)[attribute.name]
-    const indexedDoc: IndexedContent = {
+    const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,
       modifiedBy: doc.modifiedBy,
       modifiedOn: doc.modifiedOn,
       space: doc.space,
+      attachedTo: (doc as AttachedDoc).attachedTo,
       content
     }
     return await this.adapter.index(indexedDoc)

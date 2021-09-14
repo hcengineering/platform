@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { FullTextAdapter, IndexedAttachment, IndexedDoc, SearchQuery } from '@anticrm/server-core'
+import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
 
@@ -32,9 +32,9 @@ class ElasticAdapter implements FullTextAdapter {
       index: this.db,
       body: {
         query: {
-          match: {
-            content: query.$search
-            // 'attachment.content': query.$search
+          multi_match: {
+            query: query.$search,
+            fields: ['content', 'attachment.content']
           }
         }
       }
@@ -46,13 +46,14 @@ class ElasticAdapter implements FullTextAdapter {
 
   async index (doc: IndexedDoc): Promise<void> {
     console.log('eastic: index', doc)
-    if ((doc as IndexedAttachment).data === undefined) {
+    if (doc.data === undefined) {
       const resp = await this.client.index({
         index: this.db,
         type: '_doc',
         body: doc
       })
-      console.log(resp)
+      console.log('resp', resp)
+      console.log('error', (resp.meta as any)?.body?.error)
     } else {
       console.log('attachment pipeline')
       const resp = await this.client.index({
@@ -61,7 +62,8 @@ class ElasticAdapter implements FullTextAdapter {
         pipeline: 'attachment',
         body: doc
       })
-      console.log(resp)
+      console.log('resp', resp)
+      console.log('error', (resp.meta as any)?.body?.error)
     }
   }
 }
