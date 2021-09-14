@@ -44,6 +44,8 @@ export class TMessage extends TDoc implements Message {
 @Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
 export class TComment extends TDoc implements Comment {
   attachedTo!: Ref<Doc>
+  @Prop(TypeString(), 'Message' as IntlString)
+  @Index(IndexKind.FullText)
   message!: string
 }
 

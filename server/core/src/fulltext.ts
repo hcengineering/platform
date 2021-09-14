@@ -14,16 +14,28 @@
 // limitations under the License.
 //
 
-import { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, IndexKind } from '@anticrm/core'
+import core, { TxCreateDoc, Doc, Ref, Class, Obj, Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor } from '@anticrm/core'
 import type { AttachedDoc } from '@anticrm/core'
 
 import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const NO_INDEX = {} as AnyAttribute
+const NO_INDEX = [] as AnyAttribute[]
+
+function buildContent (doc: any, attributes: AnyAttribute[]): string {
+  let result = ''
+  for (const attr of attributes) {
+    const value = doc[attr.name]
+    if (value !== undefined) {
+      result += value as string
+      result += ' '  
+    }
+  }
+  return result
+}
 
 export class FullTextIndex extends TxProcessor implements Storage {
-  private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute>()
+  private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute[]>()
 
   constructor (
     private readonly hierarchy: Hierarchy,
@@ -41,27 +53,32 @@ export class FullTextIndex extends TxProcessor implements Storage {
     return this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
   }
 
-  private findFullTextAttribute (clazz: Ref<Class<Obj>>): AnyAttribute | undefined {
-    const attribute = this.indexes.get(clazz)
-    if (attribute === undefined) {
-      const attributes = this.hierarchy.getAllAttributes(clazz)
-      for (const [, attr] of attributes) {
-        if (attr.index === IndexKind.FullText) {
-          this.indexes.set(clazz, attr)
-          return attr
+  private getFullTextAttributes (clazz: Ref<Class<Obj>>): AnyAttribute[] | undefined {
+    const attributes = this.indexes.get(clazz)
+    if (attributes === undefined) {
+      const allAttributes = this.hierarchy.getAllAttributes(clazz)
+      const result: AnyAttribute[] = []
+      for (const [, attr] of allAttributes) {
+        if (attr.type._class === core.class.TypeString) {
+          result.push(attr)
         }
       }
-      this.indexes.set(clazz, NO_INDEX)
-    } else if (attribute !== NO_INDEX) {
-      return attribute
+      if (result.length > 0) {
+        this.indexes.set(clazz, result)
+        return result
+      } else {
+        this.indexes.set(clazz, NO_INDEX)
+      }
+    } else if (attributes !== NO_INDEX) {
+      return attributes
     }
   }
 
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
-    const attribute = this.findFullTextAttribute(tx.objectClass)
-    if (attribute === undefined) return
+    const attributes = this.getFullTextAttributes(tx.objectClass)
+    if (attributes === undefined) return
     const doc = TxProcessor.createDoc2Doc(tx)
-    const content = (doc as any)[attribute.name]
+    const content = buildContent(doc, attributes) // (doc as any)[attribute.name]
     const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,

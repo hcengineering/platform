@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import type { Class, Ref, Type } from '@anticrm/core'
 import core, { coreId } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
 
 export default mergeIds(coreId, core, {
   class: {
-    TypeString: '' as Ref<Class<Type<string>>>
   }
 })
