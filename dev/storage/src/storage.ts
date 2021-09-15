@@ -46,7 +46,7 @@ class InMemoryTxAdapter implements TxAdapter {
 }
 
 class InMemoryAdapter implements DbAdapter {
-  private readonly modeldb: TxDb
+  private readonly modeldb: ModelDb
 
   constructor (hierarchy: Hierarchy) {
     this.modeldb = new ModelDb(hierarchy)

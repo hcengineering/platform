@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import core, { Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor } from '@anticrm/core'
+import core, { Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
 import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj } from '@anticrm/core'
 
 import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
@@ -31,6 +31,18 @@ export class FullTextIndex extends TxProcessor implements Storage {
     private readonly dbStorage: WithFind
   ) {
     super()
+  }
+
+  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 
   async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {

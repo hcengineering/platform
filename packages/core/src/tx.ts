@@ -14,7 +14,7 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin } from './classes'
+import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType } from './classes'
 import { DocumentQuery, FindOptions, FindResult, Storage, WithLookup } from './storage'
 import core from './component'
 import { generateId } from './utils'
@@ -39,6 +39,15 @@ export interface TxCUD<T extends Doc> extends Tx {
  */
 export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
   attributes: Data<T>
+}
+
+/**
+ * @public
+ */
+export interface TxPutBag<T extends PropertyType> extends TxCUD<Doc> {
+  bag: string
+  key: string
+  value: T
 }
 
 /**
@@ -116,7 +125,7 @@ export interface WithTx {
 /**
  * @public
  */
-export class TxProcessor implements WithTx {
+export abstract class TxProcessor implements WithTx {
   async tx (tx: Tx): Promise<void> {
     switch (tx._class) {
       case core.class.TxCreateDoc:
@@ -127,6 +136,8 @@ export class TxProcessor implements WithTx {
         return await this.txRemoveDoc(tx as TxRemoveDoc<Doc>)
       case core.class.TxMixin:
         return await this.txMixin(tx as TxMixin<Doc, Doc>)
+      case core.class.TxPutBag:
+        return await this.txPutBag(tx as TxPutBag<PropertyType>)
     }
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
@@ -143,10 +154,11 @@ export class TxProcessor implements WithTx {
     } as T
   }
 
-  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {}
-  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {}
-  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {}
-  protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {}
+  protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void>
+  protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<void>
+  protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void>
+  protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void>
+  protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<void>
 }
 
 /**
@@ -180,6 +192,18 @@ export class TxOperations implements Storage {
     const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id)
     await this.storage.tx(tx)
     return tx.objectId
+  }
+
+  putBag <P extends PropertyType>(
+    _class: Ref<Class<Doc>>,
+    space: Ref<Space>,
+    objectId: Ref<Doc>,
+    bag: string,
+    key: string,
+    value: P
+  ): Promise<void> {
+    const tx = this.txFactory.createTxPutBag(_class, space, objectId, bag, key, value)
+    return this.storage.tx(tx)
   }
 
   updateDoc <T extends Doc>(
@@ -229,6 +253,29 @@ export class TxFactory {
       modifiedOn: Date.now(),
       modifiedBy: this.account,
       attributes
+    }
+  }
+
+  createTxPutBag <P extends PropertyType>(
+    _class: Ref<Class<Doc>>,
+    space: Ref<Space>,
+    objectId: Ref<Doc>,
+    bag: string,
+    key: string,
+    value: P
+  ): TxPutBag<P> {
+    return {
+      _id: generateId(),
+      _class: core.class.TxUpdateDoc,
+      space: core.space.Tx,
+      modifiedBy: this.account,
+      modifiedOn: Date.now(),
+      objectId,
+      objectClass: _class,
+      objectSpace: space,
+      bag,
+      key,
+      value
     }
   }
 

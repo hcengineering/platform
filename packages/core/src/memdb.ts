@@ -15,7 +15,7 @@
 
 import { PlatformError, Severity, Status } from '@anticrm/platform'
 import type { Class, Doc, Ref } from './classes'
-import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import core from './component'
 import type { Hierarchy } from './hierarchy'
 import { _getOperator } from './operator'
@@ -26,7 +26,7 @@ import { TxProcessor } from './tx'
 /**
  * @public
  */
-export class MemDb extends TxProcessor {
+export abstract class MemDb extends TxProcessor {
   protected readonly hierarchy: Hierarchy
   private readonly objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
@@ -147,6 +147,26 @@ export class MemDb extends TxProcessor {
  * @public
  */
 export class TxDb extends MemDb implements Storage {
+  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
   async tx (tx: Tx): Promise<void> {
     this.addDoc(tx)
   }
@@ -158,7 +178,18 @@ export class TxDb extends MemDb implements Storage {
  * @public
  */
 export class ModelDb extends MemDb implements Storage {
-  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+    const doc = this.getObject(tx.objectId) as any
+    let bag = doc[tx.bag]
+    if (bag === undefined) {
+      doc[tx.bag] = bag = {}
+    }
+    bag[tx.key] = tx.value
+    doc.modifiedBy = tx.modifiedBy
+    doc.modifiedOn = tx.modifiedOn
+  }
+
+  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
     this.addDoc(TxProcessor.createDoc2Doc(tx))
   }
 

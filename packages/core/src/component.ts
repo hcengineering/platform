@@ -14,8 +14,8 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Account, Class, Doc, Obj, Ref, Space, AnyAttribute, State, Type } from './classes'
-import type { Tx, TxCreateDoc, TxCUD, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Account, Class, Doc, Obj, Ref, Space, AnyAttribute, State, Type, PropertyType } from './classes'
+import type { Tx, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
  * @public
@@ -34,6 +34,7 @@ export default plugin(coreId, {
     TxMixin: '' as Ref<Class<TxMixin<Doc, Doc>>>,
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
+    TxPutBag: '' as Ref<Class<TxPutBag<PropertyType>>>,
     Space: '' as Ref<Class<Space>>,
     Account: '' as Ref<Class<Account>>,
     State: '' as Ref<Class<State>>,

@@ -16,7 +16,7 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData
+  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag
 } from '@anticrm/core'
 
 interface Query {
@@ -85,6 +85,14 @@ export class LiveQuery extends TxProcessor implements Client {
     return () => {
       this.queries.splice(this.queries.indexOf(q), 1)
     }
+  }
+
+  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {

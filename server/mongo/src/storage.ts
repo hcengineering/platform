@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc } from '@anticrm/core'
-import core, { TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
+import core, { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
+
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
 import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
@@ -92,6 +92,18 @@ abstract class MongoAdapterBase extends TxProcessor {
 }
 
 class MongoAdapter extends MongoAdapterBase {
+  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
     const doc = TxProcessor.createDoc2Doc(tx)
     const domain = this.hierarchy.getDomain(doc._class)
@@ -106,6 +118,26 @@ class MongoAdapter extends MongoAdapterBase {
 }
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
+  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
   override async tx (tx: Tx): Promise<void> {
     console.log('mongotx', tx)
     await this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
