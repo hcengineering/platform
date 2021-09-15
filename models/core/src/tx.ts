@@ -27,7 +27,9 @@ import type {
   TxUpdateDoc,
   TxMixin,
   Mixin,
-  ExtendedAttributes
+  ExtendedAttributes,
+  PropertyType,
+  TxPutBag
 } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { Model } from '@anticrm/model'
@@ -50,6 +52,13 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
 @Model(core.class.TxCreateDoc, core.class.TxCUD)
 export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDoc<T> {
   attributes!: Data<T>
+}
+
+@Model(core.class.TxPutBag, core.class.TxCUD)
+export class TTxPutBag<T extends PropertyType> extends TTxCUD<Doc> implements TxPutBag<T> {
+  bag!: string
+  key!: string
+  value!: T
 }
 
 @Model(core.class.TxMixin, core.class.TxCUD)

@@ -14,9 +14,10 @@
 -->
 
 <script lang="ts">
-  import { CircleButton, IconAdd, showPopup } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup, Spinner } from '@anticrm/ui'
 
-  import type { Doc, Ref, Space } from '@anticrm/core'
+  import type { Doc, Ref, Space, Class, Bag } from '@anticrm/core'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { generateId } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
@@ -26,13 +27,14 @@
 
   import chunter from '@anticrm/chunter'
 
-  export let object: Doc
-  // export let space: Ref<Space>
+  export let objectId: Ref<Doc & { attachments: Bag<Attachment> }>
+  export let space: Ref<Space>
+  export let _class: Ref<Class<Doc & { attachments: Bag<Attachment> }>>
 
-  let files: Attachment[] = []
+  export let object: Doc & { attachments: Bag<Attachment> } | undefined = undefined
 
-  const query = createQuery()
-  $: query.query(chunter.class.Attachment, { attachedTo: object._id }, result => { files = result})
+  // const query = createQuery()
+  // $: query.query(_class, { _id: objectId }, result => { object = result[0] })
 
   let inputFile: HTMLInputElement
   let loading = false
@@ -40,20 +42,19 @@
   const client = getClient()
 
   async function createAttachment(file: File) {
-    console.log('CREATE ATTACHMENT')
     loading = true
     try {
-      const id = generateId<Attachment>()
-      const uuid = await uploadFile(id, object.space, file, object._id)
+      const uuid = await uploadFile(space, file, objectId)
       console.log('uploaded file uuid', uuid)
-      client.createDoc(chunter.class.Attachment, object.space, {
-        attachedTo: object._id,
-        collection: 'attachment',
+      client.putBag(_class, space, objectId, 'attachments', encodeURIComponent(uuid), {
+        _class: chunter.class.Attachment,
         name: file.name,
         file: uuid,
         type: file.type,
         size: file.size,
-      })      
+      })
+    } catch (err: any) {
+      setPlatformStatus(unknownError(err))
     } finally {
       loading = false
     }
@@ -70,10 +71,14 @@
 <div class="attachments-container">
   <div class="flex-row-center">
     <span class="title">Attachments</span>
-    <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+    {#if loading}
+      <Spinner/>
+    {:else}
+      <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+    {/if}
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
-  {#if files.length > 0}
+  {#if object?.attachments !== undefined}
   <table class="table-body">
     <thead>
       <tr class="tr-head">
@@ -82,7 +87,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each files as file}
+      {#each Object.values(object.attachments) as file}
         <tr class="tr-body">
           <td class="item flex-row-center">
             <div class="flex-center file-icon">pdf</div>

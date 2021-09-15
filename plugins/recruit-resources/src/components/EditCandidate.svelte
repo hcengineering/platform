@@ -15,14 +15,14 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Doc } from '@anticrm/core'
+  import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
   import type { Attachment } from '@anticrm/chunter'
   import FileUpload from './icons/FileUpload.svelte'
   import PDFViewer from './PDFViewer.svelte'
-  import { getClient, Channels, AttributeEditor } from '@anticrm/presentation'
+  import { getClient, createQuery, Channels, AttributeEditor } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
-  import type { Candidate } from '@anticrm/recruit'
+  import type { Candidate, Candidate } from '@anticrm/recruit'
   import DialogHeader from './DialogHeader.svelte'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
@@ -34,9 +34,13 @@
   
   import recruit from '../plugin'
 
-  export let object: Candidate
+  export let _id: Ref<Candidate>
+  let object: Candidate
 
   const client = getClient()
+
+  const query = createQuery()
+  $: query.query(recruit.class.Candidate, { _id }, result => { object = result[0] })
 
   const dispatch = createEventDispatcher()
 
@@ -47,6 +51,7 @@
 
 </script>
 
+{#if object !== undefined}
 <Panel icon={Contact} title={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
     <div class="flex-between flex-reverse" style="width: 100%">
@@ -69,10 +74,11 @@
   </div>
 
   <div class="attachments">
-    <Attachments {object}/>
+    <Attachments objectId={object._id} _class={object._class} space={object.space} {object}/>
   </div>
 
 </Panel>
+{/if}
 
 <style lang="scss">
   @import '../../../../packages/theme/styles/mixins.scss';

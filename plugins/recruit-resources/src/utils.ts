@@ -15,18 +15,18 @@
 //
 
 import type { Ref, Doc, Space } from '@anticrm/core'
-import { getMetadata } from '@anticrm/platform'
+import { getMetadata, PlatformError } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
-export async function uploadFile(id: Ref<Doc>, space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
+export async function uploadFile(space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
   console.log(file)
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
   
   const data = new FormData()
   data.append('file', file)
 
-  const url = `${uploadUrl}?id=${id}&space=${space}&attachedTo=${attachedTo}`
+  const url = `${uploadUrl}?space=${space}&name=${encodeURIComponent(file.name)}&attachedTo=${attachedTo}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
@@ -34,6 +34,9 @@ export async function uploadFile(id: Ref<Doc>, space: Ref<Space>, file: File, at
     },
     body: data
   })
+  if (resp.status !== 200) { 
+    throw new Error('Can\t upload file.')
+  }
   const uuid = await resp.text()
   console.log(uuid)
   return uuid

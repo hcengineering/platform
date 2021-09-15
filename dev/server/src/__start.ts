@@ -18,7 +18,7 @@ import { start } from '.'
 
 import { encode } from 'jwt-simple'
 
-const token = encode({ email: 'rosamund@hc.engineering', workspace: 'ws1' }, 'secret')
+const token = encode({ email: 'rosamund@hc.engineering', workspace: 'trx40' }, 'secret')
 console.log(token)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

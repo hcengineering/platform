@@ -14,8 +14,8 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, UX, Prop, TypeString } from '@anticrm/model'
-import type { Ref, FindOptions, Doc, Domain, State } from '@anticrm/core'
+import { Builder, Model, UX, Prop, TypeString, Bag as TypeBag } from '@anticrm/model'
+import type { Ref, FindOptions, Doc, Domain, State, Bag } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import type { Attachment } from '@anticrm/chunter'
@@ -25,8 +25,6 @@ import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import contact, { TPerson } from '@anticrm/model-contact'
 import recruit from './plugin'
-import chunter from '@anticrm/chunter'
-import type { Person } from '@anticrm/contact'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
@@ -41,17 +39,17 @@ export class TCandidates extends TSpace implements Candidates {}
 @Model(recruit.class.Candidate, contact.class.Person)
 @UX('Candidate' as IntlString)
 export class TCandidate extends TPerson implements Candidate {
-  @Prop(TypeString(), 'Resume' as IntlString)
-  resume?: Ref<Attachment>
-
   @Prop(TypeString(), 'Title' as IntlString)
-  title?: Ref<Attachment>
+  title?: string
+
+  @Prop(TypeBag(), 'Attachments' as IntlString)
+  attachments!: Bag<Attachment>
 }
 
 @Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)
 export class TApplicant extends TDoc implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
-  candidate!: Ref<Person>
+  candidate!: Ref<Candidate>
 
   @Prop(TypeString(), 'State' as IntlString)
   state!: Ref<State>
@@ -107,11 +105,11 @@ export function createModel (builder: Builder): void {
     open: recruit.component.EditCandidate,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        resume: chunter.class.Attachment
-      }
+      // lookup: {
+      //   resume: chunter.class.Attachment
+      // }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '#' + recruit.component.CreateApplicationPresenter + '/Action', 'city', '$lookup.resume', 'channels']
+    config: ['', '#' + recruit.component.CreateApplicationPresenter + '/Action', 'city', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

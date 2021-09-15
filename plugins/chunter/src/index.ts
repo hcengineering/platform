@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
-import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
+import type { Space, Obj, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
 
 /**
  * @public
@@ -47,8 +47,7 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
-export interface Attachment extends AttachedDoc {
-  collection: string
+export interface Attachment extends Obj {
   name: string
   file: string
   size: number
