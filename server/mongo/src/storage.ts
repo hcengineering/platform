@@ -92,8 +92,10 @@ abstract class MongoAdapterBase extends TxProcessor {
 }
 
 class MongoAdapter extends MongoAdapterBase {
-  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
-    throw new Error('Method not implemented.')
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+    const domain = this.hierarchy.getDomain(tx.objectClass)
+    console.log('mongo', { $set: { [tx.bag + '.' + tx.key]: tx.value } })
+    await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { [tx.bag + '.' + tx.key]: tx.value } })
   }
 
   protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
@@ -112,8 +114,7 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
-    const result = await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
-    console.log('update result', result)
+    await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
   }
 }
 

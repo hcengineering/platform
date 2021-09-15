@@ -38,7 +38,8 @@ export default plugin(coreId, {
     Space: '' as Ref<Class<Space>>,
     Account: '' as Ref<Class<Account>>,
     State: '' as Ref<Class<State>>,
-    TypeString: '' as Ref<Class<Type<string>>>
+    TypeString: '' as Ref<Class<Type<string>>>,
+    Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
   },
   space: {
     Tx: '' as Ref<Space>,

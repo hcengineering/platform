@@ -272,3 +272,10 @@ export class Builder {
 export function TypeString (): Type<string> {
   return { _class: core.class.TypeString }
 }
+
+/**
+ * @public
+ */
+export function Bag (): Type<Record<string, PropertyType>> {
+  return { _class: core.class.Bag }
+}

@@ -87,8 +87,22 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
-    throw new Error('Method not implemented.')
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+    for (const q of this.queries) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      const updatedDoc = q.result.find(p => p._id === tx.objectId)
+      if (updatedDoc !== undefined) {
+        const doc = updatedDoc as any
+        let bag = doc[tx.bag]
+        if (bag === undefined) {
+          doc[tx.bag] = bag = {}
+        }
+        bag[tx.key] = tx.value
+        await this.callback(updatedDoc, q)
+      }
+    }
   }
 
   protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {

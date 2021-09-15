@@ -20,7 +20,7 @@ import cors from 'cors'
 import { v4 as uuid } from 'uuid'
 import { decode } from 'jwt-simple'
 
-import type { Space, Ref, Doc, Account } from '@anticrm/core'
+import { Space, Ref, Doc, Account, generateId } from '@anticrm/core'
 // import { TxFactory } from '@anticrm/core'
 import type { Token, IndexedDoc } from '@anticrm/server-core'
 import { createElasticAdapter } from '@anticrm/elastic'
@@ -131,7 +131,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const uuid = await minioUpload(minio, payload.workspace, file)
       console.log('uploaded uuid', uuid)
 
-      const id = req.query.id as Ref<Doc>
+      const name = req.query.name as string
       const space = req.query.space as Ref<Space>
       const attachedTo = req.query.attachedTo as Ref<Doc>
       // const name = req.query.name as string
@@ -150,7 +150,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
 
       const indexedDoc: IndexedDoc = {
-        id,
+        id: generateId() + '/attachments/' + name,
         _class: chunter.class.Attachment,
         space,
         modifiedOn: Date.now(),

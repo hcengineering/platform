@@ -33,8 +33,8 @@ export class FullTextIndex extends TxProcessor implements Storage {
     super()
   }
 
-  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
-    throw new Error('Method not implemented.')
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+    console.log('FullTextIndex.txPutBag: Method not implemented.')
   }
 
   protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {

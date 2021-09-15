@@ -17,7 +17,7 @@ import { Builder } from '@anticrm/model'
 import core from './component'
 import { TAttribute, TClass, TDoc, TMixin, TObj, TType, TTypeString } from './core'
 import { TSpace, TAccount, TState } from './security'
-import { TTx, TTxCreateDoc, TTxMixin, TTxUpdateDoc, TTxCUD } from './tx'
+import { TTx, TTxCreateDoc, TTxMixin, TTxUpdateDoc, TTxCUD, TTxPutBag } from './tx'
 
 export * from './core'
 export * from './security'
@@ -33,6 +33,7 @@ export function createModel (builder: Builder): void {
     TTx,
     TTxCUD,
     TTxCreateDoc,
+    TTxPutBag,
     TTxMixin,
     TTxUpdateDoc,
     TSpace,

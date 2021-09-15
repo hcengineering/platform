@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
+  import type { Ref, Space, Data } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
 
   import { getClient, Card, Channels } from '@anticrm/presentation'
@@ -49,7 +49,6 @@
   } as Candidate
 
   let resume = {} as {
-    id: Ref<Attachment> | undefined
     name: string
     uuid: string
     size: number
@@ -58,36 +57,46 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const candidateId = generateId<Candidate>()
+  const candidateId = generateId()
 
   async function createCandidate() {
-    console.log(_space)
-    // create candidate      
-    await client.createDoc(recruit.class.Candidate, _space, {
+    const candidate: Data<Candidate> = {
       firstName: object.firstName,
       lastName: object.lastName,
       city: object.city,
       channels: object.channels,
-    }, candidateId)
+      attachments: {}
+    }
 
+    if (resume.uuid !== undefined) {
+      candidate.attachments[encodeURIComponent(resume.uuid)] = {
+          _class: chunter.class.Attachment,
+          name: resume.name,
+          file: resume.uuid,
+          size: resume.size,
+          type: resume.type
+      }
+    }
+
+    await client.createDoc(recruit.class.Candidate, _space, candidate, candidateId)
     console.log('resume name', resume.name)
 
-    if (resume.id !== undefined) {
-      // create attachment
-      console.log('creaing attachment space', _space)
-      client.createDoc(chunter.class.Attachment, _space, {
-        attachedTo: candidateId,
-        collection: 'resume',
-        name: resume.name,
-        file: resume.uuid,
-        type: resume.type,
-        size: resume.size,
-      }, resume.id)
+    // if (resume.id !== undefined) {
+    //   // create attachment
+    //   console.log('creaing attachment space', _space)
+    //   client.createDoc(chunter.class.Attachment, _space, {
+    //     attachedTo: candidateId,
+    //     collection: 'resume',
+    //     name: resume.name,
+    //     file: resume.uuid,
+    //     type: resume.type,
+    //     size: resume.size,
+    //   }, resume.id)
 
-      client.updateDoc(recruit.class.Candidate, _space, candidateId, {
-        resume: resume.id
-      })
-    }
+    //   client.updateDoc(recruit.class.Candidate, _space, candidateId, {
+    //     resume: resume.id
+    //   })
+    // }
 
     dispatch('close')
   }
@@ -98,14 +107,10 @@
   async function createAttachment(file: File) {
     loading = true
     try {
-      const id = generateId<Attachment>()
-      resume.uuid = await uploadFile(id, space, file, candidateId)
-      resume.id = id
+      resume.uuid = await uploadFile(space, file, candidateId)
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type
-
-      object.resume = id
 
       console.log('uploaded file uuid', resume.uuid)
 

@@ -69,7 +69,7 @@
   </div>
 
   <div class="attachments">
-    <Attachments {object}/>
+    <Attachments objectId={object._id} _class={object._class} space={object.space}/>
   </div>
 
 </Panel>

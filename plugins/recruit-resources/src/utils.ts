@@ -19,14 +19,14 @@ import { getMetadata } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
-export async function uploadFile(id: Ref<Doc>, space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
+export async function uploadFile(space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
   console.log(file)
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
   
   const data = new FormData()
   data.append('file', file)
 
-  const url = `${uploadUrl}?id=${id}&space=${space}&attachedTo=${attachedTo}`
+  const url = `${uploadUrl}?space=${space}&name=${encodeURIComponent(file.name)}&attachedTo=${attachedTo}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: {

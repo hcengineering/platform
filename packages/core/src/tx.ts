@@ -266,7 +266,7 @@ export class TxFactory {
   ): TxPutBag<P> {
     return {
       _id: generateId(),
-      _class: core.class.TxUpdateDoc,
+      _class: core.class.TxPutBag,
       space: core.space.Tx,
       modifiedBy: this.account,
       modifiedOn: Date.now(),
