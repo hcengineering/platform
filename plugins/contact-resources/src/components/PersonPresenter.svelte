@@ -29,7 +29,7 @@ async function onClick() {
   const clazz = hierarchy.getClass(value._class)
   const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
   const editor = await getResource(editorMixin.editor) 
-  showPopup(editor, { object: value }, 'full')
+  showPopup(editor, { _id: value._id }, 'full')
 }
 
 </script>

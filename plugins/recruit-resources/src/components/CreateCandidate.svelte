@@ -17,6 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Data } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
 
   import { getClient, Card, Channels } from '@anticrm/presentation'
   import { uploadFile } from '../utils'
@@ -26,7 +27,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import type { Attachment } from '@anticrm/chunter'
 
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon } from '@anticrm/ui'
+  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
@@ -113,7 +114,8 @@
       resume.type = file.type
 
       console.log('uploaded file uuid', resume.uuid)
-
+    } catch (err: any) {
+      setPlatformStatus(unknownError(err))
     } finally {
       loading = false
     }
@@ -159,10 +161,15 @@
       <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={object.lastName}/></div>
       <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
       <div class="flex resume">
-        {#if resume.id}
+        {#if resume.uuid}
           <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
         {:else}
-          <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
+          {#if loading}
+            <Spinner/> Uploading...
+          {:else}
+            <FileUpload size='small'/>
+            <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
+          {/if}
           <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
         {/if}
       </div>

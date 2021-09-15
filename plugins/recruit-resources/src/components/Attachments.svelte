@@ -14,9 +14,10 @@
 -->
 
 <script lang="ts">
-  import { CircleButton, IconAdd, showPopup } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup, Spinner } from '@anticrm/ui'
 
   import type { Doc, Ref, Space, Class, Bag } from '@anticrm/core'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { generateId } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
@@ -30,10 +31,10 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc & { attachments: Bag<Attachment> }>>
 
-  let object: Doc & { attachments: Bag<Attachment> } | undefined = undefined
+  export let object: Doc & { attachments: Bag<Attachment> } | undefined = undefined
 
-  const query = createQuery()
-  $: query.query(_class, { _id: objectId }, result => { object = result[0] })
+  // const query = createQuery()
+  // $: query.query(_class, { _id: objectId }, result => { object = result[0] })
 
   let inputFile: HTMLInputElement
   let loading = false
@@ -41,10 +42,8 @@
   const client = getClient()
 
   async function createAttachment(file: File) {
-    console.log('CREATE ATTACHMENT')
     loading = true
     try {
-      // const id = generateId<Attachment>()
       const uuid = await uploadFile(space, file, objectId)
       console.log('uploaded file uuid', uuid)
       client.putBag(_class, space, objectId, 'attachments', encodeURIComponent(uuid), {
@@ -54,6 +53,8 @@
         type: file.type,
         size: file.size,
       })
+    } catch (err: any) {
+      setPlatformStatus(unknownError(err))
     } finally {
       loading = false
     }
@@ -70,7 +71,11 @@
 <div class="attachments-container">
   <div class="flex-row-center">
     <span class="title">Attachments</span>
-    <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+    {#if loading}
+      <Spinner/>
+    {:else}
+      <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+    {/if}
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
   {#if object?.attachments !== undefined}

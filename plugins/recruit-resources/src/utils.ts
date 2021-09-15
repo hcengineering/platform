@@ -15,7 +15,7 @@
 //
 
 import type { Ref, Doc, Space } from '@anticrm/core'
-import { getMetadata } from '@anticrm/platform'
+import { getMetadata, PlatformError } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
@@ -34,6 +34,9 @@ export async function uploadFile(space: Ref<Space>, file: File, attachedTo: Ref<
     },
     body: data
   })
+  if (resp.status !== 200) { 
+    throw new Error('Can\t upload file.')
+  }
   const uuid = await resp.text()
   console.log(uuid)
   return uuid
