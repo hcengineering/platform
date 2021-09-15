@@ -19,7 +19,7 @@
   import { generateId } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
 
-  import { getClient, Card, Channels } from '@anticrm/presentation'
+  import { getClient, Card, Channels, PDFViewer } from '@anticrm/presentation'
   import { uploadFile } from '../utils'
 
   import recruit from '../plugin'
@@ -32,7 +32,6 @@
   import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
-  import PDFViewer from './PDFViewer.svelte'
   import Girl from '../../img/girl.png'
   import Elon from '../../img/elon.png'
   import Bond from '../../img/bond.png'

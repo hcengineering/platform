@@ -21,7 +21,7 @@
   import { generateId } from '@anticrm/core'
   import { EditBox, Button, CircleButton, Grid, Label, Link, showPopup, Component, IconFile as FileIcon } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, PDFViewer } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
 
   import AvatarEditor from './AvatarEditor.svelte'
@@ -30,7 +30,6 @@
   import Twitter from './icons/Twitter.svelte'
   import User from './icons/User.svelte'
   import SocialEditor from './SocialEditor.svelte'
-  import PDFViewer from './PDFViewer.svelte'
 
   import { uploadFile } from '../utils'
   import { Candidate } from '@anticrm/recruit'

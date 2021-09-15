@@ -115,3 +115,5 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.AttachmentPresenter
   })
 }
+
+export default chunter

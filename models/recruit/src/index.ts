@@ -25,6 +25,7 @@ import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import contact, { TPerson } from '@anticrm/model-contact'
 import recruit from './plugin'
+import chunter from '@anticrm/model-chunter'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
@@ -109,7 +110,7 @@ export function createModel (builder: Builder): void {
       //   resume: chunter.class.Attachment
       // }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '#' + recruit.component.CreateApplicationPresenter + '/Action', 'city', 'channels']
+    config: ['', '#' + recruit.component.CreateApplicationPresenter + '/Action', 'city', '#' + chunter.component.AttachmentPresenter + '/Files', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

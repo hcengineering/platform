@@ -19,9 +19,8 @@
   import type { Doc, Ref, Space, Class, Bag } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { generateId } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
-  import PDFViewer from './PDFViewer.svelte'
 
   import { uploadFile } from '../utils'
 

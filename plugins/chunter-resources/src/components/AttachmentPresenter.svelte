@@ -16,13 +16,19 @@
 
 <script lang="ts">
 
+import type { Bag } from '@anticrm/core'
 import type { Attachment } from '@anticrm/chunter'
-import { IconFile } from '@anticrm/ui'
+import { IconFile, Link, showPopup } from '@anticrm/ui'
+import { PDFViewer } from '@anticrm/presentation'
 
-export let value: Attachment
+export let value: { attachments: Bag<Attachment> }
 
 </script>
 
 {#if value}
-  <IconFile size={'small'}/>
+  {#if Object.keys(value.attachments).length === 1}
+    <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
+  {:else if Object.keys(value.attachments).length > 1}
+    <IconFile size='small'/>Files
+  {/if}
 {/if}

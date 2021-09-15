@@ -17,7 +17,7 @@
   import { onMount } from 'svelte'
 
   import { Button, CircleButton, IconClose } from '@anticrm/ui'
-  import { Avatar } from '@anticrm/presentation'
+  import Avatar from './Avatar.svelte'
   import ArrowLeft from './icons/ArrowLeft.svelte'
   import ExpandUp from './icons/ExpandUp.svelte'
   import ExpandDown from './icons/ExpandDown.svelte'
