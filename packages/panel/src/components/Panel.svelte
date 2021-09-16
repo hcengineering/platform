@@ -65,12 +65,10 @@
       <div class="title">{title}</div>
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
-    <div class="flex-col h-full scroll-container">
-      <ScrollBox vertical stretch>
-        <div class="flex-col content">
-          <slot />
-        </div>
-      </ScrollBox>
+    <div class="flex-col scroll-container">
+      <div class="flex-col content">
+        <slot />
+      </div>
     </div>
   </div>
   <div class="rightSection">
@@ -212,11 +210,11 @@
   .leftSection {
     border-right: 1px solid var(--theme-bg-accent-hover);
     .scroll-container {
-      flex-grow: 1;
-      padding: 2rem 2rem 1rem;
+      overflow: auto;
+      margin: 2rem 2rem 1.5rem;
       .content {
-        flex-grow: 1;
-        padding: .5rem .5rem .5rem;
+        flex-shrink: 0;
+        margin: .5rem .5rem 0;
       }
     }
   }
