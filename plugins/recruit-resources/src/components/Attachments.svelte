@@ -65,6 +65,10 @@
     if (file !== undefined) { createAttachment(file) }
   }
 
+  const maxLenght: number = 52
+  const trimFilename = (fname: string): string => (fname.length > maxLenght)
+                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+                        : fname
 </script>
 
 <div class="attachments-container">
@@ -91,7 +95,7 @@
           <td class="item flex-row-center">
             <div class="flex-center file-icon">pdf</div>
             <div class="flex-col flex-grow" style="cursor: pointer" on:click={ () => { showPopup(PDFViewer, { file: file.file }, 'right') } }>
-              <div class="overflow-label caption-color">{file.name}</div>
+              <div class="overflow-label caption-color">{trimFilename(file.name)}</div>
               <div class="overflow-label file-desc">{file.type}</div>
             </div>
           </td>

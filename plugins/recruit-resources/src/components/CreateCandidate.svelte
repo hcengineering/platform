@@ -161,13 +161,12 @@
       <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
       <div class="flex resume">
         {#if resume.uuid}
-          <Link label={resume.name} href={'#'} icon={FileIcon} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
+          <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
         {:else}
           {#if loading}
-            <Spinner/> Uploading...
+            <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
           {:else}
-            <FileUpload size='small'/>
-            <a href={'#'} on:click={ () => { inputFile.click() } }>Upload resume</a>
+            <Link label={'Upload resume'} href={'#'} icon={FileUpload} on:click={ () => { inputFile.click() } } />
           {/if}
           <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
         {/if}

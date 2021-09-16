@@ -95,7 +95,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    &.reverse { flex-direction: row-reverse; }
 
     .circle {
       position: relative;
@@ -139,9 +138,16 @@
       &::after {
         position: absolute;
         top: 0;
-        left: 0;
-        right: 0;
         bottom: -1rem;
+        left: -100%;
+        right: -100%;
+        clip-path: polygon(0 100%, 25% 50%, 25% 0, 75% 0, 75% 50%, 100% 100%);
+        // background-color: rgba(255, 255, 0, .5);
+      }
+      &:first-child:after {
+        left: 0;
+        right: -100%;
+        clip-path: polygon(0 0, 0 100%, 100% 100%, 65% 50%, 65% 0);
       }
     }
     .list-small {
@@ -155,13 +161,22 @@
       height: 2rem;
     }
 
+    &.reverse {
+      flex-direction: row-reverse;
+      .list:first-child:after {
+        left: -100%;
+        right: 0;
+        clip-path: polygon(0 100%, 35% 50%, 35% 0, 100% 0, 100% 100%);
+      }
+    }
+
     .window {
       position: absolute;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 1rem;
-      top: 2.25rem;
+      top: calc(100% + .5rem);
       min-width: 100%;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);
