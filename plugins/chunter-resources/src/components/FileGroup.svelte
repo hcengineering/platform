@@ -25,7 +25,7 @@
 
 <div class="files-container">
   <span class="icon"><IconFile size={'small'}/></span>
-  {Object.values(files).length} file(s)
+  {Object.values(files).length} files
   <div class="window">
     {#each Object.values(files) as file}
       <div class="flex-row-center file">
@@ -41,7 +41,7 @@
     display: flex;
     align-items: center;
     font-weight: 500;
-    color: var(--theme-caption-color);
+    color: var(--theme-content-color);
     cursor: pointer;
 
     .icon {
@@ -51,6 +51,7 @@
       opacity: .6;
     }
     &:hover {
+      color: var(--theme-caption-color);
       .icon { opacity: 1; }
       .window { visibility: visible; }
       &::after { content: ''; }

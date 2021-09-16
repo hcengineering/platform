@@ -1,5 +1,23 @@
+<!--
+// Copyright © 2020 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 
-<div class="spinner">
+<script lang="ts">
+  export let size: 'small' | 'medium' = 'medium'
+</script>
+
+<div class="spinner spinner-{size}">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M12 0v1c6.1 0 11 4.9 11 11s-4.9 11-11 11v1c6.6 0 12-5.4 12-12S18.6 0 12 0z" fill="#fff"/>
     <linearGradient id="a" gradientUnits="userSpaceOnUse" x1="0" y1="22" x2="0" y2="2">
@@ -12,10 +30,17 @@
 
 <style lang="scss">
   .spinner {
-    width: 1.5rem;
-    height: 1.5rem;
     -webkit-animation: spinCircle 1s infinite linear;
     animation: spinCircle 1s infinite linear;
+
+    &-small {
+      width: 1rem;
+      height: 1rem;
+    }
+    &-medium {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
   }
   @-webkit-keyframes spinCircle {
     from { -webkit-transform: rotate(0deg); }
