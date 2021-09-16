@@ -15,13 +15,13 @@
 -->
 
 <script lang="ts">
+  import type { Bag } from '@anticrm/core'
+  import type { Attachment } from '@anticrm/chunter'
+  import { IconFile, Link, showPopup } from '@anticrm/ui'
+  import { PDFViewer } from '@anticrm/presentation'
+  import FileGroup from './FileGroup.svelte'
 
-import type { Bag } from '@anticrm/core'
-import type { Attachment } from '@anticrm/chunter'
-import { IconFile, Link, showPopup } from '@anticrm/ui'
-import { PDFViewer } from '@anticrm/presentation'
-
-export let value: { attachments: Bag<Attachment> }
+  export let value: { attachments: Bag<Attachment> }
 
 </script>
 
@@ -29,6 +29,6 @@ export let value: { attachments: Bag<Attachment> }
   {#if Object.keys(value.attachments).length === 1}
     <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
   {:else if Object.keys(value.attachments).length > 1}
-    <IconFile size='small'/>Files
+    <FileGroup files={value.attachments} />
   {/if}
 {/if}

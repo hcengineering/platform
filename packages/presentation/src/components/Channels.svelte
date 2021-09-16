@@ -139,9 +139,11 @@
       &::after {
         position: absolute;
         top: 0;
-        left: 0;
-        right: 0;
         bottom: -1rem;
+        left: -100%;
+        right: -100%;
+        clip-path: polygon(0 100%, 25% 50%, 25% 0, 75% 0, 75% 50%, 100% 100%);
+        // background-color: rgba(255, 255, 0, .5);
       }
     }
     .list-small {
@@ -161,7 +163,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 1rem;
-      top: 2.25rem;
+      top: calc(100% + .5rem);
       min-width: 100%;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);

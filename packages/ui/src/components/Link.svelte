@@ -20,9 +20,15 @@
   export let label: IntlString
   export let href: string
   export let icon: Asset | AnySvelteComponent | undefined
+  export let disabled: boolean = false
+  export let maxLenght: number = 26
+
+  const trimFilename = (fname: string): string => (fname.length > maxLenght)
+                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+                        : fname
 </script>
 
-<span class="container" on:click>
+<span class="container" class:disabled on:click>
   {#if icon}
     <span class="icon">
       {#if typeof (icon) === 'string'}
@@ -32,7 +38,11 @@
       {/if}
     </span>
   {/if}
-  <a {href}>{label}</a>
+  {#if disabled}
+    {trimFilename(label)}
+  {:else}
+    <a class="overflow-label" {href}>{trimFilename(label)}</a>
+  {/if}
 </span>
 
 <style lang="scss">
@@ -40,6 +50,7 @@
     display: inline-flex;
     align-items: center;
     line-height: 100%;
+    cursor: pointer;
 
     .icon {
       margin-right: .25rem;
@@ -47,7 +58,20 @@
       transform: scale(.75);
       opacity: .6;
     }
-    &:hover .icon { opacity: 1; }
-    &:active .icon { opacity: .6; }
+    &:hover {
+      a { color: var(--theme-caption-color); }
+      .icon { opacity: 1; }
+    }
+    &:active {
+      a { color: var(--theme-content-color); }
+      .icon { opacity: .6; }
+    }
+  }
+  .disabled {
+    cursor: not-allowed;
+    color: var(--theme-content-trans-color);
+    .icon { opacity: .3; }
+    &:hover .icon { opacity: .3; }
+    &:active .icon { opacity: .3; }
   }
 </style>
