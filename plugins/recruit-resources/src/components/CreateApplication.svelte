@@ -16,9 +16,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Tabs, Section, Grid, Row, Button, IconFile } from '@anticrm/ui'
+  import { Status, OK, Severity } from '@anticrm/platform'
+  import { DatePicker, EditBox, Tabs, Section, Grid, StatusControl } from '@anticrm/ui'
   import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Employee, Person } from '@anticrm/contact'
+  import type { Candidate } from '@anticrm/recruit'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
 
@@ -29,11 +31,12 @@
   import contact from '@anticrm/contact'
 
   export let space: Ref<Space>
-  export let candidate: Ref<Person> // | null = null
+  export let candidate: Ref<Candidate> // | null = null
   export let employee: Ref<Employee> // | null = null
 
   export let preserveCandidate = false
 
+  let status: Status = OK
   let _space = space
 
   const dispatch = createEventDispatcher()
@@ -51,17 +54,37 @@
     dispatch('close')
   }
 
+  async function validate(candidate: Ref<Candidate>, space: Ref<Space>) {
+    if (candidate === undefined) {
+      status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
+    } else {
+      if (space === undefined) {
+        status = new Status(Severity.INFO, recruit.status.VacancyRequired, {})
+      } else {
+        const applicants = await client.findAll(recruit.class.Applicant, { space, candidate})
+        if (applicants.length > 0) {
+          status = new Status(Severity.ERROR,  recruit.status.ApplicationExists, {})
+        } else {
+          status = OK
+        }
+      }
+    }
+  }
+
+  $: validate(candidate, _space)
+
 </script>
 
 <Card label={'Create Application'} 
       okLabel={'Save'}
       okAction={createApplication}
-      canSave={candidate !== undefined}
+      canSave={status.severity === Severity.OK}
       spaceClass={recruit.class.Vacancy}
       spaceLabel={'Vacancy'}
       spacePlaceholder={'Select vacancy'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
+  <StatusControl {status}/>
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />

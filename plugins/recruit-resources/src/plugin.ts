@@ -14,13 +14,18 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
-import type { IntlString } from '@anticrm/platform' 
+import type { IntlString, StatusCode } from '@anticrm/platform' 
 import type { Ref, Class } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit, { recruitId } from '@anticrm/recruit'
 
 export default mergeIds(recruitId, recruit, {
+  status: {
+    ApplicationExists: '' as StatusCode,
+    CandidateRequired: '' as StatusCode,
+    VacancyRequired: '' as StatusCode,
+  },
   class: {
     Vacancy: '' as Ref<Class<Vacancy>>,
     Candidates: '' as Ref<Class<Candidates>>,
