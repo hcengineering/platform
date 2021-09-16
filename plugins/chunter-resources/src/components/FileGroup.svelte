@@ -72,7 +72,6 @@
       top: 1.5rem;
       left: 0;
       min-width: 100%;
-      font-weight: 500;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);
       border-radius: .75rem;
