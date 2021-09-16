@@ -115,7 +115,7 @@
   }
 
   .tr-body {
-    height: 3rem;
+    height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
     &:last-child { border-bottom: none; }
