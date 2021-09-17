@@ -15,27 +15,52 @@
 -->
 
 <script lang="ts">
+  import type { Ref, Space, State } from '@anticrm/core'
+  import { Dialog } from '@anticrm/ui'
+  import { createQuery } from '@anticrm/presentation'
 
-import type { Ref, Space, State } from '@anticrm/core'
-import { Dialog } from '@anticrm/ui'
-import { createQuery } from '@anticrm/presentation'
+  import core from '@anticrm/core'
 
-import core from '@anticrm/core'
+  export let _id: Ref<Space>
 
-export let _id: Ref<Space>
+  let states: State[] = []
 
-let states: State[] = []
+  const query = createQuery()
+  $: query.query(core.class.State, { machine: _id }, result => { states = result })
 
-const query = createQuery()
-$: query.query(core.class.State, { machine: _id }, result => { states = result })
-
-
+  let selected: string | undefined = undefined
 </script>
 
 
 <Dialog label="Edit Statuses">
-
   {#each states as state}
-    <div>{state.title}</div>
+    <div class="flex-center states" style="background-color: {state.color}" draggable={true}
+      on:dragover|preventDefault={() => {
+        console.log(`Dragging ${selected} over ${state._id} (${state.title})`)
+      }}
+      on:drop|preventDefault={() => {
+        console.log(`Drop ${selected} into ${state._id} (${state.title})`)
+      }}
+      on:dragstart={() => {
+        selected = state._id
+        console.log('Start dragging: ' + selected)
+      }}
+      on:dragend={() => {
+        console.log('End dragging: ' + selected)
+        selected = undefined
+      }}
+    >
+      {state.title}
+    </div>
   {/each}
 </Dialog>
+
+<style lang="scss">
+  .states {
+    padding: .25rem .5rem;
+    color: #fff;
+    border-radius: .5rem;
+    user-select: none;
+    cursor: grabbing;
+  }
+</style>
