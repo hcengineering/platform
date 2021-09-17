@@ -112,6 +112,7 @@
     color: var(--theme-content-dark-color);
     background-color: var(--theme-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    z-index: 5;
   }
 
   .tr-body {
