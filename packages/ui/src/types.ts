@@ -33,7 +33,7 @@ export type AnyComponent = Resource<AnySvelteComponent>
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
-  action: () => Promise<void>
+  action: (props: any) => Promise<void>
 }
 
 export interface IPopupItem {

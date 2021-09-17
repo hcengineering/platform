@@ -1,5 +1,6 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,17 +15,27 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import type { Action } from '@anticrm/ui'
-  import TreeElement from './TreeElement.svelte'
 
-  export let label: IntlString
-  export let actions: Action[] = []
-  export let notifications = 0
-  export let collapsed = false
+import type { Ref, Space, State } from '@anticrm/core'
+import { Dialog } from '@anticrm/ui'
+import { createQuery } from '@anticrm/presentation'
+
+import core from '@anticrm/core'
+
+export let _id: Ref<Space>
+
+let states: State[] = []
+
+const query = createQuery()
+$: query.query(core.class.State, { machine: _id }, result => { states = result })
+
 
 </script>
 
-<TreeElement {label} {notifications} {collapsed} {actions} node>
-  <slot/>
-</TreeElement>
+
+<Dialog label="Edit Statuses">
+
+  {#each states as state}
+    <div>{state.title}</div>
+  {/each}
+</Dialog>

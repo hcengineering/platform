@@ -30,6 +30,14 @@
 
   const client = getClient()
 
+  const colors = [
+    '#7C6FCD',
+    '#6F7BC5',
+    '#A5D179',
+    '#77C07B',
+    '#F28469'
+  ]
+
   async function createVacancy() {
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
       name,
@@ -39,15 +47,18 @@
     })
     await client.createDoc(core.class.State, id, {
       machine: id,
-      label: 'Initial'
+      title: 'Initial',
+      color: colors[0]
     })
     await client.createDoc(core.class.State, id, {
       machine: id,
-      label: 'Interview'
+      title: 'Interview',
+      color: colors[1]
     })
     await client.createDoc(core.class.State, id, {
       machine: id,
-      label: 'Final'
+      title: 'Final',
+      color: colors[2]
     })
   }
 </script>

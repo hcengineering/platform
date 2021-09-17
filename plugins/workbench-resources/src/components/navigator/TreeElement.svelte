@@ -17,11 +17,13 @@
   import Collapsed from '../icons/Collapsed.svelte'
   import Expanded from '../icons/Expanded.svelte'
 
-  import type { Asset, IntlString } from '@anticrm/status'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
+  import type { Ref, Space } from '@anticrm/core'
   import { Icon, Label, ActionIcon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
+  export let _id: Ref<Space> | undefined = undefined
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
@@ -52,7 +54,7 @@
   </span>
   {#each actions as action}
     <div class="tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
+      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={() => { action.action(_id) }} />
     </div>
   {/each}
   {#if notifications > 0 && collapsed}

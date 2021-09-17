@@ -19,11 +19,10 @@
 
   export let value: State
 
-  const bgColor: string = '#7C6FCD'
 </script>
 
-<div class="state-container" style="background-color: {bgColor}">
-  {value.label}
+<div class="state-container" style="background-color: {value.color}">
+  {value.title}
 </div>
 
 <style lang="scss">

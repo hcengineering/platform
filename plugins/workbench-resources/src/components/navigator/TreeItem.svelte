@@ -15,16 +15,20 @@
 
 <script lang="ts">
   import TreeElement from './TreeElement.svelte'
-  import type { Asset } from '@anticrm/status'
+  import type { Asset } from '@anticrm/platform'
+  import type { Ref, Space } from '@anticrm/core'
+  import type { Action } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
+  export let _id: Ref<Space>
   export let icon: Asset
   export let title: string
   export let notifications = 0
+  export let actions: Action[] = []
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<TreeElement {icon} {title} {notifications} {selected} collapsed on:click={() => {dispatch('click')}}/>
+<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed on:click={() => {dispatch('click')}}/>

@@ -16,12 +16,11 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
 
-  import type { Asset } from '@anticrm/platform'
-  import type { Ref, Space } from '@anticrm/core'
+  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { Ref, Space, Doc } from '@anticrm/core'
   import type { SpacesNavModel } from '@anticrm/workbench'
-  import { Action, navigate, getCurrentLocation, location } from '@anticrm/ui'
+  import { Action, navigate, getCurrentLocation, location, IconAdd } from '@anticrm/ui'
 
-  import { IconAdd } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
   import { showPopup } from '@anticrm/ui'
 
@@ -29,6 +28,8 @@
 
   import TreeNode from './TreeNode.svelte'
   import TreeItem from './TreeItem.svelte'
+
+  import EditStatuses from '../EditStatuses.svelte'
 
   export let model: SpacesNavModel
   
@@ -47,6 +48,14 @@
     }
   }
 
+  const editStatuses: Action = {
+    label: 'Edit Statuses' as IntlString,
+    icon: IconAdd,
+    action: async (_id: Ref<Doc>): Promise<void> => {
+      showPopup(EditStatuses, { _id }, 'right')
+    }
+  }
+
   function selectSpace(id: Ref<Space>) {
     const loc = getCurrentLocation()
     loc.path[2] = id
@@ -62,7 +71,7 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} on:click={() => { selectSpace(space._id) }}/>
+      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={[editStatuses]} on:click={() => { selectSpace(space._id) }}/>
     {/each}
   </TreeNode>
 </div>

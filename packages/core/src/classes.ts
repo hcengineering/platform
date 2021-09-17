@@ -199,6 +199,8 @@ export interface Account extends Doc {
 /**
  * @public
  */
-export interface State extends Doc, UXObject {
+export interface State extends Doc {
   machine: Ref<Space>
+  title: string
+  color: string
 }

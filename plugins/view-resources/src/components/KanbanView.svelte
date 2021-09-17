@@ -65,14 +65,6 @@
     showPopup(open, { object, space }, 'float')
   }
 
-  const colors = [
-    '#7C6FCD',
-    '#6F7BC5',
-    '#A5D179',
-    '#77C07B',
-    '#F28469'
-  ]
-
   let dragCard: (Doc & { state: Ref<State>}) | undefined
 
   async function cardPresenter(_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
@@ -90,7 +82,7 @@
   <ScrollBox>
     <div class="kanban-content">
       {#each states as state, i}
-        <KanbanPanel label={state.label} color={colors[i]} counter={4}
+        <KanbanPanel label={state.title} color={state.color} counter={4}
           on:dragover={(event) => {
             event.preventDefault()
           }}

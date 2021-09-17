@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Ref, Space, Domain, UXObject } from '@anticrm/core'
+import type { Account, Arr, Ref, Space, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model } from '@anticrm/model'
 import core from './component'
@@ -37,6 +37,8 @@ export class TAccount extends TDoc implements Account {
 }
 
 @Model(core.class.State, core.class.Doc, DOMAIN_STATE)
-export class TState extends TDoc implements UXObject {
+export class TState extends TDoc implements State {
   machine!: Ref<Space>
+  title!: string
+  color!: string
 }
