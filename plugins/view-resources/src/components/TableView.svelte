@@ -48,7 +48,7 @@
   }
 
   const client = getClient()
-  let checkable: boolean = false
+  let checking: boolean = false
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -60,7 +60,7 @@
       <thead>
         <tr class="tr-head">
           {#each model as attribute, cellHead}
-            <th class:checkall={checkable}>
+            <th class:checkall={checking}>
               {#if !cellHead}
                 <div class="firstCell">
                   <div class="control"><CheckBox symbol={'minus'} /></div>
@@ -76,13 +76,13 @@
       {#if objects}
         <tbody>
           {#each objects as object (object._id)}
-            <tr class="tr-body" class:checkable>
+            <tr class="tr-body" class:checking>
               {#each model as attribute, cell}
                 <td>
                   {#if !cell}
                     <div class="firstCell">
                       <div class="control">
-                        <CheckBox bind:checked={checkable} />
+                        <CheckBox bind:checked={checking} />
                         <div class="moveRow"><MoreV /></div>
                       </div>
                       <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
@@ -107,16 +107,6 @@
     position: relative;
     padding-bottom: 2.5rem;
     height: 100%;
-
-    // &::before {
-    //   position: absolute;
-    //   content: '';
-    //   top: 2.5rem;
-    //   bottom: 0;
-    //   width: 100%;
-    //   background-color: var(--theme-table-bg-color);
-    //   border-radius: 0 0 1.25rem 1.25rem;
-    // }
   }
   .firstCell {
     display: flex;
@@ -127,11 +117,9 @@
       display: flex;
       align-items: center;
       width: 0;
-
       .moveRow {
         visibility: hidden;
         width: 1rem;
-        height: 1rem;
         margin: 0 .5rem;
         cursor: row-resize;
       }
@@ -172,8 +160,7 @@
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    // &:last-child { border-bottom: none; }
-    &:hover, &.checkable {
+    &:hover, &.checking {
       background-color: var(--theme-table-bg-hover);
       & td:first-child {
         padding-left: 1rem;
