@@ -63,7 +63,7 @@
             <th class:checkall={checkable}>
               {#if !cellHead}
                 <div class="firstCell">
-                  <div class="control"><CheckBox /></div>
+                  <div class="control"><CheckBox symbol={'minus'} /></div>
                   <span><Label label = {attribute.label}/></span>
                 </div>
               {:else}
