@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space } from '@anticrm/core'
   import { Status, OK, Severity } from '@anticrm/platform'
-  import { DatePicker, EditBox, Tabs, Section, Grid, StatusControl } from '@anticrm/ui'
+  import { DatePicker, EditBox, Tabs, Section, Grid, Status as StatusControl } from '@anticrm/ui'
   import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
   import type { Employee, Person } from '@anticrm/contact'
   import type { Candidate } from '@anticrm/recruit'
@@ -84,7 +84,11 @@
       spacePlaceholder={'Select vacancy'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
-  <StatusControl {status}/>
+  <svelte:fragment slot="error">
+    {#if status !== OK}
+      <StatusControl {status} />
+    {/if}
+  </svelte:fragment>
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />

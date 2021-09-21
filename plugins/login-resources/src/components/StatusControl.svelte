@@ -17,7 +17,7 @@
   import type { Status } from '@anticrm/platform'
   import { Severity } from '@anticrm/platform'
 
-  import StatusControl from './internal/Status.svelte'
+  import { Status as StatusControl } from '@anticrm/ui'
 
   export let status: Status
 </script>
