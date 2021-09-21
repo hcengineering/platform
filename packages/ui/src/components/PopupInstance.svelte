@@ -47,22 +47,20 @@ $: {
           if (rectPopup.height > rect.top - 28) {
             modalHTML.style.top = '1rem'
             modalHTML.style.height = rect.top - 28 + 'px'
-            // scrollable = true
           }
         } else {
           modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
           if (rectPopup.height > document.body.clientHeight - rect.bottom - 28) {
             modalHTML.style.bottom = '1rem'
             modalHTML.style.height = document.body.clientHeight - rect.bottom - 28 + 'px'
-            // scrollable = true
           }
         }
         if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
           modalHTML.style.left = ''
           modalHTML.style.right = '1rem'
         } else {
-          modalHTML.style.right = ''
           modalHTML.style.left = rect.left + 'px'
+          modalHTML.style.right = ''
         }
         console.log('STYLE', modalHTML.style)
         console.log('RECT', rect)
