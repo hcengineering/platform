@@ -19,7 +19,8 @@
   import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox } from '@anticrm/ui'
+  import { Label, showPopup, Loading, ScrollBox, CheckBox } from '@anticrm/ui'
+  import MoreV from './icons/MoreV.svelte'
 
   import { createQuery } from '@anticrm/presentation'
 
@@ -47,7 +48,7 @@
   }
 
   const client = getClient()
-
+  let checking: boolean = false
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -58,18 +59,39 @@
     <table class="table-body">
       <thead>
         <tr class="tr-head">
-          {#each model as attribute}
-            <th><Label label = {attribute.label}/></th>
+          {#each model as attribute, cellHead}
+            <th class:checkall={checking}>
+              {#if !cellHead}
+                <div class="firstCell">
+                  <div class="control"><CheckBox symbol={'minus'} /></div>
+                  <span><Label label = {attribute.label}/></span>
+                </div>
+              {:else}
+                <Label label = {attribute.label}/>
+              {/if}
+            </th>
           {/each}
         </tr>
       </thead>
       {#if objects}
         <tbody>
           {#each objects as object (object._id)}
-            <tr class="tr-body">
-            {#each model as attribute}
-              <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
-            {/each}
+            <tr class="tr-body" class:checking>
+              {#each model as attribute, cell}
+                <td>
+                  {#if !cell}
+                    <div class="firstCell">
+                      <div class="control">
+                        <CheckBox bind:checked={checking} />
+                        <div class="moveRow"><MoreV /></div>
+                      </div>
+                      <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
+                    </div>
+                  {:else}
+                    <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
+                  {/if}
+                </td>
+              {/each}
             </tr>
           {/each}
         </tbody>
@@ -85,22 +107,32 @@
     position: relative;
     padding-bottom: 2.5rem;
     height: 100%;
-
-    &::before {
-      position: absolute;
-      content: '';
-      top: 2.5rem;
-      bottom: 0;
-      width: 100%;
-      background-color: var(--theme-table-bg-color);
-      border-radius: 0 0 1.25rem 1.25rem;
+  }
+  .firstCell {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    .control {
+      visibility: hidden;
+      display: flex;
+      align-items: center;
+      width: 0;
+      .moveRow {
+        visibility: hidden;
+        width: 1rem;
+        margin: 0 .5rem;
+        cursor: pointer;
+      }
     }
   }
 
   th, td {
     padding: .5rem 1.5rem;
     text-align: left;
-    &:first-child { padding-left: 2.5rem; }
+    &:first-child {
+      padding-left: 2.5rem;
+      padding-right: 3rem;
+    }
   }
 
   th {
@@ -113,13 +145,32 @@
     background-color: var(--theme-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     z-index: 5;
+
+    &:first-child.checkall {
+      padding-left: 1rem;
+      & .control {
+        visibility: visible;
+        width: auto;
+      }
+      span { margin-left: 2rem; }
+    }
   }
 
   .tr-body {
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:last-child { border-bottom: none; }
-    &:hover { background-color: var(--theme-table-bg-hover); }
+    &:hover, &.checking {
+      background-color: var(--theme-table-bg-hover);
+      & td:first-child {
+        padding-left: 1rem;
+        padding-right: 1.5rem;
+        & .control {
+          visibility: visible;
+          width: auto;
+        }
+      }
+    }
+    &:hover td:first-child .control .moveRow { visibility: visible; }
   }
 </style>
