@@ -33,6 +33,7 @@
 
   let selected: Person | undefined
   let btn: HTMLElement
+  let container: HTMLElement
 
   const client = getClient()
 
@@ -50,19 +51,17 @@
   })
 </script>
 
-<div class="flex-row-center">
-  <button
-    class="focused-button btn"
-    class:selected
-    bind:this={btn}
-    on:click|preventDefault={(ev) => {
-      showPopup(UsersPopup, { _class, title, caption }, ev.target, (result) => {
-        if (result) {
-          value = result._id
-        }
-      })
-    }}
-  >
+<div class="flex-row-center container" bind:this={container}
+  on:click|preventDefault={() => {
+    btn.focus()
+    showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
+      if (result) {
+        value = result._id
+      }
+    })
+  }}
+>
+  <button class="focused-button btn" class:selected bind:this={btn}>
     {#if selected}
       <Avatar size={'medium'} />
     {:else}
@@ -79,6 +78,7 @@
 </div>
 
 <style lang="scss">
+  .container { cursor: pointer; }
   .btn {
     width: 2.25rem;
     height: 2.25rem;
