@@ -62,9 +62,6 @@ $: {
           modalHTML.style.left = rect.left + 'px'
           modalHTML.style.right = ''
         }
-        console.log('STYLE', modalHTML.style)
-        console.log('RECT', rect)
-        console.log('RECTpopup', rectPopup)
       } else if (element === 'right') {
         modalHTML.style.top = '0'
         modalHTML.style.bottom = '0'
