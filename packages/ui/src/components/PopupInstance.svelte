@@ -39,16 +39,32 @@ $: {
     if (element) {
       if (typeof element !== 'string') {
         const rect = element.getBoundingClientRect()
-        if (rect.top > document.body.clientHeight - rect.bottom) {
-          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.top}px + .75rem)`
+        const rectPopup = modalHTML.getBoundingClientRect()
+        if (rect.bottom + rectPopup.height + 28 < document.body.clientHeight) {
+          modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+        } else if (rect.top > document.body.clientHeight - rect.bottom) {
+          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
+          if (rectPopup.height > rect.top - 28) {
+            modalHTML.style.top = '1rem'
+            modalHTML.style.height = rect.top - 28 + 'px'
+          }
         } else {
           modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+          if (rectPopup.height > document.body.clientHeight - rect.bottom - 28) {
+            modalHTML.style.bottom = '1rem'
+            modalHTML.style.height = document.body.clientHeight - rect.bottom - 28 + 'px'
+          }
         }
-        if (rect.left > document.body.clientWidth - rect.right) {
-          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
+        if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
+          modalHTML.style.left = ''
+          modalHTML.style.right = '1rem'
         } else {
           modalHTML.style.left = rect.left + 'px'
+          modalHTML.style.right = ''
         }
+        console.log('STYLE', modalHTML.style)
+        console.log('RECT', rect)
+        console.log('RECTpopup', rectPopup)
       } else if (element === 'right') {
         modalHTML.style.top = '0'
         modalHTML.style.bottom = '0'
