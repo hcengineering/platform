@@ -121,7 +121,7 @@
         visibility: hidden;
         width: 1rem;
         margin: 0 .5rem;
-        cursor: row-resize;
+        cursor: pointer;
       }
     }
   }
