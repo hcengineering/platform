@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, FindOptions, State } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
@@ -33,16 +33,28 @@
   import view from '@anticrm/view'
 
   export let _class: Ref<Class<(Doc & { state: Ref<State> })>>
-  export let space: Ref<Space>
+  export let space: Ref<SpaceWithStates>
   export let open: AnyComponent
   export let options: FindOptions<Doc> | undefined
   export let config: string[]
 
+  let _space: SpaceWithStates | undefined
   let states: State[] = []
   let objects: (Doc & { state: Ref<State> })[] = []
 
+  const spaceQuery = createQuery()
+  $: spaceQuery.query(core.class.SpaceWithStates, { _id: space }, result => { _space = result[0] })
+
+  function sort(states: State[]): State[] {
+    if (_space === undefined || states.length === 0) { return [] }
+    console.log(states)
+    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
+    console.log(_space.states)
+    return _space.states.map(id => map.get(id) as State )
+  }
+
   const statesQuery = createQuery()
-  $: statesQuery.query(core.class.State, { space }, result => { states = result })
+  $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
 
   const query = createQuery()
   $: query.query(_class, { space }, result => { objects = result }, options)
