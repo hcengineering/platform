@@ -14,7 +14,8 @@
 -->
 
 <script lang="ts">
-  import { StylishEdit, Label, Button, StatusControl } from '@anticrm/ui'
+  import { StylishEdit, Label, Button } from '@anticrm/ui'
+  import StatusControl from './StatusControl.svelte'
   import { OK, Status, Severity } from '@anticrm/platform'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
@@ -69,7 +70,7 @@
   <div class="grow-separator"/>
   <div class="title"><Label label={caption}/></div>
   <div class="status">
-    <StatusControl {status} width="100%"/>
+    <StatusControl {status} />
   </div>
   <div class="form">
 

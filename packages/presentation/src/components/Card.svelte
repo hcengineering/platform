@@ -43,6 +43,11 @@
     <div class="overflow-label label"><Label {label} /></div>
     <div class="tool"><Button disabled={!canSave} label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
   </div>
+  {#if $$slots.error}
+    <div class="flex-center error">
+      <slot name="error" />
+    </div>
+  {/if}
   <div class="content"><slot /></div>
   <div class="flex-col pool" class:shrink={$$slots.contacts}>
     <div class="separator" />
@@ -74,6 +79,18 @@
         color: var(--theme-caption-color);
       }
       .tool { margin-left: .75rem; }
+    }
+
+    .error {
+      margin-bottom: 1rem;
+      padding: .75rem 0;
+      color: var(--system-error-color);
+      background-color: var(--theme-card-bg-accent);
+      &:empty {
+        visibility: hidden;
+        margin: 0;
+        padding: 0;
+      }
     }
 
     .content {

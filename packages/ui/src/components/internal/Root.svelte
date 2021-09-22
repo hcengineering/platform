@@ -9,7 +9,7 @@
   import { Theme } from '@anticrm/theme'
   import Component from '../Component.svelte'
 
-  import StatusComponent from './Status.svelte'
+  import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
   // import Mute from './icons/Mute.svelte'
   import WiFi from './icons/WiFi.svelte'

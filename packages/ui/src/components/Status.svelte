@@ -3,12 +3,12 @@
   import { Severity } from '@anticrm/platform'
 
   import Info from './icons/Info.svelte'
-  import Label from '../Label.svelte'
+  import Label from './Label.svelte'
 
   export let status: Status
 </script>
 
-<div class="flex-center container">
+<div class="flex-center container {status.severity}">
   {#if status.severity !== Severity.OK}
     <Info size={'small'}/>
     <span><Label label={status.code} params={status.params}/></span>
@@ -18,9 +18,9 @@
 <style lang="scss">
   .container {
     user-select: none;
-    span {
-      margin-left: 0.75em;
-      color: var(--theme-content-color);
-    }
+    color: var(--theme-content-color);
+    span { margin-left: .75em; }
+    &.WARNING { color: yellow; }
+    &.ERROR { color: var(--system-error-color); }
   }
 </style>
