@@ -80,7 +80,7 @@
     border-radius: .5rem;
     user-select: none;
     text-align: center;
-    z-index: 10;
+    z-index: 1000;
 
     &::after {
       content: '';

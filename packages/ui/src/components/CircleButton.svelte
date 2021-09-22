@@ -19,7 +19,7 @@
   import Icon from './Icon.svelte'
 
   export let icon: Asset | AnySvelteComponent
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'large'
 </script>
 
 <div class="icon-button icon-{size}" on:click>
@@ -55,6 +55,10 @@
     height: 1.5rem;
   }
   .icon-medium {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .icon-large {
     width: 2rem;
     height: 2rem;
   }
