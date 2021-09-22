@@ -83,7 +83,10 @@ export class LiveQuery extends TxProcessor implements Client {
       })
 
     return () => {
+      console.log('queries', this.queries.length)
+      console.log('removing query:', this.queries.indexOf(q))
       this.queries.splice(this.queries.indexOf(q), 1)
+      console.log('queries', this.queries.length)
     }
   }
 
@@ -110,6 +113,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+    console.log(`updating ${this.queries.length} queries`)
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
         q.result = await q.result

@@ -73,13 +73,29 @@ export type ArrayAsElement<T extends Doc> = {
 /**
  * @public
  */
+export interface Position<X extends PropertyType> {
+  $each: X[]
+  $position: number
+}
+
+/**
+ * @public
+ */
+export type ArrayAsElementPosition<T extends Doc> = {
+  [P in keyof T]: T[P] extends Arr<infer X> ? X | Position<X> : never
+}
+
+/**
+ * @public
+ */
 export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
 
 /**
  * @public
  */
 export interface PushOptions<T extends Doc> {
-  $push?: Partial<OmitNever<ArrayAsElement<T>>>
+  $push?: Partial<OmitNever<ArrayAsElementPosition<T>>>
+  $pull?: Partial<OmitNever<ArrayAsElement<T>>>
 }
 
 /**

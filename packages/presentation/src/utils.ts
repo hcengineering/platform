@@ -55,7 +55,7 @@ class LiveQuery {
   private unsubscribe = () => {}
 
   constructor() { 
-    onDestroy(this.unsubscribe)
+    onDestroy(() => { console.log('onDestroy query'); this.unsubscribe() })
   }
 
   query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>) {

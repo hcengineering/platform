@@ -43,22 +43,35 @@
       name,
       description,
       private: false,
-      members: []
+      members: [],
+      states: []
     })
-    await client.createDoc(core.class.State, id, {
-      machine: id,
+    const s1 = await client.createDoc(core.class.State, id, {
       title: 'Initial',
       color: colors[0]
     })
-    await client.createDoc(core.class.State, id, {
-      machine: id,
-      title: 'Interview',
+    const s2 = await client.createDoc(core.class.State, id, {
+      title: 'Interview 1',
       color: colors[1]
     })
-    await client.createDoc(core.class.State, id, {
-      machine: id,
-      title: 'Final',
+    const s3 = await client.createDoc(core.class.State, id, {
+      title: 'Interview 2',
       color: colors[2]
+    })
+    const s4 = await client.createDoc(core.class.State, id, {
+      title: 'Interview 3',
+      color: colors[3]
+    })
+    const s5 = await client.createDoc(core.class.State, id, {
+      title: 'Interview 4',
+      color: colors[4]
+    })
+    const s6 = await client.createDoc(core.class.State, id, {
+      title: 'Final',
+      color: colors[0]
+    })
+    await client.updateDoc(recruit.class.Vacancy, core.space.Model, id, {
+      states: [s1, s2, s3, s4, s5, s6]
     })
   }
 </script>

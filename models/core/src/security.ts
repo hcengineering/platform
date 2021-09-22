@@ -21,7 +21,7 @@ import { TDoc } from './core'
 
 export const DOMAIN_STATE = 'state' as Domain
 
-// S E C U R I T Y
+// S P A C E
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_MODEL)
 export class TSpace extends TDoc implements Space {
@@ -38,7 +38,11 @@ export class TAccount extends TDoc implements Account {
 
 @Model(core.class.State, core.class.Doc, DOMAIN_STATE)
 export class TState extends TDoc implements State {
-  machine!: Ref<Space>
   title!: string
   color!: string
+}
+
+@Model(core.class.SpaceWithStates, core.class.Space)
+export class TSpaceWithStates extends TSpace {
+  states!: Arr<Ref<State>>
 }

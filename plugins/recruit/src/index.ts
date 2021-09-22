@@ -15,14 +15,14 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, Doc, Ref, State, Bag } from '@anticrm/core'
+import type { Space, SpaceWithStates, Doc, Ref, State, Bag } from '@anticrm/core'
 import type { Person } from '@anticrm/contact'
 import type { Attachment } from '@anticrm/chunter'
 
 /**
  * @public
  */
-export interface Vacancy extends Space {}
+export interface Vacancy extends SpaceWithStates {}
 
 /**
  * @public

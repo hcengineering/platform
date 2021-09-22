@@ -15,43 +15,103 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, State } from '@anticrm/core'
+  import type { Ref, SpaceWithStates, State } from '@anticrm/core'
   import { Dialog } from '@anticrm/ui'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
 
   import core from '@anticrm/core'
 
-  export let _id: Ref<Space>
+  export let _id: Ref<SpaceWithStates>
+
+  let space: SpaceWithStates | undefined
 
   let states: State[] = []
+  let elements: HTMLElement[] = []
+
+  const client = getClient()
+
+  function sort(states: State[]): State[] {
+    if (space === undefined || states.length === 0) { return [] }
+    console.log(states)
+    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
+    console.log(space.states)
+    const x = space.states.map(id => map.get(id) as State )
+    // console.log(x)
+    return x
+  }
+
+  const spaceQuery = createQuery()
+  $: spaceQuery.query(core.class.SpaceWithStates, { _id }, result => { space = result[0] })
 
   const query = createQuery()
-  $: query.query(core.class.State, { machine: _id }, result => { states = result })
+  $: query.query(core.class.State, { _id: { $in: space?.states ?? [] } }, result => { states = sort(result) })
 
-  let selected: string | undefined = undefined
+  let selected: number | undefined
+  let dragState: Ref<State>
+  let dragStateInitialPosition: number
+
+  function dragswap(ev: MouseEvent, i: number): boolean {
+    let s = selected as number
+    if (i < s) {
+      return ev.offsetY < elements[i].offsetHeight / 2
+    } else if (i > s) {
+      return ev.offsetY > elements[i].offsetHeight / 2
+    }
+    return false
+  }
+
+  function dragover(ev: MouseEvent, i: number) {
+    let s = selected as number
+    if (dragswap(ev, i)) {
+      const dragover = states[i]
+      const dragging = states[s]
+      states[i] = dragging
+      states[s] = dragover
+      selected = i
+    }
+  }
+
+  async function move(to: number) {
+    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
+      $pull: {
+        states: dragState
+      }
+    })
+    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
+      $push: {
+        states: {
+          $each: [dragState],
+          $position: to < dragStateInitialPosition ? to : to
+        }
+      }
+    })
+  }
 </script>
 
 
 <Dialog label="Edit Statuses">
-  {#each states as state}
-    <div class="flex-center states" style="background-color: {state.color}" draggable={true}
-      on:dragover|preventDefault={() => {
-        console.log(`Dragging ${selected} over ${state._id} (${state.title})`)
+  {#each states as state, i}
+    {#if state}
+    <div bind:this={elements[i]} class="flex-center states" style="background-color: {state.color}; height: 60px" draggable={true}
+      on:dragover|preventDefault={(ev) => {
+        dragover(ev, i)
       }}
       on:drop|preventDefault={() => {
-        console.log(`Drop ${selected} into ${state._id} (${state.title})`)
+        console.log('DROP')
+        move(i)
       }}
       on:dragstart={() => {
-        selected = state._id
-        console.log('Start dragging: ' + selected)
+        dragStateInitialPosition = selected = i
+        dragState = states[i]._id
       }}
       on:dragend={() => {
-        console.log('End dragging: ' + selected)
+        console.log('DRAGEND')
         selected = undefined
       }}
     >
       {state.title}
     </div>
+    {/if}
   {/each}
 </Dialog>
 

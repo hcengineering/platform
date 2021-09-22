@@ -15,6 +15,7 @@
 //
 
 import type { Doc, PropertyType } from './classes'
+import type { Position } from './tx'
 
 /**
  * @internal
@@ -24,12 +25,25 @@ export type _OperatorFunc = (doc: Doc, op: object) => void
 function $push (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
-    const arr = doc[key]
-    if (arr === undefined) {
-      doc[key] = [keyval[key]]
-    } else {
-      arr.push(keyval[key])
+    if (doc[key] === undefined) {
+      doc[key] = []
     }
+    const val = keyval[key]
+    if (typeof val === 'object') {
+      const arr = doc[key] as Array<any>
+      const desc = val as Position<PropertyType>
+      arr.splice(desc.$position, 0, ...desc.$each)
+    } else {
+      doc[key].push(val)
+    }
+  }
+}
+
+function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    const arr = doc[key] as Array<any>
+    doc[key] = arr.filter(val => val !== keyval[key])
   }
 }
 
@@ -51,6 +65,7 @@ function $pushMixin (document: Doc, options: any): void {
 
 const operators: Record<string, _OperatorFunc> = {
   $push,
+  $pull,
   $pushMixin
 }
 

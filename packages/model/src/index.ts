@@ -14,4 +14,3 @@
 //
 
 export * from './dsl'
-export { default } from './component'

@@ -175,7 +175,7 @@ export interface ArrOf<T extends PropertyType> extends Type<T[]> {
  */
 export const DOMAIN_MODEL = 'model' as Domain
 
-// S E C U R I T Y
+// S P A C E
 
 /**
  * @public
@@ -200,7 +200,13 @@ export interface Account extends Doc {
  * @public
  */
 export interface State extends Doc {
-  machine: Ref<Space>
   title: string
   color: string
+}
+
+/**
+ * @public
+ */
+export interface SpaceWithStates extends Space {
+  states: Arr<Ref<State>>
 }

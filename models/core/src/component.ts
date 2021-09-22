@@ -14,8 +14,7 @@
 //
 
 import type { Class, Doc, Mixin, Ref, Type } from '@anticrm/core'
-import { coreId } from '@anticrm/core'
-import core from '@anticrm/model'
+import core, { coreId } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
 
 export default mergeIds(coreId, core, {

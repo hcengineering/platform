@@ -29,11 +29,9 @@ import type {
   Space,
   ExtendedAttributes
 } from '@anticrm/core'
-import { ClassifierKind, IndexKind, generateId, TxFactory } from '@anticrm/core'
+import core, { ClassifierKind, IndexKind, generateId, TxFactory } from '@anticrm/core'
 import type { IntlString, Asset } from '@anticrm/platform'
 import toposort from 'toposort'
-
-import core from './component'
 
 type NoIDs<T extends Tx> = Omit<T, '_id' | 'objectId'>
 

@@ -16,7 +16,7 @@
 import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, UX, Prop, TypeString, Bag as TypeBag } from '@anticrm/model'
 import type { Ref, FindOptions, Doc, Domain, State, Bag } from '@anticrm/core'
-import core, { TSpace, TDoc } from '@anticrm/model-core'
+import core, { TSpace, TSpaceWithStates, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import type { Attachment } from '@anticrm/chunter'
 
@@ -29,9 +29,9 @@ import chunter from '@anticrm/model-chunter'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
-@Model(recruit.class.Vacancy, core.class.Space)
+@Model(recruit.class.Vacancy, core.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
-export class TVacancy extends TSpace implements Vacancy {}
+export class TVacancy extends TSpaceWithStates implements Vacancy {}
 
 @Model(recruit.class.Candidates, core.class.Space)
 @UX(recruit.string.CandidatePools, recruit.icon.RecruitApplication)

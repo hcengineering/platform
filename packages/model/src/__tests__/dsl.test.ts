@@ -15,7 +15,7 @@
 
 import type { Class, Ref, Obj, Doc } from '@anticrm/core'
 import { Model, Prop, TypeString, Builder } from '../dsl'
-import core from '../component'
+import core from '@anticrm/core'
 
 function removeIds (txes: Doc[]): void {
   txes.forEach((i) => {
