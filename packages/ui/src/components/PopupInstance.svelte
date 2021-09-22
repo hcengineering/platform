@@ -15,7 +15,6 @@
 -->
 
 <script lang="ts">
-import Component from './Component.svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
 import { closePopup } from '..'
 
@@ -57,7 +56,7 @@ $: {
         }
         if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
           modalHTML.style.left = ''
-          modalHTML.style.right = '1rem'
+          modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
         } else {
           modalHTML.style.left = rect.left + 'px'
           modalHTML.style.right = ''
