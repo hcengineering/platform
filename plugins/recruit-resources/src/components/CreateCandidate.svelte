@@ -27,11 +27,13 @@
   import type { Candidate } from '@anticrm/recruit'
   import type { Attachment } from '@anticrm/chunter'
 
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner } from '@anticrm/ui'
+  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner, Label } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
+  import YesNo from './YesNo.svelte'
+
   import Girl from '../../img/girl.png'
   import Elon from '../../img/elon.png'
   import Bond from '../../img/bond.png'
@@ -141,7 +143,7 @@
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
 
-  <div class="flex">
+  <div class="flex-row-center">
     <div class="avatar" on:click={() => { (kl < 3) ? kl++ : kl = 0 }}>
       <div class="border"/>
       {#if kl === 0}
@@ -158,8 +160,9 @@
     <div class="flex-col">
       <div class="name"><EditBox placeholder="John" maxWidth="9.5rem" bind:value={object.firstName}/></div>
       <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={object.lastName}/></div>
+      <div class="title"><EditBox placeholder="Title" maxWidth="9.5rem"/></div>
       <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
-      <div class="flex resume">
+      <!-- <div class="flex resume">
         {#if resume.uuid}
           <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
         {:else}
@@ -170,8 +173,13 @@
           {/if}
           <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
         {/if}
-      </div>
+      </div> -->
     </div>
+  </div>
+  <div class="flex-col locations">
+    <span><Label label={'Work location preferences'} /></span>
+    <div class="row"><Label label={'Onsite'} /><YesNo state={'yes'} /></div>
+    <div class="row"><Label label={'Remote'} /><YesNo state={'unknown'} /></div>
   </div>
   <svelte:fragment slot="contacts">
     <Channels value={object.channels} />
@@ -219,15 +227,33 @@
     font-size: 1.25rem;
     color: var(--theme-caption-color);
   }
-  .city {
-    margin: .75rem 0 .125rem;
+  .title, .city {
     font-weight: 500;
     font-size: .75rem;
-    color: var(--theme-content-color);
+    color: var(--theme-content-accent-color);
   }
-  .resume a {
-    font-size: .75rem;
-    color: var(--theme-content-dark-color);
-    &:hover { color: var(--theme-content-color); }
+  .title { margin-top: .5rem; }
+  .locations {
+    margin-top: 1.5rem;
+    
+    span {
+      margin-bottom: .125rem;
+      font-weight: 500;
+      font-size: .75rem;
+      color: var(--theme-content-accent-color);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: .75rem;
+      color: var(--theme-caption-color);
+    }
   }
+  // .resume a {
+  //   font-size: .75rem;
+  //   color: var(--theme-content-dark-color);
+  //   &:hover { color: var(--theme-content-color); }
+  // }
 </style>
