@@ -89,11 +89,7 @@ $: {
 </script>
 
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  {#if typeof(is) === 'string'}
-    <Component is={is} props={props} on:close={ (ev) => close(ev.detail) }/>
-  {:else}
-    <svelte:component this={is} {...props} on:close={ (ev) => close(ev.detail) } />
-  {/if}
+  <svelte:component this={is} {...props} on:close={ (ev) => close(ev.detail) } />
 </div>
 <div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 

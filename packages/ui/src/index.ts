@@ -15,7 +15,7 @@
 
 import { SvelteComponent } from 'svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
-import type { IntlString } from '@anticrm/platform'
+import { getResource, IntlString } from '@anticrm/platform'
 import { addStringsLoader } from '@anticrm/platform'
 import { uiId } from './plugin' 
 
@@ -81,7 +81,7 @@ export function createApp (target: HTMLElement): SvelteComponent {
 }
 
 interface CompAndProps {
-  is: AnySvelteComponent | AnyComponent
+  is: AnySvelteComponent
   props: any
   element?: PopupAlignment
   onClose?: (result: any) => void
@@ -95,10 +95,19 @@ interface CompAndProps {
 export const popupstore = writable<CompAndProps[]>([])
 
 export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: PopupAlignment, onClose?: (result: any) => void): void {
-  popupstore.update(popups => {
-    popups.push({ is: component, props, element, onClose })
-    return popups
-  })
+  if (typeof component === 'string') {
+    getResource(component).then(resolved => {
+      popupstore.update(popups => {
+        popups.push({ is: resolved, props, element, onClose })
+        return popups
+      })    
+    })
+  } else {
+    popupstore.update(popups => {
+      popups.push({ is: component, props, element, onClose })
+      return popups
+    })
+  }
 }
 
 export function closePopup (): void {
