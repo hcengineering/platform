@@ -21,6 +21,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Label, showPopup, Loading, ScrollBox, CheckBox } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
+  import Menu from './Menu.svelte'
 
   import { createQuery } from '@anticrm/presentation'
 
@@ -49,6 +50,22 @@
 
   const client = getClient()
   let checking: boolean = false
+
+  const findNode = (el: HTMLElement, name: string): any => {
+    while (el.parentNode !== null) {
+      if (el.classList.contains(name)) return el
+      el = el.parentNode as HTMLElement
+    }
+    return false
+  }
+  const showMenu = (ev: MouseEvent): void => {
+    const elRow: HTMLElement = findNode(ev.target as HTMLElement, 'tr-body')
+    const elBtn: HTMLElement = findNode(ev.target as HTMLElement, 'menuRow')
+    elRow.classList.add('fixed')
+    showPopup(Menu, {}, elBtn, (() => {
+      elRow.classList.remove('fixed')
+    }))
+  }
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -75,7 +92,7 @@
       </thead>
       {#if objects}
         <tbody>
-          {#each objects as object (object._id)}
+          {#each objects as object, row (object._id)}
             <tr class="tr-body" class:checking>
               {#each model as attribute, cell}
                 <td>
@@ -83,7 +100,7 @@
                     <div class="firstCell">
                       <div class="control">
                         <CheckBox bind:checked={checking} />
-                        <div class="moveRow"><MoreV /></div>
+                        <div class="menuRow" on:click={(ev) => showMenu(ev)}><MoreV size={'small'} /></div>
                       </div>
                       <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
                     </div>
@@ -117,7 +134,7 @@
       display: flex;
       align-items: center;
       width: 0;
-      .moveRow {
+      .menuRow {
         visibility: hidden;
         width: 1rem;
         margin: 0 .5rem;
@@ -171,6 +188,19 @@
         }
       }
     }
-    &:hover td:first-child .control .moveRow { visibility: visible; }
+    &:hover td:first-child .control .menuRow { visibility: visible; }
+  }
+
+  :global(.fixed) {
+    background-color: var(--theme-table-bg-hover);
+    & td:first-child {
+      padding-left: 1rem;
+      padding-right: 1.5rem;
+      & .control {
+        visibility: visible;
+        width: auto;
+        .menuRow { visibility: visible; }
+      }
+    }
   }
 </style>
