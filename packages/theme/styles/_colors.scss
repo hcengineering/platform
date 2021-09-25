@@ -105,6 +105,11 @@
   --theme-table-bg-color: rgba(255, 255, 255, .02);
   --theme-table-bg-hover: rgba(255, 255, 255, .04);
 
+  --theme-popup-bg: rgba(222, 222, 240, .2);
+  --theme-popup-bg-hover: rgba(37, 37, 42, .4);
+  --theme-popup-border: transparent;
+  --theme-popup-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+
   --theme-caption-color: #fff;
   --theme-content-accent-color: rgba(255, 255, 255, 0.8);
   --theme-content-color: rgba(255, 255, 255, 0.6);
@@ -169,6 +174,11 @@
   --theme-table-bg-color: rgba(255, 255, 255, .02);
   --theme-table-bg-hover: rgba(255, 255, 255, .04);
 
+  --theme-popup-bg: rgba(222, 222, 240, .2);
+  --theme-popup-bg-hover: rgba(37, 37, 42, .4);
+  --theme-popup-border: transparent;
+  --theme-popup-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+
   --theme-caption-color: #fff;
   --theme-content-accent-color: rgba(255, 255, 255, 0.8);
   --theme-content-color: rgba(255, 255, 255, 0.6);
@@ -231,6 +241,11 @@
 
   --theme-table-bg-color: rgba(0, 0, 0, .02);
   --theme-table-bg-hover: rgba(0, 0, 0, .04);
+
+  --theme-popup-bg: #fff;
+  --theme-popup-bg-hover: #F2F2F2;
+  --theme-popup-border: 1px solid rgba(0, 0, 0, .06);
+  --theme-popup-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
 
   --theme-caption-color: #272121;
   --theme-content-accent-color: rgba(39, 33, 33, 0.8);
