@@ -144,17 +144,30 @@
       on:close={() => { dispatch('close') }}>
 
   <div class="flex-row-center">
-    <div class="avatar" on:click={() => { (kl < 3) ? kl++ : kl = 0 }}>
-      <div class="border"/>
-      {#if kl === 0}
-        <Avatar />
-      {:else if kl === 1}
-        <img src={Girl} alt="Avatar" />
-      {:else if kl === 2}
-        <img src={Elon} alt="Avatar" />
-      {:else}
-        <img src={Bond} alt="Avatar" />
-      {/if}
+    <div class="avatar-container">
+      <div class="flex-center avatar-shadow">
+        {#if kl === 0}
+          <div class="bg-avatar"><Avatar /></div>
+        {:else if kl === 1}
+          <div class="bg-avatar"><img src={Girl} alt="Avatar" /></div>
+        {:else if kl === 2}
+          <div class="bg-avatar"><img src={Elon} alt="Avatar" /></div>
+        {:else}
+          <div class="bg-avatar"><img src={Bond} alt="Avatar" /></div>
+        {/if}
+      </div>
+      <div class="flex-center avatar" on:click={() => { (kl < 3) ? kl++ : kl = 0 }}>
+        <div class="border"/>
+        {#if kl === 0}
+          <Avatar />
+        {:else if kl === 1}
+          <img src={Girl} alt="Avatar" />
+        {:else if kl === 2}
+          <img src={Elon} alt="Avatar" />
+        {:else}
+          <img src={Bond} alt="Avatar" />
+        {/if}
+      </div>
     </div>
 
     <div class="flex-col">
@@ -190,14 +203,28 @@
 <style lang="scss">
   @import '../../../../packages/theme/styles/mixins.scss';
 
-  .avatar {
+  .avatar-container {
     flex-shrink: 0;
-    overflow: hidden;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-right: 1rem;
+    width: 6rem;
+    height: 6rem;
+    user-select: none;
+  }
+  .avatar-shadow {
+    position: absolute;
+    width: 6rem;
+    height: 6rem;
+
+    .bg-avatar {
+      transform: scale(1.1);
+      filter: blur(10px);
+      opacity: .75;
+    }
+  }
+  .avatar {
+    overflow: hidden;
+    position: absolute;
     width: 6rem;
     height: 6rem;
     border-radius: 50%;

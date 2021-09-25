@@ -16,8 +16,12 @@
 
 <script lang="ts">
   import type { Ref, SpaceWithStates, State } from '@anticrm/core'
-  import { Dialog } from '@anticrm/ui'
+  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon } from '@anticrm/ui'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import { createEventDispatcher } from 'svelte'
+  import Close from './icons/Close.svelte'
+  import Circles from './icons/Circles.svelte'
+  import Status from './icons/Status.svelte'
 
   import core from '@anticrm/core'
 
@@ -86,41 +90,128 @@
       }
     })
   }
+
+  const dispatch = createEventDispatcher()
 </script>
 
-
-<Dialog label="Edit Statuses">
-  {#each states as state, i}
-    {#if state}
-    <div bind:this={elements[i]} class="flex-center states" style="background-color: {state.color}; height: 60px" draggable={true}
-      on:dragover|preventDefault={(ev) => {
-        dragover(ev, i)
-      }}
-      on:drop|preventDefault={() => {
-        console.log('DROP')
-        move(i)
-      }}
-      on:dragstart={() => {
-        dragStateInitialPosition = selected = i
-        dragState = states[i]._id
-      }}
-      on:dragend={() => {
-        console.log('DRAGEND')
-        selected = undefined
-      }}
-    >
-      {state.title}
+<div class="flex-col floatdialog-container">
+  <div class="flex-between header">
+    <div class="flex-grow flex-col">
+      <div class="flex-row-center">
+        <div class="icon"><Status size={'small'} /></div>
+        <span class="overflow-label title">Manage application statuses within vacancy</span>
+      </div>
+      <div class="overflow-label subtitle">Vacancy name</div>
     </div>
-    {/if}
-  {/each}
-</Dialog>
+    <div class="tool" on:click={() => dispatch('close')}><Close size={'small'} /></div>
+  </div>
+  <div class="content">
+    <div class="flex-between states-header">
+      <Label label={'ACTIVE STATUSES'} />
+      <CircleButton icon={IconAdd} size={'medium'} />
+    </div>
+    {#each states as state, i}
+      {#if state}
+        <div bind:this={elements[i]} class="flex-between states" draggable={true}
+          on:dragover|preventDefault={(ev) => {
+            dragover(ev, i)
+          }}
+          on:drop|preventDefault={() => {
+            console.log('DROP')
+            move(i)
+          }}
+          on:dragstart={() => {
+            dragStateInitialPosition = selected = i
+            dragState = states[i]._id
+          }}
+          on:dragend={() => {
+            console.log('DRAGEND')
+            selected = undefined
+          }}
+        >
+          <div class="bar"><Circles /></div>
+          <div class="color" style="background-color: {state.color}" />
+          <div class="flex-grow caption-color">{state.title}</div>
+          <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
+        </div>
+      {/if}
+    {/each}
+  </div>
+</div>
 
 <style lang="scss">
-  .states {
-    padding: .25rem .5rem;
-    color: #fff;
-    border-radius: .5rem;
-    user-select: none;
-    cursor: grabbing;
+  .floatdialog-container {
+    margin: 2rem 1rem 1.25rem 0;
+    height: calc(100% - 3.25rem);
+    background-color: rgba(31, 31, 37, .8);
+    border-radius: 1.25rem;
+    box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
+    backdrop-filter: blur(30px);
+
+    .header {
+      padding: 0 2rem 0 2.5rem;
+      height: 4.5rem;
+      min-height: 4.5rem;
+
+      .icon {
+        margin-right: .5rem;
+        opacity: .6;
+      }
+      .title {
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--theme-caption-color);
+      }
+      .subtitle {
+        font-size: .75rem;
+        color: var(--theme-content-dark-color);
+      }
+      .tool {
+        margin-left: 2.5rem;
+        cursor: pointer;
+      }
+    }
+
+    .content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 2.5rem;
+    }
   }
+
+  .states {
+    padding: .625rem 1rem;
+    color: #fff;
+    background-color: rgba(67, 67, 72, .3);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .75rem;
+    user-select: none;
+
+    &-header {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: .75rem;
+      color: var(--theme-content-trans-color);
+    }
+
+    .bar {
+      margin-right: .375rem;
+      width: .375rem;
+      height: 1rem;
+      opacity: .4;
+      cursor: grabbing;
+    }
+    .color {
+      margin-right: .75rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: .25rem;
+    }
+    .tool {
+      margin-left: 1rem;
+      cursor: pointer;
+    }
+  }
+  .states + .states { margin-top: .5rem; }
 </style>
