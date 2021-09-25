@@ -23,7 +23,6 @@ import EditCandidate from './components/EditCandidate.svelte'
 import CandidateGeneral from './components/CandidateGeneral.svelte'
 import Attachments from './components/Attachments.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
-import CreateApplicationPresenter from './components/CreateApplicationPresenter.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 
 import { showPopup } from '@anticrm/ui'
@@ -45,7 +44,6 @@ export default async () => ({
     CandidateGeneral,
     Attachments,
     KanbanCard,
-    CreateApplicationPresenter,
     ApplicationPresenter
   },
 })
