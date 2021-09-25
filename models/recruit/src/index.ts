@@ -148,6 +148,17 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Candidate, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditCandidate
   })
+
+  builder.createDoc(view.class.Action, core.space.Model, {
+    label: 'Create Application' as IntlString,
+    icon: view.icon.Table,
+    action: recruit.actionImpl.CreateApplication
+  }, recruit.action.CreateApplication)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Candidate,
+    action: recruit.action.CreateApplication
+  })
 }
 
 export { default } from './plugin'

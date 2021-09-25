@@ -14,13 +14,20 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
-import type { IntlString } from '@anticrm/platform'
-import type { Ref, Space } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
+import type { Ref, Space, Doc } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
+import type { Action } from '@anticrm/view'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 
 export default mergeIds(recruitId, recruit, {
+  action: {
+    CreateApplication: '' as Ref<Action>
+  },
+  actionImpl: {
+    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>
+  },
   string: {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,

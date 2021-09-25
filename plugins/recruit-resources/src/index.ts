@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import type { Doc } from '@anticrm/core'
+
 import CreateVacancy from './components/CreateVacancy.svelte'
 import CreateCandidates from './components/CreateCandidates.svelte'
 import CreateCandidate from './components/CreateCandidate.svelte'
@@ -24,7 +26,16 @@ import KanbanCard from './components/KanbanCard.svelte'
 import CreateApplicationPresenter from './components/CreateApplicationPresenter.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 
+import { showPopup } from '@anticrm/ui'
+
+async function createApplication(object: Doc): Promise<void> {
+  showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
+}
+
 export default async () => ({
+  actionImpl: {
+    CreateApplication: createApplication
+  },
   component: {
     CreateVacancy,
     CreateCandidates,
