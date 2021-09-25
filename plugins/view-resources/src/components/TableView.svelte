@@ -45,7 +45,7 @@
     for (let i=0; i<len; i++){
       obj = obj?.[path[i]]
     }
-    return obj
+    return obj ?? ''
   }
 
   const client = getClient()
