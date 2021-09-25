@@ -13,13 +13,25 @@
 // limitations under the License.
 //
 
+import type { Doc } from '@anticrm/core'
+
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
 import StatePresenter from './components/StatePresenter.svelte'
 import TableView from './components/TableView.svelte'
 import KanbanView from './components/KanbanView.svelte'
 
+import { getClient } from '@anticrm/presentation'
+
+async function Delete(object: Doc): Promise<void> {
+  const client = getClient()
+  await client.removeDoc(object._class, object.space, object._id)
+}
+
 export default async () => ({
+  actionImpl: {
+    Delete
+  },
   component: {
     StringEditor,
     StringPresenter,

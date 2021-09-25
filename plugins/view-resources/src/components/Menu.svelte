@@ -14,34 +14,39 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import type { IntlString, Asset, Resource } from '@anticrm/platform'
+  import { getResource } from '@anticrm/platform'
+  import { getClient, createQuery } from '@anticrm/presentation'
+  import type { Ref, Class, Doc } from '@anticrm/core' 
   import { createEventDispatcher } from 'svelte'
   import { Icon, Label, IconMoreH, IconFile } from '@anticrm/ui'
+  import type { Action, ActionTarget } from '@anticrm/view'
+  import { getActions } from '../utils'
+  import view from '@anticrm/view'
 
-  export let title: IntlString
-  export let caption: IntlString
+  export let object: Doc
+  
+  let actions: Action[] = []
 
-  interface PopupItem {
-    icon: Asset | AnySvelteComponent
-    label: IntlString
-    action?: () => Promise<void>
-  }
+  const client = getClient()
+
+  getActions(client, object._class).then(result => { actions = result })
 
   const dispatch = createEventDispatcher()
-  const actions: Array<PopupItem> = [{ icon: IconFile, label: 'Application', action: async () => {} },
-                                     { icon: IconMoreH, label: 'Options', action: async () => {} }]
+
+  async function invokeAction(action: Resource<(object: Doc) => Promise<void>>) {
+    dispatch('close')
+    const impl = await getResource(action)
+    await impl(object)
+  }
+
 </script>
 
 <div class="flex-col popup">
   {#each actions as action}
-    <div class="flex-row-center menu-item" on:click={() => { dispatch('close') }}>
+    <div class="flex-row-center menu-item" on:click={() => { invokeAction(action.action) }}>
       <div class="icon">
-        {#if typeof (action.icon) === 'string'}
-          <Icon icon={action.icon} size={'large'} />
-        {:else}
-          <svelte:component this={action.icon} size={'large'} />
-        {/if}
+        <Icon icon={action.icon} size={'large'} />
       </div>
       <div class="label"><Label label={action.label} /></div>
     </div>

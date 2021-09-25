@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import type { Ref, Class, Space } from '@anticrm/core'
+import type { IntlString, Asset, Resource } from '@anticrm/platform'
+import type { Ref, Class, Space, Doc } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor } from '@anticrm/view'
+import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget } from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 
@@ -57,8 +57,21 @@ export class TViewlet extends TDoc implements Viewlet {
   config: any
 }
 
+@Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
+export class TAction extends TDoc implements Action {
+  label!: IntlString
+  icon?: Asset
+  action!: Resource<(doc: Doc) => Promise<void>>
+}
+
+@Model(view.class.ActionTarget, core.class.Doc, DOMAIN_MODEL)
+export class TActionTarget extends TDoc implements ActionTarget {
+  target!: Ref<Class<Doc>>
+  action!: Ref<Action>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor
@@ -83,6 +96,17 @@ export function createModel (builder: Builder): void {
     icon: view.icon.Kanban,
     component: view.component.KanbanView
   }, view.viewlet.Kanban)
+
+  builder.createDoc(view.class.Action, core.space.Model, {
+    label: 'Delete' as IntlString,
+    icon: view.icon.Kanban,
+    action: view.actionImpl.Delete
+  }, view.action.Delete)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: core.class.Doc,
+    action: view.action.Delete
+  })
 }
 
 export default view

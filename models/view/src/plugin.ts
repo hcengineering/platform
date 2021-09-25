@@ -14,10 +14,18 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
+import type { Ref, Doc } from '@anticrm/core'
+import type { Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import view, { viewId } from '@anticrm/view'
+import view, { viewId, Action } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {
+  action: {
+    Delete: '' as Ref<Action>
+  },
+  actionImpl: {
+    Delete: '' as Resource<(doc: Doc) => Promise<void>>
+  },
   component: {
     StringEditor: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,

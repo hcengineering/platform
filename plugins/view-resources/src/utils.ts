@@ -18,6 +18,7 @@ import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import type { Ref, Class, Obj, FindOptions, Doc, Client } from '@anticrm/core'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+import type { Action, ActionTarget } from '@anticrm/view'
 
 import view from '@anticrm/view'
 
@@ -98,4 +99,19 @@ export async function buildModel(client: Client, _class: Ref<Class<Obj>>, keys: 
   const model = keys.map(key => getPresenter(client, _class, key, key, options))
   console.log(model)
   return await Promise.all(model)
+}
+
+function filterActions(client: Client, _class: Ref<Class<Obj>>, targets: ActionTarget[]): Ref<Action>[] {
+  const result: Ref<Action>[] = []
+  for (const target of targets) { 
+    if (client.getHierarchy().isDerived(_class, target.target)) {
+      result.push(target.action)
+    }
+  }
+  return result
+}
+
+export async function getActions(client: Client, _class: Ref<Class<Obj>>) {
+  const targets = await client.findAll(view.class.ActionTarget, {})
+  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets) }})
 }

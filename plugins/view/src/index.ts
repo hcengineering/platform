@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset } from '@anticrm/platform'
+import type { Plugin, Asset, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc } from '@anticrm/core'
 
@@ -69,6 +69,21 @@ export interface Viewlet extends Doc {
 /**
  * @public
  */
+export interface Action extends Doc, UXObject {
+  action: Resource<(doc: Doc) => Promise<void>>
+}
+
+/**
+ * @public
+ */
+export interface ActionTarget extends Doc {
+  target: Ref<Class<Doc>>
+  action: Ref<Action>
+}
+
+/**
+ * @public
+ */
 export const viewId = 'view' as Plugin
 
 export default plugin(viewId, {
@@ -80,7 +95,9 @@ export default plugin(viewId, {
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
-    Viewlet: '' as Ref<Class<Viewlet>>
+    Viewlet: '' as Ref<Class<Viewlet>>,
+    Action: '' as Ref<Class<Action>>,
+    ActionTarget: '' as Ref<Class<ActionTarget>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
