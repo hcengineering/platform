@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, SpaceWithStates, Doc, Ref, State, Bag } from '@anticrm/core'
+import type { Space, SpaceWithStates, Doc, Ref, State, Bag, Class } from '@anticrm/core'
 import type { Person } from '@anticrm/contact'
 import type { Attachment } from '@anticrm/chunter'
 
@@ -51,6 +51,9 @@ export interface Applicant extends Doc {
 export const recruitId = 'recruit' as Plugin
 
 export default plugin(recruitId, {
+  class: {
+    Applicant: '' as Ref<Class<Applicant>>
+  },
   icon: {
     RecruitApplication: '' as Asset,
     Vacancy: '' as Asset

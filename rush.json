@@ -722,6 +722,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-recruit-resources",
+      "projectFolder": "server/recruit-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/mongo",
       "projectFolder": "server/mongo",
       "shouldPublish": true

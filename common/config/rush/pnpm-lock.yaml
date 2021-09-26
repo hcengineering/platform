@@ -53,6 +53,7 @@ specifiers:
   '@rush-temp/server-chunter': file:./projects/server-chunter.tgz
   '@rush-temp/server-chunter-resources': file:./projects/server-chunter-resources.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
+  '@rush-temp/server-recruit-resources': file:./projects/server-recruit-resources.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/task': file:./projects/task.tgz
   '@rush-temp/task-assets': file:./projects/task-assets.tgz
@@ -120,7 +121,6 @@ specifiers:
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
   style-loader: ^3.2.1
-  svelte-check: ^2.2.5
   svelte-preprocess: ^4.7.4
   svgo-loader: ^3.0.0
   toposort: ^2.0.2
@@ -185,6 +185,7 @@ dependencies:
   '@rush-temp/server-chunter': file:projects/server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-chunter-resources': file:projects/server-chunter-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-core': file:projects/server-core.tgz_6c259fadfeb3a4b20890aefe87070b8b
+  '@rush-temp/server-recruit-resources': file:projects/server-recruit-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/server-ws': file:projects/server-ws.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/task': file:projects/task.tgz_6c259fadfeb3a4b20890aefe87070b8b
   '@rush-temp/task-assets': file:projects/task-assets.tgz
@@ -252,7 +253,6 @@ dependencies:
   sass-loader: 12.1.0_sass@1.37.5+webpack@5.48.0
   simplytyped: 3.3.0_typescript@4.3.5
   style-loader: 3.2.1_webpack@5.48.0
-  svelte-check: 2.2.5_8d5e7d8774dfc5d41599a7408187eba0
   svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
   svgo-loader: 3.0.0
   toposort: 2.0.2
@@ -8171,34 +8171,6 @@ packages:
       supports-color: 7.2.0
     dev: false
 
-  /svelte-check/2.2.5_8d5e7d8774dfc5d41599a7408187eba0:
-    resolution: {integrity: sha512-EstDoqxjqWStWELh7Z0qytqUDl/ikdNEr21dveNc4fUDnhnqO2F2jHEufqoNnC3GfBji3GIUHvoXsp/I5lMbCg==}
-    hasBin: true
-    peerDependencies:
-      svelte: ^3.24.0
-    dependencies:
-      chalk: 4.1.2
-      chokidar: 3.4.3
-      glob: 7.1.7
-      import-fresh: 3.3.0
-      minimist: 1.2.5
-      sade: 1.7.4
-      source-map: 0.7.3
-      svelte-preprocess: 4.7.4_50400bf9937d80c38e5edf397791f1b6
-      typescript: 4.3.5
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - node-sass
-      - postcss
-      - postcss-load-config
-      - pug
-      - sass
-      - stylus
-      - sugarss
-    dev: false
-
   /svelte-check/2.2.6_635b56cd8c077c5dd126b6e20db90d4b:
     resolution: {integrity: sha512-oJux/afbmcZO+N+ADXB88h6XANLie8Y2rh2qBlhgfkpr2c3t/q/T0w2JWrHqagaDL8zeNwO8a8RVFBkrRox8gg==}
     hasBin: true
@@ -9908,7 +9880,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-ylv971t0n3lj8VGA0t6gjli0YgZ/JGfIYq0sEHEz6eiStCzNU/0JmvuNBVXNkzikP082v92hFoqTM5YSOp5b9g==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-KMPiYvEBiBkv3eI+7SoWS9T517ad6A+UX665xJq9qW3Woit47y2EdKpapWps2Pgb91Z33q3sfVY/bXC/y7sQ4A==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -10069,7 +10041,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-qi/4kQnD9wGgk340sL69M3J1yRd6ffnE1khsB3cHG9csUoI1GiCYiP5pXsi1292rRhO7aEjuJfuylHhYbvdLdw==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-5z0G2tL0kPAetlvgPy7DuUV65vgcUvDVrr4L5dxztgbWxCp6v6zR2QfWKoPKHCtj/szm+s1XwbLKcF0ETmZU/w==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
@@ -10166,7 +10138,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-40ahmahal+a+1hgyBS7oEkNiw/KUOxVlUjK/lT3isHWjdrjkU81GiX6Bs1MQqpptXh+HImYoJ8TLCRPryCztJA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-mX/Fwzm3x155pv36+PFu0pFe2fVU6bKwBV9GvEJtuVKlyaTL1QIyQ0QRt+/qHKVQcDkwtZ5RqS0hQsP2FoseNw==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -10345,6 +10317,24 @@ packages:
       '@types/heft-jest': 1.0.2
       '@types/node': 16.7.5
       '@types/ws': 7.4.7
+      '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
+      eslint: 7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 4.3.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/server-recruit-resources.tgz_6c259fadfeb3a4b20890aefe87070b8b:
+    resolution: {integrity: sha512-NpUKAVVdcoS+8SN0/6ZFQABo2NvkgGBC77SOdmXEU6kt5xXHIZK0HzE6LNNbY3GRtjLgh/JSEWlYigYPTp8uiA==, tarball: file:projects/server-recruit-resources.tgz}
+    id: file:projects/server-recruit-resources.tgz
+    name: '@rush-temp/server-recruit-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.28.5_a8e83fcad666e1ba86be4b2e27a20aea
       eslint: 7.32.0
       eslint-plugin-import: 2.23.4_eslint@7.32.0
