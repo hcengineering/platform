@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Bag } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, Tooltip } from '@anticrm/ui'
+  import { IconFile, Link, Tooltip, showPopup } from '@anticrm/ui'
   import { PDFViewer } from '@anticrm/presentation'
   import AttachmentPopup from './AttachmentPopup.svelte'
 

@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Bag } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, showPopup } from '@anticrm/ui'
+  import { showPopup, closeTooltip } from '@anticrm/ui'
   import { PDFViewer } from '@anticrm/presentation'
 
   export let files: Bag<Attachment>
@@ -34,7 +34,10 @@
       <tr class="tr-body">
         <td class="item flex-row-center">
           <div class="flex-center file-icon">pdf</div>
-          <div class="flex-col flex-grow" style="cursor: pointer" on:click={ () => { showPopup(PDFViewer, { file: file.file }, 'right') } }>
+          <div class="flex-col flex-grow" style="cursor: pointer" on:click={() => {
+            closeTooltip()
+            showPopup(PDFViewer, { file: file.file }, 'right')
+          }}>
             <div class="overflow-label caption-color">{trimFilename(file.name)}</div>
             <div class="overflow-label file-desc">{file.type}</div>
           </div>
