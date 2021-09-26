@@ -68,7 +68,7 @@
       position: absolute;
       display: flex;
       flex-direction: column;
-      padding: 1rem;
+      padding: 1.25rem 1.5rem;
       top: 1.5rem;
       left: 0;
       min-width: 100%;
