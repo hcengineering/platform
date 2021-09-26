@@ -62,17 +62,17 @@ async function getAttributePresenter(client: Client, _class: Ref<Class<Obj>>, ke
 }
 
 async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string, options?: FindOptions<Doc>): Promise<AttributeModel> {
+  if (typeof key === 'object') {
+    const {presenter, label} = key
+    return {
+      key: '',
+      label: label as IntlString,
+      presenter: await getResource(presenter as AnyComponent)
+    }
+  }
   if (key.length === 0) {
     return getObjectPresenter(client, _class, preserveKey)
   } else {
-    if (key.startsWith('#')) {
-      const [presenter, label] = key.substring(1).split('/')
-      return {
-        key: '',
-        label: label as IntlString,
-        presenter: await getResource(presenter as AnyComponent)
-      }
-    }
     const split = key.split('.')
     if (split[0] === '$lookup') {
       const lookupClass = (options?.lookup as any)[split[1]] as Ref<Class<Obj>>
