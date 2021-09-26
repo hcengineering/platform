@@ -113,7 +113,14 @@ export function createModel (builder: Builder): void {
       //   resume: chunter.class.Attachment
       // }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', 'title', 'city', 'applications', { presenter: chunter.component.AttachmentPresenter, label: 'Files' }, 'channels']
+    config: [
+      '',
+      'title',
+      'city',
+      { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
+      { presenter: chunter.component.AttachmentPresenter, label: 'Files' },
+      'channels'
+    ]
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
