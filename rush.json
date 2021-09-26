@@ -702,8 +702,18 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-recruit",
+      "projectFolder": "server/recruit",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/model-server-chunter",
       "projectFolder": "models/server-chunter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-recruit",
+      "projectFolder": "models/server-recruit",
       "shouldPublish": true
     },
     {

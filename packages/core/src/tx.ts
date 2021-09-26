@@ -88,6 +88,13 @@ export type ArrayAsElementPosition<T extends Doc> = {
 /**
  * @public
  */
+export type NumberProperties<T extends Doc> = {
+  [P in keyof T]: T[P] extends number | undefined ? T[P] : never
+}
+
+/**
+ * @public
+ */
 export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
 
 /**
@@ -111,7 +118,14 @@ export interface PushMixinOptions<D extends Doc> {
 /**
  * @public
  */
-export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T>
+export interface IncOptions<T extends Doc> {
+  $inc?: Partial<OmitNever<NumberProperties<T>>>
+}
+
+/**
+ * @public
+ */
+export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T> & IncOptions<T>
 
 /**
  * @public

@@ -35,6 +35,7 @@ export interface Candidates extends Space {}
 export interface Candidate extends Person {
   title?: string
   attachments: Bag<Attachment>
+  applications?: number
 }
 
 /**
@@ -52,7 +53,8 @@ export const recruitId = 'recruit' as Plugin
 
 export default plugin(recruitId, {
   class: {
-    Applicant: '' as Ref<Class<Applicant>>
+    Applicant: '' as Ref<Class<Applicant>>,
+    Candidate: '' as Ref<Class<Candidate>>
   },
   icon: {
     RecruitApplication: '' as Asset,

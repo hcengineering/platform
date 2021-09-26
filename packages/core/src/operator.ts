@@ -20,7 +20,7 @@ import type { Position } from './tx'
 /**
  * @internal
  */
-export type _OperatorFunc = (doc: Doc, op: object) => void
+export type _OperatorFunc = (doc: Doc, op: any) => void
 
 function $push (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
@@ -63,10 +63,19 @@ function $pushMixin (document: Doc, options: any): void {
   }
 }
 
+function $inc (document: Doc, keyval: Record<string, number>): void {
+  const doc = document as unknown as Record<string, number | undefined>
+  for (const key in keyval) {
+    const cur = doc[key] ?? 0
+    doc[key] = cur + keyval[key]
+  }
+}
+
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
-  $pushMixin
+  $pushMixin,
+  $inc
 }
 
 /**

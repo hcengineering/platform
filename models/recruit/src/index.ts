@@ -45,6 +45,9 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(TypeBag(), 'Attachments' as IntlString)
   attachments!: Bag<Attachment>
+
+  @Prop(TypeString(), 'Applications' as IntlString)
+  applications?: number
 }
 
 @Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)
@@ -110,7 +113,7 @@ export function createModel (builder: Builder): void {
       //   resume: chunter.class.Attachment
       // }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', 'title', 'city', '#' + chunter.component.AttachmentPresenter + '/Files', 'channels']
+    config: ['', 'title', 'city', 'applications', '#' + chunter.component.AttachmentPresenter + '/Files', 'channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

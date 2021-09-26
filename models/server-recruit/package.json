@@ -1,6 +1,6 @@
 {
-  "name": "@anticrm/server-chunter",
-  "version": "0.6.1",
+  "name": "@anticrm/model-server-recruit",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -9,9 +9,7 @@
     "lint:fix": "eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig":"~0.6.0",
-    "@types/heft-jest":"^1.0.2",
-    "@types/node": "^16.4.10",
+    "@anticrm/model-rig":"~0.6.0",
     "@typescript-eslint/eslint-plugin":"4",
     "eslint-plugin-import":"2",
     "eslint-plugin-promise":"4",
@@ -20,7 +18,9 @@
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
+    "@anticrm/model": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
+    "@anticrm/server-recruit": "~0.6.0",
     "@anticrm/server-core": "~0.6.0"
   }
 }

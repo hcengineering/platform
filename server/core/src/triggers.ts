@@ -18,7 +18,7 @@ import type { Tx, Doc, TxCreateDoc, Ref, Account } from '@anticrm/core'
 import core, { TxFactory } from '@anticrm/core'
 
 import { getResource } from '@anticrm/platform'
-import type { Trigger, TriggerFunc } from './types'
+import type { Trigger, TriggerFunc, FindAll } from './types'
 
 import serverCore from './plugin'
 
@@ -39,8 +39,8 @@ export class Triggers {
     }
   }
 
-  async apply (account: Ref<Account>, tx: Tx): Promise<Tx[]> {
-    const derived = this.triggers.map(trigger => trigger(tx, new TxFactory(account)))
+  async apply (account: Ref<Account>, tx: Tx, findAll: FindAll<Doc>): Promise<Tx[]> {
+    const derived = this.triggers.map(trigger => trigger(tx, new TxFactory(account), findAll))
     const result = await Promise.all(derived)
     return result.flatMap(x => x)
   }

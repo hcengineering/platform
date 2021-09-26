@@ -21,7 +21,12 @@ import type { Resource } from '@anticrm/platform'
 /**
  * @public
  */
-export type TriggerFunc = (tx: Tx, txFactory: TxFactory) => Promise<Tx[]>
+export type FindAll<T extends Doc> = (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+
+/**
+ * @public
+ */
+export type TriggerFunc = (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>) => Promise<Tx[]>
 
 /**
  * @public
