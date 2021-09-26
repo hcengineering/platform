@@ -13,44 +13,77 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { tooltipstore as tooltip } from '..'
+  import { tooltipstore as tooltip, closeTooltip } from '..'
   import type { TooltipAligment } from '..'
   import Label from './Label.svelte'
 
   let tooltipHTML: HTMLElement
   let dir: TooltipAligment
+  let rect: DOMRect
 
   $: {
     if ($tooltip.label && tooltipHTML) {
       if ($tooltip.element) {
-        const rect = $tooltip.element.getBoundingClientRect()
+        rect = $tooltip.element.getBoundingClientRect()
         const doc = document.body.getBoundingClientRect()
 
-        if (!$tooltip.direction) {
-          if (rect.right < doc.width / 5) dir = 'right'
-          else if (rect.left > doc.width - doc.width / 5) dir = 'left'
-          else if (rect.top < tooltipHTML.clientHeight) dir = 'bottom'
-          else dir = 'top'
-        } else dir = $tooltip.direction
+        if ($tooltip.component) {
 
-        if (dir === 'right') {
-          tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
-          tooltipHTML.style.left = `calc(${rect.right}px + .75rem)`
-          tooltipHTML.style.transform = 'translateY(-50%)'
-        } else if (dir === 'left') {
-          tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
-          tooltipHTML.style.right = `calc(${doc.width - rect.x}px + .75rem)`
-          tooltipHTML.style.transform = 'translateY(-50%)'
-        } else if (dir === 'bottom') {
-          tooltipHTML.style.top = `calc(${rect.bottom}px + .5rem)`
-          tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
-          tooltipHTML.style.transform = 'translateX(-50%)'
-        } else if (dir === 'top') {
-          tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + .75rem)`
-          tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
-          tooltipHTML.style.transform = 'translateX(-50%)'
+          if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
+            tooltipHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+            dir = 'bottom'
+          } else if (rect.top > doc.height - rect.bottom) {
+            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + .75rem)`
+            if (tooltipHTML.clientHeight > rect.top - 28) {
+              tooltipHTML.style.top = '1rem'
+              tooltipHTML.style.height = rect.top - 28 + 'px'
+            }
+            dir = 'top'
+          } else {
+            tooltipHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+            if (tooltipHTML.clientHeight > doc.height - rect.bottom - 28) {
+              tooltipHTML.style.bottom = '1rem'
+              tooltipHTML.style.height = doc.height - rect.bottom - 28 + 'px'
+            }
+            dir = 'bottom'
+          }
+          if (rect.left + tooltipHTML.clientWidth + 16 > doc.width) {
+            tooltipHTML.style.left = ''
+            tooltipHTML.style.right = doc.width - rect.right + 'px'
+          } else {
+            tooltipHTML.style.left = rect.left + 'px'
+            tooltipHTML.style.right = ''
+          }
+
+        } else {
+
+          if (!$tooltip.direction) {
+            if (rect.right < doc.width / 5) dir = 'right'
+            else if (rect.left > doc.width - doc.width / 5) dir = 'left'
+            else if (rect.top < tooltipHTML.clientHeight) dir = 'bottom'
+            else dir = 'top'
+          } else dir = $tooltip.direction
+
+          if (dir === 'right') {
+            tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
+            tooltipHTML.style.left = `calc(${rect.right}px + .75rem)`
+            tooltipHTML.style.transform = 'translateY(-50%)'
+          } else if (dir === 'left') {
+            tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
+            tooltipHTML.style.right = `calc(${doc.width - rect.x}px + .75rem)`
+            tooltipHTML.style.transform = 'translateY(-50%)'
+          } else if (dir === 'bottom') {
+            tooltipHTML.style.top = `calc(${rect.bottom}px + .5rem)`
+            tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
+            tooltipHTML.style.transform = 'translateX(-50%)'
+          } else if (dir === 'top') {
+            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + .75rem)`
+            tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
+            tooltipHTML.style.transform = 'translateX(-50%)'
+          }
+          tooltipHTML.classList.remove('no-arrow')
+
         }
-        tooltipHTML.classList.remove('no-arrow')
       } else {
         tooltipHTML.style.top = '50%'
         tooltipHTML.style.left = '50%'
@@ -62,18 +95,35 @@
       tooltipHTML.style.visibility = 'visible'
     } else if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
   }
+
+  const hideTooltip = (): void => {
+    tooltipHTML.style.visibility = 'hidden'
+    closeTooltip()
+  }
+
+  const whileShow = (ev: MouseEvent): void => {
+    if ($tooltip.element) {
+      const rectP = tooltipHTML.getBoundingClientRect()
+      const topT = (dir === 'top') ? rect.top - 16 : rect.top
+      const bottomT = (dir === 'bottom') ? rect.bottom + 16 : rect.bottom
+      const leftT = (dir === 'left') ? rect.left - 16 : rect.left
+      const rightT = (dir === 'right') ? rect.right + 16 : rect.right
+      if (!((ev.x >= leftT && ev.x <= rightT && ev.y >= topT && ev.y <= bottomT) ||
+            (ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top && ev.y <= rectP.bottom))
+         ) hideTooltip()
+    }
+  }
 </script>
 
-{#if $tooltip.label}
+<svelte:window on:mousemove={(ev) => { whileShow(ev) }} />
+{#if $tooltip.component}
+  <div class="popup" bind:this={tooltipHTML}>
+    {#if $tooltip.label}<div class="header"><Label label={$tooltip.label} /></div>{/if}
+    <svelte:component this={$tooltip.component} {...$tooltip.props} />
+  </div>
+{:else if $tooltip.label}
   <div class="tooltip {dir}" bind:this={tooltipHTML}>
-    {#if $tooltip.component}
-      <div class="flex-col">
-        <div class="header"><Label label={$tooltip.label} /></div>
-        <svelte:component this={$tooltip.component} {...$tooltip.props} />
-      </div>
-    {:else}
-      <Label label={$tooltip.label} />
-    {/if}
+    <Label label={$tooltip.label} />
   </div>
 {/if}
 
@@ -83,6 +133,20 @@
     font-weight: 500;
     font-size: 1rem;
     color: var(--theme-caption-color);
+  }
+
+  .popup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-bg-hovered);
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: .75rem;
+    user-select: none;
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    z-index: 1000;
   }
 
   .tooltip {

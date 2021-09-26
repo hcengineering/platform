@@ -17,9 +17,9 @@
 <script lang="ts">
   import type { Bag } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, showPopup } from '@anticrm/ui'
+  import { IconFile, Link, Tooltip } from '@anticrm/ui'
   import { PDFViewer } from '@anticrm/presentation'
-  import FileGroup from './FileGroup.svelte'
+  import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: { attachments: Bag<Attachment> }
 
@@ -28,5 +28,7 @@
 {#if Object.keys(value.attachments).length === 1}
   <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
 {:else if Object.keys(value.attachments).length > 1}
-  <FileGroup files={value.attachments} />
+  <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
+    <Link label={Object.values(value.attachments).length + ' files'} href={'#'} icon={IconFile} />
+  </Tooltip>
 {/if}

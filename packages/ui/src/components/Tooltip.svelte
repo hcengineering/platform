@@ -16,12 +16,12 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import type { TooltipAligment, AnySvelteComponent, AnyComponent } from '..'
-  import { showTooltip, closeTooltip } from '..'
+  import { showTooltip } from '..'
 
   export let label: IntlString | undefined
   export let direction: TooltipAligment | undefined
-  export let component: AnySvelteComponent | AnyComponent | undefined
-  export let props: any | undefined
+  export let component: AnySvelteComponent | AnyComponent | undefined = undefined
+  export let props: any | undefined = undefined
 
   let triggerHTML: HTMLElement
 </script>
@@ -29,11 +29,8 @@
 <div
   class="tooltip-trigger"
   bind:this={triggerHTML}
-  on:mouseenter={() => {
+  on:mousemove={() => {
     showTooltip(label, triggerHTML, direction, component, props)
-  }}
-  on:mouseleave={() => {
-    closeTooltip()
   }}
 >
   <slot />

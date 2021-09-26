@@ -29,7 +29,7 @@
 </script>
 
 {#if value.applications && value.applications > 0}
-  <Tooltip label={'Applications'} component={ApplicationsPopup} props={value}>
+  <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value: value }}>
     <div class="flex-row-center">
       <div class="icon"><IconFile size={'small'} /></div>
       {value.applications}
