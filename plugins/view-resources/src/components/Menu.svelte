@@ -52,11 +52,10 @@
   .popup {
     padding: .5rem;
     height: 100%;
-    background-color: var(--theme-popup-bg);
-    border: var(--theme-popup-border);
-    border-radius: 1.25rem;
-    box-shadow: var(--theme-popup-shadow);
-    backdrop-filter: blur(30px);
+    background-color: var(--theme-button-bg-focused);
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: .75rem;
+    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
   }
 
   .menu-item {
@@ -76,6 +75,6 @@
       flex-grow: 1;
       color: var(--theme-content-accent-color);
     }
-    &:hover { background-color: var(--theme-button-bg-focused); }
+    &:hover { background-color: var(--theme-button-bg-hovered); }
   }
 </style>
