@@ -17,7 +17,7 @@
 <script lang="ts">
 
   import type { Candidate } from '@anticrm/recruit'
-  import { CircleButton, IconFile, Label, showPopup, closePopup } from '@anticrm/ui'
+  import { CircleButton, IconFile, Label, Tooltip } from '@anticrm/ui'
   import Vacancy from './icons/Vacancy.svelte'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
 
@@ -29,43 +29,20 @@
 </script>
 
 {#if value.applications && value.applications > 0}
-  <div class="apps-container"
-    bind:this={trigger}
-    on:mouseenter={() => { showPopup(ApplicationsPopup, {value}, trigger) }}
-    on:mouseleave={() => { closePopup() }}
-  >
-    <div class="icon"><IconFile size={'small'} /></div>
-    {value.applications}
-  </div>
+  <Tooltip label={'Applications'} component={ApplicationsPopup} props={value}>
+    <div class="flex-row-center">
+      <div class="icon"><IconFile size={'small'} /></div>
+      {value.applications}
+    </div>
+  </Tooltip>
 {/if}
 
 
 <style lang="scss">
-  .apps-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    color: var(--theme-content-color);
-    cursor: pointer;
-
-    .icon {
-      margin-right: .25rem;
-      transform-origin: center center;
-      transform: scale(.75);
-      opacity: .6;
-    }
-    &:hover {
-      color: var(--theme-caption-color);
-      .icon { opacity: 1; }
-      // &::after { content: ''; }
-    }
-    // &::after {
-    //   position: absolute;
-    //   top: 0;
-    //   left: 0;
-    //   right: 0;
-    //   bottom: -2rem;
-    //   background-color: rgba(255, 255, 0, .2);
-    // }
+  .icon {
+    margin-right: .25rem;
+    transform-origin: center center;
+    transform: scale(.75);
+    opacity: .6;
   }
 </style>

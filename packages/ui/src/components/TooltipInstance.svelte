@@ -66,11 +66,25 @@
 
 {#if $tooltip.label}
   <div class="tooltip {dir}" bind:this={tooltipHTML}>
-    <Label label={$tooltip.label} />
+    {#if $tooltip.component}
+      <div class="flex-col">
+        <div class="header"><Label label={$tooltip.label} /></div>
+        <svelte:component this={$tooltip.component} {...$tooltip.props} />
+      </div>
+    {:else}
+      <Label label={$tooltip.label} />
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
+  .header {
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--theme-caption-color);
+  }
+
   .tooltip {
     position: fixed;
     padding: .5rem;
