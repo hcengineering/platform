@@ -23,8 +23,6 @@ export let value: Candidate
 
 </script>
 
-{#if value}
-  {#if value.applications && value.applications > 0}
-    <IconFile size={'small'}/> {value.applications}
-  {/if}
+{#if value.applications && value.applications > 0}
+  <IconFile size={'small'}/> {value.applications}
 {/if}

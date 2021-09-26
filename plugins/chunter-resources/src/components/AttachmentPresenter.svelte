@@ -25,10 +25,8 @@
 
 </script>
 
-{#if value}
-  {#if Object.keys(value.attachments).length === 1}
-    <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
-  {:else if Object.keys(value.attachments).length > 1}
-    <FileGroup files={value.attachments} />
-  {/if}
+{#if Object.keys(value.attachments).length === 1}
+  <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
+{:else if Object.keys(value.attachments).length > 1}
+  <FileGroup files={value.attachments} />
 {/if}
