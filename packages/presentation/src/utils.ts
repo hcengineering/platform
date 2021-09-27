@@ -16,7 +16,7 @@
 
 import { onDestroy } from 'svelte'
 
-import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount } from '@anticrm/core'
+import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb } from '@anticrm/core'
 import { TxOperations } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import core from '@anticrm/core'
@@ -32,6 +32,10 @@ class UIClient extends TxOperations implements Client {
 
   getHierarchy (): Hierarchy { 
     return this.client.getHierarchy()
+  }
+
+  getModel (): ModelDb {
+    return this.client.getModel()
   }
 
   tx(tx: Tx): Promise<void> {

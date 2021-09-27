@@ -35,6 +35,7 @@ export type TxHander = (tx: Tx) => void
 export interface Client extends Storage {
   notify?: (tx: Tx) => void
   getHierarchy: () => Hierarchy
+  getModel: () => ModelDb
   findOne: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -49,6 +50,8 @@ class ClientImpl implements Client {
   }
 
   getHierarchy (): Hierarchy { return this.hierarchy }
+
+  getModel (): ModelDb { return this.model }
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,

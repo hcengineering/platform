@@ -16,7 +16,7 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag
+  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb
 } from '@anticrm/core'
 
 interface Query {
@@ -41,6 +41,10 @@ export class LiveQuery extends TxProcessor implements Client {
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
+  }
+
+  getModel (): ModelDb {
+    return this.client.getModel()
   }
 
   private match (q: Query, doc: Doc): boolean {

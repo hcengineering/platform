@@ -16,23 +16,35 @@
 
 <script lang="ts">
 
-  import type { Candidate } from '@anticrm/recruit'
+  import type { Applicant, Candidate } from '@anticrm/recruit'
   import { CircleButton, Label } from '@anticrm/ui'
   import Vacancy from './icons/Vacancy.svelte'
+  import { getClient, createQuery } from '@anticrm/presentation'
+
+  import recruit from '@anticrm/recruit'
 
   export let value: Candidate
 
-  const apps = [{ label: 'Lead analyst', description: 'Tesla' },
-                { label: 'Principal analyst', description: 'Google' }]
+  let applications: Applicant[] = []
+
+  const query = createQuery()
+  $: query.query(recruit.class.Applicant, { candidate: value._id }, result => { applications = result })
+
+  const model = getClient().getModel()
+
+  function getApplicationLabel(app: Applicant): string {
+    return model.getObject(app.space).name
+  }
+
 </script>
 
 <div class="flex-col">
-  {#each apps as app}
+  {#each applications as app}
     <div class="flex-row-center app">
       <div class="app-icon"><CircleButton icon={Vacancy} size={'large'} /></div>
       <div class="flex-grow flex-col">
-        <div class="overflow-label label">{app.label}</div>
-        <div class="overflow-label desc">{app.description}</div>
+        <div class="overflow-label label">{getApplicationLabel(app)}</div>
+        <div class="overflow-label desc">Cisco</div>
       </div>
     </div>
   {/each}

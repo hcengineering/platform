@@ -17,19 +17,15 @@
 <script lang="ts">
 
   import type { Candidate } from '@anticrm/recruit'
-  import { CircleButton, IconFile, Label, Tooltip } from '@anticrm/ui'
-  import Vacancy from './icons/Vacancy.svelte'
+  import { IconFile, Tooltip } from '@anticrm/ui'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
 
   export let value: Candidate
 
-  let trigger: HTMLElement
-  const apps = [{ label: 'Lead analyst', description: 'Tesla' },
-                { label: 'Principal analyst', description: 'Google' }]
 </script>
 
 {#if value.applications && value.applications > 0}
-  <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value: value }}>
+  <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value }}>
     <div class="flex-row-center">
       <IconFile size={'small'} />&nbsp;{value.applications}
     </div>
