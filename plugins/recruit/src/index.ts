@@ -44,6 +44,7 @@ export interface Candidate extends Person {
 export interface Applicant extends Doc {
   candidate: Ref<Candidate>
   state: Ref<State>
+  attachments: Bag<Attachment>
 }
 
 /**

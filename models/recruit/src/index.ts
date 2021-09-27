@@ -55,6 +55,9 @@ export class TApplicant extends TDoc implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
   candidate!: Ref<Candidate>
 
+  @Prop(TypeBag(), 'Attachments' as IntlString)
+  attachments!: Bag<Attachment>
+
   @Prop(TypeString(), 'State' as IntlString)
   state!: Ref<State>
 }

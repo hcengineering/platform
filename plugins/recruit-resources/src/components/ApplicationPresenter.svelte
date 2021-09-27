@@ -17,10 +17,18 @@
 <script lang="ts">
 
 import type { Applicant } from '@anticrm/recruit'
-import { IconFile } from '@anticrm/ui'
+import { IconFile, showPopup } from '@anticrm/ui'
+import EditApplication from './EditApplication.svelte'
 
-export let object: Applicant
+export let value: Applicant
+
+function show() {
+  console.log('show!', value)
+  showPopup(EditApplication, { _id: value._id }, 'full')
+}
 
 </script>
 
-<IconFile size={'small'}/>
+<div on:click={show}>
+  <IconFile size={'small'}/>
+</div>
