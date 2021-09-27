@@ -32,12 +32,12 @@
   <tbody>
     {#each Object.values(files) as file}
       <tr class="tr-body">
-        <td class="item flex-row-center">
+        <td class="item flex-row-center" on:click={() => {
+          closeTooltip()
+          showPopup(PDFViewer, { file: file.file }, 'right')
+        }}>
           <div class="flex-center file-icon">pdf</div>
-          <div class="flex-col flex-grow" style="cursor: pointer" on:click={() => {
-            closeTooltip()
-            showPopup(PDFViewer, { file: file.file }, 'right')
-          }}>
+          <div class="flex-col flex-grow">
             <div class="overflow-label caption-color">{trimFilename(file.name)}</div>
             <div class="overflow-label file-desc">{file.type}</div>
           </div>
@@ -66,7 +66,7 @@
     &:first-child { border-top: none; }
   }
 
-  .item { padding: .75rem 1rem .75rem 0; }
+  .item { padding: .75rem 1rem .75rem 0; cursor: pointer; }
   .file-icon {
     margin-right: 1.25rem;
     width: 2rem;

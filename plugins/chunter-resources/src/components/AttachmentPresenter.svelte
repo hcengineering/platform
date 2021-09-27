@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Bag } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, Tooltip, showPopup } from '@anticrm/ui'
+  import { IconFile, Link, Tooltip, IconAttachment } from '@anticrm/ui'
   import { PDFViewer } from '@anticrm/presentation'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
@@ -25,10 +25,18 @@
 
 </script>
 
-{#if Object.keys(value.attachments).length === 1}
+<!-- {#if Object.keys(value.attachments).length === 1}
   <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
 {:else if Object.keys(value.attachments).length > 1}
   <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
     <Link label={Object.values(value.attachments).length + ' files'} href={'#'} icon={IconFile} />
+  </Tooltip>
+{/if} -->
+
+{#if Object.keys(value.attachments).length > 0}
+  <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
+    <div class="flex-row-center">
+      <IconAttachment size="small"/>&nbsp;{Object.keys(value.attachments).length}
+    </div>
   </Tooltip>
 {/if}
