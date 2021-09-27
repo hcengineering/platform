@@ -17,13 +17,16 @@
 <script lang="ts">
 
   import type { Applicant, Candidate } from '@anticrm/recruit'
-  import { CircleButton, Label } from '@anticrm/ui'
+  import { CircleButton, showPopup, closeTooltip } from '@anticrm/ui'
   import Vacancy from './icons/Vacancy.svelte'
   import { getClient, createQuery } from '@anticrm/presentation'
+  import EditApplication from './EditApplication.svelte'
 
   import recruit from '@anticrm/recruit'
 
   export let value: Candidate
+
+  console.log('POPPED UP')
 
   let applications: Applicant[] = []
 
@@ -36,11 +39,16 @@
     return model.getObject(app.space).name
   }
 
+  function show(app: Applicant) {
+    closeTooltip()
+    showPopup(EditApplication, { _id: app._id }, 'full')
+  }
+
 </script>
 
 <div class="flex-col">
   {#each applications as app}
-    <div class="flex-row-center app">
+    <div class="flex-row-center app" on:click={() => show(app)}>
       <div class="app-icon"><CircleButton icon={Vacancy} size={'large'} /></div>
       <div class="flex-grow flex-col">
         <div class="overflow-label label">{getApplicationLabel(app)}</div>
