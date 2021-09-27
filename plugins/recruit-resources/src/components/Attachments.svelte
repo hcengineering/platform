@@ -147,9 +147,6 @@
     margin-right: 1.25rem;
     width: 2rem;
     height: 2rem;
-    border-radius: .5rem;
-  }
-  .file-icon {
     font-weight: 500;
     font-size: 0.625rem;
     line-height: 150%;
@@ -157,6 +154,7 @@
     color: #fff;
     background-color: var(--primary-button-enabled);
     border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .5rem;
   }
   .file-desc {
     font-size: 0.75rem;

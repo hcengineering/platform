@@ -120,15 +120,17 @@ export function closePopup (): void {
 export const tooltipstore = writable<LabelAndProps>({
   label: undefined,
   element: undefined,
-  direction: undefined
+  direction: undefined,
+  component: undefined,
+  props: undefined
 })
 
-export function showTooltip (label: IntlString, element: HTMLElement, direction?: TooltipAligment): void {
-  tooltipstore.set({ label: label, element: element, direction: direction })
+export function showTooltip (label: IntlString | undefined, element: HTMLElement, direction?: TooltipAligment, component?: AnySvelteComponent | AnyComponent, props?: any): void {
+  tooltipstore.set({ label: label, element: element, direction: direction, component: component, props: props })
 }
 
 export function closeTooltip (): void {
-  tooltipstore.set({ label: undefined, element: undefined, direction: undefined })
+  tooltipstore.set({ label: undefined, element: undefined, direction: undefined, component: undefined, props: undefined })
 }
 
 export const ticker = readable(Date.now(), set => {

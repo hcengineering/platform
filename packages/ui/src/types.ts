@@ -62,4 +62,6 @@ export interface LabelAndProps {
   label: IntlString | undefined
   element: HTMLElement | undefined
   direction?: TooltipAligment
+  component?: AnySvelteComponent | AnyComponent
+  props?: any
 }
