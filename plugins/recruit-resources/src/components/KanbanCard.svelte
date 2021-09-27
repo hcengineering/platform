@@ -22,6 +22,8 @@
   import EditCandidate from './EditCandidate.svelte'
   import EditApplication from './EditApplication.svelte'
 
+  import { AttachmentPresenter } from '@anticrm/chunter-resources'
+
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
@@ -55,8 +57,9 @@
     <Avatar size={'small'} />
     <div class="flex-row-center">
       <div class="flex-row-center caption-color tool">
-        <span class="icon"><IconAttachment size={'small'} /></span>
-        4
+        <!-- <span class="icon"><IconAttachment size={'small'} /></span>
+        4 -->
+        <AttachmentPresenter value={object} />
       </div>
       <div class="flex-row-center caption-color tool">
         <span class="icon"><IconThread size={'small'} /></span>
