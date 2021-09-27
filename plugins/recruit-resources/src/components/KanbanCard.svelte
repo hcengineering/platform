@@ -15,21 +15,23 @@
 
 <script lang="ts">
   import { UserInfo, Avatar } from '@anticrm/presentation'
-  import { Icon, Label, IconThread, IconAttachment } from '@anticrm/ui'
+  import { showPopup, Label, IconThread, IconAttachment } from '@anticrm/ui'
   import type { WithLookup } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
 
-  interface ICard {
-    _id: number
-    firstName: string
-    lastName: string
-    description: string
-    state: number
-  }
+  import EditCandidate from './EditCandidate.svelte'
+  import EditApplication from './EditApplication.svelte'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
+  function showCandidate() {
+    showPopup(EditCandidate, { _id: object.candidate }, 'full')
+  }
+
+  function showApplication() {
+    showPopup(EditApplication, { _id: object._id }, 'full')
+  }
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
@@ -41,11 +43,11 @@
       </div>
     </div>
     <div class="flex-col">
-      <div class="name">{object.$lookup?.candidate?.firstName} {object.$lookup?.candidate?.lastName}</div>
+      <div class="name" on:click={showCandidate}>{object.$lookup?.candidate?.firstName} {object.$lookup?.candidate?.lastName}</div>
       <div class="city">{object.$lookup?.candidate?.city}</div>
       <div class="tags">
-        <div class="tag"><Label label={'Application'} /></div>
-        <div class="tag"><Label label={'Resume'} /></div>
+        <div class="tag" on:click={showApplication}><Label label={'Application'} /></div>
+        <!-- <div class="tag"><Label label={'Resume'} /></div> -->
       </div>
     </div>
   </div>
@@ -65,7 +67,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../../../packages/theme/styles/mixins.scss';
+  @import '../node_modules/@anticrm/theme/styles/mixins.scss';
 
   .card-container {
     position: relative;
@@ -102,6 +104,7 @@
         font-weight: 500;
         font-size: 1rem;
         color: var(--theme-caption-color);
+        cursor: pointer;
       }
       .city {
         font-weight: 500;
@@ -120,6 +123,7 @@
           font-size: .625rem;
           text-align: center;
           color: var(--theme-caption-color);
+          cursor: pointer;
 
           &::after {
             content: '';
