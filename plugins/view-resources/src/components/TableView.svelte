@@ -78,16 +78,14 @@
       <thead>
         <tr class="tr-head">
           {#each model as attribute, cellHead}
-            <th class:checkall={checking}>
-              {#if !cellHead}
-                <div class="firstCell">
-                  <div class="control"><CheckBox symbol={'minus'} /></div>
-                  <span><Label label = {attribute.label}/></span>
+            {#if !cellHead}
+              <th>
+                <div class="checkCell" class:checkall={checking}>
+                  <CheckBox symbol={'minus'} />
                 </div>
-              {:else}
-                <Label label = {attribute.label}/>
-              {/if}
-            </th>
+              </th>
+            {/if}
+            <th><Label label = {attribute.label}/></th>
           {/each}
         </tr>
       </thead>
@@ -96,19 +94,15 @@
           {#each objects as object, row (object._id)}
             <tr class="tr-body" class:checking>
               {#each model as attribute, cell}
-                <td>
-                  {#if !cell}
-                    <div class="firstCell">
-                      <div class="control">
-                        <CheckBox bind:checked={checking} />
-                        <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><MoreV size={'small'} /></div>
-                      </div>
-                      <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                    </div>
-                  {:else}
+                {#if !cell}
+                  <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
+                  <td><div class="firstCell">
                     <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                  {/if}
-                </td>
+                    <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><MoreV size={'small'} /></div>
+                  </div></td>
+                {:else}
+                  <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
+                {/if}
               {/each}
             </tr>
           {/each}
@@ -126,30 +120,35 @@
     padding-bottom: 2.5rem;
     height: 100%;
   }
+
   .firstCell {
     display: flex;
+    // justify-content: space-between;
     align-items: center;
-    flex-grow: 1;
-    .control {
+    .menuRow {
       visibility: hidden;
-      display: flex;
-      align-items: center;
-      width: 0;
-      .menuRow {
-        visibility: hidden;
-        width: 1rem;
-        margin: 0 .5rem;
-        cursor: pointer;
-      }
+      margin-left: .5rem;
+      opacity: .6;
+      cursor: pointer;
+      &:hover { opacity: 1; }
     }
+  }
+  .checkCell {
+    visibility: hidden;
+    display: flex;
+    align-items: center;
   }
 
   th, td {
     padding: .5rem 1.5rem;
     text-align: left;
     &:first-child {
-      padding-left: 2.5rem;
-      padding-right: 3rem;
+      padding: 0 .75rem;
+      width: 2.5rem;
+    }
+    &:nth-child(2) {
+      padding-left: 0;
+      // padding-right: 0;
     }
   }
 
@@ -164,14 +163,7 @@
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     z-index: 5;
 
-    &:first-child.checkall {
-      padding-left: 1rem;
-      & .control {
-        visibility: visible;
-        width: auto;
-      }
-      span { margin-left: 2rem; }
-    }
+    .checkall { visibility: visible; }
   }
 
   .tr-body {
@@ -180,28 +172,14 @@
     border-bottom: 1px solid var(--theme-button-border-hovered);
     &:hover, &.checking {
       background-color: var(--theme-table-bg-hover);
-      & td:first-child {
-        padding-left: 1rem;
-        padding-right: 1.5rem;
-        & .control {
-          visibility: visible;
-          width: auto;
-        }
-      }
+      .checkCell { visibility: visible; }
     }
-    &:hover td:first-child .control .menuRow { visibility: visible; }
+    &:hover .firstCell .menuRow { visibility: visible; }
   }
 
   :global(.fixed) {
     background-color: var(--theme-table-bg-hover);
-    & td:first-child {
-      padding-left: 1rem;
-      padding-right: 1.5rem;
-      & .control {
-        visibility: visible;
-        width: auto;
-        .menuRow { visibility: visible; }
-      }
-    }
+    .checkCell { visibility: visible; }
+    .menuRow { visibility: visible; }
   }
 </style>
