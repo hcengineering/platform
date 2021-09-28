@@ -48,12 +48,13 @@
 
 <div class="flex-col">
   {#each applications as app}
-    <div class="flex-row-center app" on:click={() => show(app)}>
+    <div class="app" on:click={() => show(app)}>
       <div class="app-icon"><CircleButton icon={Vacancy} size={'large'} /></div>
       <div class="flex-grow flex-col">
         <div class="overflow-label label">{getApplicationLabel(app)}</div>
         <div class="overflow-label desc">Cisco</div>
       </div>
+      <div class="status" style="background-color: var(--primary-button-enabled)">status</div>
     </div>
   {/each}
 </div>
@@ -61,6 +62,10 @@
 <style lang="scss">
   .app {
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
     .app-icon {
       margin-right: 1.25rem;
       width: 2rem;
@@ -70,6 +75,15 @@
     .desc {
       font-size: .75rem;
       color: var(--theme-content-dark-color);
+    }
+    .status {
+      margin-left: 1rem;
+      padding: .5rem .75rem;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-size: .625rem;
+      color: #fff;
+      border-radius: .5rem;
     }
   }
 
