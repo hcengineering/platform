@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import type { TooltipAligment, AnySvelteComponent, AnyComponent } from '..'
-  import { showTooltip } from '..'
+  import { tooltipstore as tooltip, showTooltip } from '..'
 
   export let label: IntlString | undefined
   export let direction: TooltipAligment | undefined
@@ -24,13 +24,15 @@
   export let props: any | undefined = undefined
 
   let triggerHTML: HTMLElement
+  let shown: boolean = false
+  $: shown = ($tooltip.label || $tooltip.component) ? true : false
 </script>
 
 <div
   class="tooltip-trigger"
   bind:this={triggerHTML}
-  on:mouseenter={() => {
-    showTooltip(label, triggerHTML, direction, component, props)
+  on:mousemove={() => {
+    if (!shown) showTooltip(label, triggerHTML, direction, component, props)
   }}
 >
   <slot />
