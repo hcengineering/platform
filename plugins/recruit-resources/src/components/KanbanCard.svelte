@@ -149,6 +149,7 @@
       &::after {
         content: '';
         @include bg-layer(#fff, .04);
+        z-index: -1;
       }
       .tool .icon {
         margin-right: .25rem;
