@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import core, { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxProcessor, Hierarchy, DOMAIN_TX, SortingOrder } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
+import core, { DOMAIN_TX, SortingOrder, TxProcessor, Hierarchy, isOperator } from '@anticrm/core'
 
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
@@ -114,7 +115,8 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
-    await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+    const op = isOperator(tx.operations) ? tx.operations : { $set: tx.operations }
+    await this.db.collection(domain).updateOne({ _id: tx.objectId }, op)
   }
 
   override tx (tx: Tx): Promise<void> {

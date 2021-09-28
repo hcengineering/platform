@@ -79,6 +79,15 @@ const operators: Record<string, _OperatorFunc> = {
 }
 
 /**
+ * @public
+ */
+export function isOperator (o: Record<string, any>): boolean {
+  if (o === null || typeof o !== 'object') { return false }
+  const keys = Object.keys(o)
+  return keys.length > 0 && keys.every((key) => key.startsWith('$'))
+}
+
+/**
  * @internal
  * @param name -
  * @returns
