@@ -23,6 +23,8 @@ import { findProperty, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, LookupData, Refs } from './storage'
 import { TxProcessor } from './tx'
 
+import clone from 'just-clone'
+
 /**
  * @public
  */
@@ -119,7 +121,7 @@ export abstract class MemDb extends TxProcessor {
     if (options?.lookup !== undefined) result = this.lookup(result as T[], options.lookup)
 
     result = result.slice(0, options?.limit)
-    return result as T[]
+    return clone(result) as T[]
   }
 
   addDoc (doc: Doc): void {

@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Ref, SpaceWithStates, State } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import { createEventDispatcher } from 'svelte'
   import Close from './icons/Close.svelte'
   import Circles from './icons/Circles.svelte'
@@ -92,6 +92,18 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  async function addStatus () {
+    const state = await client.createDoc(core.class.State, _id, {
+      title: 'New State',
+      color: '#7C6FCD'
+    })
+    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
+      $push: {
+        states: state
+      }
+    })
+  }
 </script>
 
 <div class="flex-col floatdialog-container">
@@ -108,7 +120,7 @@
   <div class="content">
     <div class="flex-between states-header">
       <Label label={'ACTIVE STATUSES'} />
-      <CircleButton icon={IconAdd} size={'medium'} />
+      <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
     </div>
     {#each states as state, i}
       {#if state}
@@ -131,7 +143,7 @@
         >
           <div class="bar"><Circles /></div>
           <div class="color" style="background-color: {state.color}" />
-          <div class="flex-grow caption-color">{state.title}</div>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
           <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
         </div>
       {/if}

@@ -65,10 +65,10 @@
       <Avatar />
     </div>
     <div class="flex-col">
-      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="firstName"/></div>
-      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="lastName"/></div>
-      <div class="title"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="title"/></div>
-      <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} bind:object={object} key="city"/></div>
+      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="firstName"/></div>
+      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="lastName"/></div>
+      <div class="title"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="title"/></div>
+      <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="city"/></div>
     </div>
   </div>
 

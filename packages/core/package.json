@@ -21,6 +21,7 @@
     "@rushstack/heft": "^0.35.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.5"
+    "@anticrm/platform": "~0.6.5",
+    "just-clone": "^3.2.1"
   }
 }

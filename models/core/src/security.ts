@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
+import type { IntlString } from '@anticrm/platform'
 import type { Account, Arr, Ref, Space, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model } from '@anticrm/model'
+import { Model, Prop, TypeString } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
 
@@ -38,7 +39,9 @@ export class TAccount extends TDoc implements Account {
 
 @Model(core.class.State, core.class.Doc, DOMAIN_STATE)
 export class TState extends TDoc implements State {
+  @Prop(TypeString(), 'Title' as IntlString)
   title!: string
+
   color!: string
 }
 

@@ -5824,6 +5824,10 @@ packages:
       verror: 1.10.0
     dev: false
 
+  /just-clone/3.2.1:
+    resolution: {integrity: sha512-PFotEVrrzAnwuWTUOFquDShWrHnUnhxNrVs1VFqkNfnoH3Sn5XUlDOePYn2Vv5cN8xV2y69jf8qEoQHm7eoLnw==}
+    dev: false
+
   /jwt-simple/0.5.6:
     resolution: {integrity: sha512-40aUybvhH9t2h71ncA1/1SbtTNCVZHgsTsTgqPUxGWDmUDrXyDf2wMNQKEbdBjbf4AI+fQhbECNTV6lWxQKUzg==}
     engines: {node: '>= 0.4.0'}
@@ -9583,7 +9587,7 @@ packages:
     dev: false
 
   file:projects/core.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-ysnlXH1pr2scWoJZmFim7f6kkIJjEDaYdgWWjEVGzVqt8OGASxitVlXqkEqN+wtzAkm5rV+z5iaOiPubJuB78A==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-Up03GksJRgEntzDTW8lWmdbhpVZ2dMdnKBjG4RHICPKeT+abgdeiKelWScjcr8xzAX4c5cBxqxeFWVDeJliFcw==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
     name: '@rush-temp/core'
     version: 0.0.0
@@ -9595,6 +9599,7 @@ packages:
       eslint-plugin-import: 2.23.4_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      just-clone: 3.2.1
       simplytyped: 3.3.0_typescript@4.3.5
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
@@ -9794,7 +9799,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-QR7GrR4b35b1LyxXKoNu8DcruASc5AGXUiXs30ELSojOd5n9ZujDn1pKtuKiXGCi4QePCEOEgek3BK7+CfEvZA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-EUV+Mm7aWdUxnioD7XlTsx0a9Vj5nRqQmXy0eB6Fipicq9zFgLo7IfG4N0zN/aJ7l3iVkFZa6hqbI9J83MVU5g==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -10182,7 +10187,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.37.5+typescript@4.3.5:
-    resolution: {integrity: sha512-AWA9mq0Y9LG3jOjY+7OnWnUVjK1EVeIIYYOLYx6+MeZQ/AJR4rXtfupyICWRxDtZpqKc1dfwW9jd/KzI75KMqA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-GKv+eruG+V29obV3ncNZAaiWtA476VfyIL8nxHNOjiAZ0opOAooOZDNwO8PkSTwC5lUeUD7ghZpqVOp62POFXg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -10245,7 +10250,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_c38cf1a7a413db8918b0b4754c21e4c5:
-    resolution: {integrity: sha512-NZIT85JNysKCeQsNuixboDXKqKUZL+3bqrPGWEHiND9FXlRgyq0kibX71TyF8xRtEPKO/ARe32oQKfHKIRvN1Q==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-jrMBOKQPXVfZycis2A48V5FaRuXx7f2g22+K4eeVyKlgqnTmREhY8cT0Ycsb7oGfIWkQR9W4SSeiz9rup6TCfA==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -10310,7 +10315,7 @@ packages:
     dev: false
 
   file:projects/server-chunter.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-QOBIdplF+DBQYpzKm9CCDT9YWM3KQANfBJxbMYSaAw7F65gJVfASy545NIpeVCeubOaw2wLTQOSGXSg34/RWGw==, tarball: file:projects/server-chunter.tgz}
+    resolution: {integrity: sha512-7Beaf+cyEpSBuHs6fcP1FB7sviht6trs3hHDiiQAPEMRTmnnnxkQqdquVr8eiyPyIvKXfa7pTNg2PGFd2LsO1w==, tarball: file:projects/server-chunter.tgz}
     id: file:projects/server-chunter.tgz
     name: '@rush-temp/server-chunter'
     version: 0.0.0
@@ -10368,7 +10373,7 @@ packages:
     dev: false
 
   file:projects/server-recruit.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-YE2Am2CQHPrBIRms2AlvoRXD6peHDmCgHwSI8/HDGOF5c92tGMHd8itPiiTJkzxsYdvQ3I/MuBSsUeaCBZTx/w==, tarball: file:projects/server-recruit.tgz}
+    resolution: {integrity: sha512-CaA56lAyOqvbKspGXTfIXxpbNJuWnz/w/7C1haoX/nLe2rBunYDkXv0VkU/rvMGi7Z4rQblQYo4rPcew4LSowg==, tarball: file:projects/server-recruit.tgz}
     id: file:projects/server-recruit.tgz
     name: '@rush-temp/server-recruit'
     version: 0.0.0
@@ -10414,7 +10419,7 @@ packages:
     dev: false
 
   file:projects/server.tgz_6c259fadfeb3a4b20890aefe87070b8b:
-    resolution: {integrity: sha512-MEVHXm1K1YXXILA5Aq14mHsfYoFCd9Y43+vOFu6SHjXEphIn7J7neQm08DOqMWiSKbWK9uvkNjHEr5Fw12Mbog==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-poB0llkMF+pocNmOZ15BTztnNgZ3SsLL46mMrrYc/+JaimMpn7o/6TDzqFPs3oB2/w4RLX/g4lc8BWEP/KC3qg==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
