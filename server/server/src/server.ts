@@ -23,12 +23,14 @@ import type { DbConfiguration } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
+import { serverRecruitId } from '@anticrm/server-recruit'
 
 /**
  * @public
  */
 export async function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
+  addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
 
   startJsonRpc((workspace: string) => {
     const conf: DbConfiguration = {
