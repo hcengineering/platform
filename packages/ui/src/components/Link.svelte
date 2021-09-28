@@ -18,7 +18,7 @@
   import Icon from './Icon.svelte'
 
   export let label: IntlString
-  export let href: string
+  export let href: string = '#'
   export let icon: Asset | AnySvelteComponent | undefined
   export let disabled: boolean = false
   export let maxLenght: number = 26
@@ -41,7 +41,7 @@
   {#if disabled}
     {trimFilename(label)}
   {:else}
-    <a class="overflow-label" {href}>{trimFilename(label)}</a>
+    <a {href}>{trimFilename(label)}</a>
   {/if}
 </span>
 

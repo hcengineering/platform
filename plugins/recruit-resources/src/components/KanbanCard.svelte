@@ -108,6 +108,7 @@
         font-size: 1rem;
         color: var(--theme-caption-color);
         cursor: pointer;
+        &:hover { text-decoration: underline; }
       }
       .city {
         font-weight: 500;
@@ -149,23 +150,17 @@
         content: '';
         @include bg-layer(#fff, .04);
       }
-
       .tool .icon {
         margin-right: .25rem;
         opacity: .4;
       }
-      .tool + .tool {
-        margin-left: .75rem;
-      }
+      .tool + .tool { margin-left: .75rem; }
     }
-
-    &.draggable {
-      cursor: grab;
-    }
-
     .card-bg {
       @include bg-layer(var(--theme-card-bg), .06);
+      z-index: -1;
     }
+    &.draggable { cursor: grab; }
   }
 
   :global(.card-container + .card-container) { margin-top: .75rem; }
