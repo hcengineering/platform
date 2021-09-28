@@ -116,6 +116,11 @@ class MongoAdapter extends MongoAdapterBase {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
   }
+
+  override tx (tx: Tx): Promise<void> {
+    console.log('mongo', tx)
+    return super.tx(tx)
+  }
 }
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
