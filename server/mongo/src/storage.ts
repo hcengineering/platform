@@ -35,8 +35,26 @@ abstract class MongoAdapterBase extends TxProcessor {
   async init (): Promise<void> {}
 
   private translateQuery<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
+    const translated: any = {}
+    for (const key in query) {
+      const value = (query as any)[key]
+      if (typeof value === 'object') {
+        const keys = Object.keys(value)
+        if (keys[0] === '$like') {
+          const pattern = value.$like as string
+          translated[key] = {
+            $regex: `^${pattern.split('%').join('.*')}$`,
+            $options: 'i'
+          }
+          continue
+        }
+      }
+      translated[key] = value
+    }
     const classes = this.hierarchy.getDescendants(clazz)
-    return Object.assign({}, query, { _class: { $in: classes } })
+    translated._class = { $in: classes }
+    // return Object.assign({}, query, { _class: { $in: classes } })
+    return translated
   }
 
   private async lookup<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options: FindOptions<T>): Promise<FindResult<T>> {

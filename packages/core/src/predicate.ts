@@ -19,8 +19,6 @@ import type { Doc } from './classes'
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
 
-const likeSymbol = '%'
-
 const predicates: Record<string, PredicateFactory> = {
   $in: (o: any, propertyKey: string): Predicate => {
     if (!Array.isArray(o)) {
@@ -36,7 +34,7 @@ const predicates: Record<string, PredicateFactory> = {
   },
 
   $like: (query: string, propertyKey: string): Predicate => {
-    const searchString = query.split(likeSymbol).join('.*')
+    const searchString = query.split('%').join('.*')
     const regex = RegExp(`^${searchString}$`, 'i')
     return (docs: Doc[]): Doc[] => {
       const result: Doc[] = []
