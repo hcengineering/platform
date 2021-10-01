@@ -43,6 +43,18 @@ const predicates: Record<string, PredicateFactory> = {
       }
       return result
     }
+  },
+
+  $regex: (o: { $regex: string, $options: string }, propertyKey: string): Predicate => {
+    const re = new RegExp(o.$regex, o.$options)
+    return (docs: Doc[]): Doc[] => {
+      const result: Doc[] = []
+      for (const doc of docs) {
+        const value = (doc as any)[propertyKey] as string
+        if (value.match(re) !== null) result.push(doc)
+      }
+      return result
+    }
   }
 }
 
