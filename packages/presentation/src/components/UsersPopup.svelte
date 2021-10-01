@@ -32,7 +32,7 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, {}, result => { objects = result })
+  $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
 </script>
 
 <div class="popup">

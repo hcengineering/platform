@@ -21,9 +21,11 @@ import type { Tx } from './tx'
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type QuerySelector<T> = {
+export type QuerySelector<T> = { // TODO: refactor this shit
   $in?: T[]
   $like?: string
+  $regex?: string
+  $options?: string
 }
 
 /**

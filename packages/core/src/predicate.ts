@@ -15,10 +15,11 @@
 //
 
 import type { Doc } from './classes'
-import { checkLikeQuery } from './query'
 
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
+
+const likeSymbol = '%'
 
 const predicates: Record<string, PredicateFactory> = {
   $in: (o: any, propertyKey: string): Predicate => {
@@ -35,11 +36,13 @@ const predicates: Record<string, PredicateFactory> = {
   },
 
   $like: (query: string, propertyKey: string): Predicate => {
+    const searchString = query.split(likeSymbol).join('.*')
+    const regex = RegExp(`^${searchString}$`, 'i')
     return (docs: Doc[]): Doc[] => {
       const result: Doc[] = []
       for (const doc of docs) {
         const value = (doc as any)[propertyKey] as string
-        if (checkLikeQuery(value, query)) result.push(doc)
+        if (regex.test(value)) result.push(doc)
       }
       return result
     }
