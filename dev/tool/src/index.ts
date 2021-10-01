@@ -23,7 +23,7 @@ import { encode } from 'jwt-simple'
 import { Client } from 'minio'
 import { initWorkspace } from './workspace'
 
-import contact from '@anticrm/contact'
+import contact, { combineName } from '@anticrm/contact'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -107,10 +107,11 @@ program
       const contrib = await createContributingClient(url.href)
       const txop = new TxOperations(contrib, core.account.System)
 
+      const name = combineName(account.first, account.last)
+
       console.log('create user in target workspace...')
       const employee = await txop.createDoc(contact.class.Employee, contact.space.Employee, {
-        firstName: account.first,
-        lastName: account.last,
+        name,
         city: 'Mountain View',
         channels: []
       })
@@ -119,8 +120,7 @@ program
       await txop.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email,
         employee,
-        firstName: account.first,
-        lastName: account.last
+        name
       })
 
       contrib.close()

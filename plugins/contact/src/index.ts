@@ -43,8 +43,7 @@ export interface Contact extends Doc {
  * @public
  */
 export interface Person extends Contact {
-  firstName: string
-  lastName: string
+  name: string
   // email: string
   // phone: string
   city: string
@@ -68,8 +67,37 @@ export interface Employee extends Person {
  */
 export interface EmployeeAccount extends Account {
   employee: Ref<Employee>
-  firstName: string
-  lastName: string
+  name: string
+}
+
+const SEP = ','
+
+/**
+ * @public
+ */
+export function combineName (first: string, last: string): string {
+  return last + SEP + first
+}
+
+/**
+ * @public
+ */
+export function getFirstName (name: string): string {
+  return name.substring(name.indexOf(SEP) + 1)
+}
+
+/**
+ * @public
+ */
+export function getLastName (name: string): string {
+  return name.substring(0, name.indexOf(SEP))
+}
+
+/**
+ * @public
+ */
+export function formatName (name: string): string {
+  return getFirstName(name) + ' ' + getLastName(name)
 }
 
 /**

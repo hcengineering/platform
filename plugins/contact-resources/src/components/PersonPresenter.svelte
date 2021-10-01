@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { getResource } from '@anticrm/platform'
-import type { Person } from '@anticrm/contact'
+import { formatName, Person } from '@anticrm/contact'
 import { Avatar, getClient } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
 import view from '@anticrm/view'
@@ -36,7 +36,7 @@ async function onClick() {
 
 <div class="flex-row-center user-container" on:click={onClick}>
   <Avatar size={'x-small'} />
-  <div class="overflow-label user">{value.firstName + ' ' + value.lastName}</div>
+  <div class="overflow-label user">{formatName(value.name)}</div>
 </div>
 
 <style lang="scss">

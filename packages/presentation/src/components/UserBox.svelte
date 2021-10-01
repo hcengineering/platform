@@ -23,7 +23,7 @@
   import IconAvatar from './icons/Avatar.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
-  import type { Person } from '@anticrm/contact'
+  import { formatName, Person } from '@anticrm/contact'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
@@ -72,7 +72,7 @@
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
     <div class="caption-color">
-      {#if selected}{selected.firstName + ' ' + selected.lastName}{:else}<Label label={'Not selected'} />{/if}
+      {#if selected}{formatName(selected.name)}{:else}<Label label={'Not selected'} />{/if}
     </div>
   </div>
 </div>

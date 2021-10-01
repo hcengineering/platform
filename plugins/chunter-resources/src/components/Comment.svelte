@@ -15,6 +15,7 @@
 
 <script lang="ts">
   import type { Person } from '@anticrm/contact'
+  import { formatName } from '@anticrm/contact'
   import { Avatar } from '@anticrm/presentation'
 
   interface IMessage {
@@ -30,7 +31,7 @@
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{user.firstName} {user.lastName}<span>{message.createDate}</span></div>
+    <div class="header">{formatName(user.name)}<span>{message.createDate}</span></div>
     <div class="text">{message.text}</div>
   </div>
 </div>

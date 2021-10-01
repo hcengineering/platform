@@ -22,7 +22,6 @@
   import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate, Applicant } from '@anticrm/recruit'
-  import DialogHeader from './DialogHeader.svelte'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
@@ -32,6 +31,7 @@
   import chunter from '@anticrm/chunter'
   
   import recruit from '../plugin'
+import { formatName } from '@anticrm/contact';
 
   export let _id: Ref<Applicant>
   let object: Applicant
@@ -59,7 +59,7 @@
 </script>
 
 {#if object !== undefined && candidate !== undefined}
-<Panel icon={Contact} title={candidate.firstName + ' ' + candidate.lastName} {object} on:close={() => { dispatch('close') }}>
+<Panel icon={Contact} title={formatName(candidate.name)} {object} on:close={() => { dispatch('close') }}>
   <!-- <svelte:fragment slot="subtitle">
     <div class="flex-between flex-reverse" style="width: 100%">
       <Channels value={object.channels}/>
@@ -73,7 +73,7 @@
       <Avatar />
     </div>
     <div class="flex-col">
-      <div class="name">{candidate.firstName} {candidate.lastName}</div>
+      <div class="name">{formatName(candidate.name)}</div>
       <div class="title">For {getVacancyName()}</div>
       <div class="city">at Cisco</div>
     </div>

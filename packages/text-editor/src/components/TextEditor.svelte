@@ -67,7 +67,7 @@ onMount(() => {
         suggestion: {
           items: async query => {
             const persons = await client.findAll(contact.class.Person, {})
-            return persons.filter(person => person.firstName.includes(query))
+            return persons.filter(person => person.name.includes(query))
           },
           render: () => {
             let component: any

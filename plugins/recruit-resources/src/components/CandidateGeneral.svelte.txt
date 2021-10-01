@@ -17,7 +17,7 @@
 <script lang="ts">
 
 import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
-import { AttributeEditor, getClient, CommentViewer } from '@anticrm/presentation'
+import { AttributeEditor, getClient } from '@anticrm/presentation'
 import type { Candidate } from '@anticrm/recruit'
 
 import Address from './icons/Address.svelte'

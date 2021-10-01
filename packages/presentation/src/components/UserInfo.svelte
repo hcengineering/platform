@@ -16,7 +16,7 @@
 <script lang="ts">
   import Avatar from './Avatar.svelte'
 
-  import type { Person } from '@anticrm/contact'
+  import { formatName, Person } from '@anticrm/contact'
 
   export let value: Person
   export let subtitle: string | undefined = undefined
@@ -27,7 +27,7 @@
   <Avatar {size} />
   <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
-    <div class="title">{value.firstName + ' ' + value.lastName}</div>
+    <div class="title">{formatName(value.name)}</div>
   </div>
 </div>
 

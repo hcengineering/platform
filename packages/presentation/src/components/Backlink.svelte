@@ -22,7 +22,7 @@
   import Avatar from './Avatar.svelte'
   import { TimeSince } from '@anticrm/ui'
 
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
 
   export let comment: Comment
 
@@ -38,7 +38,7 @@
 <div class="flex-nowrap">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="flex-col-stretch message">
-    <div class="header">{#if employee}{employee.firstName} {employee.lastName}{/if}<span><TimeSince value={comment.modifiedOn}/></span></div>
+    <div class="header">{#if employee}{formatName(employee.name)}{/if}<span><TimeSince value={comment.modifiedOn}/></span></div>
     <div class="text"><MessageViewer message={comment.message} /></div>
   </div>
 </div>

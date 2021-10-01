@@ -52,18 +52,9 @@ export class TContact extends TDoc implements Contact {
 @Model(contact.class.Person, contact.class.Contact)
 @UX('Person' as IntlString)
 export class TPerson extends TContact implements Person {
-  @Prop(TypeString(), 'First name' as IntlString)
+  @Prop(TypeString(), 'Name' as IntlString)
   @Index(IndexKind.FullText)
-  firstName!: string
-
-  @Prop(TypeString(), 'Last name' as IntlString)
-  lastName!: string
-
-  // @Prop(TypeString(), 'Email' as IntlString)
-  // email!: string
-
-  // @Prop(TypeString(), 'Phone' as IntlString)
-  // phone!: string
+  name!: string
 
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
@@ -81,8 +72,7 @@ export class TEmployee extends TPerson implements Employee {
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
   employee!: Ref<Employee>
-  firstName!: string
-  lastName!: string
+  name!: string
 }
 
 export function createModel (builder: Builder): void {

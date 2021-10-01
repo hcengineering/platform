@@ -23,6 +23,7 @@
   import EditApplication from './EditApplication.svelte'
 
   import { AttachmentPresenter } from '@anticrm/chunter-resources'
+  import { formatName } from '@anticrm/contact'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
@@ -45,7 +46,7 @@
       </div>
     </div>
     <div class="flex-col">
-      <div class="name" on:click={showCandidate}>{object.$lookup?.candidate?.firstName} {object.$lookup?.candidate?.lastName}</div>
+      <div class="name" on:click={showCandidate}>{formatName(object.$lookup?.candidate?.name)}</div>
       <div class="city">{object.$lookup?.candidate?.city}</div>
       <div class="tags">
         <div class="tag" on:click={showApplication}><Label label={'Application'} /></div>

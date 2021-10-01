@@ -24,8 +24,7 @@ export function createDemo (builder: Builder): void {
   const rosamund = generateId()
 
   builder.createDoc(contact.class.Employee, contact.space.Employee, {
-    firstName: 'Rosamund',
-    lastName: 'Chen',
+    name: 'Chen,Rosamund',
     city: 'Mountain View',
     channels: []
   }, rosamund)
@@ -33,13 +32,11 @@ export function createDemo (builder: Builder): void {
   builder.createDoc(contact.class.EmployeeAccount, core.space.Model, {
     email: 'rosamund@hc.engineering',
     employee: rosamund as any,
-    firstName: 'Rosamund',
-    lastName: 'Chen'
+    name: 'Chen,Rosamund'
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    firstName: 'Andrey',
-    lastName: 'P.',
+    name: 'P.,Andrey',
     title: 'Chief Architect',
     city: 'Monte Carlo',
     channels: [
@@ -52,8 +49,7 @@ export function createDemo (builder: Builder): void {
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    firstName: 'Marina',
-    lastName: 'M.',
+    name: 'M.,Marina',
     title: 'Chief Designer',
     city: 'Los Angeles',
     channels: [
@@ -66,8 +62,7 @@ export function createDemo (builder: Builder): void {
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    firstName: 'Alex',
-    lastName: 'P.',
+    name: 'P.,Alex',
     title: 'Frontend Engineer',
     city: 'Krasnodar, Russia',
     channels: [

@@ -39,16 +39,16 @@
   import Bond from '../../img/bond.png'
 
   import equals from 'deep-equal'
+import { combineName } from '@anticrm/contact';
 
   export let space: Ref<Space>
 
   let _space = space
 
-  const object: Candidate = {
-    lastName: '',
-    firstName: '',
-    city: ''
-  } as Candidate
+  let firstName = ''
+  let lastName = ''
+
+  const object: Candidate = {} as Candidate
 
   let resume = {} as {
     name: string
@@ -63,8 +63,7 @@
 
   async function createCandidate() {
     const candidate: Data<Candidate> = {
-      firstName: object.firstName,
-      lastName: object.lastName,
+      name: combineName(firstName, lastName),
       title: object.title,
       city: object.city,
       channels: object.channels,
@@ -137,7 +136,7 @@
 <Card label={'Create Candidate'} 
       okLabel={'Save'}
       okAction={createCandidate}
-      canSave={object.firstName.length > 0 && object.lastName.length > 0}
+      canSave={firstName.length > 0 && lastName.length > 0}
       spaceClass={recruit.class.Candidates}
       spaceLabel={'Talent Pool'}
       spacePlaceholder={'Select pool'}
@@ -172,8 +171,8 @@
     </div>
 
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="John" maxWidth="9.5rem" bind:value={object.firstName}/></div>
-      <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={object.lastName}/></div>
+      <div class="name"><EditBox placeholder="John" maxWidth="9.5rem" bind:value={firstName}/></div>
+      <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={lastName}/></div>
       <div class="title"><EditBox placeholder="Title" maxWidth="9.5rem" bind:value={object.title}/></div>
       <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
       <!-- <div class="flex resume">

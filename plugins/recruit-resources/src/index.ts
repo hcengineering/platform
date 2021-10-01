@@ -20,7 +20,6 @@ import CreateCandidates from './components/CreateCandidates.svelte'
 import CreateCandidate from './components/CreateCandidate.svelte'
 import CreateApplication from './components/CreateApplication.svelte'
 import EditCandidate from './components/EditCandidate.svelte'
-import CandidateGeneral from './components/CandidateGeneral.svelte'
 import Attachments from './components/Attachments.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
@@ -42,7 +41,6 @@ export default async () => ({
     CreateCandidate,
     CreateApplication,
     EditCandidate,
-    CandidateGeneral,
     Attachments,
     KanbanCard,
     ApplicationPresenter,

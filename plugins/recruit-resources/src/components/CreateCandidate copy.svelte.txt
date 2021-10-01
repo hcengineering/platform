@@ -19,7 +19,7 @@
   import { TextArea, EditBox, Dialog, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
   import Address from './icons/Address.svelte'
   import Attachment from './icons/Attachment.svelte'
-  import DialogHeader from './DialogHeader.svelte'
+  import DialogHeader from './DialogHeader.svelte.txt'
 
   import { getClient } from '@anticrm/presentation'
 

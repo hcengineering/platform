@@ -19,7 +19,7 @@
 import { Editor } from '@tiptap/core'
 import { onMount } from 'svelte'
 import type { FindResult, Doc, Ref } from '@anticrm/core'
-import type { Person } from '@anticrm/contact'
+import { formatName, Person } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { getClient, UserInfo } from '@anticrm/presentation'
 import { EditStylish, IconSearch } from '@anticrm/ui'
@@ -45,7 +45,7 @@ export function onKeyDown(ev: KeyboardEvent) {
   if (ev.key === 'Enter') {
     const person = items[selected]
     if (person) {
-      command({id: person._id, label: person.firstName + ' ' + person.lastName})
+      command({id: person._id, label: formatName(person.name)})
       return true
     } else
       return false

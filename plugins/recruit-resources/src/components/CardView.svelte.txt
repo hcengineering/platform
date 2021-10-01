@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { ScrollBox } from '@anticrm/ui'
-  import Card from './Card.svelte'
+  import Card from './Card.svelte.txt'
   import CardEmpty from './CardEmpty.svelte'
 
   interface Person {

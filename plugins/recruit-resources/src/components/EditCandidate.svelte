@@ -22,7 +22,6 @@
   import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
-  import DialogHeader from './DialogHeader.svelte'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
@@ -32,14 +31,18 @@
   import chunter from '@anticrm/chunter'
   
   import recruit from '../plugin'
+  import { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
 
   export let _id: Ref<Candidate>
   let object: Candidate
 
+  let firstName = ''
+  let lastName = ''
+
   const client = getClient()
 
   const query = createQuery()
-  $: query.query(recruit.class.Candidate, { _id }, result => { object = result[0] })
+  $: query.query(recruit.class.Candidate, { _id }, result => { object = result[0]; firstName = getFirstName(result[0].name); lastName = getLastName(result[0].name)})
 
   const dispatch = createEventDispatcher()
 
@@ -48,10 +51,18 @@
     client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
   }
 
+  function firstNameChange() {
+    client.updateDoc(recruit.class.Candidate, object.space, object._id, { name: combineName(firstName, getLastName(object.name)) })
+  }
+
+  function lastNameChange() {
+    client.updateDoc(recruit.class.Candidate, object.space, object._id, { name: combineName(getFirstName(object.name), lastName) })
+  }
+
 </script>
 
 {#if object !== undefined}
-<Panel icon={Contact} title={object.firstName + ' ' + object.lastName} {object} on:close={() => { dispatch('close') }}>
+<Panel icon={Contact} title={formatName(object.name)} {object} on:close={() => { dispatch('close') }}>
   <svelte:fragment slot="subtitle">
     <div class="flex-between flex-reverse" style="width: 100%">
       <Channels value={object.channels}/>
@@ -65,8 +76,8 @@
       <Avatar />
     </div>
     <div class="flex-col">
-      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="firstName"/></div>
-      <div class="name"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="lastName"/></div>
+      <div class="name"><EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={ firstNameChange }/></div>
+      <div class="name"><EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={ lastNameChange }/></div>
       <div class="title"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="title"/></div>
       <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="city"/></div>
     </div>
