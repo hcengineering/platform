@@ -54,3 +54,6 @@ export class TType extends TDoc implements Type<any> {}
 
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
+
+@Model(core.class.TypeBoolean, core.class.Type)
+export class TTypeBoolean extends TType {}

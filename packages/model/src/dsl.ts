@@ -274,6 +274,13 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
+export function TypeBoolean (): Type<string> {
+  return { _class: core.class.TypeBoolean }
+}
+
+/**
+ * @public
+ */
 export function Bag (): Type<Record<string, PropertyType>> {
   return { _class: core.class.Bag }
 }

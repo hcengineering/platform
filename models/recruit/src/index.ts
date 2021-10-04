@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, UX, Prop, TypeString, Bag as TypeBag } from '@anticrm/model'
+import { Builder, Model, UX, Prop, TypeString, TypeBoolean, Bag as TypeBag } from '@anticrm/model'
 import type { Ref, FindOptions, Doc, Domain, State, Bag } from '@anticrm/core'
 import core, { TSpace, TSpaceWithStates, TDoc } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
@@ -48,6 +48,12 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(TypeString(), 'Applications' as IntlString)
   applications?: number
+
+  @Prop(TypeBoolean(), 'Onsite' as IntlString)
+  onsite?: boolean
+
+  @Prop(TypeBoolean(), 'Remote' as IntlString)
+  remote?: boolean
 }
 
 @Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)

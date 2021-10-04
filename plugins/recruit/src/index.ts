@@ -36,6 +36,8 @@ export interface Candidate extends Person {
   title?: string
   attachments: Bag<Attachment>
   applications?: number
+  onsite?: boolean
+  remote?: boolean
 }
 
 /**

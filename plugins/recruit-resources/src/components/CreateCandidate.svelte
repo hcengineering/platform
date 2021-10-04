@@ -67,7 +67,9 @@ import { combineName } from '@anticrm/contact';
       title: object.title,
       city: object.city,
       channels: object.channels,
-      attachments: {}
+      attachments: {},
+      onsite: object.onsite,
+      remote: object.remote
     }
 
     if (resume.uuid !== undefined) {
@@ -191,8 +193,8 @@ import { combineName } from '@anticrm/contact';
   </div>
   <div class="flex-col locations">
     <span><Label label={'Work location preferences'} /></span>
-    <div class="row"><Label label={'Onsite'} /><YesNo state={'yes'} /></div>
-    <div class="row"><Label label={'Remote'} /><YesNo state={'unknown'} /></div>
+    <div class="row"><Label label={'Onsite'} /><YesNo bind:value={object.onsite} /></div>
+    <div class="row"><Label label={'Remote'} /><YesNo bind:value={object.remote} /></div>
   </div>
   <svelte:fragment slot="contacts">
     <Channels value={object.channels} />

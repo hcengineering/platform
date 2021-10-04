@@ -40,6 +40,7 @@ export default plugin(coreId, {
     Account: '' as Ref<Class<Account>>,
     State: '' as Ref<Class<State>>,
     TypeString: '' as Ref<Class<Type<string>>>,
+    TypeBoolean: '' as Ref<Class<Type<string>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
   },
   space: {
