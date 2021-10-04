@@ -15,23 +15,19 @@
 
 <script lang="ts">
   import { CircleButton, Label } from '@anticrm/ui'
-  import Location from './icons/Location.svelte'
-  import YesNoPresenter from './YesNoPresenter.svelte'
-  import AttributeEditor from './AttributeEditor.svelte'
+  import type { Ref, Class, Obj, Doc } from '@anticrm/core'
+  import { AttributeBarEditor } from '@anticrm/presentation'
 
-  export let minimize: boolean = false
+  export let object: Doc
+  export let keys: string[]
 </script>
 
 <div class="flex-row-center small-text">
-  <div class="column">
-    <AttributeEditor icon={Location} label={'Location'} component={Label} props={{ label: 'Moscow' }} />
-  </div>
-  <div class="column">
-    <AttributeEditor label={'Onsite'} component={YesNoPresenter} props={{ state: 'yes' }} />
-  </div>
-  <div class="column">
-    <AttributeEditor label={'Remote'} component={YesNoPresenter} props={{ state: 'no' }} />
-  </div>
+  {#each keys as key}
+    <div class="column">
+      <AttributeBarEditor {key} {object} />
+    </div>
+  {/each}
 </div>
 
 <style lang="scss">

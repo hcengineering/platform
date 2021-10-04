@@ -17,6 +17,7 @@ import type { Doc } from '@anticrm/core'
 
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import BooleanEditor from './components/BooleanEditor.svelte'
 import StatePresenter from './components/StatePresenter.svelte'
 import TableView from './components/TableView.svelte'
 import KanbanView from './components/KanbanView.svelte'
@@ -35,6 +36,7 @@ export default async () => ({
   component: {
     StringEditor,
     StringPresenter,
+    BooleanEditor,
     StatePresenter,
     TableView,
     KanbanView
