@@ -17,44 +17,24 @@
   import { CircleButton, Label } from '@anticrm/ui'
   import Location from './icons/Location.svelte'
   import YesNoPresenter from './YesNoPresenter.svelte'
+  import AttributeEditor from './AttributeEditor.svelte'
 
-  export let minimize: boolean = true
+  export let minimize: boolean = false
 </script>
 
 <div class="flex-row-center small-text">
-  <div class="icon-wrap column">
-    <CircleButton icon={Location} size={'large'} />
-    {#if !minimize}
-      <div class="noicon-column">
-        <Label label={'Location'} />
-        <div class="value">Moscow</div>
-      </div>
-    {/if}
+  <div class="column">
+    <AttributeEditor icon={Location} label={'Location'} component={Label} props={{ label: 'Moscow' }} />
   </div>
-  <div class="noicon-column column">
-    <Label label={'Onsite'} />
-    <YesNoPresenter state={'yes'} />
+  <div class="column">
+    <AttributeEditor label={'Onsite'} component={YesNoPresenter} props={{ state: 'yes' }} />
   </div>
-  <div class="noicon-column column">
-    <Label label={'Remote'} />
-    <YesNoPresenter state={'no'} />
+  <div class="column">
+    <AttributeEditor label={'Remote'} component={YesNoPresenter} props={{ state: 'no' }} />
   </div>
 </div>
 
 <style lang="scss">
-  .icon-wrap {
-    display: flex;
-    align-items: center;
-  }
-  .noicon-column {
-    display: flex;
-    flex-direction: column;
-  }
-  .icon-wrap .noicon-column { margin-left: .5rem; }
-  .value {
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
   .column + .column {
     position: relative;
     margin-left: 3rem;
