@@ -135,6 +135,7 @@ table {
   align-items: stretch;
 }
 
+.relative { position: relative; }
 .abs-lt-content {
   position: absolute;
   top: var(--modal-padding);
@@ -180,6 +181,7 @@ table {
   height: 1.715em;
 }
 
+/* Text */
 .hidden-text {
   position: absolute;
   visibility: hidden;
@@ -193,6 +195,7 @@ table {
   overflow: hidden;
   user-select: none;
 }
+.small-text { font-size: .75rem; }
 
 .focused-button {
   background-color: var(--theme-button-bg-focused);

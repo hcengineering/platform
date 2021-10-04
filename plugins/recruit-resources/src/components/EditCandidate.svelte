@@ -27,6 +27,7 @@
   import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
+  import AttributesBar from './AttributesBar.svelte'
 
   import chunter from '@anticrm/chunter'
   
@@ -63,12 +64,13 @@
 
 {#if object !== undefined}
 <Panel icon={Contact} title={formatName(object.name)} {object} on:close={() => { dispatch('close') }}>
-  <svelte:fragment slot="subtitle">
+  <AttributesBar slot="subtitle" />
+  <!-- <svelte:fragment slot="subtitle">
     <div class="flex-between flex-reverse" style="width: 100%">
       <Channels value={object.channels}/>
       <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />      
     </div>
-  </svelte:fragment>
+  </svelte:fragment> -->
 
   <div class="flex-row-center">
     <div class="avatar">

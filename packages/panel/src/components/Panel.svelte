@@ -168,7 +168,7 @@
       flex-shrink: 0;
       padding: 0 2rem;
       height: 3.5rem;
-      border-bottom: 1px solid var(--theme-card-divider);
+      border-bottom: 1px solid var(--theme-bg-accent-hover);
     }
   }
 
