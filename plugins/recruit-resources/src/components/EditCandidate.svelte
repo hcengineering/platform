@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
-  import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon } from '@anticrm/ui'
+  import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon, IconAdd, Label } from '@anticrm/ui'
   import type { Attachment } from '@anticrm/chunter'
   import FileUpload from './icons/FileUpload.svelte'
   import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
@@ -65,10 +65,6 @@
 {#if object !== undefined}
 <Panel icon={Contact} title={formatName(object.name)} {object} on:close={() => { dispatch('close') }}>
   <AttributesBar slot="subtitle" />
-  <!-- <svelte:fragment slot="subtitle">
-    <div class="flex-between flex-reverse" style="width: 100%">
-    </div>
-  </svelte:fragment> -->
 
   <div class="flex-row-center">
     <div class="avatar">
@@ -80,8 +76,15 @@
       <div class="name"><EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={ lastNameChange }/></div>
       <div class="title"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="title"/></div>
       <!-- <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="city"/></div> -->
-      <Channels value={object.channels}/>
-      <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />      
+      <div class="flex-row-center channels">
+        {#if !object.channels || object.channels.length === 0}
+          <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+          <span><Label label={'Add social links'} /></span>
+        {:else}
+          <Channels value={object.channels} size={'small'} />
+          <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -132,16 +135,13 @@
     font-size: 1.25rem;
     color: var(--theme-caption-color);
   }
-  .title, .city {
-    font-weight: 500;
+  .title {
+    margin-top: .25rem;
     font-size: .75rem;
-    color: var(--theme-content-color);
   }
-  .title { margin-top: .75rem; }
-  .resume a {
-    font-size: .75rem;
-    color: var(--theme-content-dark-color);
-    &:hover { color: var(--theme-content-color); }
+  .channels {
+    margin-top: .75rem;
+    span { margin-left: .5rem; }
   }
 
   .attachments {
