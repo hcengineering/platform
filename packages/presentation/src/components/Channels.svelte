@@ -107,8 +107,8 @@
 
       .small {
         transform-origin: center center;
-        transform: scale(.75);
-        opacity: .4;
+        transform: scale(.55);
+        opacity: 1;
       }
 
       &-icon {

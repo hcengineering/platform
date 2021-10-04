@@ -20,9 +20,10 @@
 
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large' = 'large'
+  export let selected: boolean = false
 </script>
 
-<div class="icon-button icon-{size}" on:click>
+<div class="icon-button icon-{size}" class:selected on:click>
   <div class="content">
     {#if typeof (icon) === 'string'}
       <Icon {icon} size={'small'}/>
@@ -47,12 +48,14 @@
       transform: scale(.75);
       pointer-events: none;
     }
+    &.selected { background-color: var(--theme-button-bg-hovered); }
     &:hover { border-color: var(--theme-bg-focused-border); }
     &:active { background-color: var(--theme-bg-accent-color); }
   }
   .icon-small {
     width: 1.5rem;
     height: 1.5rem;
+    .content { transform: scale(.55); }
   }
   .icon-medium {
     width: 1.75rem;

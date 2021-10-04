@@ -101,7 +101,6 @@
       }
     }
   }
-  .popup-block + .popup-block { margin-top: 2rem; }
   .buttons {
     display: flex;
     align-items: center;
