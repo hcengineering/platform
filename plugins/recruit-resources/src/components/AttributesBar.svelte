@@ -18,16 +18,18 @@
   import Location from './icons/Location.svelte'
   import YesNoPresenter from './YesNoPresenter.svelte'
 
-  export let minimize: boolean = false
+  export let minimize: boolean = true
 </script>
 
 <div class="flex-row-center small-text">
   <div class="icon-wrap column">
     <CircleButton icon={Location} size={'large'} />
-    <div class="noicon-column">
-      <Label label={'Location'} />
-      <div class="value">Moscow</div>
-    </div>
+    {#if !minimize}
+      <div class="noicon-column">
+        <Label label={'Location'} />
+        <div class="value">Moscow</div>
+      </div>
+    {/if}
   </div>
   <div class="noicon-column column">
     <Label label={'Onsite'} />
