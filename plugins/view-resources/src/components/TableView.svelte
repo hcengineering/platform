@@ -79,11 +79,7 @@
       sortKey = key
       sortOrder = SortingOrder.Ascending
     } else {
-      if (sortOrder == SortingOrder.Ascending) {
-        sortOrder = SortingOrder.Descending
-      } else {
-        sortOrder = SortingOrder.Ascending
-      }
+      sortOrder = (sortOrder === SortingOrder.Ascending) ? SortingOrder.Descending : SortingOrder.Ascending
     }
   }
 </script>
