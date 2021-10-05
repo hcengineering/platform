@@ -33,11 +33,12 @@
   export let search: string
 
   let sortKey = 'modifiedOn'
+  let sortOrder = SortingOrder.Descending
 
   let objects: Doc[]
 
   const query = createQuery()
-  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, { sort: { [sortKey]: SortingOrder.Descending }, ...options })
+  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)
@@ -70,6 +71,21 @@
       elRow.classList.remove('fixed')
     }))
   }
+
+  function changeSorting(key: string) {
+    if (key === '')
+      return
+    if (key !== sortKey) {
+      sortKey = key
+      sortOrder = SortingOrder.Ascending
+    } else {
+      if (sortOrder == SortingOrder.Ascending) {
+        sortOrder = SortingOrder.Descending
+      } else {
+        sortOrder = SortingOrder.Ascending
+      }
+    }
+  }
 </script>
 
 {#await buildModel(client, _class, config, options)}
@@ -88,7 +104,16 @@
                 </div>
               </th>
             {/if}
-            <th><Label label = {attribute.label}/></th>
+            <th on:click={() => changeSorting(attribute.key)}>
+              <Label label = {attribute.label}/>
+              {#if attribute.key === sortKey}
+                {#if sortOrder === SortingOrder.Ascending}
+                  ^
+                {:else}
+                  v
+                {/if}
+              {/if}
+            </th>
           {/each}
         </tr>
       </thead>
