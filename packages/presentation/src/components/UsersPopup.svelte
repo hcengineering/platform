@@ -26,6 +26,7 @@
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
+  export let maxHeight: number = 0
 
   let search: string = ''
   let objects: Person[] = []
@@ -35,17 +36,21 @@
   $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
 </script>
 
-<div class="popup">
+<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
   <div class="header">
     <div class="title"><Label label={title} /></div>
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="caption"><Label label={caption} /></div>
   </div>
-  {#each objects as person}
-    <button class="menu-item" on:click={() => { dispatch('close', person) }}>
-      <UserInfo size={'medium'} value={person} />
-    </button>
-  {/each}
+  <div class="flex-grow scroll">
+    <div class="flex-col h-full box">
+      {#each objects as person}
+        <button class="menu-item" on:click={() => { dispatch('close', person) }}>
+          <UserInfo size={'medium'} value={person} />
+        </button>
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -75,6 +80,11 @@
       text-transform: uppercase;
       color: var(--theme-content-dark-color);
     }
+  }
+
+  .scroll {
+    overflow-y: scroll;
+    .box { margin-right: 1px; }
   }
 
   .menu-item {

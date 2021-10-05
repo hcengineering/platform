@@ -23,6 +23,7 @@
   import { createQuery } from '../utils'
 
   export let _class: Ref<Class<Space>>
+  export let maxHeight: number = 0
 
   let search: string = ''
   let objects: Space[] = []
@@ -32,16 +33,20 @@
   $: query.query(_class, {}, result => { objects = result })
 </script>
 
-<div class="popup">
+<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
   <div class="flex-col">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="label"><Label label={'SUGGESTED'} /></div>
   </div>
-  {#each objects as space}
-    <button class="menu-item" on:click={() => { dispatch('close', space) }}>
-      <SpaceInfo size={'large'} value={space} />
-    </button>
-  {/each}
+  <div class="flex-grow scroll">
+    <div class="flex-col h-full box">
+      {#each objects as space}
+        <button class="menu-item" on:click={() => { dispatch('close', space) }}>
+          <SpaceInfo size={'large'} value={space} />
+        </button>
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -63,6 +68,11 @@
     font-weight: 600;
     text-transform: uppercase;
     color: var(--theme-content-dark-color);
+  }
+
+  .scroll {
+    overflow-y: scroll;
+    .box { margin-right: 1px; }
   }
 
   .menu-item {

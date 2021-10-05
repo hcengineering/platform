@@ -26,6 +26,7 @@ export let zIndex: number
 
 let modalHTML: HTMLElement
 let modalOHTML: HTMLElement
+let maxHeight: number = 0
 
 function close(result: any) {
   console.log('popup close result', result)
@@ -36,23 +37,19 @@ function close(result: any) {
 $: {
   if (modalHTML) {
     if (element) {
+      maxHeight = 0
       if (typeof element !== 'string') {
         const rect = element.getBoundingClientRect()
         const rectPopup = modalHTML.getBoundingClientRect()
         if (rect.bottom + rectPopup.height + 28 < document.body.clientHeight) {
           modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+          maxHeight = document.body.clientHeight - rect.bottom - 28
         } else if (rect.top > document.body.clientHeight - rect.bottom) {
           modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
-          if (rectPopup.height > rect.top - 28) {
-            modalHTML.style.top = '1rem'
-            modalHTML.style.height = rect.top - 28 + 'px'
-          }
+          maxHeight = rect.top - 28
         } else {
           modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-          if (rectPopup.height > document.body.clientHeight - rect.bottom - 28) {
-            modalHTML.style.bottom = '1rem'
-            modalHTML.style.height = document.body.clientHeight - rect.bottom - 28 + 'px'
-          }
+          maxHeight = document.body.clientHeight - rect.bottom - 28
         }
         if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
           modalHTML.style.left = ''
@@ -85,7 +82,7 @@ $: {
 </script>
 
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component this={is} {...props} on:close={ (ev) => close(ev.detail) } />
+  <svelte:component this={is} {...props} {maxHeight} on:close={ (ev) => close(ev.detail) } />
 </div>
 <div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 
