@@ -281,6 +281,13 @@ export function TypeBoolean (): Type<string> {
 /**
  * @public
  */
+export function TypeTimestamp (): Type<string> {
+  return { _class: core.class.TypeTimestamp, label: 'TypeTimestamp' as IntlString }
+}
+
+/**
+ * @public
+ */
 export function Bag (): Type<Record<string, PropertyType>> {
   return { _class: core.class.Bag, label: 'Bag' as IntlString }
 }

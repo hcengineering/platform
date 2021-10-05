@@ -16,7 +16,7 @@
 import type { IntlString } from '@anticrm/platform'
 import type { Account, AnyAttribute, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model } from '@anticrm/model'
+import { Model, Prop, TypeTimestamp } from '@anticrm/model'
 import core from './component'
 
 // C O R E
@@ -29,7 +29,10 @@ export class TObj implements Obj {
 export class TDoc extends TObj implements Doc {
   _id!: Ref<this>
   space!: Ref<Space>
+
+  @Prop(TypeTimestamp(), 'Modified On' as IntlString)
   modifiedOn!: Timestamp
+
   modifiedBy!: Ref<Account>
 }
 
@@ -62,3 +65,6 @@ export class TTypeString extends TType {}
 
 @Model(core.class.TypeBoolean, core.class.Type)
 export class TTypeBoolean extends TType {}
+
+@Model(core.class.TypeTimestamp, core.class.Type)
+export class TTypeTimestamp extends TType {}

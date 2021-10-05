@@ -19,6 +19,7 @@ import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
 import BooleanEditor from './components/BooleanEditor.svelte'
 import StatePresenter from './components/StatePresenter.svelte'
+import TimestampPresenter from './components/TimestampPresenter.svelte'
 import TableView from './components/TableView.svelte'
 import KanbanView from './components/KanbanView.svelte'
 
@@ -39,6 +40,7 @@ export default async () => ({
     BooleanEditor,
     StatePresenter,
     TableView,
-    KanbanView
+    KanbanView,
+    TimestampPresenter
   },
 })

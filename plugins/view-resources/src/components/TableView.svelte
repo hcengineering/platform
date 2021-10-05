@@ -17,6 +17,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+  import { SortingOrder } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
   import { Label, showPopup, Loading, ScrollBox, CheckBox } from '@anticrm/ui'
@@ -31,10 +32,12 @@
   export let config: string[]
   export let search: string
 
+  let sortKey = 'modifiedOn'
+
   let objects: Doc[]
 
   const query = createQuery()
-  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, options)
+  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, { sort: { [sortKey]: SortingOrder.Descending }, ...options })
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)
