@@ -114,9 +114,9 @@
     padding: 0 1.25rem;
     font-weight: 500;
     border-radius: .5rem;
-    color: var(--trans-button-color);
+    color: var(--theme-caption-color);
     background-color: var(--trans-button-bg);
-    border-color: var(--trans-button-border);
+    border-color: var(--theme-bg-accent-color);
 
     &:hover {
       background-color: var(--trans-button-bg-hovered);
