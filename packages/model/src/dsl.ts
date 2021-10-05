@@ -54,7 +54,7 @@ interface ClassTxes {
   _id: Ref<Class<Obj>>
   extends?: Ref<Class<Obj>>
   domain?: Domain
-  label?: IntlString
+  label: IntlString
   icon?: Asset
   txes: Array<NoIDs<Tx>>
   kind: ClassifierKind
@@ -79,7 +79,7 @@ function getTxes (target: any): ClassTxes {
  * @param icon -
  * @returns
  */
-export function Prop (type: Type<PropertyType>, label?: IntlString, icon?: Asset) {
+export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset) {
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
     const tx: NoIDs<TxCreateDoc<Attribute<PropertyType>>> = {
@@ -268,19 +268,19 @@ export class Builder {
  * @public
  */
 export function TypeString (): Type<string> {
-  return { _class: core.class.TypeString }
+  return { _class: core.class.TypeString, label: 'TypeString' as IntlString }
 }
 
 /**
  * @public
  */
 export function TypeBoolean (): Type<string> {
-  return { _class: core.class.TypeBoolean }
+  return { _class: core.class.TypeBoolean, label: 'TypeBoolean' as IntlString }
 }
 
 /**
  * @public
  */
 export function Bag (): Type<Record<string, PropertyType>> {
-  return { _class: core.class.Bag }
+  return { _class: core.class.Bag, label: 'Bag' as IntlString }
 }

@@ -57,7 +57,7 @@ export type PropertyType = any
  * @public
  */
 export interface UXObject extends Obj {
-  label?: IntlString
+  label: IntlString
   icon?: Asset
 }
 

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { IntlString } from '@anticrm/platform'
 import type { Account, AnyAttribute, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model } from '@anticrm/model'
@@ -35,6 +36,7 @@ export class TDoc extends TObj implements Doc {
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)
 export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind
+  label!: IntlString
   extends!: Ref<Class<Obj>>
   domain!: Domain
 }
@@ -47,10 +49,13 @@ export class TAttribute extends TDoc implements AnyAttribute {
   attributeOf!: Ref<Class<Obj>>
   name!: string
   type!: Type<any>
+  label!: IntlString
 }
 
 @Model(core.class.Type, core.class.Doc)
-export class TType extends TDoc implements Type<any> {}
+export class TType extends TDoc implements Type<any> {
+  label!: IntlString
+}
 
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}

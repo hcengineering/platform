@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { IntlString } from '@anticrm/platform'
 import type { Class, Ref, Obj, Doc } from '@anticrm/core'
 import { Model, Prop, TypeString, Builder } from '../dsl'
 import core from '@anticrm/core'
@@ -34,7 +35,7 @@ describe('dsl', () => {
     @Model('class:test.MyClass' as Ref<Class<Obj>>, core.class.Doc)
     class MyClass {
       _class!: Ref<Class<MyClass>>
-      @Prop(TypeString()) name!: string
+      @Prop(TypeString(), 'name' as IntlString) name!: string
     }
     const builder = new Builder()
     builder.createModel(MyClass)
@@ -76,14 +77,14 @@ describe('dsl', () => {
     @Model('class:test.MyClass' as Ref<Class<Obj>>, core.class.Doc)
     class MyClass {
       _class!: Ref<Class<MyClass>>
-      @Prop(TypeString()) name!: string
+      @Prop(TypeString(), 'name' as IntlString) name!: string
     }
     @Model(
       'class:test.MyClass2' as Ref<Class<Obj>>,
       'class:test.MyClass' as Ref<Class<Obj>>
     )
     class MyClass2 extends MyClass {
-      @Prop(TypeString()) lastName!: string
+      @Prop(TypeString(), 'lastName' as IntlString) lastName!: string
     }
 
     const valid = [

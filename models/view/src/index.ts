@@ -47,6 +47,7 @@ export class TObjectEditor extends TClass implements ObjectEditor {
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
 export class TViewletDescriptor extends TDoc implements ViewletDescriptor {
   component!: AnyComponent
+  label!: IntlString
 }
 
 @Model(view.class.Viewlet, core.class.Doc, DOMAIN_MODEL)

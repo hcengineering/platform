@@ -40,7 +40,7 @@ export class TTypeChannels extends TType {}
  * @public
  */
 export function TypeChannels (): Type<Channel[]> {
-  return { _class: contact.class.TypeChannels }
+  return { _class: contact.class.TypeChannels, label: 'TypeChannels' as IntlString }
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
