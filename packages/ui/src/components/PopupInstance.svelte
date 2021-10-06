@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte'
+  import { afterUpdate } from 'svelte'
   import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
   import { closePopup } from '..'
 
@@ -84,9 +84,9 @@
   afterUpdate(() => { fitPopup() })
 </script>
 
-<svelte:window on:scroll={fitPopup} on:resize={fitPopup} />
+<svelte:window on:resize={fitPopup} />
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component this={is} {...props} {maxHeight} on:close={ (ev) => close(ev.detail) } on:update={fitPopup} />
+  <svelte:component this={is} {...props} {maxHeight} on:close={ (ev) => close(ev.detail) } />
 </div>
 <div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 

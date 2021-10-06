@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'
@@ -34,8 +34,6 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
-
-  afterUpdate(() => { dispatch('update', true) })
 </script>
 
 <div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
