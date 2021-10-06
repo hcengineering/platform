@@ -52,7 +52,7 @@
   }
 
   function sortObjects<T extends Doc> (objects: T[]): T[] {
-    if (_space === undefined) { return [] }
+    if (_space === undefined || objects.length === 0) { return [] }
     const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
     const x = _space.order.map(id => map.get(id) as T)
     return x
@@ -60,7 +60,7 @@
 
 
   const statesQuery = createQuery()
-  $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
+  $: if (_space) statesQuery.query(core.class.State, { _id: { $in: _space.states } }, result => { states = sort(result); console.log('states', sort(result)) })
 
   const query = createQuery()
   $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
