@@ -109,7 +109,7 @@ specifiers:
   express: ^4.17.1
   express-fileupload: ^1.2.1
   file-loader: ^6.2.0
-  intl-messageformat: ^9.7.1
+  intl-messageformat: ~9.7.1
   just-clone: ^3.2.1
   koa: ^2.13.1
   koa-bodyparser: ^4.3.0
@@ -244,7 +244,7 @@ dependencies:
   express: 4.17.1
   express-fileupload: 1.2.1
   file-loader: 6.2.0_webpack@5.57.1
-  intl-messageformat: 9.9.2
+  intl-messageformat: 9.7.1
   just-clone: 3.2.1
   koa: 2.13.3
   koa-bodyparser: 4.3.0
@@ -654,37 +654,28 @@ packages:
       - supports-color
     dev: false
 
-  /@formatjs/ecma402-abstract/1.9.9:
-    resolution: {integrity: sha512-w2HpUW17Ev8UN8G1fSvl0skCLP+HkhGZii0ALaBXYc7rd3osD2s8EF2ihSNkeEeC6aySX1IAkRm0f4lnE8Jeaw==}
-    dependencies:
-      '@formatjs/intl-localematcher': 0.2.21
-      tslib: 2.3.1
-    dev: false
-
-  /@formatjs/fast-memoize/1.2.0:
-    resolution: {integrity: sha512-fObitP9Tlc31SKrPHgkPgQpGo4+4yXfQQITTCNH8AZdEqB7Mq4nPrjpUL/tNGN3lEeJcFxDbi0haX8HM7QvQ8w==}
+  /@formatjs/ecma402-abstract/1.9.4:
+    resolution: {integrity: sha512-ePJXI7tWC9PBxQxS7jtbkCLGVmpC8MH8n9Yjmg8dsh9wXK9svu7nAbq76Oiu5Zb+5GVkLkeTVerlSvHCbNImlA==}
     dependencies:
       tslib: 2.3.1
     dev: false
 
-  /@formatjs/icu-messageformat-parser/2.0.12:
-    resolution: {integrity: sha512-X/tdbKLfVBc2yJRX+xC3uqYxXkp9336FhSS1Hb6kU6pSOU+EseylS3a/vjFOKjol1qQ5BSIQd8YPWtOOt3KcWA==}
+  /@formatjs/fast-memoize/1.1.1:
+    resolution: {integrity: sha512-mIqBr5uigIlx13eZTOPSEh2buDiy3BCdMYUtewICREQjbb4xarDiVWoXSnrERM7NanZ+0TAHNXSqDe6HpEFQUg==}
+    dev: false
+
+  /@formatjs/icu-messageformat-parser/2.0.7:
+    resolution: {integrity: sha512-gduYfh/YdBTmb1XzLueNaofiGZVMrkaDg0RSa0GNztKWs4QXIRS+28cjcuWNpV0q5S8aiLMkP7SHQpZKnPCHLw==}
     dependencies:
-      '@formatjs/ecma402-abstract': 1.9.9
-      '@formatjs/icu-skeleton-parser': 1.2.13
+      '@formatjs/ecma402-abstract': 1.9.4
+      '@formatjs/icu-skeleton-parser': 1.2.8
       tslib: 2.3.1
     dev: false
 
-  /@formatjs/icu-skeleton-parser/1.2.13:
-    resolution: {integrity: sha512-PHK4kdIcNTI15ASyn6dCA2cxzUPHE+UK/FsBkPULNpKgPWEZIYAFO9PgG0a9SDcIIr7Ta3SPPbUZGKRXT3d+ng==}
+  /@formatjs/icu-skeleton-parser/1.2.8:
+    resolution: {integrity: sha512-KLSSAA7Q2Uv7msij8saaOE5rpsHK/2WkfS3737JnDyVTFOYe8l2OarIBUoTC5gi1BnCgiN/1icZlqXwyUX6obA==}
     dependencies:
-      '@formatjs/ecma402-abstract': 1.9.9
-      tslib: 2.3.1
-    dev: false
-
-  /@formatjs/intl-localematcher/0.2.21:
-    resolution: {integrity: sha512-JTJeLiNwexN4Gy0cMxoUPvJbKhXdnSuo5jPrDafEZpnDWlJ5VDYta8zUVVozO/pwzEmFVHEUpgiEDj+39L4oMg==}
-    dependencies:
+      '@formatjs/ecma402-abstract': 1.9.4
       tslib: 2.3.1
     dev: false
 
@@ -4755,11 +4746,11 @@ packages:
     engines: {node: '>= 0.10'}
     dev: false
 
-  /intl-messageformat/9.9.2:
-    resolution: {integrity: sha512-IR/bOP7XUrCxrlgFlZeHXixIT29BNd/1bOS8leElk5sQfvGvsDVoTGI+wLpvWG4INIBQNj8vjxgxlbquB12vog==}
+  /intl-messageformat/9.7.1:
+    resolution: {integrity: sha512-DNiuD+/59G9qaYu3U0KgwCV0zpN9XRoUvc8izSNCNAA5MknhiIUONFE0WtScP+E/7JfoENu+CX57P/SURRbI0A==}
     dependencies:
-      '@formatjs/fast-memoize': 1.2.0
-      '@formatjs/icu-messageformat-parser': 2.0.12
+      '@formatjs/fast-memoize': 1.1.1
+      '@formatjs/icu-messageformat-parser': 2.0.7
       tslib: 2.3.1
     dev: false
 
@@ -9988,7 +9979,7 @@ packages:
     dev: false
 
   file:projects/platform.tgz_b4fae2aaf9a34e02c9acb1cfc4c88710:
-    resolution: {integrity: sha512-ApdD0Nr0CnMo9//QKGQorkxOH1VsF2W14B+70Byf5t22PowiEtg4yzRBilBQchDrMNmKXWWnhJ5lIbzDhJNdzw==, tarball: file:projects/platform.tgz}
+    resolution: {integrity: sha512-xI1AgTm1H+CYAMohZnKJyfhsOWF8gCPj0klcFZrbPu7P5HkgsmJbEO0iVKhqXMxW0GL8l6UT47i5SKci619dVg==, tarball: file:projects/platform.tgz}
     id: file:projects/platform.tgz
     name: '@rush-temp/platform'
     version: 0.0.0
@@ -10000,7 +9991,7 @@ packages:
       eslint-plugin-import: 2.24.2_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
-      intl-messageformat: 9.9.2
+      intl-messageformat: 9.7.1
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - supports-color
