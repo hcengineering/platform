@@ -38,7 +38,7 @@ class Connection implements Storage {
   constructor (private readonly url: string, private readonly handler: TxHander) {
   }
 
-  private async openConnection (): Promise<WebSocket> {
+  private openConnection (): Promise<WebSocket> {
     const websocket = new WebSocket(this.url)
     websocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)

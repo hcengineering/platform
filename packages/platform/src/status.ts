@@ -68,6 +68,12 @@ export class PlatformError<P extends Record<string, any>> extends Error {
 export const OK = new Status(Severity.OK, platform.status.OK, {})
 
 /**
+ * Error Status
+ * @public
+ */
+export const ERROR = new Status(Severity.ERROR, platform.status.BadError, {})
+
+/**
  * @public
  * @param message -
  * @returns
@@ -80,6 +86,6 @@ export function unknownStatus (message: string): Status<{}> {
  * Creates unknown error status
  * @public
  */
-export function unknownError (err: Error): Status {
-  return err instanceof PlatformError ? err.status : unknownStatus(err.message)
+export function unknownError (err: unknown): Status {
+  return err instanceof PlatformError ? err.status : err instanceof Error ? unknownStatus(err.message) : ERROR
 }

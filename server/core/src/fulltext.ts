@@ -50,7 +50,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
     const docs = await this.adapter.search(query)
     console.log(docs)
     const ids = docs.map(doc => (doc.attachedTo ?? doc.id) as Ref<T>)
-    return this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
+    return await this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>): AnyAttribute[] | undefined {
