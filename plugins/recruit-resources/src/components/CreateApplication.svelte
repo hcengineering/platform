@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
+  import type { Ref, Space, SpaceWithStates } from '@anticrm/core'
   import { Status, OK, Severity } from '@anticrm/platform'
   import { DatePicker, EditBox, Tabs, Section, Grid, Status as StatusControl } from '@anticrm/ui'
   import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
@@ -30,7 +30,7 @@
   import recruit from '../plugin'
   import contact from '@anticrm/contact'
 
-  export let space: Ref<Space>
+  export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate> // | null = null
   export let employee: Ref<Employee> // | null = null
 
@@ -47,10 +47,16 @@
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
-    await client.createDoc(recruit.class.Applicant, _space, {
+    const id = await client.createDoc(recruit.class.Applicant, _space, {
       candidate,
       state: state._id
     })
+
+    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      $push: {
+        order: id
+      }
+    })    
     dispatch('close')
   }
 

@@ -53,11 +53,46 @@
     return _space.states.map(id => map.get(id) as State )
   }
 
+  function sortObjects<T extends Doc> (objects: T[]): T[] {
+    if (_space === undefined) { return [] }
+    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
+    const x = _space.order.map(id => map.get(id) as T)
+    return x
+  }
+
+
   const statesQuery = createQuery()
   $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
 
   const query = createQuery()
-  $: query.query(_class, { space }, result => { objects = result }, options)
+  $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+
+  function dragover(ev: MouseEvent, object: Doc) {
+    // if (dragswap(ev, i)) {
+    if (dragCard !== object) {
+      const dragover = objects.indexOf(object)
+      const dragging = objects.indexOf(dragCard)
+      console.log('dragover', dragover, dragging)
+      objects[dragover] = dragCard
+      objects[dragging] = object
+    }
+  }
+
+  async function move(to: number) {
+    client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      $pull: {
+        order: dragCard._id
+      }
+    })
+    client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      $push: {
+        order: {
+          $each: [dragCard._id],
+          $position: to < dragCardInitialPosition ? to : to
+        }
+      }
+    })
+  }
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)
@@ -77,7 +112,8 @@
     showPopup(open, { object, space }, 'float')
   }
 
-  let dragCard: (Doc & { state: Ref<State>}) | undefined
+  let dragCard: Doc
+  let dragCardInitialPosition: number
 
   async function cardPresenter(_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
     const clazz = client.getHierarchy().getClass(_class) 
@@ -97,24 +133,39 @@
         <KanbanPanel label={state.title} color={state.color} counter={4}
           on:dragover={(event) => {
             event.preventDefault()
+            if (dragCard.state !== state._id) {
+              client.updateDoc(_class, space, dragCard._id, { state: state._id })
+            }
           }}
           on:drop={(event) => {
             event.preventDefault()
-            if (dragCard) {
-              client.updateDoc(_class, space, dragCard._id, { state: state._id })
-              dragCard = undefined
-            }
+            // if (selected !== -1) {
+            //   client.updateDoc(_class, space, objects[selected]._id, { state: state._id })
+            //   selected = -1
+            // }
           }}
         >
           <KanbanCardEmpty label={'Create new application'} />
-          {#each objects.filter((c) => c.state === state._id) as object}
-            <svelte:component this={presenter} {object} draggable={true}
-            on:dragstart={() => {
-              dragCard = object
-            }}
-            on:dragend={() => {
-              dragCard = undefined
-            }}/>
+          {#each objects as object, j}
+            {#if object.state === state._id}
+              <div
+                on:dragover|preventDefault={(ev) => {
+                  dragover(ev, object)
+                }}
+                on:drop|preventDefault={() => {
+                  move(j)
+                }} 
+              > {j}
+                <svelte:component this={presenter} {object} draggable={true}
+                on:dragstart={() => {
+                  dragCardInitialPosition = j
+                  dragCard = objects[j]
+                }}
+                on:dragend={() => {
+                  dragCard = undefined
+                }}/>
+              </div>
+            {/if}
           {/each}
         </KanbanPanel>
       {/each}

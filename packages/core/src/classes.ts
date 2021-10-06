@@ -209,4 +209,5 @@ export interface State extends Doc {
  */
 export interface SpaceWithStates extends Space {
   states: Arr<Ref<State>>
+  order: Arr<Ref<Doc>>
 }

@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import type { Account, Arr, Ref, Space, Domain, State } from '@anticrm/core'
+import type { Account, Arr, Ref, Space, Domain, State, Doc } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeString } from '@anticrm/model'
 import core from './component'
@@ -48,4 +48,5 @@ export class TState extends TDoc implements State {
 @Model(core.class.SpaceWithStates, core.class.Space)
 export class TSpaceWithStates extends TSpace {
   states!: Arr<Ref<State>>
+  order!: Arr<Ref<Doc>>
 }

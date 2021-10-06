@@ -129,7 +129,6 @@
             dragover(ev, i)
           }}
           on:drop|preventDefault={() => {
-            console.log('DROP')
             move(i)
           }}
           on:dragstart={() => {
@@ -137,7 +136,6 @@
             dragState = states[i]._id
           }}
           on:dragend={() => {
-            console.log('DRAGEND')
             selected = undefined
           }}
         >
