@@ -30,25 +30,15 @@
 
   let search: string = ''
   let objects: Person[] = []
-  let clientHeight: number
-  let oldHeight: number
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
 
-  $: if (oldHeight !== clientHeight) {
-    oldHeight = clientHeight
-    console.log('!!!!!!!!!!!! WORKING !!!!!!!!!!!!')
-    dispatch('update', true)
-  }
-  afterUpdate(() => {
-    console.log('!!!!!!!!!!!! WORKING !!!!!!!!!!!!')
-    dispatch('update', true)
-  })
+  afterUpdate(() => { dispatch('update', true) })
 </script>
 
-<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}" bind:clientHeight>
+<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
   <div class="header">
     <div class="title"><Label label={title} /></div>
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
