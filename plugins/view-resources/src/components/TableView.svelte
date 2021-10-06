@@ -20,7 +20,7 @@
   import { SortingOrder } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox, CheckBox } from '@anticrm/ui'
+  import { Label, showPopup, Loading, ScrollBox, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
 
@@ -100,15 +100,19 @@
                 </div>
               </th>
             {/if}
-            <th on:click={() => changeSorting(attribute.key)}>
-              <Label label = {attribute.label}/>
-              {#if attribute.key === sortKey}
-                {#if sortOrder === SortingOrder.Ascending}
-                  ^
-                {:else}
-                  v
+            <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
+              <div class="flex-row-center">
+                <Label label = {attribute.label}/>
+                {#if attribute.key === sortKey}
+                  <div class="icon">
+                    {#if sortOrder === SortingOrder.Ascending}
+                      <IconUp size={'small'} />
+                    {:else}
+                      <IconDown size={'small'} />
+                    {/if}
+                  </div>
                 {/if}
-              {/if}
+              </div>
             </th>
           {/each}
         </tr>
@@ -185,8 +189,14 @@
     color: var(--theme-content-dark-color);
     background-color: var(--theme-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    user-select: none;
     z-index: 5;
 
+    &.sortable { cursor: pointer; }
+    &.sorted .icon {
+      margin-left: .25rem;
+      opacity: .6;
+    }
     .checkall { visibility: visible; }
   }
 
