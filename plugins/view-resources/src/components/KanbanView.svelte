@@ -47,9 +47,7 @@
 
   function sort(states: State[]): State[] {
     if (_space === undefined || states.length === 0) { return [] }
-    console.log(states)
     const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
-    console.log(_space.states)
     return _space.states.map(id => map.get(id) as State )
   }
 
@@ -72,7 +70,6 @@
     if (dragCard !== object) {
       const dragover = objects.indexOf(object)
       const dragging = objects.indexOf(dragCard)
-      console.log('dragover', dragover, dragging)
       objects[dragover] = dragCard
       objects[dragging] = object
     }
@@ -155,7 +152,7 @@
                 on:drop|preventDefault={() => {
                   move(j)
                 }} 
-              > {j}
+              >
                 <svelte:component this={presenter} {object} draggable={true}
                 on:dragstart={() => {
                   dragCardInitialPosition = j

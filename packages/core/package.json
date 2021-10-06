@@ -18,7 +18,7 @@
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
     "simplytyped": "^3.3.0",
-    "@rushstack/heft": "^0.35.0"
+    "@rushstack/heft": "^0.41.1"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",

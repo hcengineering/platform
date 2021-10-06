@@ -1,6 +1,7 @@
 .heft/
 lib/
 _api-extractor-temp/
+temp/
 
 # Logs
 *.log

@@ -125,6 +125,7 @@ export const platformId = 'platform' as Plugin
 export default plugin(platformId, {
   status: {
     OK: '' as StatusCode,
+    BadError: '' as StatusCode,
     UnknownError: '' as StatusCode<{ message: string }>,
     InvalidId: '' as StatusCode<{ id: string }>,
 

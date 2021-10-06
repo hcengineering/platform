@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Status, OK } from './status'
+import { Status, OK, unknownError } from './status'
 
 /**
  * @public
@@ -93,7 +93,7 @@ export async function monitor<T> (
     void setPlatformStatus(OK) // eslint-disable-line no-void
     return result
   } catch (err) {
-    void setPlatformStatus(err) // eslint-disable-line no-void
+    void setPlatformStatus(unknownError(err)) // eslint-disable-line no-void
     throw err
   }
 }
