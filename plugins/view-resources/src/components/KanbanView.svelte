@@ -63,7 +63,7 @@
   $: if (_space) statesQuery.query(core.class.State, { _id: { $in: _space.states } }, result => { states = sort(result); console.log('states', sort(result)) })
 
   const query = createQuery()
-  $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+  $: if (_space) query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
 
   function dragover(ev: MouseEvent, object: Doc) {
     // if (dragswap(ev, i)) {
@@ -75,20 +75,29 @@
     }
   }
 
-  async function move(to: number) {
-    client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      $pull: {
-        order: dragCard._id
-      }
-    })
-    client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      $push: {
-        order: {
-          $each: [dragCard._id],
-          $position: to < dragCardInitialPosition ? to : to
+  async function move(to: number, state: Ref<State>) {
+    console.log('move version 10')
+    const id = dragCard._id
+
+    if (dragCardInitialState !== state)
+      await client.updateDoc(_class, space, id, { state })
+
+    if (dragCardInitialPosition !== to) {
+      await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+        $pull: {
+          order: id
         }
-      }
-    })
+      })
+
+      client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+        $push: {
+          order: {
+            $each: [id],
+            $position: to
+          }
+        }
+      })
+    }
   }
 
   function getValue(doc: Doc, key: string): any {
@@ -111,6 +120,7 @@
 
   let dragCard: Doc
   let dragCardInitialPosition: number
+  let dragCardInitialState: Ref<State>
 
   async function cardPresenter(_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
     const clazz = client.getHierarchy().getClass(_class) 
@@ -131,17 +141,9 @@
           on:dragover={(event) => {
             event.preventDefault()
             if (dragCard.state !== state._id) {
-              client.updateDoc(_class, space, dragCard._id, { state: state._id })
+              dragCard.state = state._id
             }
-          }}
-          on:drop={(event) => {
-            event.preventDefault()
-            // if (selected !== -1) {
-            //   client.updateDoc(_class, space, objects[selected]._id, { state: state._id })
-            //   selected = -1
-            // }
-          }}
-        >
+          }}>
           <KanbanCardEmpty label={'Create new application'} />
           {#each objects as object, j}
             {#if object.state === state._id}
@@ -150,16 +152,14 @@
                   dragover(ev, object)
                 }}
                 on:drop|preventDefault={() => {
-                  move(j)
+                  move(j, state._id)
                 }} 
               >
                 <svelte:component this={presenter} {object} draggable={true}
                 on:dragstart={() => {
+                  dragCardInitialState = state._id
                   dragCardInitialPosition = j
                   dragCard = objects[j]
-                }}
-                on:dragend={() => {
-                  dragCard = undefined
                 }}/>
               </div>
             {/if}
