@@ -84,32 +84,13 @@
 
     if (dragCardInitialPosition !== to) {
 
-      // const remove = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      //   $pull: {
-      //     order: id
-      //   }
-      // })
-
-      // const add = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      //   $push: {
-      //     order: {
-      //       $each: [id],
-      //       $position: to
-      //     }
-      //   }
-      // })
-
-      // const updateTx = client.txFactory.createTxBulkWrite(core.space.Model, [remove, add])
-
-      // await client.tx(updateTx)
-      
-      await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      const remove = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $pull: {
           order: id
         }
       })
 
-      client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      const add = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $push: {
           order: {
             $each: [id],
@@ -117,6 +98,25 @@
           }
         }
       })
+
+      const updateTx = client.txFactory.createTxBulkWrite(core.space.Model, [remove, add])
+
+      await client.tx(updateTx)
+      
+      // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      //   $pull: {
+      //     order: id
+      //   }
+      // })
+
+      // client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      //   $push: {
+      //     order: {
+      //       $each: [id],
+      //       $position: to
+      //     }
+      //   }
+      // })
     }
   }
 

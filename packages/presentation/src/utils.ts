@@ -39,7 +39,8 @@ class UIClient extends TxOperations implements Client {
   }
 
   tx(tx: Tx): Promise<void> {
-    return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
+    // return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
+    return super.tx(tx)  
   }
 }
 
