@@ -76,11 +76,11 @@
   }
 
   async function move(to: number, state: Ref<State>) {
-    console.log('move version 10')
+    console.log('move version 12')
     const id = dragCard._id
 
     if (dragCardInitialState !== state)
-      await client.updateDoc(_class, space, id, { state })
+      client.updateDoc(_class, space, id, { state })
 
     if (dragCardInitialPosition !== to) {
       await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
