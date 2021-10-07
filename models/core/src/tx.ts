@@ -29,7 +29,8 @@ import type {
   Mixin,
   ExtendedAttributes,
   PropertyType,
-  TxPutBag
+  TxPutBag,
+  TxBulkWrite
 } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { Model } from '@anticrm/model'
@@ -74,4 +75,9 @@ export class TTxUpdateDoc<T extends Doc> extends TTxCUD<T> implements TxUpdateDo
 
 @Model(core.class.TxRemoveDoc, core.class.TxCUD)
 export class TTxRemoveDoc<T extends Doc> extends TTxCUD<T> implements TxRemoveDoc<T> {
+}
+
+@Model(core.class.TxBulkWrite, core.class.Tx)
+export class TTxBulkWrite extends TTx implements TxBulkWrite {
+  txes!: TxCUD<Doc>[]
 }

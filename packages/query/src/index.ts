@@ -16,7 +16,7 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb
+  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb, TxBulkWrite
 } from '@anticrm/core'
 
 interface Query {
@@ -177,8 +177,13 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
+  protected override async txBulkWrite (tx: TxBulkWrite): Promise<void> {
+    console.log('query: bulk')
+    await super.txBulkWrite(tx)
+  }
+
   async tx (tx: Tx): Promise<void> {
-    // await this.client.tx(tx)
+    console.log('query tx', tx)
     await super.tx(tx)
   }
 

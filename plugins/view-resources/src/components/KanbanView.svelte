@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
@@ -83,6 +83,26 @@
       client.updateDoc(_class, space, id, { state })
 
     if (dragCardInitialPosition !== to) {
+
+      // const remove = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      //   $pull: {
+      //     order: id
+      //   }
+      // })
+
+      // const add = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      //   $push: {
+      //     order: {
+      //       $each: [id],
+      //       $position: to
+      //     }
+      //   }
+      // })
+
+      // const updateTx = client.txFactory.createTxBulkWrite(core.space.Model, [remove, add])
+
+      // await client.tx(updateTx)
+      
       await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $pull: {
           order: id

@@ -53,6 +53,13 @@ export interface TxPutBag<T extends PropertyType> extends TxCUD<Doc> {
 /**
  * @public
  */
+export interface TxBulkWrite extends Tx {
+  txes: TxCUD<Doc>[]
+}
+
+/**
+ * @public
+ */
 export type ExtendedAttributes<D extends Doc, M extends D> = Omit<M, keyof D>
 
 /**
@@ -168,6 +175,8 @@ export abstract class TxProcessor implements WithTx {
         return await this.txMixin(tx as TxMixin<Doc, Doc>)
       case core.class.TxPutBag:
         return await this.txPutBag(tx as TxPutBag<PropertyType>)
+      case core.class.TxBulkWrite:
+        return await this.txBulkWrite(tx as TxBulkWrite)
     }
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
@@ -189,13 +198,20 @@ export abstract class TxProcessor implements WithTx {
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void>
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void>
   protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<void>
+
+  protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<void> {
+    for (const tx of bulkTx.txes) {
+      console.log('bulk', tx)
+      await this.tx(tx)
+    }
+  }
 }
 
 /**
  * @public
  */
 export class TxOperations implements Storage {
-  private readonly txFactory: TxFactory
+  readonly txFactory: TxFactory
 
   constructor (private readonly storage: Storage, user: Ref<Account>) {
     this.txFactory = new TxFactory(user)
@@ -357,6 +373,18 @@ export class TxFactory {
       objectSpace: core.space.Model,
       mixin,
       attributes
+    }
+  }
+
+  createTxBulkWrite (space: Ref<Space>, txes: TxCUD<Doc>[]): TxBulkWrite {
+    return {
+      _id: generateId(),
+      _class: core.class.TxBulkWrite,
+      space: core.space.Tx,
+      modifiedBy: this.account,
+      modifiedOn: Date.now(),
+      objectSpace: space,
+      txes
     }
   }
 }
