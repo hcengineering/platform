@@ -22,6 +22,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Label, showPopup, Loading, ScrollBox, AnyComponent } from '@anticrm/ui'
   import type { AnySvelteComponent } from '@anticrm/ui'
+  import type { Kanban } from '@anticrm/view'
 
   import { createQuery } from '@anticrm/presentation'
 
@@ -39,11 +40,15 @@
   export let config: string[]
 
   let _space: SpaceWithStates | undefined
+  let kanban: Kanban
   let states: State[] = []
   let objects: (Doc & { state: Ref<State> })[] = []
 
   const spaceQuery = createQuery()
   $: spaceQuery.query(core.class.SpaceWithStates, { _id: space }, result => { _space = result[0] })
+
+  const kanbanQuery = createQuery()
+  $: kanbanQuery.query(view.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
   function sort(states: State[]): State[] {
     if (_space === undefined || states.length === 0) { return [] }
@@ -54,7 +59,7 @@
   function sortObjects<T extends Doc> (objects: T[]): T[] {
     if (_space === undefined || objects.length === 0) { return [] }
     const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
-    const x = _space.order.map(id => map.get(id) as T)
+    const x = kanban.order.map(id => map.get(id) as T)
     return x
   }
 
@@ -63,7 +68,7 @@
   $: if (_space) statesQuery.query(core.class.State, { _id: { $in: _space.states } }, result => { states = sort(result); console.log('states', sort(result)) })
 
   const query = createQuery()
-  $: if (_space) query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+  $: if (kanban) query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
 
   function dragover(ev: MouseEvent, object: Doc) {
     // if (dragswap(ev, i)) {
@@ -86,13 +91,13 @@
 
     if (dragCardInitialPosition !== to) {
 
-      await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      await client.updateDoc(view.class.Kanban, space, kanban._id, {
         $pull: {
           order: id
         }
       })
 
-      client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      client.updateDoc(view.class.Kanban, space, kanban._id, {
         $push: {
           order: {
             $each: [id],
