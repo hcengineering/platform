@@ -80,22 +80,26 @@
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
+    if (dragCardInitialState !== state)
+      client.updateDoc(_class, space, id, { state })
+
+
     if (dragCardInitialPosition !== to) {
 
-      txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $pull: {
           order: id
         }
-      }))
+      })
 
-      txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $push: {
           order: {
             $each: [id],
             $position: to
           }
         }
-      }))
+      })
       
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
@@ -113,13 +117,10 @@
       // })
     }
 
-    if (dragCardInitialState !== state)
-      txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
-
-    if (txes.length > 0) {
-      const updateTx = client.txFactory.createTxBulkWrite(space, txes)
-      await client.tx(updateTx)
-    }
+    // if (txes.length > 0) {
+    //   const updateTx = client.txFactory.createTxBulkWrite(space, txes)
+    //   await client.tx(updateTx)
+    // }
   }
 
   function getValue(doc: Doc, key: string): any {
