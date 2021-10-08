@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage } from '@anticrm/core'
+import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite } from '@anticrm/core'
 import core, { Hierarchy, DOMAIN_TX } from '@anticrm/core'
 import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
@@ -87,13 +87,20 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private routeTx (tx: Tx): Promise<void> {
+  private async routeTx (tx: Tx): Promise<void> {
     if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      return this.getAdapter(domain).tx(txCUD)
+      return await this.getAdapter(domain).tx(txCUD)
     } else {
-      throw new Error('not implemented (not derived from TxCUD)')
+      if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
+        const bulkWrite = tx as TxBulkWrite
+        for (const tx of bulkWrite.txes) {
+          await this.tx(tx)
+        }
+      } else {
+        throw new Error('not implemented (routeTx)')
+      }
     }
   }
 

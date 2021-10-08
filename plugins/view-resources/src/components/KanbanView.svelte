@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite, TxCUD } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
@@ -78,30 +78,24 @@
   async function move(to: number, state: Ref<State>) {
     console.log('move version 12')
     const id = dragCard._id
-
-    if (dragCardInitialState !== state)
-      client.updateDoc(_class, space, id, { state })
+    const txes: TxCUD<Doc>[] = []
 
     if (dragCardInitialPosition !== to) {
 
-      const remove = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $pull: {
           order: id
         }
-      })
+      }))
 
-      const add = client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
         $push: {
           order: {
             $each: [id],
             $position: to
           }
         }
-      })
-
-      const updateTx = client.txFactory.createTxBulkWrite(core.space.Model, [remove, add])
-
-      await client.tx(updateTx)
+      }))
       
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
@@ -117,6 +111,14 @@
       //     }
       //   }
       // })
+    }
+
+    if (dragCardInitialState !== state)
+      txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
+
+    if (txes.length > 0) {
+      const updateTx = client.txFactory.createTxBulkWrite(space, txes)
+      await client.tx(updateTx)
     }
   }
 
