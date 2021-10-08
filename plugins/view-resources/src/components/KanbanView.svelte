@@ -80,25 +80,27 @@
     }
   }
 
+  let currentOp: Promise<void> | undefined
+
   async function move(to: number, state: Ref<State>) {
     console.log('move version 12')
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
     if (dragCardInitialState !== state)
-      client.updateDoc(_class, space, id, { state })
+      txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
 
 
     if (dragCardInitialPosition !== to) {
 
-      client.updateDoc(view.class.Kanban, space, kanban._id, {
+      txes.push(client.txFactory.createTxUpdateDoc(view.class.Kanban, space, kanban._id, {
         $move: {
           order: {
             $value: id,
             $position: to
           }
         }
-      })
+      }))
       
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
@@ -116,10 +118,13 @@
       // })
     }
 
-    // if (txes.length > 0) {
-    //   const updateTx = client.txFactory.createTxBulkWrite(space, txes)
-    //   await client.tx(updateTx)
-    // }
+    if (txes.length > 0) {
+      const updateTx = client.txFactory.createTxBulkWrite(space, txes)
+      if (currentOp) {
+        await currentOp
+      }
+      currentOp = client.tx(updateTx).then(() => console.log('move done')).catch(err => console.log('move error ' + err))
+    }
   }
 
   function getValue(doc: Doc, key: string): any {
