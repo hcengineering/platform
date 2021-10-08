@@ -14,15 +14,17 @@
 //
 
 import type { IntlString, Asset, Resource } from '@anticrm/platform'
-import type { Ref, Class, Space, Doc } from '@anticrm/core'
+import type { Ref, Class, Space, Doc, Arr, Domain } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget } from '@anticrm/view'
+import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban } from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 
 import view from './plugin'
+
+const DOMAIN_KANBAN = 'kanban' as Domain
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
@@ -71,8 +73,14 @@ export class TActionTarget extends TDoc implements ActionTarget {
   action!: Ref<Action>
 }
 
+@Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
+export class TKanban extends TDoc implements Kanban {
+  attachedTo!: Ref<Space>
+  order!: Arr<Ref<Doc>>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TKanban)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor

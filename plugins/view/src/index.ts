@@ -16,7 +16,7 @@
 
 import type { Plugin, Asset, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc } from '@anticrm/core'
+import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr } from '@anticrm/core'
 
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -84,6 +84,14 @@ export interface ActionTarget extends Doc {
 /**
  * @public
  */
+export interface Kanban extends Doc {
+  attachedTo: Ref<Space>
+  order: Arr<Ref<Doc>>
+}
+
+/**
+ * @public
+ */
 export const viewId = 'view' as Plugin
 
 export default plugin(viewId, {
@@ -97,7 +105,8 @@ export default plugin(viewId, {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
-    ActionTarget: '' as Ref<Class<ActionTarget>>
+    ActionTarget: '' as Ref<Class<ActionTarget>>,
+    Kanban: '' as Ref<Class<Kanban>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,

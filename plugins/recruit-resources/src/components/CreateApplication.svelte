@@ -29,6 +29,7 @@
   import core from '@anticrm/core'
   import recruit from '../plugin'
   import contact from '@anticrm/contact'
+  import view from '@anticrm/view'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate> // | null = null
@@ -52,7 +53,13 @@
       state: state._id
     })
 
-    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+    const kanban = await client.findOne(view.class.Kanban, { attachedTo: _space })
+
+    if (kanban === undefined) {
+      throw new Error('kanban object not found')
+    }
+
+    await client.updateDoc(view.class.Kanban, _space, kanban._id, {
       $push: {
         order: id
       }
