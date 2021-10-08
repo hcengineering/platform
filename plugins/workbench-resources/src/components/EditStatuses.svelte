@@ -16,12 +16,13 @@
 
 <script lang="ts">
   import type { Ref, SpaceWithStates, State } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon } from '@anticrm/ui'
+  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, closePopup } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import { createEventDispatcher } from 'svelte'
   import Close from './icons/Close.svelte'
   import Circles from './icons/Circles.svelte'
   import Status from './icons/Status.svelte'
+  import ColorsPopup from './ColorsPopup.svelte'
 
   import core from '@anticrm/core'
 
@@ -140,7 +141,11 @@
           }}
         >
           <div class="bar"><Circles /></div>
-          <div class="color" style="background-color: {state.color}" />
+          <div class="color" style="background-color: {state.color}"
+            on:click={() => {
+              showPopup(ColorsPopup, {}, elements[i], (result) => { if (result) state.color = result })
+            }}
+          />
           <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
           <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
         </div>
@@ -217,6 +222,7 @@
       width: 1rem;
       height: 1rem;
       border-radius: .25rem;
+      cursor: pointer;
     }
     .tool {
       margin-left: 1rem;
