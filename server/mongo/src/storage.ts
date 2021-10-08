@@ -133,8 +133,45 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
-    const op = isOperator(tx.operations) ? tx.operations : { $set: tx.operations }
-    await this.db.collection(domain).updateOne({ _id: tx.objectId }, op)
+    if (isOperator(tx.operations)) {
+      const operator = Object.keys(tx.operations)[0]
+      if (operator === '$move') {
+        const keyval = (tx.operations as any).$move
+        const arr = Object.keys(keyval)[0]
+        const desc = keyval[arr]
+        const ops = [
+          {
+            updateOne: {
+              filter: { _id: tx.objectId },
+              update: {
+                $pull: {
+                  [arr]: desc.$value
+                }
+              }
+            }
+          },
+          {
+            updateOne: {
+              filter: { _id: tx.objectId },
+              update: {
+                $push: {
+                  [arr]: {
+                    $each: [desc.$value],
+                    $position: desc.$position
+                  }
+                }
+              }
+            }
+          }
+        ]
+        console.log('ops', ops)
+        await this.db.collection(domain).bulkWrite(ops as any)
+      } else {
+        await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+      }
+    } else {
+      await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+    }
   }
 
   override tx (tx: Tx): Promise<void> {

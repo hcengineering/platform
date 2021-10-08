@@ -47,6 +47,16 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
+function $move (document: Doc, keyval: Record<string, PropertyType>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    const arr = doc[key] as Array<any>
+    const desc = keyval[key]
+    doc[key] = arr.filter(val => val !== desc.$value)
+    doc[key].splice(desc.$position, 0, desc.$value)
+  }
+}
+
 function $pushMixin (document: Doc, options: any): void {
   const doc = document as any
   const mixinId = options.$mixin
@@ -74,6 +84,7 @@ function $inc (document: Doc, keyval: Record<string, number>): void {
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
+  $move,
   $pushMixin,
   $inc
 }

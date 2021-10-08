@@ -82,16 +82,16 @@
 
     if (dragCardInitialPosition !== to) {
 
-      txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-        $pull: {
-          order: id
-        }
-      }))
+      // txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
+      //   $pull: {
+      //     order: id
+      //   }
+      // }))
 
       txes.push(client.txFactory.createTxUpdateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-        $push: {
+        $move: {
           order: {
-            $each: [id],
+            $value: id,
             $position: to
           }
         }
