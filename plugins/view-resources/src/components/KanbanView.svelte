@@ -65,10 +65,10 @@
 
 
   const statesQuery = createQuery()
-  $: if (_space) statesQuery.query(core.class.State, { _id: { $in: _space.states } }, result => { states = sort(result); console.log('states', sort(result)) })
+  $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
 
   const query = createQuery()
-  $: if (kanban) query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+  $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
 
   function dragover(ev: MouseEvent, object: Doc) {
     // if (dragswap(ev, i)) {
@@ -83,7 +83,7 @@
   let currentOp: Promise<void> | undefined
 
   async function move(to: number, state: Ref<State>) {
-    console.log('move version 12')
+    console.log('INITIAL', dragCardInitialPosition, 'TO', to)
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
@@ -174,6 +174,7 @@
           <KanbanCardEmpty label={'Create new application'} />
           {#each objects as object, j}
             {#if object.state === state._id}
+              {j}
               <div
                 on:dragover|preventDefault={(ev) => {
                   dragover(ev, object)
