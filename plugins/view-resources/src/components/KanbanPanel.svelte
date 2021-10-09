@@ -15,17 +15,26 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { Label, ScrollBox } from '@anticrm/ui'
+  import { Label, ScrollBox, IconAdd } from '@anticrm/ui'
 
   export let label: IntlString
   export let color: string
   export let counter: number
+  export let addAction: () => void | undefined
 </script>
 
 <div class="panel-container" on:dragover on:drop>
-  <div class="header" style="background-color: {color}">
-    <div class="title"><Label {label} /></div>
-    <div class="counter">{counter}</div>
+  <div class="header">
+    <div class="bar" style="background-color: {color}" />
+    <div class="flex-between label">
+      <div>
+        <Label {label} />
+        <span>({counter})</span>
+      </div>
+      <div class="tool" on:click|preventDefault={addAction}>
+        <IconAdd size={'small'} />
+      </div>
+    </div>
   </div>
   <div class="scroll">
     <ScrollBox vertical>
@@ -47,28 +56,30 @@
 
     .header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: .75rem;
-      padding: .5rem;
-      min-height: 2.75rem;
-      font-weight: 500;
-      border: 1px solid rgba(0, 0, 0, .1);
-      border-radius: .5rem;
+      flex-direction: column;
+      margin: 0 .75rem;
+      height: 4rem;
+      min-height: 4rem;
+      user-select: none;
 
-      .title {
-        padding-left: .5rem;
-        color: var(--theme-caption-color);
+      .bar {
+        height: .375rem;
+        border-radius: 1px;
       }
-      .counter {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 1.75rem;
-        height: 1.75rem;
-        color: var(--theme-contnet-accent-color);
-        background-color: rgba(0, 0, 0, .08);
-        border-radius: 50%;
+      .label {
+        padding: 0 .5rem 0 1rem;
+        height: 100%;
+        font-weight: 500;
+        color: var(--theme-caption-color);
+        span {
+          font-weight: 400;
+          color: var(--theme-content-dark-color);
+        }
+      }
+      .tool {
+        opacity: .4;
+        cursor: pointer;
+        &:hover { opacity: 1; }
       }
     }
 
