@@ -63,7 +63,6 @@
     return x
   }
 
-
   const statesQuery = createQuery()
   $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
 
@@ -72,15 +71,9 @@
 
   function dragover(ev: MouseEvent, object: Doc) {
     if (dragCard !== object) {
-      const dragging = objects.indexOf(dragCard)
       const dragover = objects.indexOf(object)
-      console.log('dragging', dragging)
-      console.log('dragover', dragover)
       objects = objects.filter(x => x !== dragCard)
       objects = [...objects.slice(0, dragover), dragCard, ...objects.slice(dragover)]
-      // objects.splice(dragover, 0, [dragCard])
-      // objects[dragover] = dragCard
-      // objects[dragging] = object
     }
   }
 
