@@ -16,12 +16,13 @@
 
 <script lang="ts">
   import type { Ref, SpaceWithStates, State } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon } from '@anticrm/ui'
+  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import { createEventDispatcher } from 'svelte'
   import Close from './icons/Close.svelte'
   import Circles from './icons/Circles.svelte'
   import Status from './icons/Status.svelte'
+  import ColorsPopup from './ColorsPopup.svelte'
 
   import core from '@anticrm/core'
 
@@ -118,34 +119,40 @@
     <div class="tool" on:click={() => dispatch('close')}><Close size={'small'} /></div>
   </div>
   <div class="content">
-    <div class="flex-between states-header">
-      <Label label={'ACTIVE STATUSES'} />
-      <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
-    </div>
-    {#each states as state, i}
-      {#if state}
-        <div bind:this={elements[i]} class="flex-between states" draggable={true}
-          on:dragover|preventDefault={(ev) => {
-            dragover(ev, i)
-          }}
-          on:drop|preventDefault={() => {
-            move(i)
-          }}
-          on:dragstart={() => {
-            dragStateInitialPosition = selected = i
-            dragState = states[i]._id
-          }}
-          on:dragend={() => {
-            selected = undefined
-          }}
-        >
-          <div class="bar"><Circles /></div>
-          <div class="color" style="background-color: {state.color}" />
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-          <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
-        </div>
-      {/if}
-    {/each}
+    <ScrollBox vertical stretch>
+      <div class="flex-between states-header">
+        <Label label={'ACTIVE STATUSES'} />
+        <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
+      </div>
+      {#each states as state, i}
+        {#if state}
+          <div bind:this={elements[i]} class="flex-between states" draggable={true}
+            on:dragover|preventDefault={(ev) => {
+              dragover(ev, i)
+            }}
+            on:drop|preventDefault={() => {
+              move(i)
+            }}
+            on:dragstart={() => {
+              dragStateInitialPosition = selected = i
+              dragState = states[i]._id
+            }}
+            on:dragend={() => {
+              selected = undefined
+            }}
+          >
+            <div class="bar"><Circles /></div>
+            <div class="color" style="background-color: {state.color}"
+              on:click={() => {
+                showPopup(ColorsPopup, {}, elements[i], (result) => { if (result) state.color = result })
+              }}
+            />
+            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
+            <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
+          </div>
+        {/if}
+      {/each}
+    </ScrollBox>
   </div>
 </div>
 
@@ -217,6 +224,7 @@
       width: 1rem;
       height: 1rem;
       border-radius: .25rem;
+      cursor: pointer;
     }
     .tool {
       margin-left: 1rem;
