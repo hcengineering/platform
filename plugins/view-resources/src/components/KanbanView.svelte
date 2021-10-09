@@ -63,48 +63,51 @@
     return x
   }
 
-
   const statesQuery = createQuery()
-  $: if (_space) statesQuery.query(core.class.State, { _id: { $in: _space.states } }, result => { states = sort(result); console.log('states', sort(result)) })
+  $: statesQuery.query(core.class.State, { _id: { $in: _space?.states ?? [] } }, result => { states = sort(result) })
 
   const query = createQuery()
-  $: if (kanban) query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+  $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
 
   function dragover(ev: MouseEvent, object: Doc) {
-    // if (dragswap(ev, i)) {
     if (dragCard !== object) {
       const dragover = objects.indexOf(object)
-      const dragging = objects.indexOf(dragCard)
-      objects[dragover] = dragCard
-      objects[dragging] = object
+      objects = objects.filter(x => x !== dragCard)
+      objects = [...objects.slice(0, dragover), dragCard, ...objects.slice(dragover)]
     }
   }
 
+  let currentOp: Promise<void> | undefined
+
   async function move(to: number, state: Ref<State>) {
-    console.log('move version 12')
+    console.log('INITIAL', dragCardInitialPosition, 'TO', to)
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
-    if (dragCardInitialState !== state)
+    if (dragCardInitialState !== state) {
       client.updateDoc(_class, space, id, { state })
-
+      // txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
+    }
 
     if (dragCardInitialPosition !== to) {
 
-      await client.updateDoc(view.class.Kanban, space, kanban._id, {
-        $pull: {
-          order: id
-        }
-      })
-
       client.updateDoc(view.class.Kanban, space, kanban._id, {
-        $push: {
+        $move: {
           order: {
-            $each: [id],
+            $value: id,
             $position: to
           }
         }
       })
+
+      // txes.push(client.txFactory.createTxUpdateDoc(view.class.Kanban, space, kanban._id, {
+      //   $move: {
+      //     order: {
+      //       $value: id,
+      //       $position: to
+      //     }
+      //   }
+      // }))
       
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
@@ -124,7 +127,10 @@
 
     // if (txes.length > 0) {
     //   const updateTx = client.txFactory.createTxBulkWrite(space, txes)
-    //   await client.tx(updateTx)
+    //   if (currentOp) {
+    //     await currentOp
+    //   }
+    //   currentOp = client.tx(updateTx).then(() => console.log('move done')).catch(err => console.log('move error ' + err))
     // }
   }
 
@@ -175,6 +181,7 @@
           <KanbanCardEmpty label={'Create new application'} />
           {#each objects as object, j}
             {#if object.state === state._id}
+              {j}
               <div
                 on:dragover|preventDefault={(ev) => {
                   dragover(ev, object)
