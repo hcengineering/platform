@@ -16,7 +16,7 @@
 
 import type { Plugin, Asset, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr } from '@anticrm/core'
+import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State } from '@anticrm/core'
 
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -86,6 +86,7 @@ export interface ActionTarget extends Doc {
  */
 export interface Kanban extends Doc {
   attachedTo: Ref<Space>
+  states: Arr<Ref<State>>
   order: Arr<Ref<Doc>>
 }
 

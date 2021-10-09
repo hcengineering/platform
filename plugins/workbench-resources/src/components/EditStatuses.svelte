@@ -18,6 +18,7 @@
   import type { Ref, SpaceWithStates, State } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
+  import type { Kanban } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import Close from './icons/Close.svelte'
   import Circles from './icons/Circles.svelte'
@@ -25,10 +26,11 @@
   import ColorsPopup from './ColorsPopup.svelte'
 
   import core from '@anticrm/core'
+  import view from '@anticrm/view'
 
   export let _id: Ref<SpaceWithStates>
 
-  let space: SpaceWithStates | undefined
+  let kanban: Kanban | undefined
 
   let states: State[] = []
   let elements: HTMLElement[] = []
@@ -36,20 +38,19 @@
   const client = getClient()
 
   function sort(states: State[]): State[] {
-    if (space === undefined || states.length === 0) { return [] }
+    if (kanban === undefined || states.length === 0) { return [] }
     console.log(states)
     const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
-    console.log(space.states)
-    const x = space.states.map(id => map.get(id) as State )
-    // console.log(x)
+    console.log(kanban.states)
+    const x = kanban.states.map(id => map.get(id) as State )
     return x
   }
 
-  const spaceQuery = createQuery()
-  $: spaceQuery.query(core.class.SpaceWithStates, { _id }, result => { space = result[0] })
+  const kanbanQuery = createQuery()
+  $: kanbanQuery.query(view.class.Kanban, { attachedTo: _id }, result => { kanban = result[0] })
 
   const query = createQuery()
-  $: query.query(core.class.State, { _id: { $in: space?.states ?? [] } }, result => { states = sort(result) })
+  $: query.query(core.class.State, { _id: { $in: kanban?.states ?? [] } }, result => { states = sort(result) })
 
   let selected: number | undefined
   let dragState: Ref<State>
@@ -77,7 +78,7 @@
   }
 
   async function move(to: number) {
-    client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
+    client.updateDoc(view.class.Kanban, _id, (kanban as Kanban)._id, {
       $move: {
         states: {
           $value: dragState,
@@ -94,7 +95,7 @@
       title: 'New State',
       color: '#7C6FCD'
     })
-    await client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
+    await client.updateDoc(view.class.Kanban, _id, (kanban as Kanban)._id, {
       $push: {
         states: state
       }

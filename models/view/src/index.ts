@@ -14,7 +14,7 @@
 //
 
 import type { IntlString, Asset, Resource } from '@anticrm/platform'
-import type { Ref, Class, Space, Doc, Arr, Domain } from '@anticrm/core'
+import type { Ref, Class, Space, Doc, Arr, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
@@ -76,6 +76,7 @@ export class TActionTarget extends TDoc implements ActionTarget {
 @Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
 export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
+  states!: Arr<Ref<State>>
   order!: Arr<Ref<Doc>>
 }
 

@@ -72,11 +72,11 @@
       title: 'Final',
       color: colors[0]
     })
-    await client.updateDoc(recruit.class.Vacancy, core.space.Model, id, {
-      states: [s1, s2, s3, s4, s5, s6]
-    })
+    // await client.updateDoc(recruit.class.Vacancy, core.space.Model, id, {
+    // })
     await client.createDoc(view.class.Kanban, id, {
       attachedTo: id,
+      states: [s1, s2, s3, s4, s5, s6],
       order: []
     })
   }
