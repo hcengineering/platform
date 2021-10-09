@@ -78,15 +78,10 @@
 
   async function move(to: number) {
     client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
-      $pull: {
-        states: dragState
-      }
-    })
-    client.updateDoc(core.class.SpaceWithStates, core.space.Model, _id, {
-      $push: {
+      $move: {
         states: {
-          $each: [dragState],
-          $position: to < dragStateInitialPosition ? to : to
+          $value: dragState,
+          $position: to
         }
       }
     })
