@@ -178,7 +178,7 @@
               dragCard.state = state._id
             }
           }}>
-          <KanbanCardEmpty label={'Create new application'} />
+          <!-- <KanbanCardEmpty label={'Create new application'} /> -->
           {#each objects as object, j}
             {#if object.state === state._id}
               <div
