@@ -71,12 +71,16 @@
   $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
 
   function dragover(ev: MouseEvent, object: Doc) {
-    // if (dragswap(ev, i)) {
     if (dragCard !== object) {
-      const dragover = objects.indexOf(object)
       const dragging = objects.indexOf(dragCard)
-      objects[dragover] = dragCard
-      objects[dragging] = object
+      const dragover = objects.indexOf(object)
+      console.log('dragging', dragging)
+      console.log('dragover', dragover)
+      objects = objects.filter(x => x !== dragCard)
+      objects = [...objects.slice(0, dragover), dragCard, ...objects.slice(dragover)]
+      // objects.splice(dragover, 0, [dragCard])
+      // objects[dragover] = dragCard
+      // objects[dragging] = object
     }
   }
 
@@ -87,20 +91,30 @@
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
-    if (dragCardInitialState !== state)
-      txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
-
+    if (dragCardInitialState !== state) {
+      client.updateDoc(_class, space, id, { state })
+      // txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
+    }
 
     if (dragCardInitialPosition !== to) {
 
-      txes.push(client.txFactory.createTxUpdateDoc(view.class.Kanban, space, kanban._id, {
+      client.updateDoc(view.class.Kanban, space, kanban._id, {
         $move: {
           order: {
             $value: id,
             $position: to
           }
         }
-      }))
+      })
+
+      // txes.push(client.txFactory.createTxUpdateDoc(view.class.Kanban, space, kanban._id, {
+      //   $move: {
+      //     order: {
+      //       $value: id,
+      //       $position: to
+      //     }
+      //   }
+      // }))
       
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
@@ -118,13 +132,13 @@
       // })
     }
 
-    if (txes.length > 0) {
-      const updateTx = client.txFactory.createTxBulkWrite(space, txes)
-      if (currentOp) {
-        await currentOp
-      }
-      currentOp = client.tx(updateTx).then(() => console.log('move done')).catch(err => console.log('move error ' + err))
-    }
+    // if (txes.length > 0) {
+    //   const updateTx = client.txFactory.createTxBulkWrite(space, txes)
+    //   if (currentOp) {
+    //     await currentOp
+    //   }
+    //   currentOp = client.tx(updateTx).then(() => console.log('move done')).catch(err => console.log('move error ' + err))
+    // }
   }
 
   function getValue(doc: Doc, key: string): any {
