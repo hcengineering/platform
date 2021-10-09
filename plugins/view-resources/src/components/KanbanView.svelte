@@ -181,7 +181,6 @@
           <KanbanCardEmpty label={'Create new application'} />
           {#each objects as object, j}
             {#if object.state === state._id}
-              {j}
               <div
                 on:dragover|preventDefault={(ev) => {
                   dragover(ev, object)
