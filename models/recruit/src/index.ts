@@ -15,8 +15,8 @@
 
 import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, UX, Prop, TypeString, TypeBoolean, Bag as TypeBag } from '@anticrm/model'
-import type { Ref, FindOptions, Doc, Domain, State, Bag } from '@anticrm/core'
-import core, { TSpace, TSpaceWithStates, TDoc } from '@anticrm/model-core'
+import type { Ref, FindOptions, Doc, Domain, Bag } from '@anticrm/core'
+import core, { TSpace, TSpaceWithStates, TDocWithState } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import type { Attachment } from '@anticrm/chunter'
 
@@ -56,16 +56,13 @@ export class TCandidate extends TPerson implements Candidate {
   remote?: boolean
 }
 
-@Model(recruit.class.Applicant, core.class.Doc, DOMAIN_RECRUIT)
-export class TApplicant extends TDoc implements Applicant {
+@Model(recruit.class.Applicant, core.class.DocWithState, DOMAIN_RECRUIT)
+export class TApplicant extends TDocWithState implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
   candidate!: Ref<Candidate>
 
   @Prop(TypeBag(), 'Attachments' as IntlString)
   attachments!: Bag<Attachment>
-
-  @Prop(TypeString(), 'State' as IntlString)
-  state!: Ref<State>
 }
 
 export function createModel (builder: Builder): void {

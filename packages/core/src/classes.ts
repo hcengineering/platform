@@ -207,5 +207,12 @@ export interface State extends Doc {
 /**
  * @public
  */
+export interface DocWithState extends Doc {
+  state: Ref<State>
+}
+
+/**
+ * @public
+ */
 export interface SpaceWithStates extends Space {
 }

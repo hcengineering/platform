@@ -45,6 +45,12 @@ export class TState extends TDoc implements State {
   color!: string
 }
 
+@Model(core.class.DocWithState, core.class.Doc)
+export class TDocWithState extends TDoc {
+  @Prop(TypeString(), 'State' as IntlString)
+  state!: Ref<State>
+}
+
 @Model(core.class.SpaceWithStates, core.class.Space)
 export class TSpaceWithStates extends TSpace {
 }
