@@ -35,6 +35,8 @@
     "@anticrm/server-recruit": "~0.6.0",
     "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/mongo": "~0.6.1",
-    "@anticrm/elastic": "~0.6.0"
+    "@anticrm/elastic": "~0.6.0",
+    "@anticrm/server-view": "~0.6.0",
+    "@anticrm/server-view-resources": "~0.6.0"
   }
 }

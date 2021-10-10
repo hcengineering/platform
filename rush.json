@@ -737,6 +737,21 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-view-resources",
+      "projectFolder": "server/view-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-view",
+      "projectFolder": "server/view",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-view",
+      "projectFolder": "models/server-view",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/mongo",
       "projectFolder": "server/mongo",
       "shouldPublish": true

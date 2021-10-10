@@ -26,6 +26,7 @@ import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
 import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
+import { createModel as serverViewModel } from '@anticrm/model-server-view'
 
 import { createDemo } from '@anticrm/model-demo'
 
@@ -42,6 +43,7 @@ recruitModel(builder)
 serverCoreModel(builder)
 serverChunterModel(builder)
 serverRecruitModel(builder)
+serverViewModel(builder)
 
 createDemo(builder)
 
