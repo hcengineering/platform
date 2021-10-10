@@ -44,26 +44,26 @@
   const client = getClient()
 
   async function createApplication() {
-    const state = await client.findOne(core.class.State, { space: _space })
-    if (state === undefined) {
-      throw new Error('create application: state not found')
-    }
+    // const state = await client.findOne(core.class.State, { space: _space })
+    // if (state === undefined) {
+    //   throw new Error('create application: state not found')
+    // }
     const id = await client.createDoc(recruit.class.Applicant, _space, {
       candidate,
-      state: state._id
+      // state: state._id
     })
 
-    const kanban = await client.findOne(view.class.Kanban, { attachedTo: _space })
+    // const kanban = await client.findOne(view.class.Kanban, { attachedTo: _space })
 
-    if (kanban === undefined) {
-      throw new Error('kanban object not found')
-    }
+    // if (kanban === undefined) {
+    //   throw new Error('kanban object not found')
+    // }
 
-    await client.updateDoc(view.class.Kanban, _space, kanban._id, {
-      $push: {
-        order: id
-      }
-    })    
+    // await client.updateDoc(view.class.Kanban, _space, kanban._id, {
+    //   $push: {
+    //     order: id
+    //   }
+    // })    
     dispatch('close')
   }
 
