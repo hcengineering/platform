@@ -15,7 +15,7 @@
 //
 
 import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions } from '@anticrm/core'
-import { TxFactory } from '@anticrm/core'
+import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
 /**
@@ -26,7 +26,7 @@ export type FindAll<T extends Doc> = (clazz: Ref<Class<T>>, query: DocumentQuery
 /**
  * @public
  */
-export type TriggerFunc = (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>) => Promise<Tx[]>
+export type TriggerFunc = (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy) => Promise<Tx[]>
 
 /**
  * @public

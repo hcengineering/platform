@@ -130,7 +130,7 @@ class TServerStorage implements ServerStorage {
       // store object
       await this.routeTx(tx)
       // invoke triggers and store derived objects
-      const derived = await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this))
+      const derived = await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)
       for (const tx of derived) {
         await this.routeTx(tx)
       }

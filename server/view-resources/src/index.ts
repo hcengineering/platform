@@ -14,23 +14,21 @@
 // limitations under the License.
 //
 
-import type { Tx, TxFactory } from '@anticrm/core'
+import type { Tx, TxFactory, Doc, TxCreateDoc, DocWithState } from '@anticrm/core'
+import type { FindAll } from '@anticrm/server-core'
 
-// import core from '@anticrm/core'
+import core, { Hierarchy } from '@anticrm/core'
 
 /**
  * @public
  */
-export async function OnDocWithState (tx: Tx, txFactory: TxFactory): Promise<Tx[]> {
-  // if (tx._class === core.class.TxCreateDoc) {
-  //   const createTx = tx as TxCreateDoc<Message>
-  //   if (createTx.objectClass === chunter.class.Message) {
-  //     const content = createTx.attributes.content
-  //     const backlinks = getBacklinks(createTx.objectId, content)
-  //     return backlinks.map(backlink => txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink))
-  //   }
-  // }
-  console.log('OnDocWithState here')
+export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<DocWithState>
+    if (hierarchy.isDerived(createTx.objectClass, core.class.DocWithState)) {
+      console.log('OnDocWithState derived here')
+    }
+  }
   return []
 }
 
