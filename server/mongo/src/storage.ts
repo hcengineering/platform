@@ -38,7 +38,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     const translated: any = {}
     for (const key in query) {
       const value = (query as any)[key]
-      if (typeof value === 'object') {
+      if (value !== null && typeof value === 'object') {
         const keys = Object.keys(value)
         if (keys[0] === '$like') {
           const pattern = value.$like as string
