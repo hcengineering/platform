@@ -43,7 +43,7 @@ class Session implements Storage {
     const derived = await this.storage.tx(tx)
     this.manager.broadcast(this, this.token, { result: tx })
     for (const tx of derived) {
-      this.manager.broadcast(this, this.token, { result: tx })
+      this.manager.broadcast(null, this.token, { result: tx })
     }
   }
 }
@@ -87,7 +87,7 @@ class SessionManager {
     }
   }
 
-  broadcast (from: Session, token: Token, resp: Response<any>): void {
+  broadcast (from: Session | null, token: Token, resp: Response<any>): void {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       throw new Error('internal: cannot find sessions')
