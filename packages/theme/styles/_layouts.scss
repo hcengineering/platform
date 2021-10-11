@@ -92,6 +92,7 @@ table {
 
 .flex { display: flex; }
 .flex-grow { flex-grow: 1; }
+.flex-no-shrink { flex-shrink: 0; }
 .flex-nowrap {
   display: flex;
   flex-wrap: nowrap;
@@ -162,6 +163,12 @@ table {
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.vScroll {
+  flex-grow: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .h-full { height: 100%; }
