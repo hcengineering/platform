@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
 
   import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -23,7 +23,6 @@
   import { createQuery } from '../utils'
 
   export let _class: Ref<Class<Space>>
-  export let maxHeight: number = 0
 
   let search: string = ''
   let objects: Space[] = []
@@ -31,9 +30,10 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query(_class, {}, result => { objects = result })
+  afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
+<div class="popup">
   <div class="flex-col">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="label"><Label label={'SUGGESTED'} /></div>
