@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
 
   import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'
@@ -26,7 +26,6 @@
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
-  export let maxHeight: number = 0
 
   let search: string = ''
   let objects: Person[] = []
@@ -34,16 +33,17 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
+  afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="popup" style="max-height: {(maxHeight) ? maxHeight + 'px' : 'max-content'}">
+<div class="popup">
   <div class="header">
     <div class="title"><Label label={title} /></div>
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="caption"><Label label={caption} /></div>
   </div>
-  <div class="flex-grow scroll">
-    <div class="flex-col h-full box">
+  <div class="scroll">
+    <div class="box">
       {#each objects as person}
         <button class="menu-item" on:click={() => { dispatch('close', person) }}>
           <UserInfo size={'medium'} value={person} />
@@ -58,6 +58,7 @@
     display: flex;
     flex-direction: column;
     padding: 1rem;
+    max-height: 100%;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
@@ -83,8 +84,13 @@
   }
 
   .scroll {
-    overflow-y: scroll;
-    .box { margin-right: 1px; }
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    .box {
+      margin-right: 1px;
+      height: 100%;
+    }
   }
 
   .menu-item {

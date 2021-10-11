@@ -27,7 +27,6 @@
 
   let modalHTML: HTMLElement
   let modalOHTML: HTMLElement
-  let maxHeight: number = 0
 
   function close(result: any) {
     console.log('popup close result', result)
@@ -38,27 +37,20 @@
   const fitPopup = (): void => {
     if (modalHTML) {
       if (element) {
-        maxHeight = 0
         modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
         if (typeof element !== 'string') {
           const rect = element.getBoundingClientRect()
           const rectPopup = modalHTML.getBoundingClientRect()
-          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
+          // Vertical
+          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight)
             modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-            maxHeight = document.body.clientHeight - rect.bottom - 28
-          } else if (rectPopup.height + 28 < rect.top) {
+          else if (rectPopup.height + 28 < rect.top)
             modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
-            maxHeight = rect.top - 28
-          } else {
-            modalHTML.style.top = modalHTML.style.bottom = '1rem'
-            maxHeight = document.body.clientHeight - 32
-          }
-          
-          if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
+          else modalHTML.style.top = modalHTML.style.bottom = '1rem'
+          // Horizontal
+          if (rect.left + rectPopup.width + 16 > document.body.clientWidth)
             modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-          } else {
-            modalHTML.style.left = rect.left + 'px'
-          }
+          else modalHTML.style.left = rect.left + 'px'
         } else if (element === 'right') {
           modalHTML.style.top = '0'
           modalHTML.style.bottom = '0'
@@ -81,12 +73,12 @@
     }
   }
 
-  afterUpdate(() => { fitPopup() })
+  afterUpdate(() => fitPopup())
 </script>
 
 <svelte:window on:resize={fitPopup} />
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component this={is} {...props} {maxHeight} on:close={ (ev) => close(ev.detail) } />
+  <svelte:component this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>
 <div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 
