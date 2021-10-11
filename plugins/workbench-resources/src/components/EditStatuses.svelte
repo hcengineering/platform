@@ -114,12 +114,12 @@
     </div>
     <div class="tool" on:click={() => dispatch('close')}><Close size={'small'} /></div>
   </div>
-  <div class="content">
-    <ScrollBox vertical stretch>
-      <div class="flex-between states-header">
-        <Label label={'ACTIVE STATUSES'} />
-        <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
-      </div>
+  <div class="flex-grow flex-col content">
+    <div class="flex-no-shrink flex-between states-header">
+      <Label label={'ACTIVE STATUSES'} />
+      <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
+    </div>
+    <div class="vScroll"><div class="h-full">
       {#each states as state, i}
         {#if state}
           <div bind:this={elements[i]} class="flex-between states" draggable={true}
@@ -148,7 +148,7 @@
           </div>
         {/if}
       {/each}
-    </ScrollBox>
+    </div></div>
   </div>
 </div>
 
@@ -184,13 +184,7 @@
         cursor: pointer;
       }
     }
-
-    .content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem 2.5rem;
-    }
+    .content { margin: 1rem 2.5rem 1rem 2.5rem; }
   }
 
   .states {
