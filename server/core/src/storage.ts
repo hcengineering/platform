@@ -127,24 +127,22 @@ class TServerStorage implements ServerStorage {
       this.hierarchy.tx(tx)
       await this.triggers.tx(tx)
       await this.modelDb.tx(tx)
-      return []
-    } else {
-      // store object
-      await this.routeTx(tx)
-      // invoke triggers and store derived objects
-      const derived = await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)
-      for (const tx of derived) {
-        await this.routeTx(tx)
-      }
-      // index object
-      await this.fulltext.tx(tx)
-      // index derived objects
-      for (const tx of derived) {
-        await this.fulltext.tx(tx)
-      }
-
-      return derived
     }
+    // store object
+    await this.routeTx(tx)
+    // invoke triggers and store derived objects
+    const derived = await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)
+    for (const tx of derived) {
+      await this.routeTx(tx)
+    }
+    // index object
+    await this.fulltext.tx(tx)
+    // index derived objects
+    for (const tx of derived) {
+      await this.fulltext.tx(tx)
+    }
+
+    return derived
   }
 }
 
