@@ -17,7 +17,8 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Data } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { setPlatformStatus, unknownError, Severity } from '@anticrm/platform'
+  import type { Status } from '@anticrm/platform'
 
   import { getClient, Card, Channels, PDFViewer } from '@anticrm/presentation'
   import { uploadFile } from '../utils'
@@ -27,7 +28,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import type { Attachment } from '@anticrm/chunter'
 
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner, Label } from '@anticrm/ui'
+  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
@@ -140,6 +141,7 @@
 
 <Card label={'Create Candidate'} 
       okLabel={'Save'}
+      cancelLabel={'Cancel'}
       okAction={createCandidate}
       canSave={firstName.length > 0 && lastName.length > 0}
       spaceClass={recruit.class.Candidates}
@@ -148,6 +150,7 @@
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
 
+  <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} />
   <div class="flex-row-center">
     <div class="avatar-container">
       <div class="flex-center avatar-shadow">
@@ -194,6 +197,7 @@
       </div> -->
     </div>
   </div>
+  <div class="separator" />
   <div class="flex-col locations">
     <span><Label label={'Work location preferences'} /></span>
     <div class="row"><Label label={'Onsite'} /><YesNo bind:value={object.onsite} /></div>
@@ -282,6 +286,11 @@
       margin-top: .75rem;
       color: var(--theme-caption-color);
     }
+  }
+  .separator {
+    margin: 1rem 0;
+    height: 1px;
+    background-color: var(--theme-card-divider);
   }
   // .resume a {
   //   font-size: .75rem;
