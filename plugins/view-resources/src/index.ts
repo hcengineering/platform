@@ -25,6 +25,8 @@ import KanbanView from './components/KanbanView.svelte'
 
 import { getClient } from '@anticrm/presentation'
 
+export { TableView }
+
 async function Delete(object: Doc): Promise<void> {
   const client = getClient()
   await client.removeDoc(object._class, object.space, object._id)

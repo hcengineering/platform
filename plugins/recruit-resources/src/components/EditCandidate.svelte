@@ -28,8 +28,9 @@
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import AttributesBar from './AttributesBar.svelte'
+  import { TableView } from '@anticrm/view-resources'
 
-  import chunter from '@anticrm/chunter'
+  import core from '@anticrm/core'
   
   import recruit from '../plugin'
   import { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
@@ -87,6 +88,23 @@
       </div>
     </div>
   </div>
+
+  Applications
+
+  <TableView 
+    _class={recruit.class.Applicant}
+    config={['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.space.name']}
+    options={
+      {
+        lookup: {
+          candidate: recruit.class.Candidate,
+          state: core.class.State,
+          space: core.class.Space
+        }
+      }
+    }
+    search=""
+  />
 
   <div class="attachments">
     <Attachments objectId={object._id} _class={object._class} space={object.space} {object}/>

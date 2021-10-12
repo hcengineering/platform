@@ -15,7 +15,7 @@
 //
 
 import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite } from '@anticrm/core'
-import core, { Hierarchy, DOMAIN_TX } from '@anticrm/core'
+import core, { Hierarchy, DOMAIN_TX, ModelDb } from '@anticrm/core'
 import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
 import { Triggers } from './triggers'
@@ -40,7 +40,7 @@ export interface TxAdapter extends DbAdapter {
 /**
  * @public
  */
-export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string) => Promise<DbAdapter>
+export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb) => Promise<DbAdapter>
 
 /**
  * @public
@@ -73,7 +73,8 @@ class TServerStorage implements ServerStorage {
     private readonly adapters: Map<string, DbAdapter>,
     private readonly hierarchy: Hierarchy,
     private readonly triggers: Triggers,
-    fulltextAdapter: FullTextAdapter
+    fulltextAdapter: FullTextAdapter,
+    private readonly modelDb: ModelDb
   ) {
     this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this)
   }
@@ -125,6 +126,7 @@ class TServerStorage implements ServerStorage {
       // maintain hiearachy and triggers
       this.hierarchy.tx(tx)
       await this.triggers.tx(tx)
+      await this.modelDb.tx(tx)
       return []
     } else {
       // store object
@@ -153,10 +155,11 @@ export async function createServerStorage (conf: DbConfiguration): Promise<Serve
   const hierarchy = new Hierarchy()
   const triggers = new Triggers()
   const adapters = new Map<string, DbAdapter>()
+  const modelDb = new ModelDb(hierarchy)
 
   for (const key in conf.adapters) {
     const adapterConf = conf.adapters[key]
-    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace))
+    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb))
   }
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
@@ -171,11 +174,15 @@ export async function createServerStorage (conf: DbConfiguration): Promise<Serve
     await triggers.tx(tx)
   }
 
+  for (const tx of model) {
+    await modelDb.tx(tx)
+  }
+
   for (const [, adapter] of adapters) {
     await adapter.init(model)
   }
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
 
-  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter)
+  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, modelDb)
 }

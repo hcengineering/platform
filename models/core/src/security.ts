@@ -26,7 +26,9 @@ export const DOMAIN_STATE = 'state' as Domain
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_MODEL)
 export class TSpace extends TDoc implements Space {
+  @Prop(TypeString(), 'Name' as IntlString)
   name!: string
+
   description!: string
   private!: boolean
   members!: Arr<Ref<Account>>

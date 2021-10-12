@@ -31,6 +31,7 @@
     "deep-equal": "^2.0.5",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/chunter-resources": "~0.6.0",
-    "@anticrm/view": "~0.6.0"
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/view-resources": "~0.6.0"
   }
 }
