@@ -58,7 +58,7 @@
       <slot name="contacts" />
     </div>
   {/if}
-  </form>
+</form>
 
 <style lang="scss">
   .card-container {
