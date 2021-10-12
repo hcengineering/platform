@@ -30,12 +30,16 @@
   let componentInstance: any
 
   function close(result: any) {
-    if (componentInstance.canClose) {
-      if (!componentInstance.canClose()) return
-    }
     console.log('popup close result', result)
     if (onClose !== undefined) onClose(result)
     closePopup()
+  }
+
+  function escapeClose() {
+    if (componentInstance && componentInstance.canClose) {
+      if (!componentInstance.canClose()) return
+    }
+    close(undefined)
   }
 
   const fitPopup = (): void => {
@@ -84,7 +88,7 @@
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>
-<div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
+<div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
 <style lang="scss">
   .popup {
