@@ -38,8 +38,7 @@
   import Elon from '../../img/elon.png'
   import Bond from '../../img/bond.png'
 
-  import equals from 'deep-equal'
-import { combineName } from '@anticrm/contact';
+  import { combineName } from '@anticrm/contact';
 
   export let space: Ref<Space>
 
@@ -47,6 +46,10 @@ import { combineName } from '@anticrm/contact';
 
   let firstName = ''
   let lastName = ''
+
+  export function canClose(): boolean {
+    return firstName === '' && lastName === ''
+  }
 
   const object: Candidate = {} as Candidate
 

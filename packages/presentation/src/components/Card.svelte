@@ -37,7 +37,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="card-container">
+<form class="card-container" on:submit|preventDefault={ () => {} }>
   <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
