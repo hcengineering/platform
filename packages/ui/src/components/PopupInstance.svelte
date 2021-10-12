@@ -27,8 +27,12 @@
 
   let modalHTML: HTMLElement
   let modalOHTML: HTMLElement
+  let componentInstance: any
 
   function close(result: any) {
+    if (componentInstance.canClose) {
+      if (!componentInstance.canClose()) return
+    }
     console.log('popup close result', result)
     if (onClose !== undefined) onClose(result)
     closePopup()
@@ -78,7 +82,7 @@
 
 <svelte:window on:resize={fitPopup} />
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
+  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>
 <div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => close(undefined)} />
 
