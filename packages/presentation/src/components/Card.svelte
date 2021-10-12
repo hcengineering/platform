@@ -43,7 +43,7 @@
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
     {#if $$slots.error}
-      <div class="flex-row-center error">
+      <div class="error">
         <slot name="error" />
       </div>
     {/if}
@@ -82,11 +82,6 @@
 
       .error {
         position: absolute;
-        white-space: nowrap;
-        overflow-x: scroll;
-        user-select: none;
-
-        padding-bottom: 2px;
         top: 3.25rem;
         left: 1.75rem;
         right: 1.75rem;

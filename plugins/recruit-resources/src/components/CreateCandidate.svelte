@@ -150,7 +150,7 @@
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
 
-  <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} />
+  <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
   <div class="flex-row-center">
     <div class="avatar-container">
       <div class="flex-center avatar-shadow">

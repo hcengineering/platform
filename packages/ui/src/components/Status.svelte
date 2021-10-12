@@ -8,10 +8,10 @@
   export let status: Status
 </script>
 
-<div class="flex-center container {status.severity}">
+<div class="flex-center overflow-label container {status.severity}">
   {#if status.severity !== Severity.OK}
     <Info size={'small'}/>
-    <span><Label label={status.code} params={status.params}/></span>
+    <div class="overflow-label"><Label label={status.code} params={status.params}/></div>
   {/if}
 </div>
 
@@ -19,7 +19,7 @@
   .container {
     user-select: none;
     color: var(--theme-content-color);
-    span { margin-left: .75em; }
+    div { margin-left: .75em; }
     &.WARNING { color: yellow; }
     &.ERROR { color: var(--system-error-color); }
   }
