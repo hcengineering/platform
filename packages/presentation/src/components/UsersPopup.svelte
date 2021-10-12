@@ -43,7 +43,7 @@
     <div class="caption"><Label label={caption} /></div>
   </div>
   <div class="scroll">
-    <div class="box">
+    <div class="flex-col box">
       {#each objects as person}
         <button class="menu-item" on:click={() => { dispatch('close', person) }}>
           <UserInfo size={'medium'} value={person} />

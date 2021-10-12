@@ -22,7 +22,7 @@
   
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
-  import { setClient, Avatar } from '@anticrm/presentation'
+  import { setClient, Avatar, MessageBox } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
 
   import Navigator from './Navigator.svelte'
@@ -79,7 +79,15 @@
     </div>
     {#if navigator}
     <div class="panel-navigator">
-      <NavHeader label={'Chat'}/>
+      <NavHeader label={'Chat'} action={() => {
+        showPopup(MessageBox, {
+                                label: 'Dialog title',
+                                message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor anem isto orem ipsum dolor sit amet?'
+                              }, undefined, (result) => {
+          if (result && result === 'OK') console.log('MessageBox - Ok!')
+          else console.log('MessageBox - Cancel')
+        })
+      }} />
       <Navigator model={navigatorModel}/>
     </div>
     {/if}

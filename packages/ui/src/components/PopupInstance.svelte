@@ -28,6 +28,7 @@
   let modalHTML: HTMLElement
   let modalOHTML: HTMLElement
   let componentInstance: any
+  let show: boolean = false
 
   function close(result: any) {
     console.log('popup close result', result)
@@ -45,6 +46,7 @@
   const fitPopup = (): void => {
     if (modalHTML) {
       if (element) {
+        show = false
         modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
         if (typeof element !== 'string') {
           const rect = element.getBoundingClientRect()
@@ -77,6 +79,7 @@
         modalHTML.style.top = '50%'
         modalHTML.style.left = '50%'
         modalHTML.style.transform = 'translate(-50%, -50%)'
+        show = true
       }
     }
   }
@@ -88,7 +91,7 @@
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>
-<div bind:this={modalOHTML} class="modal-overlay" style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
+<div bind:this={modalOHTML} class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
 <style lang="scss">
   .popup {
@@ -104,6 +107,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    // background: rgba(0, 0, 0, 0.25);
+    &.show { background: rgba(0, 0, 0, .5); }
   }
 </style>
