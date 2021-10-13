@@ -31,6 +31,7 @@
   export let spacePlaceholder: IntlString
   export let label: IntlString
   export let okLabel: IntlString
+  export let cancelLabel: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
 
@@ -41,23 +42,21 @@
   <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
-    <div class="tool"><Button disabled={!canSave} label={okLabel} size={'small'} transparent on:click={() => { okAction(); dispatch('close') }} /></div>
+    {#if $$slots.error}
+      <div class="error">
+        <slot name="error" />
+      </div>
+    {/if}
   </div>
-  {#if $$slots.error}
-    <div class="flex-center error">
-      <slot name="error" />
-    </div>
-  {/if}
   <div class="content"><slot /></div>
-  <div class="flex-col pool" class:shrink={$$slots.contacts}>
+  <div class="flex-col pool">
     <div class="separator" />
     <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
   </div>
-  {#if $$slots.contacts}
-    <div class="flex-between contacts">
-      <slot name="contacts" />
-    </div>
-  {/if}
+  <div class="footer">
+    <Button disabled={!canSave} label={okLabel} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={cancelLabel} size={'small'} transparent on:click={() => { dispatch('close') }} />
+  </div>
 </form>
 
 <style lang="scss">
@@ -71,25 +70,28 @@
     border-radius: 1.25rem;
 
     .header {
+      position: relative;
       flex-shrink: 0;
-      padding: 1rem 1.25rem 1rem 1.75rem;
+      padding: 1.75rem;
+
       .label {
         font-weight: 500;
         font-size: 1rem;
         color: var(--theme-caption-color);
       }
-      .tool { margin-left: .75rem; }
-    }
 
-    .error {
-      margin-bottom: 1rem;
-      padding: .75rem 0;
-      color: var(--system-error-color);
-      background-color: var(--theme-card-bg-accent);
-      &:empty {
-        visibility: hidden;
-        margin: 0;
-        padding: 0;
+      .error {
+        position: absolute;
+        top: 3.25rem;
+        left: 1.75rem;
+        right: 1.75rem;
+        font-weight: 500;
+        font-size: .75rem;
+        color: var(--system-error-color);
+        &:empty { visibility: hidden; }
+        &::-webkit-scrollbar:horizontal {
+          height: 2px;
+        }
       }
     }
 
@@ -101,19 +103,27 @@
     }
 
     .pool {
-      margin: 0 1.75rem 1.5rem;
+      margin: 0 1.75rem .75rem;
       color: var(--theme-caption-color);
       .separator {
         margin: 1rem 0;
         height: 1px;
         background-color: var(--theme-card-divider);
       }
-      &.shrink { margin: 0 1.75rem 1rem; }
     }
 
-    .contacts {
-      padding: 1.25rem 1.75rem;
-      background-color: var(--theme-card-bg-accent);
+    .footer {
+      flex-shrink: 0;
+      display: grid;
+      grid-auto-flow: column;
+      direction: rtl;
+      justify-content: start;
+      align-items: center;
+      column-gap: .75rem;
+      padding: 1rem 1.75rem 1.75rem;
+      height: 5.25rem;
+      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
+      overflow: hidden;
       border-radius: 0 0 1.25rem 1.25rem;
     }
 

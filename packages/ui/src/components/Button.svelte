@@ -160,7 +160,7 @@
         box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
       }
       &:disabled {
-        background-color: var(--trans-primary-button-bg);
+        background-color: var(--primary-button-disabled);
         border-color: var(--trans-primary-button-border);
       }
     }
