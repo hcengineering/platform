@@ -19,9 +19,9 @@
   export let value: boolean | undefined
 
   function getLabel(value: boolean | undefined) {
-    if (value === true) return 'Yes'
-    if (value === false) return 'No'
-    return 'Unknown'
+    if (value === true) return 'Да'
+    if (value === false) return 'Нет'
+    return 'Неиз'
   }
 </script>
 
@@ -33,7 +33,7 @@
   <svg class="svg-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
     <circle fill="#fff" cx="8" cy="8" r="6"/>
     {#if value === true}
-      <polygon fill="var(--primary-button-enabled)" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 "/>
+      <polygon fill="#60B96E" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 "/>
     {:else if value === false}
       <polygon fill="#F06C63" points="10.7,6 10,5.3 8,7.3 6,5.3 5.3,6 7.3,8 5.3,10 6,10.7 8,8.7 10,10.7 10.7,10 8.7,8 "/>
     {:else}
@@ -51,11 +51,12 @@
     user-select: none;
     cursor: pointer;
 
-    &.yes { background-color: var(--primary-button-enabled); }
+    &.yes { background-color: #60B96E; }
     &.no { background-color: #F06C63; }
     &.unknown { background-color: #77818E; }
 
     span {
+      width: 1.6rem;
       margin-left: .25rem;
       text-transform: uppercase;
       font-weight: 500;
