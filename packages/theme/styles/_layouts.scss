@@ -215,6 +215,10 @@ table {
   color: var(--theme-caption-color);
 }
 .fs-subtitle { font-size: .75rem; }
+.over-underline {
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
 
 .hidden-text {
   position: absolute;
