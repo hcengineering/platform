@@ -35,8 +35,8 @@
 
 {#if value.attachments && Object.keys(value.attachments).length > 0}
   <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
-    <div class="flex-row-center">
-      <IconAttachment size="small"/>&nbsp;{Object.keys(value.attachments).length}
+    <div class="sm-tool-icon">
+      <span class="icon"><IconAttachment size="small"/></span>{Object.keys(value.attachments).length}
     </div>
   </Tooltip>
 {/if}

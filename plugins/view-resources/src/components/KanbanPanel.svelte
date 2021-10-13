@@ -23,7 +23,7 @@
   export let addAction: () => void | undefined
 </script>
 
-<div class="panel-container" on:dragover on:drop>
+<div class="panel-container step-lr75" on:dragover on:drop>
   <div class="header">
     <div class="bar" style="background-color: {color}" />
     <div class="flex-between label">
@@ -84,10 +84,8 @@
     }
 
     .scroll {
-      margin: .5rem .75rem .75rem;
+      margin: 0 .75rem .75rem;
       height: 100%;
     }
   }
-
-  :global(.panel-container + .panel-container) { margin-left: .75rem; }
 </style>

@@ -80,6 +80,7 @@
 
       .error {
         position: absolute;
+        display: flex;
         top: 3.25rem;
         left: 1.75rem;
         right: 1.75rem;
