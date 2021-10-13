@@ -30,9 +30,9 @@ class ServerStorageWrapper implements Storage {
 
   async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
-    const derived = await this.storage.tx(_tx)
+    const [result, derived] = await this.storage.tx(_tx)
     for (const tx of derived) { this.handler(tx) }
-    return {}
+    return result
   }
 }
 

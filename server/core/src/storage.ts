@@ -119,7 +119,7 @@ class TServerStorage implements ServerStorage {
     return await this.getAdapter(domain).findAll(clazz, query, options)
   }
 
-  async tx (tx: Tx): Promise<Tx[]> {
+  async tx (tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     await this.getAdapter(DOMAIN_TX).tx(tx)
 
@@ -130,7 +130,7 @@ class TServerStorage implements ServerStorage {
       await this.modelDb.tx(tx)
     }
     // store object
-    await this.routeTx(tx)
+    const result = await this.routeTx(tx)
     // invoke triggers and store derived objects
     const derived = await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)
     for (const tx of derived) {
@@ -143,7 +143,7 @@ class TServerStorage implements ServerStorage {
       await this.fulltext.tx(tx)
     }
 
-    return derived
+    return [result, derived]
   }
 }
 
