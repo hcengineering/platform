@@ -41,7 +41,7 @@
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
     {#if $$slots.error}
-      <div class="error">
+      <div class="flex-grow error">
         <slot name="error" />
       </div>
     {/if}
