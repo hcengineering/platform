@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander } from '@anticrm/core'
+import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander, TxResult } from '@anticrm/core'
 import type { ReqId } from '@anticrm/platform'
 import { serialize, readResponse } from '@anticrm/platform'
 
@@ -94,7 +94,7 @@ class Connection implements Storage {
     return this.sendRequest('findAll', _class, query, options)
   }
 
-  tx (tx: Tx): Promise<void> {
+  tx (tx: Tx): Promise<TxResult> {
     return this.sendRequest('tx', tx)
   }
 }

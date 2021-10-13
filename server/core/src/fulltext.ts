@@ -15,7 +15,7 @@
 //
 
 import core, { Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
-import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj } from '@anticrm/core'
+import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj, TxResult } from '@anticrm/core'
 
 import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
 
@@ -33,15 +33,17 @@ export class FullTextIndex extends TxProcessor implements Storage {
     super()
   }
 
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     console.log('FullTextIndex.txPutBag: Method not implemented.')
+    return {}
   }
 
-  protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
+    return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
@@ -74,9 +76,9 @@ export class FullTextIndex extends TxProcessor implements Storage {
     }
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
-    if (attributes === undefined) return
+    if (attributes === undefined) return {}
     const doc = TxProcessor.createDoc2Doc(tx)
     const content = attributes.map(attr => (doc as any)[attr.name]) // buildContent(doc, attributes) // (doc as any)[attribute.name]
     const indexedDoc: IndexedDoc = {
@@ -100,9 +102,9 @@ export class FullTextIndex extends TxProcessor implements Storage {
     return await this.adapter.index(indexedDoc)
   }
 
-  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
-    if (attributes === undefined) return
+    if (attributes === undefined) return {}
     const ops: any = tx.operations
     const update: any = {}
     let i = 0
@@ -117,5 +119,6 @@ export class FullTextIndex extends TxProcessor implements Storage {
     if (shouldUpdate) {
       return await this.adapter.update(tx.objectId, update)
     }
+    return {}
   }
 }

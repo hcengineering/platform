@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxResult } from '@anticrm/core'
 import { ModelDb, TxDb, Hierarchy } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
@@ -30,7 +30,7 @@ class InMemoryTxAdapter implements TxAdapter {
     return await this.txdb.findAll(_class, query, options)
   }
 
-  tx (tx: Tx): Promise<void> {
+  tx (tx: Tx): Promise<TxResult> {
     return this.txdb.tx(tx)
   }
 
@@ -56,7 +56,7 @@ class InMemoryAdapter implements DbAdapter {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     return await this.modeldb.tx(tx)
   }
 

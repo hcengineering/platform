@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from '@anticrm/core'
+import type { Doc, Ref, TxResult } from '@anticrm/core'
 import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
@@ -58,7 +58,7 @@ class ElasticAdapter implements FullTextAdapter {
     return hits.map(hit => hit._source)
   }
 
-  async index (doc: IndexedDoc): Promise<void> {
+  async index (doc: IndexedDoc): Promise<TxResult> {
     console.log('eastic: index', doc)
     if (doc.data === undefined) {
       const resp = await this.client.index({
@@ -81,9 +81,10 @@ class ElasticAdapter implements FullTextAdapter {
       console.log('resp', resp)
       console.log('error', (resp.meta as any)?.body?.error)
     }
+    return {}
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<void> {
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
     const resp = await this.client.update({
       index: this.db,
       id,
@@ -92,6 +93,7 @@ class ElasticAdapter implements FullTextAdapter {
       }
     })
     console.log('update', resp)
+    return {}
   }
 }
 

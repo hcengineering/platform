@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx } from '@anticrm/core'
+import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx, TxResult } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { createElasticAdapter } from '@anticrm/elastic'
@@ -29,7 +29,7 @@ import { serverViewId } from '@anticrm/server-view'
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> { return [] }
-  async tx (tx: Tx): Promise<void> {}
+  async tx (tx: Tx): Promise<TxResult> { return {} }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {

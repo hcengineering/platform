@@ -20,7 +20,7 @@ import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
 
-import type { Doc, Ref, Class, FindOptions, FindResult, Tx, DocumentQuery, Storage, ServerStorage } from '@anticrm/core'
+import type { Doc, Ref, Class, FindOptions, FindResult, Tx, DocumentQuery, Storage, ServerStorage, TxResult } from '@anticrm/core'
 
 let LOGGING_ENABLED = true
 
@@ -39,12 +39,13 @@ class Session implements Storage {
     return await this.storage.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     const derived = await this.storage.tx(tx)
     this.manager.broadcast(this, this.token, { result: tx })
     for (const tx of derived) {
       this.manager.broadcast(null, this.token, { result: tx })
     }
+    return {}
   }
 }
 

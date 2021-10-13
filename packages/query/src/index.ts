@@ -16,7 +16,7 @@
 import {
   Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
   FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb, TxBulkWrite
+  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb, TxBulkWrite, TxResult
 } from '@anticrm/core'
 
 interface Query {
@@ -91,7 +91,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
         q.result = await q.result
@@ -107,13 +107,14 @@ export class LiveQuery extends TxProcessor implements Client {
         await this.callback(updatedDoc, q)
       }
     }
+    return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     console.log(`updating ${this.queries.length} queries`)
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
@@ -126,6 +127,7 @@ export class LiveQuery extends TxProcessor implements Client {
         await this.callback(updatedDoc, q)
       }
     }
+    return {}
   }
 
   private async lookup (doc: Doc, lookup: Refs<Doc>): Promise<void> {
@@ -138,7 +140,7 @@ export class LiveQuery extends TxProcessor implements Client {
     (doc as WithLookup<Doc>).$lookup = result
   }
 
-  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     console.log('query tx', tx)
     for (const q of this.queries) {
       const doc = TxProcessor.createDoc2Doc(tx)
@@ -162,9 +164,10 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       }
     }
+    return {}
   }
 
-  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     for (const q of this.queries) {
       if (q.result instanceof Promise) {
         q.result = await q.result
@@ -175,16 +178,17 @@ export class LiveQuery extends TxProcessor implements Client {
         q.callback(q.result)
       }
     }
+    return {}
   }
 
-  protected override async txBulkWrite (tx: TxBulkWrite): Promise<void> {
+  protected override async txBulkWrite (tx: TxBulkWrite): Promise<TxResult> {
     console.log('query: bulk')
-    await super.txBulkWrite(tx)
+    return await super.txBulkWrite(tx)
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     console.log('query tx', tx)
-    await super.tx(tx)
+    return await super.tx(tx)
   }
 
   // why this is separate from txUpdateDoc?

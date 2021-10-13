@@ -104,11 +104,17 @@ export type FindResult<T extends Doc> = WithLookup<T>[]
 /**
  * @public
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface TxResult {}
+
+/**
+ * @public
+ */
 export interface Storage {
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<void>
+  tx: (tx: Tx) => Promise<TxResult>
 }

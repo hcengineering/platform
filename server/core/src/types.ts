@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult } from '@anticrm/core'
 import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
@@ -67,8 +67,8 @@ export type SearchQuery = any // TODO: replace with DocumentQuery
  * @public
  */
 export interface FullTextAdapter {
-  index: (doc: IndexedDoc) => Promise<void>
-  update: (id: Ref<Doc>, update: Record<string, any>) => Promise<void>
+  index: (doc: IndexedDoc) => Promise<TxResult>
+  update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   search: (query: SearchQuery) => Promise<IndexedDoc[]>
 }
 

@@ -15,7 +15,7 @@
 //
 
 import { DOMAIN_TX } from '@anticrm/core'
-import type { Ref, Doc } from '@anticrm/core'
+import type { Ref, Doc, TxResult } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
@@ -25,11 +25,13 @@ import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
 
 class NullFullTextAdapter implements FullTextAdapter {
-  async index (doc: IndexedDoc): Promise<void> {
+  async index (doc: IndexedDoc): Promise<TxResult> {
     console.log('noop full text indexer: ', doc)
+    return {}
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<void> {
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+    return {}
   }
 
   async search (query: any): Promise<IndexedDoc[]> {

@@ -20,7 +20,7 @@ import core from './component'
 import type { Hierarchy } from './hierarchy'
 import { _getOperator } from './operator'
 import { findProperty, resultSort } from './query'
-import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, LookupData, Refs } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, LookupData, Refs, TxResult } from './storage'
 import { TxProcessor } from './tx'
 
 import clone from 'just-clone'
@@ -149,28 +149,29 @@ export abstract class MemDb extends TxProcessor {
  * @public
  */
 export class TxDb extends MemDb implements Storage {
-  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     this.addDoc(tx)
+    return {}
   }
 }
 
@@ -180,7 +181,7 @@ export class TxDb extends MemDb implements Storage {
  * @public
  */
 export class ModelDb extends MemDb implements Storage {
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     const doc = this.getObject(tx.objectId) as any
     let bag = doc[tx.bag]
     if (bag === undefined) {
@@ -189,13 +190,15 @@ export class ModelDb extends MemDb implements Storage {
     bag[tx.key] = tx.value
     doc.modifiedBy = tx.modifiedBy
     doc.modifiedOn = tx.modifiedOn
+    return {}
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     this.addDoc(TxProcessor.createDoc2Doc(tx))
+    return {}
   }
 
-  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const doc = this.getObject(tx.objectId) as any
     const ops = tx.operations as any
     for (const key in ops) {
@@ -208,15 +211,18 @@ export class ModelDb extends MemDb implements Storage {
     }
     doc.modifiedBy = tx.modifiedBy
     doc.modifiedOn = tx.modifiedOn
+    return {}
   }
 
-  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     this.delDoc(tx.objectId)
+    return {}
   }
 
   // TODO: process ancessor mixins
-  protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const obj = this.getObject(tx.objectId) as any
     obj[tx.mixin] = tx.attributes
+    return {}
   }
 }

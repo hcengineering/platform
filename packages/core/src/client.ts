@@ -15,7 +15,7 @@
 
 import type { Doc, Ref, Class } from './classes'
 import type { Tx } from './tx'
-import type { Storage, DocumentQuery, FindOptions, FindResult, WithLookup } from './storage'
+import type { Storage, DocumentQuery, FindOptions, FindResult, WithLookup, TxResult } from './storage'
 
 import { SortingOrder } from './storage'
 import { Hierarchy } from './hierarchy'
@@ -73,13 +73,13 @@ class ClientImpl implements Client {
     return (await this.findAll(_class, query, options))[0]
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
     }
     this.notify?.(tx)
-    await this.conn.tx(tx)
+    return await this.conn.tx(tx)
   }
 
   async updateFromRemote (tx: Tx): Promise<void> {

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage } from '@anticrm/core'
+import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage, TxResult } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
@@ -28,19 +28,22 @@ class ServerStorageWrapper implements Storage {
     return this.storage.findAll(c, q, o)
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
     const derived = await this.storage.tx(_tx)
     for (const tx of derived) { this.handler(tx) }
+    return {}
   }
 }
 
 class NullFullTextAdapter implements FullTextAdapter {
-  async index (doc: IndexedDoc): Promise<void> {
+  async index (doc: IndexedDoc): Promise<TxResult> {
     console.log('noop full text indexer: ', doc)
+    return {}
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<void> {
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+    return {}
   }
 
   async search (query: any): Promise<IndexedDoc[]> {

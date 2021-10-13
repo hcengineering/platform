@@ -15,7 +15,7 @@
 
 import type { KeysByType } from 'simplytyped'
 import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType } from './classes'
-import { DocumentQuery, FindOptions, FindResult, Storage, WithLookup } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
 import core from './component'
 import { generateId } from './utils'
 
@@ -172,14 +172,14 @@ export const DOMAIN_TX = 'tx' as Domain
  * @public
  */
 export interface WithTx {
-  tx: (tx: Tx) => Promise<void>
+  tx: (tx: Tx) => Promise<TxResult>
 }
 
 /**
  * @public
  */
 export abstract class TxProcessor implements WithTx {
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(tx as TxCreateDoc<Doc>)
@@ -209,17 +209,18 @@ export abstract class TxProcessor implements WithTx {
     } as T
   }
 
-  protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void>
-  protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<void>
-  protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void>
-  protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void>
-  protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<void>
+  protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
+  protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<TxResult>
+  protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
+  protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>
+  protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult>
 
-  protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<void> {
+  protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<TxResult> {
     for (const tx of bulkTx.txes) {
       console.log('bulk', tx)
       await this.tx(tx)
     }
+    return {}
   }
 }
 
@@ -241,7 +242,7 @@ export class TxOperations implements Storage {
     return (await this.findAll(_class, query, options))[0]
   }
 
-  tx (tx: Tx): Promise<void> {
+  tx (tx: Tx): Promise<TxResult> {
     return this.storage.tx(tx)
   }
 
@@ -263,7 +264,7 @@ export class TxOperations implements Storage {
     bag: string,
     key: string,
     value: P
-  ): Promise<void> {
+  ): Promise<TxResult> {
     const tx = this.txFactory.createTxPutBag(_class, space, objectId, bag, key, value)
     return this.storage.tx(tx)
   }
@@ -273,7 +274,7 @@ export class TxOperations implements Storage {
     space: Ref<Space>,
     objectId: Ref<T>,
     operations: DocumentUpdate<T>
-  ): Promise<void> {
+  ): Promise<TxResult> {
     const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
     return this.storage.tx(tx)
   }
@@ -282,7 +283,7 @@ export class TxOperations implements Storage {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>
-  ): Promise<void> {
+  ): Promise<TxResult> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
     return this.storage.tx(tx)
   }
@@ -292,7 +293,7 @@ export class TxOperations implements Storage {
     objectClass: Ref<Class<D>>,
     mixin: Ref<Mixin<M>>,
     attributes: ExtendedAttributes<D, M>
-  ): Promise<void> {
+  ): Promise<TxResult> {
     const tx = this.txFactory.createTxMixin(objectId, objectClass, mixin, attributes)
     return this.storage.tx(tx)
   }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Tx, Storage, Class, Doc, DocumentQuery, FindOptions, Ref, FindResult } from '@anticrm/core'
+import type { Tx, Storage, Class, Doc, DocumentQuery, FindOptions, Ref, FindResult, TxResult } from '@anticrm/core'
 import { serialize } from '@anticrm/platform'
 import WebSocket from 'ws'
 
@@ -29,11 +29,12 @@ export class ContributingClient implements Storage {
     throw new Error('findAll not implemeneted for contributing client')
   }
 
-  async tx (tx: Tx): Promise<void> {
+  async tx (tx: Tx): Promise<TxResult> {
     this.websocket.send(serialize({
       method: 'tx',
       params: [tx]
     }))
+    return {}
   }
 
   close (): void {

@@ -16,7 +16,7 @@
 
 import { onDestroy } from 'svelte'
 
-import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb } from '@anticrm/core'
+import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb, TxResult } from '@anticrm/core'
 import { TxOperations } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import core from '@anticrm/core'
@@ -38,7 +38,7 @@ class UIClient extends TxOperations implements Client {
     return this.client.getModel()
   }
 
-  tx(tx: Tx): Promise<void> {
+  tx(tx: Tx): Promise<TxResult> {
     // return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
     return super.tx(tx)  
   }

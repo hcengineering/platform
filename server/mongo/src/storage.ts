@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxResult } from '@anticrm/core'
 import core, { DOMAIN_TX, DOMAIN_MODEL, SortingOrder, TxProcessor, Hierarchy, isOperator, ModelDb } from '@anticrm/core'
 
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
@@ -121,27 +121,29 @@ abstract class MongoAdapterBase extends TxProcessor {
 }
 
 class MongoAdapter extends MongoAdapterBase {
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     console.log('mongo', { $set: { [tx.bag + '.' + tx.key]: tx.value } })
     await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { [tx.bag + '.' + tx.key]: tx.value } })
+    return {}
   }
 
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const doc = TxProcessor.createDoc2Doc(tx)
     const domain = this.hierarchy.getDomain(doc._class)
     await this.db.collection(domain).insertOne(translateDoc(doc))
+    return {}
   }
 
-  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
@@ -182,38 +184,40 @@ class MongoAdapter extends MongoAdapterBase {
     } else {
       await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
     }
+    return {}
   }
 
-  override tx (tx: Tx): Promise<void> {
+  override tx (tx: Tx): Promise<TxResult> {
     console.log('mongo', tx)
     return super.tx(tx)
   }
 }
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
-  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<void> {
+  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txPutBag (tx: TxPutBag<any>): Promise<void> {
+  protected txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
+  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<void> {
+  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<void> {
+  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  override async tx (tx: Tx): Promise<void> {
+  override async tx (tx: Tx): Promise<TxResult> {
     console.log('mongotx', tx)
     await this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
+    return {}
   }
 
   async getModel (): Promise<Tx[]> {

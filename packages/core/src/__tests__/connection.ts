@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Storage, DocumentQuery, FindResult } from '../storage'
+import type { Storage, DocumentQuery, FindResult, TxResult } from '../storage'
 import type { Class, Doc, Ref } from '../classes'
 import type { Tx } from '../tx'
 import core from '../component'
@@ -43,11 +43,12 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
 
   return {
     findAll,
-    tx: async (tx: Tx): Promise<void> => {
+    tx: async (tx: Tx): Promise<TxResult> => {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)
       }
-      await Promise.all([model.tx(tx), transactions.tx(tx)])
+      const result = await Promise.all([model.tx(tx), transactions.tx(tx)])
+      return result[0]
       // handler(tx) - we have only one client, should not update?
     }
   }
