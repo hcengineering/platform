@@ -21,7 +21,7 @@
   export let label: IntlString
 </script>
 
-<div class="panel-container">
+<div class="panel-container step-lr75">
   <div class="circle">
     <div class="icon">
       <IconAdd size={'large'} />

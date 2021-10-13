@@ -178,6 +178,7 @@
           {#each objects as object, j}
             {#if object.state === state._id}
               <div
+                class="step-tb75"
                 on:dragover|preventDefault={(ev) => {
                   dragover(ev, object)
                 }}

@@ -100,11 +100,8 @@
       spacePlaceholder={'Select vacancy'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
-  <svelte:fragment slot="error">
-    {#if status !== OK}
-      <StatusControl {status} />
-    {/if}
-  </svelte:fragment>
+      
+  <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
       <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
