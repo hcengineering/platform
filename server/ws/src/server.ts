@@ -40,12 +40,12 @@ class Session implements Storage {
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    const derived = await this.storage.tx(tx)
+    const [result, derived] = await this.storage.tx(tx)
     this.manager.broadcast(this, this.token, { result: tx })
     for (const tx of derived) {
       this.manager.broadcast(null, this.token, { result: tx })
     }
-    return {}
+    return result
   }
 }
 
