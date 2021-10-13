@@ -155,6 +155,7 @@ export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & 
  */
 export interface TxUpdateDoc<T extends Doc> extends TxCUD<T> {
   operations: DocumentUpdate<T>
+  retrieve?: boolean
 }
 
 /**
@@ -273,9 +274,10 @@ export class TxOperations implements Storage {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
-    operations: DocumentUpdate<T>
+    operations: DocumentUpdate<T>,
+    retrieve?: boolean
   ): Promise<TxResult> {
-    const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
+    const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve)
     return this.storage.tx(tx)
   }
 
@@ -346,7 +348,8 @@ export class TxFactory {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
-    operations: DocumentUpdate<T>
+    operations: DocumentUpdate<T>,
+    retrieve?: boolean
   ): TxUpdateDoc<T> {
     return {
       _id: generateId(),
@@ -357,7 +360,8 @@ export class TxFactory {
       objectId,
       objectClass: _class,
       objectSpace: space,
-      operations
+      operations,
+      retrieve
     }
   }
 

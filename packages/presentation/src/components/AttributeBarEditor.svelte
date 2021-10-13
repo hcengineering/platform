@@ -45,7 +45,7 @@
   }
 
   function onChange(value: any) {
-    client.updateDoc(_class, object.space, object._id, { [key]: value }).then(result => console.log('UPDATE RESULT', result))
+    client.updateDoc(_class, object.space, object._id, { [key]: value }, true).then(result => console.log('UPDATE RESULT', result))
   }
 </script>
 

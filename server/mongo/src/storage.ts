@@ -179,10 +179,20 @@ class MongoAdapter extends MongoAdapterBase {
         console.log('ops', ops)
         return await this.db.collection(domain).bulkWrite(ops as any)
       } else {
-        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+        if (tx.retrieve === true) {
+          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, tx.operations, { returnDocument: 'after' })
+          return { object: result.value }
+        } else {
+          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+        }
       }
     } else {
-      return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+      if (tx.retrieve === true) {
+        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: tx.operations }, { returnDocument: 'after' })
+        return { object: result.value }
+      } else {
+        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+      }
     }
   }
 
