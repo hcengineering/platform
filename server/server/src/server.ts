@@ -14,17 +14,27 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX } from '@anticrm/core'
+import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { createElasticAdapter } from '@anticrm/elastic'
 import { createServerStorage } from '@anticrm/server-core'
-import type { DbConfiguration } from '@anticrm/server-core'
+import type { DbConfiguration, DbAdapter } from '@anticrm/server-core'
 
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverViewId } from '@anticrm/server-view'
+
+class NullDbAdapter implements DbAdapter {
+  async init (model: Tx[]): Promise<void> {}
+  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> { return [] }
+  async tx (tx: Tx): Promise<void> {}
+}
+
+async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
+  return new NullDbAdapter()
+}
 
 /**
  * @public
@@ -37,7 +47,8 @@ export async function start (dbUrl: string, fullTextUrl: string, port: number, h
   startJsonRpc((workspace: string) => {
     const conf: DbConfiguration = {
       domains: {
-        [DOMAIN_TX]: 'MongoTx'
+        [DOMAIN_TX]: 'MongoTx',
+        [DOMAIN_MODEL]: 'Null'
       },
       defaultAdapter: 'Mongo',
       adapters: {
@@ -48,6 +59,10 @@ export async function start (dbUrl: string, fullTextUrl: string, port: number, h
         Mongo: {
           factory: createMongoAdapter,
           url: dbUrl
+        },
+        Null: {
+          factory: createNullAdapter,
+          url: ''
         }
       },
       fulltextAdapter: {

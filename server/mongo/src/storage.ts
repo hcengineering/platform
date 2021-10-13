@@ -14,7 +14,7 @@
 //
 
 import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
-import core, { DOMAIN_TX, SortingOrder, TxProcessor, Hierarchy, isOperator } from '@anticrm/core'
+import core, { DOMAIN_TX, DOMAIN_MODEL, SortingOrder, TxProcessor, Hierarchy, isOperator, ModelDb } from '@anticrm/core'
 
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
@@ -27,7 +27,8 @@ function translateDoc (doc: Doc): Document {
 abstract class MongoAdapterBase extends TxProcessor {
   constructor (
     protected readonly db: Db,
-    protected readonly hierarchy: Hierarchy
+    protected readonly hierarchy: Hierarchy,
+    protected readonly modelDb: ModelDb
   ) {
     super()
   }
@@ -63,13 +64,16 @@ abstract class MongoAdapterBase extends TxProcessor {
     const lookups = options.lookup as any
     for (const key in lookups) {
       const clazz = lookups[key]
-      const step = {
-        from: this.hierarchy.getDomain(clazz),
-        localField: key,
-        foreignField: '_id',
-        as: key + '_lookup'
+      const domain = this.hierarchy.getDomain(clazz)
+      if (domain !== DOMAIN_MODEL) {
+        const step = {
+          from: domain,
+          localField: key,
+          foreignField: '_id',
+          as: key + '_lookup'
+        }
+        pipeline.push({ $lookup: step })
       }
-      pipeline.push({ $lookup: step })
     }
     const domain = this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline)
@@ -78,8 +82,14 @@ abstract class MongoAdapterBase extends TxProcessor {
       const object = row as any
       object.$lookup = {}
       for (const key in lookups) {
-        const arr = object[key + '_lookup']
-        object.$lookup[key] = arr[0]
+        const clazz = lookups[key]
+        const domain = this.hierarchy.getDomain(clazz)
+        if (domain !== DOMAIN_MODEL) {
+          const arr = object[key + '_lookup']
+          object.$lookup[key] = arr[0]
+        } else {
+          object.$lookup[key] = this.modelDb.getObject(object[key])
+        }
       }
     }
     return result
@@ -214,19 +224,19 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 /**
  * @public
  */
-export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<DbAdapter> {
+export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string, modelDb: ModelDb): Promise<DbAdapter> {
   const client = new MongoClient(url)
   await client.connect()
   const db = client.db(dbName)
-  return new MongoAdapter(db, hierarchy)
+  return new MongoAdapter(db, hierarchy, modelDb)
 }
 
 /**
  * @public
  */
-export async function createMongoTxAdapter (hierarchy: Hierarchy, url: string, dbName: string): Promise<TxAdapter> {
+export async function createMongoTxAdapter (hierarchy: Hierarchy, url: string, dbName: string, modelDb: ModelDb): Promise<TxAdapter> {
   const client = new MongoClient(url)
   await client.connect()
   const db = client.db(dbName)
-  return new MongoTxAdapter(db, hierarchy)
+  return new MongoTxAdapter(db, hierarchy, modelDb)
 }
