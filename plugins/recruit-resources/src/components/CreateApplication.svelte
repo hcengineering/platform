@@ -43,6 +43,10 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
+  export function canClose(): boolean {
+    return candidate === undefined && employee === undefined
+  }
+
   async function createApplication() {
     dispatch('close')
     const state = await client.findOne(core.class.State, { space: _space })
@@ -89,7 +93,6 @@
 </script>
 
 <Card label={'Create Application'} 
-      okLabel={'Save'}
       okAction={createApplication}
       canSave={status.severity === Severity.OK}
       spaceClass={recruit.class.Vacancy}

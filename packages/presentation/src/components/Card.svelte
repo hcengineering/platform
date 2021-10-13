@@ -30,8 +30,6 @@
   export let spaceLabel: IntlString
   export let spacePlaceholder: IntlString
   export let label: IntlString
-  export let okLabel: IntlString
-  export let cancelLabel: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
 
@@ -54,8 +52,8 @@
     <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
   </div>
   <div class="footer">
-    <Button disabled={!canSave} label={okLabel} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={cancelLabel} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
   </div>
 </form>
 

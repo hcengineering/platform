@@ -28,8 +28,8 @@
   <div class="overflow-label title"><Label {label} /></div>
   <div class="message"><Label label={message} /></div>
   <div class="footer">
-    <Button label={'Ok'} size={'small'} primary on:click={() => dispatch('close', 'OK')} />
-    <Button label={'Cancel'} size={'small'} on:click={() => dispatch('close', 'CANCEL')} />
+    <Button label={'Ok'} size={'small'} primary on:click={() => dispatch('close', true)} />
+    <Button label={'Cancel'} size={'small'} on:click={() => dispatch('close', false)} />
   </div>
 </div>
 

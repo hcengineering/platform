@@ -89,7 +89,7 @@
     </div>
   </div>
 
-  Applications
+  <!-- Applications
 
   <TableView 
     _class={recruit.class.Applicant}
@@ -104,7 +104,7 @@
       }
     }
     search=""
-  />
+  /> -->
 
   <div class="attachments">
     <Attachments objectId={object._id} _class={object._class} space={object.space} {object}/>

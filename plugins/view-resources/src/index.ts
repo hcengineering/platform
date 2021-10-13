@@ -23,13 +23,21 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import TableView from './components/TableView.svelte'
 import KanbanView from './components/KanbanView.svelte'
 
-import { getClient } from '@anticrm/presentation'
+import { getClient, MessageBox } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
 
 export { TableView }
 
-async function Delete(object: Doc): Promise<void> {
-  const client = getClient()
-  await client.removeDoc(object._class, object.space, object._id)
+function Delete(object: Doc): void {
+  showPopup(MessageBox, {
+    label: 'Delete object',
+    message: 'Do you want to delete this object?'
+  }, undefined, (result) => {
+    if (result) {
+      const client = getClient()
+      client.removeDoc(object._class, object.space, object._id)    
+    }
+  })
 }
 
 export default async () => ({

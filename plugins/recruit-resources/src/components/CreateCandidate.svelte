@@ -140,8 +140,6 @@
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
 
 <Card label={'Create Candidate'} 
-      okLabel={'Save'}
-      cancelLabel={'Cancel'}
       okAction={createCandidate}
       canSave={firstName.length > 0 && lastName.length > 0}
       spaceClass={recruit.class.Candidates}

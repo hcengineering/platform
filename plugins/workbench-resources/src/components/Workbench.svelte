@@ -79,15 +79,7 @@
     </div>
     {#if navigator}
     <div class="panel-navigator">
-      <NavHeader label={'Chat'} action={() => {
-        showPopup(MessageBox, {
-                                label: 'Dialog title',
-                                message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor anem isto orem ipsum dolor sit amet?'
-                              }, undefined, (result) => {
-          if (result && result === 'OK') console.log('MessageBox - Ok!')
-          else console.log('MessageBox - Cancel')
-        })
-      }} />
+      <NavHeader label={'Chat'} action={() => {}} />
       <Navigator model={navigatorModel}/>
     </div>
     {/if}
