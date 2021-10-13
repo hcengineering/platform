@@ -211,7 +211,7 @@ export class ModelDb extends MemDb implements Storage {
     }
     doc.modifiedBy = tx.modifiedBy
     doc.modifiedOn = tx.modifiedOn
-    return {}
+    return { update: 'here' }
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {

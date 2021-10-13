@@ -177,14 +177,13 @@ class MongoAdapter extends MongoAdapterBase {
           }
         ]
         console.log('ops', ops)
-        await this.db.collection(domain).bulkWrite(ops as any)
+        return await this.db.collection(domain).bulkWrite(ops as any)
       } else {
-        await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
       }
     } else {
-      await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+      return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
     }
-    return {}
   }
 
   override tx (tx: Tx): Promise<TxResult> {

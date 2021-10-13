@@ -15,7 +15,7 @@
 //
 
 import type { Doc, Class, Ref } from './classes'
-import type { DocumentQuery, FindOptions, FindResult } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
 import type { Tx } from './tx'
 
 /**
@@ -27,5 +27,5 @@ export interface ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<Tx[]>
+  tx: (tx: Tx) => Promise<[TxResult, Tx[]]>
 }
