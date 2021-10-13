@@ -47,7 +47,7 @@
     </div>
     <div class="flex-col">
       <div class="name" on:click={showCandidate}>{formatName(object.$lookup?.candidate?.name)}</div>
-      <div class="city">{object.$lookup?.candidate?.city}</div>
+      <div class="city">{object.$lookup?.candidate?.city ?? ''}</div>
       <div class="tags">
         <div class="tag" on:click={showApplication}><Label label={'Application'} /></div>
         <!-- <div class="tag"><Label label={'Resume'} /></div> -->
