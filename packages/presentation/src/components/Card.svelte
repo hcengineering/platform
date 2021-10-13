@@ -88,9 +88,6 @@
         font-size: .75rem;
         color: var(--system-error-color);
         &:empty { visibility: hidden; }
-        &::-webkit-scrollbar:horizontal {
-          height: 2px;
-        }
       }
     }
 
