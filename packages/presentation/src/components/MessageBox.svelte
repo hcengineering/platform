@@ -38,6 +38,8 @@
     display: flex;
     flex-direction: column;
     padding: 2rem 1.75rem 1.75rem;
+    width: 30rem;
+    max-width: 40rem;
     background: var(--theme-msgbox-bg);
     border-radius: 1.25rem;
     user-select: none;
