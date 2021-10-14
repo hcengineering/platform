@@ -33,6 +33,6 @@ function show() {
 
 </script>
 
-<div on:click={show}>
-  <IconFile size={'small'}/>&nbsp;{shortLabel}-{value.number}
+<div class="sm-tool-icon" on:click={show}>
+  <span class="icon"><IconFile size={'small'}/></span>{shortLabel}-{value.number}
 </div>
