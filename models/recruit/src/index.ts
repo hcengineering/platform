@@ -57,6 +57,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Model(recruit.class.Applicant, core.class.DocWithState, DOMAIN_RECRUIT)
+@UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
 export class TApplicant extends TDocWithState implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
   candidate!: Ref<Candidate>
@@ -141,22 +142,8 @@ export function createModel (builder: Builder): void {
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['number', '$lookup.candidate', { presenter: recruit.component.ApplicationPresenter, label: 'Application' }, '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
+    config: ['', '$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
-
-  // builder.createDoc(view.class.Viewlet, core.space.Model, {
-  //   attachTo: recruit.class.Applicant,
-  //   descriptor: view.viewlet.Kanban,
-  //   open: recruit.component.EditCandidate,
-  //   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  //   options: {
-  //     lookup: {
-  //       candidate: recruit.class.Candidate,
-  //       state: core.class.State
-  //     }
-  //   } as FindOptions<Doc>, // TODO: fix
-  //   config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
-  // })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
@@ -164,6 +151,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Candidate, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditCandidate
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: recruit.component.ApplicationPresenter
   })
 
   builder.createDoc(view.class.Action, core.space.Model, {

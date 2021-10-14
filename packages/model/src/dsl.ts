@@ -58,6 +58,7 @@ interface ClassTxes {
   icon?: Asset
   txes: Array<NoIDs<Tx>>
   kind: ClassifierKind
+  shortLabel?: IntlString
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -151,12 +152,14 @@ export function Mixin<T extends Obj> (
  */
 export function UX<T extends Obj> (
   label: IntlString,
-  icon?: Asset
+  icon?: Asset,
+  shortLabel?: IntlString
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label
     txes.icon = icon
+    txes.shortLabel = shortLabel
   }
 }
 
@@ -184,7 +187,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
       kind: ClassifierKind.CLASS,
       extends: tx.extends,
       label: tx.label,
-      icon: tx.icon
+      icon: tx.icon,
+      shortLabel: tx.shortLabel
     },
     objectId
   )

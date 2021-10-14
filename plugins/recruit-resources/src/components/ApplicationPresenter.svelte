@@ -19,8 +19,12 @@
 import type { Applicant } from '@anticrm/recruit'
 import { IconFile, showPopup } from '@anticrm/ui'
 import EditApplication from './EditApplication.svelte'
+import { getClient } from '@anticrm/presentation'
 
 export let value: Applicant
+
+const client = getClient()
+const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
 function show() {
   console.log('show!', value)
@@ -30,5 +34,5 @@ function show() {
 </script>
 
 <div on:click={show}>
-  <IconFile size={'small'}/>
+  <IconFile size={'small'}/>&nbsp;{shortLabel}-{value.number}
 </div>

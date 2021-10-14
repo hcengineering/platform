@@ -123,6 +123,7 @@ export type Domain = string & { __domain: true }
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
   domain?: Domain
+  shortLabel?: IntlString
 }
 
 /**
