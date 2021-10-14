@@ -145,6 +145,20 @@ export function createModel (builder: Builder): void {
     config: ['', '$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: recruit.class.Applicant,
+    descriptor: view.viewlet.Kanban,
+    open: recruit.component.EditCandidate,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        candidate: recruit.class.Candidate,
+        state: core.class.State
+      }
+    } as FindOptions<Doc>, // TODO: fix
+    config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })
