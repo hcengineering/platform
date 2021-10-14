@@ -53,11 +53,11 @@
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
-    const kanban = await client.findOne(view.class.Kanban, { attachedTo: _space })
-    if (kanban === undefined) {
-      throw new Error('kanban object not found')
+    const sequence = await client.findOne(view.class.Sequence, { attachedTo: recruit.class.Applicant })
+    if (sequence === undefined) {
+      throw new Error('sequence object not found')
     }
-    const incResult = await client.updateDoc(view.class.Kanban, _space, kanban._id, {
+    const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
       $inc: { sequence: 1 }
     }, true)
     const id = await client.createDoc(recruit.class.Applicant, _space, {

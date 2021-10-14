@@ -181,6 +181,11 @@ export function createModel (builder: Builder): void {
     target: recruit.class.Candidate,
     action: recruit.action.CreateApplication
   })
+
+  builder.createDoc(view.class.Sequence, view.space.Sequence, {
+    attachedTo: recruit.class.Applicant,
+    sequence: 0
+  })
 }
 
 export { default } from './plugin'

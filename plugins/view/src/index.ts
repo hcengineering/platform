@@ -86,9 +86,16 @@ export interface ActionTarget extends Doc {
  */
 export interface Kanban extends Doc {
   attachedTo: Ref<Space>
-  sequence: number
   states: Arr<Ref<State>>
   order: Arr<Ref<Doc>>
+}
+
+/**
+ * @public
+ */
+export interface Sequence extends Doc {
+  attachedTo: Ref<Class<Doc>>
+  sequence: number
 }
 
 /**
@@ -108,11 +115,15 @@ export default plugin(viewId, {
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
     ActionTarget: '' as Ref<Class<ActionTarget>>,
-    Kanban: '' as Ref<Class<Kanban>>
+    Kanban: '' as Ref<Class<Kanban>>,
+    Sequence: '' as Ref<Class<Sequence>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
     Kanban: '' as Ref<ViewletDescriptor>
+  },
+  space: {
+    Sequence: '' as Ref<Space>
   },
   icon: {
     Table: '' as Asset,
