@@ -19,13 +19,13 @@
   export let value: boolean | undefined
 
   function getLabel(value: boolean | undefined) {
-    if (value === true) return 'Да'
-    if (value === false) return 'Нет'
-    return 'Неиз'
+    if (value === true) return 'Yes'
+    if (value === false) return 'No'
+    return 'Unkn'
   }
 </script>
 
-<div class="flex-row-center yesno-container" class:yes={value === true} class:no={value === false} class:unknown={value === undefined} on:click={() => {
+<div class="flex-row-center yesno-container" class:yes={value === true} class:no={value === false} on:click={() => {
   if (value === true) value = false
   else if (value === false) value = undefined
   else value = true
@@ -51,9 +51,9 @@
     user-select: none;
     cursor: pointer;
 
+    background-color: #77818E;
     &.yes { background-color: #60B96E; }
     &.no { background-color: #F06C63; }
-    &.unknown { background-color: #77818E; }
 
     span {
       width: 1.6rem;
