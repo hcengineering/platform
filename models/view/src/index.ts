@@ -76,6 +76,7 @@ export class TActionTarget extends TDoc implements ActionTarget {
 @Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
 export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
+  sequence!: number
   states!: Arr<Ref<State>>
   order!: Arr<Ref<Doc>>
 }

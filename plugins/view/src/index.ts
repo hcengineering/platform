@@ -86,6 +86,7 @@ export interface ActionTarget extends Doc {
  */
 export interface Kanban extends Doc {
   attachedTo: Ref<Space>
+  sequence: number
   states: Arr<Ref<State>>
   order: Arr<Ref<Doc>>
 }

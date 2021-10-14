@@ -51,6 +51,9 @@ export class TState extends TDoc implements State {
 export class TDocWithState extends TDoc {
   @Prop(TypeString(), 'State' as IntlString)
   state!: Ref<State>
+
+  @Prop(TypeString(), 'No.' as IntlString)
+  number!: number
 }
 
 @Model(core.class.SpaceWithStates, core.class.Space)

@@ -209,6 +209,7 @@ export interface State extends Doc {
  */
 export interface DocWithState extends Doc {
   state: Ref<State>
+  number: number
 }
 
 /**
