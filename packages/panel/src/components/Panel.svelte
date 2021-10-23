@@ -43,6 +43,7 @@
   function onMessage(event: CustomEvent) {
     client.createDoc(chunter.class.Comment, object.space, {
       attachedTo: object._id,
+      attachedToClass: object._class,
       message: event.detail
     })
     console.log(event.detail)
