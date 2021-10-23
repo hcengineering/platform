@@ -14,13 +14,14 @@
 #  limitations under the License.
 #
 
-export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace default mng-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
-export MINIO_ACCESS_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.access-key}" | base64 --decode)
-export MINIO_SECRET_KEY=$(kubectl get secret --namespace default minio -o jsonpath="{.data.secret-key}" | base64 --decode)
+export MONGO_URL=$(kubectl get secret mongodb -o jsonpath="{.data.url}" | base64 --decode)
+export MINIO_ENDPOINT=$(kubectl get secret minio -o jsonpath="{.data.endpoint}" | base64 --decode)
+export MINIO_ACCESS_KEY=$(kubectl get secret minio -o jsonpath="{.data.accessKey}" | base64 --decode)
+export MINIO_SECRET_KEY=$(kubectl get secret minio -o jsonpath="{.data.secretKey}" | base64 --decode)
 
 kubectl run anticrm-tool --rm --tty -i --restart='Never' \
-  --env="MONGO_URL=mongodb://root:$MONGODB_ROOT_PASSWORD@mng-mongodb:27017/" \
+  --env="MONGO_URL=$MONGO_URL" \
   --env="TRANSACTOR_URL=ws://transactor/" \
-  --env="MINIO_ENDPOINT=minio" \
+  --env="MINIO_ENDPOINT=$MINIO_ENDPOINT" \
   --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
   --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image anticrm/tool --command -- bash

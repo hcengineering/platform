@@ -283,7 +283,7 @@ new aws.route53.Record("frontRecord", {
   type: "A",
   ttl: 300,
   records: [
-    "8.9.31.18"
+    "107.191.38.121"
   ]
 })
 
@@ -293,7 +293,7 @@ new aws.route53.Record("transactorRecord", {
   type: "A",
   ttl: 300,
   records: [
-    "8.9.31.18"
+    "107.191.38.121"
   ]
 })
 
@@ -303,7 +303,7 @@ new aws.route53.Record("uploadRecord", {
   type: "A",
   ttl: 300,
   records: [
-    "8.9.31.18"
+    "107.191.38.121"
   ]
 })
 
@@ -313,6 +313,6 @@ new aws.route53.Record("accountRecord", {
   type: "A",
   ttl: 300,
   records: [
-    "8.9.31.18"
+    "107.191.38.121"
   ]
 })

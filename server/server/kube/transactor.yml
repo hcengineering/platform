@@ -21,9 +21,15 @@ spec:
           imagePullPolicy: Always
           env:
           - name: MONGO_URL
-            value: mongodb://root:WZCwnHRazX@mng-mongodb:27017/
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: url
           - name: ELASTIC_URL
-            value: http://dev-elasticsearch-coordinating-only:9200/
+            valueFrom:
+              secretKeyRef:
+                name: elastic
+                key: url
 ---
 apiVersion: v1
 kind: Service

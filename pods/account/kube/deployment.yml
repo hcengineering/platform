@@ -20,4 +20,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MONGO_URL
-              value: mongodb://root:WZCwnHRazX@mng-mongodb:27017/
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb
+                  key: url

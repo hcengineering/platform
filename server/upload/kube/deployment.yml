@@ -22,10 +22,22 @@ spec:
           - name: TRANSACTOR_URL
             value: ws://transactor/
           - name: ELASTIC_URL
-            value: http://dev-elasticsearch-coordinating-only:9200/
+            valueFrom:
+              secretKeyRef:
+                name: elastic
+                key: url
           - name: MINIO_ENDPOINT
-            value: minio
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: endpoint
           - name: MINIO_ACCESS_KEY
-            value: 22pYVftgFj
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: accessKey
           - name: MINIO_SECRET_KEY
-            value: l8FkhAXSbQBUpeYJ7APYOSXyWp4qEXR4Gccjb2zo
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: secretKey
