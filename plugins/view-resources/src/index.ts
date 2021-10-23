@@ -21,12 +21,13 @@ import BooleanEditor from './components/BooleanEditor.svelte'
 import StatePresenter from './components/StatePresenter.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import TableView from './components/TableView.svelte'
+import Table from './components/Table.svelte'
 import KanbanView from './components/KanbanView.svelte'
 
 import { getClient, MessageBox } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
 
-export { TableView }
+export { Table }
 
 function Delete(object: Doc): void {
   showPopup(MessageBox, {

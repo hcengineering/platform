@@ -15,12 +15,11 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox, CheckBox, IconDown, IconUp } from '@anticrm/ui'
+  import { Label, showPopup, Loading, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
 
@@ -76,68 +75,57 @@
 {#await buildModel(client, _class, config, options)}
  <Loading/>
 {:then model}
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <table class="table-body">
-      <thead>
-        <tr class="tr-head">
-          {#each model as attribute, cellHead}
-            {#if !cellHead}
-              <th>
-                <div class="checkCell" class:checkall={checking}>
-                  <CheckBox symbol={'minus'} />
-                </div>
-              </th>
-            {/if}
-            <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
-              <div class="flex-row-center">
-                <Label label = {attribute.label}/>
-                {#if attribute.key === sortKey}
-                  <div class="icon">
-                    {#if sortOrder === SortingOrder.Ascending}
-                      <IconUp size={'small'} />
-                    {:else}
-                      <IconDown size={'small'} />
-                    {/if}
-                  </div>
-                {/if}
+  <table class="table-body">
+    <thead>
+      <tr class="tr-head">
+        {#each model as attribute, cellHead}
+          {#if !cellHead}
+            <th>
+              <div class="checkCell" class:checkall={checking}>
+                <CheckBox symbol={'minus'} />
               </div>
             </th>
-          {/each}
-        </tr>
-      </thead>
-      {#if objects}
-        <tbody>
-          {#each objects as object, row (object._id)}
-            <tr class="tr-body" class:checking class:fixed={row === selectRow}>
-              {#each model as attribute, cell}
-                {#if !cell}
-                  <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
-                  <td><div class="firstCell">
-                    <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                    <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
-                  </div></td>
-                {:else}
-                  <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
-                {/if}
-              {/each}
-            </tr>
-          {/each}
-        </tbody>
-      {/if}
-    </table>
-  </ScrollBox>
-</div>
+          {/if}
+          <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
+            <div class="flex-row-center">
+              <Label label = {attribute.label}/>
+              {#if attribute.key === sortKey}
+                <div class="icon">
+                  {#if sortOrder === SortingOrder.Ascending}
+                    <IconUp size={'small'} />
+                  {:else}
+                    <IconDown size={'small'} />
+                  {/if}
+                </div>
+              {/if}
+            </div>
+          </th>
+        {/each}
+      </tr>
+    </thead>
+    {#if objects}
+      <tbody>
+        {#each objects as object, row (object._id)}
+          <tr class="tr-body" class:checking class:fixed={row === selectRow}>
+            {#each model as attribute, cell}
+              {#if !cell}
+                <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
+                <td><div class="firstCell">
+                  <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
+                  <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
+                </div></td>
+              {:else}
+                <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
+              {/if}
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    {/if}
+  </table>
 {/await}
 
 <style lang="scss">
-  .container {
-    flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
-    height: 100%;
-  }
-
   .table-body { width: 100%; }
 
   .firstCell {
@@ -172,16 +160,12 @@
   }
 
   th {
-    position: sticky;
-    top: 0;
     height: 2.5rem;
     font-weight: 500;
     font-size: .75rem;
     color: var(--theme-content-dark-color);
-    background-color: var(--theme-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     user-select: none;
-    z-index: 5;
 
     &.sortable { cursor: pointer; }
     &.sorted .icon {
