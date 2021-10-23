@@ -15,11 +15,39 @@
 -->
 
 <script lang="ts">
+  import type { Attachment } from '@anticrm/chunter'
 
-import type { Attachment } from '@anticrm/chunter'
+  export let value: Attachment
 
-export let value: Attachment
-
+  const maxLenght: number = 16
+  const trimFilename = (fname: string): string => (fname.length > maxLenght)
+                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+                        : fname
 </script>
 
-{JSON.stringify(value)}
+<div class="flex-row-center">
+  <div class="flex-center icon">PDF</div>
+  <div class="flex-col">
+    <div class="caption-color">{trimFilename(value.name)}</div>
+    <div class="type">{value.type}</div>
+  </div>
+</div>
+
+<style lang="scss">
+  .icon {
+    flex-shrink: 0;
+    margin-right: 1.25rem;
+    width: 2rem;
+    height: 2rem;
+    font-weight: 500;
+    font-size: .625rem;
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-enabled);
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .5rem;
+  }
+  .type {
+    font-size: .75rem;
+    color: var(--theme-content-dark-color);
+  }
+</style>
