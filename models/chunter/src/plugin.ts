@@ -23,7 +23,7 @@ import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(chunterId, chunter, {
   component: {
-    AttachmentPresenter: '' as AnyComponent
+    AttachmentsPresenter: '' as AnyComponent
   },
   string: {
     ApplicationLabelChunter: '' as IntlString

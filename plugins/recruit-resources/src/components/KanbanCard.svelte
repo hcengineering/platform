@@ -22,7 +22,7 @@
   import EditCandidate from './EditCandidate.svelte'
   import EditApplication from './EditApplication.svelte'
 
-  import { AttachmentPresenter } from '@anticrm/chunter-resources'
+  import { AttachmentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
 
   export let object: WithLookup<Applicant>
@@ -55,7 +55,7 @@
         APP-542
       </div>
       {#if object.attachments && Object.keys(object.attachments).length > 0}
-        <div class="step-lr75"><AttachmentPresenter value={object} /></div>
+        <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
       {/if}
       <div class="sm-tool-icon step-lr75">
         <span class="icon"><IconThread size={'small'} /></span>

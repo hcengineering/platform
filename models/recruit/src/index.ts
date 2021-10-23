@@ -125,7 +125,7 @@ export function createModel (builder: Builder): void {
       'title',
       'city',
       { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
-      { presenter: chunter.component.AttachmentPresenter, label: 'Files' },
+      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
       'modifiedOn',
       'channels'
     ]

@@ -30,7 +30,7 @@
 
 <table class="table-body">
   <tbody>
-    {#each Object.values(files) as file}
+    <!-- {#each Object.values(files) as file}
       <tr class="tr-body">
         <td class="item flex-row-center" on:click={() => {
           closeTooltip()
@@ -44,7 +44,7 @@
         </td>
         <td>10 / 8</td>
       </tr>
-    {/each}
+    {/each} -->
   </tbody>
 </table>
 
