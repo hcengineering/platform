@@ -75,7 +75,6 @@
 {#await buildModel(client, _class, config, options)}
  <Loading/>
 {:then model}
-<div class="container">
   <table class="table-body">
     <thead>
       <tr class="tr-head">
@@ -124,15 +123,9 @@
       </tbody>
     {/if}
   </table>
-</div>
 {/await}
 
 <style lang="scss">
-  .container {
-    flex-grow: 1;
-    height: 100%;
-  }
-
   .table-body { width: 100%; }
 
   .firstCell {
