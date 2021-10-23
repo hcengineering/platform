@@ -17,6 +17,7 @@ import CreateChannel from './components/CreateChannel.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import Activity from './components/Activity.svelte'
 import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
+import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 
 export { AttachmentsPresenter }
 
@@ -25,6 +26,7 @@ export default async () => ({
     CreateChannel,
     ChannelView,
     Activity,
-    AttachmentsPresenter
+    AttachmentsPresenter,
+    AttachmentPresenter
   }
 })

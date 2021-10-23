@@ -85,7 +85,7 @@
   </div>
   <Table 
     _class={chunter.class.Attachment}
-    config={['name', 'file', 'type']}
+    config={['', 'file', 'type']}
     options={ {} }
     search=""
   />
