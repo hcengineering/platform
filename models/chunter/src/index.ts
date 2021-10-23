@@ -17,7 +17,7 @@ import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import core, { TSpace, TDoc, TObj } from '@anticrm/model-core'
+import core, { TSpace, TDoc } from '@anticrm/model-core'
 import type { Backlink, Channel, Message, Comment, Attachment } from '@anticrm/chunter'
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -44,6 +44,7 @@ export class TMessage extends TDoc implements Message {
 @Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
 export class TComment extends TDoc implements Comment {
   attachedTo!: Ref<Doc>
+  attachedToClass!: Ref<Class<Doc>>
   @Prop(TypeString(), 'Message' as IntlString)
   @Index(IndexKind.FullText)
   message!: string
@@ -55,8 +56,10 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
-@Model(chunter.class.Attachment, core.class.Obj, DOMAIN_ATTACHMENT)
-export class TAttachment extends TObj implements Attachment {
+@Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
+export class TAttachment extends TDoc implements Attachment {
+  attachedTo!: Ref<Doc>
+  attachedToClass!: Ref<Class<Doc>>
   name!: string
   file!: string
   size!: number

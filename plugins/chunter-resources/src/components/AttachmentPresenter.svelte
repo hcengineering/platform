@@ -15,13 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { Bag } from '@anticrm/core'
+  import type { Doc } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
   import { IconFile, Link, Tooltip, IconAttachment } from '@anticrm/ui'
   import { PDFViewer } from '@anticrm/presentation'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
-  export let value: { attachments: Bag<Attachment> }
+  export let value: Doc & { attachments?: number }
 
 </script>
 
@@ -33,10 +33,10 @@
   </Tooltip>
 {/if} -->
 
-{#if value.attachments && Object.keys(value.attachments).length > 0}
-  <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
+{#if value.attachments && value.attachments > 0}
+  <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ files: value._id }}>
     <div class="sm-tool-icon">
-      <span class="icon"><IconAttachment size="small"/></span>{Object.keys(value.attachments).length}
+      <span class="icon"><IconAttachment size="small"/></span>{value.attachments}
     </div>
   </Tooltip>
 {/if}

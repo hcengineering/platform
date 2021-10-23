@@ -43,8 +43,8 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
 
-  @Prop(TypeBag(), 'Attachments' as IntlString)
-  attachments!: Bag<Attachment>
+  @Prop(TypeString(), 'Attachments' as IntlString)
+  attachments?: number
 
   @Prop(TypeString(), 'Applications' as IntlString)
   applications?: number

@@ -44,8 +44,7 @@ export function createDemo (builder: Builder): void {
         provider: contact.channelProvider.Email,
         value: 'andrey@hc.engineering'
       }
-    ],
-    attachments: {}
+    ]
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
@@ -57,8 +56,7 @@ export function createDemo (builder: Builder): void {
         provider: contact.channelProvider.Email,
         value: 'marina@hc.engineering'
       }
-    ],
-    attachments: {}
+    ]
   })
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
@@ -70,7 +68,6 @@ export function createDemo (builder: Builder): void {
         provider: contact.channelProvider.Email,
         value: 'alex@hc.engineering'
       }
-    ],
-    attachments: {}
+    ]
   })
 }

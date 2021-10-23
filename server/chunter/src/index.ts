@@ -28,6 +28,7 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
-    OnMessage: '' as Resource<TriggerFunc>
+    OnMessage: '' as Resource<TriggerFunc>,
+    OnAttachment: '' as Resource<TriggerFunc>
   }
 })
