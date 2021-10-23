@@ -16,6 +16,8 @@
 
 <script lang="ts">
   import type { Attachment } from '@anticrm/chunter'
+  import { showPopup, closeTooltip } from '@anticrm/ui'
+  import { PDFViewer } from '@anticrm/presentation'
 
   export let value: Attachment
 
@@ -25,7 +27,7 @@
                         : fname
 </script>
 
-<div class="flex-row-center">
+<div class="flex-row-center" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>
   <div class="flex-center icon">PDF</div>
   <div class="flex-col">
     <div class="caption-color">{trimFilename(value.name)}</div>
