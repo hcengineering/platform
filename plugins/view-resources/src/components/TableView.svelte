@@ -34,6 +34,7 @@
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
+  let selectRow: number | undefined = undefined
 
   let objects: Doc[]
 
@@ -55,21 +56,9 @@
   const client = getClient()
   let checking: boolean = false
 
-  const findNode = (el: HTMLElement, name: string): any => {
-    while (el.parentNode !== null) {
-      if (el.classList.contains(name)) return el
-      el = el.parentNode as HTMLElement
-    }
-    return false
-  }
-
-  const showMenu = (ev: MouseEvent, object: Doc): void => {
-    const elRow: HTMLElement = findNode(ev.target as HTMLElement, 'tr-body')
-    const elBtn: HTMLElement = findNode(ev.target as HTMLElement, 'menuRow')
-    elRow.classList.add('fixed')
-    showPopup(Menu, { object }, elBtn, (() => {
-      elRow.classList.remove('fixed')
-    }))
+  const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
+    selectRow = row
+    showPopup(Menu, { object }, ev.target as HTMLElement, (() => { selectRow = undefined }))
   }
 
   function changeSorting(key: string) {
@@ -120,13 +109,13 @@
       {#if objects}
         <tbody>
           {#each objects as object, row (object._id)}
-            <tr class="tr-body" class:checking>
+            <tr class="tr-body" class:checking class:fixed={row === selectRow}>
               {#each model as attribute, cell}
                 {#if !cell}
                   <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
                   <td><div class="firstCell">
                     <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                    <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><MoreV size={'small'} /></div>
+                    <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
                   </div></td>
                 {:else}
                   <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
@@ -211,7 +200,7 @@
     &:hover .firstCell .menuRow { visibility: visible; }
   }
 
-  :global(.fixed) {
+  .fixed {
     background-color: var(--theme-table-bg-hover);
     .checkCell { visibility: visible; }
     .menuRow { visibility: visible; }
