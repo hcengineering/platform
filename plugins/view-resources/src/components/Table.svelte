@@ -130,7 +130,6 @@
 <style lang="scss">
   .container {
     flex-grow: 1;
-    position: relative;
     height: 100%;
   }
 
@@ -168,15 +167,12 @@
   }
 
   th {
-    position: sticky;
-    top: 0;
     height: 2.5rem;
     font-weight: 500;
     font-size: .75rem;
     color: var(--theme-content-dark-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     user-select: none;
-    z-index: 5;
 
     &.sortable { cursor: pointer; }
     &.sorted .icon {
