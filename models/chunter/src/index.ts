@@ -60,9 +60,16 @@ export class TBacklink extends TComment implements Backlink {
 export class TAttachment extends TDoc implements Attachment {
   attachedTo!: Ref<Doc>
   attachedToClass!: Ref<Class<Doc>>
+  @Prop(TypeString(), 'Name' as IntlString)
   name!: string
+
+  @Prop(TypeString(), 'File' as IntlString)
   file!: string
+
+  @Prop(TypeString(), 'Size' as IntlString)
   size!: number
+
+  @Prop(TypeString(), 'Type' as IntlString)
   type!: string
 }
 

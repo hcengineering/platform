@@ -21,6 +21,7 @@
   import { generateId } from '@anticrm/core'
   import { createQuery, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Attachment } from '@anticrm/chunter'
+  import { Table } from '@anticrm/view-resources'
 
   import { uploadFile } from '../utils'
 
@@ -82,28 +83,12 @@
     {/if}
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
-  <table class="table-body">
-    <thead>
-      <tr class="tr-head">
-        <th>Attachments</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each attachments as file}
-        <tr class="tr-body">
-          <td class="item flex-row-center">
-            <div class="flex-center file-icon">pdf</div>
-            <div class="flex-col flex-grow" style="cursor: pointer" on:click={ () => { showPopup(PDFViewer, { file: file.file }, 'right') } }>
-              <div class="overflow-label caption-color">{trimFilename(file.name)}</div>
-              <div class="overflow-label file-desc">{file.type}</div>
-            </div>
-          </td>
-          <td>10 / 8</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+  <Table 
+    _class={chunter.class.Attachment}
+    config={['name', 'file', 'type']}
+    options={ {} }
+    search=""
+  />
 </div>
 
 <style lang="scss">
