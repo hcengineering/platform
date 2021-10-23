@@ -28,7 +28,7 @@
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import AttributesBar from './AttributesBar.svelte'
-  import { TableView } from '@anticrm/view-resources'
+  import { Table } from '@anticrm/view-resources'
 
   import core from '@anticrm/core'
   
@@ -89,24 +89,25 @@
     </div>
   </div>
 
-  Applications
-
-  <TableView 
-    _class={recruit.class.Applicant}
-    config={['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.space.name']}
-    options={
-      {
-        lookup: {
-          candidate: recruit.class.Candidate,
-          state: core.class.State,
-          space: core.class.Space
+  <div class="group">
+    <div class="caption">Applications</div>
+    <Table 
+      _class={recruit.class.Applicant}
+      config={['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.space.name']}
+      options={
+        {
+          lookup: {
+            candidate: recruit.class.Candidate,
+            state: core.class.State,
+            space: core.class.Space
+          }
         }
       }
-    }
-    search=""
-  />
+      search=""
+    />
+  </div>
 
-  <div class="attachments">
+  <div class="group">
     <Attachments objectId={object._id} _class={object._class} space={object.space} {object}/>
   </div>
 
@@ -162,8 +163,14 @@
     span { margin-left: .5rem; }
   }
 
-  .attachments {
+  .group {
     margin-top: 3.5rem;
+
+    .caption {
+      font-weight: 500;
+      font-size: 1.25rem;
+      color: var(--theme-caption-color);
+    }
   }
 
   // .container {
