@@ -18,7 +18,7 @@ import type { Ref, Class, Space, Doc, Arr, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban } from '@anticrm/view'
+import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban, Sequence } from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 
@@ -76,13 +76,18 @@ export class TActionTarget extends TDoc implements ActionTarget {
 @Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
 export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
-  sequence!: number
   states!: Arr<Ref<State>>
   order!: Arr<Ref<Doc>>
 }
 
+@Model(view.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
+export class TSequence extends TDoc implements Sequence {
+  attachedTo!: Ref<Class<Doc>>
+  sequence!: number
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TKanban)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TKanban, TSequence)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor
@@ -126,6 +131,13 @@ export function createModel (builder: Builder): void {
     target: core.class.Doc,
     action: view.action.Delete
   })
+
+  builder.createDoc(core.class.Space, core.space.Model, {
+    name: 'Sequences',
+    description: 'Internal space to store sequence numbers',
+    members: [],
+    private: false
+  }, view.space.Sequence)
 }
 
 export default view
