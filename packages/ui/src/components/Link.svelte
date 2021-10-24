@@ -58,14 +58,8 @@
       transform: scale(.75);
       opacity: .6;
     }
-    &:hover {
-      a { color: var(--theme-caption-color); }
-      .icon { opacity: 1; }
-    }
-    &:active {
-      a { color: var(--theme-content-color); }
-      .icon { opacity: .6; }
-    }
+    &:hover .icon { opacity: 1; }
+    &:active .icon { opacity: .6; }
   }
   .disabled {
     cursor: not-allowed;

@@ -38,9 +38,9 @@
   <div class="flex-center icon">{iconLabel(value.name)}</div>
   <div class="flex-col">
     {#if value.type === 'application/pdf'}
-      <div class="caption-color name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
+      <div class="name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
-    <div class="caption-color name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
+      <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
     {/if}
     <div class="type">{filesize(value.size)}</div>
   </div>
@@ -60,7 +60,16 @@
     border-radius: .5rem;
   }
   .name {
+    font-weight: 500;
+    color: var(--theme-caption-color);
     white-space: nowrap;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+    &:active {
+      text-decoration: underline;
+      color: var(--theme-content-accent-color);
+    }
   }
   .type {
     font-size: .75rem;
