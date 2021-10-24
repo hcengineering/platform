@@ -57,6 +57,7 @@ export class TBacklink extends TComment implements Backlink {
 }
 
 @Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
+@UX('File' as IntlString)
 export class TAttachment extends TDoc implements Attachment {
   attachedTo!: Ref<Doc>
   attachedToClass!: Ref<Class<Doc>>
