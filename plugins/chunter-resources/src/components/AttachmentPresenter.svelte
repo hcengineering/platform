@@ -17,7 +17,8 @@
 <script lang="ts">
   import type { Attachment } from '@anticrm/chunter'
   import { showPopup, closeTooltip } from '@anticrm/ui'
-  import { PDFViewer } from '@anticrm/presentation'
+  import { PDFViewer, getFileUrl } from '@anticrm/presentation'
+  import filesize from 'filesize'
 
   export let value: Attachment
 
@@ -25,20 +26,30 @@
   const trimFilename = (fname: string): string => (fname.length > maxLenght)
                         ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
                         : fname
+
+  function iconLabel(name: string): string {
+    const parts = name.split('.')
+    const ext = parts[parts.length - 1]
+    return ext.substring(0, 4).toUpperCase()
+  }
 </script>
 
-<div class="flex-row-center" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>
-  <div class="flex-center icon">PDF</div>
+<div class="flex-row-center">
+  <div class="flex-center icon">{iconLabel(value.name)}</div>
   <div class="flex-col">
-    <div class="caption-color">{trimFilename(value.name)}</div>
-    <div class="type">{value.type}</div>
+    {#if value.type === 'application/pdf'}
+      <div class="caption-color" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
+    {:else}
+    <div class="caption-color"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
+    {/if}
+    <div class="type">{filesize(value.size)}</div>
   </div>
 </div>
 
 <style lang="scss">
   .icon {
     flex-shrink: 0;
-    margin-right: 1.25rem;
+    margin-right: 1rem;
     width: 2rem;
     height: 2rem;
     font-weight: 500;

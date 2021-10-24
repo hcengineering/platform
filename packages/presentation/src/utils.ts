@@ -19,7 +19,9 @@ import { onDestroy } from 'svelte'
 import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb, TxResult } from '@anticrm/core'
 import { TxOperations } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
-import core from '@anticrm/core'
+import { getMetadata  } from '@anticrm/platform'
+
+import login from '@anticrm/login'
 
 let liveQuery: LQ
 let client: Client & TxOperations
@@ -70,3 +72,10 @@ class LiveQuery {
 }
 
 export function createQuery() { return new LiveQuery() }
+
+export function getFileUrl(file: string): string {
+  const uploadUrl = getMetadata(login.metadata.UploadUrl)
+  const token = getMetadata(login.metadata.LoginToken)
+  const url = `${uploadUrl}?file=${file}&token=${token}`
+  return url
+}

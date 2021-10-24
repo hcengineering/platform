@@ -4085,6 +4085,11 @@ packages:
     dev: false
     optional: true
 
+  /filesize/8.0.3:
+    resolution: {integrity: sha512-UrhwVdUWmP0Jo9uLhVro8U36D4Yp3uT6pfXeNJHVRwyQrZjsqfnypOLthfnuB/bk1glUu7aIY947kyfoOfXuog==}
+    engines: {node: '>= 0.4.0'}
+    dev: false
+
   /fill-range/4.0.0:
     resolution: {integrity: sha1-1USBHUKPmOsGpj3EAtJAPDKMOPc=}
     engines: {node: '>=0.10.0'}
@@ -9314,11 +9319,12 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-0h1p//djZGU/VxL8p8mXAO9PVu9U1isYtOcfYBnYireYga0Vmd1MXVuSVSfiZTjuZACRlieN3g5Pps/YiLomYA==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-ffIxP0yesLoUxgDnGwHBhD0MRgzq5REyfoon10k7s3nlwDJzC3/yjPgMdFc9p+rZUfcRdhA17vF+AkuOD5vycA==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
     dependencies:
+      filesize: 8.0.3
       sass: 1.42.1
       svelte: 3.43.1
       svelte-loader: 3.1.2_svelte@3.43.1
@@ -9671,7 +9677,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_b4fae2aaf9a34e02c9acb1cfc4c88710:
-    resolution: {integrity: sha512-EUV+Mm7aWdUxnioD7XlTsx0a9Vj5nRqQmXy0eB6Fipicq9zFgLo7IfG4N0zN/aJ7l3iVkFZa6hqbI9J83MVU5g==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-Copd6/pj1hlBfEUVjwCXHPq4tup2ZoToNyWoa4aazw3Xhcv+v4NQn7bYHoP7S7zlUvvyv69B0vyrnsszO+r5YA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -10074,7 +10080,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-GKv+eruG+V29obV3ncNZAaiWtA476VfyIL8nxHNOjiAZ0opOAooOZDNwO8PkSTwC5lUeUD7ghZpqVOp62POFXg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-ihvq+FVcfCZLGuomnFsmDM5zGTpNUZec3RG+unrpRMO4dVe3qJhrS5FKE0cvXKKpQ8EhkfzuhaQQDUjs5HI+rw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -10140,7 +10146,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-c0otxsejtzkhfcksf1TnWiG1BXPe9BLBjyICOX/Co9FyEGNxM0rcsZ2gsPYdfX7UJxSyJEuovR2TptgF1Xc3sw==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-7kBYD0teRByoMMh2FUX7MgehSqfg5Jt40O9p9YinMTgGIwjV6FImgVV0YIw+btgnjdkfr6udEU2lf6P5oED1ag==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -10339,7 +10345,7 @@ packages:
     dev: false
 
   file:projects/server.tgz_b4fae2aaf9a34e02c9acb1cfc4c88710:
-    resolution: {integrity: sha512-poB0llkMF+pocNmOZ15BTztnNgZ3SsLL46mMrrYc/+JaimMpn7o/6TDzqFPs3oB2/w4RLX/g4lc8BWEP/KC3qg==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-DrrebkIdFcJofAPbstew0ceeNMUK9D8/afraWwVEmO0UhY0gA7cQA4A38fEMY85vssGLkbSF5oXYHKE/T8S3Tw==, tarball: file:projects/server.tgz}
     id: file:projects/server.tgz
     name: '@rush-temp/server'
     version: 0.0.0
