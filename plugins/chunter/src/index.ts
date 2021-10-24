@@ -52,6 +52,7 @@ export interface Attachment extends AttachedDoc {
   file: string
   size: number
   type: string
+  lastModified: number
 }
 
 /**

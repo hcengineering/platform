@@ -45,4 +45,4 @@
 
 </script>
 
-{time}
+<span style="white-space: nowrap;">{time}</span>

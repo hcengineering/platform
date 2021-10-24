@@ -27,7 +27,7 @@
 
 <Table 
 _class={chunter.class.Attachment}
-config={['', 'file', 'type']}
+config={['', 'lastModified']}
 options={ {} }
 search=""
 />

@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
+import { Builder, Model, Prop, UX, TypeString, Index, TypeTimestamp } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import core, { TSpace, TDoc } from '@anticrm/model-core'
@@ -71,6 +71,9 @@ export class TAttachment extends TDoc implements Attachment {
 
   @Prop(TypeString(), 'Type' as IntlString)
   type!: string
+
+  @Prop(TypeTimestamp(), 'Date' as IntlString)
+  lastModified!: number
 }
 
 export function createModel (builder: Builder): void {

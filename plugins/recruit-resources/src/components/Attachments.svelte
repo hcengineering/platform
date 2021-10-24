@@ -53,6 +53,7 @@
         file: uuid,
         type: file.type,
         size: file.size,
+        lastModified: file.lastModified
       })
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
@@ -67,10 +68,6 @@
     if (file !== undefined) { createAttachment(file) }
   }
 
-  const maxLenght: number = 52
-  const trimFilename = (fname: string): string => (fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-                        : fname
 </script>
 
 <div class="attachments-container">
@@ -85,7 +82,7 @@
   </div>
   <Table 
     _class={chunter.class.Attachment}
-    config={['', 'modifiedOn']}
+    config={['', 'lastModified']}
     options={ {} }
     search=""
   />
