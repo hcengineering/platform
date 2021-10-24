@@ -134,7 +134,8 @@
   th, td {
     padding: .5rem 1.5rem;
     text-align: left;
-    &:first-child { padding-left: 2.5rem; }
+    &:first-child { padding-left: 0; }
+    &:last-child { padding-right: 0; }
   }
 
   th {
@@ -156,12 +157,7 @@
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:hover { background-color: var(--theme-table-bg-hover); }
     &:hover .firstCell .menuRow { visibility: visible; }
   }
-
-  .fixed {
-    background-color: var(--theme-table-bg-hover);
-    .menuRow { visibility: visible; }
-  }
+  .fixed .menuRow { visibility: visible; }
 </style>
