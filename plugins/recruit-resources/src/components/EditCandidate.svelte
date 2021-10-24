@@ -102,7 +102,7 @@
           }
         }
       }
-      search=""
+      query={ { candidate: _id } }
     />
   </div>
 

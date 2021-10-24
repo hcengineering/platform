@@ -39,7 +39,7 @@
   let objects: Doc[]
 
   const query = createQuery()
-  $: query.query(_class, search === '' ? (space ? { space } : {}) : { $search: search }, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
+  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)

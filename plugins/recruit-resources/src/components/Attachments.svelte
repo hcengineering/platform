@@ -84,7 +84,7 @@
     _class={chunter.class.Attachment}
     config={['', 'lastModified']}
     options={ {} }
-    search=""
+    query={ { attachedTo: objectId } }
   />
 </div>
 

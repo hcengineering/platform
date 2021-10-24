@@ -15,19 +15,18 @@
 -->
 
 <script lang="ts">
-  import type { Bag } from '@anticrm/core'
-  import type { Attachment } from '@anticrm/chunter'
+  import type { Ref, Doc } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
 
   import chunter from '@anticrm/chunter'
 
-  export let files: Bag<Attachment>
+  export let objectId: Ref<Doc>
 
 </script>
 
 <Table 
-_class={chunter.class.Attachment}
-config={['', 'lastModified']}
-options={ {} }
-search=""
+  _class={chunter.class.Attachment}
+  config={['', 'lastModified']}
+  options={ {} }
+  query={ { attachedTo: objectId } }
 />

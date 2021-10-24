@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, FindOptions, DocumentQuery } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
@@ -26,10 +26,9 @@
   import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
+  export let query: DocumentQuery<Doc>
   export let options: FindOptions<Doc> | undefined
   export let config: string[]
-  export let search: string
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
@@ -37,8 +36,8 @@
 
   let objects: Doc[]
 
-  const query = createQuery()
-  $: query.query(_class, search === '' ? (space ? { space } : {}) : { $search: search }, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
+  const q = createQuery()
+  $: q.query(_class, query, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
 
   function getValue(doc: Doc, key: string): any {
     if (key.length === 0)

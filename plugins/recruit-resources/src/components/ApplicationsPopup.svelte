@@ -41,5 +41,5 @@
       }
     }
   }
-  search=""
+  query={ { candidate: value._id } }
 />
