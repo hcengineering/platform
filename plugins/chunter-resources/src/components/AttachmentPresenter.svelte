@@ -35,8 +35,12 @@
 </script>
 
 <div class="flex-row-center">
-  <div class="flex-center icon">{iconLabel(value.name)}</div>
-  <div class="flex-col">
+  {#if value.type === 'application/pdf'}
+    <div class="flex-center icon" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{iconLabel(value.name)}</div>
+  {:else}
+    <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
+  {/if}
+  <div class="flex-col info">
     {#if value.type === 'application/pdf'}
       <div class="name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
@@ -58,21 +62,27 @@
     background-color: var(--primary-button-enabled);
     border: 1px solid rgba(0, 0, 0, .1);
     border-radius: .5rem;
+    cursor: pointer;
   }
+
   .name {
     font-weight: 500;
-    color: var(--theme-caption-color);
+    color: var(--theme-content-accent-color);
     white-space: nowrap;
     cursor: pointer;
-
-    &:hover { text-decoration: underline; }
-    &:active {
-      text-decoration: underline;
-      color: var(--theme-content-accent-color);
-    }
   }
+
   .type {
     font-size: .75rem;
     color: var(--theme-content-dark-color);
+  }
+
+  .name:hover, .icon:hover + .info > .name, .no-line:hover + .info > .name a {
+    text-decoration: underline;
+    color: var(--theme-caption-color);
+  }
+  .name:active, .icon:active + .info > .name, .no-line:active + .info > .name a {
+    text-decoration: underline;
+    color: var(--theme-content-accent-color);
   }
 </style>
