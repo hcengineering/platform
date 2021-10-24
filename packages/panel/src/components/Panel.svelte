@@ -17,6 +17,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { Doc } from '@anticrm/core'
+  import { SortingOrder } from '@anticrm/core'
   import { getClient, createQuery, Backlink } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { ReferenceInput } from '@anticrm/text-editor'
@@ -38,7 +39,7 @@
 
   const client = getClient()
   const query = createQuery()
-  $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result })
+  $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result }, { sort: { modifiedOn: SortingOrder.Descending } })
 
   function onMessage(event: CustomEvent) {
     client.createDoc(chunter.class.Comment, object.space, {
