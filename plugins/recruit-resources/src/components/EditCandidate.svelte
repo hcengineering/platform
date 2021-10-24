@@ -93,11 +93,10 @@
     <div class="caption">Applications</div>
     <Table 
       _class={recruit.class.Applicant}
-      config={['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.space.name']}
+      config={['', '$lookup.space.name', '$lookup.state']}
       options={
         {
           lookup: {
-            candidate: recruit.class.Candidate,
             state: core.class.State,
             space: core.class.Space
           }

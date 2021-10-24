@@ -17,7 +17,7 @@
 <script lang="ts">
 
 import type { Applicant } from '@anticrm/recruit'
-import { IconFile, showPopup } from '@anticrm/ui'
+import { closeTooltip, IconFile, showPopup } from '@anticrm/ui'
 import EditApplication from './EditApplication.svelte'
 import { getClient } from '@anticrm/presentation'
 
@@ -27,7 +27,7 @@ const client = getClient()
 const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
 function show() {
-  console.log('show!', value)
+  closeTooltip()
   showPopup(EditApplication, { _id: value._id }, 'full')
 }
 
