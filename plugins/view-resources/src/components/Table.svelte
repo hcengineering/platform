@@ -52,7 +52,6 @@
   }
 
   const client = getClient()
-  let checking: boolean = false
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
@@ -72,19 +71,12 @@
 </script>
 
 {#await buildModel(client, _class, config, options)}
- <Loading/>
+  <Loading/>
 {:then model}
   <table class="table-body">
     <thead>
       <tr class="tr-head">
-        {#each model as attribute, cellHead}
-          {#if !cellHead}
-            <th>
-              <div class="checkCell" class:checkall={checking}>
-                <CheckBox symbol={'minus'} />
-              </div>
-            </th>
-          {/if}
+        {#each model as attribute}
           <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
             <div class="flex-row-center">
               <Label label = {attribute.label}/>
@@ -105,10 +97,9 @@
     {#if objects}
       <tbody>
         {#each objects as object, row (object._id)}
-          <tr class="tr-body" class:checking class:fixed={row === selectRow}>
+          <tr class="tr-body" class:fixed={row === selectRow}>
             {#each model as attribute, cell}
               {#if !cell}
-                <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
                 <td><div class="firstCell">
                   <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
                   <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
@@ -139,23 +130,11 @@
       &:hover { opacity: 1; }
     }
   }
-  .checkCell {
-    visibility: hidden;
-    display: flex;
-    align-items: center;
-  }
 
   th, td {
     padding: .5rem 1.5rem;
     text-align: left;
-    &:first-child {
-      padding: 0 .75rem;
-      width: 2.5rem;
-    }
-    &:nth-child(2) {
-      padding-left: 0;
-      // padding-right: 0;
-    }
+    &:first-child { padding-left: 2.5rem; }
   }
 
   th {
@@ -171,23 +150,18 @@
       margin-left: .25rem;
       opacity: .6;
     }
-    .checkall { visibility: visible; }
   }
 
   .tr-body {
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:hover, &.checking {
-      background-color: var(--theme-table-bg-hover);
-      .checkCell { visibility: visible; }
-    }
+    &:hover { background-color: var(--theme-table-bg-hover); }
     &:hover .firstCell .menuRow { visibility: visible; }
   }
 
   .fixed {
     background-color: var(--theme-table-bg-hover);
-    .checkCell { visibility: visible; }
     .menuRow { visibility: visible; }
   }
 </style>
