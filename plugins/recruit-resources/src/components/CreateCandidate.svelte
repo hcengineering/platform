@@ -71,7 +71,6 @@
       title: object.title,
       city: object.city,
       channels: object.channels,
-      attachments: {},
       onsite: object.onsite,
       remote: object.remote
     }
