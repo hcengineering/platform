@@ -29,7 +29,7 @@
   function getLabel(value: boolean | undefined) {
     if (value === true) return 'Yes'
     if (value === false) return 'No'
-    return 'Unkn'
+    return 'N/A'
   }
   
   </script>
