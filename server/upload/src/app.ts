@@ -27,7 +27,7 @@ import { createElasticAdapter } from '@anticrm/elastic'
 import chunter from '@anticrm/chunter'
 // import { createContributingClient } from '@anticrm/contrib'
 
-import { Client } from 'minio'
+import { Client, ItemBucketMetadata } from 'minio'
 
 // import { createElasticAdapter } from '@anticrm/elastic'
 
@@ -49,8 +49,11 @@ import { Client } from 'minio'
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()
+  const meta: ItemBucketMetadata = {
+    'Content-Type': file.mimetype
+  }
 
-  const resp = await minio.putObject(workspace, id, file.data)
+  const resp = await minio.putObject(workspace, id, file.data, meta)
 
   console.log(resp)
   return id
@@ -87,12 +90,13 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const payload = decode(token, 'secret', false) as Token
       const uuid = req.query.file as string
 
+      const stat = await minio.statObject(payload.workspace, uuid)
       minio.getObject(payload.workspace, uuid, function (err, dataStream) {
         if (err !== null) {
           return console.log(err)
         }
         res.status(200)
-        res.setHeader('Content-Type', 'application/pdf')
+        res.setHeader('Content-Type', stat.metaData['Content-Type'])
         dataStream.on('data', function (chunk) {
           res.write(chunk)
         })
