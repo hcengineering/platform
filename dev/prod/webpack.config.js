@@ -171,7 +171,7 @@ module.exports = {
       '/upload': {
         // target: 'https://anticrm-upload.herokuapp.com/',
         // target: 'http://localhost:3000/',
-        target: 'https://upload.hc.engineering/',
+        target: 'https://front.hc.engineering/files',
         changeOrigin: true,
         pathRewrite: { '^/upload': '' },
         logLevel: 'debug'

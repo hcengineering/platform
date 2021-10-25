@@ -112,6 +112,7 @@ specifiers:
   express: ^4.17.1
   express-fileupload: ^1.2.1
   file-loader: ^6.2.0
+  filesize: ^8.0.3
   intl-messageformat: ^9.7.1
   just-clone: ^3.2.1
   koa: ^2.13.1
@@ -250,6 +251,7 @@ dependencies:
   express: 4.17.1
   express-fileupload: 1.2.1
   file-loader: 6.2.0_webpack@5.57.1
+  filesize: 8.0.3
   intl-messageformat: 9.7.1
   just-clone: 3.2.1
   koa: 2.13.3
@@ -9319,7 +9321,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-ffIxP0yesLoUxgDnGwHBhD0MRgzq5REyfoon10k7s3nlwDJzC3/yjPgMdFc9p+rZUfcRdhA17vF+AkuOD5vycA==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-zq2XzUCiMo5EZ7KfbLCGceDlQIyplRUNg8hPJP/7npIY/3YTgWDoc8svgCPltsen4PNMioIjAWWP1t+g62i6Mg==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -9608,21 +9610,30 @@ packages:
     dev: false
 
   file:projects/front.tgz_b4fae2aaf9a34e02c9acb1cfc4c88710:
-    resolution: {integrity: sha512-XmgU22kXGEisU6bW4q3GuuqhzjWazpokQ+ASxb2Nu7M/cTM+xy9EY/fvessk79EXRTGFvoH4hM2jrbleWKP9ug==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-qKmnx2yFt1hFJRZWJNaPPbb+p/Q0lnyA6u9AAgeqDbOjmWjp48NxqX6jIbiEyQi56IDHViE3w4/NQb0c/mp/rA==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
+      '@types/cors': 2.8.12
       '@types/express': 4.17.13
+      '@types/express-fileupload': 1.1.7
       '@types/heft-jest': 1.0.2
+      '@types/minio': 7.0.10
       '@types/node': 16.10.3
+      '@types/uuid': 8.3.1
       '@typescript-eslint/eslint-plugin': 4.33.0_d753869925cce96d3eb2141eeedafe57
+      cors: 2.8.5
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-plugin-import: 2.24.2_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
       express: 4.17.1
+      express-fileupload: 1.2.1
+      jwt-simple: 0.5.6
+      minio: 7.0.19
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - supports-color
