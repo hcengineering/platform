@@ -69,6 +69,18 @@
     </div>
   </svelte:fragment> -->
 
+  <!-- <div class="flex-row-center">
+    <div class="avatar">
+      <div class="border"/>
+      <Avatar />
+    </div>
+    <div class="flex-col">
+      <div class="name">{formatName(candidate.name)}</div>
+      <div class="title">For {getVacancyName()}</div>
+      <div class="city">at Cisco</div>
+    </div>
+  </div> -->
+
   <div class="grid-cards">
     <CandidateCard />
     <VacancyCard />
