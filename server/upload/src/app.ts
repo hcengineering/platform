@@ -53,7 +53,7 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
     'Content-Type': file.mimetype
   }
 
-  const resp = await minio.putObject(workspace, id, file.data, meta)
+  const resp = await minio.putObject(workspace, id, file.data, file.size, meta)
 
   console.log(resp)
   return id
@@ -96,7 +96,12 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
           return console.log(err)
         }
         res.status(200)
-        res.setHeader('Content-Type', stat.metaData['Content-Type'])
+
+        const contentType = stat.metaData['content-type']
+        if (contentType !== undefined) {
+          res.setHeader('Content-Type', contentType)
+        }
+
         dataStream.on('data', function (chunk) {
           res.write(chunk)
         })
