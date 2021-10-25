@@ -27,11 +27,13 @@
   import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
+  import CandidateCard from './CandidateCard.svelte'
+  import VacancyCard from './VacancyCard.svelte'
 
   import chunter from '@anticrm/chunter'
   
   import recruit from '../plugin'
-import { formatName } from '@anticrm/contact';
+  import { formatName } from '@anticrm/contact'
 
   export let _id: Ref<Applicant>
   let object: Applicant
@@ -67,16 +69,9 @@ import { formatName } from '@anticrm/contact';
     </div>
   </svelte:fragment> -->
 
-  <div class="flex-row-center">
-    <div class="avatar">
-      <div class="border"/>
-      <Avatar />
-    </div>
-    <div class="flex-col">
-      <div class="name">{formatName(candidate.name)}</div>
-      <div class="title">For {getVacancyName()}</div>
-      <div class="city">at Cisco</div>
-    </div>
+  <div class="grid-cards">
+    <CandidateCard />
+    <VacancyCard />
   </div>
 
   <div class="attachments">
@@ -140,6 +135,12 @@ import { formatName } from '@anticrm/contact';
 
   .attachments {
     margin-top: 3.5rem;
+  }
+
+  .grid-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.5rem;
   }
 
   // .container {
