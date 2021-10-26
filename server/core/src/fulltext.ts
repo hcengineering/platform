@@ -80,7 +80,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     if (attributes === undefined) return {}
     const doc = TxProcessor.createDoc2Doc(tx)
-    const content = attributes.map(attr => (doc as any)[attr.name]) // buildContent(doc, attributes) // (doc as any)[attribute.name]
+    const content = attributes.map(attr => ((doc as any)[attr.name] !== null && (doc as any)[attr.name] !== undefined) ? (doc as any)[attr.name].toString() : '') // temporary: getFullTextAttributes should provide string attrs only
     const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,

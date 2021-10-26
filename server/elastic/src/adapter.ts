@@ -29,33 +29,38 @@ class ElasticAdapter implements FullTextAdapter {
   async search (
     query: SearchQuery
   ): Promise<IndexedDoc[]> {
-    const result = await this.client.search({
-      index: this.db,
-      body: {
-        query: {
-          multi_match: {
-            query: query.$search,
-            fields: [
-              'content0',
-              'content1',
-              'content2',
-              'content3',
-              'content4',
-              'content5',
-              'content6',
-              'content7',
-              'content8',
-              'content9',
-              'attachment.content'
-            ]
+    try {
+      const result = await this.client.search({
+        index: this.db,
+        body: {
+          query: {
+            multi_match: {
+              query: query.$search,
+              fields: [
+                'content0',
+                'content1',
+                'content2',
+                'content3',
+                'content4',
+                'content5',
+                'content6',
+                'content7',
+                'content8',
+                'content9',
+                'attachment.content'
+              ]
+            }
           }
         }
-      }
-    })
-    console.log(result)
-    const hits = result.body.hits.hits as any[]
-    console.log('hits', hits)
-    return hits.map(hit => hit._source)
+      })
+      console.log(result)
+      const hits = result.body.hits.hits as any[]
+      console.log('hits', hits)
+      return hits.map(hit => hit._source)
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2))
+      return []
+    }
   }
 
   async index (doc: IndexedDoc): Promise<TxResult> {
