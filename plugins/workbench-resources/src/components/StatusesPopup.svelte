@@ -19,10 +19,13 @@
   import { createEventDispatcher } from 'svelte'
   import { Label, showPopup } from '@anticrm/ui'
   import { getClient, MessageBox } from '@anticrm/presentation'
+  import type { Kanban } from '@anticrm/view'
   import Delete from './icons/Delete.svelte'
 
   import workbench from '@anticrm/workbench'
+  import view from '@anticrm/view'
 
+  export let kanban: Kanban
   export let state: State
   export let spaceClass: Ref<Class<Obj>>
 
@@ -32,8 +35,8 @@
 
   async function deleteState() {
     const spaceClassInstance = client.getHierarchy().getClass(spaceClass)
-    const view = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
-    const containingClass = view.view.class
+    const spaceView = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
+    const containingClass = spaceView.view.class
 
     const objectsInThisState = await client.findAll(containingClass, { state: state._id })
 
@@ -46,8 +49,9 @@
       showPopup(MessageBox, {
         label: 'Delete status',
         message: 'Do you want to delete this status?'
-      }, undefined, (result) => {
+      }, undefined, async (result) => {
         if (result) {
+          await client.updateDoc(view.class.Kanban, kanban.space, kanban._id, { $pull: { states: state._id } })
           client.removeDoc(state._class, state.space, state._id)    
         }
       })

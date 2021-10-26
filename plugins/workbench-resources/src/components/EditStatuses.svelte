@@ -148,7 +148,7 @@
             <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
             <div class="tool hover-trans"
               on:click={(ev) => {
-                showPopup(StatusesPopup, { state, spaceClass }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+                showPopup(StatusesPopup, { kanban, state, spaceClass }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
               }}
             >
               <IconMoreH size={'medium'} />
