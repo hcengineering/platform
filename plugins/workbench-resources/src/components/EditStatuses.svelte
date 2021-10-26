@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, SpaceWithStates, State } from '@anticrm/core'
+  import type { Ref, SpaceWithStates, State, Class, Obj } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import type { Kanban } from '@anticrm/view'
@@ -30,6 +30,7 @@
   import view from '@anticrm/view'
 
   export let _id: Ref<SpaceWithStates>
+  export let spaceClass: Ref<Class<Obj>>
 
   let kanban: Kanban | undefined
 
@@ -147,7 +148,7 @@
             <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
             <div class="tool hover-trans"
               on:click={(ev) => {
-                showPopup(StatusesPopup, {}, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+                showPopup(StatusesPopup, { state, spaceClass }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
               }}
             >
               <IconMoreH size={'medium'} />

@@ -15,15 +15,48 @@
 
 <script lang="ts">
   // import type { IntlString, Asset, Resource } from '@anticrm/platform'
+  import type { Ref, State, Class, Obj } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
-  import { Label } from '@anticrm/ui'
+  import { Label, showPopup } from '@anticrm/ui'
+  import { getClient, MessageBox } from '@anticrm/presentation'
   import Delete from './icons/Delete.svelte'
 
+  import workbench from '@anticrm/workbench'
+
+  export let state: State
+  export let spaceClass: Ref<Class<Obj>>
+
   const dispatch = createEventDispatcher()
+
+  const client = getClient()
+
+  async function deleteState() {
+    const spaceClassInstance = client.getHierarchy().getClass(spaceClass)
+    const view = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
+    const containingClass = view.view.class
+
+    const objectsInThisState = await client.findAll(containingClass, { state: state._id })
+
+    if (objectsInThisState.length > 0) {
+      showPopup(MessageBox, {
+        label: 'Can\'t delete status',
+        message: `There are ${objectsInThisState.length} objects in the given state. Move or delete them first.`
+      })
+    } else {
+      showPopup(MessageBox, {
+        label: 'Delete status',
+        message: 'Do you want to delete this status?'
+      }, undefined, (result) => {
+        if (result) {
+          client.removeDoc(state._class, state.space, state._id)    
+        }
+      })
+    }
+  }
 </script>
 
 <div class="flex-col popup">
-  <div class="flex-row-center red-color menu-item" on:click={() => { dispatch('close', 'delete') }}>
+  <div class="flex-row-center red-color menu-item" on:click={() => { dispatch('close'); deleteState() }}>
     <div class="icon">
       <Delete size={'medium'} />
     </div>

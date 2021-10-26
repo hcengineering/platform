@@ -52,7 +52,7 @@
     label: 'Edit Statuses' as IntlString,
     icon: IconAdd,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      showPopup(EditStatuses, { _id }, 'right')
+      showPopup(EditStatuses, { _id, spaceClass: model.spaceClass }, 'right')
     }
   }
 
