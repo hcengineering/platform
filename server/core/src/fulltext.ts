@@ -113,8 +113,8 @@ export class FullTextIndex extends TxProcessor implements Storage {
       if (ops[attr.name] !== undefined) {
         update[`content${i}`] = ops[attr.name]
         shouldUpdate = true
-        i++
       }
+      i++
     }
     if (shouldUpdate) {
       return await this.adapter.update(tx.objectId, update)
