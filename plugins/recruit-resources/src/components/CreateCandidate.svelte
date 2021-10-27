@@ -59,6 +59,7 @@
     uuid: string
     size: number
     type: string
+    lastModified: number
   }
 
   const dispatch = createEventDispatcher()
@@ -75,41 +76,27 @@
       remote: object.remote
     }
 
-    if (resume.uuid !== undefined) {
-      candidate.attachments[encodeURIComponent(resume.uuid)] = {
-          _class: chunter.class.Attachment,
-          name: resume.name,
-          file: resume.uuid,
-          size: resume.size,
-          type: resume.type
-      }
-    }
-
-    await client.createDoc(recruit.class.Candidate, _space, candidate, candidateId)
+    const id = await client.createDoc(recruit.class.Candidate, _space, candidate, candidateId)
     console.log('resume name', resume.name)
 
-    // if (resume.id !== undefined) {
-    //   // create attachment
-    //   console.log('creaing attachment space', _space)
-    //   client.createDoc(chunter.class.Attachment, _space, {
-    //     attachedTo: candidateId,
-    //     collection: 'resume',
-    //     name: resume.name,
-    //     file: resume.uuid,
-    //     type: resume.type,
-    //     size: resume.size,
-    //   }, resume.id)
-
-    //   client.updateDoc(recruit.class.Candidate, _space, candidateId, {
-    //     resume: resume.id
-    //   })
-    // }
+    if (resume.uuid !== undefined) {
+      client.createDoc(chunter.class.Attachment, space, {
+        attachedTo: id,
+        attachedToClass: recruit.class.Candidate,
+        name: resume.name,
+        file: resume.uuid,
+        size: resume.size,
+        type: resume.type,
+        lastModified: resume.lastModified
+      })
+    }
 
     dispatch('close')
   }
 
   let inputFile: HTMLInputElement
   let loading = false
+  let dragover = false
 
   async function createAttachment(file: File) {
     loading = true
@@ -118,6 +105,7 @@
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type
+      resume.lastModified = file.lastModified
 
       console.log('uploaded file uuid', resume.uuid)
     } catch (err: any) {
@@ -127,15 +115,16 @@
     }
   }
 
+  function drop(event: DragEvent) {
+    dragover = false
+    const droppedFile = event.dataTransfer?.files[0]
+    if (droppedFile !== undefined) { createAttachment(droppedFile) }
+  }  
+
   function fileSelected() {
     console.log(inputFile.files)
     const file = inputFile.files?.[0]
     if (file !== undefined) { createAttachment(file) }
-  }
-
-  function saveChannels(result: any) {
-    object.channels = result
-    client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
   }
 
   let kl: number = 0
@@ -190,15 +179,18 @@
 
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+      <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
       <span><Label label={'Add social links'} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
-      <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+      <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
     {/if}
   </div>
 
-  <div class="flex-center resume" class:solid={resume.uuid}>
+  <div class="flex-center resume" class:solid={dragover} 
+      on:dragover|preventDefault={ () => { dragover = true } } 
+      on:dragleave={ () => { dragover = false } } 
+      on:drop|preventDefault|stopPropagation={drop}>
     {#if resume.uuid}
       <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
     {:else}
