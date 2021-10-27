@@ -179,11 +179,11 @@
 
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
       <span><Label label={'Add social links'} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
-      <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
     {/if}
   </div>
 

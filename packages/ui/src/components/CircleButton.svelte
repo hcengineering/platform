@@ -20,10 +20,11 @@
 
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large' = 'large'
+  export let transparent: boolean = false
   export let selected: boolean = false
 </script>
 
-<div class="icon-button icon-{size}" class:selected on:click>
+<div class="icon-button icon-{size}" class:selected class:transparent on:click>
   <div class="content">
     {#if typeof (icon) === 'string'}
       <Icon {icon} size={'small'}/>
@@ -49,6 +50,7 @@
       pointer-events: none;
     }
     &.selected { background-color: var(--theme-button-bg-hovered); }
+    &.transparent { background-color: rgba(31, 31, 37, .3); }
     &:hover { border-color: var(--theme-bg-focused-border); }
     &:active { background-color: var(--theme-bg-accent-color); }
   }
