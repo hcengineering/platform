@@ -28,7 +28,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import type { Attachment } from '@anticrm/chunter'
 
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
+  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, IconAdd, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
@@ -133,6 +133,11 @@
     if (file !== undefined) { createAttachment(file) }
   }
 
+  function saveChannels(result: any) {
+    object.channels = result
+    client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
+  }
+
   let kl: number = 0
 </script>
 
@@ -166,44 +171,56 @@
         {#if kl === 0}
           <Avatar />
         {:else if kl === 1}
-          <img src={Girl} alt="Avatar" />
+          <img width="100%" src={Girl} alt="Avatar" />
         {:else if kl === 2}
-          <img src={Elon} alt="Avatar" />
+          <img width="100%" src={Elon} alt="Avatar" />
         {:else}
-          <img src={Bond} alt="Avatar" />
+          <img width="100%" src={Bond} alt="Avatar" />
         {/if}
       </div>
     </div>
 
     <div class="flex-col">
-      <div class="name"><EditBox placeholder="John" maxWidth="9.5rem" bind:value={firstName}/></div>
-      <div class="name"><EditBox placeholder="Appleseed" maxWidth="9.5rem" bind:value={lastName}/></div>
-      <div class="title"><EditBox placeholder="Title" maxWidth="9.5rem" bind:value={object.title}/></div>
-      <div class="city"><EditBox placeholder="Location" maxWidth="9.5rem" bind:value={object.city}/></div>
-      <!-- <div class="flex resume">
-        {#if resume.uuid}
-          <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
-        {:else}
-          {#if loading}
-            <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
-          {:else}
-            <Link label={'Upload resume'} href={'#'} icon={FileUpload} on:click={ () => { inputFile.click() } } />
-          {/if}
-          <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
-        {/if}
-      </div> -->
+      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
+      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
+      <div class="fs-subtitle"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title}/></div>
+      <div class="fs-subtitle"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city}/></div>
     </div>
   </div>
+
+  <div class="flex-row-center channels">
+    {#if !object.channels || object.channels.length === 0}
+      <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+      <span><Label label={'Add social links'} /></span>
+    {:else}
+      <Channels value={object.channels} size={'small'} />
+      <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+    {/if}
+  </div>
+
+  <div class="flex-center resume" class:solid={resume.uuid}>
+    {#if resume.uuid}
+      <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
+    {:else}
+      {#if loading}
+        <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
+      {:else}
+        <Link label={'Add or drop resume'} href={'#'} icon={FileUpload} on:click={ () => { inputFile.click() } } />
+      {/if}
+      <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+    {/if}
+  </div>
+
   <div class="separator" />
   <div class="flex-col locations">
     <span><Label label={'Work location preferences'} /></span>
     <div class="row"><Label label={'Onsite'} /><YesNo bind:value={object.onsite} /></div>
     <div class="row"><Label label={'Remote'} /><YesNo bind:value={object.remote} /></div>
   </div>
-  <svelte:fragment slot="contacts">
+  <!-- <svelte:fragment slot="contacts">
     <Channels value={object.channels} />
     <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
-  </svelte:fragment>
+  </svelte:fragment> -->
 </Card>
 
 <style lang="scss">
@@ -213,26 +230,25 @@
     flex-shrink: 0;
     position: relative;
     margin-right: 1rem;
-    width: 6rem;
-    height: 6rem;
+    width: 4.5rem;
+    height: 4.5rem;
     user-select: none;
   }
   .avatar-shadow {
     position: absolute;
-    width: 6rem;
-    height: 6rem;
+    width: 4.5rem;
+    height: 4.5rem;
 
     .bg-avatar {
-      transform: scale(1.1);
       filter: blur(10px);
-      opacity: .75;
+      opacity: .25;
     }
   }
   .avatar {
     overflow: hidden;
     position: absolute;
-    width: 6rem;
-    height: 6rem;
+    width: 4.5rem;
+    height: 4.5rem;
     border-radius: 50%;
     filter: var(--theme-avatar-shadow);
     cursor: pointer;
@@ -255,20 +271,12 @@
     }
   }
 
-  .name {
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
+  .channels {
+    margin-top: 1.25rem;
+    span { margin-left: .5rem; }
   }
-  .title, .city {
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-accent-color);
-  }
-  .title { margin-top: .5rem; }
+
   .locations {
-    margin-top: 1.5rem;
-    
     span {
       margin-bottom: .125rem;
       font-weight: 500;
@@ -284,10 +292,21 @@
       color: var(--theme-caption-color);
     }
   }
+
   .separator {
     margin: 1rem 0;
     height: 1px;
     background-color: var(--theme-card-divider);
+  }
+
+  .resume {
+    margin-top: 1rem;
+    padding: .75rem;
+    background: rgba(255, 255, 255, .05);
+    border: 1px dashed rgba(255, 255, 255, .2);
+    border-radius: .5rem;
+    backdrop-filter: blur(10px);
+    &.solid { border-style: solid; }
   }
   // .resume a {
   //   font-size: .75rem;
