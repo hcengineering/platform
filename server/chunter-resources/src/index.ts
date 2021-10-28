@@ -67,7 +67,6 @@ interface WithAttachements extends Doc {
  * @public
  */
 export async function OnAttachment (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>): Promise<Tx[]> {
-  console.log('on attachment', tx)
   if (tx._class === core.class.TxAddCollection) {
     const createTx = tx as TxAddCollection<Attachment>
     if (createTx.objectClass === chunter.class.Attachment) {

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class } from '@anticrm/core'
+import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class, TxAddCollection } from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
 import type { Message, Backlink, Attachment } from '@anticrm/chunter'
 
@@ -67,11 +67,11 @@ interface WithAttachements extends Doc {
  * @public
  */
 export async function OnAttachment (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>): Promise<Tx[]> {
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<Attachment>
+  if (tx._class === core.class.TxAddCollection) {
+    const createTx = tx as TxAddCollection<Attachment>
     if (createTx.objectClass === chunter.class.Attachment) {
-      const _id = createTx.attributes.attachedTo as Ref<WithAttachements>
-      const _class = createTx.attributes.attachedToClass as Ref<Class<WithAttachements>>
+      const _id = createTx.attachedTo as Ref<WithAttachements>
+      const _class = createTx.attachedToClass as Ref<Class<WithAttachements>>
       const attachedTo = (await findAll(_class, { _id }))[0]
       return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { attachments: 1 } })]
     }
