@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class, TxAddCollection } from '@anticrm/core'
+import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class } from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
-import type { Message, Backlink, Attachment } from '@anticrm/chunter'
+import type { Message, Backlink } from '@anticrm/chunter'
 
 import core from '@anticrm/core'
 import chunter from '@anticrm/chunter'
@@ -59,23 +59,23 @@ export async function OnMessage (tx: Tx, txFactory: TxFactory): Promise<Tx[]> {
   return []
 }
 
-interface WithAttachements extends Doc {
-  attachments: number
-}
+// interface WithAttachements extends Doc {
+//   attachments: number
+// }
 
 /**
  * @public
  */
 export async function OnAttachment (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>): Promise<Tx[]> {
-  if (tx._class === core.class.TxAddCollection) {
-    const createTx = tx as TxAddCollection<Attachment>
-    if (createTx.objectClass === chunter.class.Attachment) {
-      const _id = createTx.attachedTo as Ref<WithAttachements>
-      const _class = createTx.attachedToClass as Ref<Class<WithAttachements>>
-      const attachedTo = (await findAll(_class, { _id }))[0]
-      return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { attachments: 1 } })]
-    }
-  }
+  // if (tx._class === core.class.TxAddCollection) {
+  //   const createTx = tx as TxAddCollection<Attachment>
+  //   if (createTx.objectClass === chunter.class.Attachment) {
+  //     const _id = createTx.attachedTo as Ref<WithAttachements>
+  //     const _class = createTx.attachedToClass as Ref<Class<WithAttachements>>
+  //     const attachedTo = (await findAll(_class, { _id }))[0]
+  //     return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { attachments: 1 } })]
+  //   }
+  // }
   return []
 }
 
