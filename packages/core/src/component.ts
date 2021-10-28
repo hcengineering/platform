@@ -14,8 +14,8 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Account, Class, Doc, Obj, Ref, Space, AnyAttribute, State, Type, PropertyType, SpaceWithStates, Timestamp, DocWithState } from './classes'
-import type { Tx, TxBulkWrite, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Account, Class, Doc, Obj, Ref, Space, AnyAttribute, State, Type, PropertyType, SpaceWithStates, Timestamp, DocWithState, AttachedDoc } from './classes'
+import type { Tx, TxAddCollection, TxBulkWrite, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
  * @public
@@ -32,6 +32,7 @@ export default plugin(coreId, {
     TxBulkWrite: '' as Ref<Class<TxBulkWrite>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
+    TxAddCollection: '' as Ref<Class<TxAddCollection<AttachedDoc>>>,
     TxMixin: '' as Ref<Class<TxMixin<Doc, Doc>>>,
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
