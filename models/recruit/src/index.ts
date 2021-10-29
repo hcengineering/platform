@@ -143,7 +143,13 @@ export function createModel (builder: Builder): void {
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.channels']
+    config: [
+      '',
+      '$lookup.attachedTo',
+      '$lookup.state',
+      '$lookup.attachedTo.city',
+      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      '$lookup.attachedTo.channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
