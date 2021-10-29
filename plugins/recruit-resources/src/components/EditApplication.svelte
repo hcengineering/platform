@@ -43,7 +43,7 @@ import { formatName } from '@anticrm/contact';
   $: query.query(recruit.class.Applicant, { _id }, result => { object = result[0] })
 
   const candidateQuery = createQuery()
-  $: if (object !== undefined) candidateQuery.query(recruit.class.Candidate, { _id: object.candidate }, result => { candidate = result[0] })
+  $: if (object !== undefined) candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo }, result => { candidate = result[0] })
 
   const dispatch = createEventDispatcher()
 

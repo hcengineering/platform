@@ -60,10 +60,9 @@
     const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
       $inc: { sequence: 1 }
     }, true)
-    const id = await client.createDoc(recruit.class.Applicant, _space, {
-      candidate,
+    const id = await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
       state: state._id,
-      number: incResult.object.sequence
+      number: incResult.object.sequence,
     })
   }
 

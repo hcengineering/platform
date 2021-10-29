@@ -41,5 +41,5 @@
       }
     }
   }
-  query={ { candidate: value._id } }
+  query={ { attachedTo: value._id } }
 />
