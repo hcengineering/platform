@@ -73,7 +73,7 @@
       if (space === undefined) {
         status = new Status(Severity.INFO, recruit.status.VacancyRequired, {})
       } else {
-        const applicants = await client.findAll(recruit.class.Applicant, { space, candidate})
+        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate})
         if (applicants.length > 0) {
           status = new Status(Severity.ERROR,  recruit.status.ApplicationExists, {})
         } else {
