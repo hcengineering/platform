@@ -30,7 +30,9 @@ import type {
   ExtendedAttributes,
   PropertyType,
   TxPutBag,
-  TxBulkWrite
+  TxBulkWrite,
+  AttachedDoc,
+  TxAddCollection
 } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { Model } from '@anticrm/model'
@@ -53,6 +55,13 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
 @Model(core.class.TxCreateDoc, core.class.TxCUD)
 export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDoc<T> {
   attributes!: Data<T>
+}
+
+@Model(core.class.TxAddCollection, core.class.TxCreateDoc)
+export class TTxAddCollection<T extends AttachedDoc> extends TTxCreateDoc<T> implements TxAddCollection<T> {
+  collection!: string
+  attachedTo!: Ref<Doc>
+  attachedToClass!: Ref<Class<Doc>>
 }
 
 @Model(core.class.TxPutBag, core.class.TxCUD)

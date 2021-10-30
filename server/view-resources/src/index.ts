@@ -24,7 +24,7 @@ import view, { Kanban } from '@anticrm/view'
  * @public
  */
 export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
-  if (tx._class === core.class.TxCreateDoc) {
+  if (hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
     const createTx = tx as TxCreateDoc<DocWithState>
     if (hierarchy.isDerived(createTx.objectClass, core.class.DocWithState)) {
       const state = (await (findAll as FindAll<State>)(core.class.State, { space: createTx.objectSpace }))[0] // TODO: make FindAll generic

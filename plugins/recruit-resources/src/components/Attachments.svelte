@@ -46,9 +46,7 @@
     try {
       const uuid = await uploadFile(space, file, objectId)
       console.log('uploaded file uuid', uuid)
-      client.createDoc(chunter.class.Attachment, space, {
-        attachedTo: objectId,
-        attachedToClass: _class,
+      client.addCollection(chunter.class.Attachment, space, objectId, _class, 'attachments', {
         name: file.name,
         file: uuid,
         type: file.type,

@@ -139,6 +139,11 @@ export type Mixin<T extends Doc> = Class<T>
  */
 export type Data<T extends Doc> = Omit<T, keyof Doc>
 
+/**
+ * @public
+ */
+export type AttachedData<T extends AttachedDoc> = Omit<T, keyof AttachedDoc>
+
 // T Y P E S
 
 /**

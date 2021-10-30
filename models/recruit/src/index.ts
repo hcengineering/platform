@@ -14,11 +14,10 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, UX, Prop, TypeString, TypeBoolean, Bag as TypeBag } from '@anticrm/model'
-import type { Ref, FindOptions, Doc, Domain, Bag } from '@anticrm/core'
+import { Builder, Model, UX, Prop, TypeString, TypeBoolean } from '@anticrm/model'
+import type { Ref, FindOptions, Doc, Domain, Class } from '@anticrm/core'
 import core, { TSpace, TSpaceWithStates, TDocWithState } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
-import type { Attachment } from '@anticrm/chunter'
 
 import workbench from '@anticrm/model-workbench'
 
@@ -60,10 +59,12 @@ export class TCandidate extends TPerson implements Candidate {
 @UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
 export class TApplicant extends TDocWithState implements Applicant {
   @Prop(TypeString(), 'Candidate' as IntlString)
-  candidate!: Ref<Candidate>
+  attachedTo!: Ref<Candidate>
 
-  @Prop(TypeBag(), 'Attachments' as IntlString)
-  attachments!: Bag<Attachment>
+  attachedToClass!: Ref<Class<Candidate>>
+
+  @Prop(TypeString(), 'Attachments' as IntlString)
+  attachments?: number
 }
 
 export function createModel (builder: Builder): void {
@@ -138,11 +139,17 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        candidate: recruit.class.Candidate,
+        attachedTo: recruit.class.Candidate,
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['', '$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
+    config: [
+      '',
+      '$lookup.attachedTo',
+      '$lookup.state',
+      '$lookup.attachedTo.city',
+      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      '$lookup.attachedTo.channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -152,11 +159,11 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        candidate: recruit.class.Candidate,
+        attachedTo: recruit.class.Candidate,
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.candidate', '$lookup.state', '$lookup.candidate.city', '$lookup.candidate.channels']
+    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.channels']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
