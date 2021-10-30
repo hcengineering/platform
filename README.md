@@ -1,6 +1,6 @@
 # Anticrm Platform
 
-Anticrm Platform is a framework that help building business applications (such as CRM fast). Current exemplary applications include Chat, Task Management, and Applicant Tracking System.
+Anticrm Platform is a framework that help building business applications (such as CRM) fast. Current exemplary applications include Chat, Task Management, and Applicant Tracking System.
 
 ## Installation
 
