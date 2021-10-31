@@ -21,21 +21,24 @@
   import FileUpload from './icons/FileUpload.svelte'
   import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
-  import type { Candidate, Applicant } from '@anticrm/recruit'
+  import type { Candidate, Applicant, Vacancy } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
+  import CandidateCard from './CandidateCard.svelte'
+  import VacancyCard from './VacancyCard.svelte'
 
   import chunter from '@anticrm/chunter'
   
   import recruit from '../plugin'
-import { formatName } from '@anticrm/contact';
+  import { formatName } from '@anticrm/contact'
 
   export let _id: Ref<Applicant>
   let object: Applicant
   let candidate: Candidate
+  let vacancy: Vacancy
 
   const client = getClient()
 
@@ -44,6 +47,9 @@ import { formatName } from '@anticrm/contact';
 
   const candidateQuery = createQuery()
   $: if (object !== undefined) candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo }, result => { candidate = result[0] })
+
+  const vacancyQuery = createQuery()
+  $: if (object !== undefined) vacancyQuery.query(recruit.class.Vacancy, { _id: object.space }, result => { vacancy = result[0] })
 
   const dispatch = createEventDispatcher()
 
@@ -67,7 +73,7 @@ import { formatName } from '@anticrm/contact';
     </div>
   </svelte:fragment> -->
 
-  <div class="flex-row-center">
+  <!-- <div class="flex-row-center">
     <div class="avatar">
       <div class="border"/>
       <Avatar />
@@ -77,6 +83,11 @@ import { formatName } from '@anticrm/contact';
       <div class="title">For {getVacancyName()}</div>
       <div class="city">at Cisco</div>
     </div>
+  </div> -->
+
+  <div class="grid-cards">
+    <CandidateCard {candidate}/>
+    <VacancyCard {vacancy}/>
   </div>
 
   <div class="attachments">
@@ -140,6 +151,12 @@ import { formatName } from '@anticrm/contact';
 
   .attachments {
     margin-top: 3.5rem;
+  }
+
+  .grid-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.5rem;
   }
 
   // .container {
