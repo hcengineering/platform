@@ -15,6 +15,9 @@
 
 <script lang="ts">
   import Company from './icons/Company.svelte'
+  import type { Vacancy } from '@anticrm/recruit'
+
+  export let vacancy: Vacancy
 </script>
 
 <div class="flex-col card-container">
@@ -22,8 +25,10 @@
   <div class="flex-center logo">
     <Company size={'large'} />
   </div>
-  <div class="name">Vacancy name</div>
-  <div class="description">Company</div>
+  {#if vacancy}
+    <div class="name">{vacancy.name}</div>
+    <div class="description">Company</div>
+  {/if}
 </div>
 
 <style lang="scss">

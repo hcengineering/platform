@@ -21,7 +21,7 @@
   import FileUpload from './icons/FileUpload.svelte'
   import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
-  import type { Candidate, Applicant } from '@anticrm/recruit'
+  import type { Candidate, Applicant, Vacancy } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
   import Avatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
@@ -38,6 +38,7 @@
   export let _id: Ref<Applicant>
   let object: Applicant
   let candidate: Candidate
+  let vacancy: Vacancy
 
   const client = getClient()
 
@@ -46,6 +47,9 @@
 
   const candidateQuery = createQuery()
   $: if (object !== undefined) candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo }, result => { candidate = result[0] })
+
+  const vacancyQuery = createQuery()
+  $: if (object !== undefined) vacancyQuery.query(recruit.class.Vacancy, { _id: object.space }, result => { vacancy = result[0] })
 
   const dispatch = createEventDispatcher()
 
@@ -82,8 +86,8 @@
   </div> -->
 
   <div class="grid-cards">
-    <CandidateCard />
-    <VacancyCard />
+    <CandidateCard {candidate}/>
+    <VacancyCard {vacancy}/>
   </div>
 
   <div class="attachments">

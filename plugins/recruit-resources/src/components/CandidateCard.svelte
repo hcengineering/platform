@@ -15,15 +15,22 @@
 
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
+  import type { Candidate } from '@anticrm/recruit'
+  import { Channels } from '@anticrm/presentation'
+  import { formatName } from '@anticrm/contact'
+
+  export let candidate: Candidate
 </script>
 
 <div class="flex-col card-container">
   <div class="label">CANDIDATE</div>
   <Avatar size={'large'} />
-  <div class="name">Candidate name</div>
-  <div class="description">Candidate title</div>
-  <div class="description">Candidate location</div>
-  <div class="footer">Channels</div>
+  {#if candidate}
+    <div class="name">{formatName(candidate.name)}</div>
+    <div class="description">{candidate.title}</div>
+    <div class="description">{candidate.city}</div>
+    <div class="footer"><Channels value={candidate.channels} size={'small'} /></div>
+  {/if}
 </div>
 
 <style lang="scss">
