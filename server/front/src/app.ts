@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { resolve, join } from 'path'
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
@@ -83,8 +84,12 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
   app.use(cors())
   app.use(fileUpload())
 
+  const dist = resolve(__dirname, 'dist')
+  console.log('serving static files from', dist)
+  app.use(express.static(dist, { maxAge: '10m' }))
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/', async (req, res) => {
+  app.get('/files', async (req, res) => {
     try {
       const token = req.query.token as string
       const payload = decode(token, 'secret', false) as Token
@@ -119,7 +124,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/', async (req, res) => {
+  app.post('/files', async (req, res) => {
     const file = req.files?.file as UploadedFile
 
     if (file === undefined) {
@@ -175,6 +180,10 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       console.log(error)
       res.status(500).send()
     }
+  })
+
+  app.get('*', function (request, response) {
+    response.sendFile(join(dist, 'index.html'))
   })
 
   app.listen(port)

@@ -29,7 +29,7 @@
   export let draggable: boolean
 
   function showCandidate() {
-    showPopup(EditCandidate, { _id: object.candidate }, 'full')
+    showPopup(EditCandidate, { _id: object.attachedTo }, 'full')
   }
 
   function showApplication() {
@@ -42,8 +42,8 @@
     <div class="flex-row-center">
       <Avatar size={'medium'} />
       <div class="flex-col ml-2">
-        <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.candidate?.name)} /></div>
-        <div class="fs-subtitle"><Label label={formatName(object.$lookup?.candidate?.title)} /></div>
+        <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
+        <div class="fs-subtitle"><Label label={formatName(object.$lookup?.attachedTo?.title)} /></div>
       </div>
     </div>
     <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />

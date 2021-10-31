@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, SpaceWithStates, State } from '@anticrm/core'
+  import type { Ref, SpaceWithStates, State, Class, Obj } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import type { Kanban } from '@anticrm/view'
@@ -24,11 +24,13 @@
   import Circles from './icons/Circles.svelte'
   import Status from './icons/Status.svelte'
   import ColorsPopup from './ColorsPopup.svelte'
+  import StatusesPopup from './StatusesPopup.svelte'
 
   import core from '@anticrm/core'
   import view from '@anticrm/view'
 
   export let _id: Ref<SpaceWithStates>
+  export let spaceClass: Ref<Class<Obj>>
 
   let kanban: Kanban | undefined
 
@@ -144,7 +146,13 @@
               }}
             />
             <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-            <div class="tool"><ActionIcon icon={IconMoreH} label={'More...'} size={'medium'} /></div>
+            <div class="tool hover-trans"
+              on:click={(ev) => {
+                showPopup(StatusesPopup, { kanban, state, spaceClass }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+              }}
+            >
+              <IconMoreH size={'medium'} />
+            </div>
           </div>
         {/if}
       {/each}
@@ -216,10 +224,7 @@
       border-radius: .25rem;
       cursor: pointer;
     }
-    .tool {
-      margin-left: 1rem;
-      cursor: pointer;
-    }
+    .tool { margin-left: 1rem; }
   }
   .states + .states { margin-top: .5rem; }
 </style>

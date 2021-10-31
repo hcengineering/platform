@@ -60,10 +60,9 @@
     const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
       $inc: { sequence: 1 }
     }, true)
-    const id = await client.createDoc(recruit.class.Applicant, _space, {
-      candidate,
+    const id = await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
       state: state._id,
-      number: incResult.object.sequence
+      number: incResult.object.sequence,
     })
   }
 
@@ -74,7 +73,7 @@
       if (space === undefined) {
         status = new Status(Severity.INFO, recruit.status.VacancyRequired, {})
       } else {
-        const applicants = await client.findAll(recruit.class.Applicant, { space, candidate})
+        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate})
         if (applicants.length > 0) {
           status = new Status(Severity.ERROR,  recruit.status.ApplicationExists, {})
         } else {

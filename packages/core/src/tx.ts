@@ -14,7 +14,7 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType } from './classes'
+import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType, AttachedDoc, AttachedData } from './classes'
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
 import core from './component'
 import { generateId } from './utils'
@@ -39,6 +39,15 @@ export interface TxCUD<T extends Doc> extends Tx {
  */
 export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
   attributes: Data<T>
+}
+
+/**
+ * @public
+ */
+export interface TxAddCollection<T extends AttachedDoc> extends TxCreateDoc<T> {
+  collection: string
+  attachedTo: Ref<Doc>
+  attachedToClass: Ref<Class<Doc>>
 }
 
 /**
@@ -184,6 +193,8 @@ export abstract class TxProcessor implements WithTx {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(tx as TxCreateDoc<Doc>)
+      case core.class.TxAddCollection:
+        return await this.txAddCollection(tx as TxAddCollection<AttachedDoc>)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
@@ -215,6 +226,12 @@ export abstract class TxProcessor implements WithTx {
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>
   protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult>
+
+  protected txAddCollection (tx: TxAddCollection<AttachedDoc>): Promise<TxResult> {
+    const createTx: TxCreateDoc<Doc> = { ...tx }
+    createTx.attributes = { ...tx.attributes, attachedTo: tx.attachedTo, attachedToClass: tx.attachedToClass }
+    return this.txCreateDoc(createTx)
+  }
 
   protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<TxResult> {
     for (const tx of bulkTx.txes) {
@@ -254,6 +271,20 @@ export class TxOperations implements Storage {
     id?: Ref<T>
   ): Promise<Ref<T>> {
     const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id)
+    await this.storage.tx(tx)
+    return tx.objectId
+  }
+
+  async addCollection<T extends AttachedDoc> (
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    attachedTo: Ref<Doc>,
+    attachedToClass: Ref<Class<Doc>>,
+    collection: string,
+    attributes: AttachedData<T>,
+    id?: Ref<T>
+  ): Promise<Ref<T>> {
+    const tx = this.txFactory.createTxAddCollection(_class, space, attributes, attachedTo, attachedToClass, collection, id)
     await this.storage.tx(tx)
     return tx.objectId
   }
@@ -318,6 +349,23 @@ export class TxFactory {
       modifiedOn: Date.now(),
       modifiedBy: this.account,
       attributes
+    }
+  }
+
+  createTxAddCollection<T extends AttachedDoc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: AttachedData<T>, attachedTo: Ref<Doc>, attachedToClass: Ref<Class<Doc>>, collection: string, objectId?: Ref<T>): TxAddCollection<T> {
+    return {
+      _id: generateId(),
+      _class: core.class.TxAddCollection,
+      space: core.space.Tx,
+      objectId: objectId ?? generateId(),
+      objectClass: _class,
+      objectSpace: space,
+      modifiedOn: Date.now(),
+      modifiedBy: this.account,
+      attributes: attributes as Data<T>,
+      collection,
+      attachedTo,
+      attachedToClass
     }
   }
 

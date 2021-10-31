@@ -14,25 +14,25 @@
 // limitations under the License.
 //
 
-import type { Doc, Tx, TxCreateDoc, TxFactory } from '@anticrm/core'
+import type { Doc, Tx, TxFactory } from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
-import type { Applicant } from '@anticrm/recruit'
+// import type { Applicant } from '@anticrm/recruit'
 
-import recruit from '@anticrm/recruit'
-import core from '@anticrm/core'
+// import recruit from '@anticrm/recruit'
+// import core from '@anticrm/core'
 
 /**
  * @public
  */
 export async function OnApplication (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>): Promise<Tx[]> {
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<Applicant>
-    if (createTx.objectClass === recruit.class.Applicant) {
-      const _id = createTx.attributes.candidate
-      const candidate = (await findAll(recruit.class.Candidate, { _id }))[0] // TODO: HATE THIS
-      return [txFactory.createTxUpdateDoc(recruit.class.Candidate, candidate.space, _id, { $inc: { applications: 1 } })]
-    }
-  }
+  // if (tx._class === core.class.TxCreateDoc) {
+  //   const createTx = tx as TxCreateDoc<Applicant>
+  //   if (createTx.objectClass === recruit.class.Applicant) {
+  //     const _id = createTx.attributes.candidate
+  //     const candidate = (await findAll(recruit.class.Candidate, { _id }))[0] // TODO: HATE THIS
+  //     return [txFactory.createTxUpdateDoc(recruit.class.Candidate, candidate.space, _id, { $inc: { applications: 1 } })]
+  //   }
+  // }
   return []
 }
 

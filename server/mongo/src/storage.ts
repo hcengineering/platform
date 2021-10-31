@@ -128,8 +128,10 @@ class MongoAdapter extends MongoAdapterBase {
     return {}
   }
 
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
+  protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
+    const domain = this.hierarchy.getDomain(tx.objectClass)
+    await this.db.collection(domain).deleteOne({ _id: tx.objectId })
+    return {}
   }
 
   protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {

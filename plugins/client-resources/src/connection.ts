@@ -36,6 +36,12 @@ class Connection implements Storage {
   private lastId = 0
 
   constructor (private readonly url: string, private readonly handler: TxHander) {
+    console.log('connection created')
+    setInterval(() => {
+      console.log('ping')
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.sendRequest('ping')
+    }, 10000)
   }
 
   private openConnection (): Promise<WebSocket> {
@@ -56,14 +62,9 @@ class Connection implements Storage {
         this.handler(resp.result as Tx)
       }
     }
-    const interval = setInterval(() => {
-      console.log('ping')
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.sendRequest('ping')
-    }, 10000)
     websocket.onclose = () => {
       console.log('client websocket closed')
-      clearInterval(interval)
+      // clearInterval(interval)
       this.websocket = null
     }
     return new Promise((resolve, reject) => {
