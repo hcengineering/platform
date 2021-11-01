@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, Dialog, ToggleWithLabel, Grid } from '@anticrm/ui'
+  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
 
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, Card } from '@anticrm/presentation'
 
   import recruit from '../plugin'
   import core from '@anticrm/core'
@@ -39,13 +39,14 @@
   }
 </script>
 
-<Dialog label={recruit.string.CreateCandidates} 
-        okLabel={recruit.string.CreateCandidates} 
-        okAction={createCandidates}
-        on:close={() => { dispatch('close') }}>
-  <Grid column={1}>
-    <EditBox label={recruit.string.CandidatesName} bind:value={name} focus/>
-    <TextArea label={recruit.string.CandidatesDescription} bind:value={description}/>
+<Card label={recruit.string.CreateCandidates} 
+      okAction={createCandidates}
+      noPool
+      canSave={name ? true : false}
+      on:close={() => { dispatch('close') }}>
+  <Grid column={1} rowGap={1.5}>
+    <EditBox label={recruit.string.CandidatesName} icon={IconFolder} bind:value={name} placeholder={'The Boring Pool'} focus/>
+    <!-- <TextArea label={recruit.string.CandidatesDescription} bind:value={description}/> -->
     <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription}/>
   </Grid>
-</Dialog>
+</Card>

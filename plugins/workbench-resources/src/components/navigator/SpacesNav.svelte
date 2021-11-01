@@ -43,8 +43,8 @@
   const addSpace: Action = {
     label: model.addSpaceLabel,
     icon: IconAdd,
-    action: async (): Promise<void> => {
-      showPopup(model.createComponent, {}, 'right')
+    action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
+      showPopup(model.createComponent, {}, ev?.target as HTMLElement)
     }
   }
 

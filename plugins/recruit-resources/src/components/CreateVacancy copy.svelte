@@ -15,12 +15,10 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { TextArea, EditBox, Dialog, ToggleWithLabel, Tabs, Section, Grid, IconFile } from '@anticrm/ui'
 
-  import { getClient, Card } from '@anticrm/presentation'
-  import Company from './icons/Company.svelte'
-  import Vacancy from './icons/Vacancy.svelte'
-  import Dropdown from './Dropdown.svelte'
+  import { getClient } from '@anticrm/presentation'
+  import Recruiting from './icons/Recruiting.svelte'
 
   import recruit from '../plugin'
   import core from '@anticrm/core'
@@ -82,18 +80,19 @@
       order: []
     })
   }
-
-  const ddItems = [{ icon: Company, label: 'Company 1', description: 'desc 1' },
-                   { icon: Vacancy, label: 'Company 2', description: 'desc 2' }]
 </script>
 
-<Card label={recruit.string.CreateVacancy} 
-      okAction={createVacancy}
-      noPool
-      canSave={name ? true : false}
-      on:close={() => { dispatch('close') }}>
-  <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="The boring vacancy" maxWidth="39rem" focus/>
-    <Dropdown label={'Company *'} items={ddItems} placeholder={'The Boring Company'} />
-  </Grid>
-</Card>
+<Dialog label={recruit.string.CreateVacancy} 
+        okLabel={recruit.string.CreateVacancy} 
+        okAction={createVacancy}
+        on:close={() => { dispatch('close') }}>
+  <Section icon={IconFile} label={'General Information'}>
+    <Grid column={1}>
+      <EditBox label={recruit.string.VacancyName} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+      <TextArea label={recruit.string.VacancyDescription} bind:value={description} placeholder="Start typing..."/>
+      <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription}/>
+    </Grid>
+  </Section>
+  <Section icon={Recruiting} label={'Vacancy Members'}>
+  </Section>
+</Dialog>

@@ -72,7 +72,7 @@
       border-radius: 3.125rem;
       // vertical-align: top;
       background-color: var(--theme-off-color);
-      border: 1px solid transparent;
+      border: 1px solid rgba(0, 0, 0, .1);
       transition: left .2s;
       &:before {
         content: '';

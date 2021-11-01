@@ -54,7 +54,7 @@
   </span>
   {#each actions as action}
     <div class="tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={() => { action.action(_id) }} />
+      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(ev) => { action.action(_id, ev) }} />
     </div>
   {/each}
   {#if notifications > 0 && collapsed}

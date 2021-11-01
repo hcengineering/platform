@@ -32,6 +32,7 @@
   export let label: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
+  export let noPool: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -46,11 +47,13 @@
       </div>
     {/if}
   </div>
-  <div class="content"><slot /></div>
-  <div class="flex-col pool">
-    <div class="separator" />
-    <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
-  </div>
+  <div class="content" class:noPool><slot /></div>
+  {#if !noPool}
+    <div class="flex-col pool">
+      <div class="separator" />
+      <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+    </div>
+  {/if}
   <div class="footer">
     <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
     <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
@@ -96,6 +99,8 @@
       flex-grow: 1;
       margin: 0 1.75rem;
       height: fit-content;
+
+      &.noPool { margin-bottom: .75rem; }
     }
 
     .pool {
