@@ -65,3 +65,8 @@ export interface LabelAndProps {
   component?: AnySvelteComponent | AnyComponent
   props?: any
 }
+
+export interface ListItem {
+  item: any | undefined
+  label: string
+}

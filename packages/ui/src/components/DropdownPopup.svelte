@@ -13,18 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
 
-  import { Label, EditWithIcon, IconSearch, Icon } from '@anticrm/ui'
-  import type { AnySvelteComponent } from '@anticrm/ui'
-  // import UserInfo from './UserInfo.svelte'
-
-  interface ListItem {
-    icon: Asset | AnySvelteComponent | undefined
-    label: string
-    description: string | undefined
-  }
+  import Label from './Label.svelte'
+  import EditWithIcon from './EditWithIcon.svelte'
+  import IconSearch from './icons/Search.svelte'
+  import type { ListItem } from '../types'
 
   export let title: IntlString
   export let caption: IntlString
@@ -47,19 +42,12 @@
   {/if}
   <div class="scroll">
     <div class="flex-col box">
-      {#each items as item}
+      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
         <button class="flex-row-center menu-item" on:click={() => { dispatch('close', item) }}>
-          <div class="flex-center icon">
-            {#if typeof (item.icon) === 'string'}
-              <Icon icon={item.icon} size={'small'} />
-            {:else}
-              <svelte:component this={item.icon} size={'small'} />
-            {/if}
+          <div class="flex-center img">
+            <img src={item.item} alt={item.label} />
           </div>
-          <div class="flex-grow flex-col">
-            <div class="caption-color">{item.label}</div>
-            <div class="fs-subtitle caption-dark-color">{item.description}</div>
-          </div>
+          <div class="flex-grow caption-color">{item.label}</div>
         </button>
       {/each}
     </div>
@@ -103,13 +91,11 @@
   }
 
   .menu-item {
-    // justify-content: start;
     text-align: left;
-
     padding: .5rem;
     border-radius: .5rem;
 
-    .icon {
+    .img {
       margin-right: .75rem;
       width: 2.25rem;
       height: 2.25rem;
@@ -117,6 +103,11 @@
       background-color: var(--theme-button-bg-hovered);
       border: 1px solid var(--theme-bg-accent-color);
       border-radius: .5rem;
+      overflow: hidden;
+
+      img {
+        max-width: fit-content;
+      }
     }
 
     &:hover { background-color: var(--theme-button-bg-focused); }

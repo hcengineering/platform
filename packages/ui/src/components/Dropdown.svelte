@@ -17,20 +17,20 @@
   import { onMount } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
 
-  import { Label, showPopup, Icon } from '@anticrm/ui'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import Label from './Label.svelte'
+  import Icon from './Icon.svelte'
+  import { showPopup } from '..'
+  import type { AnySvelteComponent, ListItem } from '../types'
   import DropdownPopup from './DropdownPopup.svelte'
-  import Company from './icons/Company.svelte'
+  import Add from './icons/Add.svelte'
 
-  interface ListItem {
-    icon: Asset | AnySvelteComponent | undefined
-    label: string
-    description: string | undefined
-  }
+  import tesla from '../../img/tesla.png'
+  import voltron from '../../img/voltron.png'
 
+  export let icon: Asset | AnySvelteComponent = Add
   export let label: IntlString
   export let placeholder: IntlString
-  export let items: ListItem[] = []
+  export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: voltron, label: 'Voltron' }]
   export let selected: ListItem | undefined
   export let show: boolean = false
 
@@ -49,21 +49,19 @@
   on:click|preventDefault={() => {
     btn.focus()
     showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
-      if (result) {
-        selected = result
-      }
+      if (result) selected = result
     })
   }}
 >
-  <button class="focused-button btn" class:selected bind:this={btn}>
+  <button class="btn" class:selected bind:this={btn}>
     {#if selected}
-      {#if typeof (selected.icon) === 'string'}
-        <Icon icon={selected.icon} size={'small'} />
-      {:else}
-        <svelte:component this={selected.icon} size={'small'} />
-      {/if}
+      <img src={selected.item} alt={selected.label} />
     {:else}
-      <Company size={'small'} />
+      {#if typeof (icon) === 'string'}
+        <Icon {icon} size={'small'} />
+      {:else}
+        <svelte:component this={icon} size={'small'} />
+      {/if}
     {/if}
   </button>
 
@@ -83,11 +81,15 @@
     color: var(--theme-caption-color);
     background-color: transparent;
     border: 1px solid var(--theme-card-divider);
-    border-radius: 50%;
+    border-radius: .5rem;
+    overflow: hidden;
   }
   .selected {
-    // border: none;
-    border-radius: .5rem;
+    background-color: var(--theme-button-bg-hovered);
+    border: 1px solid var(--theme-bg-accent-color);
+    img {
+      max-width: fit-content;
+    }
   }
 
   .selectUser {

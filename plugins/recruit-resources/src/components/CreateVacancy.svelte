@@ -15,12 +15,11 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { EditBox, Grid, Dropdown } from '@anticrm/ui'
 
-  import { getClient, Card } from '@anticrm/presentation'
+  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
-  import Dropdown from './Dropdown.svelte'
 
   import recruit from '../plugin'
   import core from '@anticrm/core'
@@ -82,18 +81,16 @@
       order: []
     })
   }
-
-  const ddItems = [{ icon: Company, label: 'Company 1', description: 'desc 1' },
-                   { icon: Vacancy, label: 'Company 2', description: 'desc 2' }]
 </script>
 
-<Card label={recruit.string.CreateVacancy} 
-      okAction={createVacancy}
-      noPool
-      canSave={name ? true : false}
-      on:close={() => { dispatch('close') }}>
+<SpaceCreateCard 
+  label={recruit.string.CreateVacancy} 
+  okAction={createVacancy}
+  canSave={name ? true : false}
+  on:close={() => { dispatch('close') }}
+>
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="The boring vacancy" maxWidth="39rem" focus/>
-    <Dropdown label={'Company *'} items={ddItems} placeholder={'The Boring Company'} />
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
   </Grid>
-</Card>
+</SpaceCreateCard>

@@ -18,17 +18,8 @@
   import type { IntlString } from '@anticrm/platform'
 
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Space } from '@anticrm/core'
-
-  // import Close from './internal/icons/Close.svelte'
-  // import ScrollBox from './ScrollBox.svelte'
   import { Button, Label } from '@anticrm/ui'
-  import SpaceSelect from './SpaceSelect.svelte'
 
-  export let spaceClass: Ref<Class<Space>>
-  export let space: Ref<Space>
-  export let spaceLabel: IntlString
-  export let spacePlaceholder: IntlString
   export let label: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
@@ -47,10 +38,6 @@
     {/if}
   </div>
   <div class="content"><slot /></div>
-  <div class="flex-col pool">
-    <div class="separator" />
-    <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
-  </div>
   <div class="footer">
     <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
     <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
@@ -94,18 +81,8 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      margin: 0 1.75rem;
-      height: fit-content;
-    }
-
-    .pool {
       margin: 0 1.75rem .75rem;
-      color: var(--theme-caption-color);
-      .separator {
-        margin: 1rem 0;
-        height: 1px;
-        background-color: var(--theme-card-divider);
-      }
+      height: fit-content;
     }
 
     .footer {
