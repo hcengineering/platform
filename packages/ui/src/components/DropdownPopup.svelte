@@ -100,8 +100,6 @@
       width: 2.25rem;
       height: 2.25rem;
       color: var(--theme-caption-color);
-      background-color: var(--theme-button-bg-hovered);
-      border: 1px solid var(--theme-bg-accent-color);
       border-radius: .5rem;
       overflow: hidden;
 

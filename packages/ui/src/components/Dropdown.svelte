@@ -24,13 +24,13 @@
   import DropdownPopup from './DropdownPopup.svelte'
   import Add from './icons/Add.svelte'
 
-  import tesla from '../../img/tesla.png'
-  import voltron from '../../img/voltron.png'
+  import tesla from '../../img/tesla.svg'
+  import google from '../../img/google.svg'
 
   export let icon: Asset | AnySvelteComponent = Add
   export let label: IntlString
   export let placeholder: IntlString
-  export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: voltron, label: 'Voltron' }]
+  export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: google, label: 'Google' }]
   export let selected: ListItem | undefined
   export let show: boolean = false
 
@@ -85,11 +85,8 @@
     overflow: hidden;
   }
   .selected {
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-bg-accent-color);
-    img {
-      max-width: fit-content;
-    }
+    border-color: transparent;
+    img { max-width: fit-content; }
   }
 
   .selectUser {
