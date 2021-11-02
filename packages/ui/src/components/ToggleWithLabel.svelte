@@ -43,7 +43,7 @@
     span {
       display: block;
       font-size: .75rem;
-      color: var(--theme-caption-trans-color);
+      color: var(--theme-content-trans-color);
     }
   }
 </style>

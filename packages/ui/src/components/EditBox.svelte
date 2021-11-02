@@ -15,10 +15,13 @@
 
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { AnySvelteComponent } from '../types'
   import Label from './Label.svelte'
+  import Icon from './Icon.svelte'
 
   export let label: IntlString | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let maxWidth: string | undefined
   export let value: string | undefined
   export let placeholder: string = 'placeholder'
@@ -53,12 +56,23 @@
 <div class="container" on:click={() => { input.focus() }}>
   <div class="hidden-text" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  <div class="wrap">
-    {#if password}
-      <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
-    {:else}
-      <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+  <div class="flex-row-center">
+    {#if icon}
+      <div class="icon">
+        {#if typeof (icon) === 'string'}
+          <Icon {icon} size={'small'}/>
+        {:else}
+          <svelte:component this={icon} size={'small'} />
+        {/if}
+      </div>
     {/if}
+    <div class="wrap">
+      {#if password}
+        <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      {:else}
+        <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -95,22 +109,26 @@
     margin-bottom: .25rem;
     font-size: .75rem;
     font-weight: 500;
-    color: var(--theme-caption-color);
-    opacity: .8;
+    color: var(--theme-content-accent-color);
     pointer-events: none;
     user-select: none;
+  }
+
+  .icon {
+    margin-right: .25rem;
+    transform-origin: center center;
+    transform: scale(.75);
+    color: var(--theme-content-trans-color);
   }
 
   input {
     margin: 0;
     padding: 0;
-    color: inherit;
+    color: var(--theme-caption-color);
     border: none;
     border-radius: 2px;
 
-    &::placeholder {
-      color: var(--theme-content-dark-color);
-    }
+    &::placeholder { color: var(--theme-content-dark-color); }
 
     &::-webkit-contacts-auto-fill-button,
     &::-webkit-credentials-auto-fill-button {

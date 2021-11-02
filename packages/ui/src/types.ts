@@ -33,7 +33,7 @@ export type AnyComponent = Resource<AnySvelteComponent>
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
-  action: (props: any) => Promise<void>
+  action: (props: any, ev?: Event) => Promise<void>
 }
 
 export interface IPopupItem {
@@ -64,4 +64,9 @@ export interface LabelAndProps {
   direction?: TooltipAligment
   component?: AnySvelteComponent | AnyComponent
   props?: any
+}
+
+export interface ListItem {
+  item: any | undefined
+  label: string
 }
