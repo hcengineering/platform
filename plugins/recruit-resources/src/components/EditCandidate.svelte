@@ -102,7 +102,7 @@
           }
         }
       }
-      query={ { candidate: _id } }
+      query={ { attachedTo: _id } }
     />
   </div>
 
