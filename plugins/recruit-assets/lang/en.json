@@ -6,6 +6,8 @@
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
     "CreateCandidate": "Create Candidate",
+    "EditCandidates": "Edit Candidates pool",
+    "EditVacancy": "Edit Vacancy",
     "MakePrivate": "Make Private"  
   }
 }

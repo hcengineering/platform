@@ -42,22 +42,25 @@
 
 <style lang="scss">
   .button {
+    color: var(--theme-caption-color);
     border-radius: .125rem;
 
     .icon {
-      opacity: .3;
+      // transform-origin: center center;
+      // transform: scale(.75);
+      color: var(--theme-content-trans-color);
       &.invisible {
         opacity: 0;
       }
     }
     &:hover .icon {
-      opacity: 1;
+      color: var(--theme-caption-color);
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       .icon {
-        opacity: 1;
+        color: var(--theme-caption-color);
       }
     }
   }

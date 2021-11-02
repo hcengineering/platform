@@ -19,7 +19,7 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Ref, Space, Doc } from '@anticrm/core'
   import type { SpacesNavModel } from '@anticrm/workbench'
-  import { Action, navigate, getCurrentLocation, location, IconAdd } from '@anticrm/ui'
+  import { Action, navigate, getCurrentLocation, location, IconAdd, IconMoreH, IconEdit } from '@anticrm/ui'
 
   import { getClient, createQuery } from '@anticrm/presentation'
   import { showPopup } from '@anticrm/ui'
@@ -50,9 +50,17 @@
 
   const editStatuses: Action = {
     label: 'Edit Statuses' as IntlString,
-    icon: IconAdd,
+    icon: IconMoreH,
     action: async (_id: Ref<Doc>): Promise<void> => {
       showPopup(EditStatuses, { _id, spaceClass: model.spaceClass }, 'right')
+    }
+  }
+
+  const editSpace: Action = {
+    label: model.editSpaceLabel!,
+    icon: IconEdit,
+    action: async (_id: Ref<Doc>): Promise<void> => {
+      showPopup(model.editComponent!, { _id, spaceClass: model.spaceClass }, 'right')
     }
   }
 
@@ -71,7 +79,7 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={[editStatuses]} on:click={() => { selectSpace(space._id) }}/>
+      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={(model.editComponent) ? [editSpace, editStatuses] : [editStatuses]} on:click={() => { selectSpace(space._id) }}/>
     {/each}
   </TreeNode>
 </div>

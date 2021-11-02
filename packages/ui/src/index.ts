@@ -74,6 +74,7 @@ export { default as IconExpand } from './components/icons/Expand.svelte'
 export { default as IconActivity } from './components/icons/Activity.svelte'
 export { default as IconUp } from './components/icons/Up.svelte'
 export { default as IconDown } from './components/icons/Down.svelte'
+export { default as IconEdit } from './components/icons/Edit.svelte'
 
 export * from './utils'
 

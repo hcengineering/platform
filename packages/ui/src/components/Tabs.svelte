@@ -32,18 +32,18 @@
   <div class="grow"/>
 </div>
 {#each model as tab, i}
-  {#if selected === i}
+  {#if selected === i && tab.component}
     <Component is = {tab.component} props={tab.props}/>
   {/if}
 {/each}
 
 <style lang="scss">
   .container {
+    flex-shrink: 0;
     flex-wrap: nowrap;
-    margin-bottom: 1rem;
+    margin-bottom: 2.5rem;
     width: 100%;
     height: 4.5rem;
-    min-height: 4.5rem;
     border-bottom: 1px solid var(--theme-menu-divider);
 
     .tab {

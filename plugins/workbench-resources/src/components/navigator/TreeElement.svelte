@@ -77,7 +77,7 @@
 
     .icon {
       min-width: 1rem;
-      opacity: .3;
+      color: var(--theme-content-trans-color);
       margin: 0 1.125rem 0 .625rem;
       &.sub { margin: 0 .5rem 0 2.75rem }
     }

@@ -93,13 +93,17 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Vacancies,
           spaceClass: recruit.class.Vacancy,
           addSpaceLabel: recruit.string.CreateVacancy,
-          createComponent: recruit.component.CreateVacancy
+          createComponent: recruit.component.CreateVacancy,
+          editSpaceLabel: recruit.string.EditVacancy,
+          editComponent: recruit.component.EditVacancy
         },
         {
           label: recruit.string.CandidatePools,
           spaceClass: recruit.class.Candidates,
           addSpaceLabel: recruit.string.CreateCandidates,
-          createComponent: recruit.component.CreateCandidates
+          createComponent: recruit.component.CreateCandidates,
+          editSpaceLabel: recruit.string.EditCandidates,
+          editComponent: recruit.component.EditCandidates
         }
       ]
     }
