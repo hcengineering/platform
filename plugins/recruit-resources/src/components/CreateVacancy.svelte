@@ -30,6 +30,10 @@
   let name: string = ''
   let description: string = ''
 
+  export function canClose(): boolean {
+    return name === ''
+  }
+
   const client = getClient()
 
   const colors = [

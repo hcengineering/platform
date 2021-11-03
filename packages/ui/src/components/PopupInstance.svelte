@@ -84,10 +84,13 @@
     }
   }
 
+  function handleKeydown (ev: KeyboardEvent) {
+    if (ev.key === 'Escape' && is) escapeClose()
+  }
   afterUpdate(() => fitPopup())
 </script>
 
-<svelte:window on:resize={fitPopup} />
+<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>

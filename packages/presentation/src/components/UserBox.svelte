@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
@@ -34,6 +35,7 @@
   let selected: Person | undefined
   let btn: HTMLElement
   let container: HTMLElement
+  let opened: boolean = false
 
   const client = getClient()
 
@@ -54,11 +56,13 @@
 <div class="flex-row-center container" bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
-    showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
-      if (result) {
-        value = result._id
-      }
-    })
+    if (!opened) {
+      opened = true
+      showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
+        if (result) { value = result._id }
+        opened = false
+      })
+    }
   }}
 >
   <button class="focused-button btn" class:selected bind:this={btn}>

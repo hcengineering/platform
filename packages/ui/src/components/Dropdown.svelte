@@ -36,6 +36,7 @@
 
   let btn: HTMLElement
   let container: HTMLElement
+  let opened: boolean = false
 
   onMount(() => {
     if (btn && show) {
@@ -48,12 +49,17 @@
 <div class="flex-row-center container" bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
-    showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
-      if (result) selected = result
-    })
+    if (!opened) {
+      opened = true
+      showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
+        if (result) selected = result
+        opened = false
+        btn.blur()
+      })
+    }
   }}
 >
-  <button class="btn" class:selected bind:this={btn}>
+  <button class="focused-button btn" class:selected bind:this={btn}>
     {#if selected}
       <img src={selected.item} alt={selected.label} />
     {:else}
