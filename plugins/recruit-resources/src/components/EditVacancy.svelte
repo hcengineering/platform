@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { EditBox, Dropdown, Grid } from '@anticrm/ui'
-  import { SpacePanel } from '@anticrm/panel'
+  import { SpacePanel } from '@anticrm/presentation'
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
