@@ -76,6 +76,7 @@
 <style lang="scss">
   .container { cursor: pointer; }
   .btn {
+    flex-shrink: 0;
     width: 2.25rem;
     height: 2.25rem;
     color: var(--theme-caption-color);

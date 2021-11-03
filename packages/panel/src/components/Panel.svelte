@@ -136,14 +136,14 @@
   .dialog-container {
     overflow: hidden;
     position: fixed;
-    top: 1.5rem;
-    bottom: 1.5rem;
+    top: 32px;
+    bottom: 1.25rem;
     left: 50%;
-    right: 1.5rem;
+    right: 1rem;
 
     display: flex;
     flex-direction: column;
-    height: calc(100% - 3rem);
+    height: calc(100% - 32px - 1.25rem);
     background: rgba(31, 31, 37, 0.7);
     border-radius: 1.25rem;
     box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
@@ -201,7 +201,7 @@
 
   .fullSize {
     flex-direction: row;
-    left: 1.5rem;
+    left: 1rem;
   }
 
   .leftSection, .rightSection {

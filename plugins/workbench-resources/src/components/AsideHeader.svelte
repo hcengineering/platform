@@ -14,8 +14,7 @@
 -->
 
 <script lang="ts">
-  import Close from './icons/Close.svelte'
-  import Add from './icons/Add.svelte'
+  import { IconAdd, IconClose } from '@anticrm/ui'
 
   export let title: string = 'Unknown'
 </script>
@@ -24,8 +23,8 @@
   <div class="title"><span>{title}</span></div>
   <div class="separator"/>
   <div class="buttons">
-    <div class="button"><Close/></div>
-    <div class="button"><Add/></div>
+    <div class="button"><IconClose size={'small'} /></div>
+    <div class="button"><IconAdd size={'small'} /></div>
   </div>
 </div>
 

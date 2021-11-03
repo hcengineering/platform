@@ -26,7 +26,8 @@ export default mergeIds(taskId, task, {
   component: {
     ProjectView: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
-    CreateTask: '' as AnyComponent
+    CreateTask: '' as AnyComponent,
+    EditTask: '' as AnyComponent
   },
   class: {
     Project: '' as Ref<Class<Project>>

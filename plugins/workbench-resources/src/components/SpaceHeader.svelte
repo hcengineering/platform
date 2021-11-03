@@ -15,10 +15,9 @@
 
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, ActionIcon, Button, IconMoreH } from '@anticrm/ui'
+  import { Icon, ActionIcon, Button, IconMoreH, IconAdd } from '@anticrm/ui'
   import type { AnyComponent } from '@anticrm/ui'
   import Header from './Header.svelte'
-  import Add from './icons/Add.svelte'
   import Star from './icons/Star.svelte'
 
   import { getClient, createQuery } from '@anticrm/presentation'
@@ -48,7 +47,7 @@
       <Button label="Create" primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
     <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
-    <ActionIcon label={'Create'} icon={Add} size={'small'}/>
+    <ActionIcon label={'Create'} icon={IconAdd} size={'small'}/>
     <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/>
   {/if}
 </div>

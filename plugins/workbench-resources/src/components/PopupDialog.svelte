@@ -32,7 +32,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.5rem 1.25rem;
+    padding: 32px 1.5rem 1.25rem;
     border-radius: .75rem;
 
     .label {
