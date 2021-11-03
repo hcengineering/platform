@@ -40,20 +40,5 @@
   <Grid rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
     <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
   </Grid>
 </SpacePanel>
