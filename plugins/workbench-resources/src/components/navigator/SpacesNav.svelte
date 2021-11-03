@@ -30,6 +30,7 @@
   import TreeItem from './TreeItem.svelte'
 
   import EditStatuses from '../EditStatuses.svelte'
+  import SpacePanel from './SpacePanel.svelte'
 
   export let model: SpacesNavModel
   
@@ -60,7 +61,7 @@
     label: 'Open' as IntlString,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      showPopup(model.editComponent!, { _id, spaceClass: model.spaceClass }, 'right')
+      showPopup(SpacePanel, { _id, spaceClass: model.spaceClass }, 'right')
     }
   }
 
