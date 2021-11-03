@@ -90,7 +90,7 @@
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="The boring vacancy" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'Company'} />
   </Grid>
 </SpaceCreateCard>
