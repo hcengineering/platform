@@ -37,8 +37,7 @@ export interface SpacesNavModel {
   spaceClass: Ref<Class<Space>>
   addSpaceLabel: IntlString
   createComponent: AnyComponent
-  editSpaceLabel?: IntlString
-  editComponent?: AnyComponent
+  editComponent: AnyComponent
   component?: AnyComponent
 }
 

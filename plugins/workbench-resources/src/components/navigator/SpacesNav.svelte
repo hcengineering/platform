@@ -57,7 +57,7 @@
   }
 
   const editSpace: Action = {
-    label: model.editSpaceLabel!,
+    label: 'Open' as IntlString,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
       showPopup(model.editComponent!, { _id, spaceClass: model.spaceClass }, 'right')
@@ -79,7 +79,7 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={(model.editComponent) ? [editSpace, editStatuses] : [editStatuses]} on:click={() => { selectSpace(space._id) }}/>
+      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={[editSpace, editStatuses]} on:click={() => { selectSpace(space._id) }}/>
     {/each}
   </TreeNode>
 </div>

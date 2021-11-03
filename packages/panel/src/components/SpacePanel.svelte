@@ -25,6 +25,13 @@
   export let icon: Asset | AnySvelteComponent
 
   const dispatch = createEventDispatcher()
+
+  interface Tab {
+    id: number
+    label: IntlString
+  }
+  const tabs: Tab[] = [{ id: 0, label: 'General' as IntlString }, { id: 1, label: 'Members' as IntlString }]
+  let selected: Tab = tabs[0]
 </script>
 
 <div class="overlay" on:click={() => { dispatch('close') }}/>
@@ -41,14 +48,23 @@
   <div class="flex-row-center subtitle">
     Subtitle
   </div>
-  <div class="content">
-    <Tabs model={[{ label: 'General' }, { label: 'Members' }, { label: 'Activity' }]} />
-    <slot />
-    <!-- <ScrollBox vertical stretch noShift>
-      <div class="flex-col content">
-        <slot />
+  <div class="flex-stretch tab-container">
+    {#each tabs as tab}
+      <div class="flex-row-center tab" class:selected={tab === selected}
+           on:click={() => { selected = tab }}>
+        <Label label={tab.label}/>
       </div>
-    </ScrollBox> -->
+    {/each}
+    <div class="grow"/>
+  </div>
+  <div class="scroll">
+    <div class="flex-col box">
+      {#if !selected.id}
+        <slot />
+      {:else}
+        Members and other
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -91,14 +107,47 @@
       height: 3.5rem;
       border-bottom: 1px solid var(--theme-dialog-divider);
     }
+  }
 
-    .content {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 2.5rem;
-      padding: 0 2.5rem;
-      height: max-content;
+  .tab-container {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    margin: 0 2.5rem;
+    height: 4.5rem;
+    border-bottom: 1px solid var(--theme-menu-divider);
+
+    .tab {
+      height: 4.5rem;
+      color: var(--theme-content-trans-color);
+      cursor: pointer;
+      user-select: none;
+
+      &.selected {
+        border-top: .125rem solid transparent;
+        border-bottom: .125rem solid var(--theme-caption-color);
+        color: var(--theme-caption-color);
+        cursor: default;
+      }
+    }
+    .tab + .tab {
+      margin-left: 2.5rem;
+    }
+    .grow {
+      min-width: 2.5rem;
+      flex-grow: 1;
+    }
+  }
+
+  .scroll {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin: 1rem 0;
+    padding: 1.5rem 2.5rem;
+
+    .box {
+      margin-right: 1px;
+      height: 100%;
     }
   }
 

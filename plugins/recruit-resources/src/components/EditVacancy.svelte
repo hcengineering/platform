@@ -34,10 +34,25 @@
   let description: string
 </script>
 
-<SpacePanel label={recruit.string.EditVacancy} 
+<SpacePanel label={'Open'} 
             icon={recruit.icon.Vacancy}
             on:close={() => { dispatch('close') }}>
   <Grid rowGap={1.5}>
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
     <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
     <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
   </Grid>

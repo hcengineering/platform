@@ -32,7 +32,7 @@
   let description: string
 </script>
 
-<SpacePanel label={recruit.string.EditCandidates} 
+<SpacePanel label={'Open'} 
             icon={recruit.icon.RecruitApplication}
             on:close={() => { dispatch('close') }}>
   <Grid column={1} rowGap={1.5}>

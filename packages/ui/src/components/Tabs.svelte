@@ -32,7 +32,7 @@
   <div class="grow"/>
 </div>
 {#each model as tab, i}
-  {#if selected === i && tab.component}
+  {#if selected === i}
     <Component is = {tab.component} props={tab.props}/>
   {/if}
 {/each}
