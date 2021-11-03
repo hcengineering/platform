@@ -20,7 +20,9 @@
   let tooltipHTML: HTMLElement
   let dir: TooltipAligment
   let rect: DOMRect
+  let tooltipSW: boolean // tooltipSW = true - Label; false - Component
 
+  $: tooltipSW = $tooltip.component ? false : true
   $: {
     if ($tooltip.label && tooltipHTML) {
       if ($tooltip.element) {
@@ -104,13 +106,17 @@
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element) {
       const rectP = tooltipHTML.getBoundingClientRect()
-      const topT = (dir === 'top') ? rect.top - 16 : rect.top
-      const bottomT = (dir === 'bottom') ? rect.bottom + 16 : rect.bottom
-      const leftT = (dir === 'left') ? rect.left - 16 : rect.left
-      const rightT = (dir === 'right') ? rect.right + 16 : rect.right
-      if (!((ev.x >= leftT && ev.x <= rightT && ev.y >= topT && ev.y <= bottomT) ||
-            (ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top && ev.y <= rectP.bottom))
-         ) hideTooltip()
+      const rectT = {
+        top: (dir === 'top') ? rect.top - 16 : rect.top,
+        bottom: (dir === 'bottom') ? rect.bottom + 16 : rect.bottom,
+        left: (dir === 'left') ? rect.left - 16 : rect.left,
+        right: (dir === 'right') ? rect.right + 16 : rect.right
+      }
+      const inTrigger: boolean = (ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom)
+      const inTriggerWS: boolean = (ev.x >= rectT.left && ev.x <= rectT.right && ev.y >= rectT.top && ev.y <= rectT.bottom)
+      const inPopup: boolean = (ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top && ev.y <= rectP.bottom)
+      if (tooltipSW) { if (!inTrigger) hideTooltip() }
+      else { if (!(inTriggerWS || inPopup)) hideTooltip() }
     }
   }
 </script>
