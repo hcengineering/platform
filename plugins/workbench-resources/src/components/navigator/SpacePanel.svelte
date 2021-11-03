@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { Ref, Doc, Class, Space } from '@anticrm/core'
-  import { IconClose, Label, EditBox, Dropdown, Grid, Icon } from '@anticrm/ui'
+  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon } from '@anticrm/ui'
   import { getClient, createQuery, AttributeBarEditor } from '@anticrm/presentation'
 
   import { createEventDispatcher } from 'svelte'
@@ -72,9 +72,10 @@
     <div class="flex-col box">
       {#if selected === 0}
         {#if space}
-          <Grid rowGap={1.5}>
+          <Grid column={1} rowGap={1.5}>
             <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={onNameChange}/>
             <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
+            <ToggleWithLabel label={'MakePrivate'} description={'MakePrivateDescription'}/>
           </Grid>
         {/if}
       {:else}
