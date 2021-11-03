@@ -15,4 +15,3 @@
 //
 
 export { default as Panel } from './components/Panel.svelte'
-export { default as SpacePanel } from './components/SpacePanel.svelte'

@@ -15,13 +15,11 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Dropdown, Grid } from '@anticrm/ui'
-  import { SpacePanel } from '@anticrm/panel'
+  import { TextArea, EditBox, ToggleWithLabel, Grid, IconComments, IconThread } from '@anticrm/ui'
+  import { SpacePanel } from '@anticrm/presentation'
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
-  import Company from './icons/Company.svelte'
-  import Vacancy from './icons/Vacancy.svelte'
 
-  import recruit from '../plugin'
+  import chunter from '../plugin'
 
   export let _id: Ref<Doc>
   export let spaceClass: Ref<Class<Space>>
@@ -29,13 +27,14 @@
   const dispatch = createEventDispatcher()
 
   let name: string
+  let locked: boolean = false
 </script>
 
 <SpacePanel label={'Open'} 
-            icon={recruit.icon.Vacancy}
+            icon={chunter.icon.Chunter}
             on:close={() => { dispatch('close') }}>
-  <Grid rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} icon={Vacancy} bind:value={name} placeholder="Software Engineer" maxWidth="39rem" focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'The Boring Company'} />
+  <Grid column={1} rowGap={1.5}>
+    <EditBox label={chunter.string.ChannelName} icon={(locked) ? chunter.icon.Lock : chunter.icon.Hashtag} bind:value={name} placeholder={'Start type...'} focus/>
+    <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription} bind:on={locked} />
   </Grid>
 </SpacePanel>

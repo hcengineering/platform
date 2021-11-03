@@ -15,11 +15,9 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, ToggleWithLabel, Tabs, Section, Grid, IconFolder } from '@anticrm/ui'
-  import { SpacePanel } from '@anticrm/panel'
+  import { TextArea, EditBox, ToggleWithLabel, Grid, IconFolder } from '@anticrm/ui'
+  import { SpacePanel } from '@anticrm/presentation'
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
-
-  import Recruiting from './icons/Recruiting.svelte'
 
   import recruit from '../plugin'
 

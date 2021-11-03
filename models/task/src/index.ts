@@ -74,7 +74,8 @@ export function createModel (builder: Builder): void {
           label: task.string.Projects,
           spaceClass: task.class.Project,
           addSpaceLabel: task.string.CreateProject,
-          createComponent: task.component.CreateProject
+          createComponent: task.component.CreateProject,
+          editComponent: task.component.EditTask
         }
       ]
     }

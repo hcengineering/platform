@@ -15,9 +15,11 @@
 //
 
 import CreateTask from './components/CreateTask.svelte'
+import EditTask from './components/EditTask.svelte'
 
 export default async () => ({
   component: {
-    CreateTask
+    CreateTask,
+    EditTask
   },
 })

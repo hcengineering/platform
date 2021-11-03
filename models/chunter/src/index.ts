@@ -107,7 +107,8 @@ export function createModel (builder: Builder): void {
           label: chunter.string.Channels,
           spaceClass: chunter.class.Channel,
           addSpaceLabel: chunter.string.CreateChannel,
-          createComponent: chunter.component.CreateChannel
+          createComponent: chunter.component.CreateChannel,
+          editComponent: chunter.component.EditChannel
         }
       ]
     }
