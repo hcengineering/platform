@@ -118,6 +118,7 @@
 
     .tab {
       height: 4.5rem;
+      font-weight: 500;
       color: var(--theme-content-trans-color);
       cursor: pointer;
       user-select: none;
