@@ -40,6 +40,7 @@ button {
   border: 1px solid transparent;
   outline: none;
   cursor: pointer;
+  user-select: none;
 }
 input {
   font: inherit;
@@ -266,7 +267,7 @@ a.no-line {
   background-color: var(--theme-button-bg-focused);
   border: 1px solid transparent;
 
-  & > .icon { opacity: .3; }
+  & > .icon { color: var(--theme-content-trans-color); }
   &.selected {
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-bg-accent-color);
@@ -274,12 +275,12 @@ a.no-line {
   &:hover {
     background-color: var(--theme-button-bg-pressed);
     border: 1px solid var(--theme-bg-accent-color);
-    & > .icon { opacity: 1; }
+    & > .icon { color: var(--theme-caption-color); }
   }
   &:focus {
     border: 1px solid var(--primary-button-focused-border);
     box-shadow: 0 0 0 3px var(--primary-button-outline);
-    & > .icon { opacity: 1; }
+    & > .icon { color: var(--theme-caption-color); }
   }
 }
 

@@ -36,6 +36,7 @@
 
   let btn: HTMLElement
   let container: HTMLElement
+  let opened: boolean = false
 
   onMount(() => {
     if (btn && show) {
@@ -48,12 +49,16 @@
 <div class="flex-row-center container" bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
-    showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
-      if (result) selected = result
-    })
+    if (!opened) {
+      opened = true
+      showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
+        if (result) selected = result
+        opened = false
+      })
+    }
   }}
 >
-  <button class="btn" class:selected bind:this={btn}>
+  <div class="flex-center focused-button btn" class:selected bind:this={btn} tabindex={0} on:focus={() => container.click()}>
     {#if selected}
       <img src={selected.item} alt={selected.label} />
     {:else}
@@ -63,7 +68,7 @@
         <svelte:component this={icon} size={'small'} />
       {/if}
     {/if}
-  </button>
+  </div>
 
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
@@ -83,6 +88,7 @@
     background-color: transparent;
     border: 1px solid var(--theme-card-divider);
     border-radius: .5rem;
+    outline: none;
     overflow: hidden;
   }
   .selected {

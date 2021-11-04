@@ -27,6 +27,10 @@
   let name: string = ''
   let description: string = ''
 
+  export function canClose(): boolean {
+    return name === ''
+  }
+
   const client = getClient()
 
   function createCandidates() {
@@ -47,7 +51,6 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.CandidatesName} icon={IconFolder} bind:value={name} placeholder={'Talent Pool'} focus/>
-    <!-- <TextArea label={recruit.string.CandidatesDescription} bind:value={description}/> -->
     <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription}/>
   </Grid>
 </SpaceCreateCard>
