@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Class, Doc } from '@anticrm/core'
+  import type { Doc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
@@ -24,7 +24,7 @@
 
   // export let _class: Ref<Class<Doc>>
   export let key: string
-  export let object: Doc
+  export let object: any // Doc
   export let maxWidth: string
   export let focus: boolean = false
   export let minimize: boolean = false

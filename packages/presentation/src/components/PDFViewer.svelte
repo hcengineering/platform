@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <iframe class="flex-grow content" src={getFileUrl(file)}/>
+  <iframe class="flex-grow content" src={getFileUrl(file)} title={''} />
 
   <div class="flex-between footer">
     <div class="flex-row-reverse">

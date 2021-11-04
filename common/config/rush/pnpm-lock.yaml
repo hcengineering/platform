@@ -8091,8 +8091,8 @@ packages:
       supports-color: 7.2.0
     dev: false
 
-  /svelte-check/2.2.6_3708ed3db7329f2cbf76db19160094b1:
-    resolution: {integrity: sha512-oJux/afbmcZO+N+ADXB88h6XANLie8Y2rh2qBlhgfkpr2c3t/q/T0w2JWrHqagaDL8zeNwO8a8RVFBkrRox8gg==}
+  /svelte-check/2.2.8_3708ed3db7329f2cbf76db19160094b1:
+    resolution: {integrity: sha512-y8BmSf3v+jOoVwKY0K3wAiIt3hupLiUS4HYqXSZPXJZrChKddp+N8fyNeClsDChLt2sLUo6sOAhlnok/RJ+iIw==}
     hasBin: true
     peerDependencies:
       svelte: ^3.24.0
@@ -9321,7 +9321,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-zq2XzUCiMo5EZ7KfbLCGceDlQIyplRUNg8hPJP/7npIY/3YTgWDoc8svgCPltsen4PNMioIjAWWP1t+g62i6Mg==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-yVc/N1KhGkFJgqACTu4OkJmUy2G1WH8P3GYzjzunUlz9vXUKh0aaSvMSJ1z4PW/gtOS8AfDzyMRoUbGygohvHA==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -9329,6 +9329,7 @@ packages:
       filesize: 8.0.3
       sass: 1.42.1
       svelte: 3.43.1
+      svelte-check: 2.2.8_3708ed3db7329f2cbf76db19160094b1
       svelte-loader: 3.1.2_svelte@3.43.1
       svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
     transitivePeerDependencies:
@@ -9971,14 +9972,14 @@ packages:
     dev: false
 
   file:projects/panel.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-5z0G2tL0kPAetlvgPy7DuUV65vgcUvDVrr4L5dxztgbWxCp6v6zR2QfWKoPKHCtj/szm+s1XwbLKcF0ETmZU/w==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-Cv43AIGk1GEwAzqGnbhBvsKxR0bngiLZu6oqbZAG+YQrAe+NMyjCJnQ7biWxWr85JDIBJK7jH/ZWVLa25ZvwYw==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
     dependencies:
       sass: 1.42.1
       svelte: 3.43.1
-      svelte-check: 2.2.6_3708ed3db7329f2cbf76db19160094b1
+      svelte-check: 2.2.8_3708ed3db7329f2cbf76db19160094b1
       svelte-loader: 3.1.2_svelte@3.43.1
       svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
     transitivePeerDependencies:
@@ -10068,13 +10069,14 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-mX/Fwzm3x155pv36+PFu0pFe2fVU6bKwBV9GvEJtuVKlyaTL1QIyQ0QRt+/qHKVQcDkwtZ5RqS0hQsP2FoseNw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-b4ARay8bHpqVgH/7pQ3/g9rkncyw3vNGzEKMqOrzgNm/+172MysGPF5RVJvTsoRhwkKdoSR2CxD3gjuja9maMQ==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
     dependencies:
       sass: 1.42.1
       svelte: 3.43.1
+      svelte-check: 2.2.8_3708ed3db7329f2cbf76db19160094b1
       svelte-loader: 3.1.2_svelte@3.43.1
       svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
     transitivePeerDependencies:
@@ -10386,7 +10388,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-9VfPWhZ58JRqP1wJTAe33DCtj0ACUQ6BAN0tdkR2FR1OX3m9Do2en67dlYTvRvJPG6rgiM62Q6KHKXtQBs2/QA==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-B7rXA1T9hNeo74fPMo57SRSVO3gvs79zbscUvmNnpE9fK1mzw+x7Azah7pFNGT78vWAmb2wjbw0BbnNRVzspIg==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -10514,7 +10516,7 @@ packages:
     dependencies:
       sass: 1.42.1
       svelte: 3.43.1
-      svelte-check: 2.2.6_3708ed3db7329f2cbf76db19160094b1
+      svelte-check: 2.2.8_3708ed3db7329f2cbf76db19160094b1
       svelte-loader: 3.1.2_svelte@3.43.1
       svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
     transitivePeerDependencies:

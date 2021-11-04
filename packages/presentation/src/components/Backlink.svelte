@@ -22,7 +22,7 @@
   import Avatar from './Avatar.svelte'
   import { TimeSince } from '@anticrm/ui'
 
-  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+  import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
 
   export let comment: Comment
 

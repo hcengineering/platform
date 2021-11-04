@@ -16,7 +16,7 @@
     "svelte-loader":"^3.1.2",
     "sass":"^1.37.5",
     "svelte-preprocess":"^4.7.4",
-    "svelte-check": "^2.2.6"
+    "svelte-check": "~2.2.8"
   },
   "dependencies": {
     "@anticrm/ui": "~0.6.0",

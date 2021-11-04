@@ -15,13 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { Asset } from '@anticrm/platform'
   import type { Doc } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { getClient, createQuery, Backlink } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Label, Icon } from '@anticrm/ui'
+  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Icon } from '@anticrm/ui'
   import type { Comment } from '@anticrm/chunter'
 
   import { createEventDispatcher } from 'svelte'

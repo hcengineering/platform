@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  // import type { IntlString } from '@anticrm/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
   import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
