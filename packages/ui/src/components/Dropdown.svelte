@@ -54,12 +54,11 @@
       showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
         if (result) selected = result
         opened = false
-        btn.blur()
       })
     }
   }}
 >
-  <button class="focused-button btn" class:selected bind:this={btn}>
+  <div class="flex-center focused-button btn" class:selected bind:this={btn} tabindex={0} on:focus={() => container.click()}>
     {#if selected}
       <img src={selected.item} alt={selected.label} />
     {:else}
@@ -69,7 +68,7 @@
         <svelte:component this={icon} size={'small'} />
       {/if}
     {/if}
-  </button>
+  </div>
 
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
@@ -89,6 +88,7 @@
     background-color: transparent;
     border: 1px solid var(--theme-card-divider);
     border-radius: .5rem;
+    outline: none;
     overflow: hidden;
   }
   .selected {
