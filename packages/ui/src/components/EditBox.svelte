@@ -22,7 +22,7 @@
 
   export let label: IntlString | undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let maxWidth: string | undefined
+  export let maxWidth: string | undefined = undefined
   export let value: string | undefined
   export let placeholder: string = 'placeholder'
   export let password: boolean = false

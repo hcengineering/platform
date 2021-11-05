@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
 
-  export let label: IntlString
+  export let label: string
   export let href: string = '#'
   export let icon: Asset | AnySvelteComponent | undefined
   export let disabled: boolean = false

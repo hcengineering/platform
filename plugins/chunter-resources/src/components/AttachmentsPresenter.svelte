@@ -16,13 +16,10 @@
 
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
-  import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, Tooltip, IconAttachment } from '@anticrm/ui'
-  import { PDFViewer } from '@anticrm/presentation'
+  import { Tooltip, IconAttachment } from '@anticrm/ui'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: Doc & { attachments?: number }
-
 </script>
 
 <!-- {#if Object.keys(value.attachments).length === 1}

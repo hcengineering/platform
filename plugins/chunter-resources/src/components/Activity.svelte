@@ -36,6 +36,7 @@ $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { co
 function onMessage(event: CustomEvent) {
   client.createDoc(chunter.class.Comment, space, {
     attachedTo: object._id,
+    attachedToClass: object._class,
     message: event.detail
   })
   console.log(event.detail)

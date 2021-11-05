@@ -26,7 +26,7 @@
 </script>
 
 <div class="flex-between">
-  <div class="caption">
+  <div class="flex-col caption">
     <Label {label} />
     {#if description}
       <span><Label label={description} /></span>

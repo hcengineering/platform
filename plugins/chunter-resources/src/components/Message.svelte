@@ -48,10 +48,10 @@
   </div>
   {#if !thread}
     <div class="buttons">
-      <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Emoji} size={'medium'}/></div>
+      <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} label={'More...'}/></div>
+      <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} label={'Bookmark'}/></div>
+      <div class="tool"><ActionIcon icon={Share} size={'medium'} label={'Share'}/></div>
+      <div class="tool"><ActionIcon icon={Emoji} size={'medium'} label={'Emoji'}/></div>
     </div>
   {/if}
 </div>
