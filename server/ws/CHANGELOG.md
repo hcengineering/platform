@@ -1,6 +1,11 @@
 # Change Log - @anticrm/server-ws
 
-This log was last generated on Sat, 14 Aug 2021 09:12:06 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Nov 2021 11:00:07 GMT and should not be manually modified.
+
+## 0.6.11
+Tue, 09 Nov 2021 11:00:07 GMT
+
+_Version update only_
 
 ## 0.6.10
 Sat, 14 Aug 2021 09:12:06 GMT

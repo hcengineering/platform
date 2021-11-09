@@ -16,10 +16,11 @@
 import { createClient, Client, TxHander } from '@anticrm/core'
 
 import { connect } from './connection'
+export { connect }
 
 /*!
- * Anticrm Platform™ Client Dev Plugin
- * © 2020 Anticrm Platform Contributors. All Rights Reserved.
+ * Anticrm Platform™ Client Plugin
+ * © 2020, 2021 Anticrm Platform Contributors. All Rights Reserved.
  * Licensed under the Eclipse Public License, Version 2.0
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

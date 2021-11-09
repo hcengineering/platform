@@ -2,6 +2,18 @@
   "name": "@anticrm/client-resources",
   "entries": [
     {
+      "version": "0.6.4",
+      "tag": "@anticrm/client-resources_v0.6.4",
+      "date": "Tue, 09 Nov 2021 11:00:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Expose `connect`."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.3",
       "tag": "@anticrm/client-resources_v0.6.3",
       "date": "Sat, 14 Aug 2021 09:12:06 GMT",
