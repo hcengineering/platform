@@ -14,14 +14,22 @@
 -->
 
 <script lang="ts">
-  import chen from '../../img/chen.png'
+  import Avatar from './icons/Avatar.svelte'
 
-  export let avatar: any = chen
+  import { getFileUrl } from '../utils'
+
+  export let avatar: string | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+
+  const url = avatar ? getFileUrl(avatar) : undefined
 </script>
 
 <div class="{size} container">
-  <img class={size} src={avatar} alt={''}/>
+  {#if url}
+    <img class={size} src={url} alt={''}/>
+  {:else}
+    <Avatar {size}/>
+  {/if}
 </div>
 
 <style lang="scss">
