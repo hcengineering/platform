@@ -15,6 +15,7 @@
 //
 
 import { resolve, join } from 'path'
+import https from 'https'
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import cors from 'cors'
@@ -180,6 +181,37 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       console.log(error)
       res.status(500).send()
     }
+  })
+
+  app.get('/import', (req, res) => {
+    const authHeader = req.headers.authorization
+    if (authHeader === undefined) {
+      res.status(403).send()
+      return
+    }
+    const token = authHeader.split(' ')[1]
+    const payload = decode(token ?? '', 'secret', false) as Token
+    const url = req.query.url as string
+
+    console.log('importing from ', url)
+
+    https.get(url, response => {
+      console.log('status', response.statusCode)
+      const id = uuid()
+      const contentType = response.headers['content-type']
+      const meta: ItemBucketMetadata = {
+        'Content-Type': contentType
+      }
+      minio.putObject(payload.workspace, id, response, 0, meta, (err, objInfo) => {
+        if (err !== null) {
+          console.log('minio putObject error', err)
+          res.status(500).send(err)
+        } else {
+          console.log('uploaded uuid', id)
+          res.status(200).send(id)
+        }
+      })
+    })
   })
 
   app.get('*', function (request, response) {
