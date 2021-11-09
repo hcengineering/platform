@@ -100,6 +100,9 @@ class Connection implements Storage {
   }
 }
 
+/**
+ * @public
+ */
 export async function connect (url: string, handler: TxHander): Promise<Storage> {
   return new Connection(url, handler)
 }
