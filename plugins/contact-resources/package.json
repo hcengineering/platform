@@ -19,9 +19,9 @@
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "svelte": "^3.37.0",
-    "@anticrm/contact": "~0.6.0",
+    "@anticrm/contact": "~0.6.2",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.1",
+    "@anticrm/presentation": "~0.6.2",
     "@anticrm/core": "~0.6.11",
     "@anticrm/view": "~0.6.0"
   }

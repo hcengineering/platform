@@ -35,7 +35,7 @@ async function onClick() {
 </script>
 
 <div class="flex-row-center user-container" on:click={onClick}>
-  <Avatar size={'x-small'} />
+  <Avatar size={'x-small'} avatar={value.avatar}/>
   <div class="overflow-label user">{formatName(value.name)}</div>
 </div>
 

@@ -2,6 +2,18 @@
   "name": "@anticrm/contact",
   "entries": [
     {
+      "version": "0.6.2",
+      "tag": "@anticrm/contact_v0.6.2",
+      "date": "Tue, 09 Nov 2021 17:01:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Introduce avatar"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.6.0",
       "tag": "@anticrm/contact_v0.6.0",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",

@@ -36,6 +36,8 @@ export interface Channel {
  * @public
  */
 export interface Contact extends Doc {
+  name: string
+  avatar?: string
   channels: Channel[]
 }
 
@@ -43,7 +45,6 @@ export interface Contact extends Doc {
  * @public
  */
 export interface Person extends Contact {
-  name: string
   // email: string
   // phone: string
   city: string
@@ -53,7 +54,6 @@ export interface Person extends Contact {
  * @public
  */
 export interface Organization extends Contact {
-  name: string
 }
 
 /**

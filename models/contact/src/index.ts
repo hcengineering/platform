@@ -45,6 +45,12 @@ export function TypeChannels (): Type<Channel[]> {
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 export class TContact extends TDoc implements Contact {
+  @Prop(TypeString(), 'Name' as IntlString)
+  @Index(IndexKind.FullText)
+  name!: string
+
+  avatar?: string
+
   @Prop(TypeChannels(), 'Contact Info' as IntlString)
   channels!: Channel[]
 }
@@ -52,17 +58,12 @@ export class TContact extends TDoc implements Contact {
 @Model(contact.class.Person, contact.class.Contact)
 @UX('Person' as IntlString)
 export class TPerson extends TContact implements Person {
-  @Prop(TypeString(), 'Name' as IntlString)
-  @Index(IndexKind.FullText)
-  name!: string
-
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
 export class TOrganization extends TContact implements Organization {
-  name!: string
 }
 
 @Model(contact.class.Employee, contact.class.Person)
