@@ -1,6 +1,13 @@
 # Change Log - @anticrm/client-resources
 
-This log was last generated on Sat, 14 Aug 2021 09:12:06 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Nov 2021 11:00:07 GMT and should not be manually modified.
+
+## 0.6.4
+Tue, 09 Nov 2021 11:00:07 GMT
+
+### Patches
+
+- Expose `connect`.
 
 ## 0.6.3
 Sat, 14 Aug 2021 09:12:06 GMT
