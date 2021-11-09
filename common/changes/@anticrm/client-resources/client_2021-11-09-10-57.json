@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@anticrm/client-resources",
+      "comment": "Expose `connect`.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@anticrm/client-resources"
+}
