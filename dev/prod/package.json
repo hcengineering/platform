@@ -50,7 +50,7 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-assets": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/contact": "~0.6.0",
+    "@anticrm/contact": "~0.6.2",
     "@anticrm/contact-resources": "~0.6.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/task-assets": "~0.6.0",

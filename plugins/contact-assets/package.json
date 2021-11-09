@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "@anticrm/platform":"~0.6.5",
-    "@anticrm/contact":"~0.6.0"
+    "@anticrm/contact":"~0.6.2"
   }
 }

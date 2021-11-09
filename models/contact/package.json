@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/model-contact",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -23,6 +23,6 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/contact": "~0.6.0"
+    "@anticrm/contact": "~0.6.2"
   }
 }

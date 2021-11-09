@@ -32,7 +32,7 @@
     "jwt-simple":"^0.5.6",
     "@anticrm/contrib":"~0.6.0",
     "@anticrm/core":"~0.6.11",
-    "@anticrm/contact":"~0.6.0",
+    "@anticrm/contact":"~0.6.2",
     "@anticrm/workspace":"~0.6.0",
     "minio":"^7.0.19"
   }

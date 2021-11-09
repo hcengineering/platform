@@ -20,11 +20,11 @@
     "@anticrm/core":"~0.6.11",
     "@anticrm/platform":"~0.6.5",
     "@anticrm/ui":"~0.6.0",
-    "@anticrm/presentation":"~0.6.1",
+    "@anticrm/presentation":"~0.6.2",
     "@anticrm/chunter":"~0.6.0",
     "svelte":"^3.37.0",
     "@anticrm/text-editor":"~0.6.0",
-    "@anticrm/contact": "~0.6.0",
+    "@anticrm/contact": "~0.6.2",
     "@anticrm/view-resources": "~0.6.0",
     "filesize": "^8.0.3"
   }
