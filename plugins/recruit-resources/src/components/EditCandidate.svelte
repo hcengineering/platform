@@ -19,11 +19,11 @@
   import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon, IconAdd, Label } from '@anticrm/ui'
   import type { Attachment } from '@anticrm/chunter'
   import FileUpload from './icons/FileUpload.svelte'
-  import { getClient, createQuery, Channels, AttributeEditor, PDFViewer } from '@anticrm/presentation'
+  import { getClient, createQuery, Channels, AttributeEditor, PDFViewer, Avatar } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
-  import Avatar from './icons/Avatar.svelte'
+  import IconAvatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
@@ -60,6 +60,7 @@
   function lastNameChange() {
     client.updateDoc(recruit.class.Candidate, object.space, object._id, { name: combineName(getFirstName(object.name), lastName) })
   }
+  let bill = `https://cdn.minval.az/2021/01/Part-PAR-Par7917915-1-1-0-scaled-1.jpg`
 
 </script>
 
@@ -68,9 +69,8 @@
   <AttributesBar {object} keys={['city', 'onsite', 'remote']} slot="subtitle" />
 
   <div class="flex-row-center">
-    <div class="avatar">
-      <div class="border"/>
-      <Avatar />
+    <div class="mr-8">
+      <Avatar avatar={object.avatar} size={'x-large'} />
     </div>
     <div class="flex-col">
       <div class="name"><EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={ firstNameChange }/></div>
@@ -114,40 +114,6 @@
 {/if}
 
 <style lang="scss">
-  @import '../../../../packages/theme/styles/mixins.scss';
-
-  .avatar {
-    flex-shrink: 0;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 1.5rem;
-    width: 6rem;
-    height: 6rem;
-    border-radius: 50%;
-    filter: drop-shadow(0px 14px 44px rgba(28, 23, 22, .8));
-    cursor: pointer;
-
-    &::after {
-      content: '';
-      @include bg-layer(var(--theme-avatar-hover), .5);
-      z-index: -1;
-    }
-    &::before {
-      content: '';
-      @include bg-layer(var(--theme-avatar-bg), .1);
-      backdrop-filter: blur(25px);
-      z-index: -2;
-    }
-    .border {
-      @include bg-fullsize;
-      border: 2px solid var(--theme-avatar-border);
-      border-radius: 50%;
-    }
-  }
-
   .name {
     font-weight: 500;
     font-size: 1.25rem;
@@ -171,21 +137,4 @@
       color: var(--theme-caption-color);
     }
   }
-
-  // .container {
-  //   display: flex;
-  //   flex-direction: column;
-  //   height: 100%;
-  //   background-color: var(--theme-bg-color);
-  //   border-radius: 1.25rem;
-  //   box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
-
-  //   .tabs-container {
-  //     flex-grow: 1;
-  //     display: flex;
-  //     flex-direction: column;
-  //     height: fit-content;
-  //     padding: 0 2.5rem 2.5rem;
-  //   }
-  // }
 </style>

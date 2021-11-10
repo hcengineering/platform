@@ -21,41 +21,78 @@
   export let avatar: string | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
-  const url = avatar ? getFileUrl(avatar) : undefined
+  let url = avatar ? getFileUrl(avatar) : undefined
 </script>
 
-<div class="{size} container">
+<div class="{size} flex-center container" class:no-img={!url}>
   {#if url}
-    <img class={size} src={url} alt={''}/>
+    {#if size === 'large' || size === 'x-large'}
+      <img class="{size} blur" src={url} alt={''}/>
+    {/if}
+    <img class="{size} mask" src={url} alt={''}/>
   {:else}
     <Avatar {size}/>
   {/if}
 </div>
 
 <style lang="scss">
+  @import '../../../../packages/theme/styles/mixins.scss';
+
+  .container {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    pointer-events: none;
+
+    img { object-fit: cover; }
+
+    &.no-img {
+      border: 2px solid var(--theme-avatar-border);
+
+      &::after {
+        content: '';
+        @include bg-layer(var(--theme-avatar-hover), .5);
+      }
+      &::before {
+        content: '';
+        @include bg-layer(var(--theme-avatar-bg), .1);
+      }
+    }
+  }
+
   .x-small {
-    width: 1.5rem;
+    width: 1.5rem;   // 24
     height: 1.5rem;
+    .mask, &.no-img { border-style: none; }
   }
   .small {
-    width: 2rem;
+    width: 2rem;     // 32
     height: 2rem;
+    .mask, &.no-img { border-style: none; }
   }
   .medium {
-    width: 2.25rem;
+    width: 2.25rem;  // 36
     height: 2.25rem;
+    .mask, &.no-img { border-style: none; }
   }
   .large {
-    width: 5rem;
-    height: 5rem;
+    width: 4.5rem;   // 72
+    height: 4.5rem;
   }
   .x-large {
-    width: 10rem;
-    height: 10rem;
+    width: 7.5rem;   // 120
+    height: 7.5rem;
   }
-  .container {
-    overflow: hidden;
-    border: 50%;
-    pointer-events: none;
+
+  .blur {
+    position: absolute;
+    filter: blur(32px);
   }
+  .mask {
+    position: absolute;
+    border: 2px solid var(--theme-avatar-border);
+    border-radius: 50%;
+  }
+  // .shadow { filter: drop-shadow(0px 14px 44px rgba(74, 67, 64, .8)); }
 </style>
