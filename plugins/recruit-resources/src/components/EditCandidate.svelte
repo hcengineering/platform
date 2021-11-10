@@ -60,8 +60,6 @@
   function lastNameChange() {
     client.updateDoc(recruit.class.Candidate, object.space, object._id, { name: combineName(getFirstName(object.name), lastName) })
   }
-  let bill = `https://cdn.minval.az/2021/01/Part-PAR-Par7917915-1-1-0-scaled-1.jpg`
-
 </script>
 
 {#if object !== undefined}

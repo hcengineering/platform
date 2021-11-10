@@ -121,8 +121,6 @@
     const file = inputFile.files?.[0]
     if (file !== undefined) { createAttachment(file) }
   }
-
-  let kl: number = 0
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -138,7 +136,9 @@
 
   <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
   <div class="flex-row-center">
-    <div class="mr-4"><Avatar avatar={object.avatar} size={'large'} /></div>
+    <div class="mr-4">
+      <Avatar avatar={object.avatar} size={'large'} />
+    </div>
     <div class="flex-col">
       <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
       <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
