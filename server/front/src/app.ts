@@ -192,10 +192,19 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
     const token = authHeader.split(' ')[1]
     const payload = decode(token ?? '', 'secret', false) as Token
     const url = req.query.url as string
+    const cookie = req.query.cookie as string | undefined
 
     console.log('importing from ', url)
 
-    https.get(url, response => {
+    const options = cookie !== undefined
+      ? {
+          headers: {
+            Cookie: cookie
+          }
+        }
+      : {}
+
+    https.get(url, options, response => {
       console.log('status', response.statusCode)
       const id = uuid()
       const contentType = response.headers['content-type']
