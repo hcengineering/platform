@@ -21,7 +21,7 @@
   export let avatar: string | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
-  const url = avatar ? getFileUrl(avatar) : undefined
+  $: url = avatar ? getFileUrl(avatar) : undefined
 </script>
 
 <div class="{size} flex-center container" class:no-img={!url}>
