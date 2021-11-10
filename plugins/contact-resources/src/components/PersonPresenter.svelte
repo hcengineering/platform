@@ -31,7 +31,6 @@ async function onClick() {
   const editor = await getResource(editorMixin.editor) 
   showPopup(editor, { _id: value._id }, 'full')
 }
-
 </script>
 
 <div class="flex-row-center user-container" on:click={onClick}>

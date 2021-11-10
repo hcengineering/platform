@@ -20,7 +20,7 @@
   import { setPlatformStatus, unknownError, Severity } from '@anticrm/platform'
   import type { Status } from '@anticrm/platform'
 
-  import { getClient, Card, Channels, PDFViewer } from '@anticrm/presentation'
+  import { getClient, Card, Channels, PDFViewer, Avatar } from '@anticrm/presentation'
   import { uploadFile } from '../utils'
 
   import recruit from '../plugin'
@@ -30,14 +30,9 @@
 
   import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, IconAdd, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
-  import Avatar from './icons/Avatar.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import YesNo from './YesNo.svelte'
-
-  import Girl from '../../img/girl.png'
-  import Elon from '../../img/elon.png'
-  import Bond from '../../img/bond.png'
 
   import { combineName } from '@anticrm/contact';
 
@@ -126,8 +121,6 @@
     const file = inputFile.files?.[0]
     if (file !== undefined) { createAttachment(file) }
   }
-
-  let kl: number = 0
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -143,32 +136,9 @@
 
   <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
   <div class="flex-row-center">
-    <div class="avatar-container">
-      <div class="flex-center avatar-shadow">
-        {#if kl === 0}
-          <div class="bg-avatar"><Avatar /></div>
-        {:else if kl === 1}
-          <div class="bg-avatar"><img src={Girl} alt="Avatar" /></div>
-        {:else if kl === 2}
-          <div class="bg-avatar"><img src={Elon} alt="Avatar" /></div>
-        {:else}
-          <div class="bg-avatar"><img src={Bond} alt="Avatar" /></div>
-        {/if}
-      </div>
-      <div class="flex-center avatar" on:click={() => { (kl < 3) ? kl++ : kl = 0 }}>
-        <div class="border"/>
-        {#if kl === 0}
-          <Avatar />
-        {:else if kl === 1}
-          <img width="100%" src={Girl} alt="Avatar" />
-        {:else if kl === 2}
-          <img width="100%" src={Elon} alt="Avatar" />
-        {:else}
-          <img width="100%" src={Bond} alt="Avatar" />
-        {/if}
-      </div>
+    <div class="mr-4">
+      <Avatar avatar={object.avatar} size={'large'} />
     </div>
-
     <div class="flex-col">
       <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
       <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
@@ -216,53 +186,6 @@
 </Card>
 
 <style lang="scss">
-  @import '../../../../packages/theme/styles/mixins.scss';
-
-  .avatar-container {
-    flex-shrink: 0;
-    position: relative;
-    margin-right: 1rem;
-    width: 4.5rem;
-    height: 4.5rem;
-    user-select: none;
-  }
-  .avatar-shadow {
-    position: absolute;
-    width: 4.5rem;
-    height: 4.5rem;
-
-    .bg-avatar {
-      filter: blur(10px);
-      opacity: .25;
-    }
-  }
-  .avatar {
-    overflow: hidden;
-    position: absolute;
-    width: 4.5rem;
-    height: 4.5rem;
-    border-radius: 50%;
-    filter: var(--theme-avatar-shadow);
-    cursor: pointer;
-
-    &::after {
-      content: '';
-      @include bg-layer(var(--theme-avatar-hover), .5);
-      z-index: -1;
-    }
-    &::before {
-      content: '';
-      @include bg-layer(var(--theme-avatar-bg), .1);
-      backdrop-filter: blur(25px);
-      z-index: -2;
-    }
-    .border {
-      @include bg-fullsize;
-      border: 2px solid var(--theme-avatar-border);
-      border-radius: 50%;
-    }
-  }
-
   .channels {
     margin-top: 1.25rem;
     span { margin-left: .5rem; }
