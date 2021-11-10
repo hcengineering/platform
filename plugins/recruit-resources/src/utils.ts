@@ -35,7 +35,7 @@ export async function uploadFile(space: Ref<Space>, file: File, attachedTo: Ref<
     body: data
   })
   if (resp.status !== 200) { 
-    throw new Error('Can\t upload file.')
+    throw new Error('Can\'t upload file.')
   }
   const uuid = await resp.text()
   console.log(uuid)
