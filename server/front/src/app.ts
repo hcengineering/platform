@@ -193,6 +193,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
     const payload = decode(token ?? '', 'secret', false) as Token
     const url = req.query.url as string
     const cookie = req.query.cookie as string | undefined
+    const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
 
     console.log('importing from ', url)
 
@@ -211,14 +212,42 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const meta: ItemBucketMetadata = {
         'Content-Type': contentType
       }
-      minio.putObject(payload.workspace, id, response, 0, meta, (err, objInfo) => {
-        if (err !== null) {
-          console.log('minio putObject error', err)
-          res.status(500).send(err)
-        } else {
-          console.log('uploaded uuid', id)
-          res.status(200).send(id)
-        }
+      const data: Buffer[] = []
+      response.on('data', function (chunk) {
+        data.push(chunk)
+      }).on('end', function () {
+        const buffer = Buffer.concat(data)
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
+          if (err !== null) {
+            console.log('minio putObject error', err)
+            res.status(500).send(err)
+          } else {
+            console.log('uploaded uuid', id)
+
+            if (attachedTo !== undefined) {
+              const space = req.query.space as Ref<Space>
+              const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
+
+              const indexedDoc: IndexedDoc = {
+                id: generateId() + '/attachments/' + 'Profile.pdf',
+                _class: chunter.class.Attachment,
+                space,
+                modifiedOn: Date.now(),
+                modifiedBy: 'core:account:System' as Ref<Account>,
+                attachedTo,
+                data: buffer.toString('base64')
+              }
+
+              await elastic.index(indexedDoc)
+            }
+
+            res.status(200).send(id)
+          }
+        })
+        // console.log(buffer.toString('base64'));
+      }).on('error', function (err) {
+        res.status(500).send(err)
       })
     })
   })
