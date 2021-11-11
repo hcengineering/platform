@@ -21,7 +21,6 @@
   import { Label, showPopup } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
   import UsersPopup from './UsersPopup.svelte'
-  import IconAvatar from './icons/Avatar.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
   import { formatName, Person } from '@anticrm/contact'
@@ -66,11 +65,7 @@
   }}
 >
   <button class="focused-button btn" class:selected bind:this={btn}>
-    {#if selected}
-      <Avatar size={'medium'} />
-    {:else}
-      <IconAvatar />
-    {/if}
+    <Avatar avatar={selected ? selected.avatar : undefined} size={'medium'} />
   </button>
 
   <div class="selectUser">

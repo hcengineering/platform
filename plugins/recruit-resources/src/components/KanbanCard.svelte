@@ -40,7 +40,7 @@
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
   <div class="content">
     <div class="flex-row-center">
-      <Avatar size={'medium'} />
+      <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
         <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
         <div class="fs-subtitle"><Label label={formatName(object.$lookup?.attachedTo?.title)} /></div>
