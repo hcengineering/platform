@@ -24,12 +24,12 @@
   $: url = avatar ? getFileUrl(avatar) : undefined
 </script>
 
-<div class="{size} flex-center container" class:no-img={!url}>
+<div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
-      <img class="{size} blur" src={url} alt={''}/>
+      <img class="{size} ava-blur" src={url} alt={''}/>
     {/if}
-    <img class="{size} mask" src={url} alt={''}/>
+    <img class="{size} ava-mask" src={url} alt={''}/>
   {:else}
     <Avatar {size}/>
   {/if}
@@ -38,7 +38,7 @@
 <style lang="scss">
   @import '../../../../packages/theme/styles/mixins.scss';
 
-  .container {
+  .avatar-container {
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
@@ -53,46 +53,48 @@
       &::after {
         content: '';
         @include bg-layer(var(--theme-avatar-hover), .5);
+        border-radius: 50%;
       }
       &::before {
         content: '';
         @include bg-layer(var(--theme-avatar-bg), .1);
+        border-radius: 50%;
       }
     }
   }
 
-  .x-small {
+  .ava-x-small {
     width: 1.5rem;   // 24
     height: 1.5rem;
-    .mask, &.no-img { border-style: none; }
   }
-  .small {
+  .ava-small {
     width: 2rem;     // 32
     height: 2rem;
-    .mask, &.no-img { border-style: none; }
   }
-  .medium {
+  .ava-medium {
     width: 2.25rem;  // 36
     height: 2.25rem;
-    .mask, &.no-img { border-style: none; }
   }
-  .large {
+  .ava-large {
     width: 4.5rem;   // 72
     height: 4.5rem;
   }
-  .x-large {
+  .ava-x-large {
     width: 7.5rem;   // 120
     height: 7.5rem;
   }
 
-  .blur {
+  .ava-blur {
     position: absolute;
     filter: blur(32px);
   }
-  .mask {
+  .ava-mask {
     position: absolute;
     border: 2px solid var(--theme-avatar-border);
     border-radius: 50%;
   }
-  // .shadow { filter: drop-shadow(0px 14px 44px rgba(74, 67, 64, .8)); }
+
+  .ava-x-small .ava-mask, .ava-x-small.no-img,
+  .ava-small .ava-mask, .ava-small.no-img,
+  .ava-medium .ava-mask, .ava-medium.no-img { border-style: none; }
 </style>

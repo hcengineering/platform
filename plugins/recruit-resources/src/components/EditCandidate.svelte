@@ -88,7 +88,10 @@
   </div>
 
   <div class="group">
-    <div class="caption">Applications</div>
+    <div class="flex-row-center">
+      <div class="caption">Applications</div>
+      <CircleButton icon={IconAdd} size={'small'} on:click={ () => { } } />
+    </div>
     <Table 
       _class={recruit.class.Applicant}
       config={['', '$lookup.space.name', '$lookup.state']}
@@ -130,6 +133,7 @@
     margin-top: 3.5rem;
 
     .caption {
+      margin-right: .75rem;
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
