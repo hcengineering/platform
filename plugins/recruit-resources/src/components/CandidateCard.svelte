@@ -24,7 +24,7 @@
 
 <div class="flex-col card-container">
   <div class="label">CANDIDATE</div>
-  <Avatar size={'large'} />
+  <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
     <div class="name">{formatName(candidate.name)}</div>
     <div class="description">{candidate.title}</div>

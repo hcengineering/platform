@@ -24,7 +24,7 @@
 </script>
 
 <div class="flex-row-center" on:click>
-  <Avatar {size} />
+  <Avatar avatar={value.avatar} {size} />
   <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
     <div class="title">{formatName(value.name)}</div>
