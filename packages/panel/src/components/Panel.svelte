@@ -144,16 +144,16 @@
     display: flex;
     flex-direction: column;
     height: calc(100% - 32px - 1.25rem);
-    background: rgba(31, 31, 37, 0.7);
+    background: var(--theme-dialog-bg);
     border-radius: 1.25rem;
     box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
-    backdrop-filter: blur(30px);
+    backdrop-filter: blur(15px);
 
     .header {
       flex-shrink: 0;
       padding: 0 2.5rem;
       height: 4.5rem;
-      border-bottom: 1px solid var(--theme-card-divider);
+      border-bottom: 1px solid var(--theme-dialog-divider);
 
       .icon { opacity: .6; }
       .title {
@@ -170,7 +170,7 @@
       flex-shrink: 0;
       padding: 0 2rem;
       height: 3.5rem;
-      border-bottom: 1px solid var(--theme-bg-accent-hover);
+      border-bottom: 1px solid var(--theme-dialog-divider);
     }
   }
 
@@ -189,12 +189,12 @@
       height: max-content;
     }
     .activity {
-      background-color: var(--theme-bg-accent-color);
+      background-color: var(--theme-dialog-accent);
       &.header { border-bottom: none; }
       &.content {
         flex-grow: 1;
         padding-bottom: 0;
-        background-color: var(--theme-bg-accent-color);
+        background-color: var(--theme-dialog-accent);
       }
     }
   }
@@ -210,7 +210,7 @@
     flex-direction: column;
   }
   .leftSection {
-    border-right: 1px solid var(--theme-bg-accent-hover);
+    border-right: 1px solid var(--theme-dialog-divider);
     .scroll-container {
       overflow: auto;
       margin: 2rem 2rem 1.5rem;
@@ -222,16 +222,16 @@
   }
   .rightSection {
     background-color: transparent;
-    .header { border-bottom: 1px solid var(--theme-card-divider); }
+    .header { border-bottom: 1px solid var(--theme-dialog-divider); }
     .content {
       flex-grow: 1;
       padding: 2.5rem 2.5rem 0;
-      background-color: var(--theme-bg-accent-color);
+      background-color: var(--theme-dialog-accent);
     }
   }
 
   .ref-input {
-    background-color: var(--theme-bg-accent-color);
+    background-color: var(--theme-dialog-accent);
     padding: 1.5rem 2.5rem;
   }
 

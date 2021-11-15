@@ -164,10 +164,10 @@
   .floatdialog-container {
     margin: 2rem 1rem 1.25rem 0;
     height: calc(100% - 3.25rem);
-    background-color: rgba(31, 31, 37, .8);
+    background: var(--theme-dialog-bg-spec);
     border-radius: 1.25rem;
-    box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
-    backdrop-filter: blur(30px);
+    box-shadow: var(--theme-dialog-shadow);
+    backdrop-filter: blur(15px);
 
     .header {
       padding: 0 2rem 0 2.5rem;
