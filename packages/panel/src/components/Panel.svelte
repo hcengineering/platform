@@ -21,8 +21,9 @@
   import { getClient, createQuery, Backlink } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Label, Icon } from '@anticrm/ui'
+  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Label, Icon, IconToDo } from '@anticrm/ui'
   import type { Comment } from '@anticrm/chunter'
+  import ActivityMsg from './ActivityMsg.svelte'
 
   import { createEventDispatcher } from 'svelte'
 
@@ -115,6 +116,12 @@
       <div class="flex-col activity content">
         {#if comments}
         <Grid column={1} rowGap={1.5}>
+          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
+          <ActivityMsg icon={IconToDo}>
+            <b>Rosamund Chen</b> changed status from <span>IN PROGRESS</span> to <span class="bar">ON HOLD</span>
+            <svelte:fragment slot="content">Content</svelte:fragment>
+          </ActivityMsg>
+          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
           {#each comments as comment}
             <Backlink {comment} />
           {/each}
