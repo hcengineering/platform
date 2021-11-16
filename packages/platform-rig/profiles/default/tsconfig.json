@@ -6,6 +6,8 @@
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "types": ["heft-jest"]
+    "types": ["heft-jest"],
+    "skipLibCheck": true,
+    "incremental": true
   }
 }

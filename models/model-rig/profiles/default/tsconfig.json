@@ -7,5 +7,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "incremental": true
   }
 }
