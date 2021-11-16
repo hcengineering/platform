@@ -222,6 +222,12 @@ table {
 }
 .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
 
+.scale-75 {
+  transform-origin: center center;
+  transform: scale(.75);
+  pointer-events: none;
+}
+
 .hover-trans {
   color: var(--theme-content-trans-color);
   cursor: pointer;
