@@ -97,10 +97,10 @@
     display: flex;
     flex-direction: column;
     height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-dialog-bg);
+    background: var(--theme-dialog-bg-spec);
     border-radius: 1.25rem;
     box-shadow: var(--theme-dialog-shadow);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
 
     .header {
       flex-shrink: 0;
