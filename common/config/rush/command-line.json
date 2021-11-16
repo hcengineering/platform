@@ -166,6 +166,16 @@
     //    */
     //   // "autoinstallerName": "my-task"
     // }
+    {
+      "commandKind": "bulk",
+      "name": "lint:fix",
+      "summary": "Lint&Fix",
+      "description": "Lint and autofix linting issues",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    }
   ],
 
   /**
@@ -173,6 +183,13 @@
    * For example, you might define a "--production" parameter for the "rush build" command.
    */
   "parameters": [
+      {
+      "parameterKind": "flag",      
+      "longName": "--lite",
+      "shortName": "-l",
+      "description": "Enable Heft lite building option, will skip some phases.",
+      "associatedCommands": ["build", "rebuild"]
+    },
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.
