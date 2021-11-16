@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Obj, Ref } from '../classes'
+import type { Class, Obj, Ref, Doc } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -23,22 +23,35 @@ import { genMinModel, test, TestMixin } from './minmodel'
 
 const txes = genMinModel()
 
-async function createModel (): Promise<{ model: ModelDb, hierarchy: Hierarchy }> {
+async function createModel (): Promise<{ model: ModelDb, hierarchy: Hierarchy, txDb: TxDb }> {
   const hierarchy = new Hierarchy()
-  for (const tx of txes) hierarchy.tx(tx)
+  for (const tx of txes) {
+    hierarchy.tx(tx)
+  }
   const model = new ModelDb(hierarchy)
-  for (const tx of txes) await model.tx(tx)
-  return { model, hierarchy }
+  for (const tx of txes) {
+    await model.tx(tx)
+  }
+  const txDb = new TxDb(hierarchy)
+  for (const tx of txes) await txDb.tx(tx)
+  return { model, hierarchy, txDb }
 }
 
 describe('memdb', () => {
   it('should save all tx', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
-    const txDb = new TxDb(hierarchy)
-    for (const tx of txes) await txDb.tx(tx)
+    const { txDb } = await createModel()
+
     const result = await txDb.findAll(core.class.Tx, {})
     expect(result.length).toBe(txes.filter((tx) => tx._class === core.class.TxCreateDoc).length)
+  })
+
+  it('should query model', async () => {
+    const { model } = await createModel()
+
+    const result = await model.findAll(core.class.Class, {})
+    expect(result.length).toBeGreaterThan(5)
+    const result2 = await model.findAll('class:workbench.Application' as Ref<Class<Doc>>, { _id: undefined })
+    expect(result2).toHaveLength(0)
   })
 
   it('should create space', async () => {
@@ -65,7 +78,8 @@ describe('memdb', () => {
   it('should query model', async () => {
     const { model } = await createModel()
     const result = await model.findAll(core.class.Class, {})
-    expect(result.length).toBe(10)
+    const names = result.map(d => d._id)
+    expect(names.includes(core.class.Class)).toBe(true)
     const result2 = await model.findAll(core.class.Class, { _id: undefined })
     expect(result2.length).toBe(0)
   })
@@ -103,10 +117,7 @@ describe('memdb', () => {
   })
 
   it('should query model with params', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
-    const model = new ModelDb(hierarchy)
-    for (const tx of txes) await model.tx(tx)
+    const { model } = await createModel()
     const first = await model.findAll(core.class.Class, {
       _id: txes[1].objectId as Ref<Class<Obj>>,
       kind: 0
@@ -132,10 +143,7 @@ describe('memdb', () => {
   })
 
   it('should query model like params', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
-    const model = new ModelDb(hierarchy)
-    for (const tx of txes) await model.tx(tx)
+    const { model } = await createModel()
     const expectedLength = txes.filter((tx) => tx.objectSpace === core.space.Model).length
     const without = await model.findAll(core.class.Doc, {
       space: { $like: core.space.Model }
@@ -205,34 +213,17 @@ describe('memdb', () => {
     expect(numberSort[0].modifiedOn).toBeLessThanOrEqual(numberSort[numberSortDesc.length - 1].modifiedOn)
   })
 
-  // it('should throw error', async () => {
-  //   expect.assertions(1)
-  //   const errorTx: TxAddCollection<Doc, Emb> = {
-  //     _id: '60b73133d22498e666800cd2' as Ref<TxAddCollection<Doc, Emb>>,
-  //     _class: 'class:core.TxAddCollection' as Ref<Class<TxAddCollection<Doc, Emb>>>,
-  //     space: core.space.Tx,
-  //     modifiedBy: 'xxx' as Ref<Account>,
-  //     modifiedOn: 0,
-  //     objectId: 'class:test.MyClass' as Ref<Doc>,
-  //     objectSpace: core.space.Model,
-  //     itemClass: 'class:core.Attribute' as Ref<Class<Doc>>,
-  //     collection: 'attributes',
-  //     localId: 'name',
-  //     attributes: {
-  //       _class: 'class:core.Attribute' as Ref<Class<Doc>>,
-  //       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  //       __embedded: {
-  //         _class: 'class:core.Attribute' as Ref<Class<Doc>>
-  //       } as Emb
-  //     }
-  //   }
+  it('should add attached document', async () => {
+    const { model } = await createModel()
 
-  //   const hierarchy = new Hierarchy()
-  //   for (const tx of txes) hierarchy.tx(tx)
-  //   const model = new ModelDb(hierarchy)
+    const client = new TxOperations(model, core.account.System)
+    const result = await client.findAll(core.class.Space, {})
+    expect(result).toHaveLength(2)
 
-  //   await model.tx(errorTx).catch((error: Error) => {
-  //     expect(error.message).toBe('ERROR: status:core.ObjectNotFound')
-  //   })
-  // })
+    await client.addCollection(test.class.TestComment, core.space.Model, result[0]._id, result[0]._class, 'comments', {
+      message: 'msg'
+    })
+    const result2 = await client.findAll(test.class.TestComment, {})
+    expect(result2).toHaveLength(1)
+  })
 })

@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { Plugin, IntlString } from '@anticrm/platform'
+import type { IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Class, Data, Doc, Obj, Ref, Mixin, Arr } from '../classes'
-import { ClassifierKind, DOMAIN_MODEL } from '../classes'
-import type { TxCUD, TxCreateDoc } from '../tx'
+import type { Arr, Class, Data, Doc, Mixin, Obj, Ref } from '../classes'
+import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'
+import type { TxCreateDoc, TxCUD } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
 
 const txFactory = new TxFactory(core.account.System)
@@ -35,9 +35,16 @@ export interface TestMixin extends Doc {
   arr: Arr<string>
 }
 
+export interface AttachedComment extends AttachedDoc {
+  message: string
+}
+
 export const test = plugin('test' as Plugin, {
   mixin: {
     TestMixin: '' as Ref<Mixin<TestMixin>>
+  },
+  class: {
+    TestComment: '' as Ref<Class<AttachedComment>>
   }
 })
 
@@ -50,16 +57,21 @@ export function genMinModel (): TxCUD<Doc>[] {
   // Fill Tx'es with basic model classes.
   txes.push(createClass(core.class.Obj, { label: 'Obj' as IntlString, kind: ClassifierKind.CLASS }))
   txes.push(createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(core.class.AttachedDoc, { label: 'AttachedDoc' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
   txes.push(createClass(core.class.Class, { label: 'Class' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
   txes.push(createClass(core.class.Space, { label: 'Space' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
   txes.push(createClass(core.class.Account, { label: 'Account' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
 
   txes.push(createClass(core.class.Tx, { label: 'Tx' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
-  txes.push(createClass(core.class.TxCreateDoc, { label: 'TxCreateDoc' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.TxUpdateDoc, { label: 'TxUpdateDoc' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.TxRemoveDoc, { label: 'TxRemoveDoc' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(core.class.TxCUD, { label: 'TxCUD' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
+  txes.push(createClass(core.class.TxCreateDoc, { label: 'TxCreateDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(core.class.TxUpdateDoc, { label: 'TxUpdateDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(core.class.TxRemoveDoc, { label: 'TxRemoveDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(core.class.TxCollectionCUD, { label: 'TxCollectionCUD' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
 
   txes.push(createClass(test.mixin.TestMixin, { label: 'TestMixin' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
+
+  txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
 
   txes.push(
     createDoc(core.class.Space, {

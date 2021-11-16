@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxAddCollection, AttachedDoc } from '@anticrm/core'
+import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
 import core, { Hierarchy, DOMAIN_TX, ModelDb, TxFactory } from '@anticrm/core'
 import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
@@ -107,13 +107,16 @@ class TServerStorage implements ServerStorage {
   }
 
   async processCollection (tx: Tx): Promise<Tx[]> {
-    if (tx._class === core.class.TxAddCollection) {
-      const createTx = tx as TxAddCollection<AttachedDoc>
-      const _id = createTx.attachedTo
-      const _class = createTx.attachedToClass
-      const attachedTo = (await this.findAll(_class, { _id }))[0]
-      const txFactory = new TxFactory(tx.modifiedBy)
-      return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [createTx.collection]: 1 } })]
+    if (tx._class === core.class.TxCollectionCUD) {
+      const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      const _id = colTx.objectId
+      const _class = colTx.objectClass
+      let attachedTo: Doc | undefined
+      if (colTx.tx._class === core.class.TxCreateDoc) {
+        attachedTo = (await this.findAll(_class, { _id }))[0]
+        const txFactory = new TxFactory(tx.modifiedBy)
+        return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: 1 } })]
+      }
     }
     return []
   }

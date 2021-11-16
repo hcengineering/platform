@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class } from '@anticrm/core'
+import type { Tx, TxCreateDoc, Data, Ref, Doc, TxFactory, Class, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
 import type { Message, Backlink } from '@anticrm/chunter'
 import { parse, Node, HTMLElement } from 'node-html-parser'
@@ -48,6 +48,9 @@ function getBacklinks (backlinkId: Ref<Doc>, content: string): Data<Backlink>[] 
  * @public
  */
 export async function OnMessage (tx: Tx, txFactory: TxFactory): Promise<Tx[]> {
+  if (tx._class === core.class.TxCollectionCUD) {
+    tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
+  }
   if (tx._class === core.class.TxCreateDoc) {
     const createTx = tx as TxCreateDoc<Message>
     if (createTx.objectClass === chunter.class.Message) {

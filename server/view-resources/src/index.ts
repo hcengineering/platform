@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, TxFactory, Doc, TxCreateDoc, DocWithState, State, TxRemoveDoc } from '@anticrm/core'
+import type { Tx, TxFactory, Doc, TxCreateDoc, DocWithState, State, TxRemoveDoc, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
 
 import core, { Hierarchy } from '@anticrm/core'
@@ -24,6 +24,10 @@ import view, { Kanban } from '@anticrm/view'
  * @public
  */
 export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
+  if (tx._class === core.class.TxCollectionCUD) {
+    tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
+  }
+
   if (hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
     const createTx = tx as TxCreateDoc<DocWithState>
     if (hierarchy.isDerived(createTx.objectClass, core.class.DocWithState)) {

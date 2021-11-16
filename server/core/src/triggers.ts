@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Doc, TxCreateDoc, Ref, Account, Hierarchy } from '@anticrm/core'
+import type { Tx, Doc, TxCreateDoc, Ref, Account, Hierarchy, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
 import core, { TxFactory } from '@anticrm/core'
 
 import { getResource } from '@anticrm/platform'
@@ -29,6 +29,9 @@ export class Triggers {
   private readonly triggers: TriggerFunc[] = []
 
   async tx (tx: Tx): Promise<void> {
+    if (tx._class === core.class.TxCollectionCUD) {
+      tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
+    }
     if (tx._class === core.class.TxCreateDoc) {
       const createTx = tx as TxCreateDoc<Doc>
       if (createTx.objectClass === serverCore.class.Trigger) {

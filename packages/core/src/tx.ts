@@ -42,12 +42,14 @@ export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
 }
 
 /**
+ *
+ * Will perform create/update/delete of attached documents.
+ *
  * @public
  */
-export interface TxAddCollection<T extends AttachedDoc> extends TxCreateDoc<T> {
+export interface TxCollectionCUD<T extends Doc, P extends AttachedDoc> extends TxCUD<T> {
   collection: string
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
+  tx: TxCUD<P>
 }
 
 /**
@@ -193,8 +195,8 @@ export abstract class TxProcessor implements WithTx {
     switch (tx._class) {
       case core.class.TxCreateDoc:
         return await this.txCreateDoc(tx as TxCreateDoc<Doc>)
-      case core.class.TxAddCollection:
-        return await this.txAddCollection(tx as TxAddCollection<AttachedDoc>)
+      case core.class.TxCollectionCUD:
+        return await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
       case core.class.TxUpdateDoc:
         return await this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
@@ -209,7 +211,7 @@ export abstract class TxProcessor implements WithTx {
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
 
-  static createDoc2Doc<T extends Doc> (tx: TxCreateDoc<T>): T {
+  static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>): T {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
       _id: tx.objectId,
@@ -227,15 +229,25 @@ export abstract class TxProcessor implements WithTx {
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>
   protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult>
 
-  protected txAddCollection (tx: TxAddCollection<AttachedDoc>): Promise<TxResult> {
-    const createTx: TxCreateDoc<Doc> = { ...tx }
-    createTx.attributes = { ...tx.attributes, attachedTo: tx.attachedTo, attachedToClass: tx.attachedToClass }
-    return this.txCreateDoc(createTx)
+  protected txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
+    // We need update only create transactions to contain attached, attachedToClass.
+    if (tx.tx._class === core.class.TxCreateDoc) {
+      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
+      const d: TxCreateDoc<AttachedDoc> = {
+        ...createTx,
+        attributes: {
+          ...createTx.attributes,
+          attachedTo: tx.objectId,
+          attachedToClass: tx.objectClass
+        }
+      }
+      return this.txCreateDoc(d)
+    }
+    return this.tx(tx.tx)
   }
 
   protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<TxResult> {
     for (const tx of bulkTx.txes) {
-      console.log('bulk', tx)
       await this.tx(tx)
     }
     return {}
@@ -275,16 +287,42 @@ export class TxOperations implements Storage {
     return tx.objectId
   }
 
-  async addCollection<T extends AttachedDoc> (
-    _class: Ref<Class<T>>,
+  async addCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
     space: Ref<Space>,
-    attachedTo: Ref<Doc>,
-    attachedToClass: Ref<Class<Doc>>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
     collection: string,
-    attributes: AttachedData<T>,
-    id?: Ref<T>
+    attributes: AttachedData<P>,
+    id?: Ref<P>
   ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxAddCollection(_class, space, attributes, attachedTo, attachedToClass, collection, id)
+    const tx = this.txFactory.createTxCollectionCUD<T, P>(
+      attachedToClass,
+      attachedTo,
+      space,
+      collection,
+      this.txFactory.createTxCreateDoc<P>(_class, space, attributes as unknown as Data<P>, id)
+    )
+    await this.storage.tx(tx)
+    return tx.objectId
+  }
+
+  async updateCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: string,
+    objectId: Ref<P>,
+    operations: DocumentUpdate<P>
+  ): Promise<Ref<T>> {
+    const tx = this.txFactory.createTxCollectionCUD(
+      attachedToClass,
+      attachedTo,
+      space,
+      collection,
+      this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
+    )
     await this.storage.tx(tx)
     return tx.objectId
   }
@@ -352,20 +390,24 @@ export class TxFactory {
     }
   }
 
-  createTxAddCollection<T extends AttachedDoc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: AttachedData<T>, attachedTo: Ref<Doc>, attachedToClass: Ref<Class<Doc>>, collection: string, objectId?: Ref<T>): TxAddCollection<T> {
+  createTxCollectionCUD<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<T>>,
+    objectId: Ref<T>,
+    space: Ref<Space>,
+    collection: string,
+    tx: TxCUD<P>
+  ): TxCollectionCUD<T, P> {
     return {
       _id: generateId(),
-      _class: core.class.TxAddCollection,
+      _class: core.class.TxCollectionCUD,
       space: core.space.Tx,
-      objectId: objectId ?? generateId(),
+      objectId,
       objectClass: _class,
       objectSpace: space,
       modifiedOn: Date.now(),
       modifiedBy: this.account,
-      attributes: attributes as Data<T>,
       collection,
-      attachedTo,
-      attachedToClass
+      tx
     }
   }
 
