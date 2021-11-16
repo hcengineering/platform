@@ -48,7 +48,6 @@
   }
 
   async function createApplication() {
-    dispatch('close')
     const state = await client.findOne(core.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
