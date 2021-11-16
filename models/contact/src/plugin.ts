@@ -22,10 +22,10 @@ import {} from '@anticrm/core'
 
 export const ids = mergeIds(contactId, contact, {
   channelProvider: {
-    Email: '' as Ref<ChannelProvider>
-    // Phone: '' as Ref<ChannelProvider>,
-    // LinkedIn: '' as Ref<ChannelProvider>,
-    // Twitter: '' as Ref<ChannelProvider>,
+    Email: '' as Ref<ChannelProvider>,
+    Phone: '' as Ref<ChannelProvider>,
+    LinkedIn: '' as Ref<ChannelProvider>,
+    Twitter: '' as Ref<ChannelProvider>
     // GitHub: '' as Ref<ChannelProvider>,
     // Telegram: '' as Ref<ChannelProvider>,
   },
