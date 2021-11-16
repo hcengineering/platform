@@ -28,6 +28,7 @@
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import AttributesBar from './AttributesBar.svelte'
+  import CreateApplication from './CreateApplication.svelte'
   import { Table } from '@anticrm/view-resources'
 
   import core from '@anticrm/core'
@@ -90,7 +91,7 @@
   <div class="group">
     <div class="flex-row-center">
       <div class="caption">Applications</div>
-      <CircleButton icon={IconAdd} size={'small'} on:click={ () => { } } />
+      <CircleButton icon={IconAdd} size={'small'} on:click={ (ev) => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, ev.target) } } />
     </div>
     <Table 
       _class={recruit.class.Applicant}
