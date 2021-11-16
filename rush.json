@@ -796,5 +796,10 @@
       "projectFolder": "packages/panel",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/activity",
+      "projectFolder": "packages/activity",
+      "shouldPublish": true
+    },
   ]
 }

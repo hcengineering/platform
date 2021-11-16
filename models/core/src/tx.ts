@@ -14,25 +14,25 @@
 //
 
 import type {
+  AttachedDoc,
   Class,
   Data,
   Doc,
   DocumentUpdate,
+  ExtendedAttributes,
+  Mixin,
+  PropertyType,
   Ref,
   Space,
   Tx,
-  TxCUD,
-  TxCreateDoc,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  TxMixin,
-  Mixin,
-  ExtendedAttributes,
-  PropertyType,
-  TxPutBag,
   TxBulkWrite,
-  AttachedDoc,
-  TxAddCollection
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxMixin,
+  TxPutBag,
+  TxRemoveDoc,
+  TxUpdateDoc
 } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { Model } from '@anticrm/model'
@@ -53,38 +53,48 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
 }
 
 @Model(core.class.TxCreateDoc, core.class.TxCUD)
-export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDoc<T> {
+export class TTxCreateDoc<T extends Doc>
+  extends TTxCUD<T>
+  implements TxCreateDoc<T> {
   attributes!: Data<T>
 }
 
-@Model(core.class.TxAddCollection, core.class.TxCreateDoc)
-export class TTxAddCollection<T extends AttachedDoc> extends TTxCreateDoc<T> implements TxAddCollection<T> {
+@Model(core.class.TxCollectionCUD, core.class.TxCUD)
+export class TTxCollectionCUD<T extends Doc, P extends AttachedDoc>
+  extends TTxCUD<T>
+  implements TxCollectionCUD<T, P> {
   collection!: string
-  attachedTo!: Ref<Doc>
-  attachedToClass!: Ref<Class<Doc>>
+  txes!: TxCUD<P>[]
 }
 
 @Model(core.class.TxPutBag, core.class.TxCUD)
-export class TTxPutBag<T extends PropertyType> extends TTxCUD<Doc> implements TxPutBag<T> {
+export class TTxPutBag<T extends PropertyType>
+  extends TTxCUD<Doc>
+  implements TxPutBag<T> {
   bag!: string
   key!: string
   value!: T
 }
 
 @Model(core.class.TxMixin, core.class.TxCUD)
-export class TTxMixin<D extends Doc, M extends D> extends TTxCUD<D> implements TxMixin<D, M> {
+export class TTxMixin<D extends Doc, M extends D>
+  extends TTxCUD<D>
+  implements TxMixin<D, M> {
   mixin!: Ref<Mixin<M>>
   attributes!: ExtendedAttributes<D, M>
 }
 
 @Model(core.class.TxUpdateDoc, core.class.TxCUD)
-export class TTxUpdateDoc<T extends Doc> extends TTxCUD<T> implements TxUpdateDoc<T> {
+export class TTxUpdateDoc<T extends Doc>
+  extends TTxCUD<T>
+  implements TxUpdateDoc<T> {
   operations!: DocumentUpdate<T>
 }
 
 @Model(core.class.TxRemoveDoc, core.class.TxCUD)
-export class TTxRemoveDoc<T extends Doc> extends TTxCUD<T> implements TxRemoveDoc<T> {
-}
+export class TTxRemoveDoc<T extends Doc>
+  extends TTxCUD<T>
+  implements TxRemoveDoc<T> {}
 
 @Model(core.class.TxBulkWrite, core.class.Tx)
 export class TTxBulkWrite extends TTx implements TxBulkWrite {

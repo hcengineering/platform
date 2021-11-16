@@ -67,7 +67,7 @@ export async function OnMessage (tx: Tx, txFactory: TxFactory): Promise<Tx[]> {
  * @public
  */
 export async function OnAttachment (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>): Promise<Tx[]> {
-  // if (tx._class === core.class.TxAddCollection) {
+  // if (tx._class === core.class.TxCollectionCUD) {
   //   const createTx = tx as TxAddCollection<Attachment>
   //   if (createTx.objectClass === chunter.class.Attachment) {
   //     const _id = createTx.attachedTo as Ref<WithAttachements>
