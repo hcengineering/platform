@@ -74,7 +74,7 @@
     {#if loading}
       <Spinner/>
     {:else}
-      <a href={'#'} on:click={ () => { inputFile.click() } }><CircleButton icon={IconAdd} size={'small'} /></a>
+      <CircleButton icon={IconAdd} size={'small'} on:click={ () => { inputFile.click() } } />
     {/if}
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>

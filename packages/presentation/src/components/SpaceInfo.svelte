@@ -24,7 +24,7 @@
 </script>
 
 <div class="flex-row-center">
-  <div class="flex-center {size}"><IconFolder size={'small'} /></div>
+  <div class="flex-center {size} caption-color"><IconFolder size={'small'} /></div>
   <div class="flex-col user-info">
     {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
     <div class="title">{value.name}</div>
