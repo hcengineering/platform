@@ -242,7 +242,11 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
               await elastic.index(indexedDoc)
             }
 
-            res.status(200).send(id)
+            res.status(200).send({
+              id,
+              contentType,
+              size: data.length
+            })
           }
         })
         // console.log(buffer.toString('base64'));
