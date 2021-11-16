@@ -116,12 +116,21 @@
       <div class="flex-col activity content">
         {#if comments}
         <Grid column={1} rowGap={1.5}>
-          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
+
+          <!-- Start Demo -->
+          <ActivityMsg icon={IconToDo}><span>Task TAS189</span> was created by <b>Tim Ferris</b> test</ActivityMsg>
           <ActivityMsg icon={IconToDo}>
             <b>Rosamund Chen</b> changed status from <span>IN PROGRESS</span> to <span class="bar">ON HOLD</span>
             <svelte:fragment slot="content">Content</svelte:fragment>
           </ActivityMsg>
           <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
+          <ActivityMsg icon={IconToDo}>
+            Testing <b>Rosamund Chen</b> changed status from <span>IN PROGRESS</span> to <span class="bar">ON HOLD</span>.
+            <div slot="content">Content</div>
+          </ActivityMsg>
+          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
+          <!-- End Demo -->
+          
           {#each comments as comment}
             <Backlink {comment} />
           {/each}
