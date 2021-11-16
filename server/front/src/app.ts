@@ -195,7 +195,8 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
     const cookie = req.query.cookie as string | undefined
     const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
 
-    console.log('importing from ', url)
+    console.log('importing from', url)
+    console.log('cookie', cookie)
 
     const options = cookie !== undefined
       ? {
@@ -207,6 +208,11 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
     https.get(url, options, response => {
       console.log('status', response.statusCode)
+      if (response.statusCode !== 200) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        res.status(500).send(`server returned ${response.statusCode}`)
+        return
+      }
       const id = uuid()
       const contentType = response.headers['content-type']
       const meta: ItemBucketMetadata = {
@@ -249,7 +255,6 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
             })
           }
         })
-        // console.log(buffer.toString('base64'));
       }).on('error', function (err) {
         res.status(500).send(err)
       })
