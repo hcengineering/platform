@@ -27,8 +27,7 @@ export default mergeIds(recruitId, recruit, {
     VacancyRequired: '' as StatusCode,
   },
   class: {
-    Vacancy: '' as Ref<Class<Vacancy>>,
-    Candidates: '' as Ref<Class<Candidates>>
+    Vacancy: '' as Ref<Class<Vacancy>>
   }, 
   string: {
     CreateVacancy: '' as IntlString,
