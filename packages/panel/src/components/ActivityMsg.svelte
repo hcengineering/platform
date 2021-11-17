@@ -33,7 +33,7 @@
         {/if}
       </div>
     </div>
-    <div class="flex-grow flex-row-center label"><slot /></div>
+    <div class="flex-grow label"><slot /></div>
     <div class="content-trans-color">Yesterday, 3:20 PM</div>
   </div>
   {#if $$slots.content}
@@ -66,6 +66,7 @@
 
   .icon {
     flex-shrink: 0;
+    align-self: flex-start;
     width: 2.25rem;
     height: 2.25rem;
     color: var(--theme-caption-color);
@@ -75,6 +76,7 @@
 
   .content {
     margin: .5rem 0 .5rem 3.25rem;
+    padding: 1rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
@@ -82,12 +84,11 @@
 
   .label {
     flex-wrap: wrap;
-    gap: .25rem;
     margin: 0 1rem;
   }
   :global(.label b) { color: var(--theme-caption-color); }
   :global(.label span) {
-    display: inline-flex;
+    display: inline-block;
     padding: .125rem .25rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-bg-focused-color);
