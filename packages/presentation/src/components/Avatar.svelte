@@ -27,9 +27,9 @@
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
-      <img class="{size} ava-blur" src={url} alt={''}/>
+      <img class="ava-{size} ava-blur" src={url} alt={''}/>
     {/if}
-    <img class="{size} ava-mask" src={url} alt={''}/>
+    <img class="ava-{size} ava-mask" src={url} alt={''}/>
   {:else}
     <Avatar {size}/>
   {/if}

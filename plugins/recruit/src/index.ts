@@ -54,7 +54,8 @@ export const recruitId = 'recruit' as Plugin
 export default plugin(recruitId, {
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
-    Candidate: '' as Ref<Class<Candidate>>
+    Candidate: '' as Ref<Class<Candidate>>,
+    Candidates: '' as Ref<Class<Candidates>>
   },
   icon: {
     RecruitApplication: '' as Asset,
