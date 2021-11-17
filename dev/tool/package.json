@@ -6,6 +6,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
+    "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "start": "ts-node src/index.ts",
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
