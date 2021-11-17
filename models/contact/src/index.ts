@@ -93,25 +93,25 @@ export function createModel (builder: Builder): void {
     label: 'Phone' as IntlString,
     icon: contact.icon.Phone,
     placeholder: '+1 555 333 7777'
-  })
+  }, contact.channelProvider.Phone)
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'LinkedIn' as IntlString,
     icon: contact.icon.LinkedIn,
     placeholder: 'https://linkedin.com/in/jappleseed'
-  })
+  }, contact.channelProvider.LinkedIn)
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'Twitter' as IntlString,
     icon: contact.icon.Twitter,
     placeholder: '@appleseed'
-  })
+  }, contact.channelProvider.Twitter)
 
   builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
     label: 'Telegram' as IntlString,
     icon: contact.icon.Telegram,
     placeholder: '@appleseed'
-  })
+  }, contact.channelProvider.Telegram)
 
   builder.createDoc(core.class.Space, core.space.Model, {
     name: 'Employees',

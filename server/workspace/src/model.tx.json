@@ -977,7 +977,7 @@
     "_id": "618a9e1165ff379e1b3b8fcd",
     "_class": "core:class:TxCreateDoc",
     "space": "core:space:Tx",
-    "objectId": "618a9e1165ff379e1b3b8fce",
+    "objectId": "contact:channelProvider:Telegram",
     "objectClass": "contact:class:ChannelProvider",
     "objectSpace": "core:space:Model",
     "modifiedOn": 1636474385880,
