@@ -166,6 +166,16 @@
     //    */
     //   // "autoinstallerName": "my-task"
     // }
+    {
+      "commandKind": "bulk",
+      "name": "build:watch",
+      "summary": "Build and watch",
+      "description": "Perform build with tsc and watch for changes with rush",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreMissingScript": true,
+      "watchForChanges": true
+    },
   ],
 
   /**
