@@ -238,7 +238,8 @@ export abstract class TxProcessor implements WithTx {
         attributes: {
           ...createTx.attributes,
           attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass
+          attachedToClass: tx.objectClass,
+          collection: tx.collection
         }
       }
       return this.txCreateDoc(d)
@@ -310,10 +311,10 @@ export class TxOperations implements Storage {
   async updateCollection<T extends Doc, P extends AttachedDoc>(
     _class: Ref<Class<P>>,
     space: Ref<Space>,
+    objectId: Ref<P>,
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: string,
-    objectId: Ref<P>,
     operations: DocumentUpdate<P>
   ): Promise<Ref<T>> {
     const tx = this.txFactory.createTxCollectionCUD(

@@ -62,6 +62,7 @@ export class TApplicant extends TDocWithState implements Applicant {
   attachedTo!: Ref<Candidate>
 
   attachedToClass!: Ref<Class<Candidate>>
+  collection!: string
 
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number

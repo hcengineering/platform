@@ -40,6 +40,7 @@ export class TDoc extends TObj implements Doc {
 export class TAttachedDoc extends TDoc implements AttachedDoc {
   attachedTo!: Ref<Doc>
   attachedToClass!: Ref<Class<Doc>>
+  collection!: string
 }
 
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)

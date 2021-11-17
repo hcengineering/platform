@@ -29,6 +29,7 @@ function extractBacklinks (backlinkId: Ref<Doc>, message: string, kids: Node[]):
       result.push({
         attachedTo: (kid as HTMLElement).getAttribute('data-id') as Ref<Doc>,
         attachedToClass: (kid as HTMLElement).getAttribute('data-class') as Ref<Class<Doc>>,
+        collection: (kid as HTMLElement).getAttribute('data-collection') ?? '',
         backlinkId,
         backlinkClass: chunter.class.Message,
         message

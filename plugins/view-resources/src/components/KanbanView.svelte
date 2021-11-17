@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite, TxCUD } from '@anticrm/core'
+  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite, TxCUD, AttachedDoc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { buildModel } from '../utils'
   import { getClient } from '@anticrm/presentation'
@@ -81,7 +81,13 @@
     const txes: TxCUD<Doc>[] = []
 
     if (dragCardInitialState !== state) {
-      client.updateDoc(_class, space, id, { state })
+      if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
+        const adoc: AttachedDoc = dragCard as AttachedDoc
+        // We need to update using updateCollection
+        client.updateCollection(_class, space, id as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection,  { state })
+      } else {
+        client.updateDoc(_class, space, id, { state })
+      }
       // txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
     }
 
