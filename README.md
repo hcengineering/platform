@@ -4,7 +4,7 @@ Anticrm Platform is a framework that help building business applications (such a
 
 ## Installation
 
-You need Microsoft's [rush](https://rushjs.io) to install application. Install [rush](https://rushjs.io) with `$ npm install -g @microsoft/rush` command and run `$ rush install` from the repository root.
+You need Microsoft's [rush](https://rushjs.io) to install application. Install [rush](https://rushjs.io) with `$ npm install -g @microsoft/rush` command and run `$ rush install` from the repository root, followed by `rush build`.
 
 ## Run in development mode
 
