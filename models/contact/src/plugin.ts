@@ -25,9 +25,9 @@ export const ids = mergeIds(contactId, contact, {
     Email: '' as Ref<ChannelProvider>,
     Phone: '' as Ref<ChannelProvider>,
     LinkedIn: '' as Ref<ChannelProvider>,
-    Twitter: '' as Ref<ChannelProvider>
+    Twitter: '' as Ref<ChannelProvider>,
+    Telegram: '' as Ref<ChannelProvider>
     // GitHub: '' as Ref<ChannelProvider>,
-    // Telegram: '' as Ref<ChannelProvider>,
   },
   component: {
     PersonPresenter: '' as AnyComponent,
