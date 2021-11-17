@@ -168,6 +168,16 @@
     // }
     {
       "commandKind": "bulk",
+      "name": "lint:fix",
+      "summary": "Lint&Fix",
+      "description": "Lint and autofix linting issues",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
       "name": "build:watch",
       "summary": "Build and watch",
       "description": "Perform build with tsc and watch for changes with rush",
@@ -183,6 +193,13 @@
    * For example, you might define a "--production" parameter for the "rush build" command.
    */
   "parameters": [
+      {
+      "parameterKind": "flag",      
+      "longName": "--lite",
+      "shortName": "-l",
+      "description": "Enable Heft lite building option, will skip some phases.",
+      "associatedCommands": ["build", "rebuild"]
+    },
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.
