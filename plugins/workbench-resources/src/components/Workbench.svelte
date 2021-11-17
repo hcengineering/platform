@@ -31,7 +31,7 @@
   
   import { AnyComponent, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
   import core from '@anticrm/core'
-  import CreateUser from './CreateUser.svelte'
+  import AccountPopup from './AccountPopup.svelte'
 
   export let client: Client
 
@@ -74,7 +74,9 @@
       <ActivityStatus status="active"/>
       <Applications active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
-        <div on:click={(el) => { showPopup(CreateUser, { }, el.target) }}><Avatar size={'medium'} /></div>
+        <div class="cursor-pointer" on:click={(el) => { showPopup(AccountPopup, { }, 'account') }}>
+          <Avatar size={'medium'} />
+        </div>
       </div>
     </div>
     {#if navigator}

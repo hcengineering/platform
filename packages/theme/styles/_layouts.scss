@@ -243,15 +243,18 @@ a.no-line {
   &:active { color: var(--theme-content-accent-color); }
   &:visited { color: var(--theme-caption-color); }
 }
+.cursor-pointer { cursor: pointer; }
 
 /* Text */
+.small-text { font-size: .75rem; }
 .fs-title {
   font-weight: 500;
   font-size: 1rem;
   color: var(--theme-caption-color);
   user-select: none;
 }
-.fs-subtitle { font-size: .75rem; }
+.fs-bold { font-weight: 500; }
+
 .over-underline {
   cursor: pointer;
   &:hover { text-decoration: underline; }
@@ -269,7 +272,6 @@ a.no-line {
   overflow: hidden;
   user-select: none;
 }
-.small-text { font-size: .75rem; }
 
 .focused-button {
   background-color: var(--theme-button-bg-focused);

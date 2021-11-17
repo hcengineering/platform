@@ -69,6 +69,9 @@
           modalHTML.style.top = '4rem'
           modalHTML.style.bottom = '4rem'
           modalHTML.style.right = '4rem'
+        } else if (element === 'account') {
+          modalHTML.style.bottom = '2.75rem'
+          modalHTML.style.left = '5rem'
         } else if (element === 'full') {
           modalHTML.style.top = '0'
           modalHTML.style.bottom = '0'
