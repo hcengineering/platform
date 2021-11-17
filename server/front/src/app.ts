@@ -251,7 +251,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
             res.status(200).send({
               id,
               contentType,
-              size: data.length
+              size: buffer.length
             })
           }
         })
