@@ -36,6 +36,12 @@
   import recruit from '../plugin'
   import { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
 
+  // Start Demo
+  import PluginCard from './PluginCard.svelte'
+  import Telegram from './icons/Telegram.svelte'
+  import Gmail from './icons/Gmail.svelte'
+  // End Demo
+
   export let _id: Ref<Candidate>
   let object: Candidate
 
@@ -88,7 +94,14 @@
     </div>
   </div>
 
-  <div class="group">
+  <!-- Start Demo -->
+  <div class="group cards-container">
+    <PluginCard icon={Telegram} />
+    <PluginCard icon={Gmail} />
+  </div>
+  <!-- End Demo -->
+
+  <div class="flex-col group">
     <div class="flex-row-center">
       <div class="caption">Applications</div>
       <CircleButton icon={IconAdd} size={'small'} on:click={ (ev) => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, ev.target) } } />
@@ -116,6 +129,15 @@
 {/if}
 
 <style lang="scss">
+  // Start Demo
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
+    grid-auto-rows: minmax(12.5rem, auto);
+    grid-gap: 1.5rem;
+  }
+  // End Demo
+
   .name {
     font-weight: 500;
     font-size: 1.25rem;
