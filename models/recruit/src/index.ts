@@ -18,6 +18,7 @@ import { Builder, Model, UX, Prop, TypeString, TypeBoolean } from '@anticrm/mode
 import type { Ref, FindOptions, Doc, Domain, Class } from '@anticrm/core'
 import core, { TSpace, TSpaceWithStates, TDocWithState } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
+import activity from '@anticrm/activity'
 
 import workbench from '@anticrm/model-workbench'
 
@@ -194,6 +195,32 @@ export function createModel (builder: Builder): void {
     attachedTo: recruit.class.Applicant,
     sequence: 0
   })
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: recruit.class.Applicant,
+    icon: recruit.icon.RecruitApplication,
+    txClass: core.class.TxCreateDoc,
+    component: recruit.activity.TxApplicantCreate,
+    label: recruit.string.TxApplicantCreate,
+    display: 'emphasized'
+  }, recruit.ids.TxApplicantCreate)
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: recruit.class.Applicant,
+    icon: recruit.icon.RecruitApplication,
+    txClass: core.class.TxUpdateDoc,
+    component: recruit.activity.TxApplicantUpdate,
+    label: recruit.string.TxApplicantUpdate,
+    display: 'inline'
+  }, recruit.ids.TxApplicantUpdate)
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: recruit.class.Candidate,
+    icon: recruit.icon.RecruitApplication,
+    txClass: core.class.TxCreateDoc,
+    label: recruit.string.TxCandidateCreate,
+    display: 'emphasized'
+  }, recruit.ids.TxCandidateCreate)
 }
 
 export { default } from './plugin'

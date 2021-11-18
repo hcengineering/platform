@@ -68,6 +68,9 @@
     "@anticrm/server-recruit": "~0.6.1",
     "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/server-view": "~0.6.0",
-    "@anticrm/server-view-resources": "~0.6.0"
+    "@anticrm/server-view-resources": "~0.6.0",
+    "@anticrm/activity": "~0.6.0",
+    "@anticrm/activity-assets": "~0.6.0",
+    "@anticrm/activity-resources": "~0.6.0"
   }
 }

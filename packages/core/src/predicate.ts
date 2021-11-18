@@ -15,22 +15,30 @@
 //
 
 import type { Doc } from './classes'
+import { getNestedValue } from './query'
 
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
 
+type ExecPredicate = (value: any) => boolean
+
+function execPredicate (docs: Doc[], propertyKey: string, pred: ExecPredicate): Doc[] {
+  const result: Doc[] = []
+  for (const doc of docs) {
+    const value = getNestedValue(propertyKey, doc)
+    if (pred(value)) {
+      result.push(doc)
+    }
+  }
+  return result
+}
+
 const predicates: Record<string, PredicateFactory> = {
-  $in: (o: any, propertyKey: string): Predicate => {
+  $in: (o, propertyKey) => {
     if (!Array.isArray(o)) {
       throw new Error('$in predicate requires array')
     }
-    return (docs: Doc[]): Doc[] => {
-      const result: Doc[] = []
-      for (const doc of docs) {
-        if (o.includes((doc as any)[propertyKey])) result.push(doc)
-      }
-      return result
-    }
+    return (docs) => execPredicate(docs, propertyKey, (value) => o.includes(value))
   },
 
   $like: (query: string, propertyKey: string): Predicate => {

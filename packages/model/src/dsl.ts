@@ -13,24 +13,11 @@
 // limitations under the License.
 //
 
-import type {
-  Ref,
-  Doc,
-  Type,
-  PropertyType,
-  Attribute,
-  Tx,
-  Class,
-  Obj,
-  Data,
-  TxCreateDoc,
-  Domain,
-  Mixin as IMixin,
-  Space,
-  ExtendedAttributes
+import core, {
+  Account,
+  Attribute, Class, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
 } from '@anticrm/core'
-import core, { ClassifierKind, IndexKind, generateId, TxFactory } from '@anticrm/core'
-import type { IntlString, Asset } from '@anticrm/platform'
+import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
 
 type NoIDs<T extends Tx> = Omit<T, '_id' | 'objectId'>
@@ -240,16 +227,20 @@ export class Builder {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     attributes: Data<T>,
-    objectId?: Ref<T>
-  ): void {
-    this.txes.push(
-      txFactory.createTxCreateDoc(
-        _class,
-        space,
-        attributes,
-        objectId
-      )
+    objectId?: Ref<T>,
+    modifiedBy?: Ref<Account>
+  ): T {
+    const tx = txFactory.createTxCreateDoc(
+      _class,
+      space,
+      attributes,
+      objectId
     )
+    if (modifiedBy !== undefined) {
+      tx.modifiedBy = modifiedBy
+    }
+    this.txes.push(tx)
+    return TxProcessor.createDoc2Doc(tx)
   }
 
   mixin<D extends Doc, M extends D> (

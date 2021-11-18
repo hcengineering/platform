@@ -184,7 +184,28 @@
       "enableParallelism": true,
       "incremental": true,
       "ignoreMissingScript": true,
-      "watchForChanges": true
+      "watchForChanges": true,
+      "safeForSimultaneousRushProcesses": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "svelte-check",
+      "summary": "svelte-check",
+      "description": "Perform svelte-check",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test",
+      "summary": "test",
+      "description": "Perform testing",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
     },
   ],
 

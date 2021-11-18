@@ -31,7 +31,9 @@
   <Loading/>
 {:then Ctor}
   <ErrorBoundary>
-    <Ctor {...props} on:change on:close on:open on:click/>
+    <Ctor {...props} on:change on:close on:open on:click>
+      <slot />
+    </Ctor>
   </ErrorBoundary>
 {:catch err}
   ERROR: {console.log(err, JSON.stringify(component))}

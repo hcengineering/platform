@@ -23,6 +23,7 @@ import { taskId } from '@anticrm/task'
 import { contactId } from '@anticrm/contact'
 import { chunterId } from '@anticrm/chunter'
 import { recruitId } from '@anticrm/recruit'
+import { activityId } from '@anticrm/activity'
 
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
@@ -34,6 +35,7 @@ import '@anticrm/view-assets'
 import '@anticrm/chunter-assets'
 import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
+import '@anticrm/activity-assets'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -60,4 +62,5 @@ export function configurePlatform() {
   addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
+  addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
 }

@@ -14,26 +14,27 @@
 // limitations under the License.
 //
 
+import { Employee, EmployeeAccount } from '@anticrm/contact'
+import core, { generateId, Ref } from '@anticrm/core'
 import { Builder } from '@anticrm/model'
-import core, { generateId } from '@anticrm/core'
-
 import contact from '@anticrm/model-contact'
 import recruit from '@anticrm/model-recruit'
 
 export function createDemo (builder: Builder): void {
   const rosamund = generateId()
+  const account: Ref<EmployeeAccount> = generateId()
 
   builder.createDoc(contact.class.Employee, contact.space.Employee, {
     name: 'Chen,Rosamund',
     city: 'Mountain View',
     channels: []
-  }, rosamund)
+  }, rosamund, account)
 
-  builder.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+  builder.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
     email: 'rosamund@hc.engineering',
-    employee: rosamund as any,
+    employee: rosamund as Ref<Employee>,
     name: 'Chen,Rosamund'
-  })
+  }, account, account)
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     name: 'P.,Andrey',
@@ -45,7 +46,7 @@ export function createDemo (builder: Builder): void {
         value: 'andrey@hc.engineering'
       }
     ]
-  })
+  }, undefined, account)
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     name: 'M.,Marina',
@@ -57,7 +58,7 @@ export function createDemo (builder: Builder): void {
         value: 'marina@hc.engineering'
       }
     ]
-  })
+  }, undefined, account)
 
   builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
     name: 'P.,Alex',
@@ -69,5 +70,5 @@ export function createDemo (builder: Builder): void {
         value: 'alex@hc.engineering'
       }
     ]
-  })
+  }, undefined, account)
 }

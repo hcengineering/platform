@@ -64,7 +64,8 @@ export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
-    Lock: '' as Asset
+    Lock: '' as Asset,
+    Attachment: '' as Asset
   },
   class: {
     Message: '' as Ref<Class<Message>>,

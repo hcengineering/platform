@@ -796,5 +796,25 @@
       "projectFolder": "packages/panel",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/activity",
+      "projectFolder": "plugins/activity",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/activity-assets",
+      "projectFolder": "plugins/activity-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/activity-resources",
+      "projectFolder": "plugins/activity-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-activity",
+      "projectFolder": "models/activity",
+      "shouldPublish": true
+    },
   ]
 }

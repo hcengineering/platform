@@ -94,13 +94,6 @@
     </div>
   </div>
 
-  <!-- Start Demo -->
-  <div class="group cards-container">
-    <PluginCard icon={Telegram} />
-    <PluginCard icon={Gmail} />
-  </div>
-  <!-- End Demo -->
-
   <div class="flex-col group">
     <div class="flex-row-center">
       <div class="caption">Applications</div>

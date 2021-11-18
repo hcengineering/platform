@@ -20,6 +20,7 @@ import { mergeIds } from '@anticrm/platform'
 import type { Ref } from '@anticrm/core'
 import { ViewletDescriptor } from '@anticrm/view'
 import type { AnyComponent } from '@anticrm/ui'
+import type { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -27,9 +28,19 @@ export default mergeIds(chunterId, chunter, {
     AttachmentPresenter: '' as AnyComponent
   },
   string: {
-    ApplicationLabelChunter: '' as IntlString
+    ApplicationLabelChunter: '' as IntlString,
+    LeftComment: '' as IntlString,
+    AddAttachment: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
+  },
+  ids: {
+    TxCommentCreate: '' as Ref<TxViewlet>,
+    TxAttachmentCreate: '' as Ref<TxViewlet>
+  },
+  activity: {
+    TxCommentCreate: '' as AnyComponent,
+    TxAttachmentCreate: '' as AnyComponent
   }
 })

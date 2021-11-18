@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset, Resource } from '@anticrm/platform'
+import type { Plugin, Asset, Resource, IntlString } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State } from '@anticrm/core'
+import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj } from '@anticrm/core'
 
-import type { AnyComponent } from '@anticrm/ui'
+import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -103,6 +103,26 @@ export interface Sequence extends Doc {
  */
 export const viewId = 'view' as Plugin
 
+/**
+ * @public
+ */
+export interface AttributeModel {
+  key: string
+  label: IntlString
+  presenter: AnySvelteComponent
+}
+
+/**
+ * @public
+ */
+export interface BuildModelOptions {
+  client: Client
+  _class: Ref<Class<Obj>>
+  keys: string[]
+  options?: FindOptions<Doc>
+  ignoreMissing?: boolean
+}
+
 export default plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
@@ -128,5 +148,8 @@ export default plugin(viewId, {
   icon: {
     Table: '' as Asset,
     Kanban: '' as Asset
+  },
+  api: {
+    buildModel: '' as Resource<(options: BuildModelOptions) => Promise<AttributeModel[]>>
   }
 })
