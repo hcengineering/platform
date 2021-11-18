@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "types": ["heft-jest"]
+  }
+}

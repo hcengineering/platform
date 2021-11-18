@@ -40,6 +40,9 @@ export type DocumentQuery<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]>
 } & {
   $search?: string
+  // support nested queries e.g. 'user.friends.name'
+  // this will mark all unrecognized properties as any (including nested queries)
+  [key: string]: any
 }
 
 /**

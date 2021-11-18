@@ -26,8 +26,10 @@ import KanbanView from './components/KanbanView.svelte'
 
 import { getClient, MessageBox } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
+import {buildModel} from './utils'
 
 export { Table }
+export { buildModel } from './utils'
 
 function Delete(object: Doc): void {
   showPopup(MessageBox, {
@@ -54,4 +56,7 @@ export default async () => ({
     KanbanView,
     TimestampPresenter
   },
+  api: {
+    buildModel
+  }
 })

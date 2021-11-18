@@ -70,7 +70,7 @@
   }
 </script>
 
-{#await buildModel(client, _class, config, options)}
+{#await buildModel({client, _class, keys: config, options})}
   <Loading/>
 {:then model}
   <table class="table-body">

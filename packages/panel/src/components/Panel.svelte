@@ -15,19 +15,12 @@
 -->
 
 <script lang="ts">
-  import type { Asset } from '@anticrm/platform'
-  import type { Doc } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
-  import { getClient, createQuery, Backlink } from '@anticrm/presentation'
-  import type { AnySvelteComponent } from '@anticrm/ui'
-  import { ReferenceInput } from '@anticrm/text-editor'
-  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Icon, IconToDo } from '@anticrm/ui'
-  import type { Comment } from '@anticrm/chunter'
-  import ActivityMsg from './ActivityMsg.svelte'
-
-  import { createEventDispatcher } from 'svelte'
-
-  import chunter from '@anticrm/chunter'
+  import activity from '@anticrm/activity'
+  import type { Doc } from '@anticrm/core';
+  import type { Asset } from '@anticrm/platform';
+  import type { AnySvelteComponent } from '@anticrm/ui';
+  import { Icon,IconClose,IconExpand, Component } from '@anticrm/ui';
+  import { createEventDispatcher } from 'svelte';
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
@@ -35,19 +28,6 @@
   export let object: Doc
 
   const dispatch = createEventDispatcher()
-
-  let comments: Comment[]
-
-  const client = getClient()
-  const query = createQuery()
-  $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result }, { sort: { modifiedOn: SortingOrder.Descending } })
-
-  function onMessage(event: CustomEvent) {
-    client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', {
-      message: event.detail
-    })
-    console.log(event.detail)
-  }  
 </script>
 
 <div class="overlay" on:click={() => { dispatch('close') }}/>
@@ -73,22 +53,7 @@
     </div>
   </div>
   <div class="rightSection">
-    <div class="flex-row-center header">
-      <div class="icon"><IconActivity size={'small'} /></div>
-      <div class="title">Activity</div>
-    </div>
-    <div class="flex-col h-full content">
-      <ScrollBox vertical stretch>
-        {#if comments}
-        <Grid column={1} rowGap={1.5}>
-          {#each comments as comment}
-            <Backlink {comment} />
-          {/each}
-        </Grid>
-        {/if}
-      </ScrollBox>
-    </div>
-    <div class="ref-input"><ReferenceInput on:message={onMessage}/></div>
+    <Component is={activity.component.Activity} props={{object, fullSize}}/>
   </div>
 {:else}
   <div class="unionSection">
@@ -103,40 +68,10 @@
       <div class="title">{title}</div>
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
-    <ScrollBox vertical stretch noShift>
-      <div class="flex-col content">
-        <slot />
-      </div>
-      <div class="flex-row-center activity header">
-        <div class="icon"><IconActivity size={'small'} /></div>
-        <div class="title">Activity</div>
-      </div>
-      <div class="flex-col activity content">
-        {#if comments}
-        <Grid column={1} rowGap={1.5}>
 
-          <!-- Start Demo -->
-          <ActivityMsg icon={IconToDo}><span>Task TAS189</span> was created by <b>Tim Ferris</b> test</ActivityMsg>
-          <ActivityMsg icon={IconToDo}>
-            <b>Rosamund Chen</b> changed status from <span>IN PROGRESS</span> to <span class="bar">ON HOLD</span>
-            <svelte:fragment slot="content">Content</svelte:fragment>
-          </ActivityMsg>
-          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
-          <ActivityMsg icon={IconToDo}>
-            Testing <b>Rosamund Chen</b> changed status from <span>IN PROGRESS</span> to <span class="bar">ON HOLD</span>.
-            <div slot="content">Content</div>
-          </ActivityMsg>
-          <ActivityMsg icon={IconToDo}>Task TAS189 was created by <b>Tim Ferris</b></ActivityMsg>
-          <!-- End Demo -->
-          
-          {#each comments as comment}
-            <Backlink {comment} />
-          {/each}
-        </Grid>
-        {/if}
-      </div>
-    </ScrollBox>
-    <div class="ref-input"><ReferenceInput on:message={onMessage}/></div>
+    <Component is={activity.component.Activity} props={{object, fullSize}}>
+      <slot />
+    </Component>
   </div>
 {/if}
 
@@ -193,24 +128,7 @@
 
     display: flex;
     flex-direction: column;
-    height: max-content;
-
-    .content {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 1.5rem 2.5rem;
-      height: max-content;
-    }
-    .activity {
-      background-color: var(--theme-dialog-accent);
-      &.header { border-bottom: none; }
-      &.content {
-        flex-grow: 1;
-        padding-bottom: 0;
-        background-color: var(--theme-dialog-accent);
-      }
-    }
+    height: max-content;    
   }
 
   .fullSize {
@@ -236,17 +154,6 @@
   }
   .rightSection {
     background-color: transparent;
-    .header { border-bottom: 1px solid var(--theme-dialog-divider); }
-    .content {
-      flex-grow: 1;
-      padding: 2.5rem 2.5rem 0;
-      background-color: var(--theme-dialog-accent);
-    }
-  }
-
-  .ref-input {
-    background-color: var(--theme-dialog-accent);
-    padding: 1.5rem 2.5rem;
   }
 
   .tools {

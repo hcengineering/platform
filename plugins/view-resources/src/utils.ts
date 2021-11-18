@@ -18,15 +18,9 @@ import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import type { Ref, Class, Obj, FindOptions, Doc, Client } from '@anticrm/core'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-import type { Action, ActionTarget } from '@anticrm/view'
+import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 
-import view from '@anticrm/view'
-
-export interface AttributeModel {
-  key: string
-  label: IntlString
-  presenter: AnySvelteComponent
-}
+import view, { AttributeModel } from '@anticrm/view'
 
 async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> { 
   const clazz = client.getHierarchy().getClass(_class) 
@@ -94,11 +88,20 @@ async function getPresenter(client: Client, _class: Ref<Class<Obj>>, key: string
   }
 }
 
-export async function buildModel(client: Client, _class: Ref<Class<Obj>>, keys: string[], options?: FindOptions<Doc>): Promise<AttributeModel[]> {
-  console.log('building table model for', _class)
-  const model = keys.map(key => getPresenter(client, _class, key, key, options))
+export async function buildModel(options: BuildModelOptions): Promise<AttributeModel[]> {
+  console.log('building table model for', options._class)
+  const model = options.keys.map(key => {
+    try {
+      const result = getPresenter(options.client, options._class, key, key, options.options)
+      return result
+    } catch(err: any) {
+      if (!(options.ignoreMissing ?? false)) {
+        throw err
+      }
+    }
+  })
   console.log(model)
-  return await Promise.all(model)
+  return (await Promise.all(model)).filter(a => a !== undefined) as AttributeModel[]  
 }
 
 function filterActions(client: Client, _class: Ref<Class<Obj>>, targets: ActionTarget[]): Ref<Action>[] {

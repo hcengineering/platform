@@ -70,3 +70,4 @@ common/autoinstallers/*/.npmrc
 **/.rush/temp/
 bundle.js
 dist
+tsconfig.tsbuildinfo

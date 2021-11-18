@@ -33,6 +33,7 @@
     "@anticrm/model-server-core": "~0.6.0",
     "@anticrm/model-server-chunter": "~0.6.0",
     "@anticrm/model-server-recruit": "~0.6.0",
-    "@anticrm/model-server-view": "~0.6.0"
+    "@anticrm/model-server-view": "~0.6.0",
+    "@anticrm/model-activity": "~0.6.0"
   }
 }
