@@ -67,6 +67,7 @@ export interface UXObject extends Obj {
 export interface AttachedDoc extends Doc {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
+  collection: string
 }
 
 /**

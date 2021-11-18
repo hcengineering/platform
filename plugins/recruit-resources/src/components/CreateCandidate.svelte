@@ -75,9 +75,7 @@
     console.log('resume name', resume.name)
 
     if (resume.uuid !== undefined) {
-      client.createDoc(chunter.class.Attachment, space, {
-        attachedTo: id,
-        attachedToClass: recruit.class.Candidate,
+      client.addCollection(chunter.class.Attachment, space, id, recruit.class.Candidate, 'attachments', {
         name: resume.name,
         file: resume.uuid,
         size: resume.size,

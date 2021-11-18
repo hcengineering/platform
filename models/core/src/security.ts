@@ -47,7 +47,7 @@ export class TState extends TDoc implements State {
   color!: string
 }
 
-@Model(core.class.DocWithState, core.class.Doc)
+@Model(core.class.DocWithState, core.class.AttachedDoc)
 export class TDocWithState extends TDoc {
   @Prop(TypeString(), 'State' as IntlString)
   state!: Ref<State>

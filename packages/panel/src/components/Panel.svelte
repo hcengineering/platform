@@ -15,13 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { Asset } from '@anticrm/platform'
   import type { Doc } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { getClient, createQuery, Backlink } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Label, Icon, IconToDo } from '@anticrm/ui'
+  import { IconClose, IconExpand, IconActivity, ScrollBox, Grid, Icon, IconToDo } from '@anticrm/ui'
   import type { Comment } from '@anticrm/chunter'
   import ActivityMsg from './ActivityMsg.svelte'
 
@@ -43,9 +43,7 @@
   $: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result }, { sort: { modifiedOn: SortingOrder.Descending } })
 
   function onMessage(event: CustomEvent) {
-    client.createDoc(chunter.class.Comment, object.space, {
-      attachedTo: object._id,
-      attachedToClass: object._class,
+    client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', {
       message: event.detail
     })
     console.log(event.detail)

@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import type { Account, AnyAttribute, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
+import type { Account, AnyAttribute, AttachedDoc, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeTimestamp } from '@anticrm/model'
 import core from './component'
@@ -34,6 +34,13 @@ export class TDoc extends TObj implements Doc {
   modifiedOn!: Timestamp
 
   modifiedBy!: Ref<Account>
+}
+
+@Model(core.class.AttachedDoc, core.class.Doc)
+export class TAttachedDoc extends TDoc implements AttachedDoc {
+  attachedTo!: Ref<Doc>
+  attachedToClass!: Ref<Class<Doc>>
+  collection!: string
 }
 
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)

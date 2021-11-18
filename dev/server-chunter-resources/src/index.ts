@@ -28,6 +28,7 @@ function extractBacklinks (backlinkId: Ref<Doc>, message: string, kids: NodeList
       result.push({
         attachedTo: kid.getAttribute('data-id') as Ref<Doc>,
         attachedToClass: kid.getAttribute('data-class') as Ref<Class<Doc>>,
+        collection: kid.getAttribute('data-collection') ?? '',
         backlinkId,
         backlinkClass: chunter.class.Message,
         message
