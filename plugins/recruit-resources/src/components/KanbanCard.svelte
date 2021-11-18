@@ -43,7 +43,7 @@
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
         <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
-        <div class="fs-subtitle"><Label label={formatName(object.$lookup?.attachedTo?.title)} /></div>
+        <div class="small-text"><Label label={formatName(object.$lookup?.attachedTo?.title)} /></div>
       </div>
     </div>
     <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />
