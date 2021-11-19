@@ -24,6 +24,7 @@
 
   import { AttachmentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
+  import ApplicationPresenter from './ApplicationPresenter.svelte'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
@@ -32,9 +33,9 @@
     showPopup(EditCandidate, { _id: object.attachedTo }, 'full')
   }
 
-  function showApplication() {
-    showPopup(EditApplication, { _id: object._id }, 'full')
-  }
+  // function showApplication() {
+  //   showPopup(EditApplication, { _id: object._id }, 'full')
+  // }
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
@@ -43,16 +44,15 @@
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
         <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
-        <div class="small-text"><Label label={formatName(object.$lookup?.attachedTo?.title)} /></div>
+        <div class="small-text">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
     </div>
     <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />
   </div>
   <div class="flex-between">
     <div class="flex-row-center">
-      <div class="sm-tool-icon step-lr75" on:click={showApplication}>
-        <span class="icon"><IconFile size={'small'} /></span>
-        APP-542
+      <div class="sm-tool-icon step-lr75">
+        <ApplicationPresenter value={object} />
       </div>
       {#if object.attachments && Object.keys(object.attachments).length > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
