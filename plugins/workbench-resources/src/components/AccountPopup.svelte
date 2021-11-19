@@ -15,8 +15,9 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Label } from '@anticrm/ui'
+  import { Label, showPopup } from '@anticrm/ui'
   import { Avatar } from '@anticrm/presentation'
+  import TelegramPopup from './TelegramPopup.svelte'
 
   let items: string[] = ['Settings', 'Integrations', 'Support', 'Privacy', 'Terms & policy', 'Sign out']
 </script>
@@ -32,7 +33,10 @@
   </div>
   <div class="content">
     {#each items as item }
-      <div class="item">{item}</div>
+      <div class="item" on:click={() => {
+        if (item === 'Integrations')
+          showPopup(TelegramPopup, {})
+      }}>{item}</div>
     {/each}
   </div>
 </div>

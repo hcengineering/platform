@@ -152,7 +152,7 @@
     border-radius: .75rem;
     user-select: none;
     filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
-    z-index: 1000;
+    z-index: 10000;
   }
 
   .tooltip {
@@ -164,7 +164,7 @@
     border-radius: .5rem;
     user-select: none;
     text-align: center;
-    z-index: 1000;
+    z-index: 10000;
 
     &::after {
       content: '';

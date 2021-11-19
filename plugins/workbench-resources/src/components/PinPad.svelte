@@ -1,0 +1,108 @@
+<!--
+// Copyright © 2020 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
+<script lang="ts">
+  import { onMount } from "svelte"
+  import { createEventDispatcher } from 'svelte'
+
+  export let length: number = 6
+  export let value: string = ''
+
+  const dispatch = createEventDispatcher()
+
+  let digits: string[] = []
+  let areas: HTMLInputElement[] = []
+  let selected: number = 0
+  let filled: number
+
+  for (let i = 0; i < length; i++) digits[i] = ''
+
+  const onInput = (ev?: Event, n?: number): void => {
+    selected = -1
+    filled = 0
+    for (let i = 0; i < length; i++) {
+      if (digits[i] && digits[i].length > 1) {
+        if (i < length - 1) digits[i+1] = digits[i].substring(1)
+        digits[i] = digits[i][0]
+      }
+      if (digits[i]) filled++
+      if (selected < 0 && selected < length && digits[i] === '') selected = i
+    }
+    digits = digits
+    if (filled === length) {
+      if ((ev as InputEvent).inputType === 'insertFromPaste' && n && n < length) selected = n
+      if ((ev as InputEvent).inputType === 'insertText' && selected < 0 && (n || n === 0)) selected = n + 1
+      if (selected === length) selected--
+      value = ''
+      for (let i = 0; i < length; i++) value += digits[i]
+      dispatch('filled', value)
+    }
+    if (selected !== -1 && selected < length) {
+      areas[selected].focus()
+      areas[selected].select()
+    }
+  }
+
+  const selectInput = (n: number): void => {
+    if (areas[n]) {
+      areas[n].focus()
+      areas[n].select()
+    }
+  }
+
+  const keyPressed = (ev: Event, n: number): void => {
+    if ((ev as KeyboardEvent).key === 'Backspace' && n > 0 && digits[n] === '') {
+      digits[n-1] = ''
+      digits = digits
+      onInput(undefined, n-1)
+    }
+  }
+
+  onMount(() => {
+    if (areas[0]) onInput()
+    console.log('AREAS', areas)
+  })
+</script>
+
+<div class="flex-between">
+  {#each digits as digit, i}
+    <input
+      class="fs-title digit"
+      type="text"
+      bind:this={areas[i]}
+      bind:value={digit}
+      on:input={(ev) => { onInput(ev, i) }}
+      on:keydown={async (ev) => keyPressed(ev, i)}
+      on:click={async () => selectInput(i)}
+    />
+  {/each}
+</div>
+
+<style lang="scss">
+  .digit {
+    width: 2.5rem;
+    height: 3rem;
+    text-align: center;
+    background-color: var(--theme-card-bg-dark);
+    border: 1px solid transparent;
+    border-style: none;
+    border-radius: .5rem;
+
+    &:focus {
+      border: 1px solid var(--primary-button-focused-border);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
+    }
+  }
+</style>
