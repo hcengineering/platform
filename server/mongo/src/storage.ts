@@ -53,7 +53,11 @@ abstract class MongoAdapterBase extends TxProcessor {
       translated[key] = value
     }
     const classes = this.hierarchy.getDescendants(clazz)
-    translated._class = { $in: classes }
+
+    // Only replace if not specified
+    if (translated._class?.$in === undefined) {
+      translated._class = { $in: classes }
+    }
     // return Object.assign({}, query, { _class: { $in: classes } })
     return translated
   }
