@@ -14,13 +14,12 @@
 -->
 
 <script lang="ts">
-  import { UserInfo, Avatar } from '@anticrm/presentation'
+  import { Avatar } from '@anticrm/presentation'
   import { showPopup, Label, IconThread, ActionIcon, IconMoreH, IconFile } from '@anticrm/ui'
   import type { WithLookup } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
 
   import EditCandidate from './EditCandidate.svelte'
-  import EditApplication from './EditApplication.svelte'
 
   import { AttachmentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
@@ -32,10 +31,6 @@
   function showCandidate() {
     showPopup(EditCandidate, { _id: object.attachedTo }, 'full')
   }
-
-  // function showApplication() {
-  //   showPopup(EditApplication, { _id: object._id }, 'full')
-  // }
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
