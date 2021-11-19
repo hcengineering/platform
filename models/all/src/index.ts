@@ -22,6 +22,7 @@ import { createModel as contactModel } from '@anticrm/model-contact'
 import { createModel as taskModel } from '@anticrm/model-task'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
+import { createModel as settingModel } from '@anticrm/model-setting'
 
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
@@ -41,6 +42,7 @@ contactModel(builder)
 chunterModel(builder)
 taskModel(builder)
 recruitModel(builder)
+settingModel(builder)
 
 serverCoreModel(builder)
 serverChunterModel(builder)

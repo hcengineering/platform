@@ -1,0 +1,20 @@
+{
+  "name": "@anticrm/setting-assets",
+  "version": "0.6.0",
+  "main": "src/index.ts",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "",
+    "build:docs": "api-extractor run --local",
+    "lint": "ts-standard src",
+    "lint:fix": "ts-standard --fix src",
+    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && ts-standard --fix src"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+    "@anticrm/platform":"~0.6.5",
+    "@anticrm/setting":"~0.6.0"
+  }
+}

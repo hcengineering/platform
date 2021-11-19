@@ -816,5 +816,25 @@
       "projectFolder": "models/activity",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/setting",
+      "projectFolder": "plugins/setting",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/setting-assets",
+      "projectFolder": "plugins/setting-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/setting-resources",
+      "projectFolder": "plugins/setting-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-setting",
+      "projectFolder": "models/setting",
+      "shouldPublish": true
+    }
   ]
 }

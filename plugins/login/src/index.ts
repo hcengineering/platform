@@ -38,6 +38,7 @@ export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
     UploadUrl: '' as Asset,
+    TelegramUrl: '' as Asset,
     LoginToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,

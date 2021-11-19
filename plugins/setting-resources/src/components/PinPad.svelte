@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { onMount } from "svelte"
+  import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte'
 
   export let length: number = 6
@@ -34,7 +33,7 @@
     filled = 0
     for (let i = 0; i < length; i++) {
       if (digits[i] && digits[i].length > 1) {
-        if (i < length - 1) digits[i+1] = digits[i].substring(1)
+        if (i < length - 1) digits[i + 1] = digits[i].substring(1)
         digits[i] = digits[i][0]
       }
       if (digits[i]) filled++
@@ -64,15 +63,14 @@
 
   const keyPressed = (ev: Event, n: number): void => {
     if ((ev as KeyboardEvent).key === 'Backspace' && n > 0 && digits[n] === '') {
-      digits[n-1] = ''
+      digits[n - 1] = ''
       digits = digits
-      onInput(undefined, n-1)
+      onInput(undefined, n - 1)
     }
   }
 
   onMount(() => {
     if (areas[0]) onInput()
-    console.log('AREAS', areas)
   })
 </script>
 
@@ -83,7 +81,9 @@
       type="text"
       bind:this={areas[i]}
       bind:value={digit}
-      on:input={(ev) => { onInput(ev, i) }}
+      on:input={(ev) => {
+        onInput(ev, i)
+      }}
       on:keydown={async (ev) => keyPressed(ev, i)}
       on:click={async () => selectInput(i)}
     />
@@ -98,7 +98,7 @@
     background-color: var(--theme-card-bg-dark);
     border: 1px solid transparent;
     border-style: none;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 
     &:focus {
       border: 1px solid var(--primary-button-focused-border);

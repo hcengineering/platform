@@ -27,8 +27,8 @@
 
   let apps: Application[] = []
 
-  const query = createQuery()  
-  $: query.query(workbench.class.Application, {}, result => { apps = result })
+  const query = createQuery()
+  $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
 
   function navigateApp(app: Ref<Application>) {
     const loc = getCurrentLocation()

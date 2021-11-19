@@ -22,14 +22,14 @@
   
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
-  import { setClient, Avatar, MessageBox } from '@anticrm/presentation'
+  import { setClient, Avatar } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
 
   import Navigator from './Navigator.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
+  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
 
@@ -39,25 +39,35 @@
 
   let currentApp: Ref<Application> | undefined
   let currentSpace: Ref<Space> | undefined
+  let specialComponent: AnyComponent | undefined
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let navigatorModel: NavigatorModel | undefined
 
   onDestroy(location.subscribe(async (loc) => {
     currentApp = loc.path[1] as Ref<Application>
-    currentSpace = loc.path[2] as Ref<Space>
-    const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
-    if (space) {
-      const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
-      const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
-      currentView = view.view
-      createItemDialog = currentView.createItemDialog
-    } else {
-      currentView = undefined
-      createItemDialog = undefined
-    }
     navigatorModel = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]?.navigatorModel
+    let currentFolder = loc.path[2] as Ref<Space>
+    specialComponent = getSpecialComponent(currentFolder)
+    if (!specialComponent) {
+      currentSpace = currentFolder
+      const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
+      if (space) {
+        const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
+        const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
+        currentView = view.view
+        createItemDialog = currentView.createItemDialog
+      } else {
+        currentView = undefined
+        createItemDialog = undefined
+      }
+    }
   }))
+
+  function getSpecialComponent (id: string): AnyComponent | undefined {
+    let special = navigatorModel?.specials?.find((x) => x.id === id)
+    return special?.component
+  }
 </script>
 
 {#if client}
@@ -82,13 +92,17 @@
     {#if navigator}
     <div class="panel-navigator">
       <NavHeader label={'Chat'} action={() => {}} />
-      <Navigator model={navigatorModel}/>
+      <Navigator model={navigatorModel} />
     </div>
     {/if}
     <div class="panel-component">
-      <SpaceHeader space={currentSpace} {createItemDialog} />
-      {#if currentView && currentSpace}
-        <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
+      {#if specialComponent}
+        <Component is={specialComponent} />
+      {:else}
+        <SpaceHeader space={currentSpace} {createItemDialog} />
+        {#if currentView && currentSpace}
+          <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
+        {/if}
       {/if}
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->

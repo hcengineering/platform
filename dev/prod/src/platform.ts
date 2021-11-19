@@ -24,6 +24,7 @@ import { contactId } from '@anticrm/contact'
 import { chunterId } from '@anticrm/chunter'
 import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
+import { settingId } from '@anticrm/setting'
 
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
@@ -36,6 +37,7 @@ import '@anticrm/chunter-assets'
 import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
+import '@anticrm/setting-assets'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -43,6 +45,7 @@ export function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, process.env.ACCOUNTS_URL)
   setMetadata(login.metadata.UploadUrl, process.env.UPLOAD_URL)
+  setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL)
   setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN)
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
@@ -63,4 +66,5 @@ export function configurePlatform() {
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
+  addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
 }

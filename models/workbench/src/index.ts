@@ -25,6 +25,7 @@ import workbench from './plugin'
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
+  hidden!: boolean
 }
 
 @Mixin(workbench.mixin.SpaceView, core.class.Class)
