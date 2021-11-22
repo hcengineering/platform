@@ -32,7 +32,9 @@
 
   let txes: TxCUD<Doc>[]
 
-  $: txes = Array.from(txes1).concat(txes2).sort((a, b) => b.modifiedOn - a.modifiedOn)
+  $: txes = Array.from(txes1)
+    .concat(txes2)
+    .sort((a, b) => b.modifiedOn - a.modifiedOn)
 
   const client = getClient()
 
@@ -79,10 +81,10 @@
 
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map(r => ([activityKey(r.objectClass, r.txClass), r])))
+    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
   })
-
 </script>
+
 {#if fullSize}
   <div class="flex-row-center header">
     <div class="icon"><IconActivity size={'small'} /></div>
@@ -93,7 +95,7 @@
       {#if txes}
         <Grid column={1} rowGap={1.5}>
           {#each txes as tx}
-            <TxView {tx} {viewlets}/>
+            <TxView {tx} {viewlets} />
           {/each}
         </Grid>
       {/if}
@@ -114,7 +116,7 @@
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx}
-              <TxView {tx} {viewlets}/>
+              <TxView {tx} {viewlets} />
             {/each}
           </Grid>
         {/if}

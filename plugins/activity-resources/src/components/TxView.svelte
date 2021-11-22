@@ -36,7 +36,7 @@
   const client = getClient()
 
   $: if (client.getHierarchy().isDerived(tx._class, core.class.TxCollectionCUD)) {
-    const colCUD = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+    const colCUD = tx as TxCollectionCUD<Doc, AttachedDoc>
     displayTx = colCUD.tx
   } else if (client.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
     displayTx = tx as TxCUD<Doc>
@@ -50,13 +50,14 @@
   }
 
   let employee: EmployeeAccount | undefined
-  $: client.findOne(contact.class.EmployeeAccount, { _id: tx.modifiedBy as Ref<EmployeeAccount> }).then(account => { employee = account })
+  $: client.findOne(contact.class.EmployeeAccount, { _id: tx.modifiedBy as Ref<EmployeeAccount> }).then((account) => {
+    employee = account
+  })
 
-  $: client.findAll(contact.class.EmployeeAccount, { }).then(accounts => { console.log(tx.modifiedBy, 'accounts', accounts) })
   let model: AttributeModel[] = []
 
-  let buildModel: ((options: BuildModelOptions) => Promise<AttributeModel[]>)|undefined
-  getResource(view.api.buildModel).then(bm => {
+  let buildModel: ((options: BuildModelOptions) => Promise<AttributeModel[]>) | undefined
+  getResource(view.api.buildModel).then((bm) => {
     buildModel = bm
   })
 
@@ -64,7 +65,7 @@
     utx = displayTx as TxUpdateDoc<Doc>
     const ops = { client, _class: utx.objectClass, keys: Object.keys(utx.operations), ignoreMissing: true }
     model = []
-    buildModel?.(ops).then(m => {
+    buildModel?.(ops).then((m) => {
       model = m
     })
   } else {
@@ -79,45 +80,46 @@
 
 {#if displayTx && (viewlet !== undefined || model.length > 0)}
   <div class="flex-col msgactivity-container">
-    <div class="flex-between">      
-        <div class="flex-center icon">
-          <div class="scale-75">
-            {#if viewlet}
-              <Icon icon={viewlet.icon} size='medium'/>
-            {:else}
-              <Icon icon={activity.icon.Activity} size='medium'/>
-            {/if}
-          </div>
+    <div class="flex-between">
+      <div class="flex-center icon">
+        <div class="scale-75">
+          {#if viewlet}
+            <Icon icon={viewlet.icon} size="medium" />
+          {:else}
+            <Icon icon={activity.icon.Activity} size="medium" />
+          {/if}
         </div>
+      </div>
       <div class="flex-grow label">
         <b>
           {#if employee}
-            {formatName(employee.name)}          
+            {formatName(employee.name)}
           {:else}
             No employee
           {/if}
-        </b> 
+        </b>
         {#if viewlet}
-          <Label label={viewlet.label}/>
+          <Label label={viewlet.label} />
         {/if}
         {#if viewlet === undefined && model.length > 0 && utx}
           {#each model as m}
-            changed {m.label} to 
-            <strong><svelte:component this={m.presenter} value={getValue(utx, m.key)}/></strong>
+            changed {m.label} to
+            <strong><svelte:component this={m.presenter} value={getValue(utx, m.key)} /></strong>
           {/each}
         {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
           <Component is={viewlet.component} props={{ tx: displayTx }} />
         {/if}
       </div>
-      <div class="content-trans-color"><TimeSince value={tx.modifiedOn}/></div>
+      <div class="content-trans-color"><TimeSince value={tx.modifiedOn} /></div>
     </div>
     {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-      <div class='content' class:emphasize={viewlet.display === 'emphasized'}>
+      <div class="content" class:emphasize={viewlet.display === 'emphasized'}>
         <Component is={viewlet.component} props={{ tx: displayTx }} />
       </div>
     {/if}
   </div>
 {/if}
+
 <style lang="scss">
   .msgactivity-container {
     position: relative;
@@ -153,18 +155,20 @@
 
   .content {
     margin: 0.5rem 0 0.5rem 3.25rem;
-    padding: 1rem;    
   }
   .emphasize {
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: 0.75rem;
+    padding: 1rem;
   }
 
   .label {
     margin: 0 1rem;
 
-    b { color: var(--theme-caption-color); }
+    b {
+      color: var(--theme-caption-color);
+    }
     strong {
       font-weight: 500;
       color: var(--theme-content-accent-color);
