@@ -29,7 +29,7 @@
     <div class="flex-between label">
       <div>
         <Label {label} />
-        <span>({counter})</span>
+        <!-- <span>({counter})</span> -->
       </div>
       <div class="tool" on:click|preventDefault={addAction}>
         <IconAdd size={'small'} />

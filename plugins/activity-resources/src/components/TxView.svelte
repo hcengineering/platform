@@ -182,21 +182,6 @@
     flex-wrap: wrap;
     gap: 10px;
     margin: 0 1rem;
-  }
-  :global(.label b) {
-    color: var(--theme-caption-color);
-  }
-  :global(.label span) {
-    display: inline-block;
-    padding: 0.125rem 0.25rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-bg-focused-color);
-    border-radius: 0.25rem;
-  }
-  :global(.label span.bar) {
-    padding: 0.25rem 0.5rem;
-    font-weight: 500;
-    font-size: 0.625rem;
-    background-color: var(--primary-button-enabled);
+    b { color: var(--theme-caption-color); }
   }
 </style>
