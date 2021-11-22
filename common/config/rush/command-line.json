@@ -207,6 +207,27 @@
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
+
+    {
+      "commandKind": "bulk",
+      "name": "docker:build",
+      "summary": "docker:build",
+      "description": "Build and make docker containers",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "bundle",
+      "summary": "bundle",
+      "description": "Build bundles",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
   ],
 
   /**

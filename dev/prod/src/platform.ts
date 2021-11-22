@@ -38,20 +38,30 @@ import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
 
 import { setMetadata } from '@anticrm/platform'
-
-export function configurePlatform() {
-
-  setMetadata(login.metadata.AccountsUrl, process.env.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl, process.env.UPLOAD_URL)
-  setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN)
+export function configurePlatform() {  
+  fetch('/config.json').then(config => {
+    config.json().then(value => {
+      console.log('loading configuration', value)
+      setMetadata(login.metadata.AccountsUrl, value.ACCOUNTS_URL)
+      setMetadata(login.metadata.UploadUrl,  value.UPLOAD_URL)  
+    })    
+  })    
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   if (process.env.CLIENT_TYPE === 'dev') {
+    setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN_DEV)
+    setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT_DEV)
+    console.log('Use DEV server')
     addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
     addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
     addLocation(serverViewId, () => import(/* webpackChunkName: "server-view" */ '@anticrm/server-view-resources'))
   } else {
+    if (process.env.CLIENT_TYPE === 'dev-server') {
+      console.log('Use Endpoint override:', process.env.LOGIN_ENDPOINT)
+      setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
+    }
+    console.log('Use server')
     addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   }
   
