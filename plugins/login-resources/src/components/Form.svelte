@@ -23,6 +23,7 @@
   import login from '../plugin'
 
   interface Field {
+    id?: string
     name: string
     i18n: IntlString
     password?: boolean
@@ -76,7 +77,7 @@
 
     {#each fields as field (field.name)}
     <div class={field.short ? 'form-col' : 'form-row'}>
-      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate} />
+      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate} name={field.id} />
     </div>
     {/each}
 

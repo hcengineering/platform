@@ -22,13 +22,14 @@
   export let error: string | undefined = undefined
   export let password: boolean | undefined = undefined
   export let id: string | undefined = undefined
+  export let name: string | undefined = undefined
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
   {#if password}
-    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
+    <input {name} type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {:else}
-    <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
+    <input {name} type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {/if}
   {#if label}
     <div class="label"><Label {label} /></div>

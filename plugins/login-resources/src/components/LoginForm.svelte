@@ -27,8 +27,13 @@
   const dispatch = createEventDispatcher()
 
   const fields = [
-    { name: 'username', i18n: login.string.Email },
+    { 
+      id: 'email',
+      name: 'username', 
+      i18n: login.string.Email 
+    },
     {
+      id: 'current-password',
       name: 'password',
       i18n: login.string.Password,
       password: true
