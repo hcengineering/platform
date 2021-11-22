@@ -79,11 +79,23 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
  * @public
  * @param port -
  */
-export function start (transactorEndpoint: string, elasticUrl: string, minio: Client, port: number): void {
+export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string }, port: number): void {
   const app = express()
 
   app.use(cors())
   app.use(fileUpload())
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/config.json', async (req, res) => {
+    res.status(200)
+    res.set('Cache-Control', 'no-cache')
+    res.json(
+      {
+        ACCOUNTS_URL: config.accountsUrl,
+        UPLOAD_URL: config.uploadUrl
+      }
+    )
+  })
 
   const dist = resolve(__dirname, 'dist')
   console.log('serving static files from', dist)
@@ -96,8 +108,8 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const payload = decode(token, 'secret', false) as Token
       const uuid = req.query.file as string
 
-      const stat = await minio.statObject(payload.workspace, uuid)
-      minio.getObject(payload.workspace, uuid, function (err, dataStream) {
+      const stat = await config.minio.statObject(payload.workspace, uuid)
+      config.minio.getObject(payload.workspace, uuid, function (err, dataStream) {
         if (err !== null) {
           return console.log(err)
         }
@@ -143,7 +155,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       const token = authHeader.split(' ')[1]
       const payload = decode(token ?? '', 'secret', false) as Token
       // const fileId = await awsUpload(file as UploadedFile)
-      const uuid = await minioUpload(minio, payload.workspace, file)
+      const uuid = await minioUpload(config.minio, payload.workspace, file)
       console.log('uploaded uuid', uuid)
 
       const name = req.query.name as string
@@ -162,7 +174,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       //   fileId
       // )
 
-      const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
+      const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
       const indexedDoc: IndexedDoc = {
         id: generateId() + '/attachments/' + name,
@@ -224,7 +236,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
       }).on('end', function () {
         const buffer = Buffer.concat(data)
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
+        config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
           if (err !== null) {
             console.log('minio putObject error', err)
             res.status(500).send(err)
@@ -233,7 +245,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
             if (attachedTo !== undefined) {
               const space = req.query.space as Ref<Space>
-              const elastic = await createElasticAdapter(elasticUrl, payload.workspace)
+              const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
               const indexedDoc: IndexedDoc = {
                 id: generateId() + '/attachments/' + 'Profile.pdf',

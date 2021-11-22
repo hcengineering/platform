@@ -55,4 +55,12 @@ const minio = new Client({
   secretKey: minioSecretKey
 })
 
-start(url, elasticUrl, minio, 3000)
+const shutdown = start(url, elasticUrl, minio, 3000)
+
+const close = (): void => {
+  shutdown()
+  process.exit(0)
+}
+process.on('SIGINT', close)
+process.on('SIGTERM', close)
+process.on('exit', close)

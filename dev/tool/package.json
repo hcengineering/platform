@@ -9,9 +9,10 @@
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
     "start": "ts-node src/index.ts",
-    "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
+    "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",    
     "docker:build": "docker build -t anticrm/tool .",
-    "docker:push": "docker push anticrm/tool"
+    "docker:push": "docker push anticrm/tool",
+    "run-local": "MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 MINIO_ENDPOINT=localhost ts-node ./src/index.ts"
   },
   "devDependencies": {
     "@anticrm/platform-rig":"~0.6.0",

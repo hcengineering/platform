@@ -17,8 +17,8 @@
 import { start } from './app'
 import { Client } from 'minio'
 
-const url = process.env.TRANSACTOR_URL
-if (url === undefined) {
+const transactorEndpoint = process.env.TRANSACTOR_URL
+if (transactorEndpoint === undefined) {
   console.error('please provide transactor url')
   process.exit(1)
 }
@@ -55,4 +55,18 @@ const minio = new Client({
   secretKey: minioSecretKey
 })
 
-start(url, elasticUrl, minio, 8080)
+const accountsUrl = process.env.ACCOUNTS_URL
+if (accountsUrl === undefined) {
+  console.error('please provide accounts url')
+  process.exit(1)
+}
+
+const uploadUrl = process.env.UPLOAD_URL
+if (uploadUrl === undefined) {
+  console.error('please provide upload url')
+  process.exit(1)
+}
+
+const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl }
+console.log('Starting Front service with', config)
+start(config, 8080)

@@ -14,21 +14,27 @@
 // limitations under the License.
 //
 
-import { ACCOUNT_DB, methods } from '@anticrm/account'
-import platform, { Response, Request, serialize, Status, Severity } from '@anticrm/platform'
-import { MongoClient, Db } from 'mongodb'
-
-import Koa from 'koa'
-import Router from 'koa-router'
-
-import bodyParser from 'koa-bodyparser'
+import accountPlugin, { ACCOUNT_DB, methods } from '@anticrm/account'
+import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@anticrm/platform'
 import cors from '@koa/cors'
+import Koa from 'koa'
+import bodyParser from 'koa-bodyparser'
+import Router from 'koa-router'
+import { Db, MongoClient } from 'mongodb'
 
 const dbUri = process.env.MONGO_URL
 if (dbUri === undefined) {
   console.log('Please provide mongodb url')
   process.exit(1)
 }
+
+const transactorUri = process.env.TRANSACTOR_URL
+if (dbUri === undefined) {
+  console.log('Please provide transactor url')
+  process.exit(1)
+}
+
+setMetadata(accountPlugin.metadata.Endpoint, transactorUri)
 
 let client: MongoClient
 
@@ -60,6 +66,13 @@ app.use(cors())
 app.use(bodyParser())
 app.use(router.routes()).use(router.allowedMethods())
 
-app.listen(3000, () => {
+const server = app.listen(3000, () => {
   console.log('server started on port 3000')
 })
+
+const close = (): void => {
+  server.close()
+}
+process.on('SIGINT', close)
+process.on('SIGTERM', close)
+process.on('exit', close)

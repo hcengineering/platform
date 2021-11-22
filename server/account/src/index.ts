@@ -14,17 +14,13 @@
 // limitations under the License.
 //
 
-import type { Plugin, StatusCode, Request, Response } from '@anticrm/platform'
-import { PlatformError, Severity, Status, plugin, unknownStatus } from '@anticrm/platform'
-import { Binary, Db, ObjectId } from 'mongodb'
+import { getMetadata, Metadata, Plugin, Request, Response, StatusCode, PlatformError, plugin, Severity, Status, unknownStatus } from '@anticrm/platform'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { encode } from 'jwt-simple'
+import { Binary, Db, ObjectId } from 'mongodb'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
-
-const endpoint = 'wss://transactor.hc.engineering/'
-const secret = 'secret'
 
 /**
  * @public
@@ -40,6 +36,10 @@ export const accountId = 'account' as Plugin
  * @public
  */
 const accountPlugin = plugin(accountId, {
+  metadata: {
+    Endpoint: '' as Metadata<string>,
+    Secret: '' as Metadata<string>
+  },
   status: {
     AccountNotFound: '' as StatusCode<{account: string}>,
     WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
@@ -49,6 +49,14 @@ const accountPlugin = plugin(accountId, {
     Forbidden: '' as StatusCode
   }
 })
+
+const getSecret = (): string => {
+  return getMetadata(accountPlugin.metadata.Secret) ?? 'secret'
+}
+
+const getEndpoint = (): string => {
+  return getMetadata(accountPlugin.metadata.Endpoint) ?? 'wss://transactor.hc.engineering/'
+}
 
 /**
  * @public
@@ -132,7 +140,7 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
 }
 
 function generateToken (email: string, workspace: string): string {
-  return encode({ email, workspace }, secret)
+  return encode({ email, workspace }, getSecret())
 }
 
 /**
@@ -153,7 +161,7 @@ export async function login (db: Db, email: string, password: string, workspace:
     for (const w of workspaces) {
       if (w.equals(workspaceInfo._id)) {
         const result = {
-          endpoint,
+          endpoint: getEndpoint(),
           email,
           token: generateToken(email, workspace)
         }

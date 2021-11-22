@@ -3,11 +3,11 @@
   "version": "1.0.1",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
+    "build": "cross-env NODE_ENV=development webpack --stats-error-details && echo 'done'",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
-    "dev": "cross-env webpack serve --content-base public",
-    "dev-server": "cross-env CLIENT=server webpack serve --content-base public",
+    "dev": "cross-env CLIENT_TYPE=dev webpack serve --content-base public",
+    "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve --content-base public",
     "start": "cross-env NODE_ENV=production webpack serve --content-base public",
     "preformat-svelte": "prettier -w src/**/*.svelte",
     "lint": "eslint --max-warnings=0 src",
@@ -33,7 +33,8 @@
     "autoprefixer": "^10.2.6",
     "postcss": "^8.3.4",
     "postcss-loader": "^6.1.0",
-    "postcss-load-config": "^3.1.0"
+    "postcss-load-config": "^3.1.0",
+    "compression-webpack-plugin": "~9.0.0"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",

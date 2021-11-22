@@ -30,5 +30,12 @@ app.get('*', function (request, response) {
   response.sendFile(join(dist, 'index.html'))
 })
 
-app.listen(port)
+const server = app.listen(port)
 console.log(`server started on port ${port}`)
+
+const close = (): void => {
+  server.close()
+}
+process.on('SIGINT', close)
+process.on('SIGTERM', close)
+process.on('exit', close)

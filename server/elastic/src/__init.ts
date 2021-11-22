@@ -22,7 +22,7 @@ if (url === undefined) {
   process.exit(1)
 }
 
-const client = new Client({ node: 'http://45.32.149.163:9200/' })
+const client = new Client({ node: url })
 
 client.ingest.putPipeline({
   id: 'anticrm-pipeline',

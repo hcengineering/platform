@@ -66,38 +66,51 @@ class ElasticAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
     console.log('eastic: index', doc)
     if (doc.data === undefined) {
-      const resp = await this.client.index({
-        index: this.db,
-        id: doc.id,
-        type: '_doc',
-        body: doc
-      })
-      console.log('resp', resp)
-      console.log('error', (resp.meta as any)?.body?.error)
+      try {
+        const resp = await this.client.index({
+          index: this.db,
+          id: doc.id,
+          type: '_doc',
+          body: doc
+        })
+        console.log('resp', resp)
+        console.log('error', (resp.meta as any)?.body?.error)
+      } catch (err: any) {
+        console.log('elastic-exception', err)
+      }
     } else {
       console.log('attachment pipeline')
-      const resp = await this.client.index({
-        index: this.db,
-        id: doc.id,
-        type: '_doc',
-        pipeline: 'attachment',
-        body: doc
-      })
-      console.log('resp', resp)
-      console.log('error', (resp.meta as any)?.body?.error)
+      try {
+        const resp = await this.client.index({
+          index: this.db,
+          id: doc.id,
+          type: '_doc',
+          pipeline: 'attachment',
+          body: doc
+        })
+        console.log('resp', resp)
+        console.log('error', (resp.meta as any)?.body?.error)
+      } catch (err: any) {
+        console.log('elastic-exception', err)
+      }
     }
     return {}
   }
 
   async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
-    const resp = await this.client.update({
-      index: this.db,
-      id,
-      body: {
-        doc: update
-      }
-    })
-    console.log('update', resp)
+    try {
+      const resp = await this.client.update({
+        index: this.db,
+        id,
+        body: {
+          doc: update
+        }
+      })
+      console.log('update', resp)
+    } catch (err: any) {
+      console.log('elastic-exception', err)
+    }
+
     return {}
   }
 }
