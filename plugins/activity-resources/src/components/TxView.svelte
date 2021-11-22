@@ -78,7 +78,7 @@
 </script>
 
 {#if displayTx && (viewlet !== undefined || model.length > 0)}
-  <div class="flex-col msg-container">
+  <div class="flex-col msgactivity-container">
     <div class="flex-between">      
         <div class="flex-center icon">
           <div class="scale-75">
@@ -89,7 +89,7 @@
             {/if}
           </div>
         </div>
-      <div class="flex flex-grow label">
+      <div class="flex-grow label">
         <b>
           {#if employee}
             {formatName(employee.name)}          
@@ -102,12 +102,8 @@
         {/if}
         {#if viewlet === undefined && model.length > 0 && utx}
           {#each model as m}
-            <div class='change'>
-              changed {m.label} to 
-              <div class='value'>
-                <svelte:component this={m.presenter} value={getValue(utx, m.key)}/>
-              </div>
-            </div>          
+            changed {m.label} to 
+            <strong><svelte:component this={m.presenter} value={getValue(utx, m.key)}/></strong>
           {/each}
         {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
           <Component is={viewlet.component} props={{ tx: displayTx }} />
@@ -123,18 +119,7 @@
   </div>
 {/if}
 <style lang="scss">
-  .change {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    .value {
-      gap: 10px;
-      display: flex;   
-      align-items: center;
-      font-weight: 500;
-    }
-  }
-  .msg-container {
+  .msgactivity-container {
     position: relative;
     &::after {
       content: '';
@@ -146,7 +131,7 @@
       background-color: var(--theme-card-divider);
     }
   }
-  :global(.msg-container + .msg-container::before) {
+  :global(.msgactivity-container + .msgactivity-container::before) {
     content: '';
     position: absolute;
     top: -1.5rem;
@@ -177,11 +162,12 @@
   }
 
   .label {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
     margin: 0 1rem;
+
     b { color: var(--theme-caption-color); }
+    strong {
+      font-weight: 500;
+      color: var(--theme-content-accent-color);
+    }
   }
 </style>
