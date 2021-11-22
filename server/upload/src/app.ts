@@ -77,7 +77,7 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
  * @public
  * @param port -
  */
-export function start (transactorEndpoint: string, elasticUrl: string, minio: Client, port: number): void {
+export function start (transactorEndpoint: string, elasticUrl: string, minio: Client, port: number): () => void {
   const app = express()
 
   app.use(cors())
@@ -177,5 +177,8 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
     }
   })
 
-  app.listen(port)
+  const server = app.listen(port)
+  return () => {
+    server.close()
+  }
 }

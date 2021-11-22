@@ -17,9 +17,12 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const Dotenv = require('dotenv-webpack')
 const path = require('path')
 const autoprefixer = require('autoprefixer')
+const CompressionPlugin = require('compression-webpack-plugin')
+const DefinePlugin = require('webpack').DefinePlugin
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
+const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
 
 module.exports = {
   entry: {
@@ -41,6 +44,22 @@ module.exports = {
     filename: '[name].js',
     chunkFilename: '[name].[id].js',
     publicPath: '/'
+  },
+  optimization: {
+    minimize: prod,
+    usedExports: prod,
+    splitChunks: {
+      chunks: 'all',
+      maxAsyncRequests: 5,
+      maxInitialRequests: 3,
+      cacheGroups: {
+        vendors: {
+          name: 'vendors',
+          test: /[\\/]node_modules[\\/]/,
+          priority: 20
+        }
+      }
+    }
   },
   module: {
     rules: [
@@ -149,10 +168,14 @@ module.exports = {
   },
   mode,
   plugins: [
+    ...(prod ? [new CompressionPlugin()] : []),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     }),
-    new Dotenv({path: prod ? '.env-prod' : '.env'})
+    new Dotenv({path: prod ? '.env-prod' : '.env'}),
+    new DefinePlugin({
+      'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
+    })
   ],
   devtool: prod ? false : 'source-map',
   devServer: {
@@ -160,7 +183,19 @@ module.exports = {
     historyApiFallback: {
       disableDotRule: true
     },
-    proxy: {
+    proxy: devServer ? {
+      '/account': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        pathRewrite: { '^/account': '' },
+        logLevel: 'debug'
+      },
+      '/files': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        logLevel: 'debug'
+      },
+    } : {
       '/account': {
         // target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
         target: 'https://account.hc.engineering/',
@@ -168,12 +203,12 @@ module.exports = {
         pathRewrite: { '^/account': '' },
         logLevel: 'debug'
       },
-      '/upload': {
+      '/files': {
         // target: 'https://anticrm-upload.herokuapp.com/',
-        // target: 'http://localhost:3000/',
+        // target: 'http://localhost:3000/',  
         target: 'https://front.hc.engineering/files',
         changeOrigin: true,
-        pathRewrite: { '^/upload': '' },
+        pathRewrite: { '^/files': '' },
         logLevel: 'debug'
       },
     }

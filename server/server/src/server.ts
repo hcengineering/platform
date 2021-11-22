@@ -39,12 +39,12 @@ async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string,
 /**
  * @public
  */
-export async function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): Promise<void> {
+export function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): () => void {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
   addLocation(serverViewId, () => import('@anticrm/server-view-resources'))
 
-  startJsonRpc((workspace: string) => {
+  return startJsonRpc((workspace: string) => {
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',

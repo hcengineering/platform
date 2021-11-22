@@ -115,7 +115,7 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
  * @param port -
  * @param host -
  */
-export function start (storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): void {
+export function start (storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): () => void {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager()
@@ -151,4 +151,7 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
   })
 
   server.listen(port, host)
+  return () => {
+    server.close()
+  }
 }

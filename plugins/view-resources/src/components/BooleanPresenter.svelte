@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,24 +15,21 @@
 -->
 
 <script lang="ts">
+  import { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
-
-  export let value: boolean | undefined
-
-  function getLabel(value: boolean | undefined) {
-    if (value === true) return 'Yes'
-    if (value === false) return 'No'
-    return 'N/A'
+  
+  export let value: any
+  
+  function getLabel(value: boolean | undefined): IntlString {
+    if (value === true) return 'Yes' as IntlString
+    if (value === false) return 'No' as IntlString
+    return 'N/A' as IntlString
   }
 </script>
 
-<div class="flex-row-center yesno-container {value}" on:click={() => {
-  if (value === true) value = false
-  else if (value === false) value = undefined
-  else value = true
-}}>
+<div class="flex-row-center yesno-container" class:yes={value === true} class:no={value === false} class:unknown={value === undefined}>
   <svg class="svg-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="6" class:yes={value === true} class:no={value === false} />
+    <circle class:yes={value === true} class:no={value === false} cx="8" cy="8" r="6"/>
     {#if value === true}
       <polygon fill="#fff" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 "/>
     {:else if value === false}

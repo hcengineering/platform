@@ -97,6 +97,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringPresenter
   })
 
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.BooleanPresenter
+  })
+
   builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.BooleanEditor
   })

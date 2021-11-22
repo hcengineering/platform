@@ -105,6 +105,7 @@ specifiers:
   '@types/ws': ^7.4.7
   autoprefixer: ^10.2.6
   commander: ^8.1.0
+  compression-webpack-plugin: ~9.0.0
   cors: ^2.8.5
   cross-env: ^7.0.3
   css-loader: ^5.2.1
@@ -249,6 +250,7 @@ dependencies:
   '@types/ws': 7.4.7
   autoprefixer: 10.3.7_postcss@8.3.9
   commander: 8.2.0
+  compression-webpack-plugin: 9.0.1_webpack@5.57.1
   cors: 2.8.5
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.57.1
@@ -2234,12 +2236,30 @@ packages:
       ajv: 6.12.6
     dev: false
 
+  /ajv-formats/2.1.1:
+    resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+    peerDependenciesMeta:
+      ajv:
+        optional: true
+    dependencies:
+      ajv: 8.8.2
+    dev: false
+
   /ajv-keywords/3.5.2_ajv@6.12.6:
     resolution: {integrity: sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==}
     peerDependencies:
       ajv: ^6.9.1
     dependencies:
       ajv: 6.12.6
+    dev: false
+
+  /ajv-keywords/5.1.0_ajv@8.8.2:
+    resolution: {integrity: sha512-YCS/JNFAUyr5vAuhk1DWm1CBxRHW9LbJ2ozWeemrIqpbsqKjHVxYPyi5GC0rjZIT5JxJ3virVTS8wk4i/Z+krw==}
+    peerDependencies:
+      ajv: ^8.8.2
+    dependencies:
+      ajv: 8.8.2
+      fast-deep-equal: 3.1.3
     dev: false
 
   /ajv/6.12.6:
@@ -2253,6 +2273,15 @@ packages:
 
   /ajv/8.6.3:
     resolution: {integrity: sha512-SMJOdDP6LqTkD0Uq8qLi+gMwSt0imXLSV080qFVwJCpH9U6Mb+SUGHAXM0KNbcBPguytWyvFxcHgMLe2D2XSpw==}
+    dependencies:
+      fast-deep-equal: 3.1.3
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+      uri-js: 4.4.1
+    dev: false
+
+  /ajv/8.8.2:
+    resolution: {integrity: sha512-x9VuX+R/jcFj1DHo/fCp99esgGDWiHENrKxaCENuCxpoMCmAt/COCGVDwA7kleEpEzJjDnvh3yGoOuLu0Dtllw==}
     dependencies:
       fast-deep-equal: 3.1.3
       json-schema-traverse: 1.0.0
@@ -3020,6 +3049,17 @@ packages:
     engines: {node: '>= 0.6'}
     dependencies:
       mime-db: 1.50.0
+    dev: false
+
+  /compression-webpack-plugin/9.0.1_webpack@5.57.1:
+    resolution: {integrity: sha512-vqlhZIPSyCpy6eaYWy8iPhteLWpARKotRiN5B/jr7lLowJv1GVc98Snn1Dcxe0+SKbfydLu7qZcnNuP+AyG19Q==}
+    engines: {node: '>= 12.13.0'}
+    peerDependencies:
+      webpack: ^5.1.0
+    dependencies:
+      schema-utils: 4.0.0
+      serialize-javascript: 6.0.0
+      webpack: 5.57.1_webpack-cli@4.8.0
     dev: false
 
   /compression/1.7.4:
@@ -7685,6 +7725,16 @@ packages:
       ajv-keywords: 3.5.2_ajv@6.12.6
     dev: false
 
+  /schema-utils/4.0.0:
+    resolution: {integrity: sha512-1edyXKgh6XnJsJSQ8mKWXnN/BVaIbFMLpouRUrXgVq7WYne5kw3MW7UPhO44uRXQSIpTSXoJbmrR2X0w9kUTyg==}
+    engines: {node: '>= 12.13.0'}
+    dependencies:
+      '@types/json-schema': 7.0.9
+      ajv: 8.8.2
+      ajv-formats: 2.1.1
+      ajv-keywords: 5.1.0_ajv@8.8.2
+    dev: false
+
   /secure-json-parse/2.4.0:
     resolution: {integrity: sha512-Q5Z/97nbON5t/L/sH6mY2EacfjVGwrCcSi5D3btRO2GZ8pf1K1UN7Z9H5J57hjVU2Qzxr1xO+FmBhOvEkzCMmg==}
     dev: false
@@ -9843,7 +9893,7 @@ packages:
     dev: false
 
   file:projects/front.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-qKmnx2yFt1hFJRZWJNaPPbb+p/Q0lnyA6u9AAgeqDbOjmWjp48NxqX6jIbiEyQi56IDHViE3w4/NQb0c/mp/rA==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-8DxO3cOzfmEfVPsjIfOfA0mT3OrRDlBCuobV2mlj5+NzofW4yjJicsGlU8jCZ/fG2CMqfpWK5Hdino0LTX+T7g==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
@@ -9855,20 +9905,21 @@ packages:
       '@types/minio': 7.0.10
       '@types/node': 16.10.3
       '@types/uuid': 8.3.1
-      '@typescript-eslint/eslint-plugin': 4.33.0_eslint@7.32.0+typescript@4.4.3
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
       cors: 2.8.5
       esbuild: 0.12.29
       eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 4.3.1
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
       express: 4.17.1
       express-fileupload: 1.2.1
       jwt-simple: 0.5.6
       minio: 7.0.19
       uuid: 8.3.2
     transitivePeerDependencies:
-      - '@typescript-eslint/parser'
       - supports-color
       - typescript
     dev: false
@@ -10358,13 +10409,14 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-WC+TomUPtNd0w9x6Fkk8lnbX3vdXd98bGVtKLjKpaWfW6Cl0H0iqOyK4XuV8nyyhvzP7+WkLj0Y2SjTyOAHtyg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-GCcPe++xT1m51ZmTKEX/KBB957pSUkO2CbgSa93yCs6XX8V4O6/fiG/w+EPTdhNP/3TSIf8Lk0Ys8pE2uwy20g==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
     dependencies:
       '@types/node': 14.17.21
       autoprefixer: 10.3.7_postcss@8.3.9
+      compression-webpack-plugin: 9.0.1_webpack@5.57.1
       cross-env: 7.0.3
       css-loader: 5.2.7_webpack@5.57.1
       dotenv-webpack: 7.0.3_webpack@5.57.1

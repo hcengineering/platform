@@ -20,6 +20,10 @@ spec:
             - containerPort: 8080
           imagePullPolicy: Always
           env:
+          - name: ACCOUNTS_URL
+            value: https://account.hc.engineering/
+          - name: UPLOAD_URL
+            value: /files
           - name: TRANSACTOR_URL
             value: ws://transactor/
           - name: ELASTIC_URL

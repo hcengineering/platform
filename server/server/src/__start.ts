@@ -29,4 +29,14 @@ if (elasticUrl === undefined) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-start(url, elasticUrl, 3333)
+const shutdown = start(url, elasticUrl, 3333)
+
+const close = (): void => {
+  console.error(new Error().stack)
+  console.log('Shutdown request accepted')
+  shutdown()
+  process.exit(0)
+}
+process.on('SIGINT', close)
+process.on('SIGTERM', close)
+process.on('exit', close)
