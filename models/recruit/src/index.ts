@@ -89,6 +89,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: recruit.string.RecruitApplication,
     icon: recruit.icon.RecruitApplication,
+    hidden: false,
     navigatorModel: {
       spaces: [
         {

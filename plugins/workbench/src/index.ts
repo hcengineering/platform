@@ -26,6 +26,7 @@ import { plugin } from '@anticrm/platform'
 export interface Application extends Doc {
   label: IntlString
   icon: Asset
+  hidden: boolean
   navigatorModel?: NavigatorModel
 }
 
@@ -45,6 +46,17 @@ export interface SpacesNavModel {
  */
 export interface NavigatorModel {
   spaces: SpacesNavModel[]
+  specials?: SpecialNavModel[]
+}
+
+/**
+ * @public
+ */
+export interface SpecialNavModel {
+  id: string // Uniq id
+  label: IntlString
+  icon: Asset
+  component: AnyComponent
 }
 
 /**

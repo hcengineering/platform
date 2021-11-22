@@ -26,6 +26,7 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/login": "~0.6.1",
+    "@anticrm/setting": "~0.6.0",
     "@anticrm/contact": "~0.6.2"
   }
 }

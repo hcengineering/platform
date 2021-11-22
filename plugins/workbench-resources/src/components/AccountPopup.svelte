@@ -14,12 +14,25 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label, showPopup } from '@anticrm/ui'
-  import { Avatar } from '@anticrm/presentation'
-  import TelegramPopup from './TelegramPopup.svelte'
+  import { getCurrentLocation, Label, navigate } from '@anticrm/ui'
+  import { Avatar, getClient } from '@anticrm/presentation'
+  import workbench, { Application, SpecialNavModel } from '@anticrm/workbench'
+  import setting from '@anticrm/setting'
+  import { Ref } from '@anticrm/core'
 
-  let items: string[] = ['Settings', 'Integrations', 'Support', 'Privacy', 'Terms & policy', 'Sign out']
+  const client = getClient()
+  async function getItems(): Promise<SpecialNavModel[] | undefined> {
+    const app = await client.findOne(workbench.class.Application, { _id: setting.ids.SettingApp as Ref<Application> })
+    return app?.navigatorModel?.specials
+  }
+
+  function selectSpecial (sp: SpecialNavModel): void {
+    const loc = getCurrentLocation()
+    loc.path[1] = setting.ids.SettingApp
+    loc.path[2] = sp.id
+    loc.path.length = 3
+    navigate(loc)
+  }
 </script>
 
 <div class="account-popup">
@@ -32,12 +45,14 @@
     </div>
   </div>
   <div class="content">
-    {#each items as item }
-      <div class="item" on:click={() => {
-        if (item === 'Integrations')
-          showPopup(TelegramPopup, {})
-      }}>{item}</div>
-    {/each}
+    {#await getItems() then items}
+      {#if items}
+        {#each items as item }
+          <div class="item" on:click={() => selectSpecial(item)}><Label label={item.label} /></div>
+        {/each}
+      {/if}
+    {/await}
+    <div class="item"><Label label={'Sign out'} /></div>
   </div>
 </div>
 

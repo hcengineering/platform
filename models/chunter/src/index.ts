@@ -98,6 +98,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: chunter.string.ApplicationLabelChunter,
     icon: chunter.icon.Chunter,
+    hidden: false,
     navigatorModel: {
       spaces: [
         {

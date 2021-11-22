@@ -68,6 +68,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: task.string.ApplicationLabelTask,
     icon: task.icon.Task,
+    hidden: false,
     navigatorModel: {
       spaces: [
         {
