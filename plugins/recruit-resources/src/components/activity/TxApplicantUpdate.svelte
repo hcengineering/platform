@@ -30,26 +30,19 @@
 
 </script>
   
-{#if tx.operations.state}  
-  updated State to
-  {#if statePresenter?.presenter}
-    {#await client.findOne(core.class.State, { _id: tx.operations.state }) then st}
-      {#if st}
-        <Component is={statePresenter.presenter} props={{ value: st }}/>
-      {/if}
-    {/await}
-  {/if}
+{#if tx.operations.state}
+  <div class="flex-row-center update-container">
+    <span>updated State to</span>
+    {#if statePresenter?.presenter}
+      {#await client.findOne(core.class.State, { _id: tx.operations.state }) then st}
+        {#if st}
+          <Component is={statePresenter.presenter} props={{ value: st }}/>
+        {/if}
+      {/await}
+    {/if}
+  </div>
 {/if}
 
-<style lang='scss'>
-  .state {
-    display: flex;
-    align-items: center;
-    span {
-      margin-left: 10px;
-      margin-right: 10px;
-      display: flex;
-      align-items: center;
-    }
-  }
+<style lang="scss">
+  .update-container span { margin-right: .5rem; }
 </style>
