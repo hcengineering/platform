@@ -58,7 +58,7 @@ onMount(() => {
       HandleEnter,
       StarterKit,
       Highlight,
-      Typography,
+      // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
       Placeholder.configure({placeholder: 'Type something...'}),
       Mention.configure({
         HTMLAttributes: {
