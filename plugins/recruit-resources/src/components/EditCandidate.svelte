@@ -52,8 +52,10 @@
   const dispatch = createEventDispatcher()
 
   function saveChannels(result: any) {
-    object.channels = result
-    client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
+    if (result !== undefined) {
+      object.channels = result
+      client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
+    }
   }
 
   function firstNameChange() {
