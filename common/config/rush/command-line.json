@@ -228,6 +228,14 @@
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
+    {
+      "commandKind": "global",
+      "name": "inject-extends",
+      "summary": "Update package.json files with injection of extends.",
+      "description": "Use to update supported projects to template",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "node common/scripts/inject-extends.js && rush update"
+    },
   ],
 
   /**

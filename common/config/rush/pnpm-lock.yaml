@@ -9752,22 +9752,24 @@ packages:
     dev: false
 
   file:projects/core.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-5qEac/JIMBmn8T260wYikjiCa9mAUXb9sQdUv7AGOKp8VlPUmm3EQ8SeownjB/2uovvrcfYFjv8m3GM+1DRW2Q==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-edCdnk2O1Y/2/+plAbyYb71SmOQxVW7a2HVZhOmBXCWNWV03ibd+bau9MiFdKsm/icCPeULR4ouEJYFZ6MXQGA==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
     name: '@rush-temp/core'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.1
       '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 4.33.0_eslint@7.32.0+typescript@4.4.3
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
       eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 4.3.1
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
       just-clone: 3.2.1
+      prettier: 2.4.1
       simplytyped: 3.3.0_typescript@4.4.3
     transitivePeerDependencies:
-      - '@typescript-eslint/parser'
       - supports-color
       - typescript
     dev: false
