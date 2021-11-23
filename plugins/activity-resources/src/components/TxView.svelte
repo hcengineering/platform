@@ -127,30 +127,32 @@
         </div>
       </div>
       <div class="flex-grow label">
-        <b>
+        <div class="bold">
           {#if employee}
             {formatName(employee.name)}
           {:else}
             No employee
           {/if}
-        </b>
+        </div>
         {#if viewlet && viewlet.label}
-          <Label label={viewlet.label} />
+          <div><Label label={viewlet.label} /></div>
         {/if}
         {#if viewlet === undefined && model.length > 0 && utx}
           {#each model as m}
-            changed {m.label} to
-            <strong><svelte:component this={m.presenter} value={getValue(utx, m.key)} /></strong>
+            <span>changed {m.label} to</span>
+            <div class="strong"><svelte:component this={m.presenter} value={getValue(utx, m.key)} /></div>
           {/each}
         {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-          {#if typeof viewlet.component === 'string'}
-            <Component is={viewlet.component} {props} />
-          {:else}
-            <svelte:component this={viewlet.component} {...props} />
-          {/if}
+          <div>
+            {#if typeof viewlet.component === 'string'}
+              <Component is={viewlet.component} {props} />
+            {:else}
+              <svelte:component this={viewlet.component} {...props} />
+            {/if}
+          </div>
         {/if}
       </div>
-      <div class="content-trans-color"><TimeSince value={tx.modifiedOn} /></div>
+      <div class="time"><TimeSince value={tx.modifiedOn} /></div>
     </div>
     {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
       <div class="content" class:emphasize={viewlet.display === 'emphasized'}>
@@ -167,29 +169,32 @@
 <style lang="scss">
   .msgactivity-container {
     position: relative;
-    &::after {
-      content: '';
+    &::after,
+    &::before {
       position: absolute;
-      top: 2.25rem;
       left: 1.125rem;
-      bottom: 0;
       width: 1px;
       background-color: var(--theme-card-divider);
+    }
+    &::before {
+      top: -1.5rem;
+      height: 1.5rem;
+    }
+    &::after {
+      content: '';
+      top: 2.25rem;
+      bottom: 0;
     }
   }
   :global(.msgactivity-container + .msgactivity-container::before) {
     content: '';
-    position: absolute;
-    top: -1.5rem;
-    left: 1.125rem;
-    height: 1.5rem;
-    width: 1px;
-    background-color: var(--theme-card-divider);
   }
+  // :global(.msgactivity-container > *:last-child::after) { content: none; }
 
   .icon {
     flex-shrink: 0;
     align-self: flex-start;
+    margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
     color: var(--theme-caption-color);
@@ -206,14 +211,27 @@
     border-radius: 0.75rem;
     padding: 1rem;
   }
+  .time {
+    margin-left: 1rem;
+    color: var(--theme-content-trans-color);
+  }
 
   .label {
-    margin: 0 1rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 
-    b {
+    & > * {
+      margin-right: 0.5rem;
+    }
+    & > *:last-child {
+      margin-right: 0;
+    }
+    .bold {
+      font-weight: 500;
       color: var(--theme-caption-color);
     }
-    strong {
+    .strong {
       font-weight: 500;
       color: var(--theme-content-accent-color);
     }
