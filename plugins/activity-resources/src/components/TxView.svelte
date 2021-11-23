@@ -15,21 +15,35 @@
 -->
 <script lang="ts">
   import type { TxViewlet } from '@anticrm/activity'
-  import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import type { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD, TxCUD, TxUpdateDoc } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { Component, Icon, Label, TimeSince } from '@anticrm/ui'
-  import type { AttributeModel } from '@anticrm/view'
-  import view, { BuildModelOptions } from '@anticrm/view'
-  import { activityKey, ActivityKey } from '../utils'
   import activity from '@anticrm/activity'
+  import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
+  import core, {
+    AttachedDoc,
+    Doc,
+    Ref,
+    Tx,
+    TxCollectionCUD,
+    TxCreateDoc,
+    TxCUD,
+    TxProcessor,
+    TxUpdateDoc
+  } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import { getClient } from '@anticrm/presentation'
+  import { AnyComponent, AnySvelteComponent, Component, Icon, Label, TimeSince } from '@anticrm/ui'
+  import type { AttributeModel } from '@anticrm/view'
+  import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
+  import { activityKey, ActivityKey } from '../utils'
 
   export let tx: Tx
   export let viewlets: Map<ActivityKey, TxViewlet>
 
-  let viewlet: TxViewlet | undefined
+  type TxDisplayViewlet =
+    | (Pick<TxViewlet, 'icon' | 'label' | 'display'> & { component?: AnyComponent | AnySvelteComponent })
+    | undefined
+
+  let viewlet: TxDisplayViewlet
+  let props: any
   let displayTx: TxCUD<Doc> | undefined
   let utx: TxUpdateDoc<Doc> | undefined
 
@@ -38,16 +52,43 @@
   $: if (client.getHierarchy().isDerived(tx._class, core.class.TxCollectionCUD)) {
     const colCUD = tx as TxCollectionCUD<Doc, AttachedDoc>
     displayTx = colCUD.tx
+    viewlet = undefined
   } else if (client.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
     displayTx = tx as TxCUD<Doc>
-  }
-
-  $: if (displayTx !== undefined) {
-    const key = activityKey(displayTx.objectClass, displayTx._class)
-    viewlet = viewlets.get(key)
-  } else {
     viewlet = undefined
   }
+
+  async function updateViewlet (displayTx?: TxCUD<Doc>): Promise<TxDisplayViewlet> {
+    if (displayTx === undefined) {
+      return undefined
+    }
+    const key = activityKey(displayTx.objectClass, displayTx._class)
+    let viewlet: TxDisplayViewlet = viewlets.get(key)
+
+    props = { tx: displayTx }
+
+    if (viewlet === undefined && displayTx._class === core.class.TxCreateDoc) {
+      // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
+      const doc = TxProcessor.createDoc2Doc(displayTx as TxCreateDoc<Doc>)
+      const docClass = client.getModel().getObject(doc._class)
+
+      const presenter = await getObjectPresenter(client, doc._class, 'doc-presenter')
+      if (presenter !== undefined) {
+        viewlet = {
+          display: 'inline',
+          icon: docClass.icon ?? activity.icon.Activity,
+          label: ('created ' + docClass.label) as IntlString,
+          component: presenter.presenter
+        }
+        props = { value: doc }
+      }
+    }
+    return viewlet
+  }
+
+  $: updateViewlet(displayTx).then((result) => {
+    viewlet = result
+  })
 
   let employee: EmployeeAccount | undefined
   $: client.findOne(contact.class.EmployeeAccount, { _id: tx.modifiedBy as Ref<EmployeeAccount> }).then((account) => {
@@ -56,16 +97,11 @@
 
   let model: AttributeModel[] = []
 
-  let buildModel: ((options: BuildModelOptions) => Promise<AttributeModel[]>) | undefined
-  getResource(view.api.buildModel).then((bm) => {
-    buildModel = bm
-  })
-
   $: if (displayTx !== undefined && displayTx._class === core.class.TxUpdateDoc) {
     utx = displayTx as TxUpdateDoc<Doc>
     const ops = { client, _class: utx.objectClass, keys: Object.keys(utx.operations), ignoreMissing: true }
     model = []
-    buildModel?.(ops).then((m) => {
+    buildModel(ops).then((m) => {
       model = m
     })
   } else {
@@ -98,7 +134,7 @@
             No employee
           {/if}
         </b>
-        {#if viewlet}
+        {#if viewlet && viewlet.label}
           <Label label={viewlet.label} />
         {/if}
         {#if viewlet === undefined && model.length > 0 && utx}
@@ -107,14 +143,22 @@
             <strong><svelte:component this={m.presenter} value={getValue(utx, m.key)} /></strong>
           {/each}
         {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-          <Component is={viewlet.component} props={{ tx: displayTx }} />
+          {#if typeof viewlet.component === 'string'}
+            <Component is={viewlet.component} {props} />
+          {:else}
+            <svelte:component this={viewlet.component} {...props} />
+          {/if}
         {/if}
       </div>
       <div class="content-trans-color"><TimeSince value={tx.modifiedOn} /></div>
     </div>
     {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
       <div class="content" class:emphasize={viewlet.display === 'emphasized'}>
-        <Component is={viewlet.component} props={{ tx: displayTx }} />
+        {#if typeof viewlet.component === 'string'}
+          <Component is={viewlet.component} {props} />
+        {:else}
+          <svelte:component this={viewlet.component} {...props} />
+        {/if}
       </div>
     {/if}
   </div>

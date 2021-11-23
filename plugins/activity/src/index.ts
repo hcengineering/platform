@@ -32,7 +32,7 @@ export interface TxViewlet extends Doc {
   match?: DocumentQuery<Tx>
 
   // Label will be displayed right after author
-  label: IntlString
+  label?: IntlString
   // Do component need to be emphasized or not.
   display: 'inline' | 'content' | 'emphasized'
 }

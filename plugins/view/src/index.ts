@@ -148,8 +148,5 @@ export default plugin(viewId, {
   icon: {
     Table: '' as Asset,
     Kanban: '' as Asset
-  },
-  api: {
-    buildModel: '' as Resource<(options: BuildModelOptions) => Promise<AttributeModel[]>>
   }
 })

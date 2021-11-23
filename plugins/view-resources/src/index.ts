@@ -30,7 +30,7 @@ import { showPopup } from '@anticrm/ui'
 import {buildModel} from './utils'
 
 export { Table }
-export { buildModel } from './utils'
+export { buildModel, getObjectPresenter } from './utils'
 
 function Delete(object: Doc): void {
   showPopup(MessageBox, {
@@ -57,8 +57,5 @@ export default async () => ({
     TableView,
     KanbanView,
     TimestampPresenter
-  },
-  api: {
-    buildModel
   }
 })
