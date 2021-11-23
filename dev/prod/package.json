@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "cross-env NODE_ENV=development webpack --stats-error-details && echo 'done'",
+    "build": "cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev": "cross-env CLIENT_TYPE=dev webpack serve --content-base public",
