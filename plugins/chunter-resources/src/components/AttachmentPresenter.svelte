@@ -41,7 +41,7 @@
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
   {/if}
   <div class="flex-col info">
-    {#if value.type.includes('application/pdf')}
+    {#if value.type.includes('application/pdf') || value.type.startsWith('image/')}
       <div class="name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
       <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
