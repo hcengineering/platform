@@ -6,9 +6,6 @@
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
     "CreateCandidate": "Create Candidate",
-    "MakePrivate": "Make Private",
-    "TxApplicantCreate": "created application",
-    "TxApplicantUpdate": "",
-    "TxCandidateCreate": "created candidate"
+    "MakePrivate": "Make Private"
   }
 }

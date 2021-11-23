@@ -200,28 +200,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: recruit.class.Applicant,
     icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxCreateDoc,
-    component: recruit.activity.TxApplicantCreate,
-    label: recruit.string.TxApplicantCreate,
-    display: 'emphasized'
-  }, recruit.ids.TxApplicantCreate)
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    icon: recruit.icon.RecruitApplication,
     txClass: core.class.TxUpdateDoc,
     component: recruit.activity.TxApplicantUpdate,
-    label: recruit.string.TxApplicantUpdate,
     display: 'inline'
   }, recruit.ids.TxApplicantUpdate)
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Candidate,
-    icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxCreateDoc,
-    label: recruit.string.TxCandidateCreate,
-    display: 'emphasized'
-  }, recruit.ids.TxCandidateCreate)
 }
 
 export { default } from './plugin'
