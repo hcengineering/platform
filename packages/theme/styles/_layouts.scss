@@ -159,6 +159,14 @@ table {
   &:hover .icon { color: var(--theme-caption-color); }
 }
 
+/* Tables */
+// .activity-table > tr:last-child > .no-icon-cell {
+//   min-height: auto;
+//   height: auto;
+//   &::after { content: none; }
+// }
+
+/* Margins & Paddings */
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
 .step-tb75 + .step-tb75 { margin-top: .75rem; }
 

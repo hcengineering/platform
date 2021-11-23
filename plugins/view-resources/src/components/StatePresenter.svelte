@@ -30,14 +30,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: .375rem 1rem;
-    width: min-content;
+    padding: .25rem .75rem;
+    width: fit-content;
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: .5px;
     font-size: .625rem;
     color: #fff;
     border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .5rem;
+    border-radius: .25rem;
   }
 </style>
