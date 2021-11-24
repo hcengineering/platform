@@ -16,12 +16,14 @@
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Doc, Ref, Class, UXObject, Space, Account } from '@anticrm/core'
+import type { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
  */
 export interface ChannelProvider extends Doc, UXObject {
   placeholder: string
+  presenter?: AnyComponent
 }
 
 /**
