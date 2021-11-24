@@ -69,7 +69,7 @@
 
 {#if object !== undefined}
 <Panel icon={Contact} title={formatName(object.name)} {object} on:close={() => { dispatch('close') }}>
-  <AttributesBar {object} keys={['city', 'onsite', 'remote']} slot="subtitle" />
+  <AttributesBar {object} keys={['city', 'onsite', 'remote', 'source']} slot="subtitle" />
 
   <div class="flex-row-center">
     <div class="mr-8">

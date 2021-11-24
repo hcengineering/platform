@@ -54,6 +54,9 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(TypeBoolean(), 'Remote' as IntlString)
   remote?: boolean
+
+  @Prop(TypeString(), 'Source' as IntlString)
+  source?: string
 }
 
 @Model(recruit.class.Applicant, core.class.DocWithState, DOMAIN_RECRUIT)
