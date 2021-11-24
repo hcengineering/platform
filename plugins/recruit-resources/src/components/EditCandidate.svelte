@@ -23,7 +23,6 @@
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
-  import IconAvatar from './icons/Avatar.svelte'
   import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
@@ -35,8 +34,6 @@
   
   import recruit from '../plugin'
   import { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
-
-
 
   export let _id: Ref<Candidate>
   let object: Candidate
@@ -86,7 +83,9 @@
           <span><Label label={'Add social links'} /></span>
         {:else}
           <Channels value={object.channels} size={'small'} />
-          <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+          <div class="ml-1">
+            <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+          </div>
         {/if}
       </div>
     </div>

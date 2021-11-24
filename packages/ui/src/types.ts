@@ -64,6 +64,7 @@ export interface LabelAndProps {
   direction?: TooltipAligment
   component?: AnySvelteComponent | AnyComponent
   props?: any
+  anchor: HTMLElement | undefined
 }
 
 export interface ListItem {

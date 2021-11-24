@@ -131,6 +131,9 @@ table {
   flex-direction: row-reverse;
   align-items: center;
 }
+.flex-reverse {
+  flex-direction: row-reverse;
+}
 .flex-col {
   display: flex;
   flex-direction: column;
@@ -144,6 +147,25 @@ table {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+.safari-gap-1 {
+  & > * { margin-right: .25rem; }
+  & > *:last-child { margin-right: 0; }
+  &.reverse {
+    flex-direction: row-reverse;
+    & > :last-child { margin-right: .25rem; }
+    & > :first-child { margin-right: 0; }
+  }
+}
+.safari-gap-2 {
+  & > * { margin-right: .5rem; }
+  & > *:last-child { margin-right: 0; }
+  &.reverse {
+    flex-direction: row-reverse;
+    & > :last-child { margin-right: .5rem; }
+    & > :first-child { margin-right: 0; }
+  }
 }
 
 /* --------- */
@@ -170,7 +192,9 @@ table {
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
 .step-tb75 + .step-tb75 { margin-top: .75rem; }
 
+.ml-1 { margin-left: .25rem; }
 .ml-2 { margin-left: .5rem; }
+.ml-3 { margin-left: .75rem; }
 .mr-1 { margin-right: .25rem; }
 .mr-4 { margin-right: 1rem; }
 .mr-8 { margin-right: 2rem; }

@@ -20,13 +20,13 @@
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
 
-  import { Icon } from '@anticrm/ui'
-  import IconCopy from './icons/Copy.svelte'
+  import { Tooltip, CircleButton } from '@anticrm/ui'
+  import ChannelsPopup from './ChannelsPopup.svelte'
 
   import contact from '@anticrm/contact'
 
   export let value: Channel[] | null
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
 
   interface Item {
@@ -65,141 +65,20 @@
   $: if (value) update(value)
 
   let displayItems: Item[] = []
+  let divHTML: HTMLElement
 </script>
 
-<div class="container" class:reverse on:click|stopPropagation={() => {}}>
+<div
+  bind:this={divHTML}
+  class="flex-row-center"
+  class:safari-gap-1={size === 'small'}
+  class:safari-gap-2={size !== 'small'}
+  class:reverse
+  on:click|stopPropagation={() => {}}
+>
   {#each displayItems as item}
-    <div class="circle list list-{size}">
-      <div class="icon" class:small={size === 'small'}>
-        <Icon icon={item.icon} size={'small'}/>
-      </div>
-    </div>
-    <div class="window {reverse ? 'right' : 'left'}">
-      <div class="circle circle-icon">
-        <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
-      </div>
-      <div class="flex-grow flex-col caption-color">
-        <div class="overflow-label label">{item.label}</div>
-        <div class="overflow-label">{item.value}</div>
-      </div>
-      <div class="button" on:click|preventDefault={() => { alert('Copied: ' + item.value) }}>
-        <IconCopy size={'small'}/>
-      </div>
-    </div>
+    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
+      <CircleButton icon={item.icon} {size} />
+    </Tooltip>
   {/each}
 </div>
-
-<style lang="scss">
-  .container {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .circle {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid var(--theme-bg-focused-color);
-      border-radius: 50%;
-      cursor: pointer;
-
-      .small {
-        transform-origin: center center;
-        transform: scale(.55);
-        opacity: 1;
-      }
-
-      &-icon {
-        margin-right: .75rem;
-        width: 2.25rem;
-        height: 2.25rem;
-
-        .icon {
-          transform: none;
-          opacity: 1;
-        }
-      }
-    }
-
-    .list {
-      &:hover {
-        border-color: var(--theme-bg-focused-border);
-        z-index: 5;
-        .icon { opacity: 1; }
-        & + .window {
-          z-index: 4;
-          visibility: visible;
-        }
-        &::after { content: ''; }
-      }
-
-      &::after {
-        position: absolute;
-        top: 0;
-        bottom: -1rem;
-        left: -100%;
-        right: -100%;
-        clip-path: polygon(0 100%, 25% 50%, 25% 0, 75% 0, 75% 50%, 100% 100%);
-        // background-color: rgba(255, 255, 0, .5);
-      }
-      &:first-child:after {
-        left: 0;
-        right: -100%;
-        clip-path: polygon(0 0, 0 100%, 100% 100%, 65% 50%, 65% 0);
-      }
-    }
-    .list-small {
-      margin-right: .25rem;
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-    .list-medium {
-      margin-right: .5rem;
-      width: 2rem;
-      height: 2rem;
-    }
-
-    &.reverse {
-      flex-direction: row-reverse;
-      .list:first-child:after {
-        left: -100%;
-        right: 0;
-        clip-path: polygon(0 100%, 35% 50%, 35% 0, 100% 0, 100% 100%);
-      }
-    }
-
-    .window {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem;
-      top: calc(100% + .5rem);
-      min-width: 100%;
-      background-color: var(--theme-button-bg-focused);
-      border: 1px solid var(--theme-button-border-enabled);
-      border-radius: .75rem;
-      box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
-      visibility: hidden;
-
-      &:hover {
-        z-index: 4;
-        visibility: visible;
-      }
-      &.right { right: 0; }
-      &.left { left: 0; }
-    }
-  }
-  .label {
-    font-weight: 500;
-    font-size: .75rem;
-  }
-  .button {
-    margin-left: 1.5rem;
-    opacity: .4;
-    cursor: pointer;
-    &:hover { opacity: 1; }
-  }
-</style>
