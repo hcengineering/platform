@@ -23,7 +23,7 @@
 
   const parser = new DOMParser()
 
-  $: dom = parser.parseFromString(message, 'application/xhtml+xml').firstChild as HTMLElement
+  $: dom = parser.parseFromString(message, 'text/html').firstChild?.childNodes[1] as HTMLElement
 </script>
 
 <Nodes nodes={dom.childNodes}/>
