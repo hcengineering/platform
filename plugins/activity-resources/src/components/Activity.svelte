@@ -75,7 +75,6 @@
     client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', {
       message: event.detail
     })
-    console.log(event.detail)
   }
 
   let viewlets: Map<ActivityKey, TxViewlet>
