@@ -47,7 +47,7 @@ export function createModel (builder: Builder): void {
     icon: contact.icon.Telegram,
     placeholder: '@appleseed',
     presenter: telegram.component.Chat
-  }, telegram.channelProvider.Telegram)
+  }, contact.channelProvider.Telegram)
 
   builder.createDoc(setting.class.IntegrationType, core.space.Model, {
     label: 'Telegram',

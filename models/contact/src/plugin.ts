@@ -16,19 +16,11 @@
 import { mergeIds } from '@anticrm/platform'
 import type { Ref, Class, Type } from '@anticrm/core'
 import contact, { contactId } from '@anticrm/contact'
-import type { ChannelProvider, Channel } from '@anticrm/contact'
+import type { Channel } from '@anticrm/contact'
 import type { AnyComponent } from '@anticrm/ui'
 import {} from '@anticrm/core'
 
 export const ids = mergeIds(contactId, contact, {
-  channelProvider: {
-    Email: '' as Ref<ChannelProvider>,
-    Phone: '' as Ref<ChannelProvider>,
-    LinkedIn: '' as Ref<ChannelProvider>,
-    Twitter: '' as Ref<ChannelProvider>,
-    Telegram: '' as Ref<ChannelProvider>
-    // GitHub: '' as Ref<ChannelProvider>,
-  },
   component: {
     PersonPresenter: '' as AnyComponent,
     ChannelsPresenter: '' as AnyComponent

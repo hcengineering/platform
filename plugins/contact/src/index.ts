@@ -116,6 +116,13 @@ export default plugin(contactId, {
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
   },
+  channelProvider: {
+    Email: '' as Ref<ChannelProvider>,
+    Phone: '' as Ref<ChannelProvider>,
+    LinkedIn: '' as Ref<ChannelProvider>,
+    Twitter: '' as Ref<ChannelProvider>,
+    Telegram: '' as Ref<ChannelProvider>
+  },
   icon: {
     Phone: '' as Asset,
     Email: '' as Asset,

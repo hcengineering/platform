@@ -17,7 +17,6 @@ import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
 import type { Doc, Ref, Class } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ChannelProvider } from '@anticrm/contact'
 import type { IntegrationType } from '@anticrm/setting'
 
 /**
@@ -40,9 +39,6 @@ export default plugin(telegramId, {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
     IconTelegram: '' as AnyComponent
-  },
-  channelProvider: {
-    Telegram: '' as Ref<ChannelProvider>
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>

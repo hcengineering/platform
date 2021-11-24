@@ -32,7 +32,7 @@
 
   export let object: Contact
 
-  $: contactString = object.channels.find((p) => p.provider === telegram.channelProvider.Telegram)
+  $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Telegram)
   let messages: TelegramMessage[] = []
   let accounts: EmployeeAccount[] = []
   let enabled: boolean
