@@ -32,16 +32,20 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
+
+  function openEmbedded(contentType: string) {
+    return contentType.includes('application/pdf') || contentType.startsWith('image/')
+  }
 </script>
 
 <div class="flex-row-center">
-  {#if value.type.includes('application/pdf')}
+  {#if openEmbedded(value.type)}
     <div class="flex-center icon" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{iconLabel(value.name)}</div>
   {:else}
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
   {/if}
   <div class="flex-col info">
-    {#if value.type.includes('application/pdf')}
+    {#if openEmbedded(value.type)}
       <div class="name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
       <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
