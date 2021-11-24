@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { Doc } from '@anticrm/core'
+import type { AttachedDoc, Doc } from '@anticrm/core'
+import core from '@anticrm/core'
 
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
@@ -39,7 +40,12 @@ function Delete(object: Doc): void {
   }, undefined, (result) => {
     if (result) {
       const client = getClient()
-      client.removeDoc(object._class, object.space, object._id)    
+      if(client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+        const adoc = object as AttachedDoc
+        client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)    
+      } else {
+        client.removeDoc(object._class, object.space, object._id)    
+      }
     }
   })
 }
