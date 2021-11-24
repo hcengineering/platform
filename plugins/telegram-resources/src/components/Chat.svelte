@@ -24,18 +24,23 @@
   import { Grid, ScrollBox } from '@anticrm/ui'
   import Message from './Message.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
-  import { Ref } from '@anticrm/core'
+  import { Ref, Space } from '@anticrm/core'
   import DateView from './Date.svelte'
+  import setting from '@anticrm/setting'
+  import login from '@anticrm/login'
+  import { getMetadata } from '@anticrm/platform'
 
   export let object: Contact
 
   $: contactString = object.channels.find((p) => p.provider === telegram.channelProvider.Telegram)
   let messages: TelegramMessage[] = []
   let accounts: EmployeeAccount[] = []
+  let enabled: boolean
 
   const client = getClient()
   const messagesQuery = createQuery()
   const accauntsQuery = createQuery()
+  const settingsQuery = createQuery()
 
   $: query = contactString?.value.startsWith('+') ? { contactPhone: contactString.value } : { contactUserName: contactString?.value }
   $: messagesQuery.query(telegram.class.Message, query, (res) => {
@@ -45,6 +50,11 @@
   $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
   $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
     accounts = result
+  })
+
+  const accountId = getMetadata(login.metadata.LoginEmail)
+  $: settingsQuery.query(setting.class.Integration, { type: telegram.integrationType.Telegram, space: accountId as Ref<Space> }, (res) => {
+    enabled = res.length > 0
   })
 
   function onMessage(event: CustomEvent) {
@@ -94,9 +104,11 @@
     {/if}
   </ScrollBox>
 </div>
-<div class="ref-input">
-  <ReferenceInput on:message={onMessage}/>
-</div>
+{#if enabled}
+  <div class="ref-input">
+    <ReferenceInput on:message={onMessage}/>
+  </div>
+{/if}
 
 <style lang="scss">
   .header {

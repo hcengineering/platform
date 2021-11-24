@@ -16,9 +16,13 @@
 
 import { Resources } from '@anticrm/platform'
 import Chat from './components/Chat.svelte'
+import Connect from './components/Connect.svelte'
+import IconTelegram from './components/icons/TelegramColor.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    Chat
+    Chat,
+    Connect,
+    IconTelegram
   }
 })

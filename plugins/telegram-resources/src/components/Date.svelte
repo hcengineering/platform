@@ -18,15 +18,10 @@
 
   export let message: TelegramMessage
 
-  const options = {
-    day: 'numeric',
-    month: 'long'
-  }
-
 </script>
 
 <div class="message">
-  {new Intl.DateTimeFormat('default', options).format(message.modifiedOn)}
+  {new Intl.DateTimeFormat('default', { day: 'numeric', month: 'long' }).format(message.modifiedOn)}
 </div>
 
 <style lang="scss">

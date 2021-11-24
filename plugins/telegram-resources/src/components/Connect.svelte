@@ -17,7 +17,7 @@
   import { Button, EditBox, IconClose, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import login from '@anticrm/login'
-  import PinPad from '../PinPad.svelte'
+  import PinPad from './PinPad.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -29,10 +29,11 @@
   const url = getMetadata(login.metadata.TelegramUrl)
 
   async function requestCode(): Promise<void> {
-    const res = await sendRequest('/auth', { phone: phone })
-    if (res.next === 'code') {
-      requested = true
-    }
+    dispatch('close', { value: phone }) //todo, remove after enable service
+    // const res = await sendRequest('/auth', { phone: phone })
+    // if (res.next === 'code') {
+    //   requested = true
+    // }
   }
 
   async function sendPassword(): Promise<void> {

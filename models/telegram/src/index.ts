@@ -20,6 +20,7 @@ import contact from '@anticrm/model-contact'
 import telegram from '@anticrm/telegram'
 import type { TelegramMessage } from '@anticrm/telegram'
 import type { Domain } from '@anticrm/core'
+import setting from '@anticrm/setting'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
@@ -47,4 +48,11 @@ export function createModel (builder: Builder): void {
     placeholder: '@appleseed',
     presenter: telegram.component.Chat
   }, telegram.channelProvider.Telegram)
+
+  builder.createDoc(setting.class.IntegrationType, core.space.Model, {
+    label: 'Telegram',
+    description: 'Use telegram integration' as IntlString,
+    icon: telegram.component.IconTelegram,
+    createComponent: telegram.component.Connect
+  }, telegram.integrationType.Telegram)
 }

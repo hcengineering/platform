@@ -23,6 +23,7 @@
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-contact": "~0.6.1",
-    "@anticrm/telegram": "~0.6.0"
+    "@anticrm/telegram": "~0.6.0",
+    "@anticrm/setting": "~0.6.0"
   }
 }
