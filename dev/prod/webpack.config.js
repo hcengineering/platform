@@ -45,22 +45,6 @@ module.exports = {
     chunkFilename: '[name].[id].js',
     publicPath: '/'
   },
-  optimization: {
-    minimize: prod,
-    usedExports: prod,
-    splitChunks: {
-      chunks: 'all',
-      maxAsyncRequests: 5,
-      maxInitialRequests: 3,
-      cacheGroups: {
-        vendors: {
-          name: 'vendors',
-          test: /[\\/]node_modules[\\/]/,
-          priority: 20
-        }
-      }
-    }
-  },
   module: {
     rules: [
       {
