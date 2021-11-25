@@ -835,6 +835,21 @@
       "packageName": "@anticrm/model-setting",
       "projectFolder": "models/setting",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/telegram",
+      "projectFolder": "plugins/telegram",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/telegram-resources",
+      "projectFolder": "plugins/telegram-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-telegram",
+      "projectFolder": "models/telegram",
+      "shouldPublish": true
     }
   ]
 }

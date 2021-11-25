@@ -23,6 +23,7 @@ import { createModel as taskModel } from '@anticrm/model-task'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as settingModel } from '@anticrm/model-setting'
+import { createModel as telegramModel } from '@anticrm/model-telegram'
 
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
@@ -43,6 +44,7 @@ chunterModel(builder)
 taskModel(builder)
 recruitModel(builder)
 settingModel(builder)
+telegramModel(builder)
 
 serverCoreModel(builder)
 serverChunterModel(builder)

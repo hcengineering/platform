@@ -84,13 +84,6 @@ export function createModel (builder: Builder): void {
   }, setting.ids.SettingApp)
 
   builder.createDoc(setting.class.IntegrationType, core.space.Model, {
-    label: 'Telegram',
-    description: 'Use telegram integration' as IntlString,
-    icon: setting.component.IconTelegram,
-    createComponent: setting.component.ConnectTelegram
-  })
-
-  builder.createDoc(setting.class.IntegrationType, core.space.Model, {
     label: 'Email',
     description: 'Use email integration' as IntlString,
     icon: setting.component.IconGmail,

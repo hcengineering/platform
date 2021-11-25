@@ -107,12 +107,6 @@ export function createModel (builder: Builder): void {
     placeholder: '@appleseed'
   }, contact.channelProvider.Twitter)
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Telegram' as IntlString,
-    icon: contact.icon.Telegram,
-    placeholder: '@appleseed'
-  }, contact.channelProvider.Telegram)
-
   builder.createDoc(core.class.Space, core.space.Model, {
     name: 'Employees',
     description: 'Employees',
