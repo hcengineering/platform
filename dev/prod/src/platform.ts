@@ -25,6 +25,7 @@ import { chunterId } from '@anticrm/chunter'
 import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
+import { telegramId } from '@anticrm/telegram'
 
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
@@ -77,4 +78,5 @@ export function configurePlatform() {
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
   addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
+  addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
 }

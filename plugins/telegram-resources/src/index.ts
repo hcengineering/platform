@@ -1,5 +1,6 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +14,15 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
-import type { Ref, Class, Type } from '@anticrm/core'
-import contact, { contactId } from '@anticrm/contact'
-import type { Channel } from '@anticrm/contact'
-import type { AnyComponent } from '@anticrm/ui'
-import {} from '@anticrm/core'
+import { Resources } from '@anticrm/platform'
+import Chat from './components/Chat.svelte'
+import Connect from './components/Connect.svelte'
+import IconTelegram from './components/icons/TelegramColor.svelte'
 
-export const ids = mergeIds(contactId, contact, {
+export default async (): Promise<Resources> => ({
   component: {
-    PersonPresenter: '' as AnyComponent,
-    ChannelsPresenter: '' as AnyComponent
-  },
-  class: {
-    TypeChannels: '' as Ref<Class<Type<Channel[]>>>
+    Chat,
+    Connect,
+    IconTelegram
   }
 })

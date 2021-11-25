@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021 Anticrm Platform Contributors.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,15 +14,24 @@
 -->
 
 <script lang="ts">
-  import Nodes from './message/Nodes.svelte'
+  import type { TelegramMessage } from '@anticrm/telegram'
 
-  export let message: string
+  export let message: TelegramMessage
 
-  let dom: HTMLElement
-
-  const parser = new DOMParser()
-
-  $: dom = parser.parseFromString(message, 'text/html').firstChild?.childNodes[1] as HTMLElement
 </script>
 
-<Nodes nodes={dom.childNodes}/>
+<div class="message">
+  {new Intl.DateTimeFormat('default', { day: 'numeric', month: 'long' }).format(message.modifiedOn)}
+</div>
+
+<style lang="scss">
+  .message {
+    background-color: var(--theme-menu-divider);
+    border-radius: .75rem;
+    padding: .5rem;
+    width: fit-content;
+    justify-self: center;
+    text-transform: capitalize;
+  }
+
+</style>

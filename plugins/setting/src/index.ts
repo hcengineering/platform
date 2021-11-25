@@ -55,9 +55,7 @@ export default plugin(settingId, {
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,
-    ConnectTelegram: '' as AnyComponent,
     ConnectEmail: '' as AnyComponent,
-    IconTelegram: '' as AnyComponent,
     IconGmail: '' as AnyComponent
   },
   string: {

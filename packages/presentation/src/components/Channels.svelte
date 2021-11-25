@@ -20,10 +20,11 @@
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
 
-  import { Icon } from '@anticrm/ui'
+  import { AnyComponent, Icon } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
 
   import contact from '@anticrm/contact'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Channel[] | null
   export let size: 'small' | 'medium' = 'medium'
@@ -32,10 +33,12 @@
   interface Item {
     label: IntlString,
     icon: Asset,
-    value: string
+    value: string,
+    presenter?: AnyComponent
   }
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function getProviders(): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
     const providers = await client.findAll(contact.class.ChannelProvider, {})
@@ -54,6 +57,7 @@
           label: provider.label as IntlString,
           icon: provider.icon as Asset,
           value: item.value,
+          presenter: provider.presenter
         })
       } else {
         console.log('provider not found: ', item.provider)
@@ -67,23 +71,25 @@
   let displayItems: Item[] = []
 </script>
 
-<div class="container" class:reverse on:click|stopPropagation={() => {}}>
+<div class="container" class:reverse>
   {#each displayItems as item}
-    <div class="circle list list-{size}">
-      <div class="icon" class:small={size === 'small'}>
-        <Icon icon={item.icon} size={'small'}/>
+    <div on:click|stopPropagation={() => {dispatch('click', item)}}>
+      <div class="circle list list-{size}">
+        <div class="icon" class:small={size === 'small'}>
+          <Icon icon={item.icon} size={'small'}/>
+        </div>
       </div>
-    </div>
-    <div class="window {reverse ? 'right' : 'left'}">
-      <div class="circle circle-icon">
-        <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
-      </div>
-      <div class="flex-grow flex-col caption-color">
-        <div class="overflow-label label">{item.label}</div>
-        <div class="overflow-label">{item.value}</div>
-      </div>
-      <div class="button" on:click|preventDefault={() => { alert('Copied: ' + item.value) }}>
-        <IconCopy size={'small'}/>
+      <div class="window {reverse ? 'right' : 'left'}">
+        <div class="circle circle-icon">
+          <div class="icon"><Icon icon={item.icon} size={'small'}/></div>
+        </div>
+        <div class="flex-grow flex-col caption-color">
+          <div class="overflow-label label">{item.label}</div>
+          <div class="overflow-label">{item.value}</div>
+        </div>
+        <div class="button" on:click|preventDefault={() => { alert('Copied: ' + item.value) }}>
+          <IconCopy size={'small'}/>
+        </div>
       </div>
     </div>
   {/each}

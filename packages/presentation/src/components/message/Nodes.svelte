@@ -25,11 +25,19 @@
     {#if node.nodeType === Node.TEXT_NODE}
       {node.data}
     {:else}
-      {#if node.nodeName === 'em'}
+      {#if node.nodeName === 'EM'}
         <em><svelte:self nodes={node.childNodes}/></em>
-      {:else if node.nodeName === 'strong'}
+      {:else if node.nodeName === 'STRONG'}
         <strong><svelte:self nodes={node.childNodes}/></strong>
-      {:else if node.nodeName === 'span'}
+      {:else if node.nodeName === 'P'}
+        <p><svelte:self nodes={node.childNodes}/></p>
+      {:else if node.nodeName === 'BLOCKQUOTE'}
+        <blockquote><svelte:self nodes={node.childNodes}/></blockquote>
+      {:else if node.nodeName === 'CODE'}
+        <code><svelte:self nodes={node.childNodes}/></code>
+      {:else if node.nodeName === 'BR'}
+        <br/>
+      {:else if node.nodeName === 'SPAN'}
         <Person objectId={node.getAttribute('data-id')} title={node.getAttribute('data-label')} />
       {:else}
         Unknown { node.nodeName }
