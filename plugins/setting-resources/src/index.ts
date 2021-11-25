@@ -14,17 +14,13 @@
 //
 
 import Integrations from './components/Integrations.svelte'
-import ConnectTelegram from './components/integrations/ConnectTelegram.svelte'
 import ConnectEmail from './components/integrations/ConnectEmail.svelte'
-import IconTelegram from './components/icons/Telegram.svelte'
 import IconGmail from './components/icons/Gmail.svelte'
 
 export default async () => ({
   component: {
     Integrations,
-    ConnectTelegram,
     ConnectEmail,
-    IconTelegram,
     IconGmail
   }
 })

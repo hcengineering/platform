@@ -18,13 +18,14 @@
   import activity from '@anticrm/activity'
   import type { Doc } from '@anticrm/core';
   import type { Asset } from '@anticrm/platform';
-  import type { AnySvelteComponent } from '@anticrm/ui';
+  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui';
   import { Icon,IconClose,IconExpand, Component } from '@anticrm/ui';
   import { createEventDispatcher } from 'svelte';
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
   export let fullSize: boolean = false
+  export let rightSection: AnyComponent | undefined
   export let object: Doc
 
   const dispatch = createEventDispatcher()
@@ -53,7 +54,7 @@
     </div>
   </div>
   <div class="rightSection">
-    <Component is={activity.component.Activity} props={{object, fullSize}}/>
+    <Component is={rightSection ?? activity.component.Activity} props={{object, fullSize}}/>
   </div>
 {:else}
   <div class="unionSection">

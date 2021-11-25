@@ -14,16 +14,14 @@
 //
 
 import { PlatformError, Severity, Status } from '@anticrm/platform'
+import clone from 'just-clone'
 import type { Class, Doc, Ref } from './classes'
-import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import core from './component'
 import type { Hierarchy } from './hierarchy'
-import { _getOperator } from './operator'
 import { findProperty, resultSort } from './query'
-import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, LookupData, Refs, TxResult } from './storage'
+import type { DocumentQuery, FindOptions, FindResult, LookupData, Refs, Storage, TxResult, WithLookup } from './storage'
+import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
-
-import clone from 'just-clone'
 
 /**
  * @public
@@ -200,17 +198,7 @@ export class ModelDb extends MemDb implements Storage {
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const doc = this.getObject(tx.objectId) as any
-    const ops = tx.operations as any
-    for (const key in ops) {
-      if (key.startsWith('$')) {
-        const operator = _getOperator(key)
-        operator(doc, ops[key])
-      } else {
-        doc[key] = ops[key]
-      }
-    }
-    doc.modifiedBy = tx.modifiedBy
-    doc.modifiedOn = tx.modifiedOn
+    TxProcessor.updateDoc2Doc(doc, tx)
     return tx.retrieve === true ? { object: doc } : {}
   }
 
