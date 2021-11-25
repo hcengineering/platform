@@ -17,6 +17,17 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/server/server",
       "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest tests",
+      "program": "${fileDirname}/../../node_modules/@rushstack/heft/lib/start.js",
+      "cwd": "${fileDirname}/../../",
+      "args": ["--debug", "test", "--clean", "--test-path-pattern", "${file}"],
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "protocol": "inspector"
     }
   ]
 }

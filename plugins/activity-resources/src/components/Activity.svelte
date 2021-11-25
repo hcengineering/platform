@@ -13,62 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import type { AttachedDoc, Doc, Ref, TxCollectionCUD, TxCUD } from '@anticrm/core'
-  import core, { SortingOrder } from '@anticrm/core'
+  import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { ReferenceInput } from '@anticrm/text-editor'
   import { Grid, IconActivity, ScrollBox } from '@anticrm/ui'
-  import { ActivityKey, activityKey } from '../utils'
+  import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
   export let fullSize: boolean = false
   export let object: Doc
 
-  let txes1: TxCUD<Doc>[] = []
-  let txes2: TxCUD<Doc>[] = []
-
-  let txes: TxCUD<Doc>[]
-
-  $: txes = Array.from(txes1)
-    .concat(txes2)
-    .sort((a, b) => b.modifiedOn - a.modifiedOn)
+  let txes: DisplayTx[] = []
 
   const client = getClient()
 
-  const txQuery1 = createQuery()
-  const txQuery2 = createQuery()
+  const activityQuery = newActivity(client)
 
-  let isAttached = false
-
-  $: isAttached = client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)
-  $: txQuery1.query<TxCollectionCUD<Doc, AttachedDoc>>(
-    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
-    isAttached
-      ? { 'tx.objectId': object._id as Ref<AttachedDoc> }
-      : {
-          objectId: object._id,
-          _class: { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
-        },
+  $: activityQuery.update(
+    object,
     (result) => {
-      txes1 = result
+      txes = result
     },
-    { sort: { modifiedOn: SortingOrder.Descending } }
-  )
-
-  $: txQuery2.query<TxCUD<Doc>>(
-    core.class.TxCollectionCUD,
-    {
-      objectId: object._id,
-      'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc] }
-    },
-    (result) => {
-      txes2 = result
-    },
-    { sort: { modifiedOn: SortingOrder.Descending } }
+    SortingOrder.Descending
   )
 
   function onMessage (event: CustomEvent) {
@@ -94,7 +63,7 @@
     <ScrollBox vertical stretch>
       {#if txes}
         <Grid column={1} rowGap={1.5}>
-          {#each txes as tx}
+          {#each txes as tx (tx.tx._id)}
             <TxView {tx} {viewlets} />
           {/each}
         </Grid>

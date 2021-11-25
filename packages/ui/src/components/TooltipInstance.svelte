@@ -104,7 +104,7 @@
   }
 
   const whileShow = (ev: MouseEvent): void => {
-    if ($tooltip.element) {
+    if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
       const rectT = {
         top: (dir === 'top') ? rect.top - 16 : rect.top,
