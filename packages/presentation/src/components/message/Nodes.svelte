@@ -37,6 +37,14 @@
         <code><svelte:self nodes={node.childNodes}/></code>
       {:else if node.nodeName === 'BR'}
         <br/>
+      {:else if node.nodeName === 'H1'}
+        <h1><svelte:self nodes={node.childNodes}/></h1>
+      {:else if node.nodeName === 'H2'}
+        <h2><svelte:self nodes={node.childNodes}/></h2>
+      {:else if node.nodeName === 'UL'}
+        <ul><svelte:self nodes={node.childNodes}/></ul>
+      {:else if node.nodeName === 'LI'}
+        <li><svelte:self nodes={node.childNodes}/></li>
       {:else if node.nodeName === 'SPAN'}
         <Person objectId={node.getAttribute('data-id')} title={node.getAttribute('data-label')} />
       {:else}
