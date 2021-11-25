@@ -46,6 +46,9 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number
 
+  @Prop(TypeString(), 'Comments' as IntlString)
+  comments?: number
+
   @Prop(TypeString(), 'Applications' as IntlString)
   applications?: number
 
@@ -130,6 +133,7 @@ export function createModel (builder: Builder): void {
       'city',
       { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
       { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',
       'channels'
     ]
