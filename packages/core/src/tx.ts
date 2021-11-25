@@ -18,7 +18,7 @@ import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, Propert
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
 import core from './component'
 import { generateId } from './utils'
-import { _getOperator } from '.'
+import { _getOperator } from './operator'
 
 /**
  * @public

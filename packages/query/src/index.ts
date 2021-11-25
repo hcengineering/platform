@@ -13,11 +13,37 @@
 // limitations under the License.
 //
 
-import {
-  Ref, Class, Doc, Tx, DocumentQuery, TxCreateDoc, TxRemoveDoc, Client,
-  FindOptions, TxUpdateDoc, _getOperator, TxProcessor, resultSort, SortingQuery,
-  FindResult, Hierarchy, Refs, WithLookup, LookupData, TxMixin, TxPutBag, ModelDb, TxBulkWrite, TxResult
+import core, {
+  Ref,
+  Class,
+  Doc,
+  Tx,
+  DocumentQuery,
+  TxCreateDoc,
+  TxRemoveDoc,
+  Client,
+  FindOptions,
+  TxUpdateDoc,
+  _getOperator,
+  TxProcessor,
+  resultSort,
+  SortingQuery,
+  FindResult,
+  Hierarchy,
+  Refs,
+  WithLookup,
+  LookupData,
+  TxMixin,
+  TxPutBag,
+  ModelDb,
+  TxBulkWrite,
+  TxResult,
+  TxCollectionCUD,
+  AttachedDoc,
+  findProperty
 } from '@anticrm/core'
+
+import clone from 'just-clone'
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -51,24 +77,40 @@ export class LiveQuery extends TxProcessor implements Client {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
       return false
     }
-    for (const key in q.query) {
-      const value = (q.query as any)[key]
-      if ((doc as any)[key] !== value) {
+    const query = q.query
+    for (const key in query) {
+      if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
+      const value = (query as any)[key]
+      const result = findProperty([doc], key, value)
+      if (result.length === 0) {
         return false
       }
     }
     return true
   }
 
-  async findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return await this.client.findAll(_class, query, options)
   }
 
-  async findOne<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
     return (await this.findAll(_class, query, options))[0]
   }
 
-  query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>): () => void {
+  query<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: T[]) => void,
+    options?: FindOptions<T>
+  ): () => void {
     const result = this.client.findAll(_class, query, options)
     const q: Query = {
       _class,
@@ -96,7 +138,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
-      const updatedDoc = q.result.find(p => p._id === tx.objectId)
+      const updatedDoc = q.result.find((p) => p._id === tx.objectId)
       if (updatedDoc !== undefined) {
         const doc = updatedDoc as any
         let bag = doc[tx.bag]
@@ -114,20 +156,87 @@ export class LiveQuery extends TxProcessor implements Client {
     throw new Error('Method not implemented.')
   }
 
-  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    console.log(`updating ${this.queries.length} queries`)
+  protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
     for (const q of this.queries) {
-      if (q.result instanceof Promise) {
-        q.result = await q.result
+      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
+        // handle add since Txes are immutable
+        await this.handleDocAdd(q, tx)
+        continue
       }
-      const updatedDoc = q.result.find(p => p._id === tx.objectId)
-      if (updatedDoc !== undefined) {
-        await this.__updateDoc(q, updatedDoc, tx)
-        this.sort(q, tx)
-        await this.callback(updatedDoc, q)
+
+      if (tx.tx._class === core.class.TxCreateDoc) {
+        const createTx = tx.tx as TxCreateDoc<AttachedDoc>
+        const d: TxCreateDoc<AttachedDoc> = {
+          ...createTx,
+          attributes: {
+            ...createTx.attributes,
+            attachedTo: tx.objectId,
+            attachedToClass: tx.objectClass,
+            collection: tx.collection
+          }
+        }
+        await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d))
+      } else if (tx.tx._class === core.class.TxUpdateDoc) {
+        await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>)
+      } else if (tx.tx._class === core.class.TxRemoveDoc) {
+        await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
       }
     }
     return {}
+  }
+
+  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+    for (const q of this.queries) {
+      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
+        // handle add since Txes are immutable
+        await this.handleDocAdd(q, tx)
+        continue
+      }
+      await this.handleDocUpdate(q, tx)
+    }
+    return {}
+  }
+
+  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>): Promise<void> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    const pos = q.result.findIndex((p) => p._id === tx.objectId)
+    if (pos !== -1) {
+      const updatedDoc = q.result[pos]
+      await this.__updateDoc(q, updatedDoc, tx)
+      if (!this.match(q, updatedDoc)) {
+        q.result.splice(pos, 1)
+      } else {
+        q.result[pos] = updatedDoc
+      }
+      this.sort(q, tx)
+      await this.callback(updatedDoc, q)
+    } else if (this.matchQuery(q, tx)) {
+      await this.refresh(q)
+    }
+  }
+
+  private async refresh (q: Query): Promise<void> {
+    const res = await this.client.findAll(q._class, q.query, q.options)
+    q.result = res
+    q.callback(clone(res))
+  }
+
+  // Check if query is partially matched.
+  private matchQuery (q: Query, tx: TxUpdateDoc<Doc>): boolean {
+    if (!this.client.getHierarchy().isDerived(q._class, tx.objectClass)) {
+      return false
+    }
+
+    for (const key in q.query) {
+      const value = (q.query as any)[key]
+      const res = findProperty([tx.operations as unknown as Doc], key, value)
+      if (res.length === 1) {
+        return true
+      }
+    }
+    return false
   }
 
   private async lookup (doc: Doc, lookup: Refs<Doc>): Promise<void> {
@@ -135,59 +244,81 @@ export class LiveQuery extends TxProcessor implements Client {
     for (const key in lookup) {
       const _class = (lookup as any)[key] as Ref<Class<Doc>>
       const _id = (doc as any)[key] as Ref<Doc>
-      (result as any)[key] = (await this.client.findAll(_class, { _id }))[0]
+      ;(result as any)[key] = (await this.client.findAll(_class, { _id }))[0]
     }
-    (doc as WithLookup<Doc>).$lookup = result
+    ;(doc as WithLookup<Doc>).$lookup = result
   }
 
   protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
-    console.log('query tx', tx)
+    const docTx = TxProcessor.createDoc2Doc(tx)
     for (const q of this.queries) {
-      const doc = TxProcessor.createDoc2Doc(tx)
-      if (this.match(q, doc)) {
-        if (q.result instanceof Promise) {
-          q.result = await q.result
-        }
-
-        if (q.options?.lookup !== undefined) await this.lookup(doc, q.options.lookup)
-
-        q.result.push(doc)
-
-        if (q.options?.sort !== undefined) resultSort(q.result, q.options?.sort)
-
-        if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
-          if (q.result.pop()?._id !== doc._id) {
-            q.callback(q.result)
-          }
-        } else {
-          q.callback(q.result)
-        }
-      }
+      const doc = this.client.getHierarchy().isDerived(q._class, core.class.Tx) ? tx : docTx
+      await this.handleDocAdd(q, doc)
     }
     return {}
+  }
+
+  private async handleDocAdd (q: Query, doc: Doc): Promise<void> {
+    if (this.match(q, doc)) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+
+      if (q.options?.lookup !== undefined) {
+        await this.lookup(doc, q.options.lookup)
+      }
+
+      q.result.push(doc)
+
+      if (q.options?.sort !== undefined) {
+        resultSort(q.result, q.options?.sort)
+      }
+
+      if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
+        if (q.result.pop()?._id !== doc._id) {
+          q.callback(clone(q.result))
+        }
+      } else {
+        q.callback(clone(q.result))
+      }
+    }
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     for (const q of this.queries) {
-      if (q.result instanceof Promise) {
-        q.result = await q.result
+      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
+        // handle add since Txes are immutable
+        await this.handleDocAdd(q, tx)
+        continue
       }
-      const index = q.result.findIndex(p => p._id === tx.objectId)
-      if (index > -1) {
-        q.result.splice(index, 1)
-        q.callback(q.result)
-      }
+      await this.handleDocRemove(q, tx)
     }
     return {}
   }
 
+  private async handleDocRemove (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    const index = q.result.findIndex((p) => p._id === tx.objectId)
+    if (
+      q.options?.limit !== undefined &&
+      q.options.limit === q.result.length &&
+      this.client.getHierarchy().isDerived(q._class, tx.objectClass)
+    ) {
+      return await this.refresh(q)
+    }
+    if (index > -1) {
+      q.result.splice(index, 1)
+      q.callback(clone(q.result))
+    }
+  }
+
   protected override async txBulkWrite (tx: TxBulkWrite): Promise<TxResult> {
-    console.log('query: bulk')
     return await super.txBulkWrite(tx)
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    console.log('query tx', tx)
     return await super.tx(tx)
   }
 
@@ -199,11 +330,11 @@ export class LiveQuery extends TxProcessor implements Client {
         const operator = _getOperator(key)
         operator(updatedDoc, ops[key])
       } else {
-        (updatedDoc as any)[key] = ops[key]
+        ;(updatedDoc as any)[key] = ops[key]
         if (q.options !== undefined) {
           const lookup = (q.options.lookup as any)?.[key]
           if (lookup !== undefined) {
-            (updatedDoc.$lookup as any)[key] = await this.client.findOne(lookup, { _id: ops[key] })
+            ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(lookup, { _id: ops[key] })
           }
         }
       }
@@ -240,14 +371,11 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
       if (q.result[q.options?.limit]._id === updatedDoc._id) {
-        const res = await this.findAll(q._class, q.query, q.options)
-        q.result = res
-        q.callback(res)
-        return
+        return await this.refresh(q)
       }
       if (q.result.pop()?._id !== updatedDoc._id) q.callback(q.result)
     } else {
-      q.callback(q.result)
+      q.callback(clone(q.result))
     }
   }
 }
