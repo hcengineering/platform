@@ -37,6 +37,7 @@ export interface Candidate extends Person {
   applications?: number
   onsite?: boolean
   remote?: boolean
+  source?: string
 }
 
 /**
