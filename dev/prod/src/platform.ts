@@ -49,7 +49,7 @@ export function configurePlatform() {
       setMetadata(login.metadata.UploadUrl,  value.UPLOAD_URL)  
     })    
   })    
-  setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL)
+  setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   if (process.env.CLIENT_TYPE === 'dev') {
