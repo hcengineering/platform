@@ -151,7 +151,9 @@
       <span><Label label={'Add social links'} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
-      <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <div class="ml-1">
+        <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      </div>
     {/if}
   </div>
 
