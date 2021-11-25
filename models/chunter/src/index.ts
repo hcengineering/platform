@@ -43,6 +43,7 @@ export class TMessage extends TDoc implements Message {
 }
 
 @Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
+@UX('Comment' as IntlString)
 export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeString(), 'Message' as IntlString)
   @Index(IndexKind.FullText)
@@ -125,6 +126,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.AttachmentPresenter
+  })
+
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.CommentPresenter
   })
 
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {

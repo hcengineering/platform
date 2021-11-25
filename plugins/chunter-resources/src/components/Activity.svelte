@@ -19,10 +19,11 @@
 import type { Doc, Ref, Space } from '@anticrm/core'
 import type { Comment } from '@anticrm/chunter'
 import { ReferenceInput } from '@anticrm/text-editor'
-import { createQuery, getClient, Backlink } from '@anticrm/presentation'
+import { createQuery, getClient } from '@anticrm/presentation'
 import { ScrollBox, Grid } from '@anticrm/ui'
 
 import chunter from '@anticrm/chunter'
+import CommentPresenter from './CommentPresenter.svelte'
 
 export let object: Doc
 export let space: Ref<Space>
@@ -48,7 +49,7 @@ function onMessage(event: CustomEvent) {
       {#if comments}
         <Grid column={1} rowGap={1.5}>
           {#each comments as comment}
-            <Backlink {comment} />
+            <CommentPresenter value={comment} />
           {/each}
         </Grid>
       {/if}
