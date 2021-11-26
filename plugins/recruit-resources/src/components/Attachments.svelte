@@ -38,12 +38,12 @@
   $: query.query(chunter.class.Attachment, { attachedTo: objectId }, result => { attachments = result })
 
   let inputFile: HTMLInputElement
-  let loading = false
+  let loading = 0
 
   const client = getClient()
 
   async function createAttachment(file: File) {
-    loading = true
+    loading++
     try {
       const uuid = await uploadFile(space, file, objectId)
       console.log('uploaded file uuid', uuid)
@@ -57,7 +57,7 @@
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {
-      loading = false
+      loading--
     }
   }
 
