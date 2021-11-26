@@ -23,17 +23,19 @@
 
   let requested = false
   let secondFactor = false
+  let connecting = false
   let phone: string = ''
   let code: string = ''
   let password: string = ''
+  let error: string | undefined = undefined
   const url = getMetadata(login.metadata.TelegramUrl)
 
   async function requestCode(): Promise<void> {
     dispatch('close', { value: phone }) //todo, remove after enable service
-    // const res = await sendRequest('/auth', { phone: phone })
-    // if (res.next === 'code') {
-    //   requested = true
-    // }
+    const res = await sendRequest('/auth', { phone: phone })
+    if (res.next === 'code') {
+      requested = true
+    }
   }
 
   async function sendPassword(): Promise<void> {
@@ -53,6 +55,7 @@
   }
 
   async function sendRequest(path: string, data: any): Promise<any> {
+    connecting = true
     const response = await fetch(url + path, {
       method: 'POST',
       headers: {
@@ -62,6 +65,10 @@
       body: serialize(data)
     })
     const res = await response.json()
+    connecting = false
+    if (res.tg_code === 'PHONE_CODE_INVALID') {
+      error = 'Invalid code'
+    }
     if (res.err != null) {
       throw new Error(res.err)
     }
@@ -74,6 +81,27 @@
     phone = ''
     requested = false
     secondFactor = false
+  }
+
+  $: label = connecting ? 'Connecting...' : (requested || secondFactor ? 'Connect' : 'Next')
+
+  $: disabled = checkDisabled(connecting, secondFactor, password, requested, error, code, phone)
+
+  function checkDisabled (connecting: boolean, secondFactor: boolean, password: string,
+    requested: boolean, error: string | undefined, code: string, phone: string): boolean {
+    if (connecting) return true
+    if (secondFactor) return password.length === 0
+    if (requested) {
+      if (error !== undefined) return true
+      return !code.match(/^\d{5}$/)
+    }
+    return !phone.match(/^\+\d{9,15}$/)
+  }
+
+  function click () {
+    if (secondFactor) return sendPassword()
+    if (requested) return sendCode()
+    return requestCode()
   }
 </script>
 
@@ -94,24 +122,19 @@
     {#if secondFactor}
       <p><Label label={'Enter your second factor password'} /></p>
       <EditBox label={'Password'} password placeholder={'password'} bind:value={password} />
-      <div class="footer">
-        <Button label={'Connect'} primary disabled={!password.length} on:click={sendPassword} />
-        <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
-      </div>
     {:else if requested}
       <p><Label label={'Enter the 5-digit code you received on your Telegram account.'} /></p>
-      <PinPad length={5} bind:value={code} />
-      <div class="footer">
-        <Button label={'Connect'} primary disabled={!code.match(/^\d{5}$/)} on:click={sendCode} />
-        <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
-      </div>
+      <PinPad length={5} bind:value={code} bind:error={error} />
     {:else}
       <p><Label label={'Enter your Telegram phone number to connect your account.'} /></p>
       <EditBox label={'Phone number'} placeholder={'+1 555 333 7777'} bind:value={phone} />
-      <div class="footer">
-        <Button label={'Next'} primary disabled={!phone.match(/^\+\d{9,15}$/)} on:click={requestCode} />
-      </div>
     {/if}
+      <div class="footer">
+        <Button {label} primary {disabled} on:click={click} />
+        {#if requested || secondFactor}
+          <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
+        {/if}
+      </div>
   </div>
 </div>
 
@@ -154,7 +177,7 @@
         flex-direction: row-reverse;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 1.75rem 1.75rem;
+        padding: 1rem 0.1rem;
 
         .link {
           color: var(--theme-content-dark-color);

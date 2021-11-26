@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class } from '@anticrm/core'
+import type { Doc, Ref, Class, Space } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { IntegrationType } from '@anticrm/setting'
 
@@ -45,5 +45,8 @@ export default plugin(telegramId, {
   },
   class: {
     Message: '' as Ref<Class<TelegramMessage>>
+  },
+  space: {
+    Telegram: '' as Ref<Space>
   }
 })
