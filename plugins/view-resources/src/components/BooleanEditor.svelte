@@ -15,15 +15,11 @@
 -->
 
 <script lang="ts">
-
-  import type { IntlString } from '@anticrm/platform'
+  // import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
   
-  export let label: IntlString
-  export let placeholder: IntlString
   export let value: any
-  export let focus: boolean
-  export let maxWidth: string
+  export let maxWidth: string | undefined = undefined
   export let onChange: (value: any) => void
   
   function getLabel(value: boolean | undefined) {
@@ -31,15 +27,21 @@
     if (value === false) return 'No'
     return 'N/A'
   }
-  
-  </script>
+</script>
 
-<div class="flex-row-center yesno-container" class:yes={value === true} class:no={value === false} class:unknown={value === undefined} on:click={() => {
-  if (value === true) value = false
-  else if (value === false) value = undefined
-  else value = true
-  onChange(value)
-}}>
+<div
+  class="flex-row-center yesno-container"
+  class:yes={value === true}
+  class:no={value === false}
+  class:unknown={value === undefined}
+  style={(maxWidth) ? `max-width: ${maxWidth};` : ''}
+  on:click={() => {
+    if (value === true) value = false
+    else if (value === false) value = undefined
+    else value = true
+    onChange(value)
+  }}
+>
   <svg class="svg-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
     <circle class:yes={value === true} class:no={value === false} cx="8" cy="8" r="6"/>
     {#if value === true}

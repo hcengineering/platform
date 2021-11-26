@@ -19,7 +19,7 @@
 
   export let label: IntlString
   export let color: string
-  export let counter: number
+  // export let counter: number
   export let addAction: () => void | undefined
 </script>
 
@@ -71,10 +71,10 @@
         height: 100%;
         font-weight: 500;
         color: var(--theme-caption-color);
-        span {
-          font-weight: 400;
-          color: var(--theme-content-dark-color);
-        }
+        // span {
+        //   font-weight: 400;
+        //   color: var(--theme-content-dark-color);
+        // }
       }
       .tool {
         opacity: .4;
