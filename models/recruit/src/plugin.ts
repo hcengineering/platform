@@ -33,10 +33,7 @@ export default mergeIds(recruitId, recruit, {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
     CandidatePools: '' as IntlString,
-    Vacancy: '' as IntlString,
-    TxApplicantCreate: '' as IntlString,
-    TxCandidateCreate: '' as IntlString,
-    TxApplicantUpdate: '' as IntlString
+    Vacancy: '' as IntlString
   },
   component: {
     CreateVacancy: '' as AnyComponent,
@@ -52,12 +49,9 @@ export default mergeIds(recruitId, recruit, {
     CandidatesPublic: '' as Ref<Space>
   },
   ids: {
-    TxApplicantCreate: '' as Ref<TxViewlet>,
-    TxCandidateCreate: '' as Ref<TxViewlet>,
     TxApplicantUpdate: '' as Ref<TxViewlet>
   },
   activity: {
-    TxApplicantCreate: '' as AnyComponent,
     TxApplicantUpdate: '' as AnyComponent
   }
 })

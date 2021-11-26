@@ -46,6 +46,9 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number
 
+  @Prop(TypeString(), 'Comments' as IntlString)
+  comments?: number
+
   @Prop(TypeString(), 'Applications' as IntlString)
   applications?: number
 
@@ -54,6 +57,9 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(TypeBoolean(), 'Remote' as IntlString)
   remote?: boolean
+
+  @Prop(TypeString(), 'Source' as IntlString)
+  source?: string
 }
 
 @Model(recruit.class.Applicant, core.class.DocWithState, DOMAIN_RECRUIT)
@@ -130,6 +136,7 @@ export function createModel (builder: Builder): void {
       'city',
       { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
       { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',
       'channels'
     ]
@@ -200,28 +207,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: recruit.class.Applicant,
     icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxCreateDoc,
-    component: recruit.activity.TxApplicantCreate,
-    label: recruit.string.TxApplicantCreate,
-    display: 'emphasized'
-  }, recruit.ids.TxApplicantCreate)
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    icon: recruit.icon.RecruitApplication,
     txClass: core.class.TxUpdateDoc,
     component: recruit.activity.TxApplicantUpdate,
-    label: recruit.string.TxApplicantUpdate,
     display: 'inline'
   }, recruit.ids.TxApplicantUpdate)
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Candidate,
-    icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxCreateDoc,
-    label: recruit.string.TxCandidateCreate,
-    display: 'emphasized'
-  }, recruit.ids.TxCandidateCreate)
 }
 
 export { default } from './plugin'

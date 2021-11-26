@@ -16,12 +16,14 @@
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Doc, Ref, Class, UXObject, Space, Account } from '@anticrm/core'
+import type { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
  */
 export interface ChannelProvider extends Doc, UXObject {
   placeholder: string
+  presenter?: AnyComponent
 }
 
 /**
@@ -113,6 +115,13 @@ export default plugin(contactId, {
     Organization: '' as Ref<Class<Organization>>,
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
+  },
+  channelProvider: {
+    Email: '' as Ref<ChannelProvider>,
+    Phone: '' as Ref<ChannelProvider>,
+    LinkedIn: '' as Ref<ChannelProvider>,
+    Twitter: '' as Ref<ChannelProvider>,
+    Telegram: '' as Ref<ChannelProvider>
   },
   icon: {
     Phone: '' as Asset,

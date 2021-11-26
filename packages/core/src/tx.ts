@@ -18,6 +18,7 @@ import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, Propert
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
 import core from './component'
 import { generateId } from './utils'
+import { _getOperator } from './operator'
 
 /**
  * @public
@@ -223,6 +224,21 @@ export abstract class TxProcessor implements WithTx {
     } as T
   }
 
+  static updateDoc2Doc<T extends Doc>(doc: T, tx: TxUpdateDoc<T>): T {
+    const ops = tx.operations as any
+    for (const key in ops) {
+      if (key.startsWith('$')) {
+        const operator = _getOperator(key)
+        operator(doc, ops[key])
+      } else {
+        (doc as any)[key] = ops[key]
+      }
+    }
+    doc.modifiedBy = tx.modifiedBy
+    doc.modifiedOn = tx.modifiedOn
+    return doc
+  }
+
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
   protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<TxResult>
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
@@ -323,6 +339,25 @@ export class TxOperations implements Storage {
       space,
       collection,
       this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
+    )
+    await this.storage.tx(tx)
+    return tx.objectId
+  }
+
+  async removeCollection<T extends Doc, P extends AttachedDoc>(
+    _class: Ref<Class<P>>,
+    space: Ref<Space>,
+    objectId: Ref<P>,
+    attachedTo: Ref<T>,
+    attachedToClass: Ref<Class<T>>,
+    collection: string
+  ): Promise<Ref<T>> {
+    const tx = this.txFactory.createTxCollectionCUD(
+      attachedToClass,
+      attachedTo,
+      space,
+      collection,
+      this.txFactory.createTxRemoveDoc(_class, space, objectId)
     )
     await this.storage.tx(tx)
     return tx.objectId

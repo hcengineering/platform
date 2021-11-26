@@ -22,7 +22,10 @@ import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 
 import view, { AttributeModel } from '@anticrm/view'
 
-async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> { 
+/**
+ * @public
+ */
+export async function getObjectPresenter(client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> { 
   const clazz = client.getHierarchy().getClass(_class) 
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   if (presenterMixin.presenter === undefined) {

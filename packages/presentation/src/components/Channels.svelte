@@ -24,6 +24,7 @@
   import ChannelsPopup from './ChannelsPopup.svelte'
 
   import contact from '@anticrm/contact'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Channel[] | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
@@ -32,10 +33,12 @@
   interface Item {
     label: IntlString,
     icon: Asset,
-    value: string
+    value: string,
+    presenter?: AnyComponent
   }
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function getProviders(): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
     const providers = await client.findAll(contact.class.ChannelProvider, {})
@@ -54,6 +57,7 @@
           label: provider.label as IntlString,
           icon: provider.icon as Asset,
           value: item.value,
+          presenter: provider.presenter
         })
       } else {
         console.log('provider not found: ', item.provider)

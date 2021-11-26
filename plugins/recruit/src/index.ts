@@ -34,9 +34,11 @@ export interface Candidates extends Space {}
 export interface Candidate extends Person {
   title?: string
   attachments?: number
+  comments?: number
   applications?: number
   onsite?: boolean
   remote?: boolean
+  source?: string
 }
 
 /**

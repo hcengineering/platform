@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@anticrm/platform":"~0.6.5",
+    "@anticrm/ui":"~0.6.0",
     "@anticrm/core":"~0.6.11"
   }
 }

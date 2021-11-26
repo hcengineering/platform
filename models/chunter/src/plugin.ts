@@ -25,7 +25,9 @@ import type { TxViewlet } from '@anticrm/activity'
 export default mergeIds(chunterId, chunter, {
   component: {
     AttachmentsPresenter: '' as AnyComponent,
-    AttachmentPresenter: '' as AnyComponent
+    AttachmentPresenter: '' as AnyComponent,
+    CommentsPresenter: '' as AnyComponent,
+    CommentPresenter: '' as AnyComponent
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,

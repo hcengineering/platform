@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,12 +15,18 @@
 -->
 
 <script lang="ts">
-  import type { Applicant } from '@anticrm/recruit'
-  import type { TxCreateDoc } from '@anticrm/core'
-  import { TxProcessor } from '@anticrm/core'
-  import ApplicationPresenter from '../ApplicationPresenter.svelte'
+  import { Ref, Doc, SortingOrder } from '@anticrm/core'
+  import { Table } from '@anticrm/view-resources'
 
-  export let tx: TxCreateDoc<Applicant>
+  import chunter from '@anticrm/chunter'
+
+  export let objectId: Ref<Doc>
+
 </script>
 
-<ApplicationPresenter value={TxProcessor.createDoc2Doc(tx)}/>
+<Table 
+  _class={chunter.class.Comment}
+  config={['']}
+  options={ { limit: 3, sort: { modifiedOn: SortingOrder.Descending }} }
+  query={ { attachedTo: objectId } }
+/>

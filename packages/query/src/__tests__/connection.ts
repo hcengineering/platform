@@ -13,12 +13,11 @@
 // limitations under the License.
 //
 
-import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult } from '@anticrm/core'
-import core, { ModelDb, TxDb, Hierarchy, DOMAIN_TX } from '@anticrm/core'
+import type { Class, Client, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxResult } from '@anticrm/core'
+import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@anticrm/core'
+import { genMinModel } from './minmodel'
 
-import { genMinModel } from '@anticrm/core/src/__tests__/minmodel'
-
-export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
+export async function connect (handler: (tx: Tx) => void): Promise<Client> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -31,20 +30,29 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
     await model.tx(tx)
   }
 
-  async function findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>): Promise<FindResult<T>> {
+  async function findAll<T extends Doc> (
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const domain = hierarchy.getClass(_class).domain
-    if (domain === DOMAIN_TX) return await transactions.findAll(_class, query)
-    return await model.findAll(_class, query)
+    if (domain === DOMAIN_TX) return await transactions.findAll(_class, query, options)
+    return await model.findAll(_class, query, options)
   }
 
   return {
     findAll,
-    tx: async (tx: Tx): Promise<void> => {
+    findOne: async (_class, query, options) => (await findAll(_class, query, { ...options, limit: 1 })).shift(),
+    getHierarchy: () => hierarchy,
+    getModel: () => model,
+    tx: async (tx: Tx): Promise<TxResult> => {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)
       }
       await Promise.all([model.tx(tx), transactions.tx(tx)])
-      handler(tx)
+      // Not required, since handled in client.
+      // handler(tx)
+      return {}
     }
   }
 }

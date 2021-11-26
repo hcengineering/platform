@@ -58,7 +58,7 @@ export function setClient(_client: Client) {
   }
 }
 
-class LiveQuery {
+export class LiveQuery {
   private unsubscribe = () => {}
 
   constructor() { 
