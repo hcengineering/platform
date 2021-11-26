@@ -31,7 +31,7 @@ import { showPopup } from '@anticrm/ui'
 import {buildModel} from './utils'
 
 export { Table }
-export { buildModel, getObjectPresenter } from './utils'
+export { buildModel, getObjectPresenter, getActions } from './utils'
 
 function Delete(object: Doc): void {
   showPopup(MessageBox, {

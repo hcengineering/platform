@@ -54,6 +54,7 @@ export interface DisplayTx {
   // Document in case it is required.
   doc?: Doc
 
+  updated: boolean
   removed: boolean
 }
 
@@ -136,21 +137,35 @@ class ActivityImpl implements Activity {
     // We need to sort with with natural order, to build a proper doc values.
     const allTx = Array.from(txes1).concat(txes2).sort(this.sortByLastModified)
     const txCUD: Array<TxCUD<Doc>> = this.filterTxCUD(allTx, hierarchy)
+
     const parents = new Map<Ref<Doc>, DisplayTx>()
 
     const results: DisplayTx[] = []
 
     for (const tx of txCUD) {
       const { collectionCUD, updateCUD, result, tx: ntx } = this.createDisplayTx(tx, parents)
-
       // We do not need collection object updates, in main list of displayed transactions.
       if (this.isDisplayTxRequired(collectionCUD, updateCUD, ntx, object)) {
         // Combine previous update transaction for same field and if same operation and time treshold is ok
         this.checkIntegratePreviousTx(results, result)
         results.push(result)
+
+        this.updateRemovedState(result, results)
       }
     }
+    console.log('DISPLAY TX', results)
     return Array.from(results)
+  }
+
+  private updateRemovedState (result: DisplayTx, results: DisplayTx[]): void {
+    if (result.removed) {
+      // We need to mark all transactions for same object as removed as well.
+      for (const t of results) {
+        if (t.tx.objectId === result.tx.objectId) {
+          t.removed = true
+        }
+      }
+    }
   }
 
   sortByLastModified (a: TxCUD<Doc>, b: TxCUD<Doc>): number {
@@ -173,7 +188,7 @@ class ActivityImpl implements Activity {
     let updateCUD = false
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-      tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
+      tx = getCollectionTx((tx as TxCollectionCUD<Doc, AttachedDoc>))
       collectionCUD = true
     }
     let firstTx = parents.get(tx.objectId)
@@ -185,17 +200,24 @@ class ActivityImpl implements Activity {
     parents.set(tx.objectId, firstTx)
 
     // If we have updates also apply them all.
-    updateCUD = this.updateFirstTx(result, firstTx)
+    updateCUD = this.checkUpdateState(result, firstTx)
 
-    if (hierarchy.isDerived(tx._class, core.class.TxRemoveDoc) && result.doc !== undefined) {
-      firstTx.removed = true
-    }
+    this.checkRemoveState(hierarchy, tx, firstTx, result)
     return { collectionCUD, updateCUD, result, tx }
   }
 
-  updateFirstTx (result: DisplayTx, firstTx: DisplayTx): boolean {
+  private checkRemoveState (hierarchy: Hierarchy, tx: TxCUD<Doc>, firstTx: DisplayTx, result: DisplayTx): void {
+    if (hierarchy.isDerived(tx._class, core.class.TxRemoveDoc)) {
+      firstTx.removed = true
+      result.removed = true
+    }
+  }
+
+  checkUpdateState (result: DisplayTx, firstTx: DisplayTx): boolean {
     if (this.client.getHierarchy().isDerived(result.tx._class, core.class.TxUpdateDoc) && result.doc !== undefined) {
       firstTx.doc = TxProcessor.updateDoc2Doc(result.doc, result.tx as TxUpdateDoc<Doc>)
+      firstTx.updated = true
+      result.updated = true
       return true
     }
     return false
@@ -209,6 +231,7 @@ class ActivityImpl implements Activity {
       txes: [],
       createTx,
       updateTx: hierarchy.isDerived(tx._class, core.class.TxUpdateDoc) ? (tx as TxUpdateDoc<Doc>) : undefined,
+      updated: false,
       removed: false,
       doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
     }
@@ -242,6 +265,18 @@ class ActivityImpl implements Activity {
       prevTx.tx.modifiedBy === result.tx.modifiedBy // Same user
     )
   }
+}
+
+function getCollectionTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): TxCUD<Doc> {
+  if (cltx.tx._class === core.class.TxCreateDoc) {
+    // We need to update tx to contain attachedDoc, attachedClass & collection
+    const create = cltx.tx as TxCreateDoc<AttachedDoc>
+    create.attributes.attachedTo = cltx.objectId
+    create.attributes.attachedToClass = cltx.objectClass
+    create.attributes.collection = cltx.collection
+    return create
+  }
+  return cltx.tx
 }
 
 /**
