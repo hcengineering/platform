@@ -38,12 +38,12 @@
   $: query.query(chunter.class.Attachment, { attachedTo: objectId }, result => { attachments = result })
 
   let inputFile: HTMLInputElement
-  let loading = false
+  let loading = 0
 
   const client = getClient()
 
   async function createAttachment(file: File) {
-    loading = true
+    loading++
     try {
       const uuid = await uploadFile(space, file, objectId)
       console.log('uploaded file uuid', uuid)
@@ -57,19 +57,30 @@
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {
-      loading = false
+      loading--
     }
   }
 
-  function fileSelected() {
+  function fileSelected () {
     console.log(inputFile.files)
-    const file = inputFile.files?.[0]
-    if (file !== undefined) { createAttachment(file) }
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) createAttachment(file)
+    }
   }
 
-  let kl = true
+  function fileDrop (e: DragEvent) {
+    const list = e.dataTransfer?.files
+    if (list === undefined || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) createAttachment(file)
+    }
+  }
+
   let dragover = false
-  $: if (loading) kl = false
 </script>
 
 <div class="attachments-container">
@@ -80,19 +91,20 @@
     {:else}
       <CircleButton icon={IconAdd} size={'small'} on:click={ () => { inputFile.click() } } />
     {/if}
-    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+    <input bind:this={inputFile} multiple type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
 
-  {#if kl}
+  {#if attachments.length === 0 && !loading}
     <div class="flex-col-center mt-5 resume" class:solid={dragover} 
       on:dragover|preventDefault={ () => { dragover = true } } 
       on:dragleave={ () => { dragover = false } } 
-      on:drop|preventDefault|stopPropagation
+      on:drop|preventDefault|stopPropagation={fileDrop}
+      on:click={ () => { inputFile.click() } }
     >
       <Upload size={'large'} />
       <div class="small-text content-dark-color mt-2">There are no attachments for this candidate.</div>
       <div class="small-text">
-        <Link label={'Upload'} href={'#'} on:click={ () => { inputFile.click() } } /> or drop files here
+        Upload or drop files here
       </div>
     </div>
   {:else}
@@ -160,6 +172,7 @@
   }
 
   .resume {
+    cursor: pointer;
     padding: 1rem;
     color: var(--theme-caption-color);
     background: rgba(255, 255, 255, .03);
