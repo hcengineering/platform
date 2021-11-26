@@ -118,47 +118,6 @@
     }
   }
 
-  .table-body {
-    margin-top: .75rem;
-
-    th, td {
-      padding: .75rem 0;
-      text-align: left;
-    }
-    th {
-      font-weight: 500;
-      font-size: .75rem;
-      color: var(--theme-content-dark-color);
-    }
-    td {
-      color: var(--theme-caption-color);
-    }
-    .tr-body { border-top: 1px solid var(--theme-button-border-hovered); }
-  }
-
-  .item {
-    display: flex;
-    align-items: center;
-    padding: .75rem 1rem;
-  }
-  .file-icon {
-    margin-right: 1.25rem;
-    width: 2rem;
-    height: 2rem;
-    font-weight: 500;
-    font-size: 0.625rem;
-    line-height: 150%;
-    text-transform: uppercase;
-    color: #fff;
-    background-color: var(--primary-button-enabled);
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .5rem;
-  }
-  .file-desc {
-    font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
-  }
-
   .resume {
     padding: 1rem;
     color: var(--theme-caption-color);

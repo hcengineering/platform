@@ -43,7 +43,7 @@
 <div class="flex-row-center">
   <CircleButton icon={value.icon} size={'x-large'} />
   <div class="flex-col caption-color ml-3">
-    <div class="small-text">{value.label}</div>
+    <div class="label">{value.label}</div>
     <div class="overflow-label">{value.value}</div>
   </div>
   <div class="button" on:click|preventDefault={copyLink}>

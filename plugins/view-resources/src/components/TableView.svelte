@@ -200,6 +200,7 @@
       .checkCell { visibility: visible; }
     }
     &:hover .firstCell .menuRow { visibility: visible; }
+    &:last-child { border-bottom: none; }
   }
 
   .fixed {
