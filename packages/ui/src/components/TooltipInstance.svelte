@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { tooltipstore as tooltip, closeTooltip } from '..'
   import type { TooltipAligment } from '..'
@@ -20,67 +21,70 @@
   let tooltipHTML: HTMLElement
   let dir: TooltipAligment
   let rect: DOMRect
+  let rectAnchor: DOMRect
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component
 
   $: tooltipSW = $tooltip.component ? false : true
   $: {
-    if ($tooltip.label && tooltipHTML) {
+    if (($tooltip.label || $tooltip.component) && tooltipHTML) {
       if ($tooltip.element) {
-        rect = $tooltip.element.getBoundingClientRect()
         const doc = document.body.getBoundingClientRect()
+        rect = $tooltip.element.getBoundingClientRect()
+        rectAnchor = ($tooltip.anchor) ? $tooltip.anchor.getBoundingClientRect()
+                                       : $tooltip.element.getBoundingClientRect()
 
         if ($tooltip.component) {
 
-          if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
-            tooltipHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+          if (rectAnchor.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
+            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .75rem)`
             dir = 'bottom'
-          } else if (rect.top > doc.height - rect.bottom) {
-            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + .75rem)`
-            if (tooltipHTML.clientHeight > rect.top - 28) {
+          } else if (rectAnchor.top > doc.height - rectAnchor.bottom) {
+            tooltipHTML.style.bottom = `calc(${doc.height - rectAnchor.y}px + .75rem)`
+            if (tooltipHTML.clientHeight > rectAnchor.top - 28) {
               tooltipHTML.style.top = '1rem'
-              tooltipHTML.style.height = rect.top - 28 + 'px'
+              tooltipHTML.style.height = rectAnchor.top - 28 + 'px'
             }
             dir = 'top'
           } else {
-            tooltipHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-            if (tooltipHTML.clientHeight > doc.height - rect.bottom - 28) {
+            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .75rem)`
+            if (tooltipHTML.clientHeight > doc.height - rectAnchor.bottom - 28) {
               tooltipHTML.style.bottom = '1rem'
-              tooltipHTML.style.height = doc.height - rect.bottom - 28 + 'px'
+              tooltipHTML.style.height = doc.height - rectAnchor.bottom - 28 + 'px'
             }
             dir = 'bottom'
           }
-          if (rect.left + tooltipHTML.clientWidth + 16 > doc.width) {
+          if (rectAnchor.left + tooltipHTML.clientWidth + 16 > doc.width) {
             tooltipHTML.style.left = ''
-            tooltipHTML.style.right = doc.width - rect.right + 'px'
+            tooltipHTML.style.right = doc.width - rectAnchor.right + 'px'
           } else {
-            tooltipHTML.style.left = rect.left + 'px'
+            tooltipHTML.style.left = rectAnchor.left + 'px'
             tooltipHTML.style.right = ''
           }
 
         } else {
 
           if (!$tooltip.direction) {
-            if (rect.right < doc.width / 5) dir = 'right'
-            else if (rect.left > doc.width - doc.width / 5) dir = 'left'
-            else if (rect.top < tooltipHTML.clientHeight) dir = 'bottom'
+            if (rectAnchor.right < doc.width / 5) dir = 'right'
+            else if (rectAnchor.left > doc.width - doc.width / 5) dir = 'left'
+            else if (rectAnchor.top < tooltipHTML.clientHeight) dir = 'bottom'
             else dir = 'top'
           } else dir = $tooltip.direction
 
           if (dir === 'right') {
-            tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
-            tooltipHTML.style.left = `calc(${rect.right}px + .75rem)`
+            tooltipHTML.style.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
+            tooltipHTML.style.left = `calc(${rectAnchor.right}px + .75rem)`
             tooltipHTML.style.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
-            tooltipHTML.style.top = rect.y + rect.height / 2 + 'px'
-            tooltipHTML.style.right = `calc(${doc.width - rect.x}px + .75rem)`
+            tooltipHTML.style.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
+            tooltipHTML.style.right = `calc(${doc.width - rectAnchor.x}px + .75rem)`
             tooltipHTML.style.transform = 'translateY(-50%)'
           } else if (dir === 'bottom') {
-            tooltipHTML.style.top = `calc(${rect.bottom}px + .5rem)`
-            tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
+            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .5rem)`
+            tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             tooltipHTML.style.transform = 'translateX(-50%)'
           } else if (dir === 'top') {
-            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + .75rem)`
-            tooltipHTML.style.left = rect.x + rect.width / 2 + 'px'
+            tooltipHTML.style.bottom = `calc(${doc.height - rectAnchor.y}px + .75rem)`
+            tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             tooltipHTML.style.transform = 'translateX(-50%)'
           }
           tooltipHTML.classList.remove('no-arrow')
@@ -106,17 +110,16 @@
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
-      const rectT = {
-        top: (dir === 'top') ? rect.top - 16 : rect.top,
-        bottom: (dir === 'bottom') ? rect.bottom + 16 : rect.bottom,
-        left: (dir === 'left') ? rect.left - 16 : rect.left,
-        right: (dir === 'right') ? rect.right + 16 : rect.right
+      const dT: number = dir === 'bottom' ? 12 : 0
+      const dB: number = dir === 'top' ? 12 : 0
+      const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
+      const inPopup: boolean =
+        ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
+      if (tooltipSW) {
+        if (!inTrigger) hideTooltip()
+      } else {
+        if (!(inTrigger || inPopup)) hideTooltip()
       }
-      const inTrigger: boolean = (ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom)
-      const inTriggerWS: boolean = (ev.x >= rectT.left && ev.x <= rectT.right && ev.y >= rectT.top && ev.y <= rectT.bottom)
-      const inPopup: boolean = (ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top && ev.y <= rectP.bottom)
-      if (tooltipSW) { if (!inTrigger) hideTooltip() }
-      else { if (!(inTriggerWS || inPopup)) hideTooltip() }
     }
   }
 </script>

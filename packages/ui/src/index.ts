@@ -127,15 +127,16 @@ export const tooltipstore = writable<LabelAndProps>({
   element: undefined,
   direction: undefined,
   component: undefined,
-  props: undefined
+  props: undefined,
+  anchor: undefined
 })
 
-export function showTooltip (label: IntlString | undefined, element: HTMLElement, direction?: TooltipAligment, component?: AnySvelteComponent | AnyComponent, props?: any): void {
-  tooltipstore.set({ label: label, element: element, direction: direction, component: component, props: props })
+export function showTooltip (label: IntlString | undefined, element: HTMLElement, direction?: TooltipAligment, component?: AnySvelteComponent | AnyComponent, props?: any, anchor?: HTMLElement): void {
+  tooltipstore.set({ label: label, element: element, direction: direction, component: component, props: props, anchor: anchor })
 }
 
 export function closeTooltip (): void {
-  tooltipstore.set({ label: undefined, element: undefined, direction: undefined, component: undefined, props: undefined })
+  tooltipstore.set({ label: undefined, element: undefined, direction: undefined, component: undefined, props: undefined, anchor: undefined })
 }
 
 export const ticker = readable(Date.now(), set => {

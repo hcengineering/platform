@@ -158,6 +158,7 @@
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
     &:hover .firstCell .menuRow { visibility: visible; }
+    &:last-child { border-bottom: none; }
   }
   .fixed .menuRow { visibility: visible; }
 </style>

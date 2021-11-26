@@ -73,18 +73,6 @@
     </div>
   </svelte:fragment> -->
 
-  <!-- <div class="flex-row-center">
-    <div class="avatar">
-      <div class="border"/>
-      <Avatar />
-    </div>
-    <div class="flex-col">
-      <div class="name">{formatName(candidate.name)}</div>
-      <div class="title">For {getVacancyName()}</div>
-      <div class="city">at Cisco</div>
-    </div>
-  </div> -->
-
   <div class="grid-cards">
     <CandidateCard {candidate}/>
     <VacancyCard {vacancy}/>
@@ -98,57 +86,6 @@
 {/if}
 
 <style lang="scss">
-  @import '../../../../packages/theme/styles/mixins.scss';
-
-  .avatar {
-    flex-shrink: 0;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 1.5rem;
-    width: 6rem;
-    height: 6rem;
-    border-radius: 50%;
-    filter: drop-shadow(0px 14px 44px rgba(28, 23, 22, .8));
-    cursor: pointer;
-
-    &::after {
-      content: '';
-      @include bg-layer(var(--theme-avatar-hover), .5);
-      z-index: -1;
-    }
-    &::before {
-      content: '';
-      @include bg-layer(var(--theme-avatar-bg), .1);
-      backdrop-filter: blur(25px);
-      z-index: -2;
-    }
-    .border {
-      @include bg-fullsize;
-      border: 2px solid var(--theme-avatar-border);
-      border-radius: 50%;
-    }
-  }
-
-  .name {
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
-  }
-  .title, .city {
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-color);
-  }
-  .title { margin-top: .75rem; }
-  .resume a {
-    font-size: .75rem;
-    color: var(--theme-content-dark-color);
-    &:hover { color: var(--theme-content-color); }
-  }
-
   .attachments {
     margin-top: 3.5rem;
   }
@@ -158,21 +95,4 @@
     grid-template-columns: 1fr 1fr;
     column-gap: 1.5rem;
   }
-
-  // .container {
-  //   display: flex;
-  //   flex-direction: column;
-  //   height: 100%;
-  //   background-color: var(--theme-bg-color);
-  //   border-radius: 1.25rem;
-  //   box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
-
-  //   .tabs-container {
-  //     flex-grow: 1;
-  //     display: flex;
-  //     flex-direction: column;
-  //     height: fit-content;
-  //     padding: 0 2.5rem 2.5rem;
-  //   }
-  // }
 </style>

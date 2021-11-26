@@ -19,7 +19,7 @@
 import type { IntlString } from '@anticrm/platform'
 import { EditBox } from '@anticrm/ui'
 
-export let label: IntlString
+// export let label: IntlString
 export let placeholder: IntlString
 export let value: any
 export let focus: boolean

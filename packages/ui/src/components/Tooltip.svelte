@@ -19,9 +19,10 @@
   import { tooltipstore as tooltip, showTooltip } from '..'
 
   export let label: IntlString | undefined
-  export let direction: TooltipAligment | undefined
+  export let direction: TooltipAligment | undefined = undefined
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined
+  export let anchor: HTMLElement | undefined = undefined
 
   let triggerHTML: HTMLElement
   let shown: boolean = false
@@ -32,7 +33,7 @@
   class="tooltip-trigger"
   bind:this={triggerHTML}
   on:mousemove={() => {
-    if (!shown) showTooltip(label, triggerHTML, direction, component, props)
+    if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor)
   }}
 >
   <slot />

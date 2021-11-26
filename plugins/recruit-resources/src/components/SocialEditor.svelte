@@ -106,6 +106,6 @@
     align-items: center;
     margin-top: 1rem;
     .btn { flex-grow: 1; }
-    .btn + .btn { margin-left: .75rem; }
+    // .btn + .btn { margin-left: .75rem; }
   }
 </style>
