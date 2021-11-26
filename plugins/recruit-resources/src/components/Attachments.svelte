@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { CircleButton, IconAdd, showPopup, Spinner } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup, Spinner, Link } from '@anticrm/ui'
 
   import type { Doc, Ref, Space, Class, Bag } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
@@ -24,6 +24,7 @@
   import { Table } from '@anticrm/view-resources'
 
   import { uploadFile } from '../utils'
+  import Upload from './icons/Upload.svelte'
 
   import chunter from '@anticrm/chunter'
 
@@ -66,6 +67,9 @@
     if (file !== undefined) { createAttachment(file) }
   }
 
+  let kl = true
+  let dragover = false
+  $: if (loading) kl = false
 </script>
 
 <div class="attachments-container">
@@ -78,12 +82,27 @@
     {/if}
     <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
   </div>
-  <Table 
-    _class={chunter.class.Attachment}
-    config={['', 'lastModified']}
-    options={ {} }
-    query={ { attachedTo: objectId } }
-  />
+
+  {#if kl}
+    <div class="flex-col-center mt-5 resume" class:solid={dragover} 
+      on:dragover|preventDefault={ () => { dragover = true } } 
+      on:dragleave={ () => { dragover = false } } 
+      on:drop|preventDefault|stopPropagation
+    >
+      <Upload size={'large'} />
+      <div class="small-text content-dark-color mt-2">There are no attachments for this candidate.</div>
+      <div class="small-text">
+        <Link label={'Upload'} href={'#'} on:click={ () => { inputFile.click() } } /> or drop files here
+      </div>
+    </div>
+  {:else}
+    <Table 
+      _class={chunter.class.Attachment}
+      config={['', 'lastModified']}
+      options={ {} }
+      query={ { attachedTo: objectId } }
+    />
+  {/if}
 </div>
 
 <style lang="scss">
@@ -138,5 +157,13 @@
   .file-desc {
     font-size: 0.75rem;
     color: var(--theme-content-dark-color);
+  }
+
+  .resume {
+    padding: 1rem;
+    color: var(--theme-caption-color);
+    background: rgba(255, 255, 255, .03);
+    border: 1px dashed rgba(255, 255, 255, .16);
+    border-radius: .75rem;
   }
 </style>
