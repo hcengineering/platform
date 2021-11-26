@@ -55,4 +55,11 @@ export function createModel (builder: Builder): void {
     icon: telegram.component.IconTelegram,
     createComponent: telegram.component.Connect
   }, telegram.integrationType.Telegram)
+
+  builder.createDoc(core.class.Space, core.space.Model, {
+    name: 'Telegram',
+    description: 'Space for all telegram messages',
+    private: false,
+    members: []
+  }, telegram.space.Telegram)
 }

@@ -15,9 +15,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte'
+  import { IconInfo } from '@anticrm/ui'
 
   export let length: number = 6
   export let value: string = ''
+  export let error: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -29,8 +31,10 @@
   for (let i = 0; i < length; i++) digits[i] = ''
 
   const onInput = (ev?: Event, n?: number): void => {
+    error = undefined
     selected = -1
     filled = 0
+    value = ''
     for (let i = 0; i < length; i++) {
       if (digits[i] && digits[i].length > 1) {
         if (i < length - 1) digits[i + 1] = digits[i].substring(1)
@@ -38,14 +42,13 @@
       }
       if (digits[i]) filled++
       if (selected < 0 && selected < length && digits[i] === '') selected = i
+      value += digits[i]
     }
     digits = digits
     if (filled === length) {
       if ((ev as InputEvent).inputType === 'insertFromPaste' && n && n < length) selected = n
       if ((ev as InputEvent).inputType === 'insertText' && selected < 0 && (n || n === 0)) selected = n + 1
       if (selected === length) selected--
-      value = ''
-      for (let i = 0; i < length; i++) value += digits[i]
       dispatch('filled', value)
     }
     if (selected !== -1 && selected < length) {
@@ -78,6 +81,7 @@
   {#each digits as digit, i}
     <input
       class="fs-title digit"
+      class:error
       type="text"
       bind:this={areas[i]}
       bind:value={digit}
@@ -89,6 +93,12 @@
     />
   {/each}
 </div>
+{#if error}
+  <div class='error-message flex-row-center'>
+    <IconInfo size={'small'}/>
+    <div>{error}</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .digit {
@@ -100,9 +110,24 @@
     border-style: none;
     border-radius: 0.5rem;
 
+    &.error {
+      border: 1.2px solid var(--system-error-color);
+      background-color: #FAA9981A;
+    }
+
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
+    }
+  }
+
+  .error-message {
+    margin-top: 0.5rem;
+    margin-left: 0.2rem;
+    color: var(--system-error-color);
+
+    div {
+      margin-left: 0.3rem;
     }
   }
 </style>
