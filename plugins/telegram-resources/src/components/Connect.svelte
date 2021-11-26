@@ -28,25 +28,24 @@
   let code: string = ''
   let password: string = ''
   let error: string | undefined = undefined
-  const url = getMetadata(login.metadata.TelegramUrl)
+  const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
   async function requestCode(): Promise<void> {
-    dispatch('close', { value: phone }) //todo, remove after enable service
-    const res = await sendRequest('/auth', { phone: phone })
+    const res = await sendRequest('/signin', { phone })
     if (res.next === 'code') {
       requested = true
     }
   }
 
   async function sendPassword(): Promise<void> {
-    const res = await sendRequest('/auth/pass', { pass: password })
+    const res = await sendRequest('/signin/pass', { phone, pass: password })
     if (res.next === 'end') {
-      dispatch('close', { value: phone })
+      dispatch('close')
     }
   }
 
   async function sendCode(): Promise<void> {
-    const res = await sendRequest('/auth/code', { code: code })
+    const res = await sendRequest('/signin/code', { phone, code: code })
     if (res.next === 'pass') {
       secondFactor = true
     } else if (res.next === 'end') {
@@ -72,7 +71,6 @@
     if (res.err != null) {
       throw new Error(res.err)
     }
-    return res
   }
 
   function back() {

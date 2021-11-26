@@ -16,7 +16,7 @@
 <script lang="ts">
 
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import telegram from '@anticrm/telegram'
   import type { TelegramMessage } from '@anticrm/telegram'
   import type { Contact, EmployeeAccount } from '@anticrm/contact'
@@ -36,8 +36,8 @@
   let messages: TelegramMessage[] = []
   let accounts: EmployeeAccount[] = []
   let enabled: boolean
+  const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
-  const client = getClient()
   const messagesQuery = createQuery()
   const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
@@ -57,11 +57,17 @@
     enabled = res.length > 0
   })
 
-  function onMessage(event: CustomEvent) {
-    client.createDoc(telegram.class.Message, object.space, {
-      content: event.detail,
-      incoming: Boolean(Math.round(Math.random())),
-      ...query
+  async function onMessage(event: CustomEvent) {
+    await fetch(url + '/send-msg', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: contactString?.value ?? '',
+        msg: event.detail
+      })
     })
   }
 
