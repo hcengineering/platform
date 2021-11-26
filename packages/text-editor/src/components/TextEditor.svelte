@@ -31,6 +31,8 @@ import { getClient } from '@anticrm/presentation'
 
 import contact from '@anticrm/contact'
 
+export let content: string
+
 let element: HTMLElement
 let editor: Editor
 
@@ -90,6 +92,9 @@ onMount(() => {
         },
       }),
     ],
+    onUpdate: () => {
+      content = editor.getHTML()
+    },
     // content: 'dfgdfg',
     onTransaction: () => {
       // force re-render so `editor.isActive` works as expected
@@ -103,6 +108,8 @@ onDestroy(() => {
     editor.destroy()
   }
 })
+
+$: if (content === '') editor.commands.clearContent(false)
 
 </script>
 

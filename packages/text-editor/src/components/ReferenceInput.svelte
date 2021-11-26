@@ -23,15 +23,18 @@
   import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
+  let content: string
 
 </script>
 
 <div class="ref-container">
   <div class="textInput">
     <div class="inputMsg">
-      <TextEditor on:message={ev => dispatch('message', ev.detail)}/>
+      <TextEditor bind:content on:message={ev => dispatch('message', ev.detail)}/>
     </div>
-    <button class="sendButton"><div class="icon"><Send /></div></button>
+    <button class="sendButton" on:click={() => { dispatch('message', content); content = '' }}>
+      <div class="icon"><Send /></div>
+    </button>
   </div>
   <div class="buttons">
     <div class="tool"><Attach /></div>
