@@ -58,7 +58,11 @@
       color: var(--theme-content-accent-color);
       background-color: var(--theme-bg-accent-color);
     }
-    &.selected { background-color: var(--theme-button-bg-hovered); }
+    &.selected {
+      background-color: var(--theme-button-bg-enabled);
+      &:hover { background-color: var(--theme-button-bg-hovered); }
+      &:active { background-color: var(--theme-button-bg-pressed); }
+    }
     &.transparent { background-color: rgba(31, 31, 37, .3); }
     &.primary {
       background-color: var(--primary-button-enabled);

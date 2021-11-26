@@ -23,7 +23,6 @@
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
-  export let fullSize: boolean = false
   export let object: Doc
 
   let txes: DisplayTx[] = []
@@ -54,46 +53,22 @@
   })
 </script>
 
-{#if fullSize}
-  <div class="flex-row-center header">
-    <div class="icon"><IconActivity size={'small'} /></div>
-    <div class="title">Activity</div>
-  </div>
-  <div class="flex-col h-full right-content">
-    <ScrollBox vertical stretch>
-      {#if txes}
-        <Grid column={1} rowGap={1.5}>
-          {#each txes as tx (tx.tx._id)}
-            <TxView {tx} {viewlets} />
-          {/each}
-        </Grid>
-      {/if}
-    </ScrollBox>
-  </div>
-  <div class="ref-input"><ReferenceInput on:message={onMessage} /></div>
-{:else}
-  <div class="unionSection">
-    <ScrollBox vertical stretch noShift>
-      <div class="flex-col content">
-        <slot />
-      </div>
-      <div class="flex-row-center activity header">
-        <div class="icon"><IconActivity size={'small'} /></div>
-        <div class="title">Activity</div>
-      </div>
-      <div class="flex-col activity content">
-        {#if txes}
-          <Grid column={1} rowGap={1.5}>
-            {#each txes as tx}
-              <TxView {tx} {viewlets} />
-            {/each}
-          </Grid>
-        {/if}
-      </div>
-    </ScrollBox>
-    <div class="ref-input"><ReferenceInput on:message={onMessage} /></div>
-  </div>
-{/if}
+<div class="flex-row-center header">
+  <div class="icon"><IconActivity size={'small'} /></div>
+  <div class="title">Activity</div>
+</div>
+<div class="flex-col h-full right-content">
+  <ScrollBox vertical stretch>
+    {#if txes}
+      <Grid column={1} rowGap={1.5}>
+        {#each txes as tx (tx.tx._id)}
+          <TxView {tx} {viewlets} />
+        {/each}
+      </Grid>
+    {/if}
+  </ScrollBox>
+</div>
+<div class="ref-input"><ReferenceInput on:message={onMessage} /></div>
 
 <style lang="scss">
   .header {
@@ -115,41 +90,19 @@
     }
   }
   .activity {
-    background-color: var(--theme-bg-accent-color);
     &.header {
       border-bottom: none;
     }
     &.content {
       flex-grow: 1;
       padding-bottom: 0;
-      background-color: var(--theme-bg-accent-color);
     }
   }
 
-  .ref-input {
-    background-color: var(--theme-bg-accent-color);
-    padding: 1.5rem 2.5rem;
-  }
+  .ref-input { padding: 1.5rem 2.5rem; }
 
   .right-content {
     flex-grow: 1;
     padding: 2.5rem 2.5rem 0;
-    background-color: var(--theme-dialog-accent);
-  }
-
-  .unionSection {
-    flex-grow: 1;
-
-    display: flex;
-    flex-direction: column;
-    height: max-content;
-
-    .content {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 1.5rem 2.5rem;
-      height: max-content;
-    }
   }
 </style>

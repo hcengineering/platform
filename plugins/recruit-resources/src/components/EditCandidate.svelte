@@ -91,7 +91,7 @@
             }
           }} />
           <div class="ml-1">
-            <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+            <CircleButton icon={Edit} size={'small'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
           </div>
         {/if}
       </div>
@@ -101,7 +101,7 @@
   <div class="flex-col group">
     <div class="flex-row-center">
       <div class="caption">Applications</div>
-      <CircleButton icon={IconAdd} size={'small'} on:click={ (ev) => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, ev.target) } } />
+      <CircleButton icon={IconAdd} size={'small'} selected on:click={ (ev) => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, ev.target) } } />
     </div>
     <Table 
       _class={recruit.class.Applicant}

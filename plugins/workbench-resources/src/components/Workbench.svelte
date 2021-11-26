@@ -148,7 +148,7 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      margin-right: 1rem;
+      margin-right: 1.25rem;
       height: 100%;
       border-radius: 1.25rem;
       background-color: var(--theme-bg-color);
