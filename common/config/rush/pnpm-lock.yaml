@@ -9548,7 +9548,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-WDQxnDVBhDhLcJ0+gZveR64mMJBdC+hx7LFp8RmiL7SvBN5YqO+freVJ/jwhWfeN4RHmCsKsuuAFHlE9PEw/kg==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-+QzdZodn7EX1tvSLWZXDEpivgYNYeFbALbr28PO81fXSHSbiwhodZE7J6teILOdZxW3wS/7TPiokvb5zndPCog==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -10222,7 +10222,7 @@ packages:
     dev: false
 
   file:projects/model-telegram.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-X4Ao5ADNaxuup/qZv0FeOLSEqXKHVqkqEEdUvHwcMHeHr1SvibSMhlumfTdPGCq70iX2AL2R37FI0DGlx0EnUw==, tarball: file:projects/model-telegram.tgz}
+    resolution: {integrity: sha512-Pe+NBKGYALA2zA0qUm3yJ7G0c2ZI9WfKIjKDrhtJgMPauf8cgdykpjMyBMgKCKom1jNOzF3RGRQnWh86Q7+MtA==, tarball: file:projects/model-telegram.tgz}
     id: file:projects/model-telegram.tgz
     name: '@rush-temp/model-telegram'
     version: 0.0.0
@@ -10474,22 +10474,28 @@ packages:
     dev: false
 
   file:projects/query.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-v0KEf+fc7kni8uGlxU33qQQV9N8fLv85+Yaty64+giXdyla+2CmmEyVyCHtjuhiL786luoAY5Bz6UZjxfCV/vA==, tarball: file:projects/query.tgz}
+    resolution: {integrity: sha512-b9sIE2RoX3GNvHPqcd3DBUS/wuYYkdCqmebq0AJ8t190Z1n1nyQOQy7xjO7tXgOVd85BMpCg/qVKuG/mv5+bvA==, tarball: file:projects/query.tgz}
     id: file:projects/query.tgz
     name: '@rush-temp/query'
     version: 0.0.0
     dependencies:
+      '@rushstack/heft': 0.41.1
+      '@rushstack/heft-jest-plugin': 0.1.36_@rushstack+heft@0.41.1
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.33.0_eslint@7.32.0+typescript@4.4.3
       eslint: 7.32.0
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 4.3.1
+      just-clone: 3.2.1
       simplytyped: 3.3.0_typescript@4.4.3
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
+      - bufferutil
+      - canvas
       - supports-color
       - typescript
+      - utf-8-validate
     dev: false
 
   file:projects/recruit-assets.tgz:
@@ -10841,7 +10847,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-sbIaaqkc2pyh2dXKHF6S3gj+VZRzBjFngvY1b+RYQ+a0v7bF74kvA+uR7moeRYFf1p8VX3Rqg0kUvC3bSY2lWA==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-c6QScub4eTkKdIFSwTwERbTGMTEC6WPTPQGR6OeuQbdkuZpF5aUtnkx6rRcROlkcIZuq8sWBOJljlRl9ch+ZoQ==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -10871,7 +10877,7 @@ packages:
     dev: false
 
   file:projects/telegram.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-tUpx+Ryw6IrNxyKxPL99sEfzDhXAy2Q8YAYrBro6lCNrvH12qLHZ3va5wZHtRT0mnvMg8oM0Q+zgaitWfCDQ8w==, tarball: file:projects/telegram.tgz}
+    resolution: {integrity: sha512-b0V40ZxHl36k6O/ukvRnBNF3hL/tcSleVNqrrdRMjGBtu9pGQFNTyYpJfUJ9z5keujRNL6Yc9wmxZ3F6JBUolw==, tarball: file:projects/telegram.tgz}
     id: file:projects/telegram.tgz
     name: '@rush-temp/telegram'
     version: 0.0.0

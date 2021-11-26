@@ -6,6 +6,7 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
+    "test": "heft test",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src"
   },
@@ -17,10 +18,13 @@
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
     "eslint":"^7.32.0",
-    "simplytyped": "^3.3.0"
+    "simplytyped": "^3.3.0",
+    "@rushstack/heft-jest-plugin":"^0.1.15",
+    "@rushstack/heft":"^0.41.1"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11"
+    "@anticrm/core": "~0.6.11",
+    "just-clone": "^3.2.1"
   }
 }
