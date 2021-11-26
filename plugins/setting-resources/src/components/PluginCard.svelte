@@ -38,7 +38,9 @@
 
   async function disconnect(): Promise<void> {
     if (integration !== undefined) {
-      await client.removeDoc(setting.class.Integration, accountId as Ref<Space>, integration._id)
+      // TODO: Need to call proper endpoint, so likely should not be here but in specific integration plugins
+
+      // await client.removeDoc(setting.class.Integration, accountId as Ref<Space>, integration._id)
     }
   }
 </script>
