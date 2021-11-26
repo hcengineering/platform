@@ -151,6 +151,11 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
+    const operations = {
+      ...tx.operations,
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn
+    }
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
       if (operator === '$move') {
@@ -172,6 +177,10 @@ class MongoAdapter extends MongoAdapterBase {
             updateOne: {
               filter: { _id: tx.objectId },
               update: {
+                $set: {
+                  modifiedBy: tx.modifiedBy,
+                  modifiedOn: tx.modifiedOn
+                },
                 $push: {
                   [arr]: {
                     $each: [desc.$value],
@@ -186,18 +195,18 @@ class MongoAdapter extends MongoAdapterBase {
         return await this.db.collection(domain).bulkWrite(ops as any)
       } else {
         if (tx.retrieve === true) {
-          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, tx.operations, { returnDocument: 'after' })
+          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, operations, { returnDocument: 'after' })
           return { object: result.value }
         } else {
-          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, operations)
         }
       }
     } else {
       if (tx.retrieve === true) {
-        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: tx.operations }, { returnDocument: 'after' })
+        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: operations }, { returnDocument: 'after' })
         return { object: result.value }
       } else {
-        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: tx.operations })
+        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: operations })
       }
     }
   }
