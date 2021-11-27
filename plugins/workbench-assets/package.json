@@ -10,10 +10,9 @@
     "lint:fix": "",
     "format": ""
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
-    "@anticrm/platform":"~0.6.5",
-    "@anticrm/workbench":"~0.6.0"
+    "@anticrm/platform": "~0.6.5",
+    "@anticrm/workbench": "~0.6.0"
   }
 }

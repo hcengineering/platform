@@ -11,30 +11,37 @@
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/account .",
-    "docker:push": "docker push anticrm/account"
+    "docker:push": "docker push anticrm/account",
+    "lint": "eslint src",
+    "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig":"~0.6.0",
-    "@types/heft-jest":"^1.0.2",
+    "@anticrm/platform-rig": "~0.6.0",
+    "@types/heft-jest": "^1.0.2",
     "@types/node": "^16.4.10",
-    "@typescript-eslint/eslint-plugin":"4",
-    "eslint-plugin-import":"2",
-    "eslint-plugin-promise":"4",
-    "eslint-plugin-node":"11",
-    "eslint":"^7.32.0",
-    "esbuild":"^0.12.24",
-    "@types/koa-bodyparser":"^4.3.3",
-    "@types/koa-router":"^7.4.4",
-    "@types/koa":"^2.13.4",
-    "@types/koa__cors":"^3.0.3"
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint": "^7.32.0",
+    "esbuild": "^0.12.24",
+    "@types/koa-bodyparser": "^4.3.3",
+    "@types/koa-router": "^7.4.4",
+    "@types/koa": "^2.13.4",
+    "@types/koa__cors": "^3.0.3",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "prettier": "^2.4.1",
+    "@rushstack/heft": "^0.41.1",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/account":"~0.6.0",
-    "@anticrm/platform":"~0.6.5",
-    "mongodb":"^4.1.1",
-    "koa":"^2.13.1",
-    "koa-router":"^10.1.1",
-    "koa-bodyparser":"^4.3.0",
-    "@koa/cors":"^3.1.0"
+    "@anticrm/account": "~0.6.0",
+    "@anticrm/platform": "~0.6.5",
+    "mongodb": "^4.1.1",
+    "koa": "^2.13.1",
+    "koa-router": "^10.1.1",
+    "koa-bodyparser": "^4.3.0",
+    "@koa/cors": "^3.1.0"
   }
 }

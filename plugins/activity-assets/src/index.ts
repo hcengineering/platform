@@ -14,7 +14,7 @@
 //
 
 import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import activity, {activityId} from '@anticrm/activity'
+import activity, { activityId } from '@anticrm/activity'
 
 const icons = require('../assets/icons.svg') // eslint-disable-line
 loadMetadata(activity.icon, {
