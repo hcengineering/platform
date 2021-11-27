@@ -21,12 +21,16 @@
   //     close()
   //   }
   // }
-
 </script>
 
 <!-- <svelte:window on:keydown={handleKeydown} /> -->
 
 {#each $modal as popup, i}
-  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} zIndex={(i+1) * 500}/>
+  <PopupInstance
+    is={popup.is}
+    props={popup.props}
+    element={popup.element}
+    onClose={popup.onClose}
+    zIndex={(i + 1) * 500}
+  />
 {/each}
-

@@ -15,7 +15,25 @@
 
 import core, {
   Account,
-  Attribute, Class, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
+  Attribute,
+  Class,
+  ClassifierKind,
+  Data,
+  Doc,
+  Domain,
+  ExtendedAttributes,
+  generateId,
+  IndexKind,
+  Mixin as IMixin,
+  Obj,
+  PropertyType,
+  Ref,
+  Space,
+  Tx,
+  TxCreateDoc,
+  TxFactory,
+  TxProcessor,
+  Type
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
@@ -102,11 +120,7 @@ export function Index (kind: IndexKind) {
 /**
  * @public
  */
-export function Model<T extends Obj> (
-  _class: Ref<Class<T>>,
-  _extends: Ref<Class<Obj>>,
-  domain?: Domain
-) {
+export function Model<T extends Obj> (_class: Ref<Class<T>>, _extends: Ref<Class<Obj>>, domain?: Domain) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes._id = _class
@@ -119,10 +133,7 @@ export function Model<T extends Obj> (
 /**
  * @public
  */
-export function Mixin<T extends Obj> (
-  _class: Ref<Class<T>>,
-  _extends: Ref<Class<Obj>>
-) {
+export function Mixin<T extends Obj> (_class: Ref<Class<T>>, _extends: Ref<Class<Obj>>) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes._id = _class
@@ -137,11 +148,7 @@ export function Mixin<T extends Obj> (
  * @param icon -
  * @returns
  */
-export function UX<T extends Obj> (
-  label: IntlString,
-  icon?: Asset,
-  shortLabel?: IntlString
-) {
+export function UX<T extends Obj> (label: IntlString, icon?: Asset, shortLabel?: IntlString) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label
@@ -205,10 +212,7 @@ export class Builder {
     }
   }
 
-  private generateTransactions (
-    txes: ClassTxes[],
-    byId: Map<string, ClassTxes>
-  ): Tx[] {
+  private generateTransactions (txes: ClassTxes[], byId: Map<string, ClassTxes>): Tx[] {
     const graph = this.createGraph(txes)
     const sorted = toposort(graph)
       .reverse()
@@ -217,9 +221,7 @@ export class Builder {
   }
 
   private createGraph (txes: ClassTxes[]): [string, string | undefined][] {
-    return txes.map(
-      (tx) => [tx._id, tx.extends] as [string, string | undefined]
-    )
+    return txes.map((tx) => [tx._id, tx.extends] as [string, string | undefined])
   }
 
   // do we need this?
@@ -230,12 +232,7 @@ export class Builder {
     objectId?: Ref<T>,
     modifiedBy?: Ref<Account>
   ): T {
-    const tx = txFactory.createTxCreateDoc(
-      _class,
-      space,
-      attributes,
-      objectId
-    )
+    const tx = txFactory.createTxCreateDoc(_class, space, attributes, objectId)
     if (modifiedBy !== undefined) {
       tx.modifiedBy = modifiedBy
     }
@@ -243,7 +240,7 @@ export class Builder {
     return TxProcessor.createDoc2Doc(tx)
   }
 
-  mixin<D extends Doc, M extends D> (
+  mixin<D extends Doc, M extends D>(
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
     mixin: Ref<IMixin<M>>,

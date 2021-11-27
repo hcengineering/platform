@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { IntlString } from "@anticrm/status"
+  import { IntlString } from '@anticrm/status'
 
   export let title: IntlString
   export let line: boolean = false
 </script>
 
-<div class="flex-center container" class:line={line}>
+<div class="flex-center container" class:line>
   <div class="title">{title}</div>
 </div>
 
@@ -32,10 +31,10 @@
 
     .title {
       position: relative;
-      padding: .375rem .75rem;
+      padding: 0.375rem 0.75rem;
       font-weight: 600;
-      font-size: .75rem;
-      letter-spacing: .5;
+      font-size: 0.75rem;
+      letter-spacing: 0.5;
       text-transform: uppercase;
       color: var(--theme-content-trans-color);
       z-index: 1;

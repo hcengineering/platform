@@ -17,12 +17,12 @@
 import { setMetadata } from '@anticrm/platform'
 import type { Metadata } from '@anticrm/platform'
 
-export function setMetadataLocalStorage(id: Metadata<string>, value: string): void {
+export function setMetadataLocalStorage (id: Metadata<string>, value: string): void {
   localStorage.setItem(id, value)
   setMetadata(id, value)
 }
 
-export function fetchMetadataLocalStorage(id: Metadata<string>): string | null {
+export function fetchMetadataLocalStorage (id: Metadata<string>): string | null {
   const value = localStorage.getItem(id)
   if (value !== null) {
     setMetadata(id, value)

@@ -16,7 +16,15 @@
 
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
-import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB, dropWorkspace, dropAccount } from '@anticrm/account'
+import {
+  getAccount,
+  createAccount,
+  assignWorkspace,
+  createWorkspace,
+  ACCOUNT_DB,
+  dropWorkspace,
+  dropAccount
+} from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'

@@ -13,33 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
-  import type { Applicant, Candidate } from '@anticrm/recruit'
-  import { CircleButton, showPopup, closeTooltip } from '@anticrm/ui'
-  import Vacancy from './icons/Vacancy.svelte'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import EditApplication from './EditApplication.svelte'
+  import core from '@anticrm/core'
+  import type { Candidate } from '@anticrm/recruit'
+  import recruit from '@anticrm/recruit'
   import { Table } from '@anticrm/view-resources'
 
-  import recruit from '@anticrm/recruit'
-  import core from '@anticrm/core'
-
   export let value: Candidate
-
 </script>
 
-<Table 
+<Table
   _class={recruit.class.Applicant}
   config={['', '$lookup.space.name', '$lookup.state']}
-  options={
-    {
-      lookup: {
-        state: core.class.State,
-        space: core.class.Space
-      }
+  options={{
+    lookup: {
+      state: core.class.State,
+      space: core.class.Space
     }
-  }
-  query={ { attachedTo: value._id } }
+  }}
+  query={{ attachedTo: value._id }}
 />

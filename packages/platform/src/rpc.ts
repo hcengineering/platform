@@ -48,7 +48,9 @@ export interface Response<R> {
  * @returns
  */
 export function protoSerialize (object: object): string {
-  return JSON.stringify(object, (key, value) => { return value ?? null })
+  return JSON.stringify(object, (key, value) => {
+    return value ?? null
+  })
 }
 
 /**
@@ -86,9 +88,7 @@ export function readResponse<D> (response: string): Response<D> {
 export function readRequest<P extends any[]> (request: string): Request<P> {
   const result: Request<P> = protoDeserialize(request)
   if (typeof result.method !== 'string') {
-    throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.BadRequest, {})
-    )
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
   return result
 }

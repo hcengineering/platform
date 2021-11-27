@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent, TooltipAligment } from '../types'
@@ -30,11 +29,11 @@
 
 <Tooltip {label} {direction}>
   <button class="button {size}" on:click|stopPropagation={action}>
-    <div class="icon {size}" class:invisible={invisible}>
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} {size}/>
+    <div class="icon {size}" class:invisible>
+      {#if typeof icon === 'string'}
+        <Icon {icon} {size} />
       {:else}
-        <svelte:component this={icon} size={size} />
+        <svelte:component this={icon} {size} />
       {/if}
     </div>
   </button>
@@ -43,7 +42,7 @@
 <style lang="scss">
   .button {
     color: var(--theme-caption-color);
-    border-radius: .125rem;
+    border-radius: 0.125rem;
 
     .icon {
       // transform-origin: center center;

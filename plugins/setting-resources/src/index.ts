@@ -16,8 +16,9 @@
 import Integrations from './components/Integrations.svelte'
 import ConnectEmail from './components/integrations/ConnectEmail.svelte'
 import IconGmail from './components/icons/Gmail.svelte'
+import { Resources } from '@anticrm/platform'
 
-export default async () => ({
+export default async (): Promise<Resources> => ({
   component: {
     Integrations,
     ConnectEmail,

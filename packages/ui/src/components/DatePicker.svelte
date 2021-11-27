@@ -57,7 +57,7 @@
 </script>
 
 <div class="flex-row-center">
-  <PopupMenu bind:show={show}>
+  <PopupMenu bind:show>
     <button
       slot="trigger"
       class="focused-button btn"
@@ -79,7 +79,8 @@
           on:click|preventDefault={() => {
             view.setMonth(view.getMonth() - 1)
             view = view
-          }}><div class="icon"><Back size={'small'} /></div></button>
+          }}><div class="icon"><Back size={'small'} /></div></button
+        >
         <div class="monthYear">
           {monthYear}
         </div>
@@ -88,7 +89,8 @@
           on:click|preventDefault={() => {
             view.setMonth(view.getMonth() + 1)
             view = view
-          }}><div class="icon"><Forward size={'small'} /></div></button>
+          }}><div class="icon"><Forward size={'small'} /></div></button
+        >
       </div>
     </div>
 
@@ -129,7 +131,7 @@
   .btn {
     width: 2.25rem;
     height: 2.25rem;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     border: none;
   }
 
@@ -137,11 +139,11 @@
     width: 2rem;
     height: 2rem;
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
   }
 
   .title {
-    margin-bottom: .75rem;
+    margin-bottom: 0.75rem;
     font-weight: 500;
     text-align: left;
   }
@@ -158,10 +160,11 @@
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: .125rem;
-    margin-top: .5rem;
+    gap: 0.125rem;
+    margin-top: 0.5rem;
 
-    .caption, .day {
+    .caption,
+    .day {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -170,10 +173,10 @@
       color: var(--theme-content-dark-color);
     }
     .caption {
-      font-size: .75rem;
+      font-size: 0.75rem;
     }
     .day {
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       cursor: pointer;
 
       &.selected {
@@ -185,9 +188,9 @@
   }
 
   .selectDate {
-    margin-left: .75rem;
+    margin-left: 0.75rem;
     .label {
-      font-size: .75rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--theme-content-accent-color);
     }

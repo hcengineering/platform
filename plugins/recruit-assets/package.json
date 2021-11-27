@@ -6,10 +6,9 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "",
-    "build:docs": "api-extractor run --local",
-    "lint": "ts-standard src",
-    "lint:fix": "ts-standard --fix src",
-    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && ts-standard --fix src"
+    "lint": "",
+    "lint:fix": "",
+    "format": ""
   },
   "devDependencies": {
   },

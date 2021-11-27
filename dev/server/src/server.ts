@@ -49,28 +49,32 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 export async function start (port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc(() => {
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'InMemoryTx'
-      },
-      defaultAdapter: 'InMemory',
-      adapters: {
-        InMemoryTx: {
-          factory: createInMemoryTxAdapter,
+  startJsonRpc(
+    () => {
+      const conf: DbConfiguration = {
+        domains: {
+          [DOMAIN_TX]: 'InMemoryTx'
+        },
+        defaultAdapter: 'InMemory',
+        adapters: {
+          InMemoryTx: {
+            factory: createInMemoryTxAdapter,
+            url: ''
+          },
+          InMemory: {
+            factory: createInMemoryAdapter,
+            url: ''
+          }
+        },
+        fulltextAdapter: {
+          factory: createNullFullTextAdapter,
           url: ''
         },
-        InMemory: {
-          factory: createInMemoryAdapter,
-          url: ''
-        }
-      },
-      fulltextAdapter: {
-        factory: createNullFullTextAdapter,
-        url: ''
-      },
-      workspace: ''
-    }
-    return createServerStorage(conf)
-  }, port, host)
+        workspace: ''
+      }
+      return createServerStorage(conf)
+    },
+    port,
+    host
+  )
 }

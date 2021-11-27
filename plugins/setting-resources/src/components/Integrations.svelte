@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core';
-  import { getMetadata } from '@anticrm/platform';
+  import type { Ref, Space } from '@anticrm/core'
+  import { getMetadata } from '@anticrm/platform'
   import login from '@anticrm/login'
   import { createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'

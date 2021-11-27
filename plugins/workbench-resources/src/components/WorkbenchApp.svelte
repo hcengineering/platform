@@ -12,49 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import { getResource } from '@anticrm/platform'
+  import type { Client } from '@anticrm/core'
+  import { setCurrentAccount } from '@anticrm/core'
+  import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
 
-import { getResource } from '@anticrm/platform'
-import type { Client } from '@anticrm/core'
-import { setCurrentAccount } from '@anticrm/core'
-import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
+  import client from '@anticrm/client'
+  import login from '@anticrm/login'
+  import contact from '@anticrm/contact'
 
-import client from '@anticrm/client'
-import login from '@anticrm/login'
-import contact from '@anticrm/contact'
+  import Workbench from './Workbench.svelte'
 
-import Workbench from './Workbench.svelte'
+  async function connect (): Promise<Client | undefined> {
+    const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
+    const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+    const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
-async function connect(): Promise<Client | undefined> {
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
+    if (token === null || endpoint === null || email === null) {
+      navigate({ path: [login.component.LoginApp] })
+      return
+    }
 
-  if (token === null || endpoint === null || email === null) {
-    navigate({ path: [login.component.LoginApp] })
-    return
+    const getClient = await getResource(client.function.GetClient)
+    const instance = await getClient(token, endpoint)
+    console.log('logging in as', email)
+    const me = await instance.findOne(contact.class.EmployeeAccount, { email })
+    if (me !== undefined) {
+      console.log('login: employee account', me)
+      setCurrentAccount(me)
+    } else {
+      console.log('WARNING: no employee account found.')
+    }
+    return instance
   }
-
-  const getClient = await getResource(client.function.GetClient)
-  const instance = await getClient(token, endpoint)
-  console.log('logging in as', email)
-  const me = await instance.findOne(contact.class.EmployeeAccount, { email })
-  if (me !== undefined) {
-    console.log('login: employee account', me)
-    setCurrentAccount(me)
-  } else {
-    console.log('WARNING: no employee account found.')
-  }
-  return instance
-}
-
 </script>
 
 {#await connect()}
-  <Loading/>
+  <Loading />
 {:then client}
-  <Workbench {client}/>
+  <Workbench {client} />
 {:catch error}
   <div>{error} -- {error.stack}</div>
 {/await}

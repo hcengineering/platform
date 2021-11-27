@@ -13,17 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Ref, Class, Doc, Space, FindOptions, DocumentQuery } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { IconDown, IconUp, Label, Loading, showPopup } from '@anticrm/ui'
   import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
-
-  import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -37,15 +34,21 @@
   let objects: Doc[]
 
   const q = createQuery()
-  $: q.query(_class, query, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
+  $: q.query(
+    _class,
+    query,
+    (result) => {
+      objects = result
+    },
+    { sort: { [sortKey]: sortOrder }, ...options }
+  )
 
-  function getValue(doc: Doc, key: string): any {
-    if (key.length === 0)
-      return doc
+  function getValue (doc: Doc, key: string): any {
+    if (key.length === 0) return doc
     const path = key.split('.')
     const len = path.length
     let obj = doc as any
-    for (let i=0; i<len; i++){
+    for (let i = 0; i < len; i++) {
       obj = obj?.[path[i]]
     }
     return obj ?? ''
@@ -55,23 +58,24 @@
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, (() => { selectRow = undefined }))
+    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
+      selectRow = undefined
+    })
   }
 
-  function changeSorting(key: string) {
-    if (key === '')
-      return
+  function changeSorting (key: string) {
+    if (key === '') return
     if (key !== sortKey) {
       sortKey = key
       sortOrder = SortingOrder.Ascending
     } else {
-      sortOrder = (sortOrder === SortingOrder.Ascending) ? SortingOrder.Descending : SortingOrder.Ascending
+      sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
     }
   }
 </script>
 
-{#await buildModel({client, _class, keys: config, options})}
-  <Loading/>
+{#await buildModel({ client, _class, keys: config, options })}
+  <Loading />
 {:then model}
   <table class="table-body">
     <thead>
@@ -79,7 +83,7 @@
         {#each model as attribute}
           <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
             <div class="flex-row-center">
-              <Label label = {attribute.label}/>
+              <Label label={attribute.label} />
               {#if attribute.key === sortKey}
                 <div class="icon">
                   {#if sortOrder === SortingOrder.Ascending}
@@ -100,12 +104,14 @@
           <tr class="tr-body" class:fixed={row === selectRow}>
             {#each model as attribute, cell}
               {#if !cell}
-                <td><div class="firstCell">
-                  <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                  <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
-                </div></td>
+                <td
+                  ><div class="firstCell">
+                    <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} />
+                    <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
+                  </div></td
+                >
               {:else}
-                <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
+                <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} /></td>
               {/if}
             {/each}
           </tr>
@@ -116,7 +122,9 @@
 {/await}
 
 <style lang="scss">
-  .table-body { width: 100%; }
+  .table-body {
+    width: 100%;
+  }
 
   .firstCell {
     display: flex;
@@ -124,32 +132,41 @@
     align-items: center;
     .menuRow {
       visibility: hidden;
-      margin-left: .5rem;
-      opacity: .6;
+      margin-left: 0.5rem;
+      opacity: 0.6;
       cursor: pointer;
-      &:hover { opacity: 1; }
+      &:hover {
+        opacity: 1;
+      }
     }
   }
 
-  th, td {
-    padding: .5rem 1.5rem;
+  th,
+  td {
+    padding: 0.5rem 1.5rem;
     text-align: left;
-    &:first-child { padding-left: 0; }
-    &:last-child { padding-right: 0; }
+    &:first-child {
+      padding-left: 0;
+    }
+    &:last-child {
+      padding-right: 0;
+    }
   }
 
   th {
     height: 2.5rem;
     font-weight: 500;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--theme-content-dark-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     user-select: none;
 
-    &.sortable { cursor: pointer; }
+    &.sortable {
+      cursor: pointer;
+    }
     &.sorted .icon {
-      margin-left: .25rem;
-      opacity: .6;
+      margin-left: 0.25rem;
+      opacity: 0.6;
     }
   }
 
@@ -157,8 +174,14 @@
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:hover .firstCell .menuRow { visibility: visible; }
-    &:last-child { border-bottom: none; }
+    &:hover .firstCell .menuRow {
+      visibility: visible;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
   }
-  .fixed .menuRow { visibility: visible; }
+  .fixed .menuRow {
+    visibility: visible;
+  }
 </style>

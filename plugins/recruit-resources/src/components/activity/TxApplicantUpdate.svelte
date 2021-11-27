@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Class, State, TxUpdateDoc } from '@anticrm/core'
   import core from '@anticrm/core'
@@ -27,16 +26,15 @@
 
   const stateClass = client.getModel().getObject(core.class.State) as Class<State>
   const statePresenter = client.getHierarchy().as(stateClass, view.mixin.AttributePresenter)
-
 </script>
-  
+
 {#if tx.operations.state}
   <div class="flex-row-center update-container">
     <span>updated State to</span>
     {#if statePresenter?.presenter}
       {#await client.findOne(core.class.State, { _id: tx.operations.state }) then st}
         {#if st}
-          <Component is={statePresenter.presenter} props={{ value: st }}/>
+          <Component is={statePresenter.presenter} props={{ value: st }} />
         {/if}
       {/await}
     {/if}
@@ -44,5 +42,7 @@
 {/if}
 
 <style lang="scss">
-  .update-container span { margin-right: .5rem; }
+  .update-container span {
+    margin-right: 0.5rem;
+  }
 </style>

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
@@ -27,7 +26,7 @@
 
 {#if icon}
   <div class="flex-row-center">
-    <CircleButton icon={icon} size={'large'} />
+    <CircleButton {icon} size={'large'} />
     {#if !minimize}
       <div class="flex-col with-icon">
         <Label {label} />
@@ -43,7 +42,9 @@
 {/if}
 
 <style lang="scss">
-  .with-icon { margin-left: .5rem; }
+  .with-icon {
+    margin-left: 0.5rem;
+  }
   .value {
     font-weight: 500;
     color: var(--theme-caption-color);

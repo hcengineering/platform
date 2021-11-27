@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Attachment } from "@anticrm/chunter";
-  import type { TxCreateDoc } from "@anticrm/core";
-  import { TxProcessor } from '@anticrm/core';
-  import AttachmentPresenter from "../AttachmentPresenter.svelte";
+  import type { Attachment } from '@anticrm/chunter'
+  import type { TxCreateDoc } from '@anticrm/core'
+  import { TxProcessor } from '@anticrm/core'
+  import AttachmentPresenter from '../AttachmentPresenter.svelte'
 
   export let tx: TxCreateDoc<Attachment>
 </script>
 
-<AttachmentPresenter value={TxProcessor.createDoc2Doc(tx)}/>
+<AttachmentPresenter value={TxProcessor.createDoc2Doc(tx)} />

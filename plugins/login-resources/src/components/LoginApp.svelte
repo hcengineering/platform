@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import LoginForm from './LoginForm.svelte'
   import SignupForm from './SignupForm.svelte'
@@ -23,14 +22,14 @@
 <div class="container">
   <div class="panel">
     {#if page === 'login'}
-      <LoginForm on:switch={(event) => page = event.detail}/>
+      <LoginForm on:switch={(event) => (page = event.detail)} />
     {:else if page === 'signup'}
-      <SignupForm on:switch={(event) => page = event.detail}/>
+      <SignupForm on:switch={(event) => (page = event.detail)} />
     {/if}
   </div>
   <div class="intro">
     <div class="content">
-      <div class="logo"> </div>
+      <div class="logo" />
     </div>
     <div class="slogan">
       <p>A unique place to manage all of your work</p>
@@ -71,21 +70,21 @@
           position: relative;
           &:after {
             position: absolute;
-            content: "";
-            background: center url("../../img/logo.svg");
+            content: '';
+            background: center url('../../img/logo.svg');
             transform: translate(-50%, -50%);
             width: 63px;
             height: 79px;
           }
           &:before {
             position: absolute;
-            content: "";
+            content: '';
             transform: translate(-50%, -50%);
             width: 16rem;
             height: 16rem;
             border: 1.8px solid var(--theme-caption-color);
             border-radius: 50%;
-            opacity: .08;
+            opacity: 0.08;
           }
         }
       }
@@ -94,10 +93,10 @@
         p {
           margin: 0;
           font-weight: 400;
-          font-size: .8rem;
+          font-size: 0.8rem;
           text-align: center;
           color: var(--theme-caption-color);
-          opacity: .8;
+          opacity: 0.8;
         }
       }
     }

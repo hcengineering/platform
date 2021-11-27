@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
@@ -25,10 +24,10 @@
 
 <div class="flex-row-center container">
   <div class="icon">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size='small'/>
+    {#if typeof icon === 'string'}
+      <Icon {icon} size="small" />
     {:else}
-      <svelte:component this={icon} size='small' />
+      <svelte:component this={icon} size="small" />
     {/if}
   </div>
   <span><Label {label} /></span>
@@ -36,17 +35,17 @@
 
 <style lang="scss">
   .container {
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     color: #fff;
-    background-color: rgba(255, 255, 255, .17);
-    border: 1px solid rgba(255, 255, 255, .14);
-    border-radius: .5rem;
+    background-color: rgba(255, 255, 255, 0.17);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0.5rem;
     backdrop-filter: blur(3px);
     cursor: pointer;
 
     .icon {
       transform-origin: center center;
-      transform: scale(.75);
+      transform: scale(0.75);
     }
 
     span {
@@ -56,12 +55,12 @@
     }
 
     &:hover {
-      background-color: rgba(255, 255, 255, .22);
-      border-color: rgba(255, 255, 255, .19);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      background-color: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.19);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
     }
     &:active {
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
     }
   }
 </style>

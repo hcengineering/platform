@@ -42,7 +42,9 @@ function login (endpoint: string, email: string, password: string, workspace: st
 }
 
 export function handleRequest (req: Request<any[]>, serverEndpoint: string): Response<any> {
-  if (req.method === 'login') { return login(serverEndpoint, ...(req as Request<[string, string, string]>).params) }
+  if (req.method === 'login') {
+    return login(serverEndpoint, ...(req as Request<[string, string, string]>).params)
+  }
 
   return { error: new Status(Severity.ERROR, platform.status.BadRequest, {}) }
 }

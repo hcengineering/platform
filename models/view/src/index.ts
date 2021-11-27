@@ -18,7 +18,18 @@ import type { Ref, Class, Space, Doc, Arr, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Mixin, Builder } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban, Sequence } from '@anticrm/view'
+import type {
+  ViewletDescriptor,
+  Viewlet,
+  AttributeEditor,
+  AttributePresenter,
+  KanbanCard,
+  ObjectEditor,
+  Action,
+  ActionTarget,
+  Kanban,
+  Sequence
+} from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 
@@ -87,7 +98,18 @@ export class TSequence extends TDoc implements Sequence {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TKanban, TSequence)
+  builder.createModel(
+    TAttributeEditor,
+    TAttributePresenter,
+    TKanbanCard,
+    TObjectEditor,
+    TViewletDescriptor,
+    TViewlet,
+    TAction,
+    TActionTarget,
+    TKanban,
+    TSequence
+  )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor
@@ -113,35 +135,55 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StatePresenter
   })
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Table' as IntlString,
-    icon: view.icon.Table,
-    component: view.component.TableView
-  }, view.viewlet.Table)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Table' as IntlString,
+      icon: view.icon.Table,
+      component: view.component.TableView
+    },
+    view.viewlet.Table
+  )
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Kanban' as IntlString,
-    icon: view.icon.Kanban,
-    component: view.component.KanbanView
-  }, view.viewlet.Kanban)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Kanban' as IntlString,
+      icon: view.icon.Kanban,
+      component: view.component.KanbanView
+    },
+    view.viewlet.Kanban
+  )
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Delete' as IntlString,
-    icon: view.icon.Kanban,
-    action: view.actionImpl.Delete
-  }, view.action.Delete)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Delete' as IntlString,
+      icon: view.icon.Kanban,
+      action: view.actionImpl.Delete
+    },
+    view.action.Delete
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: core.class.Doc,
     action: view.action.Delete
   })
 
-  builder.createDoc(core.class.Space, core.space.Model, {
-    name: 'Sequences',
-    description: 'Internal space to store sequence numbers',
-    members: [],
-    private: false
-  }, view.space.Sequence)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      name: 'Sequences',
+      description: 'Internal space to store sequence numbers',
+      members: [],
+      private: false
+    },
+    view.space.Sequence
+  )
 }
 
 export default view

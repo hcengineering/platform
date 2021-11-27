@@ -15,11 +15,12 @@
 
 import { SvelteComponent } from 'svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
-import { getResource, IntlString } from '@anticrm/platform'
-import { addStringsLoader } from '@anticrm/platform'
-import { uiId } from './plugin' 
+import { getResource, IntlString, addStringsLoader } from '@anticrm/platform'
+import { uiId } from './plugin'
 
 import Root from './components/internal/Root.svelte'
+
+import { writable, readable } from 'svelte/store'
 
 export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment } from './types'
 // export { applicationShortcutKey } from './utils'
@@ -79,8 +80,6 @@ export { default as IconInfo } from './components/icons/Info.svelte'
 
 export * from './utils'
 
-import { writable, readable } from 'svelte/store'
-
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
@@ -99,16 +98,22 @@ interface CompAndProps {
 
 export const popupstore = writable<CompAndProps[]>([])
 
-export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: PopupAlignment, onClose?: (result: any) => void): void {
+export function showPopup (
+  component: AnySvelteComponent | AnyComponent,
+  props: any,
+  element?: PopupAlignment,
+  onClose?: (result: any) => void
+): void {
   if (typeof component === 'string') {
-    getResource(component).then(resolved => {
-      popupstore.update(popups => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getResource(component).then((resolved) => {
+      popupstore.update((popups) => {
         popups.push({ is: resolved, props, element, onClose })
         return popups
-      })    
+      })
     })
   } else {
-    popupstore.update(popups => {
+    popupstore.update((popups) => {
       popups.push({ is: component, props, element, onClose })
       return popups
     })
@@ -116,7 +121,7 @@ export function showPopup (component: AnySvelteComponent | AnyComponent, props: 
 }
 
 export function closePopup (): void {
-  popupstore.update(popups => {
+  popupstore.update((popups) => {
     popups.pop()
     return popups
   })
@@ -131,18 +136,39 @@ export const tooltipstore = writable<LabelAndProps>({
   anchor: undefined
 })
 
-export function showTooltip (label: IntlString | undefined, element: HTMLElement, direction?: TooltipAligment, component?: AnySvelteComponent | AnyComponent, props?: any, anchor?: HTMLElement): void {
-  tooltipstore.set({ label: label, element: element, direction: direction, component: component, props: props, anchor: anchor })
+export function showTooltip (
+  label: IntlString | undefined,
+  element: HTMLElement,
+  direction?: TooltipAligment,
+  component?: AnySvelteComponent | AnyComponent,
+  props?: any,
+  anchor?: HTMLElement
+): void {
+  tooltipstore.set({
+    label: label,
+    element: element,
+    direction: direction,
+    component: component,
+    props: props,
+    anchor: anchor
+  })
 }
 
 export function closeTooltip (): void {
-  tooltipstore.set({ label: undefined, element: undefined, direction: undefined, component: undefined, props: undefined, anchor: undefined })
+  tooltipstore.set({
+    label: undefined,
+    element: undefined,
+    direction: undefined,
+    component: undefined,
+    props: undefined,
+    anchor: undefined
+  })
 }
 
-export const ticker = readable(Date.now(), set => {
-	const interval = setInterval(() => {
-		set(Date.now())
-	}, 10000)
+export const ticker = readable(Date.now(), (set) => {
+  setInterval(() => {
+    set(Date.now())
+  }, 10000)
 })
 
 addStringsLoader(uiId, async (lang: string) => {

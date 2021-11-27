@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Avatar, getClient } from '@anticrm/presentation'
   import type { Comment } from '@anticrm/chunter'
@@ -26,16 +25,16 @@
 
   const client = getClient()
 
-  async function getUser (user: Ref<EmployeeAccount> | Ref<Account>): Promise<EmployeeAccount | undefined>  {
+  async function getUser (user: Ref<EmployeeAccount> | Ref<Account>): Promise<EmployeeAccount | undefined> {
     return await client.findOne(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
   }
 
   function getTime (time: number): string {
-    let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric'}
+    let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
     if (!isToday(time)) {
       options = {
         month: 'numeric',
-         day: 'numeric',
+        day: 'numeric',
         ...options
       }
     }
@@ -46,7 +45,11 @@
   function isToday (time: number): boolean {
     const current = new Date()
     const target = new Date(time)
-    return current.getDate() === target.getDate() && current.getMonth() === target.getMonth() && current.getFullYear() === target.getFullYear()
+    return (
+      current.getDate() === target.getDate() &&
+      current.getMonth() === target.getMonth() &&
+      current.getFullYear() === target.getFullYear()
+    )
   }
 </script>
 
@@ -59,7 +62,7 @@
       {/await}
       <span>{getTime(value.modifiedOn)}</span>
     </div>
-    <div class="text"><MessageViewer message={value.message}/></div>
+    <div class="text"><MessageViewer message={value.message} /></div>
   </div>
 </div>
 
@@ -67,7 +70,9 @@
   .container {
     display: flex;
 
-    .avatar { min-width: 2.25rem; }
+    .avatar {
+      min-width: 2.25rem;
+    }
 
     .message {
       display: flex;
@@ -80,14 +85,14 @@
         font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
-        margin-bottom: .25rem;
+        margin-bottom: 0.25rem;
 
         span {
-          margin-left: .5rem;
+          margin-left: 0.5rem;
           font-weight: 400;
-          font-size: .875rem;
+          font-size: 0.875rem;
           line-height: 1.125rem;
-          opacity: .4;
+          opacity: 0.4;
         }
       }
       .text {

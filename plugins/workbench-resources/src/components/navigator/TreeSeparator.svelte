@@ -13,4 +13,4 @@
 // limitations under the License.
 -->
 
-<div class="background-menu-divider" style="height: 1px; margin: 1.5rem 0;"/>
+<div class="background-menu-divider" style="height: 1px; margin: 1.5rem 0;" />

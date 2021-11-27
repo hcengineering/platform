@@ -43,7 +43,12 @@
   <div class="scroll">
     <div class="flex-col box">
       {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="flex-row-center menu-item" on:click={() => { dispatch('close', item) }}>
+        <button
+          class="flex-row-center menu-item"
+          on:click={() => {
+            dispatch('close', item)
+          }}
+        >
           <div class="flex-center img">
             <img src={item.item} alt={item.label} />
           </div>
@@ -59,20 +64,20 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    border-radius: .75rem;
+    border-radius: 0.75rem;
   }
 
   .title {
-    margin: 1rem 1rem .25rem;
+    margin: 1rem 1rem 0.25rem;
     font-weight: 500;
     color: var(--theme-caption-color);
   }
   .header {
-    margin: .25rem 1rem 0;
+    margin: 0.25rem 1rem 0;
     text-align: left;
     .caption {
-      margin-top: .5rem;
-      font-size: .75rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       color: var(--theme-content-trans-color);
@@ -81,7 +86,7 @@
 
   .scroll {
     flex-grow: 1;
-    padding: .5rem;
+    padding: 0.5rem;
     overflow-x: hidden;
     overflow-y: auto;
     .box {
@@ -92,15 +97,15 @@
 
   .menu-item {
     text-align: left;
-    padding: .5rem;
-    border-radius: .5rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
 
     .img {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       width: 2.25rem;
       height: 2.25rem;
       color: var(--theme-caption-color);
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       overflow: hidden;
 
       img {
@@ -108,7 +113,9 @@
       }
     }
 
-    &:hover { background-color: var(--theme-button-bg-focused); }
+    &:hover {
+      background-color: var(--theme-button-bg-focused);
+    }
     &:focus {
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       z-index: 1;
@@ -116,15 +123,15 @@
   }
 
   .card-bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--theme-card-bg);
-      border-radius: .75rem;
-      backdrop-filter: blur(24px);
-      box-shadow: var(--theme-card-shadow);
-      z-index: -1;
-    }
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--theme-card-bg);
+    border-radius: 0.75rem;
+    backdrop-filter: blur(24px);
+    box-shadow: var(--theme-card-shadow);
+    z-index: -1;
+  }
 </style>

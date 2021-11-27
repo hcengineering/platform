@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
 
@@ -36,7 +35,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="card-container" on:submit|preventDefault={ () => {} }>
+<form class="card-container" on:submit|preventDefault={() => {}}>
   <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label label"><Label {label} /></div>
@@ -52,8 +51,25 @@
     <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
   </div>
   <div class="footer">
-    <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button
+      disabled={!canSave}
+      label={'Create'}
+      size={'small'}
+      transparent
+      primary
+      on:click={() => {
+        okAction()
+        dispatch('close')
+      }}
+    />
+    <Button
+      label={'Cancel'}
+      size={'small'}
+      transparent
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
   </div>
 </form>
 
@@ -85,9 +101,11 @@
         left: 1.75rem;
         right: 1.75rem;
         font-weight: 500;
-        font-size: .75rem;
+        font-size: 0.75rem;
         color: var(--system-error-color);
-        &:empty { visibility: hidden; }
+        &:empty {
+          visibility: hidden;
+        }
       }
     }
 
@@ -99,7 +117,7 @@
     }
 
     .pool {
-      margin: 0 1.75rem .75rem;
+      margin: 0 1.75rem 0.75rem;
       color: var(--theme-caption-color);
       .separator {
         margin: 1rem 0;
@@ -115,7 +133,7 @@
       direction: rtl;
       justify-content: start;
       align-items: center;
-      column-gap: .75rem;
+      column-gap: 0.75rem;
       padding: 1rem 1.75rem 1.75rem;
       height: 5.25rem;
       mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);

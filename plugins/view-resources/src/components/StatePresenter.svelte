@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { State } from '@anticrm/core'
 
   export let value: State
-
 </script>
 
 <div class="state-container" style="background-color: {value.color}">
@@ -30,14 +28,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: .25rem .75rem;
+    padding: 0.25rem 0.75rem;
     width: fit-content;
     text-transform: uppercase;
     font-weight: 500;
-    letter-spacing: .5px;
-    font-size: .625rem;
+    letter-spacing: 0.5px;
+    font-size: 0.625rem;
     color: #fff;
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
   }
 </style>

@@ -13,23 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  // import type { Ref } from '@anticrm/core'
+  // import type { Person } from '@anticrm/contact'
 
-  import type { Ref } from '@anticrm/core'
-  import type { Person } from '@anticrm/contact'
-
-  export let objectId: Ref<Person>
+  // export let objectId: Ref<Person>
   export let title: string
-
 </script>
 
 <span class="person">{title}</span>
 
 <style lang="scss">
-
   .person {
     border: 1px solid red;
   }
-
 </style>

@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  
+
   import Toggle from './Toggle.svelte'
   import Label from './Label.svelte'
-  
+
   export let label: IntlString
   export let description: IntlString | undefined = undefined
   export let on: boolean = false
@@ -32,7 +31,7 @@
       <span><Label label={description} /></span>
     {/if}
   </div>
-  <Toggle bind:on={on}/>
+  <Toggle bind:on />
 </div>
 
 <style lang="scss">
@@ -42,7 +41,7 @@
     user-select: none;
     span {
       display: block;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-trans-color);
     }
   }

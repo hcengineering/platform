@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
   const fill: string = 'currentColor'
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <polygon points="12.4,9.6 8.4,5.6 8,5.3 7.6,5.6 3.6,9.6 4.4,10.4 8,6.7 11.6,10.4 "/>
+  <polygon points="12.4,9.6 8.4,5.6 8,5.3 7.6,5.6 3.6,9.6 4.4,10.4 8,6.7 11.6,10.4 " />
 </svg>

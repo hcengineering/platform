@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Ref } from '@anticrm/core'
   import type { Application } from '@anticrm/workbench'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
@@ -28,19 +26,28 @@
   let apps: Application[] = []
 
   const query = createQuery()
-  $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
+  $: query.query(workbench.class.Application, { hidden: false }, (result) => {
+    apps = result
+  })
 
-  function navigateApp(app: Ref<Application>) {
+  function navigateApp (app: Ref<Application>) {
     const loc = getCurrentLocation()
     loc.path[1] = app
     loc.path.length = 2
     navigate(loc)
   }
-
 </script>
 
 <div class="flex-col">
   {#each apps as app}
-    <AppItem selected={app._id === active} icon={app.icon} label={app.label} notify action={async () => {navigateApp(app._id)}}/>
+    <AppItem
+      selected={app._id === active}
+      icon={app.icon}
+      label={app.label}
+      notify
+      action={async () => {
+        navigateApp(app._id)
+      }}
+    />
   {/each}
 </div>

@@ -25,14 +25,17 @@ import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx, TxRes
 describe('server', () => {
   disableLogging()
 
-  start(async () => ({
-    findAll: async <T extends Doc>(
-      _class: Ref<Class<T>>,
-      query: DocumentQuery<T>,
-      options?: FindOptions<T>
-    ): Promise<FindResult<T>> => ([]),
-    tx: async (tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []])
-  }), 3333)
+  start(
+    async () => ({
+      findAll: async <T extends Doc>(
+        _class: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ): Promise<FindResult<T>> => [],
+      tx: async (tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []]
+    }),
+    3333
+  )
 
   function connect (): WebSocket {
     const payload: Token = {
@@ -47,7 +50,9 @@ describe('server', () => {
     conn.on('open', () => {
       conn.close()
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 
   it('should not connect to server without token', (done) => {
@@ -55,7 +60,9 @@ describe('server', () => {
     conn.on('error', () => {
       conn.close()
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 
   it('should send many requests', (done) => {
@@ -75,6 +82,8 @@ describe('server', () => {
         conn.close()
       }
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 })

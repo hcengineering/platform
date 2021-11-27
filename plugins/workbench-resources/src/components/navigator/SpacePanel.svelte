@@ -13,16 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { Ref, Doc, Class, Space } from '@anticrm/core'
-  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon } from '@anticrm/ui'
-  import { getClient, createQuery, AttributeBarEditor } from '@anticrm/presentation'
-
-  import { createEventDispatcher } from 'svelte'
-
+  import type { Class, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
   export let spaceClass: Ref<Class<Space>>
@@ -38,44 +35,68 @@
   const clazz = client.getHierarchy().getClass(spaceClass)
 
   const query = createQuery()
-  $: query.query(core.class.Space, { _id }, result => { space = result[0] })
+  $: query.query(core.class.Space, { _id }, (result) => {
+    space = result[0]
+  })
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString]
   let selected = 0
 
-  function onNameChange(ev: Event) {
+  function onNameChange (ev: Event) {
     client.updateDoc(spaceClass, space.space, space._id, { name: (ev.target as HTMLInputElement).value })
   }
-
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
+<div
+  class="overlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="dialog-container">
   <div class="flex-row-center header">
     <Icon icon={clazz.icon} size={'medium'} />
     <div class="flex-grow fs-title ml-2"><Label label={clazz.label} /></div>
-    <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
+    <div
+      class="tool"
+      on:click={() => {
+        dispatch('close')
+      }}
+    >
+      <IconClose size={'small'} />
+    </div>
   </div>
-  <div class="flex-row-center subtitle">
-    Subtitle
-  </div>
+  <div class="flex-row-center subtitle">Subtitle</div>
   <div class="flex-stretch tab-container">
     {#each tabs as tab, i}
-      <div class="flex-row-center tab" class:selected={i === selected}
-           on:click={() => { selected = i }}>
-        <Label label={tab}/>
+      <div
+        class="flex-row-center tab"
+        class:selected={i === selected}
+        on:click={() => {
+          selected = i
+        }}
+      >
+        <Label label={tab} />
       </div>
     {/each}
-    <div class="grow"/>
+    <div class="grow" />
   </div>
   <div class="scroll">
     <div class="flex-col box">
       {#if selected === 0}
         {#if space}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={onNameChange}/>
+            <EditBox
+              label={clazz.label}
+              icon={clazz.icon}
+              bind:value={space.name}
+              placeholder="Software Engineer"
+              maxWidth="39rem"
+              focus
+              on:change={onNameChange}
+            />
             <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
-            <ToggleWithLabel label={'MakePrivate'} description={'MakePrivateDescription'}/>
+            <ToggleWithLabel label={'MakePrivate'} description={'MakePrivateDescription'} />
           </Grid>
         {/if}
       {:else}
@@ -109,12 +130,14 @@
       border-bottom: 1px solid var(--theme-dialog-divider);
 
       .tool {
-        margin-left: .75rem;
+        margin-left: 0.75rem;
         transform-origin: center center;
-        transform: scale(.75);
+        transform: scale(0.75);
         color: var(--theme-content-accent-color);
         cursor: pointer;
-        &:hover { color: var(--theme-caption-color); }
+        &:hover {
+          color: var(--theme-caption-color);
+        }
       }
     }
 
@@ -141,8 +164,8 @@
       user-select: none;
 
       &.selected {
-        border-top: .125rem solid transparent;
-        border-bottom: .125rem solid var(--theme-caption-color);
+        border-top: 0.125rem solid transparent;
+        border-bottom: 0.125rem solid var(--theme-caption-color);
         color: var(--theme-caption-color);
         cursor: default;
       }
@@ -176,6 +199,6 @@
     width: 100%;
     height: 100%;
     background: var(--theme-menu-color);
-    opacity: .6;
+    opacity: 0.6;
   }
 </style>

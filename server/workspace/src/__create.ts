@@ -62,6 +62,10 @@ const minio = new Client({
 })
 
 console.log('creating model...')
-createWorkspace(mongoUrl, db, transactorUrl, minio).then(() => {
-  console.log('done.')
-}).catch(error => { console.error(error) })
+createWorkspace(mongoUrl, db, transactorUrl, minio)
+  .then(() => {
+    console.log('done.')
+  })
+  .catch((error) => {
+    console.error(error)
+  })

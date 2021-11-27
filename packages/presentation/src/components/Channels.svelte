@@ -13,41 +13,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
 
-  import { Tooltip, CircleButton } from '@anticrm/ui'
+  import { Tooltip, CircleButton, AnyComponent } from '@anticrm/ui'
   import ChannelsPopup from './ChannelsPopup.svelte'
 
   import contact from '@anticrm/contact'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: Channel[] | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
 
   interface Item {
-    label: IntlString,
-    icon: Asset,
-    value: string,
+    label: IntlString
+    icon: Asset
+    value: string
     presenter?: AnyComponent
   }
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
-  async function getProviders(): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
+  async function getProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
     const providers = await client.findAll(contact.class.ChannelProvider, {})
     const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
-    for (const provider of providers) { map.set(provider._id, provider) }
+    for (const provider of providers) {
+      map.set(provider._id, provider)
+    }
     return map
   }
 
-  async function update(value: Channel[]) {
+  async function update (value: Channel[]) {
     const result = []
     const map = await getProviders()
     for (const item of value) {

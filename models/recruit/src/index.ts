@@ -113,12 +113,17 @@ export function createModel (builder: Builder): void {
       ]
     }
   })
-  builder.createDoc(recruit.class.Candidates, core.space.Model, {
-    name: 'public',
-    description: 'Public Candidates',
-    private: false,
-    members: []
-  }, recruit.space.CandidatesPublic)
+  builder.createDoc(
+    recruit.class.Candidates,
+    core.space.Model,
+    {
+      name: 'public',
+      description: 'Public Candidates',
+      private: false,
+      members: []
+    },
+    recruit.space.CandidatesPublic
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Candidate,
@@ -159,7 +164,8 @@ export function createModel (builder: Builder): void {
       '$lookup.state',
       '$lookup.attachedTo.city',
       { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
-      '$lookup.attachedTo.channels']
+      '$lookup.attachedTo.channels'
+    ]
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -188,11 +194,16 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationPresenter
   })
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Create Application' as IntlString,
-    icon: view.icon.Table,
-    action: recruit.actionImpl.CreateApplication
-  }, recruit.action.CreateApplication)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Create Application' as IntlString,
+      icon: view.icon.Table,
+      action: recruit.actionImpl.CreateApplication
+    },
+    recruit.action.CreateApplication
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Candidate,
@@ -204,13 +215,18 @@ export function createModel (builder: Builder): void {
     sequence: 0
   })
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxUpdateDoc,
-    component: recruit.activity.TxApplicantUpdate,
-    display: 'inline'
-  }, recruit.ids.TxApplicantUpdate)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: recruit.class.Applicant,
+      icon: recruit.icon.RecruitApplication,
+      txClass: core.class.TxUpdateDoc,
+      component: recruit.activity.TxApplicantUpdate,
+      display: 'inline'
+    },
+    recruit.ids.TxApplicantUpdate
+  )
 }
 
 export { default } from './plugin'

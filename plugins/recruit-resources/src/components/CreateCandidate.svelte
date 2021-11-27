@@ -12,29 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Data } from '@anticrm/core'
-  import { generateId } from '@anticrm/core'
-  import { setPlatformStatus, unknownError, Severity } from '@anticrm/platform'
-  import type { Status } from '@anticrm/platform'
-
-  import { getClient, Card, Channels, PDFViewer, Avatar } from '@anticrm/presentation'
-  import { uploadFile } from '../utils'
-
-  import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
+  import { combineName } from '@anticrm/contact'
+  import type { Data, Ref, Space } from '@anticrm/core'
+  import { generateId } from '@anticrm/core'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { Avatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import type { Attachment } from '@anticrm/chunter'
-
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, IconAdd, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
-  import FileUpload from './icons/FileUpload.svelte'
+  import { CircleButton, EditBox, IconAdd, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import recruit from '../plugin'
+  import { uploadFile } from '../utils'
   import Edit from './icons/Edit.svelte'
+  import FileUpload from './icons/FileUpload.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import YesNo from './YesNo.svelte'
-
-  import { combineName } from '@anticrm/contact';
 
   export let space: Ref<Space>
 
@@ -43,13 +36,13 @@
   let firstName = ''
   let lastName = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return firstName === '' && lastName === ''
   }
 
   const object: Candidate = {} as Candidate
 
-  let resume = {} as {
+  const resume = {} as {
     name: string
     uuid: string
     size: number
@@ -61,7 +54,7 @@
   const client = getClient()
   const candidateId = generateId()
 
-  async function createCandidate() {
+  async function createCandidate () {
     const candidate: Data<Candidate> = {
       name: combineName(firstName, lastName),
       title: object.title,
@@ -91,7 +84,7 @@
   let loading = false
   let dragover = false
 
-  async function createAttachment(file: File) {
+  async function createAttachment (file: File) {
     loading = true
     try {
       resume.uuid = await uploadFile(space, file, candidateId)
@@ -108,68 +101,113 @@
     }
   }
 
-  function drop(event: DragEvent) {
+  function drop (event: DragEvent) {
     dragover = false
     const droppedFile = event.dataTransfer?.files[0]
-    if (droppedFile !== undefined) { createAttachment(droppedFile) }
-  }  
+    if (droppedFile !== undefined) {
+      createAttachment(droppedFile)
+    }
+  }
 
-  function fileSelected() {
+  function fileSelected () {
     console.log(inputFile.files)
     const file = inputFile.files?.[0]
-    if (file !== undefined) { createAttachment(file) }
+    if (file !== undefined) {
+      createAttachment(file)
+    }
   }
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
 
-<Card label={'Create Candidate'} 
-      okAction={createCandidate}
-      canSave={firstName.length > 0 && lastName.length > 0}
-      spaceClass={recruit.class.Candidates}
-      spaceLabel={'Talent Pool'}
-      spacePlaceholder={'Select pool'}
-      bind:space={_space}
-      on:close={() => { dispatch('close') }}>
-
+<Card
+  label={'Create Candidate'}
+  okAction={createCandidate}
+  canSave={firstName.length > 0 && lastName.length > 0}
+  spaceClass={recruit.class.Candidates}
+  spaceLabel={'Talent Pool'}
+  spacePlaceholder={'Select pool'}
+  bind:space={_space}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
   <div class="flex-row-center">
     <div class="mr-4">
       <Avatar avatar={object.avatar} size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
-      <div class="small-text"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title}/></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city}/></div>
+      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName} /></div>
+      <div class="small-text"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title} /></div>
+      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city} /></div>
     </div>
   </div>
 
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <CircleButton
+        icon={IconAdd}
+        size={'small'}
+        transparent
+        on:click={(ev) =>
+          showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
+            object.channels = result
+          })}
+      />
       <span><Label label={'Add social links'} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">
-        <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+        <CircleButton
+          icon={Edit}
+          size={'small'}
+          transparent
+          on:click={(ev) =>
+            showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
+              object.channels = result
+            })}
+        />
       </div>
     {/if}
   </div>
 
-  <div class="flex-center resume" class:solid={dragover} 
-      on:dragover|preventDefault={ () => { dragover = true } } 
-      on:dragleave={ () => { dragover = false } } 
-      on:drop|preventDefault|stopPropagation={drop}>
+  <div
+    class="flex-center resume"
+    class:solid={dragover}
+    on:dragover|preventDefault={() => {
+      dragover = true
+    }}
+    on:dragleave={() => {
+      dragover = false
+    }}
+    on:drop|preventDefault|stopPropagation={drop}
+  >
     {#if resume.uuid}
-      <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
+      <Link
+        label={resume.name}
+        href={'#'}
+        icon={FileIcon}
+        maxLenght={16}
+        on:click={() => {
+          showPopup(PDFViewer, { file: resume.uuid }, 'right')
+        }}
+      />
     {:else}
       {#if loading}
         <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
       {:else}
-        <Link label={'Add or drop resume'} href={'#'} icon={FileUpload} on:click={ () => { inputFile.click() } } />
+        <Link
+          label={'Add or drop resume'}
+          href={'#'}
+          icon={FileUpload}
+          on:click={() => {
+            inputFile.click()
+          }}
+        />
       {/if}
-      <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected}/>
+      <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
     {/if}
   </div>
 
@@ -188,14 +226,16 @@
 <style lang="scss">
   .channels {
     margin-top: 1.25rem;
-    span { margin-left: .5rem; }
+    span {
+      margin-left: 0.5rem;
+    }
   }
 
   .locations {
     span {
-      margin-bottom: .125rem;
+      margin-bottom: 0.125rem;
       font-weight: 500;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-accent-color);
     }
 
@@ -203,7 +243,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: .75rem;
+      margin-top: 0.75rem;
       color: var(--theme-caption-color);
     }
   }
@@ -216,12 +256,14 @@
 
   .resume {
     margin-top: 1rem;
-    padding: .75rem;
-    background: rgba(255, 255, 255, .05);
-    border: 1px dashed rgba(255, 255, 255, .2);
-    border-radius: .5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
     backdrop-filter: blur(10px);
-    &.solid { border-style: solid; }
+    &.solid {
+      border-style: solid;
+    }
   }
   // .resume a {
   //   font-size: .75rem;

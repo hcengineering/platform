@@ -12,24 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, SpaceWithStates } from '@anticrm/core'
-  import { Status, OK, Severity } from '@anticrm/platform'
-  import { DatePicker, EditBox, Tabs, Section, Grid, Status as StatusControl } from '@anticrm/ui'
-  import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
-  import type { Employee, Person } from '@anticrm/contact'
-  import type { Candidate } from '@anticrm/recruit'
-  import Address from './icons/Address.svelte'
-  import Attachment from './icons/Attachment.svelte'
-
-  import { getClient } from '@anticrm/presentation'
-
-  import core from '@anticrm/core'
-  import recruit from '../plugin'
+  import type { Employee } from '@anticrm/contact'
   import contact from '@anticrm/contact'
+  import type { Ref, Space, SpaceWithStates } from '@anticrm/core'
+  import core from '@anticrm/core'
+  import { OK, Severity, Status } from '@anticrm/platform'
+  import { Card, getClient, UserBox } from '@anticrm/presentation'
+  import type { Candidate } from '@anticrm/recruit'
+  import { Grid, Status as StatusControl } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
+  import recruit from '../plugin'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate> // | null = null
@@ -43,11 +37,11 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return candidate === undefined && employee === undefined
   }
 
-  async function createApplication() {
+  async function createApplication () {
     const state = await client.findOne(core.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
@@ -56,25 +50,31 @@
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
-    const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
-      $inc: { sequence: 1 }
-    }, true)
-    const id = await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
+    const incResult = await client.updateDoc(
+      view.class.Sequence,
+      view.space.Sequence,
+      sequence._id,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
       state: state._id,
-      number: incResult.object.sequence,
+      number: incResult.object.sequence
     })
   }
 
-  async function validate(candidate: Ref<Candidate>, space: Ref<Space>) {
+  async function validate (candidate: Ref<Candidate>, space: Ref<Space>) {
     if (candidate === undefined) {
       status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
     } else {
       if (space === undefined) {
         status = new Status(Severity.INFO, recruit.status.VacancyRequired, {})
       } else {
-        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate})
+        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate })
         if (applicants.length > 0) {
-          status = new Status(Severity.ERROR,  recruit.status.ApplicationExists, {})
+          status = new Status(Severity.ERROR, recruit.status.ApplicationExists, {})
         } else {
           status = OK
         }
@@ -83,23 +83,25 @@
   }
 
   $: validate(candidate, _space)
-
 </script>
 
-<Card label={'Create Application'} 
-      okAction={createApplication}
-      canSave={status.severity === Severity.OK}
-      spaceClass={recruit.class.Vacancy}
-      spaceLabel={'Vacancy'}
-      spacePlaceholder={'Select vacancy'}
-      bind:space={_space}
-      on:close={() => { dispatch('close') }}>
-      
+<Card
+  label={'Create Application'}
+  okAction={createApplication}
+  canSave={status.severity === Severity.OK}
+  spaceClass={recruit.class.Vacancy}
+  spaceLabel={'Vacancy'}
+  spacePlaceholder={'Select vacancy'}
+  bind:space={_space}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
-      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
+      <UserBox _class={recruit.class.Candidate} title="Candidate" caption="Candidates" bind:value={candidate} />
     {/if}
-    <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={employee} />
+    <UserBox _class={contact.class.Employee} title="Assigned recruiter" caption="Recruiters" bind:value={employee} />
   </Grid>
 </Card>

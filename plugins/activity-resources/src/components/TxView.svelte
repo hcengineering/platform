@@ -99,7 +99,7 @@
     const ops = {
       client,
       _class: tx.updateTx.objectClass,
-      keys: Object.keys(tx.updateTx.operations).filter(id => !id.startsWith('$')),
+      keys: Object.keys(tx.updateTx.operations).filter((id) => !id.startsWith('$')),
       ignoreMissing: true
     }
     buildModel(ops).then((m) => {

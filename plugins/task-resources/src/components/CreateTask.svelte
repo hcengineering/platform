@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Row, TextArea, IconFile } from '@anticrm/ui'
-  import { UserBox } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
   import type { Person } from '@anticrm/contact'
-  
-  import { getClient } from '@anticrm/presentation'
-
   import contact from '@anticrm/contact'
+  import type { Ref, Space } from '@anticrm/core'
+  import { getClient, UserBox } from '@anticrm/presentation'
+  import { Task } from '@anticrm/task'
+  import { ReferenceInput } from '@anticrm/text-editor'
+  import { DatePicker, Dialog, EditBox, Grid, IconFile, Row, Section, Tabs } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
 
   export let space: Ref<Space>
@@ -35,23 +32,28 @@
 
   const client = getClient()
 
-  function createCandidate() {
-    client.createDoc(task.class.Task, space, {
+  function createCandidate () {
+    client.createDoc<Task>(task.class.Task, space, {
       title,
       assignee,
+      description: ''
     })
   }
 </script>
 
-<Dialog label={'Create Task'} 
-        okLabel={'Create Task'} 
-        okAction={createCandidate}
-        on:close={() => { dispatch('close') }}>
-  <Tabs/>
+<Dialog
+  label={'Create Task'}
+  okLabel={'Create Task'}
+  okAction={createCandidate}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
+  <Tabs />
   <Section icon={IconFile} label={'General Information'}>
     <Grid>
       <Row><EditBox label={'Title *'} placeholder={'The Secret Project'} bind:value={title} focus /></Row>
-      <UserBox _class={contact.class.Person} title='Assignee' caption='Employees' bind:value={assignee} />
+      <UserBox _class={contact.class.Person} title="Assignee" caption="Employees" bind:value={assignee} />
       <DatePicker title={'Pick due date'} />
       <Row><ReferenceInput /></Row>
     </Grid>

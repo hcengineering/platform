@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref, Doc, SortingOrder } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
@@ -21,12 +20,11 @@
   import chunter from '@anticrm/chunter'
 
   export let objectId: Ref<Doc>
-
 </script>
 
-<Table 
+<Table
   _class={chunter.class.Comment}
   config={['']}
-  options={ { limit: 3, sort: { modifiedOn: SortingOrder.Descending }} }
-  query={ { attachedTo: objectId } }
+  options={{ limit: 3, sort: { modifiedOn: SortingOrder.Descending } }}
+  query={{ attachedTo: objectId }}
 />

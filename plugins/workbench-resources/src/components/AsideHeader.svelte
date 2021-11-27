@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IconAdd, IconClose } from '@anticrm/ui'
 
@@ -21,7 +20,7 @@
 
 <div class="header">
   <div class="title"><span>{title}</span></div>
-  <div class="separator"/>
+  <div class="separator" />
   <div class="buttons">
     <div class="button"><IconClose size={'small'} /></div>
     <div class="button"><IconAdd size={'small'} /></div>
@@ -43,13 +42,13 @@
       align-items: center;
       height: 28px;
       padding: 6px 8px;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       background-color: var(--theme-menu-divider);
       span {
         font-weight: 600;
         font-size: 12px;
         text-transform: uppercase;
-        color: #56A4FF;
+        color: #56a4ff;
       }
     }
     .separator {
@@ -62,7 +61,7 @@
       .button {
         width: 24px;
         height: 24px;
-        opacity: .4;
+        opacity: 0.4;
       }
       .button + .button {
         margin-right: 16px;

@@ -15,14 +15,16 @@
   import WiFi from './icons/WiFi.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
-  
+
   let application: AnyComponent | undefined
 
-  onDestroy(location.subscribe((loc) => {
-    if (loc.path[0]) {
-      application = loc.path[0] as AnyComponent
-    }
-  }))
+  onDestroy(
+    location.subscribe((loc) => {
+      if (loc.path[0]) {
+        application = loc.path[0] as AnyComponent
+      }
+    })
+  )
 
   let status = OK
 
@@ -49,7 +51,7 @@
             <FontSizeSelector />
           </div>
           <div class="widget">
-            <WiFi size={'small'}/>
+            <WiFi size={'small'} />
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@
         justify-content: center;
         width: 32px;
         height: 32px;
-        opacity: .6;
+        opacity: 0.6;
       }
     }
 

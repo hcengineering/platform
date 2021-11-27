@@ -14,7 +14,17 @@
 // limitations under the License.
 //
 
-import type { Tx, TxFactory, Doc, TxCreateDoc, DocWithState, State, TxRemoveDoc, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
+import type {
+  Tx,
+  TxFactory,
+  Doc,
+  TxCreateDoc,
+  DocWithState,
+  State,
+  TxRemoveDoc,
+  TxCollectionCUD,
+  AttachedDoc
+} from '@anticrm/core'
 import type { FindAll } from '@anticrm/server-core'
 
 import core, { Hierarchy } from '@anticrm/core'
@@ -23,7 +33,12 @@ import view, { Kanban } from '@anticrm/view'
 /**
  * @public
  */
-export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
+export async function OnDocWithState (
+  tx: Tx,
+  txFactory: TxFactory,
+  findAll: FindAll<Doc>,
+  hierarchy: Hierarchy
+): Promise<Tx[]> {
   if (tx._class === core.class.TxCollectionCUD) {
     tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
   }
@@ -40,8 +55,12 @@ export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: Fin
         throw new Error('OnDocWithState: kanban not found')
       }
       return [
-        txFactory.createTxUpdateDoc(createTx.objectClass, createTx.objectSpace, createTx.objectId, { state: state._id }),
-        txFactory.createTxUpdateDoc(view.class.Kanban, createTx.objectSpace, kanban._id, { $push: { order: createTx.objectId } })
+        txFactory.createTxUpdateDoc(createTx.objectClass, createTx.objectSpace, createTx.objectId, {
+          state: state._id
+        }),
+        txFactory.createTxUpdateDoc(view.class.Kanban, createTx.objectSpace, kanban._id, {
+          $push: { order: createTx.objectId }
+        })
       ]
     }
   } else if (tx._class === core.class.TxRemoveDoc) {
@@ -52,7 +71,9 @@ export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: Fin
         throw new Error('OnDocWithState: kanban not found')
       }
       return [
-        txFactory.createTxUpdateDoc(view.class.Kanban, removeTx.objectSpace, kanban._id, { $pull: { order: removeTx.objectId } })
+        txFactory.createTxUpdateDoc(view.class.Kanban, removeTx.objectSpace, kanban._id, {
+          $pull: { order: removeTx.objectId }
+        })
       ]
     }
   }

@@ -12,22 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
 
-  enum StatusColors {
-    TURQUOISE = '#79C4CE',
-    PURPLE = '#9D92C4',
-    STINKYBLUE = '#72A6CC',
-    GREEN = '#69B46D',
-    ORANGE = '#C97661'
-  }
+  // enum StatusColors {
+  //   TURQUOISE = '#79C4CE',
+  //   PURPLE = '#9D92C4',
+  //   STINKYBLUE = '#72A6CC',
+  //   GREEN = '#69B46D',
+  //   ORANGE = '#C97661'
+  // }
 
   export let label: IntlString
-  export let color: string = StatusColors.TURQUOISE
-
+  export let color: string = '#79C4CE'
 </script>
 
 <div class="label-container" style="background-color: {color}">
@@ -42,6 +40,6 @@
     text-align: center;
     color: #fff;
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
 </style>

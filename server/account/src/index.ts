@@ -14,7 +14,19 @@
 // limitations under the License.
 //
 
-import { getMetadata, Metadata, Plugin, Request, Response, StatusCode, PlatformError, plugin, Severity, Status, unknownStatus } from '@anticrm/platform'
+import {
+  getMetadata,
+  Metadata,
+  Plugin,
+  Request,
+  Response,
+  StatusCode,
+  PlatformError,
+  plugin,
+  Severity,
+  Status,
+  unknownStatus
+} from '@anticrm/platform'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
@@ -41,11 +53,11 @@ const accountPlugin = plugin(accountId, {
     Secret: '' as Metadata<string>
   },
   status: {
-    AccountNotFound: '' as StatusCode<{account: string}>,
-    WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
-    InvalidPassword: '' as StatusCode<{account: string}>,
-    AccountAlreadyExists: '' as StatusCode<{account: string}>,
-    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>,
+    AccountNotFound: '' as StatusCode<{ account: string }>,
+    WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
+    InvalidPassword: '' as StatusCode<{ account: string }>,
+    AccountAlreadyExists: '' as StatusCode<{ account: string }>,
+    WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     Forbidden: '' as StatusCode
   }
 })
@@ -176,7 +188,13 @@ export async function login (db: Db, email: string, password: string, workspace:
 /**
  * @public
  */
-export async function createAccount (db: Db, email: string, password: string, first: string, last: string): Promise<AccountInfo> {
+export async function createAccount (
+  db: Db,
+  email: string,
+  password: string,
+  first: string,
+  last: string
+): Promise<AccountInfo> {
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -219,7 +237,11 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
     .then((e) => e.insertedId.toHexString())
 }
 
-async function getWorkspaceAndAccount (db: Db, email: string, workspace: string): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+async function getWorkspaceAndAccount (
+  db: Db,
+  email: string,
+  workspace: string
+): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
   const wsPromise = await getWorkspace(db, workspace)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
@@ -267,7 +289,9 @@ export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
-  await db.collection<Account>(ACCOUNT_COLLECTION).updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
+  await db
+    .collection<Account>(ACCOUNT_COLLECTION)
+    .updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
 }
 
 /**
@@ -279,7 +303,9 @@ export async function dropAccount (db: Db, email: string): Promise<void> {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
+  await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
 }
 
 function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {

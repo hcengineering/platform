@@ -27,7 +27,7 @@
   const accountId = getMetadata(login.metadata.LoginEmail)
   const client = getClient()
 
-  async function close(res: any): Promise<void> {
+  async function close (res: any): Promise<void> {
     if (res.value) {
       await client.createDoc(setting.class.Integration, accountId as Ref<Space>, {
         type: integrationType._id,
@@ -36,10 +36,9 @@
     }
   }
 
-  async function disconnect(): Promise<void> {
+  async function disconnect (): Promise<void> {
     if (integration !== undefined) {
       // TODO: Need to call proper endpoint, so likely should not be here but in specific integration plugins
-
       // await client.removeDoc(setting.class.Integration, accountId as Ref<Space>, integration._id)
     }
   }

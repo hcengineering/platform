@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, Dialog, ToggleWithLabel, Grid, Section, IconToDo } from '@anticrm/ui'
-
+  import core, { getCurrentAccount } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-
+  import { Dialog, EditBox, Grid, TextArea, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
-  import core from '@anticrm/core'
 
   const dispatch = createEventDispatcher()
 
@@ -29,23 +26,28 @@
 
   const client = getClient()
 
-  function createChannel() {
+  function createChannel () {
     client.createDoc(chunter.class.Channel, core.space.Model, {
       name,
       description,
-      private: false
+      private: false,
+      members: [getCurrentAccount()._id]
     })
   }
 </script>
 
-<Dialog label={chunter.string.CreateChannel} 
-        okLabel={chunter.string.CreateChannel} 
-        okAction={createChannel}
-        on:close={() => { dispatch('close') }}>
+<Dialog
+  label={chunter.string.CreateChannel}
+  okLabel={chunter.string.CreateChannel}
+  okAction={createChannel}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <Grid column={1}>
-    <EditBox label={chunter.string.ChannelName} bind:value={name} focus/>
-    <TextArea label={chunter.string.ChannelDescription} bind:value={description}/>
-    <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription}/>
+    <EditBox label={chunter.string.ChannelName} bind:value={name} focus />
+    <TextArea label={chunter.string.ChannelDescription} bind:value={description} />
+    <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription} />
   </Grid>
   <!-- <Section icon={IconToDo} label={`To Do's`}>
     <CheckBoxList label={'Add a To Do'} editable />

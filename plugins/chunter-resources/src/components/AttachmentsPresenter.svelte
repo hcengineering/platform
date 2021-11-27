@@ -13,30 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
-  import type { Attachment } from '@anticrm/chunter'
-  import { IconFile, Link, Tooltip, IconAttachment } from '@anticrm/ui'
-  import { PDFViewer } from '@anticrm/presentation'
+  import { IconAttachment, Tooltip } from '@anticrm/ui'
   import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: Doc & { attachments?: number }
-
 </script>
 
-<!-- {#if Object.keys(value.attachments).length === 1}
-  <Link label={Object.values(value.attachments)[0].name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: Object.values(value.attachments)[0].file }, 'right') } }/>
-{:else if Object.keys(value.attachments).length > 1}
-  <Tooltip label={'Attachments (' + Object.values(value.attachments).length + ')'} component={AttachmentPopup} props={{ files: value.attachments }}>
-    <Link label={Object.values(value.attachments).length + ' files'} href={'#'} icon={IconFile} />
-  </Tooltip>
-{/if} -->
-
 {#if value.attachments && value.attachments > 0}
-  <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ objectId: value._id }}>
+  <Tooltip
+    label={'Attachments (' + value.attachments + ')'}
+    component={AttachmentPopup}
+    props={{ objectId: value._id }}
+  >
     <div class="sm-tool-icon">
-      <span class="icon"><IconAttachment size="small"/></span>{value.attachments}
+      <span class="icon"><IconAttachment size="small" /></span>{value.attachments}
     </div>
   </Tooltip>
 {/if}

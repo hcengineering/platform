@@ -29,7 +29,7 @@ export * from './rpc'
 addStringsLoader(platformId, async (lang: string) => {
   switch (lang) {
     case 'en':
-      return (await import('./lang/en.json'))
+      return await import('./lang/en.json')
   }
   throw new Error('unsupported language')
 })

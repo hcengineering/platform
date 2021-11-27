@@ -69,21 +69,14 @@ export type Namespace = Record<string, Record<string, string>>
  */
 export const _ID_SEPARATOR = ':'
 
-function identify (
-  result: Record<string, any>,
-  prefix: string,
-  namespace: Record<string, any>
-): Namespace {
+function identify (result: Record<string, any>, prefix: string, namespace: Record<string, any>): Namespace {
   for (const key in namespace) {
     const value = namespace[key]
     if (typeof result[key] === 'string') {
       throw new Error(`'identify' overwrites '${key}'.`)
     }
     const ident = prefix + _ID_SEPARATOR + key
-    result[key] =
-      typeof value === 'string'
-        ? ident
-        : identify(result[key] ?? {}, ident, value)
+    result[key] = typeof value === 'string' ? ident : identify(result[key] ?? {}, ident, value)
   }
   return result
 }
@@ -109,11 +102,7 @@ export function plugin<N extends Namespace> (plugin: Plugin, namespace: N): N {
  * @param merge -
  * @returns
  */
-export function mergeIds<N extends Namespace, M extends Namespace> (
-  plugin: Plugin,
-  ns: N,
-  merge: M
-): N & M {
+export function mergeIds<N extends Namespace, M extends Namespace> (plugin: Plugin, ns: N, merge: M): N & M {
   return identify({ ...ns }, plugin, merge) as N & M
 }
 

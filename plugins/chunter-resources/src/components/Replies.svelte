@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
 
   export let replies: string[] = ['Chen', 'Elon', 'Tim', 'Elon', 'Tim', 'Chen']
 
-  let shown: number = 4
-  let showReplies: Array<string> = []
+  const shown: number = 4
+  const showReplies: Array<string> = []
   for (let i = 0; i < shown; i++) {
     showReplies.push(replies[i])
   }
@@ -42,7 +41,7 @@
     user-select: none;
 
     .counter {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       line-height: 150%;
       color: var(--theme-content-color);
       white-space: nowrap;
@@ -56,7 +55,7 @@
       height: 1rem;
       background-color: var(--theme-bg-color);
       border-radius: 50%;
-      margin-right: -.625rem;
+      margin-right: -0.625rem;
 
       span {
         display: flex;
@@ -64,9 +63,9 @@
         align-items: center;
         width: 1.5rem;
         height: 1.5rem;
-        font-size: .75rem;
+        font-size: 0.75rem;
         font-weight: 500;
-        line-height: .5;
+        line-height: 0.5;
         color: var(--theme-caption-color);
         background-color: var(--theme-bg-selection);
         border-radius: 50%;

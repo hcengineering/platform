@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Doc } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
@@ -21,12 +20,6 @@
   import chunter from '@anticrm/chunter'
 
   export let objectId: Ref<Doc>
-
 </script>
 
-<Table 
-  _class={chunter.class.Attachment}
-  config={['', 'lastModified']}
-  options={ {} }
-  query={ { attachedTo: objectId } }
-/>
+<Table _class={chunter.class.Attachment} config={['', 'lastModified']} options={{}} query={{ attachedTo: objectId }} />

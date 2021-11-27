@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { TelegramMessage } from '@anticrm/telegram'
   import { MessageViewer } from '@anticrm/presentation'
@@ -21,14 +20,28 @@
   export let message: TelegramMessage
   export let name: string | undefined = undefined
 
-  export let colors: string[] = ['#A5D179', '#77C07B', '#60B96E', '#45AEA3', '#46CBDE', '#47BDF6',
-                                 '#5AADF6', '#73A6CD', '#B977CB', '#7C6FCD', '#6F7BC5', '#F28469']
+  export let colors: string[] = [
+    '#A5D179',
+    '#77C07B',
+    '#60B96E',
+    '#45AEA3',
+    '#46CBDE',
+    '#47BDF6',
+    '#5AADF6',
+    '#73A6CD',
+    '#B977CB',
+    '#7C6FCD',
+    '#6F7BC5',
+    '#F28469'
+  ]
 
   function getNameColor (name: string): string {
-    let hash = 0, i, chr;
+    let hash = 0
+    let i
+    let chr
     for (i = 0; i < name.length; i++) {
       chr = name.charCodeAt(i)
-      hash = ((hash << 5) - hash) + chr
+      hash = (hash << 5) - hash + chr
       hash |= 0
     }
     return colors[Math.abs(hash) % colors.length]
@@ -40,22 +53,24 @@
     <div class="name" style="color: {getNameColor(name)}">{formatName(name)}</div>
   {/if}
   <div class="flex">
-    <div class="text"><MessageViewer message={message.content}/></div>
-    <div class="time">{new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric'})}</div>
+    <div class="text"><MessageViewer message={message.content} /></div>
+    <div class="time">
+      {new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
   .message {
     max-width: 66%;
-    border-radius: .75rem;
-    padding: .75rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
     width: fit-content;
     justify-self: flex-end;
-    background-color: rgba(67, 67, 72, .6);
+    background-color: rgba(67, 67, 72, 0.6);
 
     &.incoming {
-      background-color: rgba(67, 67, 72, .3);
+      background-color: rgba(67, 67, 72, 0.3);
       justify-self: flex-start;
     }
 
@@ -68,9 +83,8 @@
       align-self: flex-end;
       margin-left: auto;
       color: var(--theme-content-trans-color);
-      font-size: .75rem;
+      font-size: 0.75rem;
       font-style: italic;
     }
   }
-
 </style>

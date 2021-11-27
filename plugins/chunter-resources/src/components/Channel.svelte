@@ -12,27 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
   import chunter from '../plugin'
 
-  import { default as MessageComponent } from './Message.svelte'
+  import MessageComponent from './Message.svelte'
 
   export let space: Ref<Space> | undefined
 
   let messages: Message[] | undefined
   const query = createQuery()
 
-  $: query.query(chunter.class.Message, { space }, result => { messages = result })
+  $: query.query(chunter.class.Message, { space }, (result) => {
+    messages = result
+  })
 </script>
 
 <div class="flex-col container">
   {#if messages}
     {#each messages as message}
-      <MessageComponent {message}/>
+      <MessageComponent {message} />
     {/each}
   {/if}
 </div>

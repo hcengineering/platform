@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import ActivityStatus from './ActivityStatus.svelte'
   import Applications from './Applications.svelte'
   import NavHeader from './NavHeader.svelte'
 
   import { onDestroy } from 'svelte'
-  
+
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
   import { setClient, Avatar } from '@anticrm/presentation'
@@ -28,7 +27,7 @@
   import Navigator from './Navigator.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
-  
+
   import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
@@ -44,28 +43,30 @@
   let createItemDialog: AnyComponent | undefined
   let navigatorModel: NavigatorModel | undefined
 
-  onDestroy(location.subscribe(async (loc) => {
-    currentApp = loc.path[1] as Ref<Application>
-    navigatorModel = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]?.navigatorModel
-    let currentFolder = loc.path[2] as Ref<Space>
-    specialComponent = getSpecialComponent(currentFolder)
-    if (!specialComponent) {
-      currentSpace = currentFolder
-      const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
-      if (space) {
-        const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
-        const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
-        currentView = view.view
-        createItemDialog = currentView.createItemDialog
-      } else {
-        currentView = undefined
-        createItemDialog = undefined
+  onDestroy(
+    location.subscribe(async (loc) => {
+      currentApp = loc.path[1] as Ref<Application>
+      navigatorModel = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]?.navigatorModel
+      const currentFolder = loc.path[2] as Ref<Space>
+      specialComponent = getSpecialComponent(currentFolder)
+      if (!specialComponent) {
+        currentSpace = currentFolder
+        const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
+        if (space) {
+          const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
+          const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
+          currentView = view.view
+          createItemDialog = currentView.createItemDialog
+        } else {
+          currentView = undefined
+          createItemDialog = undefined
+        }
       }
-    }
-  }))
+    })
+  )
 
   function getSpecialComponent (id: string): AnyComponent | undefined {
-    let special = navigatorModel?.specials?.find((x) => x.id === id)
+    const special = navigatorModel?.specials?.find((x) => x.id === id)
     return special?.component
   }
 </script>
@@ -73,27 +74,34 @@
 {#if client}
   <svg class="mask">
     <clipPath id="notify-normal">
-      <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"/>
+      <path
+        d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"
+      />
     </clipPath>
     <clipPath id="notify-small">
-      <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z"/>
+      <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z" />
     </clipPath>
   </svg>
   <div class="container">
     <div class="panel-app">
-      <ActivityStatus status="active"/>
-      <Applications active={currentApp}/>
+      <ActivityStatus status="active" />
+      <Applications active={currentApp} />
       <div class="flex-center" style="min-height: 6.25rem;">
-        <div class="cursor-pointer" on:click={(el) => { showPopup(AccountPopup, { }, 'account') }}>
+        <div
+          class="cursor-pointer"
+          on:click={(el) => {
+            showPopup(AccountPopup, {}, 'account')
+          }}
+        >
           <Avatar size={'medium'} />
         </div>
       </div>
     </div>
     {#if navigator}
-    <div class="panel-navigator">
-      <NavHeader label={'Chat'} action={() => {}} />
-      <Navigator model={navigatorModel} />
-    </div>
+      <div class="panel-navigator">
+        <NavHeader label={'Chat'} action={() => {}} />
+        <Navigator model={navigatorModel} />
+      </div>
     {/if}
     <div class="panel-component">
       {#if specialComponent}

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
@@ -20,13 +19,12 @@
 
   export let icon: Asset | AnySvelteComponent
   export let label: IntlString
-
 </script>
 
 <div class="label-container">
   <div class="icon">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size={'large'}/>
+    {#if typeof icon === 'string'}
+      <Icon {icon} size={'large'} />
     {:else}
       <svelte:component this={icon} size={'large'} />
     {/if}
@@ -41,9 +39,9 @@
     font-weight: 500;
     font-size: 16px;
     color: var(--theme-caption-color);
-    
+
     .icon {
-      margin-right: .5em;
+      margin-right: 0.5em;
       width: 24px;
       height: 24px;
     }

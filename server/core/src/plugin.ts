@@ -26,8 +26,8 @@ import type { Trigger } from './types'
 export const serverCoreId = 'server-core' as Plugin
 
 /**
-  * @public
-  */
+ * @public
+ */
 const serverCore = plugin(serverCoreId, {
   class: {
     Trigger: '' as Ref<Class<Trigger>>

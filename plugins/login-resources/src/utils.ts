@@ -18,7 +18,7 @@ import type { Request, Response } from '@anticrm/platform'
 
 import login from '@anticrm/login'
 
-export interface LoginInfo { 
+export interface LoginInfo {
   token: string
   endpoint: string
   email: string

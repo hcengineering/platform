@@ -13,7 +13,19 @@
 // limitations under the License.
 //
 
-import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage, TxResult } from '@anticrm/core'
+import type {
+  Tx,
+  Storage,
+  Ref,
+  Doc,
+  Class,
+  DocumentQuery,
+  FindResult,
+  FindOptions,
+  TxHander,
+  ServerStorage,
+  TxResult
+} from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
@@ -23,7 +35,11 @@ import { protoSerialize, protoDeserialize } from '@anticrm/platform'
 class ServerStorageWrapper implements Storage {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
 
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
     return this.storage.findAll(c, q, o)
   }
@@ -31,7 +47,9 @@ class ServerStorageWrapper implements Storage {
   async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
     const [result, derived] = await this.storage.tx(_tx)
-    for (const tx of derived) { this.handler(tx) }
+    for (const tx of derived) {
+      this.handler(tx)
+    }
     return result
   }
 }

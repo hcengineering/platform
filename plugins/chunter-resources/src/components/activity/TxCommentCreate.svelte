@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Comment } from "@anticrm/chunter"
-  import type { TxCreateDoc } from "@anticrm/core"
+  import type { Comment } from '@anticrm/chunter'
+  import type { TxCreateDoc } from '@anticrm/core'
   import { MessageViewer } from '@anticrm/presentation'
 
   export let tx: TxCreateDoc<Comment>
 </script>
 
 <div class="text">
-  <MessageViewer message={tx.attributes.message}/>
+  <MessageViewer message={tx.attributes.message} />
 </div>
 
 <style lang="scss">

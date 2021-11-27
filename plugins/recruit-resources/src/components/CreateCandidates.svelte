@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
@@ -25,15 +24,15 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let description: string = ''
+  const description: string = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return name === ''
   }
 
   const client = getClient()
 
-  function createCandidates() {
+  function createCandidates () {
     client.createDoc(recruit.class.Candidates, core.space.Model, {
       name,
       description,
@@ -44,13 +43,21 @@
 </script>
 
 <SpaceCreateCard
-  label={recruit.string.CreateCandidates} 
+  label={recruit.string.CreateCandidates}
   okAction={createCandidates}
-  canSave={name ? true : false}
-  on:close={() => { dispatch('close') }}
+  canSave={!!name}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.CandidatesName} icon={IconFolder} bind:value={name} placeholder={'Talent Pool'} focus/>
-    <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription}/>
+    <EditBox
+      label={recruit.string.CandidatesName}
+      icon={IconFolder}
+      bind:value={name}
+      placeholder={'Talent Pool'}
+      focus
+    />
+    <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription} />
   </Grid>
 </SpaceCreateCard>

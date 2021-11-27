@@ -42,24 +42,39 @@ export class TTelegramMessage extends TDoc implements TelegramMessage {
 export function createModel (builder: Builder): void {
   builder.createModel(TTelegramMessage)
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Telegram' as IntlString,
-    icon: contact.icon.Telegram,
-    placeholder: '@appleseed',
-    presenter: telegram.component.Chat
-  }, contact.channelProvider.Telegram)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Telegram' as IntlString,
+      icon: contact.icon.Telegram,
+      placeholder: '@appleseed',
+      presenter: telegram.component.Chat
+    },
+    contact.channelProvider.Telegram
+  )
 
-  builder.createDoc(setting.class.IntegrationType, core.space.Model, {
-    label: 'Telegram',
-    description: 'Use telegram integration' as IntlString,
-    icon: telegram.component.IconTelegram,
-    createComponent: telegram.component.Connect
-  }, telegram.integrationType.Telegram)
+  builder.createDoc(
+    setting.class.IntegrationType,
+    core.space.Model,
+    {
+      label: 'Telegram',
+      description: 'Use telegram integration' as IntlString,
+      icon: telegram.component.IconTelegram,
+      createComponent: telegram.component.Connect
+    },
+    telegram.integrationType.Telegram
+  )
 
-  builder.createDoc(core.class.Space, core.space.Model, {
-    name: 'Telegram',
-    description: 'Space for all telegram messages',
-    private: false,
-    members: []
-  }, telegram.space.Telegram)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      name: 'Telegram',
+      description: 'Space for all telegram messages',
+      private: false,
+      members: []
+    },
+    telegram.space.Telegram
+  )
 }

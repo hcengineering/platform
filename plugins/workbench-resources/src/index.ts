@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Resources } from '@anticrm/platform'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 
 /*!
@@ -20,7 +21,7 @@ import WorkbenchApp from './components/WorkbenchApp.svelte'
  * © 2020 Anticrm Platform Contributors. All Rights Reserved.
  * Licensed under the Eclipse Public License, Version 2.0
  */
-export default async () => ({
+export default async (): Promise<Resources> => ({
   component: {
     WorkbenchApp
   }

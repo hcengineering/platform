@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import { Icon, Tooltip } from '@anticrm/ui'
@@ -25,11 +24,11 @@
 </script>
 
 <Tooltip {label}>
-  <button class="app" class:selected={selected} on:click={action}>
+  <button class="app" class:selected on:click={action}>
     <div class="icon-container" class:noty={notify}>
-      <Icon icon={icon} size={'large'}/>
+      <Icon {icon} size={'large'} />
     </div>
-    {#if notify}<div class="marker"/>{/if}
+    {#if notify}<div class="marker" />{/if}
   </button>
 </Tooltip>
 
@@ -41,7 +40,7 @@
     height: 3.25rem;
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
     outline: none;
 
@@ -53,29 +52,39 @@
       height: 3.25rem;
       color: var(--theme-content-trans-color);
 
-      .normal-font &.noty { clip-path: url(#notify-normal); }
-      .small-font &.noty { clip-path: url(#notify-small); }
+      .normal-font &.noty {
+        clip-path: url(#notify-normal);
+      }
+      .small-font &.noty {
+        clip-path: url(#notify-small);
+      }
     }
 
-    &:hover .icon-container { color: var(--theme-caption-color); }
+    &:hover .icon-container {
+      color: var(--theme-caption-color);
+    }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
-      .icon-container { color: var(--theme-caption-color); }
+      .icon-container {
+        color: var(--theme-caption-color);
+      }
     }
 
     &.selected {
       background-color: var(--theme-menu-selection);
-      .icon-container { color: var(--theme-caption-color); }
+      .icon-container {
+        color: var(--theme-caption-color);
+      }
     }
   }
 
   .marker {
     position: absolute;
-    top: .75rem;
-    right: .75rem;
-    width: .5rem;
-    height: .5rem;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
     background-color: var(--highlight-red);
   }

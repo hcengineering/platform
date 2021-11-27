@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
@@ -43,7 +42,7 @@
     background: var(--theme-msgbox-bg);
     border-radius: 1.25rem;
     user-select: none;
-    box-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
+    box-shadow: 0px 20px 70px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
 
     .title {
@@ -63,7 +62,7 @@
       direction: rtl;
       justify-content: start;
       align-items: center;
-      column-gap: .5rem;
+      column-gap: 0.5rem;
       // mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
       // overflow: hidden;
     }

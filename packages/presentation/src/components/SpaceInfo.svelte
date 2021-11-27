@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IconFolder } from '@anticrm/ui'
 
@@ -41,11 +40,11 @@
     height: 2.25rem;
   }
   .user-info {
-    margin-left: .5rem;
+    margin-left: 0.5rem;
     color: var(--theme-content-accent-color);
 
     .subtitle {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-dark-color);
     }
     .title {

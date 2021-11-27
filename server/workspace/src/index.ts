@@ -27,7 +27,12 @@ const txes = (txJson as any).default as Tx[]
 /**
  * @public
  */
-export async function createWorkspace (mongoUrl: string, dbName: string, clientUrl: string, minio: Client): Promise<void> {
+export async function createWorkspace (
+  mongoUrl: string,
+  dbName: string,
+  clientUrl: string,
+  minio: Client
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -37,12 +42,12 @@ export async function createWorkspace (mongoUrl: string, dbName: string, clientU
     await db.dropDatabase()
 
     console.log('creating model...')
-    const model = txes.filter(tx => tx.objectSpace === core.space.Model)
+    const model = txes.filter((tx) => tx.objectSpace === core.space.Model)
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const data = txes.filter(tx => tx.objectSpace !== core.space.Model)
+    const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
     const token = encode({ email: 'anticrm@hc.engineering', workspace: dbName }, 'secret')
     const url = new URL(`/${token}`, clientUrl)
     const contrib = await createContributingClient(url.href)
@@ -52,7 +57,9 @@ export async function createWorkspace (mongoUrl: string, dbName: string, clientU
     contrib.close()
 
     console.log('create minio bucket')
-    if (!await minio.bucketExists(dbName)) { await minio.makeBucket(dbName, 'k8s') }
+    if (!(await minio.bucketExists(dbName))) {
+      await minio.makeBucket(dbName, 'k8s')
+    }
   } finally {
     await client.close()
   }

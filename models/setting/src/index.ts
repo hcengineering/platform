@@ -42,46 +42,51 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 export function createModel (builder: Builder): void {
   builder.createModel(TIntegration, TIntegrationType)
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: setting.string.Setting,
-    icon: setting.icon.Setting,
-    hidden: true,
-    navigatorModel: {
-      specials: [
-        {
-          id: 'setting',
-          label: setting.string.Setting,
-          icon: setting.icon.Setting,
-          component: setting.component.Setting
-        },
-        {
-          id: 'integrations',
-          label: setting.string.Integrations,
-          icon: setting.icon.Integrations,
-          component: setting.component.Integrations
-        },
-        {
-          id: 'support',
-          label: setting.string.Support,
-          icon: setting.icon.Support,
-          component: setting.component.Support
-        },
-        {
-          id: 'privacy',
-          label: setting.string.Privacy,
-          icon: setting.icon.Privacy,
-          component: setting.component.Privacy
-        },
-        {
-          id: 'terms',
-          label: setting.string.Terms,
-          icon: setting.icon.Terms,
-          component: setting.component.Terms
-        }
-      ],
-      spaces: []
-    }
-  }, setting.ids.SettingApp)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: setting.string.Setting,
+      icon: setting.icon.Setting,
+      hidden: true,
+      navigatorModel: {
+        specials: [
+          {
+            id: 'setting',
+            label: setting.string.Setting,
+            icon: setting.icon.Setting,
+            component: setting.component.Setting
+          },
+          {
+            id: 'integrations',
+            label: setting.string.Integrations,
+            icon: setting.icon.Integrations,
+            component: setting.component.Integrations
+          },
+          {
+            id: 'support',
+            label: setting.string.Support,
+            icon: setting.icon.Support,
+            component: setting.component.Support
+          },
+          {
+            id: 'privacy',
+            label: setting.string.Privacy,
+            icon: setting.icon.Privacy,
+            component: setting.component.Privacy
+          },
+          {
+            id: 'terms',
+            label: setting.string.Terms,
+            icon: setting.icon.Terms,
+            component: setting.component.Terms
+          }
+        ],
+        spaces: []
+      }
+    },
+    setting.ids.SettingApp
+  )
 
   builder.createDoc(setting.class.IntegrationType, core.space.Model, {
     label: 'Email',

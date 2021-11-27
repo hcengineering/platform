@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import { translate } from '@anticrm/platform'
   import { ticker } from '..'
   import ui from '../plugin'
@@ -29,7 +27,7 @@
 
   let time: string = ''
 
-  async function formatTime(now: number) {
+  async function formatTime (now: number) {
     let passed = now - value
     if (passed < 0) passed = 0
     if (passed < HOUR) {
@@ -42,7 +40,6 @@
   }
 
   $: formatTime($ticker)
-
 </script>
 
 <span style="white-space: nowrap;">{time}</span>

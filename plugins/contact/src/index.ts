@@ -55,14 +55,12 @@ export interface Person extends Contact {
 /**
  * @public
  */
-export interface Organization extends Contact {
-}
+export interface Organization extends Contact {}
 
 /**
  * @public
  */
-export interface Employee extends Person {
-}
+export interface Employee extends Person {}
 
 /**
  * @public

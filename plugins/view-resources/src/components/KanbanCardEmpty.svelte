@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
@@ -34,21 +33,23 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: .75rem 1.5rem;
+    padding: 0.75rem 1.5rem;
     color: var(--theme-content-dark-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px dotted var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     cursor: pointer;
 
     .icon {
-      margin-bottom: .25rem;
-      opacity: .4;
+      margin-bottom: 0.25rem;
+      opacity: 0.4;
     }
 
     &:hover {
       color: var(--theme-caption-color);
-      .icon { opacity: 1; }
+      .icon {
+        opacity: 1;
+      }
     }
   }
 </style>

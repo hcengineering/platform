@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
@@ -27,7 +26,7 @@
 
 <div class="icon-button icon-{size}" class:selected class:transparent class:primary on:click on:mousemove>
   <div class="content">
-    {#if typeof (icon) === 'string'}
+    {#if typeof icon === 'string'}
       <Icon {icon} size={'small'} />
     {:else}
       <svelte:component this={icon} size={'small'} />
@@ -47,7 +46,7 @@
 
     .content {
       transform-origin: center center;
-      transform: scale(.75);
+      transform: scale(0.75);
       pointer-events: none;
     }
     &:hover {
@@ -58,19 +57,29 @@
       color: var(--theme-content-accent-color);
       background-color: var(--theme-bg-accent-color);
     }
-    &.selected { background-color: var(--theme-button-bg-hovered); }
-    &.transparent { background-color: rgba(31, 31, 37, .3); }
+    &.selected {
+      background-color: var(--theme-button-bg-hovered);
+    }
+    &.transparent {
+      background-color: rgba(31, 31, 37, 0.3);
+    }
     &.primary {
       background-color: var(--primary-button-enabled);
       border-color: var(--primary-button-border);
-      &:hover { background-color: var(--primary-button-hovered); }
-      &:active { background-color: var(--primary-button-pressed); }
+      &:hover {
+        background-color: var(--primary-button-hovered);
+      }
+      &:active {
+        background-color: var(--primary-button-pressed);
+      }
     }
   }
   .icon-small {
     width: 1.5rem;
     height: 1.5rem;
-    .content { transform: scale(.6); }
+    .content {
+      transform: scale(0.6);
+    }
   }
   .icon-medium {
     width: 1.75rem;
@@ -79,11 +88,15 @@
   .icon-large {
     width: 2rem;
     height: 2rem;
-    .content { transform: scale(.9); }
+    .content {
+      transform: scale(0.9);
+    }
   }
   .icon-x-large {
     width: 2.25rem;
     height: 2.25rem;
-    .content { transform: none; }
+    .content {
+      transform: none;
+    }
   }
 </style>

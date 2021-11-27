@@ -33,7 +33,7 @@
 
   const client = getClient()
 
-  async function updateSelected(value: Ref<Space>) {
+  async function updateSelected (value: Ref<Space>) {
     selected = await client.findOne(_class, { _id: value })
   }
 
@@ -47,7 +47,8 @@
   })
 </script>
 
-<div class="flex-col spaceselect-container"
+<div
+  class="flex-col spaceselect-container"
   bind:this={btn}
   on:click|preventDefault={() => {
     showPopup(SpacesPopup, { _class }, btn, (result) => {
@@ -58,7 +59,7 @@
   }}
 >
   <div class="overflow-label label"><Label {label} /></div>
-  <div class="flex-row-center space" class:selected={selected}>
+  <div class="flex-row-center space" class:selected>
     <span class="icon"><IconFolder size={'small'} /></span>
     <span class="overflow-label">
       {#if selected}
@@ -74,20 +75,22 @@
   .spaceselect-container {
     cursor: pointer;
     .label {
-      margin-bottom: .125rem;
+      margin-bottom: 0.125rem;
       font-weight: 500;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-accent-color);
     }
     .space {
-      opacity: .3;
+      opacity: 0.3;
 
       .icon {
         transform-origin: center center;
-        transform: scale(.75);
-        margin-right: .25rem;
+        transform: scale(0.75);
+        margin-right: 0.25rem;
       }
-      &.selected { opacity: 1; }
+      &.selected {
+        opacity: 1;
+      }
     }
   }
 </style>

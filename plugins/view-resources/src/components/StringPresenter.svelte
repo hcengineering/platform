@@ -13,11 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
-export let value: string
-
+  export let value: string
 </script>
 
 {value}

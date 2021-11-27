@@ -223,5 +223,4 @@ export interface DocWithState extends Doc {
 /**
  * @public
  */
-export interface SpaceWithStates extends Space {
-}
+export interface SpaceWithStates extends Space {}

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Class, Doc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
@@ -41,7 +40,7 @@
     editor = getResource(editorMixin.editor)
   }
 
-  function onChange(value: any) {
+  function onChange (value: any) {
     const doc = object as Doc
     client.updateDoc(_class, doc.space, doc._id, { [key]: value })
   }
@@ -51,7 +50,14 @@
   {#await editor}
     ...
   {:then instance}
-    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/>
+    <svelte:component
+      this={instance}
+      label={attribute?.label}
+      placeholder={attribute?.label}
+      {maxWidth}
+      bind:value={object[key]}
+      {onChange}
+      {focus}
+    />
   {/await}
 {/if}
-

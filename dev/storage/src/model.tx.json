@@ -1548,10 +1548,7 @@
           "assignee": "contact:class:Employee"
         }
       },
-      "config": [
-        "title",
-        "$lookup.assignee"
-      ]
+      "config": ["title", "$lookup.assignee"]
     }
   },
   {
@@ -1998,12 +1995,7 @@
           "state": "core:class:State"
         }
       },
-      "config": [
-        "$lookup.attachedTo",
-        "$lookup.state",
-        "$lookup.attachedTo.city",
-        "$lookup.attachedTo.channels"
-      ]
+      "config": ["$lookup.attachedTo", "$lookup.state", "$lookup.attachedTo.city", "$lookup.attachedTo.channels"]
     }
   },
   {

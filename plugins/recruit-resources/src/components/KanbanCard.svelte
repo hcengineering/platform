@@ -12,23 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { Avatar } from '@anticrm/presentation'
-  import { showPopup, Label, IconThread, ActionIcon, IconMoreH, IconFile } from '@anticrm/ui'
-  import type { WithLookup } from '@anticrm/core'
-  import type { Applicant } from '@anticrm/recruit'
-
-  import EditCandidate from './EditCandidate.svelte'
-
   import { AttachmentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
+  import type { WithLookup } from '@anticrm/core'
+  import { Avatar } from '@anticrm/presentation'
+  import type { Applicant } from '@anticrm/recruit'
+  import { ActionIcon, IconMoreH, IconThread, Label, showPopup } from '@anticrm/ui'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
+  import EditCandidate from './EditCandidate.svelte'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
-  function showCandidate() {
+  function showCandidate () {
     showPopup(EditCandidate, { _id: object.attachedTo }, 'full')
   }
 </script>
@@ -38,7 +35,9 @@
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
-        <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
+        <div class="fs-title over-underline" on:click={showCandidate}>
+          <Label label={formatName(object.$lookup?.attachedTo?.name)} />
+        </div>
         <div class="small-text">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
     </div>
@@ -66,8 +65,8 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, .06);
-    border-radius: .75rem;
+    background-color: rgba(222, 222, 240, 0.06);
+    border-radius: 0.75rem;
     user-select: none;
     backdrop-filter: blur(10px);
 
@@ -76,6 +75,8 @@
       justify-content: space-between;
       margin-bottom: 1rem;
     }
-    &.draggable { cursor: grab; }
+    &.draggable {
+      cursor: grab;
+    }
   }
 </style>

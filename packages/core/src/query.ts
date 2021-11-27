@@ -16,7 +16,7 @@ export function findProperty (objects: Doc[], propertyKey: string, value: any): 
   const result: Doc[] = []
   for (const object of objects) {
     const val = getNestedValue(propertyKey, object)
-    if ((val === value) || isArrayValueCheck(val, value)) {
+    if (val === value || isArrayValueCheck(val, value)) {
       result.push(object)
     }
   }

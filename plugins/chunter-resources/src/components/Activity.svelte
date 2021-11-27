@@ -13,34 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import type { Doc, Ref, Space } from '@anticrm/core'
+  import type { Comment } from '@anticrm/chunter'
+  import { ReferenceInput } from '@anticrm/text-editor'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { ScrollBox, Grid } from '@anticrm/ui'
 
-import type { Doc, Ref, Space } from '@anticrm/core'
-import type { Comment } from '@anticrm/chunter'
-import { ReferenceInput } from '@anticrm/text-editor'
-import { createQuery, getClient } from '@anticrm/presentation'
-import { ScrollBox, Grid } from '@anticrm/ui'
+  import chunter from '@anticrm/chunter'
+  import CommentPresenter from './CommentPresenter.svelte'
 
-import chunter from '@anticrm/chunter'
-import CommentPresenter from './CommentPresenter.svelte'
+  export let object: Doc
+  export let space: Ref<Space>
 
-export let object: Doc
-export let space: Ref<Space>
-  
-let comments: Comment[]
+  let comments: Comment[]
 
-const client = getClient()
-const query = createQuery()
-$: query.query(chunter.class.Comment, { attachedTo: object._id }, result => { comments = result })
-
-function onMessage(event: CustomEvent) {
-  client.createDoc(chunter.class.Comment, space, {
-    attachedTo: object._id,
-    message: event.detail
+  const client = getClient()
+  const query = createQuery()
+  $: query.query(chunter.class.Comment, { attachedTo: object._id }, (result) => {
+    comments = result
   })
-  console.log(event.detail)
-}
+
+  function onMessage (event: CustomEvent) {
+    client.createDoc(chunter.class.Comment, space, {
+      attachedTo: object._id,
+      message: event.detail
+    })
+    console.log(event.detail)
+  }
 </script>
 
 <div class="container">
@@ -55,7 +55,7 @@ function onMessage(event: CustomEvent) {
       {/if}
     </ScrollBox>
   </div>
-  <ReferenceInput on:message={onMessage}/>
+  <ReferenceInput on:message={onMessage} />
 </div>
 
 <style lang="scss">

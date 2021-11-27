@@ -13,79 +13,85 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import type { Connection } from '@anticrm/client'
+  import type { Class, Doc, Obj, Ref, Space, WithLookup } from '@anticrm/core'
+  import core from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import { Component, EditWithIcon, Icon, IconSearch } from '@anticrm/ui'
+  import type { Viewlet } from '@anticrm/view'
+  import view from '@anticrm/view'
 
-import type { Ref, Class ,Doc, FindOptions, Space, WithLookup, Obj } from '@anticrm/core'
-import type { Connection } from '@anticrm/client'
-import type { Viewlet } from '@anticrm/view'
+  export let _class: Ref<Class<Doc>>
+  export let space: Ref<Space>
 
-import { getClient } from '@anticrm/presentation'
+  const client = getClient()
 
-import { Icon, Component, EditWithIcon, IconSearch } from '@anticrm/ui'
+  type ViewletConfig = WithLookup<Viewlet>
 
-import view from '@anticrm/view'
-import core from '@anticrm/core'
+  async function getViewlets (client: Connection, _class: Ref<Class<Obj>>): Promise<ViewletConfig[]> {
+    return await client.findAll(
+      view.class.Viewlet,
+      { attachTo: _class },
+      {
+        lookup: {
+          descriptor: core.class.Class
+        }
+      }
+    )
+  }
 
-export let _class: Ref<Class<Doc>>
-export let space: Ref<Space>
+  let selected = 0
 
-const client = getClient()
+  function onSpace (space: Ref<Space>) {
+    selected = 0
+  }
 
-type ViewletConfig = WithLookup<Viewlet>
+  $: onSpace(space)
 
-async function getViewlets(client: Connection, _class: Ref<Class<Obj>>): Promise<ViewletConfig[]> {
-  return await client.findAll(view.class.Viewlet, { attachTo: _class }, { lookup: { 
-    descriptor: core.class.Class
-  }})
-}
+  let search = ''
 
-let selected = 0
-
-function onSpace(space: Ref<Space>) {
-  selected = 0
-}
-
-$: onSpace(space)
-
-let search = ''
-
-function onSearch(ev: Event) {
-  search = (ev.target as HTMLInputElement).value
-}
-
+  function onSearch (ev: Event) {
+    search = (ev.target as HTMLInputElement).value
+  }
 </script>
 
 {#await getViewlets(client, _class)}
- ...
+  ...
 {:then viewlets}
-
   {#if viewlets.length > 0}
     <div class="toolbar">
-      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} on:change={onSearch}/>
+      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} on:change={onSearch} />
 
       <div class="flex">
         {#each viewlets as viewlet, i}
-          <div class="btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
-            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+          <div
+            class="btn"
+            class:selected={selected === i}
+            on:click={() => {
+              selected = i
+            }}
+          >
+            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'} /></div>
           </div>
         {/each}
       </div>
-      
     </div>
   {/if}
 
   <div class="container">
-    <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
-      _class,
-      space,
-      open: viewlets[selected].open,
-      options: viewlets[selected].options, 
-      config: viewlets[selected].config,
-      search
-    } } />
+    <Component
+      is={viewlets[selected].$lookup?.descriptor?.component}
+      props={{
+        _class,
+        space,
+        open: viewlets[selected].open,
+        options: viewlets[selected].options,
+        config: viewlets[selected].config,
+        search
+      }}
+    />
   </div>
-
 {/await}
 
 <style lang="scss">
@@ -103,10 +109,12 @@ function onSearch(ev: Event) {
       width: 2.5rem;
       height: 2.5rem;
       background-color: transparent;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       cursor: pointer;
 
-      .icon { opacity: .3; }
+      .icon {
+        opacity: 0.3;
+      }
       &:hover .icon {
         opacity: 1;
       }
@@ -114,7 +122,7 @@ function onSearch(ev: Event) {
         background-color: var(--theme-button-bg-enabled);
         cursor: default;
         &:hover .icon {
-          opacity: .8;
+          opacity: 0.8;
         }
       }
     }

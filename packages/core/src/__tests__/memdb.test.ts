@@ -70,7 +70,12 @@ describe('memdb', () => {
     const result2 = await client.findAll(core.class.Space, {})
     expect(result2).toHaveLength(3)
 
-    await client.createDoc(core.class.Space, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [] })
+    await client.createDoc(core.class.Space, core.space.Model, {
+      private: false,
+      name: 'NewSpace',
+      description: '',
+      members: []
+    })
     const result3 = await client.findAll(core.class.Space, {})
     expect(result3).toHaveLength(4)
   })
@@ -78,7 +83,7 @@ describe('memdb', () => {
   it('should query model', async () => {
     const { model } = await createModel()
     const result = await model.findAll(core.class.Class, {})
-    const names = result.map(d => d._id)
+    const names = result.map((d) => d._id)
     expect(names.includes(core.class.Class)).toBe(true)
     const result2 = await model.findAll(core.class.Class, { _id: undefined })
     expect(result2.length).toBe(0)

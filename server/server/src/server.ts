@@ -14,7 +14,20 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx, TxResult } from '@anticrm/core'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  ModelDb,
+  Ref,
+  Tx,
+  TxResult
+} from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { createElasticAdapter } from '@anticrm/elastic'
@@ -28,8 +41,17 @@ import { serverViewId } from '@anticrm/server-view'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
-  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> { return [] }
-  async tx (tx: Tx): Promise<TxResult> { return {} }
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
+    return []
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    return {}
+  }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -44,33 +66,37 @@ export function start (dbUrl: string, fullTextUrl: string, port: number, host?: 
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
   addLocation(serverViewId, () => import('@anticrm/server-view-resources'))
 
-  return startJsonRpc((workspace: string) => {
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'MongoTx',
-        [DOMAIN_MODEL]: 'Null'
-      },
-      defaultAdapter: 'Mongo',
-      adapters: {
-        MongoTx: {
-          factory: createMongoTxAdapter,
-          url: dbUrl
+  return startJsonRpc(
+    (workspace: string) => {
+      const conf: DbConfiguration = {
+        domains: {
+          [DOMAIN_TX]: 'MongoTx',
+          [DOMAIN_MODEL]: 'Null'
         },
-        Mongo: {
-          factory: createMongoAdapter,
-          url: dbUrl
+        defaultAdapter: 'Mongo',
+        adapters: {
+          MongoTx: {
+            factory: createMongoTxAdapter,
+            url: dbUrl
+          },
+          Mongo: {
+            factory: createMongoAdapter,
+            url: dbUrl
+          },
+          Null: {
+            factory: createNullAdapter,
+            url: ''
+          }
         },
-        Null: {
-          factory: createNullAdapter,
-          url: ''
-        }
-      },
-      fulltextAdapter: {
-        factory: createElasticAdapter,
-        url: fullTextUrl
-      },
-      workspace
-    }
-    return createServerStorage(conf)
-  }, port, host)
+        fulltextAdapter: {
+          factory: createElasticAdapter,
+          url: fullTextUrl
+        },
+        workspace
+      }
+      return createServerStorage(conf)
+    },
+    port,
+    host
+  )
 }

@@ -26,7 +26,16 @@
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
   {#if password}
-    <input type="password" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
+    <input
+      type="password"
+      class:nolabel={!label}
+      {id}
+      bind:value
+      on:change
+      on:keyup
+      autocomplete="off"
+      placeholder=" "
+    />
   {:else}
     <input type="text" class:nolabel={!label} {id} bind:value on:change on:keyup autocomplete="off" placeholder=" " />
   {/if}
@@ -45,7 +54,7 @@
     height: 3.25rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     &:focus-within {
       background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);
@@ -53,10 +62,10 @@
     input {
       height: 3.25rem;
       margin: 0;
-      padding: .875rem 1.25rem 0px;
+      padding: 0.875rem 1.25rem 0px;
       background-color: transparent;
       border: none;
-      border-radius: .75rem;
+      border-radius: 0.75rem;
     }
     .nolabel {
       padding-top: 0;
@@ -66,16 +75,16 @@
       position: absolute;
       top: 1rem;
       left: 1.25rem;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-caption-color);
-      opacity: .3;
+      opacity: 0.3;
       transition: top 200ms;
       pointer-events: none;
       user-select: none;
     }
     input:focus + .label,
     input:not(:placeholder-shown) + .label {
-      top: .5rem;
+      top: 0.5rem;
     }
   }
   .error {

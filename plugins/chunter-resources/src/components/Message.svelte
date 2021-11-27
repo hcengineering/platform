@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
@@ -29,29 +28,33 @@
 
   let name: string
   let time: string
-  let reactions: boolean = false
-  let replies: boolean = false
-  let thread: boolean = false
+  const reactions: boolean = false
+  const replies: boolean = false
+  const thread: boolean = false
 </script>
 
 <div class="container">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
     <div class="header">{name}<span>{time}</span></div>
-    <div class="text"><MessageViewer message={message.content}/></div>
+    <div class="text"><MessageViewer message={message.content} /></div>
     {#if (reactions || replies) && !thread}
       <div class="footer">
-        <div>{#if reactions}<Reactions/>{/if}</div>
-        <div>{#if replies}<Replies/>{/if}</div>
+        <div>
+          {#if reactions}<Reactions />{/if}
+        </div>
+        <div>
+          {#if replies}<Replies />{/if}
+        </div>
       </div>
     {/if}
   </div>
   {#if !thread}
     <div class="buttons">
-      <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div>
-      <div class="tool"><ActionIcon icon={Emoji} size={'medium'}/></div>
+      <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} /></div>
+      <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
+      <div class="tool"><ActionIcon icon={Share} size={'medium'} /></div>
+      <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
     </div>
   {/if}
 </div>
@@ -63,7 +66,9 @@
     margin-bottom: 2rem;
     z-index: 1;
 
-    .avatar { min-width: 2.25rem; }
+    .avatar {
+      min-width: 2.25rem;
+    }
 
     .message {
       display: flex;
@@ -76,14 +81,14 @@
         font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
-        margin-bottom: .25rem;
+        margin-bottom: 0.25rem;
 
         span {
-          margin-left: .5rem;
+          margin-left: 0.5rem;
           font-weight: 400;
-          font-size: .875rem;
+          font-size: 0.875rem;
           line-height: 1.125rem;
-          opacity: .4;
+          opacity: 0.4;
         }
       }
       .text {
@@ -94,7 +99,7 @@
         justify-content: space-between;
         align-items: center;
         height: 2rem;
-        margin-top: .5rem;
+        margin-top: 0.5rem;
         user-select: none;
 
         div + div {
@@ -106,14 +111,14 @@
     .buttons {
       position: absolute;
       visibility: hidden;
-      top: -.5rem;
-      right: -.5rem;
+      top: -0.5rem;
+      right: -0.5rem;
       display: flex;
       flex-direction: row-reverse;
       user-select: none;
 
       .tool + .tool {
-        margin-right: .5rem;
+        margin-right: 0.5rem;
       }
     }
 
@@ -132,7 +137,7 @@
       height: calc(100% + 2.5rem);
       background-color: var(--theme-button-bg-enabled);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
       z-index: -1;
     }
   }

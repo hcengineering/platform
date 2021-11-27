@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { TelegramMessage } from '@anticrm/telegram'
 
   export let message: TelegramMessage
-
 </script>
 
 <div class="message">
@@ -27,11 +25,10 @@
 <style lang="scss">
   .message {
     background-color: var(--theme-menu-divider);
-    border-radius: .75rem;
-    padding: .5rem;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
     width: fit-content;
     justify-self: center;
     text-transform: capitalize;
   }
-
 </style>

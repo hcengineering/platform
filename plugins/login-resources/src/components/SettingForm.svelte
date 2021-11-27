@@ -86,7 +86,9 @@
 
     status = new Status(Severity.INFO, 0, 'Соединяюсь с сервером...')
 
-    status = await (await loginService).saveSetting(
+    status = await (
+      await loginService
+    ).saveSetting(
       object.oldPassword,
       changePassword ? object.newPassword : '',
       secondFactorEnabled,
@@ -114,7 +116,8 @@
         name="newPassword"
         placeholder="Новый пароль"
         type="password"
-        bind:value={object.newPassword} />
+        bind:value={object.newPassword}
+      />
     </div>
     <div class="field">
       <input
@@ -122,7 +125,8 @@
         name="newPasswordConfirm"
         placeholder="Подтверждение пароля"
         type="password"
-        bind:value={object.newPasswordConfirm} />
+        bind:value={object.newPasswordConfirm}
+      />
     </div>
   {/if}
   {#await secondFactorCheck then value}
@@ -136,7 +140,8 @@
           name="clientSecret"
           placeholder="Секретный код"
           type="text"
-          bind:value={object.clientSecret} />
+          bind:value={object.clientSecret}
+        />
       </div>
       {#if src}
         <div>
@@ -149,7 +154,8 @@
           name="secondFactorCode"
           placeholder="Код подтверждения"
           type="text"
-          bind:value={object.secondFactorCode} />
+          bind:value={object.secondFactorCode}
+        />
       </div>
     {/if}
   {/await}

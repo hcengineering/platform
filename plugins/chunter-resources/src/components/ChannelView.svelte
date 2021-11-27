@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
   import chunter from '../plugin'
@@ -25,7 +24,7 @@
 
   const client = getClient()
 
-  function onMessage(event: CustomEvent) {
+  function onMessage (event: CustomEvent) {
     client.createDoc(chunter.class.Message, space, {
       content: event.detail
     })
@@ -36,7 +35,7 @@
   <Channel {space} />
 </div>
 <div class="reference">
-  <ReferenceInput on:message={onMessage}/>
+  <ReferenceInput on:message={onMessage} />
 </div>
 
 <style lang="scss">

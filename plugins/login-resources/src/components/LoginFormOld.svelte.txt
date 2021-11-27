@@ -49,12 +49,9 @@
   async function doLogin () {
     status = new Status(Severity.INFO, 0, 'Соединяюсь с сервером...')
 
-    status = await (await loginService).doLogin(
-      object.username,
-      object.password,
-      object.workspace,
-      object.secondFactorCode
-    )
+    status = await (
+      await loginService
+    ).doLogin(object.username, object.password, object.workspace, object.secondFactorCode)
 
     if (status.code === AuthStatusCodes.CLIENT_VALIDATE_REQUIRED) {
       needSecondFactor = true
@@ -90,11 +87,11 @@
   })
 
   async function navigateApp (): Promise<void> {
-    (await loginService).navigateApp()
+    ;(await loginService).navigateApp()
   }
 
   async function logout (): Promise<void> {
-    (await loginService).doLogout()
+    ;(await loginService).doLogout()
     loginActive = false
   }
 
@@ -127,7 +124,8 @@
       {fields}
       {object}
       caption="Login into system"
-      {status} />
+      {status}
+    />
   {/if}
 {/await}
 

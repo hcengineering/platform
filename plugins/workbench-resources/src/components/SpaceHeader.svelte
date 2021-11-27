@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, ActionIcon, Button, IconMoreH, IconAdd } from '@anticrm/ui'
+  import core from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
+  import { ActionIcon, Button, IconAdd, IconMoreH, showPopup } from '@anticrm/ui'
+  import { classIcon } from '../utils'
   import Header from './Header.svelte'
   import Star from './icons/Star.svelte'
-
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
-  import { classIcon } from '../utils'
-  import core from '@anticrm/core'
 
   export let space: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -33,9 +30,11 @@
   const query = createQuery()
   let data: Space | undefined
 
-  $: query.query(core.class.Space, { _id: space }, result => { data = result[0] })
+  $: query.query(core.class.Space, { _id: space }, (result) => {
+    data = result[0]
+  })
 
-  function showCreateDialog(ev: Event) {
+  function showCreateDialog (ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space }, ev.target as HTMLElement)
   }
 </script>
@@ -44,11 +43,11 @@
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
-      <Button label="Create" primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button label="Create" primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
-    <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
-    <ActionIcon label={'Create'} icon={IconAdd} size={'small'}/>
-    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/>
+    <ActionIcon label={'Favorite'} icon={Star} size={'small'} />
+    <ActionIcon label={'Create'} icon={IconAdd} size={'small'} />
+    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />
   {/if}
 </div>
 
@@ -58,7 +57,7 @@
     grid-template-columns: auto;
     grid-auto-flow: column;
     grid-auto-columns: min-content;
-    gap: .75rem;
+    gap: 0.75rem;
     align-items: center;
     padding: 0 2rem 0 2.5rem;
     height: 4.5rem;

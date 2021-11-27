@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Person } from '@anticrm/contact'
   import { formatName } from '@anticrm/contact'
@@ -25,7 +24,6 @@
 
   export let user: Person
   export let message: IMessage
-
 </script>
 
 <div class="flex-nowrap">
@@ -44,16 +42,16 @@
     margin-right: 1.25rem;
 
     .header {
-      margin-bottom: .25rem;
+      margin-bottom: 0.25rem;
       font-weight: 500;
       font-size: 1rem;
       line-height: 150%;
       color: var(--theme-caption-color);
 
       span {
-        margin-left: .5rem;
+        margin-left: 0.5rem;
         font-weight: 400;
-        font-size: .875rem;
+        font-size: 0.875rem;
         color: var(--theme-content-dark-color);
       }
     }

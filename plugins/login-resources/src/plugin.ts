@@ -14,11 +14,9 @@
 // limitations under the License.
 */
 
-import type { StatusCode, IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-
 import login, { loginId } from '@anticrm/login'
+import type { IntlString, StatusCode } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
 
 export default mergeIds(loginId, login, {
   status: {

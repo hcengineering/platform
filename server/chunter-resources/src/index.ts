@@ -57,7 +57,9 @@ export async function OnMessage (tx: Tx, txFactory: TxFactory): Promise<Tx[]> {
     if (createTx.objectClass === chunter.class.Message) {
       const content = createTx.attributes.content
       const backlinks = getBacklinks(createTx.objectId, content)
-      return backlinks.map(backlink => txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink))
+      return backlinks.map((backlink) =>
+        txFactory.createTxCreateDoc(chunter.class.Backlink, chunter.space.Backlinks, backlink)
+      )
     }
   }
   return []

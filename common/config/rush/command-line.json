@@ -228,6 +228,26 @@
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
+    {
+      "commandKind": "bulk",
+      "name": "lint",
+      "summary": "Lint all files",
+      "description": "Perform linting",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "format",
+      "summary": "Format all files",
+      "description": "Perform formatting of all files",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
   ],
 
   /**

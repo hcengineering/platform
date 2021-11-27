@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
@@ -36,7 +35,7 @@
 
   $: style = maxWidth ? `max-width: ${maxWidth};` : ''
 
-  function computeSize(t: EventTarget | null) {
+  function computeSize (t: EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
@@ -53,14 +52,19 @@
   })
 </script>
 
-<div class="container" on:click={() => { input.focus() }}>
-  <div class="hidden-text" bind:this={text}></div>
-  {#if label}<div class="label"><Label label={label}/></div>{/if}
+<div
+  class="container"
+  on:click={() => {
+    input.focus()
+  }}
+>
+  <div class="hidden-text" bind:this={text} />
+  {#if label}<div class="label"><Label {label} /></div>{/if}
   <div class="flex-row-center">
     {#if icon}
       <div class="icon">
-        {#if typeof (icon) === 'string'}
-          <Icon {icon} size={'small'}/>
+        {#if typeof icon === 'string'}
+          <Icon {icon} size={'small'} />
         {:else}
           <svelte:component this={icon} size={'small'} />
         {/if}
@@ -68,9 +72,25 @@
     {/if}
     <div class="wrap">
       {#if password}
-        <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+        <input
+          bind:this={input}
+          type="password"
+          bind:value
+          {placeholder}
+          {style}
+          on:input={(ev) => ev.target && computeSize(ev.target)}
+          on:change
+        />
       {:else}
-        <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+        <input
+          bind:this={input}
+          type="text"
+          bind:value
+          {placeholder}
+          {style}
+          on:input={(ev) => ev.target && computeSize(ev.target)}
+          on:change
+        />
       {/if}
     </div>
   </div>
@@ -86,7 +106,8 @@
   .wrap {
     position: relative;
 
-    &::after, &::before {
+    &::after,
+    &::before {
       position: absolute;
       width: 6px;
       height: 6px;
@@ -102,12 +123,15 @@
       right: -4px;
       clip-path: path('M0,6h6v-6h-1v5h-5z');
     }
-    &:focus-within::before, &:focus-within::after { content: ''; }
+    &:focus-within::before,
+    &:focus-within::after {
+      content: '';
+    }
   }
 
   .label {
-    margin-bottom: .25rem;
-    font-size: .75rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: var(--theme-content-accent-color);
     pointer-events: none;
@@ -115,9 +139,9 @@
   }
 
   .icon {
-    margin-right: .25rem;
+    margin-right: 0.25rem;
     transform-origin: center center;
-    transform: scale(.75);
+    transform: scale(0.75);
     color: var(--theme-content-trans-color);
   }
 
@@ -128,7 +152,9 @@
     border: none;
     border-radius: 2px;
 
-    &::placeholder { color: var(--theme-content-dark-color); }
+    &::placeholder {
+      color: var(--theme-content-dark-color);
+    }
 
     &::-webkit-contacts-auto-fill-button,
     &::-webkit-credentials-auto-fill-button {

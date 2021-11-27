@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Collapsed from '../icons/Collapsed.svelte'
   import Expanded from '../icons/Expanded.svelte'
@@ -36,7 +35,9 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="container" class:selected
+<div
+  class="container"
+  class:selected
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
@@ -44,17 +45,22 @@
 >
   <div class="icon" class:sub={!node}>
     {#if icon}
-      <Icon {icon} size={'small'}/>
-    {:else}
-      {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
-    {/if}
+      <Icon {icon} size={'small'} />
+    {:else if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
   </div>
   <span class="label" class:sub={node}>
-    {#if label}<Label {label}/>{:else}{title}{/if}
+    {#if label}<Label {label} />{:else}{title}{/if}
   </span>
   {#each actions as action}
     <div class="tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(ev) => { action.action(_id, ev) }} />
+      <ActionIcon
+        label={action.label}
+        icon={action.icon}
+        size={'small'}
+        action={(ev) => {
+          action.action(_id, ev)
+        }}
+      />
     </div>
   {/each}
   {#if notifications > 0 && collapsed}
@@ -62,7 +68,7 @@
   {/if}
 </div>
 {#if node && !icon && !collapsed}
-  <div class="dropbox"><slot/></div>
+  <div class="dropbox"><slot /></div>
 {/if}
 
 <style lang="scss">
@@ -71,19 +77,21 @@
     align-items: center;
     margin: 0 1rem;
     height: 2.25rem;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     user-select: none;
     cursor: pointer;
 
     .icon {
       min-width: 1rem;
       color: var(--theme-content-trans-color);
-      margin: 0 1.125rem 0 .625rem;
-      &.sub { margin: 0 .5rem 0 2.75rem }
+      margin: 0 1.125rem 0 0.625rem;
+      &.sub {
+        margin: 0 0.5rem 0 2.75rem;
+      }
     }
     .label {
       flex-grow: 1;
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -96,13 +104,13 @@
       }
     }
     .tool {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       visibility: hidden;
     }
     .counter {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       font-weight: 600;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-caption-color);
     }
 
@@ -112,15 +120,17 @@
         visibility: visible;
       }
     }
-    
+
     &.selected {
       background-color: var(--theme-menu-selection);
-      &:hover { background-color: var(--theme-button-bg-enabled); }
+      &:hover {
+        background-color: var(--theme-button-bg-enabled);
+      }
     }
   }
 
   .dropbox {
     height: auto;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 </style>

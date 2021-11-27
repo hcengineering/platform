@@ -50,7 +50,9 @@ let currentAccount: Account
  * @public
  * @returns
  */
-export function getCurrentAccount (): Account { return currentAccount }
+export function getCurrentAccount (): Account {
+  return currentAccount
+}
 
 /**
  * @public

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { EditBox, Grid, Dropdown } from '@anticrm/ui'
@@ -28,23 +27,17 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let description: string = ''
+  const description: string = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return name === ''
   }
 
   const client = getClient()
 
-  const colors = [
-    '#7C6FCD',
-    '#6F7BC5',
-    '#A5D179',
-    '#77C07B',
-    '#F28469'
-  ]
+  const colors = ['#7C6FCD', '#6F7BC5', '#A5D179', '#77C07B', '#F28469']
 
-  async function createVacancy() {
+  async function createVacancy () {
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
       name,
       description,
@@ -87,14 +80,23 @@
   }
 </script>
 
-<SpaceCreateCard 
-  label={recruit.string.CreateVacancy} 
+<SpaceCreateCard
+  label={recruit.string.CreateVacancy}
   okAction={createVacancy}
-  canSave={name ? true : false}
-  on:close={() => { dispatch('close') }}
+  canSave={!!name}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth="39rem" focus/>
+    <EditBox
+      label={recruit.string.VacancyName}
+      bind:value={name}
+      icon={Vacancy}
+      placeholder="Software Engineer"
+      maxWidth="39rem"
+      focus
+    />
     <Dropdown icon={Company} label={'Company *'} placeholder={'Company'} />
   </Grid>
 </SpaceCreateCard>

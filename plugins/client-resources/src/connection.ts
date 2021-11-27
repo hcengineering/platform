@@ -14,7 +14,18 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander, TxResult } from '@anticrm/core'
+import type {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Ref,
+  Storage,
+  Tx,
+  TxHander,
+  TxResult
+} from '@anticrm/core'
 import type { ReqId } from '@anticrm/platform'
 import { serialize, readResponse } from '@anticrm/platform'
 
@@ -50,7 +61,9 @@ class Connection implements Storage {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
         const promise = this.requests.get(resp.id)
-        if (promise === undefined) { throw new Error(`unknown response id: ${resp.id}`) }
+        if (promise === undefined) {
+          throw new Error(`unknown response id: ${resp.id}`)
+        }
         this.requests.delete(resp.id)
         if (resp.error !== undefined) {
           promise.reject(resp.error)
@@ -79,19 +92,27 @@ class Connection implements Storage {
   }
 
   private async sendRequest (method: string, ...params: any[]): Promise<any> {
-    if (this.websocket === null) { this.websocket = await this.openConnection() }
+    if (this.websocket === null) {
+      this.websocket = await this.openConnection()
+    }
     const id = this.lastId++
-    this.websocket.send(serialize({
-      method,
-      params,
-      id
-    }))
+    this.websocket.send(
+      serialize({
+        method,
+        params,
+        id
+      })
+    )
     const promise = new DeferredPromise()
     this.requests.set(id, promise)
     return await promise.promise
   }
 
-  findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return this.sendRequest('findAll', _class, query, options)
   }
 

@@ -24,9 +24,9 @@
 </script>
 
 <div class="editbox" style={width ? 'width: ' + width : ''}>
-  <input type="text" bind:value {placeholder} on:change/>
+  <input type="text" bind:value {placeholder} on:change />
   <div class="icon">
-    {#if typeof (icon) === 'string'}
+    {#if typeof icon === 'string'}
       <Icon {icon} size={'small'} />
     {:else}
       <svelte:component this={icon} size={'small'} />
@@ -43,7 +43,7 @@
     height: 2.5rem;
     background-color: var(--theme-bg-focused-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 
     &:focus-within {
       border-color: var(--theme-bg-focused-border);
@@ -51,9 +51,9 @@
     input {
       width: 100%;
       height: 2.5rem;
-      padding-left: .75rem;
+      padding-left: 0.75rem;
       border: none;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
 
       &::placeholder {
         color: var(--theme-content-trans-color);
@@ -61,8 +61,8 @@
     }
 
     .icon {
-      margin: .75rem;
-      opacity: .3;
+      margin: 0.75rem;
+      opacity: 0.3;
     }
   }
 </style>

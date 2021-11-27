@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
   const fill: string = 'currentColor'
 </script>
 
 <svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <path d="M15.5,7.5H1.9l5-5L6.2,1.7L0.3,7.6L0,8l0.4,0.4l5.9,5.9L7,13.6l-5-5h13.5c0.3,0,0.5-0.2,0.5-0.5C16,7.8,15.8,7.5,15.5,7.5z"/>
+  <path
+    d="M15.5,7.5H1.9l5-5L6.2,1.7L0.3,7.6L0,8l0.4,0.4l5.9,5.9L7,13.6l-5-5h13.5c0.3,0,0.5-0.2,0.5-0.5C16,7.8,15.8,7.5,15.5,7.5z"
+  />
 </svg>

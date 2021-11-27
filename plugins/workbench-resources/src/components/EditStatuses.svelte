@@ -13,21 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Ref, SpaceWithStates, State, Class, Obj } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
-  import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
-  import type { Kanban } from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
-  import Close from './icons/Close.svelte'
-  import Circles from './icons/Circles.svelte'
-  import Status from './icons/Status.svelte'
-  import ColorsPopup from './ColorsPopup.svelte'
-  import StatusesPopup from './StatusesPopup.svelte'
-
+  import type { Class, Obj, Ref, SpaceWithStates, State } from '@anticrm/core'
   import core from '@anticrm/core'
+  import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
+  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import type { Kanban } from '@anticrm/view'
   import view from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
+  import ColorsPopup from './ColorsPopup.svelte'
+  import Circles from './icons/Circles.svelte'
+  import Close from './icons/Close.svelte'
+  import Status from './icons/Status.svelte'
+  import StatusesPopup from './StatusesPopup.svelte'
 
   export let _id: Ref<SpaceWithStates>
   export let spaceClass: Ref<Class<Obj>>
@@ -35,31 +33,40 @@
   let kanban: Kanban | undefined
 
   let states: State[] = []
-  let elements: HTMLElement[] = []
+  const elements: HTMLElement[] = []
 
   const client = getClient()
 
-  function sort(states: State[]): State[] {
-    if (kanban === undefined || states.length === 0) { return [] }
+  function sort (states: State[]): State[] {
+    if (kanban === undefined || states.length === 0) {
+      return []
+    }
     console.log(states)
-    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
+    const map = states.reduce((map, state) => {
+      map.set(state._id, state)
+      return map
+    }, new Map<Ref<State>, State>())
     console.log(kanban.states)
-    const x = kanban.states.map(id => map.get(id) as State )
+    const x = kanban.states.map((id) => map.get(id) as State)
     return x
   }
 
   const kanbanQuery = createQuery()
-  $: kanbanQuery.query(view.class.Kanban, { attachedTo: _id }, result => { kanban = result[0] })
+  $: kanbanQuery.query(view.class.Kanban, { attachedTo: _id }, (result) => {
+    kanban = result[0]
+  })
 
   const query = createQuery()
-  $: query.query(core.class.State, { _id: { $in: kanban?.states ?? [] } }, result => { states = sort(result) })
+  $: query.query(core.class.State, { _id: { $in: kanban?.states ?? [] } }, (result) => {
+    states = sort(result)
+  })
 
   let selected: number | undefined
   let dragState: Ref<State>
   let dragStateInitialPosition: number
 
-  function dragswap(ev: MouseEvent, i: number): boolean {
-    let s = selected as number
+  function dragswap (ev: MouseEvent, i: number): boolean {
+    const s = selected as number
     if (i < s) {
       return ev.offsetY < elements[i].offsetHeight / 2
     } else if (i > s) {
@@ -68,8 +75,8 @@
     return false
   }
 
-  function dragover(ev: MouseEvent, i: number) {
-    let s = selected as number
+  function dragover (ev: MouseEvent, i: number) {
+    const s = selected as number
     if (dragswap(ev, i)) {
       const dragover = states[i]
       const dragging = states[s]
@@ -79,7 +86,7 @@
     }
   }
 
-  async function move(to: number) {
+  async function move (to: number) {
     client.updateDoc(view.class.Kanban, _id, (kanban as Kanban)._id, {
       $move: {
         states: {
@@ -121,42 +128,56 @@
       <Label label={'ACTIVE STATUSES'} />
       <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
     </div>
-    <div class="vScroll"><div class="h-full">
-      {#each states as state, i}
-        {#if state}
-          <div bind:this={elements[i]} class="flex-between states" draggable={true}
-            on:dragover|preventDefault={(ev) => {
-              dragover(ev, i)
-            }}
-            on:drop|preventDefault={() => {
-              move(i)
-            }}
-            on:dragstart={() => {
-              dragStateInitialPosition = selected = i
-              dragState = states[i]._id
-            }}
-            on:dragend={() => {
-              selected = undefined
-            }}
-          >
-            <div class="bar"><Circles /></div>
-            <div class="color" style="background-color: {state.color}"
-              on:click={() => {
-                showPopup(ColorsPopup, {}, elements[i], (result) => { if (result) state.color = result })
+    <div class="vScroll">
+      <div class="h-full">
+        {#each states as state, i}
+          {#if state}
+            <div
+              bind:this={elements[i]}
+              class="flex-between states"
+              draggable={true}
+              on:dragover|preventDefault={(ev) => {
+                dragover(ev, i)
               }}
-            />
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-            <div class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(StatusesPopup, { kanban, state, spaceClass }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+              on:drop|preventDefault={() => {
+                move(i)
+              }}
+              on:dragstart={() => {
+                dragStateInitialPosition = selected = i
+                dragState = states[i]._id
+              }}
+              on:dragend={() => {
+                selected = undefined
               }}
             >
-              <IconMoreH size={'medium'} />
+              <div class="bar"><Circles /></div>
+              <div
+                class="color"
+                style="background-color: {state.color}"
+                on:click={() => {
+                  showPopup(ColorsPopup, {}, elements[i], (result) => {
+                    if (result) state.color = result
+                  })
+                }}
+              />
+              <div class="flex-grow caption-color">
+                <AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title" />
+              </div>
+              <div
+                class="tool hover-trans"
+                on:click={(ev) => {
+                  showPopup(StatusesPopup, { kanban, state, spaceClass }, ev.target, (result) => {
+                    if (result) console.log('StatusesPopup:', result)
+                  })
+                }}
+              >
+                <IconMoreH size={'medium'} />
+              </div>
             </div>
-          </div>
-        {/if}
-      {/each}
-    </div></div>
+          {/if}
+        {/each}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -175,8 +196,8 @@
       min-height: 4.5rem;
 
       .icon {
-        margin-right: .5rem;
-        opacity: .6;
+        margin-right: 0.5rem;
+        opacity: 0.6;
       }
       .title {
         font-weight: 500;
@@ -184,7 +205,7 @@
         color: var(--theme-caption-color);
       }
       .subtitle {
-        font-size: .75rem;
+        font-size: 0.75rem;
         color: var(--theme-content-dark-color);
       }
       .tool {
@@ -192,39 +213,45 @@
         cursor: pointer;
       }
     }
-    .content { margin: 1rem 2.5rem 1rem 2.5rem; }
+    .content {
+      margin: 1rem 2.5rem 1rem 2.5rem;
+    }
   }
 
   .states {
-    padding: .625rem 1rem;
+    padding: 0.625rem 1rem;
     color: #fff;
-    background-color: rgba(67, 67, 72, .3);
+    background-color: rgba(67, 67, 72, 0.3);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     user-select: none;
 
     &-header {
       margin-bottom: 1rem;
       font-weight: 600;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-trans-color);
     }
 
     .bar {
-      margin-right: .375rem;
-      width: .375rem;
+      margin-right: 0.375rem;
+      width: 0.375rem;
       height: 1rem;
-      opacity: .4;
+      opacity: 0.4;
       cursor: grabbing;
     }
     .color {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       width: 1rem;
       height: 1rem;
-      border-radius: .25rem;
+      border-radius: 0.25rem;
       cursor: pointer;
     }
-    .tool { margin-left: 1rem; }
+    .tool {
+      margin-left: 1rem;
+    }
   }
-  .states + .states { margin-top: .5rem; }
+  .states + .states {
+    margin-top: 0.5rem;
+  }
 </style>

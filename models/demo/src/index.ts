@@ -24,51 +24,81 @@ export function createDemo (builder: Builder): void {
   const rosamund = generateId()
   const account: Ref<EmployeeAccount> = generateId()
 
-  builder.createDoc(contact.class.Employee, contact.space.Employee, {
-    name: 'Chen,Rosamund',
-    city: 'Mountain View',
-    channels: []
-  }, rosamund, account)
+  builder.createDoc(
+    contact.class.Employee,
+    contact.space.Employee,
+    {
+      name: 'Chen,Rosamund',
+      city: 'Mountain View',
+      channels: []
+    },
+    rosamund,
+    account
+  )
 
-  builder.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
-    email: 'rosamund@hc.engineering',
-    employee: rosamund as Ref<Employee>,
-    name: 'Chen,Rosamund'
-  }, account, account)
+  builder.createDoc<EmployeeAccount>(
+    contact.class.EmployeeAccount,
+    core.space.Model,
+    {
+      email: 'rosamund@hc.engineering',
+      employee: rosamund as Ref<Employee>,
+      name: 'Chen,Rosamund'
+    },
+    account,
+    account
+  )
 
-  builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    name: 'P.,Andrey',
-    title: 'Chief Architect',
-    city: 'Monte Carlo',
-    channels: [
-      {
-        provider: contact.channelProvider.Email,
-        value: 'andrey@hc.engineering'
-      }
-    ]
-  }, undefined, account)
+  builder.createDoc(
+    recruit.class.Candidate,
+    recruit.space.CandidatesPublic,
+    {
+      name: 'P.,Andrey',
+      title: 'Chief Architect',
+      city: 'Monte Carlo',
+      channels: [
+        {
+          provider: contact.channelProvider.Email,
+          value: 'andrey@hc.engineering'
+        }
+      ]
+    },
+    undefined,
+    account
+  )
 
-  builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    name: 'M.,Marina',
-    title: 'Chief Designer',
-    city: 'Los Angeles',
-    channels: [
-      {
-        provider: contact.channelProvider.Email,
-        value: 'marina@hc.engineering'
-      }
-    ]
-  }, undefined, account)
+  builder.createDoc(
+    recruit.class.Candidate,
+    recruit.space.CandidatesPublic,
+    {
+      name: 'M.,Marina',
+      title: 'Chief Designer',
+      city: 'Los Angeles',
+      channels: [
+        {
+          provider: contact.channelProvider.Email,
+          value: 'marina@hc.engineering'
+        }
+      ]
+    },
+    undefined,
+    account
+  )
 
-  builder.createDoc(recruit.class.Candidate, recruit.space.CandidatesPublic, {
-    name: 'P.,Alex',
-    title: 'Frontend Engineer',
-    city: 'Krasnodar, Russia',
-    channels: [
-      {
-        provider: contact.channelProvider.Email,
-        value: 'alex@hc.engineering'
-      }
-    ]
-  }, undefined, account)
+  builder.createDoc(
+    recruit.class.Candidate,
+    recruit.space.CandidatesPublic,
+    {
+      name: 'P.,Alex',
+      title: 'Frontend Engineer',
+      city: 'Krasnodar, Russia',
+      channels: [
+        {
+          provider: contact.channelProvider.Email,
+          value: 'alex@hc.engineering'
+        }
+      ]
+    },
+    undefined,
+    account
+  )
 }

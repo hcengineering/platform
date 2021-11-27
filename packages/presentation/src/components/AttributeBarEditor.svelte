@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Ref, Class, Doc } from '@anticrm/core'
+  import type { Doc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
-  import { getClient } from '../utils'
   import view from '@anticrm/view'
+  import { getClient } from '../utils'
 
   // export let _class: Ref<Class<Doc>>
   export let key: string
@@ -44,8 +43,10 @@
     editor = getResource(editorMixin.editor)
   }
 
-  function onChange(value: any) {
-    client.updateDoc(_class, object.space, object._id, { [key]: value }, true).then(result => console.log('UPDATE RESULT', result))
+  function onChange (value: any) {
+    client
+      .updateDoc(_class, object.space, object._id, { [key]: value }, true)
+      .then((result) => console.log('UPDATE RESULT', result))
   }
 </script>
 
@@ -53,24 +54,41 @@
   {#await editor}
     ...
   {:then instance}
-
     {#if attribute.icon}
       <div class="flex-row-center">
         <CircleButton icon={attribute.icon} size={'large'} />
         {#if !minimize}
           <div class="flex-col with-icon">
             <Label label={attribute.label} />
-            <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/></div>
+            <div class="value">
+              <svelte:component
+                this={instance}
+                label={attribute?.label}
+                placeholder={attribute?.label}
+                {maxWidth}
+                bind:value={object[key]}
+                {onChange}
+                {focus}
+              />
+            </div>
           </div>
         {/if}
       </div>
     {:else}
       <div class="flex-col">
         <Label label={attribute.label} />
-        <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/></div>
+        <div class="value">
+          <svelte:component
+            this={instance}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            {maxWidth}
+            bind:value={object[key]}
+            {onChange}
+            {focus}
+          />
+        </div>
       </div>
     {/if}
-
   {/await}
 {/if}
-

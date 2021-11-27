@@ -14,7 +14,18 @@
 // limitations under the License.
 //
 
-import core, { Hierarchy, AnyAttribute, Storage, DocumentQuery, FindOptions, FindResult, TxProcessor, TxMixin, TxPutBag, TxRemoveDoc } from '@anticrm/core'
+import core, {
+  Hierarchy,
+  AnyAttribute,
+  Storage,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  TxProcessor,
+  TxMixin,
+  TxPutBag,
+  TxRemoveDoc
+} from '@anticrm/core'
 import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj, TxResult } from '@anticrm/core'
 
 import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
@@ -47,11 +58,15 @@ export class FullTextIndex extends TxProcessor implements Storage {
     throw new Error('Method not implemented.')
   }
 
-  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     console.log('search', query)
     const docs = await this.adapter.search(query)
     console.log(docs)
-    const ids = docs.map(doc => (doc.attachedTo ?? doc.id) as Ref<T>)
+    const ids = docs.map((doc) => (doc.attachedTo ?? doc.id) as Ref<T>)
     return await this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
   }
 
@@ -80,7 +95,11 @@ export class FullTextIndex extends TxProcessor implements Storage {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     if (attributes === undefined) return {}
     const doc = TxProcessor.createDoc2Doc(tx)
-    const content = attributes.map(attr => ((doc as any)[attr.name] !== null && (doc as any)[attr.name] !== undefined) ? (doc as any)[attr.name].toString() : '') // temporary: getFullTextAttributes should provide string attrs only
+    const content = attributes.map((attr) =>
+      (doc as any)[attr.name] !== null && (doc as any)[attr.name] !== undefined
+        ? (doc as any)[attr.name].toString()
+        : ''
+    ) // temporary: getFullTextAttributes should provide string attrs only
     const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,

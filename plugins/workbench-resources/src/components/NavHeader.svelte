@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { ActionIcon, IconMoreH } from '@anticrm/ui'
@@ -23,7 +22,7 @@
 
 <div class="container">
   <span class="overflow-label label">{label}</span>
-  <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} {action}/>
+  <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} {action} />
 </div>
 
 <style lang="scss">

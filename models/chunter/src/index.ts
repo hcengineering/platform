@@ -83,11 +83,16 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Chat' as IntlString,
-    icon: view.icon.Table,
-    component: chunter.component.ChannelView
-  }, chunter.viewlet.Chat)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Chat' as IntlString,
+      icon: view.icon.Table,
+      component: chunter.component.ChannelView
+    },
+    chunter.viewlet.Chat
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: chunter.class.Message,
@@ -132,23 +137,33 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.CommentPresenter
   })
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Comment,
-    icon: chunter.icon.Chunter,
-    txClass: core.class.TxCreateDoc,
-    component: chunter.activity.TxCommentCreate,
-    label: chunter.string.LeftComment,
-    display: 'content'
-  }, chunter.ids.TxCommentCreate)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Comment,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxCommentCreate,
+      label: chunter.string.LeftComment,
+      display: 'content'
+    },
+    chunter.ids.TxCommentCreate
+  )
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Attachment,
-    icon: chunter.icon.Attachment,
-    txClass: core.class.TxCreateDoc,
-    component: chunter.activity.TxAttachmentCreate,
-    label: chunter.string.AddAttachment,
-    display: 'emphasized'
-  }, chunter.ids.TxAttachmentCreate)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Attachment,
+      icon: chunter.icon.Attachment,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxAttachmentCreate,
+      label: chunter.string.AddAttachment,
+      display: 'emphasized'
+    },
+    chunter.ids.TxAttachmentCreate
+  )
 }
 
 export default chunter

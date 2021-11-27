@@ -29,11 +29,18 @@
   export let width: string | undefined = undefined
 </script>
 
-<button class="button {size}" class:primary class:transparent disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button
+  class="button {size}"
+  class:primary
+  class:transparent
+  disabled={disabled || loading}
+  style={width ? 'width: ' + width : ''}
+  on:click
+>
   {#if icon && !loading}
     <div class="icon">
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} size={'small'}/>
+      {#if typeof icon === 'string'}
+        <Icon {icon} size={'small'} />
       {:else}
         <svelte:component this={icon} size={'small'} />
       {/if}
@@ -47,8 +54,12 @@
 </button>
 
 <style lang="scss">
-  .small { height: 2.5rem; }
-  .medium { height: 3rem; }
+  .small {
+    height: 2.5rem;
+  }
+  .medium {
+    height: 3rem;
+  }
   .button {
     padding: 0 1.5rem;
     font-weight: 600;
@@ -58,9 +69,9 @@
     border-radius: 0.75rem;
 
     .icon {
-      margin-right: .375rem;
+      margin-right: 0.375rem;
       transform-origin: center center;
-      transform: scale(.75);
+      transform: scale(0.75);
     }
 
     &:hover {
@@ -113,7 +124,7 @@
   .transparent {
     padding: 0 1.25rem;
     font-weight: 500;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     color: var(--theme-caption-color);
     background-color: var(--trans-button-bg);
     border-color: var(--theme-bg-accent-color);
@@ -121,17 +132,17 @@
     &:hover {
       background-color: var(--trans-button-bg-hovered);
       border-color: var(--trans-button-border-hovered);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
     }
     &:focus {
       background-color: var(--trans-button-bg-hovered);
       border-color: var(--primary-button-focused-border);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
     }
     &:active {
       background-color: var(--trans-button-bg);
       border-color: var(--trans-button-border);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
     }
     &:disabled {
       background-color: var(--trans-button-bg);
@@ -147,17 +158,17 @@
       &:hover {
         background-color: var(--trans-primary-button-bg-hovered);
         border-color: var(--trans-primary-button-border-hovered);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
       }
       &:focus {
         background-color: var(--trans-primary-button-bg-hovered);
         border-color: var(--primary-button-focused-border);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
       }
       &:active {
         background-color: var(--trans-primary-button-bg);
         border-color: var(--trans-primary-button-border);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
+        box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
       }
       &:disabled {
         background-color: var(--primary-button-disabled);

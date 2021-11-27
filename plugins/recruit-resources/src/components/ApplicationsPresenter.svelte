@@ -13,15 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Candidate } from '@anticrm/recruit'
   import { IconFile, Tooltip } from '@anticrm/ui'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
 
   export let value: Candidate
-
 </script>
 
 {#if value.applications && value.applications > 0}

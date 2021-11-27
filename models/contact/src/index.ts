@@ -19,7 +19,15 @@ import { Builder, Model, Prop, TypeString, UX, Index } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 
 import core, { TAccount, TDoc, TType } from '@anticrm/model-core'
-import type { Contact, Person, Organization, Employee, Channel, ChannelProvider, EmployeeAccount } from '@anticrm/contact'
+import type {
+  Contact,
+  Person,
+  Organization,
+  Employee,
+  Channel,
+  ChannelProvider,
+  EmployeeAccount
+} from '@anticrm/contact'
 
 import view from '@anticrm/model-view'
 import { ids as contact } from './plugin'
@@ -63,12 +71,10 @@ export class TPerson extends TContact implements Person {
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-export class TOrganization extends TContact implements Organization {
-}
+export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
-export class TEmployee extends TPerson implements Employee {
-}
+export class TEmployee extends TPerson implements Employee {}
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
@@ -83,36 +89,61 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.ChannelsPresenter
   })
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Email' as IntlString,
-    icon: contact.icon.Email,
-    placeholder: 'john.appleseed@apple.com'
-  }, contact.channelProvider.Email)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Email' as IntlString,
+      icon: contact.icon.Email,
+      placeholder: 'john.appleseed@apple.com'
+    },
+    contact.channelProvider.Email
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Phone' as IntlString,
-    icon: contact.icon.Phone,
-    placeholder: '+1 555 333 7777'
-  }, contact.channelProvider.Phone)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Phone' as IntlString,
+      icon: contact.icon.Phone,
+      placeholder: '+1 555 333 7777'
+    },
+    contact.channelProvider.Phone
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'LinkedIn' as IntlString,
-    icon: contact.icon.LinkedIn,
-    placeholder: 'https://linkedin.com/in/jappleseed'
-  }, contact.channelProvider.LinkedIn)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'LinkedIn' as IntlString,
+      icon: contact.icon.LinkedIn,
+      placeholder: 'https://linkedin.com/in/jappleseed'
+    },
+    contact.channelProvider.LinkedIn
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Twitter' as IntlString,
-    icon: contact.icon.Twitter,
-    placeholder: '@appleseed'
-  }, contact.channelProvider.Twitter)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Twitter' as IntlString,
+      icon: contact.icon.Twitter,
+      placeholder: '@appleseed'
+    },
+    contact.channelProvider.Twitter
+  )
 
-  builder.createDoc(core.class.Space, core.space.Model, {
-    name: 'Employees',
-    description: 'Employees',
-    private: false,
-    members: []
-  }, contact.space.Employee)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      name: 'Employees',
+      description: 'Employees',
+      private: false,
+      members: []
+    },
+    contact.space.Employee
+  )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter

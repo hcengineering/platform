@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
@@ -38,7 +37,7 @@
 
   const client = getClient()
 
-  async function updateSelected(value: Ref<Person>) {
+  async function updateSelected (value: Ref<Person>) {
     selected = await client.findOne(_class, { _id: value })
   }
 
@@ -52,13 +51,17 @@
   })
 </script>
 
-<div class="flex-row-center container" bind:this={container}
+<div
+  class="flex-row-center container"
+  bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
     if (!opened) {
       opened = true
       showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
-        if (result) { value = result._id }
+        if (result) {
+          value = result._id
+        }
         opened = false
       })
     }
@@ -77,7 +80,9 @@
 </div>
 
 <style lang="scss">
-  .container { cursor: pointer; }
+  .container {
+    cursor: pointer;
+  }
   .btn {
     width: 2.25rem;
     height: 2.25rem;
@@ -85,12 +90,14 @@
     border: 1px solid var(--theme-card-divider);
     border-radius: 50%;
   }
-  .selected { border: none; }
+  .selected {
+    border: none;
+  }
 
   .selectUser {
-    margin-left: .75rem;
+    margin-left: 0.75rem;
     .title {
-      font-size: .75rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--theme-content-accent-color);
     }

@@ -22,11 +22,11 @@ interface Channel extends Space {
   x: number
 }
 
-async function getClient (): Promise<{liveQuery: LiveQuery, factory: TxOperations}> {
+async function getClient (): Promise<{ liveQuery: LiveQuery, factory: TxOperations }> {
   const storage = await createClient(connect)
   const liveQuery = new LiveQuery(storage)
   storage.notify = (tx: Tx) => {
-    liveQuery.tx(tx).catch(err => console.log(err))
+    liveQuery.tx(tx).catch((err) => console.log(err))
   }
   return { liveQuery, factory: new TxOperations(storage, core.account.System) }
 }

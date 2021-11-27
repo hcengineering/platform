@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Company from './icons/Company.svelte'
   import type { Vacancy } from '@anticrm/recruit'
@@ -36,7 +35,7 @@
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
 
     .logo {
       width: 5rem;
@@ -48,17 +47,17 @@
     .label {
       margin-bottom: 1.75rem;
       font-weight: 500;
-      font-size: .625rem;
+      font-size: 0.625rem;
       color: var(--theme-content-dark-color);
     }
     .name {
-      margin: 1rem 0 .25rem;
+      margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
     }
     .description {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-dark-color);
     }
   }

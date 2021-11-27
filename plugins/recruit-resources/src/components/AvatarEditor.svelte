@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
@@ -30,7 +29,12 @@
   <div class="abs-lt-content label">
     <Label {label} />
   </div>
-  <div class="abs-rt-content tool" on:click={() => { dispatch('close') }}>
+  <div
+    class="abs-rt-content tool"
+    on:click={() => {
+      dispatch('close')
+    }}
+  >
     <IconClose size={'small'} />
   </div>
 
@@ -39,7 +43,7 @@
   </div>
 
   <div class="abs-lb-content actions">
-    <Grid columnGap={.5}>
+    <Grid columnGap={0.5}>
       <Button label={'Edit'} />
       <Button label={'Delete'} />
     </Grid>
@@ -59,7 +63,7 @@
     height: 23.75rem;
     background-color: var(--theme-bg-color);
     border-radius: 1.25rem;
-    filter: drop-shadow(0 0 4rem rgba(0, 0, 0, .35));
+    filter: drop-shadow(0 0 4rem rgba(0, 0, 0, 0.35));
 
     .label {
       font-weight: 500;
@@ -76,17 +80,18 @@
       border-radius: 50%;
       overflow: hidden;
 
-      &::after, &::before {
+      &::after,
+      &::before {
         content: '';
         position: absolute;
         z-index: 1;
       }
       &::after {
-        top: .65rem;
-        left: .65rem;
-        bottom: .65rem;
-        right: .65rem;
-        border: 1px solid rgba(255, 255, 255, .6);
+        top: 0.65rem;
+        left: 0.65rem;
+        bottom: 0.65rem;
+        right: 0.65rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 50%;
       }
       &::before {
@@ -96,16 +101,20 @@
         right: 0;
         width: 13.75rem;
         height: 13.75rem;
-        background-color: rgba(255, 255, 255, .2);
-        clip-path: path('M110,0C49.2,0,0,49.2,0,110c0,60.8,49.2,110,110,110s110-49.2,110-110C220,49.2,170.8,0,110,0z M110,212 C53.7,212,8,166.3,8,110C8,53.7,53.7,8,110,8s102,45.7,102,102C212,166.3,166.3,212,110,212z');
+        background-color: rgba(255, 255, 255, 0.2);
+        clip-path: path(
+          'M110,0C49.2,0,0,49.2,0,110c0,60.8,49.2,110,110,110s110-49.2,110-110C220,49.2,170.8,0,110,0z M110,212 C53.7,212,8,166.3,8,110C8,53.7,53.7,8,110,8s102,45.7,102,102C212,166.3,166.3,212,110,212z'
+        );
         filter: blur(3px);
       }
     }
 
     .tool {
-      opacity: .4;
+      opacity: 0.4;
       cursor: pointer;
-      &:hover { opacity: 1; }
+      &:hover {
+        opacity: 1;
+      }
     }
   }
 </style>

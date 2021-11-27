@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Bag } from '@anticrm/core'
   import type { Attachment } from '@anticrm/chunter'
@@ -24,12 +23,19 @@
 </script>
 
 <div class="files-container">
-  <span class="icon"><IconFile size={'small'}/></span>
+  <span class="icon"><IconFile size={'small'} /></span>
   {Object.values(files).length} files
   <div class="window">
     {#each Object.values(files) as file}
       <div class="flex-row-center file">
-        <Link label={file.name} href={'#'} icon={IconFile} on:click={ () => { showPopup(PDFViewer, { file: file.file }, 'right') } }/>
+        <Link
+          label={file.name}
+          href={'#'}
+          icon={IconFile}
+          on:click={() => {
+            showPopup(PDFViewer, { file: file.file }, 'right')
+          }}
+        />
       </div>
     {/each}
   </div>
@@ -44,16 +50,22 @@
     cursor: pointer;
 
     .icon {
-      margin-right: .25rem;
+      margin-right: 0.25rem;
       transform-origin: center center;
-      transform: scale(.75);
-      opacity: .6;
+      transform: scale(0.75);
+      opacity: 0.6;
     }
     &:hover {
       color: var(--theme-caption-color);
-      .icon { opacity: 1; }
-      .window { visibility: visible; }
-      &::after { content: ''; }
+      .icon {
+        opacity: 1;
+      }
+      .window {
+        visibility: visible;
+      }
+      &::after {
+        content: '';
+      }
     }
     &::after {
       position: absolute;
@@ -74,11 +86,13 @@
       min-width: 100%;
       background-color: var(--theme-button-bg-focused);
       border: 1px solid var(--theme-button-border-enabled);
-      border-radius: .75rem;
-      box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
+      border-radius: 0.75rem;
+      box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.2);
       z-index: 1;
 
-      .file + .file { margin-top: .25rem; }
+      .file + .file {
+        margin-top: 0.25rem;
+      }
     }
   }
 </style>

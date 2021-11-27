@@ -14,7 +14,23 @@
 // limitations under the License.
 //
 
-import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
+import type {
+  ServerStorage,
+  Domain,
+  Tx,
+  TxCUD,
+  Doc,
+  Ref,
+  Class,
+  DocumentQuery,
+  FindResult,
+  FindOptions,
+  Storage,
+  TxBulkWrite,
+  TxResult,
+  TxCollectionCUD,
+  AttachedDoc
+} from '@anticrm/core'
 import core, { Hierarchy, DOMAIN_TX, ModelDb, TxFactory } from '@anticrm/core'
 import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
@@ -121,7 +137,7 @@ class TServerStorage implements ServerStorage {
     return []
   }
 
-  async findAll<T extends Doc> (
+  async findAll<T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -147,7 +163,10 @@ class TServerStorage implements ServerStorage {
     // store object
     const result = await this.routeTx(tx)
     // invoke triggers and store derived objects
-    const derived = [...await this.processCollection(tx), ...await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)]
+    const derived = [
+      ...(await this.processCollection(tx)),
+      ...(await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy))
+    ]
     for (const tx of derived) {
       await this.routeTx(tx)
     }

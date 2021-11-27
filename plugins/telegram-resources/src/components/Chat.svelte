@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import { ReferenceInput } from '@anticrm/text-editor'
   import { createQuery } from '@anticrm/presentation'
   import telegram from '@anticrm/telegram'
@@ -42,22 +40,28 @@
   const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
 
-  $: query = contactString?.value.startsWith('+') ? { contactPhone: contactString.value } : { contactUserName: contactString?.value }
+  $: query = contactString?.value.startsWith('+')
+    ? { contactPhone: contactString.value }
+    : { contactUserName: contactString?.value }
   $: messagesQuery.query(telegram.class.Message, query, (res) => {
     messages = res
   })
 
   $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
-  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
+  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds } }, (result) => {
     accounts = result
   })
 
   const accountId = getMetadata(login.metadata.LoginEmail)
-  $: settingsQuery.query(setting.class.Integration, { type: telegram.integrationType.Telegram, space: accountId as Ref<Space> }, (res) => {
-    enabled = res.length > 0
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { type: telegram.integrationType.Telegram, space: accountId as Ref<Space> },
+    (res) => {
+      enabled = res.length > 0
+    }
+  )
 
-  async function onMessage(event: CustomEvent) {
+  async function onMessage (event: CustomEvent) {
     await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
@@ -74,14 +78,14 @@
   function isNewDate (messages: TelegramMessage[], i: number): boolean {
     if (i === 0) return true
     const current = new Date(messages[i].modifiedOn).toLocaleDateString()
-    const prev = new Date(messages[i-1].modifiedOn).toLocaleDateString()
+    const prev = new Date(messages[i - 1].modifiedOn).toLocaleDateString()
     return current !== prev
   }
 
   function needName (messages: TelegramMessage[], i: number): boolean {
     if (i === 0) return true
     const current = messages[i]
-    const prev = messages[i-1]
+    const prev = messages[i - 1]
     return current.incoming !== prev.incoming || current.modifiedBy !== prev.modifiedBy
   }
 
@@ -99,7 +103,7 @@
 <div class="flex-col h-full right-content">
   <ScrollBox vertical stretch>
     {#if messages}
-      <Grid column={1} rowGap={.3}>
+      <Grid column={1} rowGap={0.3}>
         {#each messages as message, i (message._id)}
           {#if isNewDate(messages, i)}
             <DateView {message} />
@@ -112,7 +116,7 @@
 </div>
 {#if enabled}
   <div class="ref-input">
-    <ReferenceInput on:message={onMessage}/>
+    <ReferenceInput on:message={onMessage} />
   </div>
 {/if}
 
@@ -145,4 +149,3 @@
     padding: 2.5rem 2.5rem 0;
   }
 </style>
-

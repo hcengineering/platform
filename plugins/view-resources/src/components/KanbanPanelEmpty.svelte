@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
@@ -38,11 +37,11 @@
     align-items: center;
     width: 20rem;
     height: 100%;
-    padding: .75rem;
+    padding: 0.75rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-enabled);
     border: 1px dotted var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     cursor: pointer;
 
     .circle {
@@ -55,14 +54,18 @@
       background-color: var(--theme-bg-accent-color);
       border-radius: 50%;
 
-      .icon { opacity: .6; }
+      .icon {
+        opacity: 0.6;
+      }
     }
 
     &:hover {
       background-color: var(--theme-bg-accent-hover);
-      box-shadow: 0 .75rem 2.5rem rgba(0, 0, 0, .15);
+      box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.15);
 
-      .circle .icon { opacity: 1; }
+      .circle .icon {
+        opacity: 1;
+      }
     }
   }
 </style>

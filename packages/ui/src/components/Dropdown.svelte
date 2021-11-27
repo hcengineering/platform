@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
@@ -30,7 +29,10 @@
   export let icon: Asset | AnySvelteComponent = Add
   export let label: IntlString
   export let placeholder: IntlString
-  export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: google, label: 'Google' }]
+  export let items: ListItem[] = [
+    { item: tesla, label: 'Tesla' },
+    { item: google, label: 'Google' }
+  ]
   export let selected: ListItem | undefined
   export let show: boolean = false
 
@@ -46,7 +48,9 @@
   })
 </script>
 
-<div class="flex-row-center container" bind:this={container}
+<div
+  class="flex-row-center container"
+  bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
     if (!opened) {
@@ -58,28 +62,34 @@
     }
   }}
 >
-  <div class="flex-center focused-button btn" class:selected bind:this={btn} tabindex={0} on:focus={() => container.click()}>
+  <div
+    class="flex-center focused-button btn"
+    class:selected
+    bind:this={btn}
+    tabindex={0}
+    on:focus={() => container.click()}
+  >
     {#if selected}
       <img src={selected.item} alt={selected.label} />
+    {:else if typeof icon === 'string'}
+      <Icon {icon} size={'small'} />
     {:else}
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} size={'small'} />
-      {:else}
-        <svelte:component this={icon} size={'small'} />
-      {/if}
+      <svelte:component this={icon} size={'small'} />
     {/if}
   </div>
 
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
-    <div class="caption-color" class:empty={selected ? false : true}>
+    <div class="caption-color" class:empty={!selected}>
       {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
     </div>
   </div>
 </div>
 
 <style lang="scss">
-  .container { cursor: pointer; }
+  .container {
+    cursor: pointer;
+  }
   .btn {
     flex-shrink: 0;
     width: 2.25rem;
@@ -87,22 +97,26 @@
     color: var(--theme-caption-color);
     background-color: transparent;
     border: 1px solid var(--theme-card-divider);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     outline: none;
     overflow: hidden;
   }
   .selected {
     border-color: transparent;
-    img { max-width: fit-content; }
+    img {
+      max-width: fit-content;
+    }
   }
 
   .selectUser {
-    margin-left: .75rem;
+    margin-left: 0.75rem;
     .title {
-      font-size: .75rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--theme-content-accent-color);
     }
-    .empty { color: var(--theme-content-trans-color); }
+    .empty {
+      color: var(--theme-content-trans-color);
+    }
   }
 </style>

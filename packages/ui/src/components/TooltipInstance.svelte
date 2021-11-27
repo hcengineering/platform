@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { tooltipstore as tooltip, closeTooltip } from '..'
   import type { TooltipAligment } from '..'
@@ -24,17 +23,17 @@
   let rectAnchor: DOMRect
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component
 
-  $: tooltipSW = $tooltip.component ? false : true
+  $: tooltipSW = !$tooltip.component
   $: {
     if (($tooltip.label || $tooltip.component) && tooltipHTML) {
       if ($tooltip.element) {
         const doc = document.body.getBoundingClientRect()
         rect = $tooltip.element.getBoundingClientRect()
-        rectAnchor = ($tooltip.anchor) ? $tooltip.anchor.getBoundingClientRect()
-                                       : $tooltip.element.getBoundingClientRect()
+        rectAnchor = $tooltip.anchor
+          ? $tooltip.anchor.getBoundingClientRect()
+          : $tooltip.element.getBoundingClientRect()
 
         if ($tooltip.component) {
-
           if (rectAnchor.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
             tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .75rem)`
             dir = 'bottom'
@@ -60,9 +59,7 @@
             tooltipHTML.style.left = rectAnchor.left + 'px'
             tooltipHTML.style.right = ''
           }
-
         } else {
-
           if (!$tooltip.direction) {
             if (rectAnchor.right < doc.width / 5) dir = 'right'
             else if (rectAnchor.left > doc.width - doc.width / 5) dir = 'left'
@@ -88,7 +85,6 @@
             tooltipHTML.style.transform = 'translateX(-50%)'
           }
           tooltipHTML.classList.remove('no-arrow')
-
         }
       } else {
         tooltipHTML.style.top = '50%'
@@ -124,7 +120,11 @@
   }
 </script>
 
-<svelte:window on:mousemove={(ev) => { whileShow(ev) }} />
+<svelte:window
+  on:mousemove={(ev) => {
+    whileShow(ev)
+  }}
+/>
 {#if $tooltip.component}
   <div class="popup" bind:this={tooltipHTML}>
     {#if $tooltip.label}<div class="header"><Label label={$tooltip.label} /></div>{/if}
@@ -152,19 +152,19 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
     z-index: 10000;
   }
 
   .tooltip {
     position: fixed;
-    padding: .5rem;
+    padding: 0.5rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     user-select: none;
     text-align: center;
     z-index: 10000;
@@ -172,8 +172,8 @@
     &::after {
       content: '';
       position: absolute;
-      width: .875rem;
-      height: .875rem;
+      width: 0.875rem;
+      height: 0.875rem;
       background-color: var(--theme-tooltip-color);
       border: 1px solid var(--theme-bg-accent-color);
       border-radius: 0 0 3px;
@@ -183,21 +183,21 @@
     &.top::after,
     &.bottom::after {
       left: 50%;
-      margin-left: -.5rem;
+      margin-left: -0.5rem;
     }
     &.top {
       bottom: 100%;
-      box-shadow: 0px 8px 20px rgba(0, 0, 0, .35);
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.35);
       &::after {
-        bottom: -.3125rem;
+        bottom: -0.3125rem;
         transform: rotate(45deg);
       }
     }
     &.bottom {
       top: 100%;
-      box-shadow: 0px -8px 20px rgba(0, 0, 0, .35);
+      box-shadow: 0px -8px 20px rgba(0, 0, 0, 0.35);
       &::after {
-        top: -.3125rem;
+        top: -0.3125rem;
         transform: rotate(-135deg);
       }
     }
@@ -205,27 +205,27 @@
     &.right::after,
     &.left::after {
       top: 50%;
-      margin-top: -.5rem;
+      margin-top: -0.5rem;
     }
     &.right {
       left: 100%;
-      box-shadow: -8px 0px 20px rgba(0, 0, 0, .35);
+      box-shadow: -8px 0px 20px rgba(0, 0, 0, 0.35);
       &::after {
-        left: -.3125rem;
+        left: -0.3125rem;
         transform: rotate(135deg);
       }
     }
     &.left {
       right: 100%;
-      box-shadow: 8px 0px 20px rgba(0, 0, 0, .35);
+      box-shadow: 8px 0px 20px rgba(0, 0, 0, 0.35);
       &::after {
-        right: -.3125rem;
+        right: -0.3125rem;
         transform: rotate(-45deg);
       }
     }
   }
   .no-arrow {
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, .75);
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.75);
     &::after {
       content: none;
     }

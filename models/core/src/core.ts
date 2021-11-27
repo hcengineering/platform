@@ -14,7 +14,21 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import type { Account, AnyAttribute, AttachedDoc, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
+import type {
+  Account,
+  AnyAttribute,
+  AttachedDoc,
+  Class,
+  ClassifierKind,
+  Doc,
+  Domain,
+  Mixin,
+  Obj,
+  Ref,
+  Space,
+  Timestamp,
+  Type
+} from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeTimestamp } from '@anticrm/model'
 import core from './component'

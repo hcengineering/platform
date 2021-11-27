@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { Label, ScrollBox, IconAdd } from '@anticrm/ui'
@@ -52,22 +51,22 @@
     height: 100%;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
 
     .header {
       display: flex;
       flex-direction: column;
-      margin: 0 .75rem;
+      margin: 0 0.75rem;
       height: 4rem;
       min-height: 4rem;
       user-select: none;
 
       .bar {
-        height: .375rem;
+        height: 0.375rem;
         border-radius: 1px;
       }
       .label {
-        padding: 0 .5rem 0 1rem;
+        padding: 0 0.5rem 0 1rem;
         height: 100%;
         font-weight: 500;
         color: var(--theme-caption-color);
@@ -77,14 +76,16 @@
         // }
       }
       .tool {
-        opacity: .4;
+        opacity: 0.4;
         cursor: pointer;
-        &:hover { opacity: 1; }
+        &:hover {
+          opacity: 1;
+        }
       }
     }
 
     .scroll {
-      margin: 0 .75rem .75rem;
+      margin: 0 0.75rem 0.75rem;
       height: 100%;
     }
   }

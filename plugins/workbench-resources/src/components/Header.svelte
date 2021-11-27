@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import { Icon } from '@anticrm/ui'
@@ -24,10 +23,10 @@
 
 <div class="header-container">
   <div class="flex-row-center">
-    {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
+    {#if icon}<span class="icon"><Icon {icon} size={'small'} /></span>{/if}
     <span class="label">{label}</span>
   </div>
-  {#if description }<div class="description">{description}</div>{/if}
+  {#if description}<div class="description">{description}</div>{/if}
 </div>
 
 <style lang="scss">
@@ -37,10 +36,11 @@
     flex-grow: 1;
 
     .icon {
-      margin-right: .5rem;
-      opacity: .6;
+      margin-right: 0.5rem;
+      opacity: 0.6;
     }
-    .label, .description {
+    .label,
+    .description {
       flex-grow: 1;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -53,7 +53,7 @@
       color: var(--theme-caption-color);
     }
     .description {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-trans-color);
     }
   }

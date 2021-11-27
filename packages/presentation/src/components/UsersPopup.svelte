@@ -32,8 +32,12 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
-  afterUpdate(() => { dispatch('update', Date.now()) })
+  $: query.query(_class, { name: { $like: '%' + search + '%' } }, (result) => {
+    objects = result
+  })
+  afterUpdate(() => {
+    dispatch('update', Date.now())
+  })
 </script>
 
 <div class="popup">
@@ -45,7 +49,12 @@
   <div class="scroll">
     <div class="flex-col box">
       {#each objects as person}
-        <button class="menu-item" on:click={() => { dispatch('close', person) }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', person)
+          }}
+        >
           <UserInfo size={'medium'} value={person} />
         </button>
       {/each}
@@ -62,9 +71,9 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
   }
 
   .header {
@@ -75,8 +84,8 @@
       color: var(--theme-caption-color);
     }
     .caption {
-      margin: 1rem 0 .625rem .375rem;
-      font-size: .75rem;
+      margin: 1rem 0 0.625rem 0.375rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       color: var(--theme-content-dark-color);
@@ -95,8 +104,8 @@
 
   .menu-item {
     justify-content: start;
-    padding: .375rem;
-    border-radius: .5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
 
     &:hover {
       background-color: var(--theme-button-bg-pressed);

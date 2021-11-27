@@ -23,16 +23,15 @@
   export let disabled: boolean = false
   export let maxLenght: number = 26
 
-  const trimFilename = (fname: string): string => (fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-                        : fname
+  const trimFilename = (fname: string): string =>
+    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 </script>
 
 <span class="container" class:disabled on:click>
   {#if icon}
     <span class="icon">
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} size={'small'}/>
+      {#if typeof icon === 'string'}
+        <Icon {icon} size={'small'} />
       {:else}
         <svelte:component this={icon} size={'small'} />
       {/if}
@@ -53,19 +52,29 @@
     cursor: pointer;
 
     .icon {
-      margin-right: .25rem;
+      margin-right: 0.25rem;
       transform-origin: center center;
-      transform: scale(.75);
-      opacity: .6;
+      transform: scale(0.75);
+      opacity: 0.6;
     }
-    &:hover .icon { opacity: 1; }
-    &:active .icon { opacity: .6; }
+    &:hover .icon {
+      opacity: 1;
+    }
+    &:active .icon {
+      opacity: 0.6;
+    }
   }
   .disabled {
     cursor: not-allowed;
     color: var(--theme-content-trans-color);
-    .icon { opacity: .3; }
-    &:hover .icon { opacity: .3; }
-    &:active .icon { opacity: .3; }
+    .icon {
+      opacity: 0.3;
+    }
+    &:hover .icon {
+      opacity: 0.3;
+    }
+    &:active .icon {
+      opacity: 0.3;
+    }
   }
 </style>

@@ -20,11 +20,24 @@ import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
 
-import type { Doc, Ref, Class, FindOptions, FindResult, Tx, DocumentQuery, Storage, ServerStorage, TxResult } from '@anticrm/core'
+import type {
+  Doc,
+  Ref,
+  Class,
+  FindOptions,
+  FindResult,
+  Tx,
+  DocumentQuery,
+  Storage,
+  ServerStorage,
+  TxResult
+} from '@anticrm/core'
 
 let LOGGING_ENABLED = true
 
-export function disableLogging (): void { LOGGING_ENABLED = false }
+export function disableLogging (): void {
+  LOGGING_ENABLED = false
+}
 
 class Session implements Storage {
   constructor (
@@ -33,9 +46,16 @@ class Session implements Storage {
     private readonly storage: ServerStorage
   ) {}
 
-  async ping (): Promise<string> { console.log('ping'); return 'pong!' }
+  async ping (): Promise<string> {
+    console.log('ping')
+    return 'pong!'
+  }
 
-  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return await this.storage.findAll(_class, query, options)
   }
 
@@ -57,7 +77,11 @@ interface Workspace {
 class SessionManager {
   private readonly workspaces = new Map<string, Workspace>()
 
-  async addSession (ws: WebSocket, token: Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
+  async addSession (
+    ws: WebSocket,
+    token: Token,
+    storageFactory: (ws: string) => Promise<ServerStorage>
+  ): Promise<Session> {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       const storage = await storageFactory(token.workspace)
@@ -81,7 +105,7 @@ class SessionManager {
     if (workspace === undefined) {
       throw new Error('internal: cannot find sessions')
     }
-    workspace.sessions = workspace.sessions.filter(session => session[1] !== ws)
+    workspace.sessions = workspace.sessions.filter((session) => session[1] !== ws)
     if (workspace.sessions.length === 0) {
       if (LOGGING_ENABLED) console.log('no sessions for workspace', token.workspace)
       this.workspaces.delete(token.workspace)
@@ -96,7 +120,9 @@ class SessionManager {
     if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
     const msg = serialize(resp)
     for (const session of workspace.sessions) {
-      if (session[0] !== from) { session[1].send(msg) }
+      if (session[0] !== from) {
+        session[1].send(msg)
+      }
     }
   }
 }
@@ -115,7 +141,11 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
  * @param port -
  * @param host -
  */
-export function start (storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): () => void {
+export function start (
+  storageFactory: (workspace: string) => Promise<ServerStorage>,
+  port: number,
+  host?: string
+): () => void {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager()
@@ -125,7 +155,9 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
   wss.on('connection', async (ws: WebSocket, request: any, token: Token) => {
     const buffer: string[] = []
 
-    ws.on('message', (msg: string) => { buffer.push(msg) })
+    ws.on('message', (msg: string) => {
+      buffer.push(msg)
+    })
     const session = await sessions.addSession(ws, token, storageFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(session, ws, msg))
@@ -142,7 +174,7 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
     try {
       const payload = decode(token ?? '', 'secret', false)
       console.log('client connected with payload', payload)
-      wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
+      wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload))
     } catch (err) {
       console.log('unauthorized client')
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')

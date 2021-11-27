@@ -20,15 +20,9 @@ import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-c
 import { Client } from '@elastic/elasticsearch'
 
 class ElasticAdapter implements FullTextAdapter {
-  constructor (
-    private readonly client: Client,
-    private readonly db: string
-  ) {
-  }
+  constructor (private readonly client: Client, private readonly db: string) {}
 
-  async search (
-    query: SearchQuery
-  ): Promise<IndexedDoc[]> {
+  async search (query: SearchQuery): Promise<IndexedDoc[]> {
     try {
       const result = await this.client.search({
         index: this.db,
@@ -56,7 +50,7 @@ class ElasticAdapter implements FullTextAdapter {
       console.log(result)
       const hits = result.body.hits.hits as any[]
       console.log('hits', hits)
-      return hits.map(hit => hit._source)
+      return hits.map((hit) => hit._source)
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
       return []

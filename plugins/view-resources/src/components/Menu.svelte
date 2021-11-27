@@ -12,39 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { IntlString, Asset, Resource } from '@anticrm/platform'
+  import type { Doc } from '@anticrm/core'
+  import type { Resource } from '@anticrm/platform'
   import { getResource } from '@anticrm/platform'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import type { Ref, Class, Doc } from '@anticrm/core' 
+  import { getClient } from '@anticrm/presentation'
+  import { Icon, Label } from '@anticrm/ui'
+  import type { Action } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label, IconMoreH, IconFile } from '@anticrm/ui'
-  import type { Action, ActionTarget } from '@anticrm/view'
   import { getActions } from '../utils'
-  import view from '@anticrm/view'
 
   export let object: Doc
-  
+
   let actions: Action[] = []
 
   const client = getClient()
 
-  getActions(client, object._class).then(result => { actions = result })
+  getActions(client, object._class).then((result) => {
+    actions = result
+  })
 
   const dispatch = createEventDispatcher()
 
-  async function invokeAction(action: Resource<(object: Doc) => Promise<void>>) {
+  async function invokeAction (action: Resource<(object: Doc) => Promise<void>>) {
     dispatch('close')
     const impl = await getResource(action)
     await impl(object)
   }
-
 </script>
 
 <div class="flex-col popup">
   {#each actions as action}
-    <div class="flex-row-center menu-item" on:click={() => { invokeAction(action.action) }}>
+    <div
+      class="flex-row-center menu-item"
+      on:click={() => {
+        invokeAction(action.action)
+      }}
+    >
       <div class="icon">
         <Icon icon={action.icon} size={'large'} />
       </div>
@@ -55,31 +59,33 @@
 
 <style lang="scss">
   .popup {
-    padding: .5rem;
+    padding: 0.5rem;
     height: 100%;
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.2);
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    padding: .375rem 1rem .375rem .5rem;
-    border-radius: .5rem;
+    padding: 0.375rem 1rem 0.375rem 0.5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
 
     .icon {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       transform-origin: center center;
-      transform: scale(.75);
-      opacity: .3;
+      transform: scale(0.75);
+      opacity: 0.3;
     }
     .label {
       flex-grow: 1;
       color: var(--theme-content-accent-color);
     }
-    &:hover { background-color: var(--theme-button-bg-hovered); }
+    &:hover {
+      background-color: var(--theme-button-bg-hovered);
+    }
   }
 </style>

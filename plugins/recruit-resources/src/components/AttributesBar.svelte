@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { CircleButton, Label } from '@anticrm/ui'
-  import type { Ref, Class, Obj, Doc } from '@anticrm/core'
+  import type { Doc } from '@anticrm/core'
   import { AttributeBarEditor } from '@anticrm/presentation'
 
   export let object: Doc

@@ -23,8 +23,8 @@ import type { Trigger, TriggerFunc, FindAll } from './types'
 import serverCore from './plugin'
 
 /**
-  * @public
-  */
+ * @public
+ */
 export class Triggers {
   private readonly triggers: TriggerFunc[] = []
 
@@ -43,8 +43,8 @@ export class Triggers {
   }
 
   async apply (account: Ref<Account>, tx: Tx, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
-    const derived = this.triggers.map(trigger => trigger(tx, new TxFactory(account), findAll, hierarchy))
+    const derived = this.triggers.map((trigger) => trigger(tx, new TxFactory(account), findAll, hierarchy))
     const result = await Promise.all(derived)
-    return result.flatMap(x => x)
+    return result.flatMap((x) => x)
   }
 }

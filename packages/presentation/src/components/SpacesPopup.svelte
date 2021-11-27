@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { Class, Ref, Space } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import { EditWithIcon, IconSearch, Label } from '@anticrm/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
-
-  import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
-  import SpaceInfo from './SpaceInfo.svelte'
-
-  import type { Ref, Class, Space } from '@anticrm/core'
   import { createQuery } from '../utils'
+  import SpaceInfo from './SpaceInfo.svelte'
 
   export let _class: Ref<Class<Space>>
 
@@ -29,19 +27,29 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, {}, result => { objects = result })
-  afterUpdate(() => { dispatch('update', Date.now()) })
+  $: query.query(_class, {}, (result) => {
+    objects = result
+  })
+  afterUpdate(() => {
+    dispatch('update', Date.now())
+  })
+  const suggested = 'SUGGESTED' as IntlString
 </script>
 
 <div class="popup">
   <div class="flex-col">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-    <div class="label"><Label label={'SUGGESTED'} /></div>
+    <div class="label"><Label label={suggested} /></div>
   </div>
   <div class="flex-grow scroll">
     <div class="flex-col h-full box">
       {#each objects as space}
-        <button class="menu-item" on:click={() => { dispatch('close', space) }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', space)
+          }}
+        >
           <SpaceInfo size={'large'} value={space} />
         </button>
       {/each}
@@ -57,14 +65,14 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
   }
 
   .label {
-    margin: 1rem 0 .625rem .375rem;
-    font-size: .75rem;
+    margin: 1rem 0 0.625rem 0.375rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--theme-content-dark-color);
@@ -72,13 +80,15 @@
 
   .scroll {
     overflow-y: scroll;
-    .box { margin-right: 1px; }
+    .box {
+      margin-right: 1px;
+    }
   }
 
   .menu-item {
     justify-content: start;
-    padding: .375rem;
-    border-radius: .5rem;
+    padding: 0.375rem;
+    border-radius: 0.5rem;
 
     &:hover {
       background-color: var(--theme-button-bg-pressed);

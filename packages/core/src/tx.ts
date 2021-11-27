@@ -14,7 +14,20 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType, AttachedDoc, AttachedData } from './classes'
+import type {
+  Class,
+  Data,
+  Doc,
+  Domain,
+  Ref,
+  Account,
+  Space,
+  Arr,
+  Mixin,
+  PropertyType,
+  AttachedDoc,
+  AttachedData
+} from './classes'
 import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
 import core from './component'
 import { generateId } from './utils'
@@ -173,8 +186,7 @@ export interface TxUpdateDoc<T extends Doc> extends TxCUD<T> {
 /**
  * @public
  */
-export interface TxRemoveDoc<T extends Doc> extends TxCUD<T> {
-}
+export interface TxRemoveDoc<T extends Doc> extends TxCUD<T> {}
 
 /**
  * @public
@@ -231,7 +243,7 @@ export abstract class TxProcessor implements WithTx {
         const operator = _getOperator(key)
         operator(doc, ops[key])
       } else {
-        (doc as any)[key] = ops[key]
+        ;(doc as any)[key] = ops[key]
       }
     }
     doc.modifiedBy = tx.modifiedBy
@@ -281,11 +293,19 @@ export class TxOperations implements Storage {
     this.txFactory = new TxFactory(user)
   }
 
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
     return this.storage.findAll(_class, query, options)
   }
 
-  async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<WithLookup<T> | undefined> {
     return (await this.findAll(_class, query, options))[0]
   }
 
@@ -293,7 +313,7 @@ export class TxOperations implements Storage {
     return this.storage.tx(tx)
   }
 
-  async createDoc<T extends Doc> (
+  async createDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     attributes: Data<T>,
@@ -363,7 +383,7 @@ export class TxOperations implements Storage {
     return tx.objectId
   }
 
-  putBag <P extends PropertyType>(
+  putBag<P extends PropertyType>(
     _class: Ref<Class<Doc>>,
     space: Ref<Space>,
     objectId: Ref<Doc>,
@@ -375,7 +395,7 @@ export class TxOperations implements Storage {
     return this.storage.tx(tx)
   }
 
-  updateDoc <T extends Doc>(
+  updateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
@@ -386,11 +406,7 @@ export class TxOperations implements Storage {
     return this.storage.tx(tx)
   }
 
-  removeDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>
-  ): Promise<TxResult> {
+  removeDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): Promise<TxResult> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
     return this.storage.tx(tx)
   }
@@ -412,7 +428,12 @@ export class TxOperations implements Storage {
 export class TxFactory {
   constructor (readonly account: Ref<Account>) {}
 
-  createTxCreateDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>, objectId?: Ref<T>): TxCreateDoc<T> {
+  createTxCreateDoc<T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    attributes: Data<T>,
+    objectId?: Ref<T>
+  ): TxCreateDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxCreateDoc,
@@ -447,7 +468,7 @@ export class TxFactory {
     }
   }
 
-  createTxPutBag <P extends PropertyType>(
+  createTxPutBag<P extends PropertyType>(
     _class: Ref<Class<Doc>>,
     space: Ref<Space>,
     objectId: Ref<Doc>,
@@ -470,7 +491,7 @@ export class TxFactory {
     }
   }
 
-  createTxUpdateDoc <T extends Doc>(
+  createTxUpdateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
@@ -491,11 +512,7 @@ export class TxFactory {
     }
   }
 
-  createTxRemoveDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>
-  ): TxRemoveDoc<T> {
+  createTxRemoveDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): TxRemoveDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxRemoveDoc,
@@ -508,7 +525,12 @@ export class TxFactory {
     }
   }
 
-  createTxMixin<D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, mixin: Ref<Mixin<M>>, attributes: ExtendedAttributes<D, M>): TxMixin<D, M> {
+  createTxMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    mixin: Ref<Mixin<M>>,
+    attributes: ExtendedAttributes<D, M>
+  ): TxMixin<D, M> {
     return {
       _id: generateId(),
       _class: core.class.TxMixin,

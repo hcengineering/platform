@@ -23,13 +23,12 @@
   import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
-
 </script>
 
 <div class="ref-container">
   <div class="textInput">
     <div class="inputMsg">
-      <TextEditor on:message={ev => dispatch('message', ev.detail)}/>
+      <TextEditor on:message={(ev) => dispatch('message', ev.detail)} />
     </div>
     <button class="sendButton"><div class="icon"><Send /></div></button>
   </div>
@@ -55,7 +54,7 @@
       padding: 8px 16px;
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
 
       .inputMsg {
         display: flex;
@@ -105,7 +104,7 @@
         height: 20px;
         background-color: transparent;
         border: 1px solid transparent;
-        border-radius: .25rem;
+        border-radius: 0.25rem;
         outline: none;
         cursor: pointer;
 

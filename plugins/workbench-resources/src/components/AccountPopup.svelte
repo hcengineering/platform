@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getCurrentLocation, Label, navigate } from '@anticrm/ui'
   import { Avatar, getClient } from '@anticrm/presentation'
@@ -21,7 +20,7 @@
   import { Ref } from '@anticrm/core'
 
   const client = getClient()
-  async function getItems(): Promise<SpecialNavModel[] | undefined> {
+  async function getItems (): Promise<SpecialNavModel[] | undefined> {
     const app = await client.findOne(workbench.class.Application, { _id: setting.ids.SettingApp as Ref<Application> })
     return app?.navigatorModel?.specials
   }
@@ -47,7 +46,7 @@
   <div class="content">
     {#await getItems() then items}
       {#if items}
-        {#each items as item }
+        {#each items as item}
           <div class="item" on:click={() => selectSpecial(item)}><Label label={item.label} /></div>
         {/each}
       {/if}
@@ -68,19 +67,19 @@
 
     .header {
       flex-shrink: 0;
-      margin: .75rem 1rem;
+      margin: 0.75rem 1rem;
     }
 
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      margin: 0 .5rem 1rem;
+      margin: 0 0.5rem 1rem;
       height: fit-content;
 
       .item {
-        padding: .5rem;
+        padding: 0.5rem;
         color: var(--theme-content-accent-color);
-        border-radius: .5rem;
+        border-radius: 0.5rem;
         cursor: pointer;
 
         &:hover {

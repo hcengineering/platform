@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
   import SpacesNav from './navigator/SpacesNav.svelte'
@@ -40,6 +39,6 @@
     {/if}
   {/if}
   {#each model.spaces as m}
-    <SpacesNav model={m}/>
+    <SpacesNav model={m} />
   {/each}
 {/if}

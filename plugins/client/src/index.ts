@@ -25,10 +25,8 @@ import type { Client } from '@anticrm/core'
  */
 export const clientId = 'client' as Plugin
 
-export default plugin(clientId,
-  {
-    function: {
-      GetClient: '' as Resource<(token: string, endpoint: string) => Promise<Client>>
-    }
+export default plugin(clientId, {
+  function: {
+    GetClient: '' as Resource<(token: string, endpoint: string) => Promise<Client>>
   }
-)
+})

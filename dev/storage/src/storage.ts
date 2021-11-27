@@ -26,7 +26,11 @@ class InMemoryTxAdapter implements TxAdapter {
     this.txdb = new TxDb(hierarchy)
   }
 
-  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return await this.txdb.findAll(_class, query, options)
   }
 
@@ -52,7 +56,11 @@ class InMemoryAdapter implements DbAdapter {
     this.modeldb = new ModelDb(hierarchy)
   }
 
-  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
   }
 
@@ -70,7 +78,11 @@ class InMemoryAdapter implements DbAdapter {
 /**
  * @public
  */
-export async function createInMemoryTxAdapter (hierarchy: Hierarchy, url: string, workspace: string): Promise<TxAdapter> {
+export async function createInMemoryTxAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  workspace: string
+): Promise<TxAdapter> {
   return new InMemoryTxAdapter(hierarchy)
 }
 

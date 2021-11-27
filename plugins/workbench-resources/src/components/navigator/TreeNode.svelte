@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
@@ -22,9 +21,8 @@
   export let actions: Action[] = []
   export let notifications = 0
   export let collapsed = false
-
 </script>
 
 <TreeElement {label} {notifications} {collapsed} {actions} node>
-  <slot/>
+  <slot />
 </TreeElement>

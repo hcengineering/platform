@@ -57,5 +57,4 @@ export class TDocWithState extends TDoc {
 }
 
 @Model(core.class.SpaceWithStates, core.class.Space)
-export class TSpaceWithStates extends TSpace {
-}
+export class TSpaceWithStates extends TSpace {}

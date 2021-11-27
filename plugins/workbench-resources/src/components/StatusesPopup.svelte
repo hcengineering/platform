@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   // import type { IntlString, Asset, Resource } from '@anticrm/platform'
   import type { Ref, State, Class, Obj } from '@anticrm/core'
@@ -33,7 +32,7 @@
 
   const client = getClient()
 
-  async function deleteState() {
+  async function deleteState () {
     const spaceClassInstance = client.getHierarchy().getClass(spaceClass)
     const spaceView = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
     const containingClass = spaceView.view.class
@@ -42,25 +41,36 @@
 
     if (objectsInThisState.length > 0) {
       showPopup(MessageBox, {
-        label: 'Can\'t delete status',
+        label: "Can't delete status",
         message: `There are ${objectsInThisState.length} objects in the given state. Move or delete them first.`
       })
     } else {
-      showPopup(MessageBox, {
-        label: 'Delete status',
-        message: 'Do you want to delete this status?'
-      }, undefined, async (result) => {
-        if (result) {
-          await client.updateDoc(view.class.Kanban, kanban.space, kanban._id, { $pull: { states: state._id } })
-          client.removeDoc(state._class, state.space, state._id)    
+      showPopup(
+        MessageBox,
+        {
+          label: 'Delete status',
+          message: 'Do you want to delete this status?'
+        },
+        undefined,
+        async (result) => {
+          if (result) {
+            await client.updateDoc(view.class.Kanban, kanban.space, kanban._id, { $pull: { states: state._id } })
+            client.removeDoc(state._class, state.space, state._id)
+          }
         }
-      })
+      )
     }
   }
 </script>
 
 <div class="flex-col popup">
-  <div class="flex-row-center red-color menu-item" on:click={() => { dispatch('close'); deleteState() }}>
+  <div
+    class="flex-row-center red-color menu-item"
+    on:click={() => {
+      dispatch('close')
+      deleteState()
+    }}
+  >
     <div class="icon">
       <Delete size={'medium'} />
     </div>
@@ -70,26 +80,28 @@
 
 <style lang="scss">
   .popup {
-    padding: .5rem;
+    padding: 0.5rem;
     min-width: 12rem;
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.2);
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    padding: .5rem;
-    border-radius: .5rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
 
     .icon {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       transform-origin: center center;
-      transform: scale(.75);
+      transform: scale(0.75);
     }
-    &:hover { background-color: var(--theme-button-bg-hovered); }
+    &:hover {
+      background-color: var(--theme-button-bg-hovered);
+    }
   }
 </style>

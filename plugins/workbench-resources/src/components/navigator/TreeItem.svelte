@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import TreeElement from './TreeElement.svelte'
   import type { Asset } from '@anticrm/platform'
@@ -28,7 +27,17 @@
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
-
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed on:click={() => {dispatch('click')}}/>
+<TreeElement
+  {_id}
+  {icon}
+  {title}
+  {notifications}
+  {selected}
+  {actions}
+  collapsed
+  on:click={() => {
+    dispatch('click')
+  }}
+/>

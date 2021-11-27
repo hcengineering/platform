@@ -15,9 +15,30 @@
 
 import { Builder } from '@anticrm/model'
 import core from './component'
-import { TAttribute, TClass, TDoc, TMixin, TObj, TType, TTypeString, TTypeBoolean, TTypeTimestamp, TAttachedDoc } from './core'
+import {
+  TAttribute,
+  TClass,
+  TDoc,
+  TMixin,
+  TObj,
+  TType,
+  TTypeString,
+  TTypeBoolean,
+  TTypeTimestamp,
+  TAttachedDoc
+} from './core'
 import { TSpace, TAccount, TState, TSpaceWithStates, TDocWithState } from './security'
-import { TTx, TTxCreateDoc, TTxMixin, TTxUpdateDoc, TTxCUD, TTxPutBag, TTxRemoveDoc, TTxBulkWrite, TTxCollectionCUD } from './tx'
+import {
+  TTx,
+  TTxCreateDoc,
+  TTxMixin,
+  TTxUpdateDoc,
+  TTxCUD,
+  TTxPutBag,
+  TTxRemoveDoc,
+  TTxBulkWrite,
+  TTxCollectionCUD
+} from './tx'
 
 export * from './core'
 export * from './security'

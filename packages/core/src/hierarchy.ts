@@ -36,7 +36,9 @@ export class Hierarchy {
     return {
       get (target: any, property: string, receiver: any): any {
         const value = target[mixin]?.[property]
-        if (value === undefined) { return (ancestorProxy !== null) ? ancestorProxy.get?.(target, property, receiver) : target[property] }
+        if (value === undefined) {
+          return ancestorProxy !== null ? ancestorProxy.get?.(target, property, receiver) : target[property]
+        }
         return value
       }
     }

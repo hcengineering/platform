@@ -46,12 +46,15 @@ export interface Client extends Storage {
 class ClientImpl implements Client {
   notify?: (tx: Tx) => void
 
-  constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {
+  constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {}
+
+  getHierarchy (): Hierarchy {
+    return this.hierarchy
   }
 
-  getHierarchy (): Hierarchy { return this.hierarchy }
-
-  getModel (): ModelDb { return this.model }
+  getModel (): ModelDb {
+    return this.model
+  }
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -95,9 +98,7 @@ class ClientImpl implements Client {
 /**
  * @public
  */
-export async function createClient (
-  connect: (txHandler: TxHander) => Promise<Storage>
-): Promise<Client> {
+export async function createClient (connect: (txHandler: TxHander) => Promise<Storage>): Promise<Client> {
   let client: ClientImpl | null = null
   let txBuffer: Tx[] | undefined = []
 
@@ -114,7 +115,11 @@ export async function createClient (
   }
 
   const conn = await connect(txHander)
-  const txes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model }, { sort: { _id: SortingOrder.Ascending } })
+  const txes = await conn.findAll(
+    core.class.Tx,
+    { objectSpace: core.space.Model },
+    { sort: { _id: SortingOrder.Ascending } }
+  )
 
   const txMap = new Map<Ref<Tx>, Ref<Tx>>()
   for (const tx of txes) txMap.set(tx._id, tx._id)

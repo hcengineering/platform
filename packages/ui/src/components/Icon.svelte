@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">  
+<script lang="ts">
   import { Asset, getMetadata } from '@anticrm/platform'
-  import { AnySvelteComponent } from '../types';
+  import { AnySvelteComponent } from '../types'
 
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'

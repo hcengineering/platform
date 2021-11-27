@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import type { AnyComponent } from '../types'
-  
+
   // import Icon from './Icon.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
@@ -28,7 +27,7 @@
 </script>
 
 {#await component}
-  <Loading/>
+  <Loading />
 {:then Ctor}
   <ErrorBoundary>
     <Ctor {...props} on:change on:close on:open on:click>
