@@ -31,7 +31,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
+<!-- <div class="overlay" on:click={() => { dispatch('close') }}/> -->
 <div class="panel-container">
   <div class="leftSection">
 
@@ -69,18 +69,19 @@
 <style lang="scss">
   .panel-container {
     overflow: hidden;
-    position: fixed;
-    top: 32px;
-    bottom: 1.25rem;
-    left: 5rem;
-    right: 1.25rem;
+    // position: fixed;
+    // top: 32px;
+    // bottom: 1.25rem;
+    // left: 5rem;
+    // right: 1.25rem;
 
     display: flex;
     flex-direction: row;
-    height: calc(100% - 32px - 1.25rem);
+    height: 100%;
+    // height: calc(100% - 32px - 1.25rem);
     background: var(--theme-panel-bg);
     border-radius: .75rem;
-    filter: drop-shadow(-6px 0px 4px rgba(0, 0, 0, .25));
+    filter: drop-shadow(-4px 0px 4px rgba(0, 0, 0, .25));
 
     .header {
       flex-shrink: 0;
@@ -131,12 +132,12 @@
     color: var(--theme-content-accent-color);
   }
 
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, .4);
-  }
+  // .overlay {
+  //   position: fixed;
+  //   top: 0;
+  //   left: 0;
+  //   width: 100%;
+  //   height: 100%;
+  //   background-color: rgba(0, 0, 0, .4);
+  // }
 </style>

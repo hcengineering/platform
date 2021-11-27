@@ -19,16 +19,23 @@
   import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
   import { closePopup } from '..'
 
+  interface IPropsPopup {
+    index: number
+    length: number
+    offset: number | undefined
+  }
+
   export let is: AnyComponent | AnySvelteComponent
   export let props: object
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
-  export let zIndex: number
+  export let propsPopup: IPropsPopup
 
   let modalHTML: HTMLElement
   let modalOHTML: HTMLElement
   let componentInstance: any
   let show: boolean = false
+  let cover: boolean = false
 
   function close(result: any) {
     console.log('popup close result', result)
@@ -73,10 +80,14 @@
           modalHTML.style.bottom = '2.75rem'
           modalHTML.style.left = '5rem'
         } else if (element === 'full') {
-          modalHTML.style.top = '0'
-          modalHTML.style.bottom = '0'
-          modalHTML.style.left = '0'
-          modalHTML.style.right = '0'
+          if (propsPopup.offset !== undefined) {
+            modalHTML.style.top = (propsPopup.length - 1 - propsPopup.offset) * 20 + 32 + 'px'
+            modalHTML.style.left = propsPopup.offset * .75 + 5 + 'rem'
+            modalHTML.style.right = '1.25rem'
+            modalHTML.style.bottom = '1.25rem'
+            show = (propsPopup.offset === 0) ? true : false
+            cover = (propsPopup.index < propsPopup.length - 1) ? true : false
+          } else modalHTML.style.top = modalHTML.style.left = modalHTML.style.right = modalHTML.style.bottom = '0'
         }
       } else {
         modalHTML.style.top = '50%'
@@ -94,10 +105,12 @@
 </script>
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
-<div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
+<div bind:this={modalOHTML} class="modal-overlay" class:show style={`z-index: ${propsPopup.index * 50 + 1000};`} on:click={() => escapeClose()} />
+<div class="popup" bind:this={modalHTML} class:cover style={`z-index: ${propsPopup.index * 50 + 1001};`}>
+  {#if !cover}
+    <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
+  {/if}
 </div>
-<div bind:this={modalOHTML} class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
 <style lang="scss">
   .popup {
@@ -107,12 +120,25 @@
     justify-content: center;
     background-color: transparent;
   }
+
+  .cover {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, .04);
+    box-shadow: -4px 0px 4px rgba(0, 0, 0, .25);
+    backdrop-filter: blur(54px);
+    border-radius: .75rem;
+  }
+
   .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    &.show { background: rgba(0, 0, 0, .5); }
+    &.show { background: rgba(0, 0, 0, .4); }
   }
 </style>

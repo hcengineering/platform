@@ -16,17 +16,32 @@
   import { popupstore as modal } from '..'
   import PopupInstance from './PopupInstance.svelte'
 
+  type Offset = number | undefined
+  let offsets: Offset[] = []
+  let length: number
+
+  $: {
+    offsets = []
+    length = 0
+    $modal.forEach((item, i) => { offsets[i] = (item.element === 'full') ? length++ : undefined })
+  }
+
   // function handleKeydown (ev: KeyboardEvent) {
   //   if (ev.key === 'Escape' && $modal.is) {
   //     close()
   //   }
   // }
-
 </script>
 
 <!-- <svelte:window on:keydown={handleKeydown} /> -->
 
 {#each $modal as popup, i}
-  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} zIndex={(i+1) * 500}/>
+  <PopupInstance
+    is={popup.is}
+    props={popup.props}
+    element={popup.element}
+    onClose={popup.onClose}
+    propsPopup={{ index: i, length, offset: offsets[i] }}
+  />
 {/each}
 
