@@ -25,6 +25,7 @@ import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
+import { clientId } from '@anticrm/client'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -47,6 +48,7 @@ export function configurePlatform() {
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   
+  addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
   addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
