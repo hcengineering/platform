@@ -62,7 +62,7 @@
 
   <div class="flex-row-center tools">
     <div class="ml-4"><ActionIcon icon={IconSearch} size={'small'} label={'Search'} /></div>
-    <div class="ml-4"><ActionIcon icon={IconClose} size={'small'} label={'Close'} action={(ev) => { dispatch('close') }} /></div>
+    <div class="ml-4"><ActionIcon icon={IconClose} size={'small'} label={'Close'} action={async () => { dispatch('close') }} /></div>
   </div>
 </div>
 

@@ -81,8 +81,13 @@
           modalHTML.style.left = '5rem'
         } else if (element === 'full') {
           if (propsPopup.offset !== undefined) {
-            modalHTML.style.top = (propsPopup.length - 1 - propsPopup.offset) * 20 + 32 + 'px'
-            modalHTML.style.left = propsPopup.offset * .75 + 5 + 'rem'
+            if (propsPopup.length > 4) {
+              modalHTML.style.top = `calc(32px + ${5 - 5 / (propsPopup.length - 1) * propsPopup.offset}rem)`
+              modalHTML.style.left = 3 / propsPopup.length * propsPopup.offset + 5 + 'rem'
+            } else {
+              modalHTML.style.top = `calc(32px + ${(propsPopup.length - 1 - propsPopup.offset) * 1.25}rem)`
+              modalHTML.style.left = propsPopup.offset * .75 + 5 + 'rem'
+            }
             modalHTML.style.right = '1.25rem'
             modalHTML.style.bottom = '1.25rem'
             show = (propsPopup.offset === 0) ? true : false
@@ -122,14 +127,8 @@
   }
 
   .cover {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, .04);
-    box-shadow: -4px 0px 4px rgba(0, 0, 0, .25);
-    backdrop-filter: blur(54px);
+    background: var(--theme-bg-color);
+    filter: drop-shadow(-4px 0px 10px rgba(0, 0, 0, .5));
     border-radius: .75rem;
   }
 
@@ -139,6 +138,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    &.show { background: rgba(0, 0, 0, .4); }
+    &.show { background: rgba(0, 0, 0, .6); }
   }
 </style>
