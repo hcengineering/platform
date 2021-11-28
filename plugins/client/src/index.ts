@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
+import { Metadata, plugin } from '@anticrm/platform'
 import type { Plugin, Resource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
 // import type { LiveQuery } from '@anticrm/query'
@@ -25,10 +25,23 @@ import type { Client } from '@anticrm/core'
  */
 export const clientId = 'client' as Plugin
 
+/**
+ * @public
+ */
+export type ClientHook = (client: Client) => Promise<Client>
+
+/**
+ * @public
+ */
+export type ClientFactory = (token: string, endpoint: string) => Promise<Client>
+
 export default plugin(clientId,
   {
+    metadata: {
+      ClientHook: '' as Metadata<Resource<ClientHook>>
+    },
     function: {
-      GetClient: '' as Resource<(token: string, endpoint: string) => Promise<Client>>
+      GetClient: '' as Resource<ClientFactory>
     }
   }
 )

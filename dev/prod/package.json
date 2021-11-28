@@ -77,6 +77,8 @@
     "@anticrm/activity-assets": "~0.6.0",
     "@anticrm/activity-resources": "~0.6.0",
     "@anticrm/telegram": "~0.6.0",
-    "@anticrm/telegram-resources": "~0.6.0"
+    "@anticrm/telegram-resources": "~0.6.0",
+    "@anticrm/devmodel": "~0.6.0",
+    "@anticrm/devmodel-resources": "~0.6.0"
   }
 }

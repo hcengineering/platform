@@ -14,7 +14,9 @@
 //
 
 import { createClient, Client } from '@anticrm/core'
+import { getMetadata, getResource } from '@anticrm/platform'
 import { connect } from './connection'
+import clientPlugin from '@anticrm/client'
 
 /*!
  * Anticrm Platform™ Client Dev Plugin
@@ -29,6 +31,13 @@ export default async () => {
       GetClient: async (): Promise<Client> => {
         if (client === undefined) {
           client = await createClient(connect)
+        }
+        // Check if we had dev hook for client.
+        // Check if we had dev hook for client.
+        const hook = getMetadata(clientPlugin.metadata.ClientHook)
+        if (hook !== undefined) {
+          const hookProc = await getResource(hook)
+          client = await hookProc(client)
         }
         return client
       }
