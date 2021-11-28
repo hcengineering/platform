@@ -72,8 +72,8 @@ export async function upgradeWorkspace (mongoUrl: string, dbName: string, client
     // we're preserving accounts (created by core.account.System).
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
-      modifiedBy: core.account.System, 
-      _class: { $ne: contact.class.EmployeeAccount } 
+      modifiedBy: core.account.System,
+      _class: { $ne: contact.class.EmployeeAccount }
     })
     console.log(`${result.deletedCount} transactions deleted.`)
 
