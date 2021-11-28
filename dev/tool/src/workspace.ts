@@ -19,6 +19,7 @@ import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import { createContributingClient } from '@anticrm/contrib'
 import { encode } from 'jwt-simple'
 import { Client } from 'minio'
+import contact from '@anticrm/contact'
 
 import * as txJson from './model.tx.json'
 
@@ -53,6 +54,33 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
 
     console.log('create minio bucket')
     if (!await minio.bucketExists(dbName)) { await minio.makeBucket(dbName, 'k8s') }
+  } finally {
+    await client.close()
+  }
+}
+
+/**
+ * @public
+ */
+export async function upgradeWorkspace (mongoUrl: string, dbName: string, clientUrl: string, minio: Client): Promise<void> {
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = client.db(dbName)
+
+    console.log('removing model...')
+    // we're preserving accounts (created by core.account.System).
+    const result = await db.collection(DOMAIN_TX).deleteMany({
+      objectSpace: core.space.Model,
+      modifiedBy: core.account.System, 
+      _class: { $ne: contact.class.EmployeeAccount } 
+    })
+    console.log(`${result.deletedCount} transactions deleted.`)
+
+    console.log('creating model...')
+    const model = txes.filter(tx => tx.objectSpace === core.space.Model)
+    const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
+    console.log(`${insert.insertedCount} model transactions inserted.`)
   } finally {
     await client.close()
   }
