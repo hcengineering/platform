@@ -16,11 +16,11 @@
 
 <script lang="ts">
   import activity from '@anticrm/activity'
-  import type { Doc } from '@anticrm/core';
-  import type { Asset } from '@anticrm/platform';
-  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui';
-  import { Icon, ActionIcon, Component, IconSearch, IconClose, IconMoreH } from '@anticrm/ui';
-  import { createEventDispatcher } from 'svelte';
+  import type { Doc } from '@anticrm/core'
+  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+  import { Icon, ActionIcon, Component, IconSearch, IconClose, IconMoreH } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
@@ -29,6 +29,8 @@
   export let object: Doc
 
   const dispatch = createEventDispatcher()
+
+  const getIntlString = (str: string): IntlString => str as IntlString
 </script>
 
 <!-- <div class="overlay" on:click={() => { dispatch('close') }}/> -->
@@ -44,7 +46,7 @@
         {/if}
       </div>
       <div class="title">{title}</div>
-      <ActionIcon label={''} icon={IconMoreH} size={'medium'} />
+      <ActionIcon label={getIntlString('More...')} icon={IconMoreH} size={'medium'} action={async () => {}} />
     </div>
 
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
@@ -61,8 +63,8 @@
   </div>
 
   <div class="flex-row-center tools">
-    <div class="ml-4"><ActionIcon icon={IconSearch} size={'small'} label={'Search'} /></div>
-    <div class="ml-4"><ActionIcon icon={IconClose} size={'small'} label={'Close'} action={async () => { dispatch('close') }} /></div>
+    <div class="ml-4"><ActionIcon icon={IconSearch} size={'small'} label={getIntlString('Search')} action={async () => {}} /></div>
+    <div class="ml-4"><ActionIcon icon={IconClose} size={'small'} label={getIntlString('Close')} action={async () => { dispatch('close') }} /></div>
   </div>
 </div>
 
