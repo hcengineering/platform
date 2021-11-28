@@ -16,14 +16,13 @@
   import { popupstore as modal } from '..'
   import PopupInstance from './PopupInstance.svelte'
 
-  type Offset = number | undefined
-  let offsets: Offset[] = []
+  let offsets: (number | undefined)[] = []
   let length: number
 
   $: {
     offsets = []
     length = 0
-    $modal.forEach((item, i) => { offsets[i] = (item.element === 'full') ? length++ : undefined })
+    offsets = $modal.map(item => item.element === 'full' ? length++ : undefined)
   }
 
   // function handleKeydown (ev: KeyboardEvent) {
