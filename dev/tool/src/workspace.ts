@@ -18,10 +18,13 @@ import { MongoClient, Document } from 'mongodb'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import { createContributingClient } from '@anticrm/contrib'
 import { encode } from 'jwt-simple'
-import { Client } from 'minio'
+import { BucketItem, Client } from 'minio'
 import contact from '@anticrm/contact'
 
 import * as txJson from './model.tx.json'
+import { existsSync } from 'fs'
+import { mkdir, writeFile } from 'fs/promises'
+import { join } from 'path'
 
 const txes = (txJson as any).default as Tx[]
 
@@ -81,6 +84,52 @@ export async function upgradeWorkspace (mongoUrl: string, dbName: string, client
     const model = txes.filter(tx => tx.objectSpace === core.space.Model)
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${insert.insertedCount} model transactions inserted.`)
+  } finally {
+    await client.close()
+  }
+}
+
+/**
+  * @public
+  */
+export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName: string, minio: Client): Promise<void> {
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = client.db(dbName)
+
+    console.log('dumping transactions...')
+
+    const dbTxes = await db.collection<Tx>(DOMAIN_TX).find().toArray()
+    await writeFile(fileName + '.tx.json', JSON.stringify(dbTxes, undefined, 2))
+
+    console.log('Dump minio objects')
+    if (await minio.bucketExists(dbName)) {
+      const minioData: BucketItem[] = []
+      const list = await minio.listObjects(dbName, undefined, true)
+      await new Promise((resolve) => {
+        list.on('data', data => {
+          minioData.push(data)
+        })
+        list.on('end', () => {
+          resolve(null)
+        })
+      })
+      const minioDbLocation = dbName + '.minio'
+      if (!existsSync(minioDbLocation)) {
+        await mkdir(minioDbLocation)
+      }
+      await writeFile(fileName + '.minio.json', JSON.stringify(minioData, undefined, 2))
+      for (const d of minioData) {
+        const data = await minio.getObject(dbName, d.name)
+        const allData = []
+        let chunk
+        while ((chunk = data.read()) !== null) {
+          allData.push(chunk)
+        }
+        await writeFile(join(minioDbLocation, d.name), allData.join(''))
+      }
+    }
   } finally {
     await client.close()
   }
