@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
@@ -87,15 +88,6 @@
       font-size: 1rem;
       color: var(--theme-caption-color);
       user-select: none;
-    }
-  }
-  .activity {
-    &.header {
-      border-bottom: none;
-    }
-    &.content {
-      flex-grow: 1;
-      padding-bottom: 0;
     }
   }
 

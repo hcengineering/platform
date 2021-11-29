@@ -24,7 +24,6 @@
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
-  export let fullSize: boolean = false
   export let rightSection: AnyComponent | undefined
   export let object: Doc
 
