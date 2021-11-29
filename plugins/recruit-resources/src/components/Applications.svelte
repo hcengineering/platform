@@ -17,7 +17,7 @@
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
   import { createQuery } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, showPopup, Label, Link } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
   import CreateApplication from './CreateApplication.svelte'
   import FileDuo from "./icons/FileDuo.svelte"
   import { Table } from '@anticrm/view-resources'
@@ -61,10 +61,10 @@
     <div class="flex-col-center mt-5 createapp-container">
       <FileDuo size={'large'} />
       <div class="small-text content-dark-color mt-2">
-        <Label label={recruit.string.NoApplicationsCandidate} />
+        <Label label={recruit.string.NoApplicationsForCandidate} />
       </div>
       <div class="small-text">
-        <Link label={recruit.string.CreateAnApplication} maxLenght={0} on:click={createApp} />
+        <a href={'#'} on:click={createApp}><Label label={recruit.string.CreateAnApplication} /></a>
       </div>
     </div>
   {/if}
@@ -84,7 +84,6 @@
   }
 
   .createapp-container {
-    cursor: pointer;
     padding: 1rem;
     color: var(--theme-caption-color);
     background: var(--theme-bg-accent-color);

@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
-  import Label from './Label.svelte'
 
   export let label: IntlString
   export let href: string = '#'
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined
   export let disabled: boolean = false
   export let maxLenght: number = 26
 
-  const trimFilename = (fname: string): IntlString => (maxLenght !== 0 && fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) as IntlString
-                        : fname as IntlString
+  const trimFilename = (fname: string): string => (fname.length > maxLenght)
+                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+                        : fname
 </script>
 
 <span class="container" class:disabled on:click>
@@ -40,9 +40,9 @@
     </span>
   {/if}
   {#if disabled}
-    <Label label={trimFilename(label)} />
+    {trimFilename(label)}
   {:else}
-    <a {href}><Label label={trimFilename(label)} /></a>
+    <a {href}>{trimFilename(label)}</a>
   {/if}
 </span>
 
