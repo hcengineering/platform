@@ -21,7 +21,7 @@ import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
 import { Client } from 'minio'
-import { initWorkspace, upgradeWorkspace } from './workspace'
+import { initWorkspace, upgradeWorkspace, dumpWorkspace } from './workspace'
 
 import contact, { combineName } from '@anticrm/contact'
 
@@ -171,6 +171,13 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       await dropAccount(db, email)
     })
+  })
+
+program
+  .command('dump-workspace <name> <fileName>')
+  .description('dump workspace transactions and minio resources')
+  .action(async (workspace, fileName, cmd) => {
+    return await dumpWorkspace(mongodbUri, workspace, fileName, minio)
   })
 
 program.parse(process.argv)
