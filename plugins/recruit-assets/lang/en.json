@@ -11,7 +11,9 @@
     "Vacancy": "Vacancy",
     "CreateCandidates": "Create pool",
     "CandidatesName": "Pool name *",
-    "MakePrivateDescription": "Only members can see it"
+    "MakePrivateDescription": "Only members can see it",
+    "CreateAnApplication": "Create an application",
+    "NoApplicationsForCandidate": "There are no applications for this candidate."
   },
   "status": {
     "CandidateRequired": "Please select candidate"

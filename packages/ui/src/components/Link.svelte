@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
@@ -56,16 +57,16 @@
       margin-right: .25rem;
       transform-origin: center center;
       transform: scale(.75);
-      opacity: .6;
+      color: var(--theme-content-color);
     }
-    &:hover .icon { opacity: 1; }
-    &:active .icon { opacity: .6; }
+    &:hover .icon { color: var(--theme-caption-color); }
+    &:active .icon { color: var(--theme-content-accent-color); }
   }
   .disabled {
     cursor: not-allowed;
     color: var(--theme-content-trans-color);
-    .icon { opacity: .3; }
-    &:hover .icon { opacity: .3; }
-    &:active .icon { opacity: .3; }
+    .icon { color: var(--theme-content-trans-color); }
+    &:hover .icon { color: var(--theme-content-trans-color); }
+    &:active .icon { color: var(--theme-content-trans-color); }
   }
 </style>
