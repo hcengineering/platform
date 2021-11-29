@@ -16,7 +16,6 @@
 import { addLocation } from '@anticrm/platform'
 
 import login, { loginId } from '@anticrm/login'
-import { clientId } from '@anticrm/client'
 import { workbenchId } from '@anticrm/workbench'
 import { viewId } from '@anticrm/view'
 import { taskId } from '@anticrm/task'
@@ -26,10 +25,7 @@ import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
-
-import { serverChunterId } from '@anticrm/server-chunter'
-import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverViewId } from '@anticrm/server-view'
+import { clientId } from '@anticrm/client'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -39,6 +35,7 @@ import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
 import '@anticrm/setting-assets'
+import '@anticrm/workbench-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export function configurePlatform() {  
@@ -51,24 +48,8 @@ export function configurePlatform() {
   })    
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-
-  if (process.env.CLIENT_TYPE === 'dev') {
-    setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN_DEV)
-    setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT_DEV)
-    console.log('Use DEV server')
-    addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
-    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
-    addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
-    addLocation(serverViewId, () => import(/* webpackChunkName: "server-view" */ '@anticrm/server-view-resources'))
-  } else {
-    if (process.env.CLIENT_TYPE === 'dev-server') {
-      console.log('Use Endpoint override:', process.env.LOGIN_ENDPOINT)
-      setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-    }
-    console.log('Use server')
-    addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
-  }
   
+  addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
   addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))

@@ -22,7 +22,7 @@
   
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
-  import { setClient, Avatar } from '@anticrm/presentation'
+  import { setClient, Avatar, createQuery } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
 
   import Navigator from './Navigator.svelte'
@@ -38,6 +38,7 @@
   setClient(client)
 
   let currentApp: Ref<Application> | undefined
+  let currentApplication: Application | undefined
   let currentSpace: Ref<Space> | undefined
   let specialComponent: AnyComponent | undefined
   let currentView: ViewConfiguration | undefined
@@ -46,7 +47,8 @@
 
   onDestroy(location.subscribe(async (loc) => {
     currentApp = loc.path[1] as Ref<Application>
-    navigatorModel = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]?.navigatorModel
+    currentApplication = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]
+    navigatorModel = currentApplication?.navigatorModel
     let currentFolder = loc.path[2] as Ref<Space>
     specialComponent = getSpecialComponent(currentFolder)
     if (!specialComponent) {
@@ -68,6 +70,11 @@
     let special = navigatorModel?.specials?.find((x) => x.id === id)
     return special?.component
   }
+
+  let apps: Application[] = []
+
+  const query = createQuery()
+  $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
 </script>
 
 {#if client}
@@ -82,7 +89,7 @@
   <div class="container">
     <div class="panel-app">
       <ActivityStatus status="active"/>
-      <Applications active={currentApp}/>
+      <Applications {apps} active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
         <div class="cursor-pointer" on:click={(el) => { showPopup(AccountPopup, { }, 'account') }}>
           <Avatar size={'medium'} />
@@ -91,7 +98,9 @@
     </div>
     {#if navigator}
     <div class="panel-navigator">
-      <NavHeader label={'Chat'} action={() => {}} />
+      {#if currentApplication}
+        <NavHeader label={currentApplication.label} action={() => {}} />
+      {/if}
       <Navigator model={navigatorModel} />
     </div>
     {/if}

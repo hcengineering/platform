@@ -18,7 +18,7 @@
   import type { TooltipAligment, AnySvelteComponent, AnyComponent } from '..'
   import { tooltipstore as tooltip, showTooltip } from '..'
 
-  export let label: IntlString | undefined
+  export let label: IntlString | undefined = undefined
   export let direction: TooltipAligment | undefined = undefined
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined

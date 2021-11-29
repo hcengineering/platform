@@ -16,7 +16,7 @@
 import type { IntlString } from '@anticrm/platform'
 import type { Account, Arr, Ref, Space, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Prop, TypeString } from '@anticrm/model'
+import { Model, Prop, TypeState, TypeString } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
 
@@ -49,7 +49,7 @@ export class TState extends TDoc implements State {
 
 @Model(core.class.DocWithState, core.class.AttachedDoc)
 export class TDocWithState extends TDoc {
-  @Prop(TypeString(), 'State' as IntlString)
+  @Prop(TypeState(), 'State' as IntlString)
   state!: Ref<State>
 
   @Prop(TypeString(), 'No.' as IntlString)

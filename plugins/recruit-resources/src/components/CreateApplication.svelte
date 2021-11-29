@@ -43,11 +43,11 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return candidate === undefined && employee === undefined
   }
 
-  async function createApplication() {
+  async function createApplication () {
     const state = await client.findOne(core.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
@@ -62,19 +62,20 @@
     const id = await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
       state: state._id,
       number: incResult.object.sequence,
+      employee: employee
     })
   }
 
-  async function validate(candidate: Ref<Candidate>, space: Ref<Space>) {
+  async function validate (candidate: Ref<Candidate>, space: Ref<Space>) {
     if (candidate === undefined) {
       status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
     } else {
       if (space === undefined) {
         status = new Status(Severity.INFO, recruit.status.VacancyRequired, {})
       } else {
-        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate})
+        const applicants = await client.findAll(recruit.class.Applicant, { space, attachedTo: candidate })
         if (applicants.length > 0) {
-          status = new Status(Severity.ERROR,  recruit.status.ApplicationExists, {})
+          status = new Status(Severity.ERROR, recruit.status.ApplicationExists, {})
         } else {
           status = OK
         }
@@ -94,7 +95,6 @@
       spacePlaceholder={'Select vacancy'}
       bind:space={_space}
       on:close={() => { dispatch('close') }}>
-      
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}

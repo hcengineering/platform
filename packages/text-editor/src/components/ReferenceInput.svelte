@@ -24,14 +24,29 @@
 
   const dispatch = createEventDispatcher()
 
+  export let content: string = ''
+  export let showSend = true
+
+  let textEditor: TextEditor
+
+  export function submit (): void {
+    textEditor.submit()
+  }
 </script>
 
 <div class="ref-container">
   <div class="textInput">
     <div class="inputMsg">
-      <TextEditor on:message={ev => dispatch('message', ev.detail)}/>
+      <TextEditor content={content} bind:this={textEditor} on:content={
+        ev => {
+          dispatch('message', ev.detail)
+          content = ''
+        }
+      }/>
     </div>
-    <button class="sendButton"><div class="icon"><Send /></div></button>
+    {#if showSend}
+      <button class="sendButton" on:click={submit}><div class="icon"><Send/></div></button>
+    {/if}
   </div>
   <div class="buttons">
     <div class="tool"><Attach /></div>

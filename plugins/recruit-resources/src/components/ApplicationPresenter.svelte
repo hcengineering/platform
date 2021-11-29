@@ -26,7 +26,7 @@ export let value: Applicant
 const client = getClient()
 const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-function show() {
+function show () {
   closeTooltip()
   showPopup(EditApplication, { _id: value._id }, 'full')
 }

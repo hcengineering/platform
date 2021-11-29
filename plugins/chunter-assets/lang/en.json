@@ -2,6 +2,15 @@
   "string": {
     "ApplicationLabelChunter": "Chat",
     "LeftComment": "left a comment",
-    "AddAttachment": "uploaded an attachment"
+    "AddAttachment": "uploaded an attachment",
+    "Channels": "Channels",
+    "CreateChannel": "New Channel",
+    "ChannelName": "Name",
+    "ChannelDescription": "Description",
+    "MakePrivate": "Make private",
+    "MakePrivateDescription": "Only members can see it",
+    "Channel": "Channel",
+    "EditUpdate": "Save...",
+    "EditCancel": "Cancel"
   }
 }

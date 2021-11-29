@@ -23,12 +23,13 @@ const DefinePlugin = require('webpack').DefinePlugin
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
+const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer
 
 module.exports = {
   entry: {
     bundle: [
       '@anticrm/theme/styles/global.scss',
-      './src/main.ts'
+      ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] )
     ]
   },
   resolve: {

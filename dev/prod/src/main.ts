@@ -18,5 +18,4 @@ import { createApp } from '@anticrm/ui'
 import { configurePlatform } from './platform'
 
 configurePlatform()
-
 createApp(document.body)

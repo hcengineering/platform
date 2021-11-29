@@ -42,7 +42,7 @@ export class TMessage extends TDoc implements Message {
   content!: string
 }
 
-@Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
+@Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
 @UX('Comment' as IntlString)
 export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeString(), 'Message' as IntlString)
@@ -56,7 +56,7 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
-@Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
+@Model(chunter.class.Attachment, core.class.AttachedDoc, DOMAIN_ATTACHMENT)
 @UX('File' as IntlString)
 export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeString(), 'Name' as IntlString)
@@ -138,8 +138,19 @@ export function createModel (builder: Builder): void {
     txClass: core.class.TxCreateDoc,
     component: chunter.activity.TxCommentCreate,
     label: chunter.string.LeftComment,
-    display: 'content'
+    display: 'content',
+    editable: true,
+    hideOnRemove: true
   }, chunter.ids.TxCommentCreate)
+
+  // We need to define this one, to hide default attached object removed case
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: chunter.class.Comment,
+    icon: chunter.icon.Chunter,
+    txClass: core.class.TxRemoveDoc,
+    display: 'inline',
+    hideOnRemove: true
+  }, chunter.ids.TxCommentRemove)
 
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: chunter.class.Attachment,
