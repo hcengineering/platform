@@ -28,6 +28,7 @@
   export let maxWidth: string
   export let focus: boolean = false
   export let minimize: boolean = false
+  export let showHeader: boolean = true
 
   const _class = object._class
   const client = getClient()
@@ -59,14 +60,18 @@
         <CircleButton icon={attribute.icon} size={'large'} />
         {#if !minimize}
           <div class="flex-col with-icon">
-            <Label label={attribute.label} />
+            {#if showHeader}
+              <Label label={attribute.label} />
+            {/if}
             <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/></div>
           </div>
         {/if}
       </div>
     {:else}
       <div class="flex-col">
-        <Label label={attribute.label} />
+        {#if showHeader}
+          <Label label={attribute.label} />
+        {/if}
         <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/></div>
       </div>
     {/if}

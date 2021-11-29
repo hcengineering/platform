@@ -16,7 +16,7 @@
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Space, SpaceWithStates, DocWithState, Ref, Class, AttachedDoc } from '@anticrm/core'
-import type { Person } from '@anticrm/contact'
+import type { Employee, Person } from '@anticrm/contact'
 
 /**
  * @public
@@ -46,6 +46,7 @@ export interface Candidate extends Person {
  */
 export interface Applicant extends DocWithState, AttachedDoc {
   attachments?: number
+  employee: Ref<Employee>
 }
 
 /**

@@ -25,7 +25,7 @@
   export let title: string
   export let icon: Asset | AnySvelteComponent
   export let fullSize: boolean = false
-  export let rightSection: AnyComponent | undefined
+  export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
 
   const dispatch = createEventDispatcher()

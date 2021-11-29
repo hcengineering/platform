@@ -24,12 +24,14 @@
 
   import type { Ref, Class } from '@anticrm/core'
   import { formatName, Person } from '@anticrm/contact'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
   export let value: Ref<Person>
   export let show: boolean = false
+  const dispatch = createEventDispatcher()
 
   let selected: Person | undefined
   let btn: HTMLElement
@@ -58,7 +60,10 @@
     if (!opened) {
       opened = true
       showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
-        if (result) { value = result._id }
+        if (result) { 
+          value = result._id
+          dispatch('change', value)
+        }
         opened = false
       })
     }

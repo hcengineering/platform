@@ -109,6 +109,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.TimestampPresenter
   })
 
+  builder.mixin(core.class.State, core.class.Class, view.mixin.AttributeEditor, {
+    editor: view.component.StateEditor
+  })
+
   builder.mixin(core.class.State, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.StatePresenter
   })
