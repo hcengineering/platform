@@ -15,46 +15,21 @@
 -->
 
 <script lang="ts">
-  import { Avatar, getClient } from '@anticrm/presentation'
   import type { Comment } from '@anticrm/chunter'
-  import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-
-  import { MessageViewer } from '@anticrm/presentation'
-  import { Account, Ref } from '@anticrm/core'
+  import { formatName } from '@anticrm/contact'
+  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { getTime, getUser } from '../utils'
 
   export let value: Comment
 
   const client = getClient()
-
-  async function getUser (user: Ref<EmployeeAccount> | Ref<Account>): Promise<EmployeeAccount | undefined>  {
-    return await client.findOne(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
-  }
-
-  function getTime (time: number): string {
-    let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric'}
-    if (!isToday(time)) {
-      options = {
-        month: 'numeric',
-         day: 'numeric',
-        ...options
-      }
-    }
-
-    return new Date(value.modifiedOn).toLocaleString('default', options)
-  }
-
-  function isToday (time: number): boolean {
-    const current = new Date()
-    const target = new Date(time)
-    return current.getDate() === target.getDate() && current.getMonth() === target.getMonth() && current.getFullYear() === target.getFullYear()
-  }
 </script>
 
 <div class="container">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
     <div class="header">
-      {#await getUser(value.modifiedBy) then user}
+      {#await getUser(client, value.modifiedBy) then user}
         {#if user}{formatName(user.name)}{/if}
       {/await}
       <span>{getTime(value.modifiedOn)}</span>
