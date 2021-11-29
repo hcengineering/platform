@@ -16,13 +16,12 @@
 
 <script lang="ts">
 
-import type { Ref, Class ,Doc, FindOptions, Space, WithLookup, Obj } from '@anticrm/core'
-import type { Connection } from '@anticrm/client'
+import type { Ref, Class ,Doc, FindOptions, Space, WithLookup, Obj, Client } from '@anticrm/core'
 import type { Viewlet } from '@anticrm/view'
 
 import { getClient } from '@anticrm/presentation'
 
-import { Icon, Component, EditWithIcon, IconSearch } from '@anticrm/ui'
+import { Icon, Component, EditWithIcon, IconSearch, Tooltip } from '@anticrm/ui'
 
 import view from '@anticrm/view'
 import core from '@anticrm/core'
@@ -34,7 +33,7 @@ const client = getClient()
 
 type ViewletConfig = WithLookup<Viewlet>
 
-async function getViewlets(client: Connection, _class: Ref<Class<Obj>>): Promise<ViewletConfig[]> {
+async function getViewlets(client: Client, _class: Ref<Class<Obj>>): Promise<ViewletConfig[]> {
   return await client.findAll(view.class.Viewlet, { attachTo: _class }, { lookup: { 
     descriptor: core.class.Class
   }})
@@ -67,7 +66,11 @@ function onSearch(ev: Event) {
       <div class="flex">
         {#each viewlets as viewlet, i}
           <div class="btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
-            <div class="icon"><Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/></div>
+            <div class="icon">
+              <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
+                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
+              </Tooltip>
+            </div>
           </div>
         {/each}
       </div>

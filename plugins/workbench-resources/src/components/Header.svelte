@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import { Icon } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
 
   export let icon: Asset | undefined
   export let label: IntlString
@@ -25,7 +25,7 @@
 <div class="header-container">
   <div class="flex-row-center">
     {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
-    <span class="label">{label}</span>
+    <span class="label"><Label {label}/></span>
   </div>
   {#if description }<div class="description">{description}</div>{/if}
 </div>

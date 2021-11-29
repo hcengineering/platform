@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { addStringsLoader } from '@anticrm/platform'
+import { workbenchId } from '@anticrm/workbench'
 
-import workbench, { workbenchId } from '@anticrm/workbench'
-import { IntlString } from '@anticrm/platform'
-
-export default mergeIds(workbenchId, workbench, {
-  string: {
-    More: '' as IntlString,
-    Delete: '' as IntlString,
-    Create: '' as IntlString
-  }
-})
+addStringsLoader(workbenchId, async (lang: string) => await import(`../lang/${lang}.json`))
