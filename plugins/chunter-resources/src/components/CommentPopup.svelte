@@ -16,17 +16,33 @@
 
 <script lang="ts">
   import { Ref, Doc, SortingOrder } from '@anticrm/core'
-  import { Table } from '@anticrm/view-resources'
 
-  import chunter from '@anticrm/chunter'
+  import chunter, { Comment } from '@anticrm/chunter'
+  import { createQuery } from '@anticrm/presentation'
+  import CommentPresenter from './CommentPresenter.svelte'
 
   export let objectId: Ref<Doc>
 
+    let comments: Comment[] = []
+    const query = createQuery()
+    $: query.query(chunter.class.Comment, { attachedTo: objectId }, (res) => {
+      comments = res
+    }, { limit: 3, sort: { modifiedOn: SortingOrder.Descending }})
+
 </script>
 
-<Table 
-  _class={chunter.class.Comment}
-  config={['']}
-  options={ { limit: 3, sort: { modifiedOn: SortingOrder.Descending }} }
-  query={ { attachedTo: objectId } }
-/>
+<div class="content">
+  {#each comments as comment}
+    <div class="item">
+      <CommentPresenter value={comment} />
+    </div>
+  {/each}
+</div>
+
+<style lang="scss">
+  .content {
+    .item + .item {
+      margin-top: 1.75rem;
+    }
+  }
+</style>

@@ -28,7 +28,7 @@
 <div class="container">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
-    <div class="header">
+    <div class="header flex-between">
       {#await getUser(client, value.modifiedBy) then user}
         {#if user}{formatName(user.name)}{/if}
       {/await}
@@ -48,14 +48,14 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      margin-left: 1rem;
+      margin-left: 1.1rem;
 
       .header {
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
-        margin-bottom: .25rem;
+        margin-bottom: .2rem;
 
         span {
           margin-left: .5rem;
@@ -67,6 +67,9 @@
       }
       .text {
         line-height: 150%;
+        max-width: 20rem;
+
+        :global(p) { margin: 0; }
       }
     }
   }
