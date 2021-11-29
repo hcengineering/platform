@@ -35,6 +35,12 @@ export interface TxViewlet extends Doc {
   label?: IntlString
   // Do component need to be emphasized or not.
   display: 'inline' | 'content' | 'emphasized'
+
+  // If defined and true, will show context menu with Edit action, and will pass 'edit:true' to viewlet properties.
+  editable?: boolean
+
+  // If defined and true, will hide all transactions from object in case it is deleted.
+  hideOnRemove?: boolean
 }
 /**
  * @public
@@ -42,6 +48,12 @@ export interface TxViewlet extends Doc {
 export const activityId = 'activity' as Plugin
 
 export default plugin(activityId, {
+  string: {
+    Delete: '' as IntlString,
+    Edit: '' as IntlString,
+    Options: '' as IntlString,
+    Edited: '' as IntlString
+  },
   icon: {
     Activity: '' as Asset
   },

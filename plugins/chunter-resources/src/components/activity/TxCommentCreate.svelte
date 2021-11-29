@@ -14,20 +14,55 @@
 -->
 
 <script lang="ts">
-  import type { Comment } from "@anticrm/chunter"
-  import type { TxCreateDoc } from "@anticrm/core"
-  import { MessageViewer } from '@anticrm/presentation'
+  import type { Comment } from "@anticrm/chunter";
+  import type { TxCreateDoc } from "@anticrm/core";
+  import { getClient, MessageViewer } from '@anticrm/presentation'
+  import { ReferenceInput } from "@anticrm/text-editor"
+  import { Button } from "@anticrm/ui"
+  import { createEventDispatcher } from "svelte"
+  import chunter from '../../plugin'
 
   export let tx: TxCreateDoc<Comment>
-</script>
+  export let value: Comment
+  export let edit: boolean = false
 
-<div class="text">
-  <MessageViewer message={tx.attributes.message}/>
+  const client = getClient()
+  const dispatch = createEventDispatcher()
+
+  let editing = false
+
+  function onMessage(event: CustomEvent) {
+    client.updateCollection(tx.objectClass, tx.objectSpace, tx.objectId, value.attachedTo, value.attachedToClass, value.collection, {
+      message: event.detail
+    })
+    dispatch('close', false)
+  }
+  let refInput: ReferenceInput
+</script>
+<div class='container' class:editing={editing}>
+  <div class="text">
+    {#if edit}
+      <ReferenceInput bind:this={refInput} content={value.message} on:message={onMessage} showSend={false}/>
+      <div class='flex-row-reverse flex-grab'>
+        <Button label={chunter.string.EditCancel} on:click={() => {
+          dispatch('close', false)
+        }}/>
+        <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
+      </div>
+    {:else}
+      <MessageViewer message={value.message}/>
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
-  .text {
-    line-height: 150%;
-    color: var(--theme-content-color);
+  .container {
+    .text {
+      line-height: 150%;
+      color: var(--theme-content-color);
+    }
+    .editing {
+      border: 1px solid var(--primary-button-focused-border);
+    }
   }
 </style>

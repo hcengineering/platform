@@ -14,24 +14,23 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset, Resource } from '@anticrm/platform'
+  import type { Doc } from '@anticrm/core'
+  import type { Asset, IntlString, Resource } from '@anticrm/platform'
   import { getResource } from '@anticrm/platform'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import type { Ref, Class, Doc } from '@anticrm/core' 
+  import { getClient } from '@anticrm/presentation'
+  import { Menu } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label, IconMoreH, IconFile } from '@anticrm/ui'
-  import type { Action, ActionTarget } from '@anticrm/view'
   import { getActions } from '../utils'
-  import view from '@anticrm/view'
 
   export let object: Doc
   
-  let actions: Action[] = []
+  let actions: {
+    label: IntlString
+    icon?: Asset
+    action: () => void
+  }[] = []
 
   const client = getClient()
-
-  getActions(client, object._class).then(result => { actions = result })
-
   const dispatch = createEventDispatcher()
 
   async function invokeAction(action: Resource<(object: Doc) => Promise<void>>) {
@@ -40,46 +39,15 @@
     await impl(object)
   }
 
+  getActions(client, object._class).then(result => { 
+    actions = result.map(a => ({
+      label: a.label,
+      icon: a.icon,
+      action: () => { invokeAction(a.action) }
+    }) )
+  })
+
 </script>
 
-<div class="flex-col popup">
-  {#each actions as action}
-    <div class="flex-row-center menu-item" on:click={() => { invokeAction(action.action) }}>
-      <div class="icon">
-        <Icon icon={action.icon} size={'large'} />
-      </div>
-      <div class="label"><Label label={action.label} /></div>
-    </div>
-  {/each}
-</div>
+<Menu actions={actions} on:close/>
 
-<style lang="scss">
-  .popup {
-    padding: .5rem;
-    height: 100%;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: .375rem 1rem .375rem .5rem;
-    border-radius: .5rem;
-    cursor: pointer;
-
-    .icon {
-      margin-right: .75rem;
-      transform-origin: center center;
-      transform: scale(.75);
-      opacity: .3;
-    }
-    .label {
-      flex-grow: 1;
-      color: var(--theme-content-accent-color);
-    }
-    &:hover { background-color: var(--theme-button-bg-hovered); }
-  }
-</style>

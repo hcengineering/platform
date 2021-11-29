@@ -15,15 +15,16 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { ActionIcon, IconMoreH } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH, Label } from '@anticrm/ui'
+  import workbench from '../plugin'
 
   export let label: IntlString
-  export let action: () => Promise<void>
+  export let action: () => Promise<void> | void
 </script>
 
 <div class="container">
-  <span class="overflow-label label">{label}</span>
-  <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} {action}/>
+  <span class="overflow-label label"><Label {label}></Label></span>
+  <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/>
 </div>
 
 <style lang="scss">

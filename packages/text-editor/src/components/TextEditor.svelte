@@ -31,22 +31,28 @@ import { getClient } from '@anticrm/presentation'
 
 import contact from '@anticrm/contact'
 
+export let content: string = ''
+
 let element: HTMLElement
 let editor: Editor
 
 const dispatch = createEventDispatcher()
 const client = getClient()
 
+export function submit (): void {
+  content = editor.getHTML()
+  dispatch('content', content)
+  content = ''
+  editor.commands.clearContent(false)
+}
+
 const HandleEnter = Extension.create({
   addKeyboardShortcuts() {
     return {
-      'Enter': () => {
-        dispatch('message', this.editor.getHTML())
-        this.editor.commands.clearContent(false)
+      'Enter': () => {    
+        submit()
         return true
-      }
-      
-      
+      }          
     }
   },
 })
@@ -54,6 +60,7 @@ const HandleEnter = Extension.create({
 onMount(() => {
   editor = new Editor({
     element,
+    content: content,
     extensions: [
       HandleEnter,
       StarterKit,
@@ -103,7 +110,6 @@ onDestroy(() => {
     editor.destroy()
   }
 })
-
 </script>
 
 <div style="width: 100%" bind:this={element}/>

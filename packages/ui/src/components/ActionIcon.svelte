@@ -21,7 +21,7 @@
   import Tooltip from './Tooltip.svelte'
 
   export let label: IntlString
-  export let direction: TooltipAligment | undefined
+  export let direction: TooltipAligment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
   export let action: (ev?: Event) => Promise<void> | void

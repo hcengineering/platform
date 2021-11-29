@@ -16,7 +16,7 @@
 
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import type { Ref, Class, Obj, FindOptions, Doc, Client } from '@anticrm/core'
+import type { Ref, Class, Obj, FindOptions, Doc, Client, FindResult } from '@anticrm/core'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 
@@ -117,7 +117,7 @@ function filterActions(client: Client, _class: Ref<Class<Obj>>, targets: ActionT
   return result
 }
 
-export async function getActions(client: Client, _class: Ref<Class<Obj>>) {
+export async function getActions(client: Client, _class: Ref<Class<Obj>>): Promise<FindResult<Action>> {
   const targets = await client.findAll(view.class.ActionTarget, {})
   return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets) }})
 }

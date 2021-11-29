@@ -21,7 +21,7 @@ import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
 import { Client } from 'minio'
-import { initWorkspace } from './workspace'
+import { initWorkspace, upgradeWorkspace } from './workspace'
 
 import contact, { combineName } from '@anticrm/contact'
 
@@ -146,6 +146,13 @@ program
       await createWorkspace(db, workspace, cmd.organization)
       await initWorkspace(mongodbUri, workspace, transactorUrl, minio)
     })
+  })
+
+program
+  .command('upgrade-workspace <name>')
+  .description('upgrade workspace')
+  .action(async (workspace, cmd) => {
+    await upgradeWorkspace(mongodbUri, workspace, transactorUrl, minio)
   })
 
 program
