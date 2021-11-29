@@ -2,6 +2,8 @@
   "string": {
     "ApplicationLabelChunter": "Chat",
     "LeftComment": "left a comment",
-    "AddAttachment": "uploaded an attachment"
+    "AddAttachment": "uploaded an attachment",
+    "EditUpdate": "Save...",
+    "EditCancel": "Cancel"
   }
 }

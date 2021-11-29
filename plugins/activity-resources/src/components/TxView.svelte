@@ -18,18 +18,18 @@
   import activity from '@anticrm/activity'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { Class, Doc, Ref, TxCUD, TxUpdateDoc } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
+  import { getResource, IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { AnyComponent, AnySvelteComponent, Component, Icon, Label, TimeSince } from '@anticrm/ui'
-  import type { AttributeModel } from '@anticrm/view'
-  import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
+  import { AnyComponent, AnySvelteComponent, Component, Icon, IconEdit, IconMoreH, Label, Menu, showPopup, TimeSince } from '@anticrm/ui'
+  import type { Action, AttributeModel } from '@anticrm/view'
+  import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
 
   type TxDisplayViewlet =
-    | (Pick<TxViewlet, 'icon' | 'label' | 'display'> & { component?: AnyComponent | AnySvelteComponent })
+    | (Pick<TxViewlet, 'icon' | 'label' | 'display'|'editable' | 'hideOnRemove'> & { component?: AnyComponent | AnySvelteComponent })
     | undefined
 
   let ptx: DisplayTx | undefined
@@ -38,6 +38,9 @@
   let props: any
   let employee: EmployeeAccount | undefined
   let model: AttributeModel[] = []
+  let actions: Action[] = []
+
+  let edit = false
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     viewlet = undefined
@@ -71,7 +74,7 @@
     const key = activityKey(dtx.tx.objectClass, dtx.tx._class)
     let viewlet: TxDisplayViewlet = viewlets.get(key)
 
-    props = { tx: dtx.tx, value: dtx.doc }
+    props = { tx: dtx.tx, value: dtx.doc, edit }
 
     if (viewlet === undefined && dtx.tx._class === core.class.TxCreateDoc) {
       // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
@@ -107,12 +110,40 @@
     })
   }
 
+  $: getActions(client, tx.tx.objectClass).then((result) => {
+    actions = result
+  })
+
   function getValue (utx: TxUpdateDoc<Doc>, key: string): any {
     return (utx.operations as any)[key]
   }
+  const showMenu = async (ev: MouseEvent): Promise<void> => {
+    showPopup(Menu, {
+      actions: [{
+        label: activity.string.Edit,
+        icon: IconEdit,
+        action: () => {
+          edit = true
+          props = { ...props, edit }
+        }
+      }, ...actions.map(a => ({
+        label: a.label,
+        icon: a.icon,
+        action: async () => {
+          const impl = await getResource(a.action)
+          await impl(tx.doc as Doc)
+        }
+      }))
+      ]
+    }, ev.target as HTMLElement)
+  }
+  const onCancelEdit = () => {
+    edit = false
+    props = { ...props, edit }
+  }
 </script>
 
-{#if viewlet !== undefined || model.length > 0}
+{#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
   <div class="flex-col msgactivity-container">
     <div class="flex-between">
       <div class="flex-center icon">
@@ -132,8 +163,24 @@
             No employee
           {/if}
         </div>
-        {#if viewlet && viewlet.label}
-          <div><Label label={viewlet.label} /></div>
+        {#if viewlet && viewlet?.editable}
+          <div class='edited'>
+            {#if viewlet.label}
+              <Label label={viewlet.label} />
+            {/if}
+            {#if tx.updated}
+            <Label label={activity.string.Edited}/>
+            {/if}
+            <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
+              <IconMoreH size={'small'} />
+            </div>
+          </div>
+        {:else}
+          {#if viewlet && viewlet.label}
+            <div>
+              <Label label={viewlet.label} />
+            </div>
+          {/if}
         {/if}
         {#if viewlet === undefined && model.length > 0 && tx.updateTx}
           {#each model as m}
@@ -143,9 +190,9 @@
         {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
           <div>
             {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} />
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
             {:else}
-              <svelte:component this={viewlet.component} {...props} />
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
             {/if}
           </div>
         {/if}
@@ -155,9 +202,9 @@
     {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
       <div class="content" class:emphasize={viewlet.display === 'emphasized'}>
         {#if typeof viewlet.component === 'string'}
-          <Component is={viewlet.component} {props} />
+          <Component is={viewlet.component} {props} on:close={onCancelEdit} />
         {:else}
-          <svelte:component this={viewlet.component} {...props} />
+          <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
         {/if}
       </div>
     {/if}
@@ -189,6 +236,12 @@
   }
   // :global(.msgactivity-container > *:last-child::after) { content: none; }
 
+  .menuOptions {
+    margin-left: .5rem;
+    opacity: .6;
+    cursor: pointer;
+    &:hover { opacity: 1; }
+  }
   .icon {
     flex-shrink: 0;
     align-self: flex-start;
@@ -212,6 +265,12 @@
   .time {
     margin-left: 1rem;
     color: var(--theme-content-trans-color);
+  }
+
+  .edited {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
   }
 
   .label {

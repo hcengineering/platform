@@ -78,11 +78,12 @@
   class:safari-gap-1={size === 'small'}
   class:safari-gap-2={size !== 'small'}
   class:reverse
-  on:click|stopPropagation={() => {}}
 >
   {#each displayItems as item}
+    <div on:click|stopPropagation={() => { dispatch('click', item) }}>
     <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
       <CircleButton icon={item.icon} {size} />
     </Tooltip>
+    </div>
   {/each}
 </div>

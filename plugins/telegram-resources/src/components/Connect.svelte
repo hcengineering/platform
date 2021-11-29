@@ -71,6 +71,8 @@
     if (res.err != null) {
       throw new Error(res.err)
     }
+
+    return res
   }
 
   function back() {

@@ -83,6 +83,7 @@ specifiers:
   '@rush-temp/view-assets': file:./projects/view-assets.tgz
   '@rush-temp/view-resources': file:./projects/view-resources.tgz
   '@rush-temp/workbench': file:./projects/workbench.tgz
+  '@rush-temp/workbench-assets': file:./projects/workbench-assets.tgz
   '@rush-temp/workbench-resources': file:./projects/workbench-resources.tgz
   '@rush-temp/workspace': file:./projects/workspace.tgz
   '@rushstack/heft': ^0.41.1
@@ -231,6 +232,7 @@ dependencies:
   '@rush-temp/view-assets': file:projects/view-assets.tgz
   '@rush-temp/view-resources': file:projects/view-resources.tgz_e1367da94684b005adf08f025c517b1a
   '@rush-temp/workbench': file:projects/workbench.tgz_typescript@4.4.3
+  '@rush-temp/workbench-assets': file:projects/workbench-assets.tgz
   '@rush-temp/workbench-resources': file:projects/workbench-resources.tgz_e1367da94684b005adf08f025c517b1a
   '@rush-temp/workspace': file:projects/workspace.tgz_typescript@4.4.3
   '@rushstack/heft': 0.41.1
@@ -10409,7 +10411,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-1einnqLkZQVaVUNlm/JU8G7micSM3DR/4em+rasS0Pt9FHyehFspVTvowM4757t7HAbIFYxx/m5MQ2AiGjGiwQ==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-2IXWVC0yNL631Gw6X7QwqjGN1+9Ooqswvx9OJchqJ9knRKWZ0RwjgQjHI5QGxs85aUTAB0F5WUe1NMdmfERY3Q==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -11077,6 +11079,12 @@ packages:
       - '@typescript-eslint/parser'
       - supports-color
       - typescript
+    dev: false
+
+  file:projects/workbench-assets.tgz:
+    resolution: {integrity: sha512-DCD9OfS0mb4mHt9QEJA9kFvaLl7Lcw3fNmNUtDDVFaN0W7xpELihKhKEMn4wt+FvwwTww5D/jykdb0sQh7K6Fw==, tarball: file:projects/workbench-assets.tgz}
+    name: '@rush-temp/workbench-assets'
+    version: 0.0.0
     dev: false
 
   file:projects/workbench-resources.tgz_e1367da94684b005adf08f025c517b1a:
