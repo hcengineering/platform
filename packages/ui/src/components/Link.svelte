@@ -16,16 +16,17 @@
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
 
   export let label: IntlString
   export let href: string = '#'
-  export let icon: Asset | AnySvelteComponent | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
   export let maxLenght: number = 26
 
-  const trimFilename = (fname: string): string => (fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-                        : fname
+  const trimFilename = (fname: string): IntlString => (maxLenght !== 0 && fname.length > maxLenght)
+                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) as IntlString
+                        : fname as IntlString
 </script>
 
 <span class="container" class:disabled on:click>
@@ -39,9 +40,9 @@
     </span>
   {/if}
   {#if disabled}
-    {trimFilename(label)}
+    <Label label={trimFilename(label)} />
   {:else}
-    <a {href}>{trimFilename(label)}</a>
+    <a {href}><Label label={trimFilename(label)} /></a>
   {/if}
 </span>
 
@@ -56,16 +57,16 @@
       margin-right: .25rem;
       transform-origin: center center;
       transform: scale(.75);
-      opacity: .6;
+      color: var(--theme-content-color);
     }
-    &:hover .icon { opacity: 1; }
-    &:active .icon { opacity: .6; }
+    &:hover .icon { color: var(--theme-caption-color); }
+    &:active .icon { color: var(--theme-content-accent-color); }
   }
   .disabled {
     cursor: not-allowed;
     color: var(--theme-content-trans-color);
-    .icon { opacity: .3; }
-    &:hover .icon { opacity: .3; }
-    &:active .icon { opacity: .3; }
+    .icon { color: var(--theme-content-trans-color); }
+    &:hover .icon { color: var(--theme-content-trans-color); }
+    &:active .icon { color: var(--theme-content-trans-color); }
   }
 </style>

@@ -27,8 +27,7 @@
   import Edit from './icons/Edit.svelte'
   import SocialEditor from './SocialEditor.svelte'
   import AttributesBar from './AttributesBar.svelte'
-  import CreateApplication from './CreateApplication.svelte'
-  import { Table } from '@anticrm/view-resources'
+  import Applications from './Applications.svelte'
 
   import core from '@anticrm/core'
 
@@ -98,28 +97,12 @@
     </div>
   </div>
 
-  <div class="flex-col group">
-    <div class="flex-row-center">
-      <div class="caption">Applications</div>
-      <CircleButton icon={IconAdd} size={'small'} on:click={ (ev) => { showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true }, ev.target) } } />
-    </div>
-    <Table 
-      _class={recruit.class.Applicant}
-      config={['', '$lookup.space.name', '$lookup.state']}
-      options={
-        {
-          lookup: {
-            state: core.class.State,
-            space: core.class.Space
-          }
-        }
-      }
-      query={ { attachedTo: _id } }
-    />
+  <div class="mt-14">
+    <Applications objectId={object._id} _class={object._class} space={object.space} />
   </div>
 
-  <div class="group">
-    <Attachments objectId={object._id} _class={object._class} space={object.space} {object}/>
+  <div class="mt-14">
+    <Attachments objectId={object._id} _class={object._class} space={object.space} />
   </div>
 
 </Panel>
@@ -138,16 +121,5 @@
   .channels {
     margin-top: .75rem;
     span { margin-left: .5rem; }
-  }
-
-  .group {
-    margin-top: 3.5rem;
-
-    .caption {
-      margin-right: .75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
   }
 </style>

@@ -24,7 +24,7 @@
   import { Table } from '@anticrm/view-resources'
 
   import { uploadFile } from '../utils'
-  import Upload from './icons/Upload.svelte'
+  import UploadDuo from './icons/UploadDuo.svelte'
 
   import chunter from '@anticrm/chunter'
 
@@ -101,7 +101,7 @@
       on:drop|preventDefault|stopPropagation={fileDrop}
       on:click={ () => { inputFile.click() } }
     >
-      <Upload size={'large'} />
+      <UploadDuo size={'large'} />
       <div class="small-text content-dark-color mt-2">There are no attachments for this candidate.</div>
       <div class="small-text">
         Upload or drop files here
