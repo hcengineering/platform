@@ -56,9 +56,9 @@
     <div class="flex-grow fs-title ml-2"><Label label={clazz.label} /></div>
     <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
   </div>
-  <div class="flex-row-center subtitle">
+  <!-- <div class="flex-row-center subtitle">
     Subtitle
-  </div>
+  </div> -->
   <div class="flex-stretch tab-container">
     {#each tabs as tab, i}
       <div class="flex-row-center tab" class:selected={i === selected}
@@ -118,12 +118,12 @@
       }
     }
 
-    .subtitle {
-      flex-shrink: 0;
-      padding: 0 2.5rem;
-      height: 3.5rem;
-      border-bottom: 1px solid var(--theme-dialog-divider);
-    }
+    // .subtitle {
+    //   flex-shrink: 0;
+    //   padding: 0 2.5rem;
+    //   height: 3.5rem;
+    //   border-bottom: 1px solid var(--theme-dialog-divider);
+    // }
   }
 
   .tab-container {

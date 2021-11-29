@@ -22,7 +22,7 @@
   import type { Kanban } from '@anticrm/view'
   import Delete from './icons/Delete.svelte'
 
-  import workbench from '@anticrm/workbench'
+  import workbench from '../plugin'
   import view from '@anticrm/view'
 
   export let kanban: Kanban
@@ -64,7 +64,7 @@
     <div class="icon">
       <Delete size={'medium'} />
     </div>
-    <div class="flex-grow"><Label label={'Delete'} /></div>
+    <div class="flex-grow"><Label label={workbench.string.Delete} /></div>
   </div>
 </div>
 

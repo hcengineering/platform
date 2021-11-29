@@ -24,6 +24,7 @@
   import { showPopup } from '@anticrm/ui'
   import { classIcon } from '../utils'
   import core from '@anticrm/core'
+  import workbench from '../plugin'
 
   export let space: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -44,11 +45,11 @@
   {#if data}
     <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
     {#if createItemDialog}
-      <Button label="Create" primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
-    <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
+    <!-- <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
     <ActionIcon label={'Create'} icon={IconAdd} size={'small'}/>
-    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/>
+    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/> -->
   {/if}
 </div>
 
