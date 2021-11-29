@@ -131,7 +131,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Action, core.space.Model, {
     label: 'Delete' as IntlString,
-    icon: view.icon.Kanban,
+    icon: view.icon.Delete,
     action: view.actionImpl.Delete
   }, view.action.Delete)
 
