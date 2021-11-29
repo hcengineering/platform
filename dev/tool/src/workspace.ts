@@ -76,7 +76,7 @@ export async function upgradeWorkspace (mongoUrl: string, dbName: string, client
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
-      _class: { $ne: contact.class.EmployeeAccount }
+      objectClass: { $ne: contact.class.EmployeeAccount }
     })
     console.log(`${result.deletedCount} transactions deleted.`)
 
@@ -115,7 +115,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
           resolve(null)
         })
       })
-      const minioDbLocation = dbName + '.minio'
+      const minioDbLocation = fileName + '.minio'
       if (!existsSync(minioDbLocation)) {
         await mkdir(minioDbLocation)
       }
