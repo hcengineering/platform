@@ -20,7 +20,18 @@
   import core, { Class, Doc, Ref, TxCUD, TxUpdateDoc } from '@anticrm/core'
   import { getResource, IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { AnyComponent, AnySvelteComponent, Component, Icon, IconEdit, IconMoreH, Label, Menu, showPopup, TimeSince } from '@anticrm/ui'
+  import {
+    AnyComponent,
+    AnySvelteComponent,
+    Component,
+    Icon,
+    IconEdit,
+    IconMoreH,
+    Label,
+    Menu,
+    showPopup,
+    TimeSince
+  } from '@anticrm/ui'
   import type { Action, AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
@@ -29,7 +40,9 @@
   export let viewlets: Map<ActivityKey, TxViewlet>
 
   type TxDisplayViewlet =
-    | (Pick<TxViewlet, 'icon' | 'label' | 'display'|'editable' | 'hideOnRemove'> & { component?: AnyComponent | AnySvelteComponent })
+    | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove'> & {
+        component?: AnyComponent | AnySvelteComponent
+      })
     | undefined
 
   let ptx: DisplayTx | undefined
@@ -102,7 +115,7 @@
     const ops = {
       client,
       _class: tx.updateTx.objectClass,
-      keys: Object.keys(tx.updateTx.operations).filter(id => !id.startsWith('$')),
+      keys: Object.keys(tx.updateTx.operations).filter((id) => !id.startsWith('$')),
       ignoreMissing: true
     }
     buildModel(ops).then((m) => {
@@ -118,24 +131,30 @@
     return (utx.operations as any)[key]
   }
   const showMenu = async (ev: MouseEvent): Promise<void> => {
-    showPopup(Menu, {
-      actions: [{
-        label: activity.string.Edit,
-        icon: IconEdit,
-        action: () => {
-          edit = true
-          props = { ...props, edit }
-        }
-      }, ...actions.map(a => ({
-        label: a.label,
-        icon: a.icon,
-        action: async () => {
-          const impl = await getResource(a.action)
-          await impl(tx.doc as Doc)
-        }
-      }))
-      ]
-    }, ev.target as HTMLElement)
+    showPopup(
+      Menu,
+      {
+        actions: [
+          {
+            label: activity.string.Edit,
+            icon: IconEdit,
+            action: () => {
+              edit = true
+              props = { ...props, edit }
+            }
+          },
+          ...actions.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            action: async () => {
+              const impl = await getResource(a.action)
+              await impl(tx.doc as Doc)
+            }
+          }))
+        ]
+      },
+      ev.target as HTMLElement
+    )
   }
   const onCancelEdit = () => {
     edit = false
@@ -164,23 +183,21 @@
           {/if}
         </div>
         {#if viewlet && viewlet?.editable}
-          <div class='edited'>
+          <div class="edited">
             {#if viewlet.label}
               <Label label={viewlet.label} />
             {/if}
             {#if tx.updated}
-            <Label label={activity.string.Edited}/>
+              <Label label={activity.string.Edited} />
             {/if}
             <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
               <IconMoreH size={'small'} />
             </div>
           </div>
-        {:else}
-          {#if viewlet && viewlet.label}
-            <div>
-              <Label label={viewlet.label} />
-            </div>
-          {/if}
+        {:else if viewlet && viewlet.label}
+          <div>
+            <Label label={viewlet.label} />
+          </div>
         {/if}
         {#if viewlet === undefined && model.length > 0 && tx.updateTx}
           {#each model as m}
@@ -237,10 +254,12 @@
   // :global(.msgactivity-container > *:last-child::after) { content: none; }
 
   .menuOptions {
-    margin-left: .5rem;
-    opacity: .6;
+    margin-left: 0.5rem;
+    opacity: 0.6;
     cursor: pointer;
-    &:hover { opacity: 1; }
+    &:hover {
+      opacity: 1;
+    }
   }
   .icon {
     flex-shrink: 0;
