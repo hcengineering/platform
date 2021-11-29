@@ -32,6 +32,8 @@ export class TTxViewlet extends TDoc implements TxViewlet {
   match!: DocumentQuery<Tx>
   label!: IntlString
   display!: 'inline' | 'content' | 'emphasized'
+  editable!: boolean
+  hideOnRemove!: boolean
 }
 
 export function createModel (builder: Builder): void {

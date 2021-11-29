@@ -1405,7 +1405,9 @@
       "txClass": "core:class:TxCreateDoc",
       "component": "chunter:activity:TxCommentCreate",
       "label": "chunter:string:LeftComment",
-      "display": "content"
+      "display": "content",
+      "editable": true,
+      "hideOnRemove": true
     }
   },
   {

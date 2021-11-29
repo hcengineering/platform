@@ -138,8 +138,19 @@ export function createModel (builder: Builder): void {
     txClass: core.class.TxCreateDoc,
     component: chunter.activity.TxCommentCreate,
     label: chunter.string.LeftComment,
-    display: 'content'
+    display: 'content',
+    editable: true,
+    hideOnRemove: true
   }, chunter.ids.TxCommentCreate)
+
+  // We need to define this one, to hide default attached object removed case
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: chunter.class.Comment,
+    icon: chunter.icon.Chunter,
+    txClass: core.class.TxRemoveDoc,
+    display: 'inline',
+    hideOnRemove: true
+  }, chunter.ids.TxCommentRemove)
 
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: chunter.class.Attachment,
