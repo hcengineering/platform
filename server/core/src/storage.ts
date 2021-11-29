@@ -117,6 +117,11 @@ class TServerStorage implements ServerStorage {
         const txFactory = new TxFactory(tx.modifiedBy)
         return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: 1 } })]
       }
+      if (colTx.tx._class === core.class.TxRemoveDoc) {
+        attachedTo = (await this.findAll(_class, { _id }))[0]
+        const txFactory = new TxFactory(tx.modifiedBy)
+        return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: -1 } })]
+      }
     }
     return []
   }

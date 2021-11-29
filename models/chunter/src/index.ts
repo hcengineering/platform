@@ -42,7 +42,7 @@ export class TMessage extends TDoc implements Message {
   content!: string
 }
 
-@Model(chunter.class.Comment, core.class.Doc, DOMAIN_COMMENT)
+@Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
 @UX('Comment' as IntlString)
 export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeString(), 'Message' as IntlString)
@@ -56,7 +56,7 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
-@Model(chunter.class.Attachment, core.class.Doc, DOMAIN_ATTACHMENT)
+@Model(chunter.class.Attachment, core.class.AttachedDoc, DOMAIN_ATTACHMENT)
 @UX('File' as IntlString)
 export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeString(), 'Name' as IntlString)
