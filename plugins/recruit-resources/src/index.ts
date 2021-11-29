@@ -24,7 +24,6 @@ import Attachments from './components/Attachments.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
-
 import TxApplicantUpdate from './components/activity/TxApplicantUpdate.svelte'
 
 import { showPopup } from '@anticrm/ui'

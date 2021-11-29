@@ -15,24 +15,26 @@
 -->
 
 <script lang="ts">
+  import { AttributeBarEditor, getClient, UserBox } from '@anticrm/presentation'
+  import { Applicant } from '@anticrm/recruit'
+  import contact from '@anticrm/contact'
 
-import type { Applicant } from '@anticrm/recruit'
-import { closeTooltip, IconFile, showPopup } from '@anticrm/ui'
-import EditApplication from './EditApplication.svelte'
-import { getClient } from '@anticrm/presentation'
+  export let object: Applicant
+  const client = getClient()
 
-export let value: Applicant
-
-const client = getClient()
-const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
-
-function show () {
-  closeTooltip()
-  showPopup(EditApplication, { _id: value._id }, 'full')
-}
-
+  function change () {
+    client.updateDoc(object._class, object.space, object._id, { employee: object.employee })
+  }
 </script>
 
-<div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><IconFile size={'small'}/></span>{shortLabel}-{value.number}
+<div class="flex-between header">
+  <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={object.employee} on:change={change} />
+  <AttributeBarEditor key={'state'} {object} showHeader={false} />
 </div>
+
+<style lang="scss">
+  .header {
+    width: 100%;
+    padding: 0 .5rem;
+  }
+</style>

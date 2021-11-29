@@ -19,6 +19,7 @@ import type { Ref, FindOptions, Doc, Domain, Class } from '@anticrm/core'
 import core, { TSpace, TSpaceWithStates, TDocWithState } from '@anticrm/model-core'
 import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import activity from '@anticrm/activity'
+import type { Employee } from '@anticrm/contact'
 
 import workbench from '@anticrm/model-workbench'
 
@@ -73,6 +74,9 @@ export class TApplicant extends TDocWithState implements Applicant {
 
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number
+
+  @Prop(TypeString(), 'Assigned recruiter' as IntlString)
+  employee!: Ref<Employee>
 }
 
 export function createModel (builder: Builder): void {

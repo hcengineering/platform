@@ -283,6 +283,13 @@ export function TypeTimestamp (): Type<string> {
 /**
  * @public
  */
+export function TypeState (): Type<string> {
+  return { _class: core.class.State, label: 'TypeState' as IntlString }
+}
+
+/**
+ * @public
+ */
 export function Bag (): Type<Record<string, PropertyType>> {
   return { _class: core.class.Bag, label: 'Bag' as IntlString }
 }
