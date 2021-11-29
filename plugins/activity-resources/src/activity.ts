@@ -140,16 +140,14 @@ class ActivityImpl implements Activity {
 
     const parents = new Map<Ref<Doc>, DisplayTx>()
 
-    const results: DisplayTx[] = []
+    let results: DisplayTx[] = []
 
     for (const tx of txCUD) {
       const { collectionCUD, updateCUD, result, tx: ntx } = this.createDisplayTx(tx, parents)
       // We do not need collection object updates, in main list of displayed transactions.
       if (this.isDisplayTxRequired(collectionCUD, updateCUD, ntx, object)) {
         // Combine previous update transaction for same field and if same operation and time treshold is ok
-        this.checkIntegratePreviousTx(results, result)
-        results.push(result)
-
+        results = this.integrateTxWithResults(results, result)
         this.updateRemovedState(result, results)
       }
     }
@@ -188,7 +186,7 @@ class ActivityImpl implements Activity {
     let updateCUD = false
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-      tx = getCollectionTx((tx as TxCollectionCUD<Doc, AttachedDoc>))
+      tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
       collectionCUD = true
     }
     let firstTx = parents.get(tx.objectId)
@@ -237,24 +235,27 @@ class ActivityImpl implements Activity {
     }
   }
 
-  checkIntegratePreviousTx (results: DisplayTx[], result: DisplayTx): void {
-    if (results.length > 0) {
-      const prevTx = results[results.length - 1]
+  integrateTxWithResults (results: DisplayTx[], result: DisplayTx): DisplayTx[] {
+    const curUpdate = result.tx as unknown as TxUpdateDoc<Doc>
+
+    const newResult = results.filter((prevTx) => {
       if (this.isSameKindTx(prevTx, result)) {
         const prevUpdate = prevTx.tx as unknown as TxUpdateDoc<Doc>
-        const curUpdate = result.tx as unknown as TxUpdateDoc<Doc>
         if (
-          isEqualOps(prevUpdate.operations, curUpdate.operations) &&
-          result.tx.modifiedOn - prevUpdate.modifiedOn < combineThreshold
+          result.tx.modifiedOn - prevUpdate.modifiedOn < combineThreshold &&
+          isEqualOps(prevUpdate.operations, curUpdate.operations)
         ) {
-          // we have same keys, l
+          // we have same keys,
           // Remember previous transactions
           result.txes.push(...prevTx.txes, prevTx.tx)
-          // Remove last item
-          results.splice(results.length - 1, 1)
+          return false
         }
       }
-    }
+
+      return true
+    })
+    newResult.push(result)
+    return newResult
   }
 
   isSameKindTx (prevTx: DisplayTx, result: DisplayTx): boolean {
