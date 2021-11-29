@@ -147,6 +147,7 @@ export default plugin(viewId, {
   },
   icon: {
     Table: '' as Asset,
-    Kanban: '' as Asset
+    Kanban: '' as Asset,
+    Delete: '' as Asset
   }
 })
