@@ -1,11 +1,19 @@
 {
   "string": {
+    "RecruitApplication": "Recruiting",
     "Vacancies": "Vacancies",
     "CandidatePools": "Candidates",
     "VacancyName": "Vacancy Title *",
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
     "CreateCandidate": "Create Candidate",
-    "MakePrivate": "Make Private"
+    "MakePrivate": "Make Private",
+    "Vacancy": "Vacancy",
+    "CreateCandidates": "Create pool",
+    "CandidatesName": "Pool name *",
+    "MakePrivateDescription": "Only members can see it"
+  },
+  "status": {
+    "CandidateRequired": "Please select candidate"
   }
 }

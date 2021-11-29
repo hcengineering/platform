@@ -9,6 +9,8 @@
     "ChannelDescription": "Description",
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
-    "Channel": "Channel"
+    "Channel": "Channel",
+    "EditUpdate": "Save...",
+    "EditCancel": "Cancel"
   }
 }

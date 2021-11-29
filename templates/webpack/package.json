@@ -1,0 +1,13 @@
+{
+  "name": "@anticrm/webpack-package",
+  "version": "0.6.0",
+  "scripts": {
+  },
+  "peerDependencies": {
+    "webpack": "*"
+  },
+  "devDependencies": {    
+  },
+  "dependencies": {
+  }
+}

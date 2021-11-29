@@ -15,20 +15,13 @@
 
 <script lang="ts">
 
-  import type { Ref } from '@anticrm/core'
-  import type { Application } from '@anticrm/workbench'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
-  import { createQuery } from '@anticrm/presentation'
-  import workbench from '@anticrm/workbench'
-
-  import AppItem from './AppItem.svelte'
+  import type { Ref } from '@anticrm/core';
+  import { getCurrentLocation,navigate } from '@anticrm/ui';
+  import type { Application } from '@anticrm/workbench';
+  import AppItem from './AppItem.svelte';
 
   export let active: Ref<Application> | undefined
-
-  let apps: Application[] = []
-
-  const query = createQuery()
-  $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
+  export let apps: Application[] = []
 
   function navigateApp(app: Ref<Application>) {
     const loc = getCurrentLocation()

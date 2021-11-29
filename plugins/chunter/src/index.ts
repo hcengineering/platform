@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
+import { IntlString, plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
 
@@ -75,5 +75,9 @@ export default plugin(chunterId, {
   },
   space: {
     Backlinks: '' as Ref<Space>
+  },
+  string: {
+    EditUpdate: '' as IntlString,
+    EditCancel: '' as IntlString
   }
 })

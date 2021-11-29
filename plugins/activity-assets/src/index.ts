@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
-import { loadMetadata } from '@anticrm/platform'
-import activity from '@anticrm/activity'
+import { addStringsLoader, loadMetadata } from '@anticrm/platform'
+import activity, {activityId} from '@anticrm/activity'
 
 const icons = require('../assets/icons.svg') // eslint-disable-line
 loadMetadata(activity.icon, {
   Activity: `${icons}#activity` // eslint-disable-line
 })
+
+addStringsLoader(activityId, async (lang: string) => await import(`../lang/${lang}.json`))

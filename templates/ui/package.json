@@ -1,0 +1,36 @@
+{
+  "name": "@anticrm/ui-package",
+  "version": "0.6.0",
+  "scripts": {
+    "build": "echo 'no build for ui'",
+    "lint:fix": "eslint --fix src",
+    "lint": "svelte-check && eslint",
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
+  },
+  "devDependencies": {    
+    "@anticrm/platform-rig": "~0.6.0",
+    "svelte-loader":"^3.1.2",
+    "sass":"^1.37.5",
+    "svelte-preprocess":"^4.7.4",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-svelte3": "~3.2.1",
+    "prettier-plugin-svelte": "^2.2.0",
+    "eslint": "^7.32.0",
+    "prettier": "^2.4.1",
+    "svelte-check": "^2.2.10"
+  },
+  "peerDependencies": {
+    "svelte": "*"
+  },
+  "dependencies": {
+    "svelte": "^3.37.0"
+  },
+  "#replaces": [
+    ".eslintrc.js"
+  ]
+}

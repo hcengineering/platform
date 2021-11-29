@@ -522,6 +522,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/workbench-assets",
+      "projectFolder": "plugins/workbench-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/workbench-resources",
       "projectFolder": "plugins/workbench-resources",
       "shouldPublish": true
