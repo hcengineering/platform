@@ -15,39 +15,40 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { TextArea, EditBox, Dialog, ToggleWithLabel, Grid, Section, IconToDo } from '@anticrm/ui'
+  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
 
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
 
   import chunter from '../plugin'
-  import core from '@anticrm/core'
+  import core, { getCurrentAccount } from '@anticrm/core'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   let description: string = ''
-
+  export function canClose(): boolean {
+    return name === ''
+  }
   const client = getClient()
 
   function createChannel() {
     client.createDoc(chunter.class.Channel, core.space.Model, {
       name,
       description,
-      private: false
+      private: false,
+      members: [getCurrentAccount()._id]
     })
   }
 </script>
 
-<Dialog label={chunter.string.CreateChannel} 
-        okLabel={chunter.string.CreateChannel} 
-        okAction={createChannel}
-        on:close={() => { dispatch('close') }}>
-  <Grid column={1}>
-    <EditBox label={chunter.string.ChannelName} bind:value={name} focus/>
-    <TextArea label={chunter.string.ChannelDescription} bind:value={description}/>
+<SpaceCreateCard
+  label={chunter.string.CreateChannel} 
+  okAction={createChannel}
+  canSave={name ? true : false}
+  on:close={() => { dispatch('close') }}
+>
+  <Grid column={1} rowGap={1.5}>
+    <EditBox label={chunter.string.ChannelName} icon={IconFolder} bind:value={name} placeholder={'Channel'} focus/>
     <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription}/>
   </Grid>
-  <!-- <Section icon={IconToDo} label={`To Do's`}>
-    <CheckBoxList label={'Add a To Do'} editable />
-  </Section> -->
-</Dialog>
+</SpaceCreateCard>

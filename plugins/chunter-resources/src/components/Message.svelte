@@ -14,30 +14,37 @@
 -->
 
 <script lang="ts">
-  import { Avatar } from '@anticrm/presentation'
+  import { Avatar, getClient } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
-  import { ActionIcon, IconMoreH } from '@anticrm/ui'
-  import Emoji from './icons/Emoji.svelte'
-  import Share from './icons/Share.svelte'
-  import Bookmark from './icons/Bookmark.svelte'
+  // import { ActionIcon, IconMoreH } from '@anticrm/ui'
+  // import Emoji from './icons/Emoji.svelte'
+  // import Share from './icons/Share.svelte'
+  // import Bookmark from './icons/Bookmark.svelte'
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
 
   import { MessageViewer } from '@anticrm/presentation'
+  import { getTime, getUser } from '../utils'
+  import { formatName } from '@anticrm/contact'
 
   export let message: Message
 
-  let name: string
-  let time: string
   let reactions: boolean = false
   let replies: boolean = false
   let thread: boolean = false
+
+  const client = getClient()
 </script>
 
 <div class="container">
   <div class="avatar"><Avatar size={'medium'} /></div>
   <div class="message">
-    <div class="header">{name}<span>{time}</span></div>
+    <div class="header">
+      {#await getUser(client, message.modifiedBy) then user}
+        {#if user}{formatName(user.name)}{/if}
+      {/await}
+    <span>{getTime(message.modifiedOn)}</span>
+    </div>
     <div class="text"><MessageViewer message={message.content}/></div>
     {#if (reactions || replies) && !thread}
       <div class="footer">
@@ -46,14 +53,14 @@
       </div>
     {/if}
   </div>
-  {#if !thread}
+  <!-- {#if !thread}
     <div class="buttons">
       <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'}/></div>
       <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>
       <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div>
       <div class="tool"><ActionIcon icon={Emoji} size={'medium'}/></div>
     </div>
-  {/if}
+  {/if} -->
 </div>
 
 <style lang="scss">
