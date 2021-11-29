@@ -17,10 +17,9 @@
   // import type { IntlString, Asset, Resource } from '@anticrm/platform'
   import type { Ref, State, Class, Obj } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
-  import { Label, showPopup } from '@anticrm/ui'
+  import { Label, showPopup, IconDelete as Delete } from '@anticrm/ui'
   import { getClient, MessageBox } from '@anticrm/presentation'
   import type { Kanban } from '@anticrm/view'
-  import Delete from './icons/Delete.svelte'
 
   import workbench from '../plugin'
   import view from '@anticrm/view'
