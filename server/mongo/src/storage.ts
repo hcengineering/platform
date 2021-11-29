@@ -190,15 +190,27 @@ class MongoAdapter extends MongoAdapterBase {
         return await this.db.collection(domain).bulkWrite(ops as any)
       } else {
         if (tx.retrieve === true) {
-          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, tx.operations, { returnDocument: 'after' })
+          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, {
+            ...tx.operations,
+            $set: {
+              modifiedBy: tx.modifiedBy,
+              modifiedOn: tx.modifiedOn
+            }
+          }, { returnDocument: 'after' })
           return { object: result.value }
         } else {
-          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, tx.operations)
+          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, {
+            ...tx.operations,
+            $set: {
+              modifiedBy: tx.modifiedBy,
+              modifiedOn: tx.modifiedOn
+            }
+          })
         }
       }
     } else {
       if (tx.retrieve === true) {
-        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: tx.operations }, { returnDocument: 'after' })
+        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }, { returnDocument: 'after' })
         return { object: result.value }
       } else {
         return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } })
