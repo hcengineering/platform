@@ -16,6 +16,8 @@
 import { createClient, Client, TxHander } from '@anticrm/core'
 
 import { connect } from './connection'
+import clientPlugin from '@anticrm/client'
+import { getMetadata, getResource } from '@anticrm/platform'
 export { connect }
 
 /*!
@@ -31,11 +33,18 @@ export default async () => {
     function: {
       GetClient: async (token: string, endpoint: string): Promise<Client> => {
         if (client === undefined) {
-          return await createClient((handler: TxHander) => {
+          client = await createClient((handler: TxHander) => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
             return connect(url.href, handler)
           })
+
+          // Check if we had dev hook for client.
+          const hook = getMetadata(clientPlugin.metadata.ClientHook)
+          if (hook !== undefined) {
+            const hookProc = await getResource(hook)
+            client = await hookProc(client)
+          }
         }
         return client
       }

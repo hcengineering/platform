@@ -855,6 +855,16 @@
       "packageName": "@anticrm/model-telegram",
       "projectFolder": "models/telegram",
       "shouldPublish": true
-    }
+    },
+    {
+      "packageName": "@anticrm/devmodel-resources",
+      "projectFolder": "plugins/devmodel-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/devmodel",
+      "projectFolder": "plugins/devmodel",
+      "shouldPublish": true
+    },
   ]
 }

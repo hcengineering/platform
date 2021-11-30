@@ -23,6 +23,8 @@ specifiers:
   '@rush-temp/dev-server': file:./projects/dev-server.tgz
   '@rush-temp/dev-server-chunter-resources': file:./projects/dev-server-chunter-resources.tgz
   '@rush-temp/dev-storage': file:./projects/dev-storage.tgz
+  '@rush-temp/devmodel': file:./projects/devmodel.tgz
+  '@rush-temp/devmodel-resources': file:./projects/devmodel-resources.tgz
   '@rush-temp/elastic': file:./projects/elastic.tgz
   '@rush-temp/front': file:./projects/front.tgz
   '@rush-temp/login': file:./projects/login.tgz
@@ -172,6 +174,8 @@ dependencies:
   '@rush-temp/dev-server': file:projects/dev-server.tgz_typescript@4.4.3
   '@rush-temp/dev-server-chunter-resources': file:projects/dev-server-chunter-resources.tgz_typescript@4.4.3
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz_typescript@4.4.3
+  '@rush-temp/devmodel': file:projects/devmodel.tgz_typescript@4.4.3
+  '@rush-temp/devmodel-resources': file:projects/devmodel-resources.tgz_e1367da94684b005adf08f025c517b1a
   '@rush-temp/elastic': file:projects/elastic.tgz_typescript@4.4.3
   '@rush-temp/front': file:projects/front.tgz_typescript@4.4.3
   '@rush-temp/login': file:projects/login.tgz_typescript@4.4.3
@@ -9877,6 +9881,62 @@ packages:
       - typescript
     dev: false
 
+  file:projects/devmodel-resources.tgz_e1367da94684b005adf08f025c517b1a:
+    resolution: {integrity: sha512-eA8s5XJOwP4vu/EVRb73vl3z0C2K4cqsp3Pa2E0TREP2K78AjJPSGxIZD6WEwjg4K2L1dCOCG9kWGSShWwAt3A==, tarball: file:projects/devmodel-resources.tgz}
+    id: file:projects/devmodel-resources.tgz
+    name: '@rush-temp/devmodel-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.43.1
+      prettier: 2.4.1
+      prettier-plugin-svelte: 2.5.0_prettier@2.4.1+svelte@3.43.1
+      sass: 1.42.1
+      svelte: 3.43.1
+      svelte-check: 2.2.10_3708ed3db7329f2cbf76db19160094b1
+      svelte-loader: 3.1.2_svelte@3.43.1
+      svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/devmodel.tgz_typescript@4.4.3:
+    resolution: {integrity: sha512-1VtK6jXB5uH+z3VGtIESE9fE1UgUfAKsmmLjl5YAfe++WcWAZqQzuaRShcFvQiKGR2FfTyAEtSdq+J6CqEdc0g==, tarball: file:projects/devmodel.tgz}
+    id: file:projects/devmodel.tgz
+    name: '@rush-temp/devmodel'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.1
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
+      prettier: 2.4.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/elastic.tgz_typescript@4.4.3:
     resolution: {integrity: sha512-uoPGQmOAopNC8F64rYWrRDU1s3/u70CNQeBYz7EH/PE6mR0QsYIFJW3U6/LgeDWsMXNge+5fKkjwAJh0+EQtBA==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
@@ -10434,7 +10494,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-ZgzyuEX4q/KCtkXfJOVOSHEBZEYI6FrJJO2tYxQaynmSq7AQpjIp3XB0uwoagnD3dyzH/S3qAXqvQ7ltgPXhbQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-jYkFXSc3TaFdljpFFcRvEWTmtHKLA7nQUn+9kSDD9/J91/LmQEv3yEyJH89kb1ETNiTK6vnuLlp9br+RZipWVg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

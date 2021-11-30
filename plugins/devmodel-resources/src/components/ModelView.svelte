@@ -1,0 +1,82 @@
+<!--
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import core, { Doc, TxCUD } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import { ScrollBox, Tooltip } from '@anticrm/ui'
+import { toIntl } from '..'
+  import ContentPopup from './ContentPopup.svelte'
+
+  let txes: TxCUD<Doc>[] = []
+
+  const activityQuery = createQuery()
+
+  $: activityQuery.query(core.class.TxCUD, { objectSpace: core.space.Model }, (result) => {
+    txes = result
+  })
+</script>
+
+<ScrollBox vertical>
+  <div class='model-content'>
+  <table class='table'>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Class</th>
+        <th>Body</th>
+      </tr>
+    </thead>
+    <tbody>
+    {#each txes as tx}
+      <tr class='tr-body'>
+        <td>{tx.objectId}</td>
+        <td>{tx.objectClass}</td>
+        <td>
+          <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: tx }}>
+            Content
+          </Tooltip>
+        </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</div>
+</ScrollBox>
+<style lang="scss">
+  .model-content {
+    display: flex;
+    margin: 20px;
+  }
+  th, td {
+  padding: .5rem 1.5rem;
+  text-align: left;
+}
+
+th {
+  height: 2.5rem;
+  font-weight: 500;
+  font-size: .75rem;
+  color: var(--theme-content-dark-color);
+  box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+  user-select: none;
+}
+
+.tr-body {
+  height: 3.25rem;
+  color: var(--theme-caption-color);
+  border-bottom: 1px solid var(--theme-button-border-hovered);
+}  
+</style>
