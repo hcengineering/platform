@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
 // 
@@ -12,18 +12,28 @@
 // 
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { Resources } from '@anticrm/platform'
+<script lang="ts">
 
-import CreateTask from './components/CreateTask.svelte'
-import CreateProject from './components/CreateProject.svelte'
-import TaskPresenter from './components/TaskPresenter.svelte'
+import type { Task } from '@anticrm/task'
+import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
+import EditTask from './EditTask.svelte'
+import { getClient } from '@anticrm/presentation'
+import task from '../plugin'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    CreateTask,
-    CreateProject,
-    TaskPresenter
-  }
-})
+export let value: Task
+
+const client = getClient()
+const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
+
+function show () {
+  closeTooltip()
+  showPopup(EditTask, { _id: value._id }, 'full')
+}
+
+</script>
+
+<div class="sm-tool-icon" on:click={show}>
+  <span class="icon"><Icon icon={task.icon.Task} size={'small'}/></span>{shortLabel}-{value.number}
+</div>

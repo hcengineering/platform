@@ -20,7 +20,7 @@ import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
-import { TxViewlet } from '../../chunter/node_modules/@anticrm/activity/lib'
+import { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(recruitId, recruit, {
   action: {

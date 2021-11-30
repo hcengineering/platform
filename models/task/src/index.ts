@@ -13,34 +13,42 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, UX, Prop } from '@anticrm/model'
-import type { Ref, Doc, FindOptions } from '@anticrm/core'
-import core, { TSpace, TDoc } from '@anticrm/model-core'
-import type { Project, Task } from '@anticrm/task'
 import type { Employee } from '@anticrm/contact'
-import type { AnyComponent } from '@anticrm/ui'
-
-import workbench from '@anticrm/model-workbench'
-
+import contact from '@anticrm/contact'
+import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
+import chunter from '@anticrm/model-chunter'
+import core, { TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
-import contact from '@anticrm/model-contact'
+import workbench from '@anticrm/model-workbench'
+import type { IntlString } from '@anticrm/platform'
+import type { Project, Task } from '@anticrm/task'
 import task from './plugin'
 
 @Model(task.class.Project, core.class.Space)
 @UX('Project' as IntlString, task.icon.Task)
 export class TProject extends TSpace implements Project {}
 
-@Model(task.class.Task, core.class.Doc)
+@Model(task.class.Task, core.class.Doc, 'task' as Domain)
+@UX('Task' as IntlString, task.icon.Task, 'TASK' as IntlString)
 export class TTask extends TDoc implements Task {
-  @Prop(TypeString(), 'Title' as IntlString)
-  title!: string
+  @Prop(TypeString(), 'No.' as IntlString)
+  number!: number
+
+  @Prop(TypeString(), 'Name' as IntlString)
+  name!: string
 
   @Prop(TypeString(), 'Description' as IntlString)
   description!: string
 
   @Prop(TypeString(), 'Assignee' as IntlString)
   assignee!: Ref<Employee>
+
+  @Prop(TypeString(), 'Comments' as IntlString)
+  comments!: number
+
+  @Prop(TypeString(), 'Labels' as IntlString)
+  labels!: string
 }
 
 export function createModel (builder: Builder): void {
@@ -50,19 +58,6 @@ export function createModel (builder: Builder): void {
       class: task.class.Task,
       createItemDialog: task.component.CreateTask
     }
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: task.class.Task,
-    descriptor: view.viewlet.Table,
-    open: 'ZX' as AnyComponent,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        assignee: contact.class.Employee
-      }
-    } as FindOptions<Doc>,
-    config: ['title', '$lookup.assignee']
   })
 
   builder.createDoc(workbench.class.Application, core.space.Model, {
@@ -79,11 +74,45 @@ export function createModel (builder: Builder): void {
         }
       ]
     }
+  }, task.app.Tasks)
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: task.class.Task,
+    descriptor: view.viewlet.Table,
+    open: task.component.EditTask,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        assignee: contact.class.Employee
+      }
+    } as FindOptions<Doc>,
+    config: [
+      '',
+      'name',
+      '$lookup.assignee',
+      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      'modifiedOn'
+    ]
   })
+
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.TaskPresenter
+  })
+
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditor, {
+    editor: task.component.EditTask
+  })
+
   builder.createDoc(task.class.Project, core.space.Model, {
-    name: 'demo',
-    description: 'Demo Project',
+    name: 'public',
+    description: 'Public tasks',
     private: false,
     members: []
+  }, task.space.TasksPublic)
+
+  builder.createDoc(view.class.Sequence, view.space.Sequence, {
+    attachedTo: task.class.Task,
+    sequence: 0
   })
 }

@@ -14,26 +14,31 @@
 // limitations under the License.
 //
 
-import { taskId } from '@anticrm/task'
-import task from '@anticrm/task-resources/src/plugin'
+import type { Ref, Space } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
-import type { Ref, Class } from '@anticrm/core'
-import type { Project } from '@anticrm/task'
-import type { AnyComponent } from '@anticrm/ui'
 import { mergeIds } from '@anticrm/platform'
+import task, { taskId } from '@anticrm/task'
+import type { AnyComponent } from '@anticrm/ui'
+import { Application } from '@anticrm/workbench'
 
 export default mergeIds(taskId, task, {
+  app: {
+    Tasks: '' as Ref<Application>
+  },
   component: {
     ProjectView: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
-    CreateTask: '' as AnyComponent
-  },
-  class: {
-    Project: '' as Ref<Class<Project>>
+    CreateTask: '' as AnyComponent,
+    EditTask: '' as AnyComponent,
+    TaskPresenter: '' as AnyComponent
   },
   string: {
+    Task: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
     CreateProject: '' as IntlString
+  },
+  space: {
+    TasksPublic: '' as Ref<Space>
   }
 })

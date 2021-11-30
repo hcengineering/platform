@@ -14,7 +14,19 @@
   "devDependencies": {
     "svelte-loader":"^3.1.2",
     "sass":"^1.37.5",
-    "svelte-preprocess":"^4.7.4"
+    "svelte-preprocess":"^4.7.4",
+    "@anticrm/platform-rig":"~0.6.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-svelte3": "~3.2.1",
+    "prettier-plugin-svelte": "^2.2.0",
+    "eslint": "^7.32.0",
+    "prettier": "^2.4.1",
+    "svelte-check": "^2.2.10"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
@@ -24,6 +36,11 @@
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.2",
-    "@anticrm/core": "~0.6.11"
+    "@anticrm/core": "~0.6.11",
+    "@anticrm/chunter": "~0.6.1",
+    "@anticrm/panel": "~0.6.0",
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/view-resources": "~0.6.0",
+    "@anticrm/login": "~0.6.1"
   }
 }

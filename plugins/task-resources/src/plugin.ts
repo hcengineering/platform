@@ -13,9 +13,28 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 
 import task, { taskId } from '@anticrm/task'
 
 export default mergeIds(taskId, task, {
+  string: {
+    ApplicationLabelTask: '' as IntlString,
+    Projects: '' as IntlString,
+    CreateProject: '' as IntlString,
+    ProjectName: '' as IntlString,
+    MakePrivate: '' as IntlString,
+    MakePrivateDescription: '' as IntlString,
+    CreateTask: '' as IntlString,
+    TaskProject: '' as IntlString,
+    SelectProject: '' as IntlString,
+    TaskName: '' as IntlString,
+    TaskAssignee: '' as IntlString,
+    TaskDescription: '' as IntlString,
+    NoAttachmentsForTask: '' as IntlString,
+    UploadDropFilesHere: '' as IntlString
+  },
+  status: {
+    AssigneeRequired: '' as IntlString
+  }
 })

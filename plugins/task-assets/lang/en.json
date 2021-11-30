@@ -2,6 +2,19 @@
   "string": {
     "ApplicationLabelTask": "Tasks",
     "Projects": "Projects",
-    "CreateProject": "New Project"
+    "CreateProject": "New Project",
+    "ProjectName": "Project",
+    "MakePrivate": "Make Private",
+    "MakePrivateDescription": "Only members can see it",
+    "CreateTask": "Create task",
+    "TaskProject": "selected project",
+    "SelectProject": "Select project",
+    "Task": "Task",
+    "TaskName": "Task name *",
+    "TaskAssignee": "Assignee",
+    "TaskDescription": "Description",
+    "UploadDropFilesHere": "Upload or drop files here",
+    "NoAttachmentsForTask": "There are no attachments for this task.",
+    "AssigneeRequired": "Assignee is required"
   }
 }

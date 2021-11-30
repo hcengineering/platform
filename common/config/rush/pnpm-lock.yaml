@@ -9864,7 +9864,7 @@ packages:
     dev: false
 
   file:projects/dev-storage.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-SfTtSgH07SlBF5nTXqS/E5023gdeN5eFmaL4fdrvId5ixenWnSJ16Xcvj02R8nuQ7PAwkNkZMwO+707Ins3GlQ==, tarball: file:projects/dev-storage.tgz}
+    resolution: {integrity: sha512-MI95DMgzOe43SqSrvtR+wgcws3voLsrjvQAS87DGkq15UUxobrixatDGfk5rxFUJsGNpw68s0SQNB+XsYmB4Dw==, tarball: file:projects/dev-storage.tgz}
     id: file:projects/dev-storage.tgz
     name: '@rush-temp/dev-storage'
     version: 0.0.0
@@ -10267,7 +10267,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-ECVFsBQDPeXBhwde4kBvnJlE8sXbSuSPOVa76QAdw4poccNaXabQbDUMNKNIquq4kTPGp7GhUUbaDk316zWmcw==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-BFTI2YyRTQa+3voYij2r8icUkp5QdKc69N3oPvir4XsfrRrlM90EiDYi0XKk2YCjRtnn+2DEa+pjT8q4CQke5g==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -10494,7 +10494,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-jYkFXSc3TaFdljpFFcRvEWTmtHKLA7nQUn+9kSDD9/J91/LmQEv3yEyJH89kb1ETNiTK6vnuLlp9br+RZipWVg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-YXR+9ndU1ibNRBgBG2s//HcelDIJmxvXqSPkrZ1A9z8qhjtnYGi7mwqIKpxS+mYVr5nS6JRCNLXcblAp7aDlXA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -10868,13 +10868,24 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-x8gVBObHY9bs86rKxU8Vq0uKMNgjvz5LFQqux6+l8aECuCJjjj70UcQqV+5hBGaY9m5GnlaxAJZed4VntxS4XA==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-dxx9fOd472gS8ILbnRMpBhnd4KOT0xkpQRbSkGHn9sigBeRZ48ZdEXtfagTQSaVlgwhOoCbVm1QrFy67Ctpbcw==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
     dependencies:
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.43.1
+      prettier: 2.4.1
+      prettier-plugin-svelte: 2.5.0_prettier@2.4.1+svelte@3.43.1
       sass: 1.42.1
       svelte: 3.43.1
+      svelte-check: 2.2.10_3708ed3db7329f2cbf76db19160094b1
       svelte-loader: 3.1.2_svelte@3.43.1
       svelte-preprocess: 4.9.8_b1ccfb371c7d68f75291f5a547be0b14
     transitivePeerDependencies:
@@ -10887,6 +10898,7 @@ packages:
       - pug
       - stylus
       - sugarss
+      - supports-color
       - typescript
     dev: false
 
@@ -11009,7 +11021,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-4mquFHT6NpGnSQiTikfIdCakmJbxLsSCVn7f8X4j8DWwx+GKYLxi8O+NGHuB82dZ76XJoonako1CsiVGvrNpPA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-SwaepBCYg7nNx+Vb5vkowQ2QYwf6KLw8iKJGWmm8A261c9geGd8f2Sl2DYyxi9lhG946DRaMxxnQkSfzvNZkRg==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -11189,7 +11201,7 @@ packages:
     dev: false
 
   file:projects/workspace.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-Mey3vBH1eqNXrxrhsXI3d66AoIW4hqE34OWI7KN7hqY0nqVzUcex0GHBc78dw7vS+UDkW1Cc2J6rCiLvYQkzfw==, tarball: file:projects/workspace.tgz}
+    resolution: {integrity: sha512-RqzmT9xyUKDthUVU6kMT/yarSmB0yPv2q4VI6cJ+O/Iw7HiuKhTUV7ObyA6AJPIYiHZIGOqM4EMrMvX2G8rWNA==, tarball: file:projects/workspace.tgz}
     id: file:projects/workspace.tgz
     name: '@rush-temp/workspace'
     version: 0.0.0

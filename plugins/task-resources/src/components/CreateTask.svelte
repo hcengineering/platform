@@ -14,46 +14,119 @@
 -->
 
 <script lang="ts">
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import type { Data, Ref, Space } from '@anticrm/core'
+  import { generateId } from '@anticrm/core'
+  import { Card, getClient, UserBox } from '@anticrm/presentation'
+  import { Task } from '@anticrm/task'
+  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import { Status, OK, Severity } from '@anticrm/platform'
+  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
-  import { DatePicker, EditBox, Dialog, Tabs, Section, Grid, Row, TextArea, IconFile } from '@anticrm/ui'
-  import { UserBox } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
-  import type { Person } from '@anticrm/contact'
-  
-  import { getClient } from '@anticrm/presentation'
-
-  import contact from '@anticrm/contact'
   import task from '../plugin'
 
   export let space: Ref<Space>
 
+  let _space = space
+  const status: Status = OK
+
+  let assignee: Ref<EmployeeAccount> // | null = null
+  
+  const object: Data<Task> = {
+    name: '',
+    description: '',
+    assignee: undefined as unknown as Ref<Employee>,
+    number: 0
+  }
+  
   const dispatch = createEventDispatcher()
-
-  let title: string
-  let assignee: Ref<Person>
-
   const client = getClient()
+  const taskId = generateId()
 
-  function createCandidate() {
-    client.createDoc(task.class.Task, space, {
-      title,
+  export function canClose (): boolean {
+    return object.name !== ''
+  }
+
+  async function createTask () {
+    const sequence = await client.findOne(view.class.Sequence, { attachedTo: task.class.Task })
+    if (sequence === undefined) {
+      throw new Error('sequence object not found')
+    }
+  
+    const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
+      $inc: { sequence: 1 }
+    }, true)
+  
+    const value: Data<Task> = {
+      name: object.name,
+      description: object.description,
       assignee,
-    })
+      number: (incResult as any).object.sequence
+    }
+
+    await client.createDoc(task.class.Task, _space, value, taskId)
+    dispatch('close')
   }
 </script>
 
-<Dialog label={'Create Task'} 
-        okLabel={'Create Task'} 
-        okAction={createCandidate}
-        on:close={() => { dispatch('close') }}>
-  <Tabs/>
-  <Section icon={IconFile} label={'General Information'}>
-    <Grid>
-      <Row><EditBox label={'Title *'} placeholder={'The Secret Project'} bind:value={title} focus /></Row>
-      <UserBox _class={contact.class.Person} title='Assignee' caption='Employees' bind:value={assignee} />
-      <DatePicker title={'Pick due date'} />
-      <Row><ReferenceInput /></Row>
-    </Grid>
-  </Section>
-</Dialog>
+<!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
+
+<Card label={task.string.CreateTask} 
+      okAction={createTask}
+      canSave={object.name.length > 0 && assignee !== undefined}
+      spaceClass={task.class.Project}
+      spaceLabel={task.string.ProjectName}
+      spacePlaceholder={task.string.SelectProject}
+      bind:space={_space}
+      on:close={() => { dispatch('close') }}>
+      <StatusControl slot="error" {status} />
+      <Grid column={1} rowGap={1.5}>
+        <EditBox label={task.string.TaskName} bind:value={object.name} icon={task.icon.Task} placeholder="The boring task" maxWidth="39rem" focus/>
+        <UserBox _class={contact.class.EmployeeAccount} title='Assignee *' caption='Assign this task' bind:value={assignee} />
+      </Grid>
+</Card>
+
+<style lang="scss">
+  .channels {
+    margin-top: 1.25rem;
+    span { margin-left: .5rem; }
+  }
+
+  .locations {
+    span {
+      margin-bottom: .125rem;
+      font-weight: 500;
+      font-size: .75rem;
+      color: var(--theme-content-accent-color);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: .75rem;
+      color: var(--theme-caption-color);
+    }
+  }
+
+  .separator {
+    margin: 1rem 0;
+    height: 1px;
+    background-color: var(--theme-card-divider);
+  }
+
+  .resume {
+    margin-top: 1rem;
+    padding: .75rem;
+    background: rgba(255, 255, 255, .05);
+    border: 1px dashed rgba(255, 255, 255, .2);
+    border-radius: .5rem;
+    backdrop-filter: blur(10px);
+    &.solid { border-style: solid; }
+  }
+  // .resume a {
+  //   font-size: .75rem;
+  //   color: var(--theme-content-dark-color);
+  //   &:hover { color: var(--theme-content-color); }
+  // }
+</style>

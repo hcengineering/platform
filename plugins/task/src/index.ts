@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
-import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, Doc, Ref, Class } from '@anticrm/core'
 import type { Employee } from '@anticrm/contact'
+import type { Class, Doc, Ref, Space } from '@anticrm/core'
+import type { Asset, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
 
 /**
  * @public
@@ -27,9 +27,15 @@ export interface Project extends Space {}
  * @public
  */
 export interface Task extends Doc {
-  title: string
+  number: number // Sequence number
+
+  name: string
   description: string
   assignee: Ref<Employee>
+
+  comments?: number
+  attachments?: number
+  labels?: string
 }
 
 /**
@@ -39,7 +45,8 @@ export const taskId = 'task' as Plugin
 
 export default plugin(taskId, {
   class: {
-    Task: '' as Ref<Class<Task>>
+    Task: '' as Ref<Class<Task>>,
+    Project: '' as Ref<Class<Project>>
   },
   icon: {
     Task: '' as Asset
