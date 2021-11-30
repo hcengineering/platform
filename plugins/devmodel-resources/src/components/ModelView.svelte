@@ -20,12 +20,13 @@
 import { toIntl } from '..'
   import ContentPopup from './ContentPopup.svelte'
 
-  let txes: TxCUD<Doc>[] = []
+  let txes: (TxCUD<Doc> & {index:number})[] = []
 
   const activityQuery = createQuery()
 
   $: activityQuery.query(core.class.TxCUD, { objectSpace: core.space.Model }, (result) => {
-    txes = result
+    let c = 0
+    txes = result.map(t => ({ ...t, index: c++ }))
   })
 </script>
 
@@ -42,6 +43,7 @@ import { toIntl } from '..'
     <tbody>
     {#each txes as tx}
       <tr class='tr-body'>
+        <td>{tx.index}</td>
         <td>{tx.objectId}</td>
         <td>{tx.objectClass}</td>
         <td>

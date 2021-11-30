@@ -26,7 +26,6 @@ import { serverChunterId } from '@anticrm/server-chunter'
 
 class NullFullTextAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
-    console.log('noop full text indexer: ', doc)
     return {}
   }
 

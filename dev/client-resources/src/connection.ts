@@ -38,7 +38,6 @@ class ServerStorageWrapper implements Storage {
 
 class NullFullTextAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
-    console.log('noop full text indexer: ', doc)
     return {}
   }
 
