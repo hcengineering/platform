@@ -85,14 +85,14 @@ export function combineName (first: string, last: string): string {
  * @public
  */
 export function getFirstName (name: string): string {
-  return name.substring(name.indexOf(SEP) + 1)
+  return name !== undefined ? name.substring(name.indexOf(SEP) + 1) : ''
 }
 
 /**
  * @public
  */
 export function getLastName (name: string): string {
-  return name.substring(0, name.indexOf(SEP))
+  return name !== undefined ? name.substring(0, name.indexOf(SEP)) : ''
 }
 
 /**
