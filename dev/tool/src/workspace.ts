@@ -26,7 +26,7 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const txes = builder.getTxes()
+const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 
 /**
  * @public
