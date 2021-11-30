@@ -22,7 +22,7 @@ import CommentsPresenter from './components/CommentsPresenter.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 
-export { AttachmentsPresenter }
+export { AttachmentsPresenter, CommentsPresenter }
 
 export default async () => ({
   component: {

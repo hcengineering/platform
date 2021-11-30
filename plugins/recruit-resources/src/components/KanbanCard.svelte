@@ -21,7 +21,7 @@
 
   import EditCandidate from './EditCandidate.svelte'
 
-  import { AttachmentsPresenter } from '@anticrm/chunter-resources'
+  import { AttachmentsPresenter, CommentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
@@ -49,13 +49,12 @@
       <div class="sm-tool-icon step-lr75">
         <ApplicationPresenter value={object} />
       </div>
-      {#if object.attachments && Object.keys(object.attachments).length > 0}
+      {#if object.attachments ?? 0 > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
       {/if}
-      <div class="sm-tool-icon step-lr75">
-        <span class="icon"><IconThread size={'small'} /></span>
-        5
-      </div>
+      {#if object.comments ?? 0 > 0}
+        <div class="step-lr75"><CommentsPresenter value={object} /></div>
+      {/if}
     </div>
     <Avatar size={'x-small'} />
   </div>
