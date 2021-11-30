@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { CircleButton, IconAdd, showPopup, Spinner, Link } from '@anticrm/ui'
+  import { CircleButton, IconAdd, showPopup, Spinner, Label } from '@anticrm/ui'
 
   import type { Doc, Ref, Space, Class, Bag } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
@@ -27,6 +27,7 @@
   import UploadDuo from './icons/UploadDuo.svelte'
 
   import chunter from '@anticrm/chunter'
+  import recruit from '../plugin'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -95,16 +96,17 @@
   </div>
 
   {#if attachments.length === 0 && !loading}
-    <div class="flex-col-center mt-5 resume" class:solid={dragover} 
+    <div class="flex-col-center mt-5 zone-container" class:solid={dragover} 
       on:dragover|preventDefault={ () => { dragover = true } } 
       on:dragleave={ () => { dragover = false } } 
       on:drop|preventDefault|stopPropagation={fileDrop}
-      on:click={ () => { inputFile.click() } }
     >
       <UploadDuo size={'large'} />
-      <div class="small-text content-dark-color mt-2">There are no attachments for this candidate.</div>
+      <div class="small-text content-dark-color mt-2">
+        <Label label={recruit.string.NoAttachmentsForCandidate} />
+      </div>
       <div class="small-text">
-        Upload or drop files here
+        <a href={'#'} on:click={() => inputFile.click()}><Label label={recruit.string.UploadDropFilesHere} /></a>
       </div>
     </div>
   {:else}
@@ -130,8 +132,7 @@
     }
   }
 
-  .resume {
-    cursor: pointer;
+  .zone-container {
     padding: 1rem;
     color: var(--theme-caption-color);
     background: rgba(255, 255, 255, .03);
