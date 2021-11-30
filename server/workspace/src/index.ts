@@ -14,15 +14,14 @@
 // limitations under the License.
 //
 
-import { MongoClient, Document } from 'mongodb'
-import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import { createContributingClient } from '@anticrm/contrib'
+import core, { DOMAIN_TX } from '@anticrm/core'
+import builder from '@anticrm/model-all'
 import { encode } from 'jwt-simple'
 import { Client } from 'minio'
+import { Document, MongoClient } from 'mongodb'
 
-import * as txJson from './model.tx.json'
-
-const txes = (txJson as any).default as Tx[]
+const txes = builder.getTxes()
 
 /**
  * @public
