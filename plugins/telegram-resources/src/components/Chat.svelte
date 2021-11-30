@@ -57,9 +57,8 @@
     enabled = res.length > 0
   })
 
-  async function onMessage(event: CustomEvent, isRetry = false) {
-    const to = contactString?.value ?? ''
-    const res = await fetch(url + '/send-msg', {
+  async function sendMsg (to: string, msg: string) {
+    return await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
@@ -67,24 +66,15 @@
       },
       body: JSON.stringify({
         to,
-        msg: event.detail
+        msg
       })
     })
+  }
 
-    if (res.status === 400 && !isRetry) {
-      if (!to.startsWith('+')) {
-        return
-      }
+  async function addContact (phone: string) {
+    const [lastName, firstName] = object.name.split(',')
 
-      const err = await res.json()
-
-      if (err.code !== 'CONTACT_IMPORT_REQUIRED') {
-        return
-      }
-
-      const [lastName, firstName] = object.name.split(',')
-
-      const addRes = await fetch(url + '/add-contact', {
+    return await fetch(url + '/add-contact', {
         method: 'POST',
         headers: {
           Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
@@ -93,18 +83,34 @@
         body: JSON.stringify({
           firstName: firstName ?? '',
           lastName: lastName ?? '',
-          phone: to
+          phone
         })
       })
+  }
 
-      if (Math.trunc(addRes.status / 100) !== 2) {
-        const { message } = await addRes.json().catch(() => ({ message: 'Unknown error' }))
+  async function onMessage(event: CustomEvent) {
+    const to = contactString?.value ?? ''
+    const sendRes = await sendMsg(to, event.detail)
 
-        throw Error(message)
-      }
-
-      await onMessage(event, true)
+    if (sendRes.status !== 400 || !to.startsWith('+')) {
+      return
     }
+
+
+    const err = await sendRes.json()
+    if (err.code !== 'CONTACT_IMPORT_REQUIRED') {
+      return
+    }
+
+    const addRes = await addContact(to)
+
+    if (Math.trunc(addRes.status / 100) !== 2) {
+      const { message } = await addRes.json().catch(() => ({ message: 'Unknown error' }))
+
+      throw Error(message)
+    }
+
+    await sendMsg(to, event.detail)
   }
 
   function isNewDate (messages: TelegramMessage[], i: number): boolean {
