@@ -75,6 +75,9 @@ export class TApplicant extends TDocWithState implements Applicant {
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number
 
+  @Prop(TypeString(), 'Comments' as IntlString)
+  comments?: number
+
   @Prop(TypeString(), 'Assigned recruiter' as IntlString)
   employee!: Ref<Employee>
 }
@@ -163,6 +166,8 @@ export function createModel (builder: Builder): void {
       '$lookup.state',
       '$lookup.attachedTo.city',
       { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      'modifiedOn',
       '$lookup.attachedTo.channels']
   })
 

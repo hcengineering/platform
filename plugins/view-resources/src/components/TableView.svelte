@@ -89,7 +89,7 @@
                 </div>
               </th>
             {/if}
-            <th class="sortable" class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
+            <th class:sortable={attribute.key} class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
               <div class="flex-row-center">
                 <Label label = {attribute.label}/>
                 {#if attribute.key === sortKey}
