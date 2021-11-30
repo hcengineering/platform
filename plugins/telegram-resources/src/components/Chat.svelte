@@ -57,18 +57,54 @@
     enabled = res.length > 0
   })
 
-  async function onMessage(event: CustomEvent) {
-    await fetch(url + '/send-msg', {
+  async function onMessage(event: CustomEvent, isRetry = false) {
+    const to = contactString?.value ?? ''
+    const res = await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to: contactString?.value ?? '',
+        to,
         msg: event.detail
       })
     })
+
+    if (res.status === 400 && !isRetry) {
+      if (!to.startsWith('+')) {
+        return
+      }
+
+      const err = await res.json()
+
+      if (err.code !== 'CONTACT_IMPORT_REQUIRED') {
+        return
+      }
+
+      const [lastName, firstName] = object.name.split(',')
+
+      const addRes = await fetch(url + '/add-contact', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          firstName: firstName ?? '',
+          lastName: lastName ?? '',
+          phone: to
+        })
+      })
+
+      if (Math.trunc(addRes.status / 100) !== 2) {
+        const { message } = await addRes.json().catch(() => ({ message: 'Unknown error' }))
+
+        throw Error(message)
+      }
+
+      await onMessage(event, true)
+    }
   }
 
   function isNewDate (messages: TelegramMessage[], i: number): boolean {
