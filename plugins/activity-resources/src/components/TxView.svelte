@@ -35,8 +35,7 @@
   } from '@anticrm/ui'
   import type { Action, AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
-import { beforeUpdate } from 'svelte';
-  import { afterUpdate, onMount } from 'svelte'
+  import { afterUpdate } from 'svelte'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
 
   export let tx: DisplayTx
