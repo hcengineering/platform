@@ -35,7 +35,8 @@
   } from '@anticrm/ui'
   import type { Action, AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
-  import { afterUpdate } from 'svelte'
+import { beforeUpdate } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
 
   export let tx: DisplayTx
@@ -65,7 +66,10 @@
   const toggleContent = (): void => bigMsg ? hideContent() : showContent()
 
   afterUpdate(() => {
-    if (contentHTML && contentHTML.scrollHeight !== contentHTML.clientHeight && !edit) hideContent()
+    if (contentHTML) {
+      if (contentHTML.scrollHeight !== contentHTML.clientHeight) (edit) ? showContent() : hideContent()
+      if (contentHTML.clientHeight < 240) bigMsg = outterBtn = undefined
+    }
   })
 
   $: if (tx.tx._id !== ptx?.tx._id) {
@@ -153,7 +157,6 @@
             icon: IconEdit,
             action: () => {
               edit = true
-              if (typeof bigMsg !== 'undefined') showContent()
               props = { ...props, edit }
             }
           },
@@ -236,7 +239,7 @@
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-        <div bind:this={contentHTML} class={viewlet.display} class:show={bigMsg || edit} class:mask={bigMsg === false}>
+        <div bind:this={contentHTML} class={viewlet.display} class:full={bigMsg || edit} class:mask={bigMsg === false && !edit}>
           {#if typeof viewlet.component === 'string'}
             <Component is={viewlet.component} {props} on:close={onCancelEdit} />
           {:else}
@@ -325,15 +328,14 @@
   }
 
   .content {
-    text-overflow: ellipsis;
+    flex-shrink: 0;
+    overflow: hidden;
     margin-top: .5rem;
+    height: max-content;
     max-height: 15rem;
 
-    &.show { max-height: max-content; }
-    &.mask {
-      overflow: hidden;
-      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 75%);
-    }
+    &.full { max-height: max-content; }
+    &.mask { mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 75%); }
   }
 
   .showMore {
@@ -354,11 +356,19 @@
     border-radius: 2.5rem;
     cursor: pointer;
 
-    opacity: .25;
-    transition: opacity .1s ease-in-out;
-    &:hover { opacity: 1; }
+    opacity: .3;
+    transform: scale(.9);
+    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+    &:hover {
+      opacity: 1;
+      transform: scale(1);
+    }
+    &:active {
+      opacity: .9;
+      transform: scale(.95);
+    }
 
-    &.outter { transform: translateY(75%); }
+    &.outter { bottom: -1.5rem; }
   }
 
   .emphasized {
