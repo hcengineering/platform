@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
@@ -34,6 +35,7 @@
   } from '@anticrm/ui'
   import type { Action, AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
+  import { afterUpdate } from 'svelte'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
 
   export let tx: DisplayTx
@@ -54,6 +56,17 @@
   let actions: Action[] = []
 
   let edit = false
+  let contentHTML: HTMLElement
+  let bigMsg: boolean | undefined = undefined
+  let outterBtn: boolean | undefined = undefined
+
+  const showContent = (): void => { bigMsg = outterBtn = true }
+  const hideContent = (): void => { bigMsg = outterBtn = false }
+  const toggleContent = (): void => bigMsg ? hideContent() : showContent()
+
+  afterUpdate(() => {
+    if (contentHTML && contentHTML.scrollHeight !== contentHTML.clientHeight && !edit) hideContent()
+  })
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     viewlet = undefined
@@ -140,6 +153,7 @@
             icon: IconEdit,
             action: () => {
               edit = true
+              if (typeof bigMsg !== 'undefined') showContent()
               props = { ...props, edit }
             }
           },
@@ -163,68 +177,80 @@
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="flex-col msgactivity-container">
-    <div class="flex-between">
-      <div class="flex-center icon">
-        <div class="scale-75">
-          {#if viewlet}
-            <Icon icon={viewlet.icon} size="medium" />
-          {:else}
-            <Icon icon={activity.icon.Activity} size="medium" />
-          {/if}
-        </div>
-      </div>
-      <div class="flex-grow label">
-        <div class="bold">
-          {#if employee}
-            {formatName(employee.name)}
-          {:else}
-            No employee
-          {/if}
-        </div>
-        {#if viewlet && viewlet?.editable}
-          <div class="edited">
-            {#if viewlet.label}
-              <Label label={viewlet.label} />
-            {/if}
-            {#if tx.updated}
-              <Label label={activity.string.Edited} />
-            {/if}
-            <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
-              <IconMoreH size={'small'} />
-            </div>
-          </div>
-        {:else if viewlet && viewlet.label}
-          <div>
-            <Label label={viewlet.label} />
-          </div>
-        {/if}
-        {#if viewlet === undefined && model.length > 0 && tx.updateTx}
-          {#each model as m}
-            <span>changed {m.label} to</span>
-            <div class="strong"><svelte:component this={m.presenter} value={getValue(tx.updateTx, m.key)} /></div>
-          {/each}
-        {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-          <div>
-            {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-            {:else}
-              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
-            {/if}
-          </div>
-        {/if}
-      </div>
-      <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-    </div>
-    {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-      <div class="content" class:emphasize={viewlet.display === 'emphasized'}>
-        {#if typeof viewlet.component === 'string'}
-          <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+  <div class="flex-between msgactivity-container">
+
+    <div class="flex-center icon">
+      <div class="scale-75">
+        {#if viewlet}
+          <Icon icon={viewlet.icon} size="medium" />
         {:else}
-          <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+          <Icon icon={activity.icon.Activity} size="medium" />
         {/if}
       </div>
-    {/if}
+    </div>
+
+    <div class="flex-grow flex-col relative">
+
+      <div class="flex-between">
+        <div class="flex-grow label">
+          <div class="bold">
+            {#if employee}
+              {formatName(employee.name)}
+            {:else}
+              No employee
+            {/if}
+          </div>
+          {#if viewlet && viewlet?.editable}
+            <div class="edited">
+              {#if viewlet.label}
+                <Label label={viewlet.label} />
+              {/if}
+              {#if tx.updated}
+                <Label label={activity.string.Edited} />
+              {/if}
+              <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
+                <IconMoreH size={'medium'} />
+              </div>
+            </div>
+          {:else if viewlet && viewlet.label}
+            <div>
+              <Label label={viewlet.label} />
+            </div>
+          {/if}
+          {#if viewlet === undefined && model.length > 0 && tx.updateTx}
+            {#each model as m}
+              <span>changed {m.label} to</span>
+              <div class="strong"><svelte:component this={m.presenter} value={getValue(tx.updateTx, m.key)} /></div>
+            {/each}
+          {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
+            <div>
+              {#if typeof viewlet.component === 'string'}
+                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+              {:else}
+                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+              {/if}
+            </div>
+          {/if}
+        </div>
+        <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>    
+      </div>
+
+      {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
+        <div bind:this={contentHTML} class={viewlet.display} class:show={bigMsg || edit} class:mask={bigMsg === false}>
+          {#if typeof viewlet.component === 'string'}
+            <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+          {:else}
+            <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+          {/if}
+        </div>
+        {#if typeof outterBtn !== 'undefined' && !edit}
+          <div class="showMore" class:outter={outterBtn} on:click={toggleContent}>
+            <Label label={(bigMsg) ? activity.string.ShowLess : activity.string.ShowMore} />
+          </div>
+        {/if}
+      {/if}
+
+    </div>
   </div>
 {/if}
 
@@ -254,12 +280,10 @@
   // :global(.msgactivity-container > *:last-child::after) { content: none; }
 
   .menuOptions {
-    margin-left: 0.5rem;
-    opacity: 0.6;
+    margin-left: .5rem;
+    opacity: .6;
     cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
+    &:hover { opacity: 1; }
   }
   .icon {
     flex-shrink: 0;
@@ -270,20 +294,6 @@
     color: var(--theme-caption-color);
     border: 1px solid var(--theme-card-divider);
     border-radius: 50%;
-  }
-
-  .content {
-    margin: 0.5rem 0 0.5rem 3.25rem;
-  }
-  .emphasize {
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-    padding: 1rem;
-  }
-  .time {
-    margin-left: 1rem;
-    color: var(--theme-content-trans-color);
   }
 
   .edited {
@@ -297,12 +307,8 @@
     align-items: center;
     flex-wrap: wrap;
 
-    & > * {
-      margin-right: 0.5rem;
-    }
-    & > *:last-child {
-      margin-right: 0;
-    }
+    & > * { margin-right: .5rem; }
+    & > *:last-child { margin-right: 0; }
     .bold {
       font-weight: 500;
       color: var(--theme-caption-color);
@@ -311,5 +317,55 @@
       font-weight: 500;
       color: var(--theme-content-accent-color);
     }
+  }
+
+  .time {
+    margin-left: 1rem;
+    color: var(--theme-content-trans-color);
+  }
+
+  .content {
+    text-overflow: ellipsis;
+    margin-top: .5rem;
+    max-height: 15rem;
+
+    &.show { max-height: max-content; }
+    &.mask {
+      overflow: hidden;
+      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 75%);
+    }
+  }
+
+  .showMore {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto;
+    padding: .5rem 1rem;
+    width: fit-content;
+
+    font-size: .75rem;
+    color: var(--theme-caption-color);
+    background: var(--theme-card-bg);
+    border: .5px solid var(--theme-card-divider);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, .1);
+    backdrop-filter: blur(120px);
+    border-radius: 2.5rem;
+    cursor: pointer;
+
+    opacity: .25;
+    transition: opacity .1s ease-in-out;
+    &:hover { opacity: 1; }
+
+    &.outter { transform: translateY(75%); }
+  }
+
+  .emphasized {
+    margin-top: .5rem;
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .75rem;
+    padding: 1rem 1.25rem;
   }
 </style>

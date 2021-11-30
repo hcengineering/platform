@@ -36,11 +36,11 @@
       action.action() 
     }}>
       {#if action.icon}
-        <div class="icon">
-          <Icon icon={action.icon} size={'large'} />
+        <div class="scale-75">
+          <Icon icon={action.icon} size={'medium'} />
         </div>
       {/if}
-      <div class="label"><Label label={action.label} /></div>
+      <div class="ml-3"><Label label={action.label} /></div>
     </div>
   {/each}
 </div>
@@ -59,19 +59,13 @@
     display: flex;
     align-items: center;
     padding: .375rem 1rem .375rem .5rem;
+    color: var(--theme-content-color);
     border-radius: .5rem;
     cursor: pointer;
 
-    .icon {
-      margin-right: .75rem;
-      transform-origin: center center;
-      transform: scale(.75);
-      opacity: .3;
+    &:hover {
+      background-color: var(--theme-button-bg-hovered);
+      color: var(--theme-caption-color);
     }
-    .label {
-      flex-grow: 1;
-      color: var(--theme-content-accent-color);
-    }
-    &:hover { background-color: var(--theme-button-bg-hovered); }
   }
 </style>

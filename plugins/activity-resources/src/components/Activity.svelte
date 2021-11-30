@@ -133,7 +133,7 @@
 
   .right-content {
     flex-grow: 1;
-    padding: 2.5rem 2.5rem 0;
+    padding: 2.25rem 2.5rem 0;
     background-color: var(--theme-dialog-accent);
   }
 
