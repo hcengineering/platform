@@ -21,12 +21,12 @@ import { encode } from 'jwt-simple'
 import { BucketItem, Client } from 'minio'
 import contact from '@anticrm/contact'
 
-import * as txJson from './model.tx.json'
+import builder from '@anticrm/model-all'
 import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const txes = (txJson as any).default as Tx[]
+const txes = builder.getTxes()
 
 /**
  * @public

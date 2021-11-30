@@ -17,7 +17,7 @@ import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxRes
 import { ModelDb, TxDb, Hierarchy } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 
-import * as txJson from './model.tx.json'
+import builder from '@anticrm/model-all'
 
 class InMemoryTxAdapter implements TxAdapter {
   private readonly txdb: TxDb
@@ -41,7 +41,7 @@ class InMemoryTxAdapter implements TxAdapter {
   }
 
   async getModel (): Promise<Tx[]> {
-    return txJson as unknown as Tx[]
+    return builder.getTxes()
   }
 }
 

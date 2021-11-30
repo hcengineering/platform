@@ -31,6 +31,7 @@
     "mongodb": "^4.1.0",
     "@anticrm/contrib": "~0.6.0",
     "jwt-simple": "^0.5.6",
-    "minio": "^7.0.19"
+    "minio": "^7.0.19",
+    "@anticrm/model-all": "~0.6.0"
   }
 }
