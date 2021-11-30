@@ -35,8 +35,8 @@
   } from '@anticrm/ui'
   import type { Action, AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
-  import { afterUpdate } from 'svelte'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
+  import ShowMore from './ShowMore.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -56,20 +56,6 @@
   let actions: Action[] = []
 
   let edit = false
-  let contentHTML: HTMLElement
-  let bigMsg: boolean | undefined = undefined
-  let outterBtn: boolean | undefined = undefined
-
-  const showContent = (): void => { bigMsg = outterBtn = true }
-  const hideContent = (): void => { bigMsg = outterBtn = false }
-  const toggleContent = (): void => bigMsg ? hideContent() : showContent()
-
-  afterUpdate(() => {
-    if (contentHTML) {
-      if (contentHTML.scrollHeight !== contentHTML.clientHeight) (edit) ? showContent() : hideContent()
-      if (contentHTML.clientHeight < 240) bigMsg = outterBtn = undefined
-    }
-  })
 
   $: if (tx.tx._id !== ptx?.tx._id) {
     viewlet = undefined
@@ -191,7 +177,7 @@
       </div>
     </div>
 
-    <div class="flex-grow flex-col relative">
+    <div class="flex-grow flex-col">
 
       <div class="flex-between">
         <div class="flex-grow label">
@@ -238,20 +224,16 @@
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-        <div bind:this={contentHTML} class={viewlet.display} class:full={bigMsg || edit} class:mask={bigMsg === false && !edit}>
-          {#if typeof viewlet.component === 'string'}
-            <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-          {:else}
-            <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
-          {/if}
+        <div class={viewlet.display}>
+          <ShowMore ignore={viewlet.display !== 'content' || edit}>
+            {#if typeof viewlet.component === 'string'}
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+            {:else}
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+            {/if}
+          </ShowMore>
         </div>
-        {#if typeof outterBtn !== 'undefined' && !edit}
-          <div class="showMore" class:outter={outterBtn} on:click={toggleContent}>
-            <Label label={(bigMsg) ? activity.string.ShowLess : activity.string.ShowMore} />
-          </div>
-        {/if}
       {/if}
-
     </div>
   </div>
 {/if}
@@ -328,46 +310,7 @@
 
   .content {
     flex-shrink: 0;
-    overflow: hidden;
     margin-top: .5rem;
-    height: max-content;
-    max-height: 15rem;
-
-    &.full { max-height: max-content; }
-    &.mask { mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 75%); }
-  }
-
-  .showMore {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0 auto;
-    padding: .5rem 1rem;
-    width: fit-content;
-
-    font-size: .75rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-card-bg);
-    border: .5px solid var(--theme-card-divider);
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, .1);
-    backdrop-filter: blur(120px);
-    border-radius: 2.5rem;
-    cursor: pointer;
-
-    opacity: .3;
-    transform: scale(.9);
-    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-    &:hover {
-      opacity: 1;
-      transform: scale(1);
-    }
-    &:active {
-      opacity: .9;
-      transform: scale(.95);
-    }
-
-    &.outter { bottom: -1.5rem; }
   }
 
   .emphasized {
