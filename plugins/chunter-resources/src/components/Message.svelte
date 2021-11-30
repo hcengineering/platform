@@ -110,23 +110,23 @@
       }
     }
 
-    .buttons {
-      position: absolute;
-      visibility: hidden;
-      top: -.5rem;
-      right: -.5rem;
-      display: flex;
-      flex-direction: row-reverse;
-      user-select: none;
+    // .buttons {
+    //   position: absolute;
+    //   visibility: hidden;
+    //   top: -.5rem;
+    //   right: -.5rem;
+    //   display: flex;
+    //   flex-direction: row-reverse;
+    //   user-select: none;
 
-      .tool + .tool {
-        margin-right: .5rem;
-      }
-    }
+    //   .tool + .tool {
+    //     margin-right: .5rem;
+    //   }
+    // }
 
-    &:hover > .buttons {
-      visibility: visible;
-    }
+    // &:hover > .buttons {
+    //   visibility: visible;
+    // }
     &:hover::before {
       content: '';
     }
