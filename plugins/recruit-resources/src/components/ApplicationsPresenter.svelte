@@ -26,8 +26,8 @@
 
 {#if value.applications && value.applications > 0}
   <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value }}>
-    <div class="flex-row-center">
-      <IconFile size={'small'} />&nbsp;{value.applications}
+    <div class="sm-tool-icon">
+      <span class="icon"><IconFile size={'small'} /></span>&nbsp;{value.applications}
     </div>
   </Tooltip>
 {/if}
