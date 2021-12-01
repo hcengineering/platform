@@ -22,5 +22,8 @@ export default async () => ({
     Integrations,
     ConnectEmail,
     IconGmail
+  },
+  handler: {
+    EmailDisconnectHandler: async () => {}
   }
 })

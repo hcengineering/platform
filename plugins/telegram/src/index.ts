@@ -17,7 +17,7 @@ import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
 import type { Doc, Ref, Class, Space } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
-import type { IntegrationType } from '@anticrm/setting'
+import type { IntegrationType, Handler } from '@anticrm/setting'
 
 /**
  * @public
@@ -42,6 +42,9 @@ export default plugin(telegramId, {
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>
+  },
+  handler: {
+    DisconnectHandler: '' as Handler
   },
   class: {
     Message: '' as Ref<Class<TelegramMessage>>
