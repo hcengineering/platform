@@ -38,6 +38,7 @@
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.0",
     "@anticrm/setting": "~0.6.0",
+    "@anticrm/chunter": "~0.6.0",
     "@anticrm/login": "~0.6.1",
     "@anticrm/core": "~0.6.11"
   }

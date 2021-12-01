@@ -16,46 +16,50 @@
 <script lang="ts">
 
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import telegram from '@anticrm/telegram'
   import type { TelegramMessage } from '@anticrm/telegram'
   import type { Contact, EmployeeAccount } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { Grid, ScrollBox } from '@anticrm/ui'
+  import { Button, Grid, ScrollBox, showPopup } from '@anticrm/ui'
   import Message from './Message.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
-  import { Ref, Space } from '@anticrm/core'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import DateView from './Date.svelte'
   import setting from '@anticrm/setting'
   import login from '@anticrm/login'
   import { getMetadata } from '@anticrm/platform'
+  import { formatName } from '@anticrm/contact'
+  import chunter from '@anticrm/chunter'
+  import Connect from './Connect.svelte'
 
   export let object: Contact
 
   $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Telegram)
   let messages: TelegramMessage[] = []
-  let accounts: EmployeeAccount[] = []
+  let account: EmployeeAccount | undefined
   let enabled: boolean
+  let selected: Ref<TelegramMessage>[] = []
   const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
   const messagesQuery = createQuery()
-  const accauntsQuery = createQuery()
+  const accauntQuery = createQuery()
   const settingsQuery = createQuery()
+  const accountId = getCurrentAccount()._id
 
   $: query = contactString?.value.startsWith('+') ? { contactPhone: contactString.value } : { contactUserName: contactString?.value }
-  $: messagesQuery.query(telegram.class.Message, query, (res) => {
+  $: messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, ...query }, (res) => {
     messages = res
   })
 
-  $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
-  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
-    accounts = result
+  $: accauntQuery.query(contact.class.EmployeeAccount, { _id: accountId as Ref<EmployeeAccount>}, (result) => {
+    account = result[0]
   })
 
-  const accountId = getMetadata(login.metadata.LoginEmail)
-  $: settingsQuery.query(setting.class.Integration, { type: telegram.integrationType.Telegram, space: accountId as Ref<Space> }, (res) => {
+  $: settingsQuery.query(setting.class.Integration, { type: telegram.integrationType.Telegram, space: accountId as string as Ref<Space> }, (res) => {
     enabled = res.length > 0
   })
+  const client = getClient()
 
   async function onMessage(event: CustomEvent) {
     await fetch(url + '/send-msg', {
@@ -85,16 +89,62 @@
     return current.incoming !== prev.incoming || current.modifiedBy !== prev.modifiedBy
   }
 
-  function getName (messages: TelegramMessage[], accounts: EmployeeAccount[], i: number): string | undefined {
+  function getName (messages: TelegramMessage[], account: EmployeeAccount | undefined, i: number): string | undefined {
     if (!needName(messages, i)) return undefined
     const message = messages[i]
-    return message.incoming ? object.name : accounts.find((p) => p._id === message.modifiedBy)?.name
+    return message.incoming ? object.name : account?.name
+  }
+
+  function select (id: Ref<TelegramMessage>): void {
+    const index = selected.indexOf(id)
+    if (index === -1) {
+      selected.push(id)
+    } else {
+      selected.splice(index, 1)
+    }
+    selected = selected
+  }
+
+  function getSelectedContent (): string {
+    const selectedMessages = messages.filter((m) => selected.includes(m._id))
+    let result = ''
+    for (let index = 0; index < selectedMessages.length; index++) {
+      const element = selectedMessages[index]
+      const name = getName(selectedMessages, account, index)
+      let message: string = ''
+      if (name !== undefined) {
+        message += formatName(name)
+        message += ': '
+      }
+      message += element.content
+      result += message
+    }
+    return result
+  }
+
+  async function share (): Promise<void> {
+    const content = getSelectedContent()
+    await client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', {
+      message: content
+    })
+    clear()
+  }
+
+  function clear (): void {
+    selected = []
   }
 </script>
 
 <div class="flex-row-center header">
-  <div class="icon"><TelegramIcon size={'small'} /></div>
-  <div class="title">Telegram</div>
+  {#if selected.length}
+    <div class="flex-between actions">
+      <Button label={`Share ${selected.length}`} primary on:click={share} />
+      <Button label='Cancel' on:click={clear} />
+    </div>
+  {:else}
+    <div class="icon"><TelegramIcon size={'small'} /></div>
+    <div class="title">Telegram</div>
+  {/if}
 </div>
 <div class="flex-col h-full right-content">
   <ScrollBox vertical stretch>
@@ -104,17 +154,23 @@
           {#if isNewDate(messages, i)}
             <DateView {message} />
           {/if}
-          <Message {message} name={getName(messages, accounts, i)} />
+          <Message {message} selected={selected.includes(message._id)} name={getName(messages, account, i)} on:click={() => {select(message._id)}}/>
         {/each}
       </Grid>
     {/if}
   </ScrollBox>
 </div>
-{#if enabled}
-  <div class="ref-input">
+<div class="ref-input">
+  {#if enabled}
     <ReferenceInput on:message={onMessage}/>
-  </div>
-{/if}
+  {:else}
+    <div class="flex-center">
+      <Button label='Connect' primary on:click={(e) => {
+        showPopup(Connect, {}, e.target)
+      }} />
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .header {
@@ -122,6 +178,11 @@
     padding: 0 2.5rem;
     height: 4.5rem;
     border-bottom: 1px solid var(--theme-card-divider);
+
+    .actions {
+      width: 100%;
+      margin-right: 4rem;
+    }
 
     .icon {
       opacity: 0.6;
