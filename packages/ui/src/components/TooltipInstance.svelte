@@ -138,7 +138,7 @@
 
 <style lang="scss">
   .header {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
     font-weight: 500;
     font-size: 1rem;
     color: var(--theme-caption-color);
@@ -148,9 +148,9 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    padding: 1.75rem;
+    padding: 1.5rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     user-select: none;

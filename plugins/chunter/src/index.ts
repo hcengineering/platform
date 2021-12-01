@@ -78,6 +78,7 @@ export default plugin(chunterId, {
   },
   string: {
     EditUpdate: '' as IntlString,
-    EditCancel: '' as IntlString
+    EditCancel: '' as IntlString,
+    Comments: '' as IntlString
   }
 })
