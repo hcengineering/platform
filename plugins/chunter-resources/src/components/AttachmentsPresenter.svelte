@@ -36,7 +36,7 @@
 {#if value.attachments && value.attachments > 0}
   <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ objectId: value._id }}>
     <div class="sm-tool-icon">
-      <span class="icon"><IconAttachment size="small"/></span>{value.attachments}
+      <span class="icon"><IconAttachment size="small"/></span>&nbsp;{value.attachments}
     </div>
   </Tooltip>
 {/if}

@@ -31,13 +31,13 @@
     <Avatar size={'medium'} />
   </div>
   <div class="flex-col">
-    <div class="flex-row-top justify-between mb-1">
+    <div class="header">
       <div class="fs-title">
         {#await getUser(client, value.modifiedBy) then user}
           {#if user}{formatName(user.name)}{/if}
         {/await}
       </div>
-      <div class="content-trans-color"><TimeSince value={value.modifiedOn} /></div>
+      <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
     </div>
     <div class="content-color">
       <MessageViewer message={value.message}/>
@@ -51,15 +51,10 @@
       min-width: 2.25rem;
     }
 
-    // .message {
-    //   display: flex;
-    //   flex-direction: column;
-    //   width: 100%;
-    //   .text {
-    //     line-height: 150%;
-    //     max-width: 20rem;
-
-    //     :global(p) { margin: 0; }
-    //   }
-    // }
+    .header {
+      display: inline-flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: .25rem;
+    }
 </style>
