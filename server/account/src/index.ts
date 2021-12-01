@@ -206,6 +206,15 @@ export async function createAccount (db: Db, email: string, password: string, fi
 /**
  * @public
  */
+export async function listWorkspaces (db: Db): Promise<Workspace[]> {
+  return await db.collection<Workspace>(WORKSPACE_COLLECTION)
+    .find({})
+    .toArray()
+}
+
+/**
+ * @public
+ */
 export async function createWorkspace (db: Db, workspace: string, organisation: string): Promise<string> {
   if ((await getWorkspace(db, workspace)) !== null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))
@@ -299,7 +308,8 @@ export const methods = {
   createAccount: wrap(createAccount),
   createWorkspace: wrap(createWorkspace),
   assignWorkspace: wrap(assignWorkspace),
-  removeWorkspace: wrap(removeWorkspace)
+  removeWorkspace: wrap(removeWorkspace),
+  listWorkspaces: wrap(listWorkspaces)
   // updateAccount: wrap(updateAccount)
 }
 
