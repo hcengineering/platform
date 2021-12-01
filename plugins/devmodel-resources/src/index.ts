@@ -41,12 +41,14 @@ export const queries: QueryWithResult[] = []
 
 class ModelClient implements Client {
   constructor (readonly client: Client) {
+    client.notify = (tx) => {
+      this.notify?.(tx)
+      console.info('devmodel# notify=>', tx, this.client.getModel())
+      notifications.push(tx)
+    }
   }
 
-  notify (tx: Tx): void {
-    this.client.notify?.(tx)
-    notifications.push(tx)
-  }
+  notify?: (tx: Tx) => void
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
