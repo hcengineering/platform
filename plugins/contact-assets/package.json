@@ -11,10 +11,9 @@
     "lint:fix": "ts-standard --fix src",
     "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && ts-standard --fix src"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
-    "@anticrm/platform":"~0.6.5",
-    "@anticrm/contact":"~0.6.2"
+    "@anticrm/platform": "~0.6.5",
+    "@anticrm/contact": "~0.6.2"
   }
 }

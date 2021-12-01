@@ -10,11 +10,13 @@
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/__start.ts --bundle --minify --platform=node > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
     "docker:build": "docker build -t anticrm/front .",
-    "docker:push": "docker push anticrm/front"
+    "docker:push": "docker push anticrm/front",
+    "lint": "eslint src",
+    "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig":"~0.6.0",
-    "@types/heft-jest":"^1.0.2",
+    "@anticrm/platform-rig": "~0.6.0",
+    "@types/heft-jest": "^1.0.2",
     "@types/node": "^16.4.10",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -23,25 +25,28 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.1",
     "eslint": "^7.32.0",
-    "@types/express":"^4.17.13",
-    "@types/express-fileupload":"^1.1.7",
-    "@types/uuid":"^8.3.1",
-    "@types/cors":"^2.8.12",
-    "@types/minio":"^7.0.10",
-    "esbuild":"^0.12.24"
+    "@types/express": "^4.17.13",
+    "@types/express-fileupload": "^1.1.7",
+    "@types/uuid": "^8.3.1",
+    "@types/cors": "^2.8.12",
+    "@types/minio": "^7.0.10",
+    "esbuild": "^0.12.24",
+    "prettier": "^2.4.1",
+    "@rushstack/heft": "^0.41.1",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
     "@anticrm/platform": "~0.6.5",
     "express": "^4.17.1",
-    "express-fileupload":"^1.2.1",
-    "uuid":"^8.3.2",
-    "cors":"^2.8.5",
-    "@anticrm/elastic":"~0.6.0",
-    "jwt-simple":"^0.5.6",
-    "@anticrm/server-core":"~0.6.1",
-    "@anticrm/chunter":"~0.6.0",
-    "@anticrm/contrib":"~0.6.0",
-    "minio":"^7.0.19"
+    "express-fileupload": "^1.2.1",
+    "uuid": "^8.3.2",
+    "cors": "^2.8.5",
+    "@anticrm/elastic": "~0.6.0",
+    "jwt-simple": "^0.5.6",
+    "@anticrm/server-core": "~0.6.1",
+    "@anticrm/chunter": "~0.6.0",
+    "@anticrm/contrib": "~0.6.0",
+    "minio": "^7.0.19"
   }
 }

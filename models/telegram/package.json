@@ -7,15 +7,22 @@
   "scripts": {
     "build": "heft build",
     "build:watch": "tsc",
-    "lint:fix": "eslint --fix src"
+    "lint:fix": "eslint --fix src",
+    "lint": "eslint src",
+    "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/model-rig":"~0.6.0",
-    "@typescript-eslint/eslint-plugin":"4",
-    "eslint-plugin-import":"2",
-    "eslint-plugin-promise":"4",
-    "eslint-plugin-node":"11",
-    "eslint":"^7.32.0"
+    "@anticrm/model-rig": "~0.6.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint": "^7.32.0",
+    "@types/heft-jest": "^1.0.2",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "prettier": "^2.4.1",
+    "@rushstack/heft": "^0.41.1"
   },
   "dependencies": {
     "@anticrm/model": "~0.6.0",

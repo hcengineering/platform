@@ -5,17 +5,17 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "",
+    "build": "echo 'no build for ui'",
     "build:docs": "api-extractor run --local",
-    "lint": "eslint src",
+    "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && eslint --fix src"
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
   },
   "devDependencies": {
-    "svelte-loader":"^3.1.2",
-    "sass":"^1.37.5",
-    "svelte-preprocess":"^4.7.4",
-    "@anticrm/platform-rig":"~0.6.0",
+    "svelte-loader": "^3.1.2",
+    "sass": "^1.37.5",
+    "svelte-preprocess": "^4.7.4",
+    "@anticrm/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -27,7 +27,8 @@
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
     "svelte-check": "^2.2.10",
-    "@types/deep-equal":"^1.0.1"
+    "@types/deep-equal": "^1.0.1",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
