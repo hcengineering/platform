@@ -67,13 +67,13 @@
           </div>
         {/if}
       </div>
-    {:else}
+    {:else if showHeader}
       <div class="flex-col">
-        {#if showHeader}
-          <Label label={attribute.label} />
-        {/if}
+        <Label label={attribute.label} />
         <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/></div>
       </div>
+    {:else}
+      <svelte:component this={instance} {maxWidth} bind:value={object[key]} {onChange} {focus}/>
     {/if}
 
   {/await}

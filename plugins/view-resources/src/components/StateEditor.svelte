@@ -34,7 +34,7 @@
 </script>
 
 {#if state}
-  <div class="flex-row-center" bind:this={container}
+  <div class="flex-row-center cursor-pointer" bind:this={container}
     on:click|preventDefault={() => {
       if (!opened) {
         opened = true
