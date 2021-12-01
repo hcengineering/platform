@@ -265,7 +265,7 @@
 
   .menuOptions {
     margin-left: .5rem;
-    opacity: .6;
+    opacity: .8;
     cursor: pointer;
     &:hover { opacity: 1; }
   }

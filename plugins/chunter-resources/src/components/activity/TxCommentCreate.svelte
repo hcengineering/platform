@@ -40,7 +40,7 @@
   let refInput: ReferenceInput
 </script>
 
-<div class:editing={editing}>
+<div class:editing>
   {#if edit}
     <ReferenceInput bind:this={refInput} content={value.message} on:message={onMessage} showSend={false}/>
     <div class='flex-row-reverse safari-gap-2 reverse'>
@@ -55,7 +55,5 @@
 </div>
 
 <style lang="scss">
-  .editing {
-    border: 1px solid var(--primary-button-focused-border);
-  }
+  .editing { border: 1px solid var(--primary-button-focused-border); }
 </style>
