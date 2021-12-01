@@ -17,7 +17,7 @@ import { Builder, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
 import core, { TDoc } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
-import type { Integration, IntegrationType } from '@anticrm/setting'
+import type { Integration, IntegrationType, Handler } from '@anticrm/setting'
 import type { IntlString } from '@anticrm/platform'
 
 import workbench from '@anticrm/model-workbench'
@@ -37,6 +37,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   description!: IntlString
   icon!: AnyComponent
   createComponent!: AnyComponent
+  onDisconnect!: Handler
 }
 
 export function createModel (builder: Builder): void {
@@ -87,6 +88,7 @@ export function createModel (builder: Builder): void {
     label: 'Email',
     description: 'Use email integration' as IntlString,
     icon: setting.component.IconGmail,
-    createComponent: setting.component.ConnectEmail
+    createComponent: setting.component.ConnectEmail,
+    onDisconnect: setting.handler.EmailDisconnectHandler
   })
 }

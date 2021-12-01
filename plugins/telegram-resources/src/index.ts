@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { getMetadata, Resources } from '@anticrm/platform'
+import login from '@anticrm/login'
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
@@ -24,5 +25,17 @@ export default async (): Promise<Resources> => ({
     Chat,
     Connect,
     IconTelegram
+  },
+  handler: {
+    DisconnectHandler: async () => {
+      const url = getMetadata(login.metadata.TelegramUrl) ?? ''
+      await fetch(url + '/signout', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) ?? ''),
+          'Content-Type': 'application/json'
+        }
+      })
+    }
   }
 })

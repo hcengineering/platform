@@ -13,10 +13,15 @@
 // limitations under the License.
 //
 
-import { Asset, IntlString, plugin } from '@anticrm/platform'
+import { Asset, IntlString, plugin, Resource } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 import type { Class, Doc, Ref } from '@anticrm/core'
+
+/**
+ * @public
+ */
+export type Handler = Resource<() => Promise<void>>
 
 /**
  * @public
@@ -26,6 +31,7 @@ export interface IntegrationType extends Doc {
   description: IntlString
   icon: AnyComponent
   createComponent: AnyComponent
+  onDisconnect: Handler
 }
 
 /**
@@ -57,6 +63,9 @@ export default plugin(settingId, {
     Terms: '' as AnyComponent,
     ConnectEmail: '' as AnyComponent,
     IconGmail: '' as AnyComponent
+  },
+  handler: {
+    EmailDisconnectHandler: '' as Handler
   },
   string: {
     Setting: '' as IntlString,

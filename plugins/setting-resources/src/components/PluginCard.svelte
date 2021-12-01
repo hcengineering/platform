@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Button, Component, Label, Link } from '@anticrm/ui'
-  import { getMetadata } from '@anticrm/platform'
+  import { getMetadata, getResource } from '@anticrm/platform'
   import { showPopup } from '@anticrm/ui'
   import type { Integration, IntegrationType } from '@anticrm/setting'
   import setting from '@anticrm/setting'
@@ -26,6 +26,7 @@
   export let integration: Integration | undefined
   const accountId = getMetadata(login.metadata.LoginEmail)
   const client = getClient()
+  const onDisconnectP = getResource(integrationType.onDisconnect)
 
   async function close(res: any): Promise<void> {
     if (res.value) {
@@ -38,9 +39,7 @@
 
   async function disconnect(): Promise<void> {
     if (integration !== undefined) {
-      // TODO: Need to call proper endpoint, so likely should not be here but in specific integration plugins
-
-      // await client.removeDoc(setting.class.Integration, accountId as Ref<Space>, integration._id)
+      await (await onDisconnectP)()
     }
   }
 </script>

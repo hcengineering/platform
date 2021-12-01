@@ -53,7 +53,8 @@ export function createModel (builder: Builder): void {
     label: 'Telegram',
     description: 'Use telegram integration' as IntlString,
     icon: telegram.component.IconTelegram,
-    createComponent: telegram.component.Connect
+    createComponent: telegram.component.Connect,
+    onDisconnect: telegram.handler.DisconnectHandler
   }, telegram.integrationType.Telegram)
 
   builder.createDoc(core.class.Space, core.space.Model, {
