@@ -52,7 +52,7 @@
     &.crop {
       overflow: hidden;
       max-height: 15rem;
-      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 75%);
+      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, .9) 2.5rem, rgba(0, 0, 0, 1) 3rem);
     }
   }
 
@@ -63,8 +63,9 @@
     bottom: 0;
     margin: 0 auto;
     padding: .5rem 1rem;
-    width: fit-content;
+    width: max-content;
 
+    font-weight: 500;
     font-size: .75rem;
     color: var(--theme-caption-color);
     background: var(--theme-card-bg);
@@ -72,20 +73,33 @@
     box-shadow: 0px 8px 15px rgba(0, 0, 0, .1);
     backdrop-filter: blur(120px);
     border-radius: 2.5rem;
+    user-select: none;
     cursor: pointer;
 
-    opacity: .3;
-    transform: scale(.9);
+    opacity: .9;
+    transform: scale(.97);
     transition: opacity .1s ease-in-out, transform .1s ease-in-out;
     &:hover {
       opacity: 1;
       transform: scale(1);
     }
     &:active {
-      opacity: .9;
-      transform: scale(.95);
+      opacity: .95;
+      transform: scale(.99);
     }
 
-    &.outter { bottom: -2.25rem; }
+    &.outter {
+      bottom: -1.85rem;
+      opacity: .7;
+      transform: scale(.80);
+      &:hover {
+        opacity: 1;
+        transform: scale(.83);
+      }
+      &:active {
+        opacity: .95;
+        transform: scale(.82);
+      }
+    }
   }
 </style>

@@ -80,25 +80,15 @@ table {
   border-spacing: 0;
 }
 
-// input:-webkit-autofill,
-// input:-webkit-autofill:hover,
-// input:-webkit-autofill:focus,
-// input:-webkit-autofill:active {
-//   -webkit-animation: autofill 0s forwards;
-// }
- 
-// @-webkit-keyframes autofill {
-//   100% {
-//     background: transparent;
-//     color: inherit;
-//   }
-// }
-
 /* Common */
 * {
   --modal-padding: 1.5rem;
 }
 
+p:first-child { margin-block-start: 0; } // First and last padding
+p:last-child { margin-block-end: 0; }
+
+/* Flex */
 .flex { display: flex; }
 .inline-flex { display: inline-flex; }
 .flex-grow { flex-grow: 1; }
@@ -180,13 +170,6 @@ table {
   }
   &:hover .icon { color: var(--theme-caption-color); }
 }
-
-/* Tables */
-// .activity-table > tr:last-child > .no-icon-cell {
-//   min-height: auto;
-//   height: auto;
-//   &::after { content: none; }
-// }
 
 /* Margins & Paddings */
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
