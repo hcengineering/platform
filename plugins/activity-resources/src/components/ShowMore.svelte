@@ -58,47 +58,38 @@
 
   .showMore {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 50%;
     bottom: 0;
-    margin: 0 auto;
     padding: .5rem 1rem;
     width: max-content;
 
     font-weight: 500;
     font-size: .75rem;
     color: var(--theme-caption-color);
-    background: var(--theme-card-bg);
+    background: var(--theme-showmore-color);
     border: .5px solid var(--theme-card-divider);
     box-shadow: 0px 8px 15px rgba(0, 0, 0, .1);
-    backdrop-filter: blur(120px);
     border-radius: 2.5rem;
     user-select: none;
     cursor: pointer;
 
-    opacity: .9;
-    transform: scale(.97);
+    opacity: 1;
+    transform: translateX(-50%) scale(.97);
     transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-    &:hover {
-      opacity: 1;
-      transform: scale(1);
-    }
-    &:active {
-      opacity: .95;
-      transform: scale(.99);
-    }
+    &:hover { transform: translateX(-50%) scale(1); }
+    &:active { transform: translateX(-50%) scale(.99); }
 
     &.outter {
       bottom: -1.85rem;
       opacity: .7;
-      transform: scale(.80);
+      transform: translateX(-50%) scale(.80);
       &:hover {
         opacity: 1;
-        transform: scale(.83);
+        transform: translateX(-50%) scale(.83);
       }
       &:active {
         opacity: .95;
-        transform: scale(.82);
+        transform: translateX(-50%) scale(.82);
       }
     }
   }
