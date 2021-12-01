@@ -13,20 +13,20 @@
 // limitations under the License.
 //
 
-import type { Ref, Class, Obj, Domain, Mixin, Doc, AnyAttribute } from './classes'
+import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
-import { Tx, TxCreateDoc, TxMixin, TxProcessor } from './tx'
-
 import core from './component'
+import type { Tx, TxCreateDoc, TxMixin } from './tx'
+import { TxProcessor } from './tx'
 
 /**
  * @public
  */
 export class Hierarchy {
-  private readonly classes = new Map<Ref<Class<Obj>>, Class<Obj>>()
-  private readonly attributes = new Map<Ref<Class<Obj>>, Map<string, AnyAttribute>>()
-  private readonly descendants = new Map<Ref<Class<Obj>>, Ref<Class<Obj>>[]>()
-  private readonly ancestors = new Map<Ref<Class<Obj>>, Ref<Class<Obj>>[]>()
+  private readonly classifiers = new Map<Ref<Classifier>, Classifier>()
+  private readonly attributes = new Map<Ref<Classifier>, Map<string, AnyAttribute>>()
+  private readonly descendants = new Map<Ref<Classifier>, Ref<Classifier>[]>()
+  private readonly ancestors = new Map<Ref<Classifier>, Ref<Classifier>[]>()
   private readonly proxies = new Map<Ref<Mixin<Doc>>, ProxyHandler<Doc>>()
 
   private createMixinProxyHandler (mixin: Ref<Mixin<Doc>>): ProxyHandler<Doc> {
@@ -36,7 +36,9 @@ export class Hierarchy {
     return {
       get (target: any, property: string, receiver: any): any {
         const value = target[mixin]?.[property]
-        if (value === undefined) { return (ancestorProxy !== null) ? ancestorProxy.get?.(target, property, receiver) : target[property] }
+        if (value === undefined) {
+          return ancestorProxy !== null ? ancestorProxy.get?.(target, property, receiver) : target[property]
+        }
         return value
       }
     }
@@ -56,7 +58,7 @@ export class Hierarchy {
     return new Proxy(doc, this.getMixinProxyHandler(mixin)) as M
   }
 
-  getAncestors (_class: Ref<Class<Obj>>): Ref<Class<Obj>>[] {
+  getAncestors (_class: Ref<Classifier>): Ref<Classifier>[] {
     const result = this.ancestors.get(_class)
     if (result === undefined) {
       throw new Error('ancestors not found: ' + _class)
@@ -65,9 +67,17 @@ export class Hierarchy {
   }
 
   getClass (_class: Ref<Class<Obj>>): Class<Obj> {
-    const data = this.classes.get(_class)
-    if (data === undefined) {
+    const data = this.classifiers.get(_class)
+    if (data === undefined || this.isInterface(data)) {
       throw new Error('class not found: ' + _class)
+    }
+    return data
+  }
+
+  getInterface (_interface: Ref<Interface<Doc>>): Interface<Doc> {
+    const data = this.classifiers.get(_interface)
+    if (data === undefined || !this.isInterface(data)) {
+      throw new Error('interface not found: ' + _interface)
     }
     return data
   }
@@ -77,12 +87,19 @@ export class Hierarchy {
     if (klazz.domain !== undefined) {
       return klazz.domain
     }
-    if (klazz.extends !== undefined) {
-      const domain = this.getDomain(klazz.extends)
-      klazz.domain = domain
-      return domain
+    klazz.domain = this.findDomain(klazz)
+    return klazz.domain
+  }
+
+  private findDomain (klazz: Class<Doc>): Domain {
+    let _klazz = klazz
+    while (_klazz.extends !== undefined) {
+      _klazz = this.getClass(_klazz.extends)
+      if (_klazz.domain !== undefined) {
+        return _klazz.domain
+      }
     }
-    throw new Error('domain not found: ' + _class)
+    throw new Error(`domain not found: ${klazz._id} `)
   }
 
   tx (tx: Tx): void {
@@ -96,10 +113,9 @@ export class Hierarchy {
   }
 
   private txCreateDoc (tx: TxCreateDoc<Doc>): void {
-    if (tx.objectClass === core.class.Class) {
-      const createTx = tx as TxCreateDoc<Class<Obj>>
-      const _id = createTx.objectId
-      this.classes.set(_id, TxProcessor.createDoc2Doc(createTx))
+    if (tx.objectClass === core.class.Class || tx.objectClass === core.class.Interface) {
+      const _id = tx.objectId as Ref<Classifier>
+      this.classifiers.set(_id, TxProcessor.createDoc2Doc(tx as TxCreateDoc<Classifier>))
       this.addAncestors(_id)
       this.addDescendant(_id)
     } else if (tx.objectClass === core.class.Attribute) {
@@ -115,12 +131,48 @@ export class Hierarchy {
     }
   }
 
+  /**
+   * Check if passed _class is derived from `from` class.
+   * It will iterave over parents.
+   */
   isDerived<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Class<T>>): boolean {
-    let cl: Ref<Class<Obj>> | undefined = _class
+    let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
       if (cl === from) return true
-      const attrs = this.classes.get(cl)
-      cl = attrs?.extends
+      cl = this.getClass(cl).extends
+    }
+    return false
+  }
+
+  /**
+   * Check if passed _class implements passed interfaces `from`.
+   * It will check for class parents and they interfaces.
+   */
+  isImplements<T extends Doc>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
+    let cl: Ref<Class<T>> | undefined = _class
+    while (cl !== undefined) {
+      const klazz = this.getClass(cl)
+      if (this.isExtends(klazz.implements ?? [], from)) {
+        return true
+      }
+      cl = klazz.extends
+    }
+    return false
+  }
+
+  /**
+   * Check if interface is extends passed interface.
+   */
+  private isExtends<T extends Doc>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
+    const result: Ref<Interface<Doc>>[] = []
+    const toVisit = extendsOrImplements
+    while (toVisit.length > 0) {
+      const ref = toVisit.shift() as Ref<Interface<Doc>>
+      if (ref === from) {
+        return true
+      }
+      addIf(result, ref)
+      toVisit.push(...this.ancestorsOf(ref))
     }
     return false
   }
@@ -133,7 +185,7 @@ export class Hierarchy {
     return data
   }
 
-  private addDescendant<T extends Obj>(_class: Ref<Class<T>>): void {
+  private addDescendant (_class: Ref<Classifier>): void {
     const hierarchy = this.getAncestors(_class)
     for (const cls of hierarchy) {
       const list = this.descendants.get(cls)
@@ -145,18 +197,48 @@ export class Hierarchy {
     }
   }
 
-  private addAncestors<T extends Obj>(_class: Ref<Class<T>>): void {
-    let cl: Ref<Class<Obj>> | undefined = _class
-    while (cl !== undefined) {
-      const list = this.ancestors.get(_class)
-      if (list === undefined) {
-        this.ancestors.set(_class, [cl])
-      } else {
-        list.push(cl)
+  private addAncestors (_class: Ref<Classifier>): void {
+    const cl: Ref<Classifier>[] = [_class]
+    const visited = new Set<Ref<Classifier>>()
+    while (cl.length > 0) {
+      const classifier = cl.shift() as Ref<Classifier>
+      if (addNew(visited, classifier)) {
+        const list = this.ancestors.get(_class)
+        if (list === undefined) {
+          this.ancestors.set(_class, [classifier])
+        } else {
+          addIf(list, classifier)
+        }
+        cl.push(...this.ancestorsOf(classifier))
       }
-      const attrs = this.classes.get(cl)
-      cl = attrs?.extends
     }
+  }
+
+  /**
+   * Return extends and implemnets as combined list of references
+   */
+  private ancestorsOf (classifier: Ref<Classifier>): Ref<Classifier>[] {
+    const attrs = this.classifiers.get(classifier)
+    const result: Ref<Classifier>[] = []
+    if (this.isClass(attrs)) {
+      const cls = attrs as Class<Doc>
+      if (cls.extends !== undefined) {
+        result.push(cls.extends)
+      }
+      result.push(...(cls.implements ?? []))
+    }
+    if (this.isInterface(attrs)) {
+      result.push(...((attrs as Interface<Doc>).extends ?? []))
+    }
+    return result
+  }
+
+  private isClass (attrs?: Classifier): boolean {
+    return attrs?.kind === ClassifierKind.CLASS
+  }
+
+  private isInterface (attrs?: Classifier): boolean {
+    return attrs?.kind === ClassifierKind.INTERFACE
   }
 
   private addAttribute (attribute: AnyAttribute): void {
@@ -169,7 +251,7 @@ export class Hierarchy {
     attributes.set(attribute.name, attribute)
   }
 
-  getAllAttributes (clazz: Ref<Class<Obj>>): Map<string, AnyAttribute> {
+  getAllAttributes (clazz: Ref<Classifier>): Map<string, AnyAttribute> {
     const result = new Map<string, AnyAttribute>()
     const ancestors = this.getAncestors(clazz)
 
@@ -185,16 +267,41 @@ export class Hierarchy {
     return result
   }
 
-  getAttribute (_class: Ref<Class<Obj>>, name: string): AnyAttribute {
-    const attribute = this.attributes.get(_class)?.get(name)
-    if (attribute === undefined) {
-      const clazz = this.getClass(_class)
-      if (clazz.extends !== undefined) {
-        return this.getAttribute(clazz.extends, name)
-      } else {
-        throw new Error('attribute not found: ' + name)
+  getAttribute (classifier: Ref<Classifier>, name: string): AnyAttribute {
+    const attr = this.findAttribute(classifier, name)
+    if (attr === undefined) {
+      throw new Error('attribute not found: ' + name)
+    }
+    return attr
+  }
+
+  private findAttribute (classifier: Ref<Classifier>, name: string): AnyAttribute | undefined {
+    const list = [classifier]
+    const visited = new Set<Ref<Classifier>>()
+    while (list.length > 0) {
+      const cl = list.shift() as Ref<Classifier>
+      if (addNew(visited, cl)) {
+        const attribute = this.attributes.get(cl)?.get(name)
+        if (attribute !== undefined) {
+          return attribute
+        }
+        // Check ancestorsOf
+        list.push(...this.ancestorsOf(cl))
       }
     }
-    return attribute
+  }
+}
+
+function addNew<T> (val: Set<T>, value: T): boolean {
+  if (val.has(value)) {
+    return false
+  }
+  val.add(value)
+  return true
+}
+
+function addIf<T> (array: T[], value: T): void {
+  if (!array.includes(value)) {
+    array.push(value)
   }
 }

@@ -15,7 +15,8 @@
 
 import type { IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Arr, Class, Data, Doc, Mixin, Obj, Ref } from '../classes'
+import { DocWithState } from '..'
+import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref } from '../classes'
 import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'
 import type { TxCreateDoc, TxCUD } from '../tx'
@@ -25,6 +26,10 @@ const txFactory = new TxFactory(core.account.System)
 
 function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)
+}
+
+function createInterface (_interface: Ref<Interface<Doc>>, attributes: Data<Interface<Doc>>): TxCreateDoc<Doc> {
+  return txFactory.createTxCreateDoc(core.class.Interface, core.space.Model, attributes, _interface)
 }
 
 export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>): TxCreateDoc<Doc> {
@@ -39,12 +44,26 @@ export interface AttachedComment extends AttachedDoc {
   message: string
 }
 
+export interface Task extends Doc, DocWithState {
+  name: string
+}
+
+export interface TaskCheckItem extends AttachedDoc, DocWithState {
+  name: string
+  complete: boolean
+}
+
 export const test = plugin('test' as Plugin, {
   mixin: {
     TestMixin: '' as Ref<Mixin<TestMixin>>
   },
   class: {
+    Task: '' as Ref<Class<Task>>,
+    TaskCheckItem: '' as Ref<Class<TaskCheckItem>>,
     TestComment: '' as Ref<Class<AttachedComment>>
+  },
+  interface: {
+    DummyDocWithState: '' as Ref<Interface<DocWithState>>
   }
 })
 
@@ -59,8 +78,11 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS }))
   txes.push(createClass(core.class.AttachedDoc, { label: 'AttachedDoc' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
   txes.push(createClass(core.class.Class, { label: 'Class' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
+  txes.push(createClass(core.class.Interface, { label: 'Interface' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS }))
   txes.push(createClass(core.class.Space, { label: 'Space' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
   txes.push(createClass(core.class.Account, { label: 'Account' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
+
+  txes.push(createInterface(core.interface.DocWithState, { label: 'DocWithState' as IntlString, extends: [], kind: ClassifierKind.INTERFACE }))
 
   txes.push(createClass(core.class.Tx, { label: 'Tx' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
   txes.push(createClass(core.class.TxCUD, { label: 'TxCUD' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
@@ -71,7 +93,10 @@ export function genMinModel (): TxCUD<Doc>[] {
 
   txes.push(createClass(test.mixin.TestMixin, { label: 'TestMixin' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
 
+  txes.push(createInterface(test.interface.DummyDocWithState, { label: 'DummyDocWithState' as IntlString, extends: [core.interface.DocWithState], kind: ClassifierKind.INTERFACE }))
   txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(test.class.Task, { label: 'Task' as IntlString, extends: core.class.Doc, implements: [test.interface.DummyDocWithState], kind: ClassifierKind.CLASS }))
+  txes.push(createClass(test.class.TaskCheckItem, { label: 'Task' as IntlString, extends: core.class.AttachedDoc, implements: [core.interface.DocWithState], kind: ClassifierKind.CLASS }))
 
   txes.push(
     createDoc(core.class.Space, {

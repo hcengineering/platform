@@ -15,7 +15,7 @@
 
 import core, {
   Account,
-  Attribute, Class, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
+  Attribute, Class, Classifier, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Interface, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
@@ -38,8 +38,9 @@ function getIndex (target: any, property: string): IndexKind | undefined {
 }
 
 interface ClassTxes {
-  _id: Ref<Class<Obj>>
+  _id: Ref<Classifier>
   extends?: Ref<Class<Obj>>
+  implements?: Ref<Interface<Doc>>[]
   domain?: Domain
   label: IntlString
   icon?: Asset
@@ -105,14 +106,31 @@ export function Index (kind: IndexKind) {
 export function Model<T extends Obj> (
   _class: Ref<Class<T>>,
   _extends: Ref<Class<Obj>>,
-  domain?: Domain
+  domain?: Domain,
+  _implements?: Ref<Interface<Doc>>[]
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes._id = _class
     txes.extends = _class !== core.class.Obj ? _extends : undefined
+    txes.implements = _implements
     txes.domain = domain
     txes.kind = ClassifierKind.CLASS
+  }
+}
+
+/**
+ * @public
+ */
+export function Implements<T extends Doc> (
+  _interface: Ref<Interface<T>>,
+  _extends?: Ref<Interface<Doc>>[]
+) {
+  return function classDecorator<C extends new () => T> (constructor: C): void {
+    const txes = getTxes(constructor.prototype)
+    txes._id = _interface
+    txes.implements = _extends
+    txes.kind = ClassifierKind.INTERFACE
   }
 }
 
@@ -166,13 +184,13 @@ const txFactory = new TxFactory(core.account.System)
 
 function _generateTx (tx: ClassTxes): Tx[] {
   const objectId = tx._id
-  const createTx = txFactory.createTxCreateDoc(
+  const createTx = txFactory.createTxCreateDoc<Doc>(
     core.class.Class,
     core.space.Model,
     {
-      domain: tx.domain,
-      kind: ClassifierKind.CLASS,
-      extends: tx.extends,
+      ...(tx.domain !== undefined ? { domain: tx.domain } : {}),
+      kind: tx.kind,
+      ...(tx.kind === ClassifierKind.INTERFACE ? { extends: tx.implements } : { extends: tx.extends, implements: tx.implements }),
       label: tx.label,
       icon: tx.icon,
       shortLabel: tx.shortLabel
