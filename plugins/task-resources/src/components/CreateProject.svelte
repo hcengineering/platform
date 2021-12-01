@@ -25,15 +25,15 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let description: string = ''
+  const description: string = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return name === ''
   }
 
   const client = getClient()
 
-  function createProject() {
+  function createProject () {
     client.createDoc(task.class.Project, core.space.Model, {
       name,
       description,
@@ -46,7 +46,7 @@
 <SpaceCreateCard
   label={task.string.CreateProject} 
   okAction={createProject}
-  canSave={name ? true : false}
+  canSave={name.length > 0}
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
