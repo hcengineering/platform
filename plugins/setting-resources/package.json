@@ -34,7 +34,6 @@
     "@anticrm/core": "~0.6.11",
     "svelte": "^3.37.0",
     "@anticrm/setting": "~0.6.0",
-    "@anticrm/login": "~0.6.1",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2"
   }
