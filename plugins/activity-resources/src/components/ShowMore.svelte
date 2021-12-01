@@ -36,6 +36,7 @@
     bind:clientHeight={cHeight}
     class="showMore-content"
     class:crop={!ignore && crop}
+    class:full={bigger && !ignore && !crop}
   ><slot /></div>
 
   {#if !ignore && bigger}
@@ -52,8 +53,9 @@
     &.crop {
       overflow: hidden;
       max-height: 15rem;
-      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, .9) 2.5rem, rgba(0, 0, 0, 1) 3rem);
+      mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);
     }
+    &.full { margin-bottom: 2.75rem; }
   }
 
   .showMore {
@@ -61,9 +63,9 @@
     left: 50%;
     bottom: 0;
     padding: .5rem 1rem;
-    width: max-content;
+    transform: translateX(-50%);
 
-    font-weight: 500;
+    word-wrap: none;
     font-size: .75rem;
     color: var(--theme-caption-color);
     background: var(--theme-showmore-color);
@@ -72,25 +74,10 @@
     border-radius: 2.5rem;
     user-select: none;
     cursor: pointer;
-
-    opacity: 1;
-    transform: translateX(-50%) scale(.97);
-    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-    &:hover { transform: translateX(-50%) scale(1); }
-    &:active { transform: translateX(-50%) scale(.99); }
-
+    
     &.outter {
-      bottom: -1.85rem;
-      opacity: .7;
-      transform: translateX(-50%) scale(.80);
-      &:hover {
-        opacity: 1;
-        transform: translateX(-50%) scale(.83);
-      }
-      &:active {
-        opacity: .95;
-        transform: translateX(-50%) scale(.82);
-      }
+      bottom: -2.75rem;
+      transform: translateX(-50%);
     }
   }
 </style>
