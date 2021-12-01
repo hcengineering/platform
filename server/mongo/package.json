@@ -7,6 +7,7 @@
   "scripts": {
     "build": "heft build",
     "build:watch": "tsc",
+    "test": "heft test",
     "lint:fix": "eslint --fix src"
   },
   "devDependencies": {
@@ -16,7 +17,8 @@
     "eslint-plugin-import":"2",
     "eslint-plugin-promise":"4",
     "eslint-plugin-node":"11",
-    "eslint":"^7.32.0"
+    "eslint":"^7.32.0",
+    "@rushstack/heft":"^0.41.1"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",

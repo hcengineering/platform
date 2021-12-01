@@ -10355,11 +10355,12 @@ packages:
     dev: false
 
   file:projects/mongo.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-WCx0v8hkOiPCmB1OWUZLTG48gxCKVeLW0YklyY4xMUKBcJtLuLdI7ANR32dCV4foigoed/lUnhuIo+u5/ItAAw==, tarball: file:projects/mongo.tgz}
+    resolution: {integrity: sha512-0KGq7LjHPxTwjmCdufl9q/USIGXeiULPW0uunzAQU6p2dOVDZcBF1wSVsjID8YD4xGUuP/PrZ/m0xINiw6LQFQ==, tarball: file:projects/mongo.tgz}
     id: file:projects/mongo.tgz
     name: '@rush-temp/mongo'
     version: 0.0.0
     dependencies:
+      '@rushstack/heft': 0.41.1
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 4.33.0_eslint@7.32.0+typescript@4.4.3
       eslint: 7.32.0
@@ -10868,7 +10869,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-dxx9fOd472gS8ILbnRMpBhnd4KOT0xkpQRbSkGHn9sigBeRZ48ZdEXtfagTQSaVlgwhOoCbVm1QrFy67Ctpbcw==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-ClICw/CPw4rPYLvKabxpF44rmJKWLI61xTB4FSA75L9FamuJKV73Ncoo0/c5qhxGNcsd2fe1gHTjg6CYGqP1Lg==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0

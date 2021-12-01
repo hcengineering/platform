@@ -13,29 +13,39 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxCreateDoc, TxUpdateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxResult } from '@anticrm/core'
-import core, { DOMAIN_TX, DOMAIN_MODEL, SortingOrder, TxProcessor, Hierarchy, isOperator, ModelDb } from '@anticrm/core'
-
+import type {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Ref,
+  Tx,
+  TxCreateDoc,
+  TxMixin,
+  TxPutBag,
+  TxRemoveDoc,
+  TxResult,
+  TxUpdateDoc
+} from '@anticrm/core'
+import core, { DOMAIN_MODEL, DOMAIN_TX, Hierarchy, isOperator, ModelDb, SortingOrder, TxProcessor } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-
-import { MongoClient, Db, Filter, Document, Sort } from 'mongodb'
+import { Db, Document, Filter, Sort } from 'mongodb'
+import { mongoEscape, mongoReplaceNulls, mongoUnescape } from './escaping'
+import { getMongoClient } from './utils'
 
 function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
 abstract class MongoAdapterBase extends TxProcessor {
-  constructor (
-    protected readonly db: Db,
-    protected readonly hierarchy: Hierarchy,
-    protected readonly modelDb: ModelDb
-  ) {
+  constructor (protected readonly db: Db, protected readonly hierarchy: Hierarchy, protected readonly modelDb: ModelDb) {
     super()
   }
 
   async init (): Promise<void> {}
 
-  private translateQuery<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
+  private translateQuery<T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
     for (const key in query) {
       const value = (query as any)[key]
@@ -62,7 +72,11 @@ abstract class MongoAdapterBase extends TxProcessor {
     return translated
   }
 
-  private async lookup<T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options: FindOptions<T>): Promise<FindResult<T>> {
+  private async lookup<T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const pipeline = []
     pipeline.push({ $match: this.translateQuery(clazz, query) })
     const lookups = options.lookup as any
@@ -81,7 +95,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
     const domain = this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline)
-    const result = await cursor.toArray() as FindResult<T>
+    const result = (await cursor.toArray()) as FindResult<T>
     for (const row of result) {
       const object = row as any
       object.$lookup = {}
@@ -99,17 +113,22 @@ abstract class MongoAdapterBase extends TxProcessor {
     return result
   }
 
-  async findAll<T extends Doc> (
+  async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     // TODO: rework this
     if (options !== null && options !== undefined) {
-      if (options.lookup !== undefined) { return await this.lookup(_class, query, options) }
+      if (options.lookup !== undefined) {
+        return await this.lookup(_class, query, options)
+      }
     }
     const domain = this.hierarchy.getDomain(_class)
     let cursor = this.db.collection(domain).find<T>(this.translateQuery(_class, query))
+    if (options?.limit !== undefined) {
+      cursor = cursor.limit(options.limit)
+    }
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
@@ -120,14 +139,13 @@ abstract class MongoAdapterBase extends TxProcessor {
         cursor = cursor.sort(sort)
       }
     }
-    return await cursor.toArray()
+    return (await cursor.toArray()).map(mongoReplaceNulls) as FindResult<T>
   }
 }
 
 class MongoAdapter extends MongoAdapterBase {
   protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
-    console.log('mongo', { $set: { [tx.bag + '.' + tx.key]: tx.value } })
     await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { [tx.bag + '.' + tx.key]: tx.value } })
     return {}
   }
@@ -186,40 +204,56 @@ class MongoAdapter extends MongoAdapterBase {
             }
           }
         ]
-        console.log('ops', ops)
         return await this.db.collection(domain).bulkWrite(ops as any)
       } else {
         if (tx.retrieve === true) {
-          const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, {
-            ...tx.operations,
-            $set: {
-              modifiedBy: tx.modifiedBy,
-              modifiedOn: tx.modifiedOn
-            }
-          }, { returnDocument: 'after' })
+          const result = await this.db.collection(domain).findOneAndUpdate(
+            { _id: tx.objectId },
+            {
+              ...tx.operations,
+              $set: {
+                modifiedBy: tx.modifiedBy,
+                modifiedOn: tx.modifiedOn
+              }
+            },
+            { returnDocument: 'after' }
+          )
           return { object: result.value }
         } else {
-          return await this.db.collection(domain).updateOne({ _id: tx.objectId }, {
-            ...tx.operations,
-            $set: {
-              modifiedBy: tx.modifiedBy,
-              modifiedOn: tx.modifiedOn
+          return await this.db.collection(domain).updateOne(
+            { _id: tx.objectId },
+            {
+              ...tx.operations,
+              $set: {
+                modifiedBy: tx.modifiedBy,
+                modifiedOn: tx.modifiedOn
+              }
             }
-          })
+          )
         }
       }
     } else {
       if (tx.retrieve === true) {
-        const result = await this.db.collection(domain).findOneAndUpdate({ _id: tx.objectId }, { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }, { returnDocument: 'after' })
+        const result = await this.db
+          .collection(domain)
+          .findOneAndUpdate(
+            { _id: tx.objectId },
+            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } },
+            { returnDocument: 'after' }
+          )
         return { object: result.value }
       } else {
-        return await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } })
+        return await this.db
+          .collection(domain)
+          .updateOne(
+            { _id: tx.objectId },
+            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } }
+          )
       }
     }
   }
 
   override tx (tx: Tx): Promise<TxResult> {
-    console.log('mongo', tx)
     return super.tx(tx)
   }
 }
@@ -246,22 +280,33 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    console.log('mongotx', tx)
-    await this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
+    await this.db.collection(DOMAIN_TX).insertOne(mongoEscape(translateDoc(tx)))
     return {}
   }
 
   async getModel (): Promise<Tx[]> {
     return await this.db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
   }
+
+  override async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    return (await super.findAll(_class, query, options)).map(mongoUnescape) as FindResult<T>
+  }
 }
 
 /**
  * @public
  */
-export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbName: string, modelDb: ModelDb): Promise<DbAdapter> {
-  const client = new MongoClient(url)
-  await client.connect()
+export async function createMongoAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  dbName: string,
+  modelDb: ModelDb
+): Promise<DbAdapter> {
+  const client = await getMongoClient(url)
   const db = client.db(dbName)
   return new MongoAdapter(db, hierarchy, modelDb)
 }
@@ -269,9 +314,13 @@ export async function createMongoAdapter (hierarchy: Hierarchy, url: string, dbN
 /**
  * @public
  */
-export async function createMongoTxAdapter (hierarchy: Hierarchy, url: string, dbName: string, modelDb: ModelDb): Promise<TxAdapter> {
-  const client = new MongoClient(url)
-  await client.connect()
+export async function createMongoTxAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  dbName: string,
+  modelDb: ModelDb
+): Promise<TxAdapter> {
+  const client = await getMongoClient(url)
   const db = client.db(dbName)
   return new MongoTxAdapter(db, hierarchy, modelDb)
 }
