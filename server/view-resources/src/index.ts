@@ -30,7 +30,7 @@ export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: Fin
 
   if (hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
     const createTx = tx as TxCreateDoc<DocWithState>
-    if (hierarchy.isDerived(createTx.objectClass, core.class.DocWithState)) {
+    if (hierarchy.isImplements(createTx.objectClass, core.interface.DocWithState)) {
       const state = (await (findAll as FindAll<State>)(core.class.State, { space: createTx.objectSpace }))[0] // TODO: make FindAll generic
       if (state === undefined) {
         throw new Error('OnDocWithState: state not found')
@@ -46,7 +46,7 @@ export async function OnDocWithState (tx: Tx, txFactory: TxFactory, findAll: Fin
     }
   } else if (tx._class === core.class.TxRemoveDoc) {
     const removeTx = tx as TxRemoveDoc<DocWithState>
-    if (hierarchy.isDerived(removeTx.objectClass, core.class.DocWithState)) {
+    if (hierarchy.isImplements(removeTx.objectClass, core.interface.DocWithState)) {
       const kanban = (await (findAll as FindAll<Kanban>)(view.class.Kanban, { attachedTo: removeTx.objectSpace }))[0]
       if (kanban === undefined) {
         throw new Error('OnDocWithState: kanban not found')

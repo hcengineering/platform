@@ -13,20 +13,18 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, UX, Prop, TypeString, TypeBoolean } from '@anticrm/model'
-import type { Ref, FindOptions, Doc, Domain, Class } from '@anticrm/core'
-import core, { TSpace, TSpaceWithStates, TDocWithState } from '@anticrm/model-core'
-import type { Vacancy, Candidates, Candidate, Applicant } from '@anticrm/recruit'
 import activity from '@anticrm/activity'
 import type { Employee } from '@anticrm/contact'
-
-import workbench from '@anticrm/model-workbench'
-
-import view from '@anticrm/model-view'
-import contact, { TPerson } from '@anticrm/model-contact'
-import recruit from './plugin'
+import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import { Builder, Model, Prop, TypeBoolean, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
+import contact, { TPerson } from '@anticrm/model-contact'
+import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@anticrm/model-core'
+import view from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import type { IntlString } from '@anticrm/platform'
+import type { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import recruit from './plugin'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
@@ -63,14 +61,12 @@ export class TCandidate extends TPerson implements Candidate {
   source?: string
 }
 
-@Model(recruit.class.Applicant, core.class.DocWithState, DOMAIN_RECRUIT)
+@Model(recruit.class.Applicant, core.class.AttachedDoc, DOMAIN_RECRUIT, [core.interface.DocWithState])
 @UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
-export class TApplicant extends TDocWithState implements Applicant {
+export class TApplicant extends TAttachedDoc implements Applicant {
+  // We need to declare, to provide property with label
   @Prop(TypeString(), 'Candidate' as IntlString)
-  attachedTo!: Ref<Candidate>
-
-  attachedToClass!: Ref<Class<Candidate>>
-  collection!: string
+  declare attachedTo: Ref<Candidate>
 
   @Prop(TypeString(), 'Attachments' as IntlString)
   attachments?: number
@@ -80,6 +76,10 @@ export class TApplicant extends TDocWithState implements Applicant {
 
   @Prop(TypeString(), 'Assigned recruiter' as IntlString)
   employee!: Ref<Employee>
+
+  // We need this two to make typescript happy.
+  declare state: TDocWithState['state']
+  declare number: TDocWithState['number']
 }
 
 export function createModel (builder: Builder): void {

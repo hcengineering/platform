@@ -103,6 +103,7 @@ export type AnyAttribute = Attribute<Type<any>>
  */
 export enum ClassifierKind {
   CLASS,
+  INTERFACE,
   MIXIN
 }
 
@@ -122,8 +123,18 @@ export type Domain = string & { __domain: true }
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Interface<T extends Obj> extends Classifier {
+  extends?: Ref<Interface<Obj>>[]
+  shortLabel?: IntlString
+}
+
+/**
+ * @public
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
+  implements?: Ref<Interface<Obj>>[]
   domain?: Domain
   shortLabel?: IntlString
 }

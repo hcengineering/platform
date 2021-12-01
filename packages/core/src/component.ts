@@ -14,8 +14,8 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Account, Class, Doc, Obj, Ref, Space, AnyAttribute, State, Type, PropertyType, SpaceWithStates, Timestamp, DocWithState, AttachedDoc } from './classes'
-import type { Tx, TxCollectionCUD, TxBulkWrite, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Account, AnyAttribute, AttachedDoc, Class, Doc, DocWithState, Interface, Obj, PropertyType, Ref, Space, SpaceWithStates, State, Timestamp, Type } from './classes'
+import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
  * @public
@@ -28,6 +28,7 @@ export default plugin(coreId, {
     Doc: '' as Ref<Class<Doc>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,
+    Interface: '' as Ref<Class<Interface<Obj>>>,
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
     TxBulkWrite: '' as Ref<Class<TxBulkWrite>>,
@@ -40,13 +41,15 @@ export default plugin(coreId, {
     TxPutBag: '' as Ref<Class<TxPutBag<PropertyType>>>,
     Space: '' as Ref<Class<Space>>,
     SpaceWithStates: '' as Ref<Class<SpaceWithStates>>,
-    DocWithState: '' as Ref<Class<DocWithState>>,
     Account: '' as Ref<Class<Account>>,
     State: '' as Ref<Class<State>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
+  },
+  interface: {
+    DocWithState: '' as Ref<Interface<DocWithState>>
   },
   space: {
     Tx: '' as Ref<Space>,

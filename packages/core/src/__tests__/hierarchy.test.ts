@@ -17,30 +17,45 @@ import type { Class, Doc, Obj, Ref } from '../classes'
 import type { TxCreateDoc } from '../tx'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
-import { genMinModel } from './minmodel'
+import { genMinModel, test } from './minmodel'
 
 const txes = genMinModel()
 
+function prepare (): Hierarchy {
+  const hierarchy = new Hierarchy()
+  for (const tx of txes) hierarchy.tx(tx)
+  return hierarchy
+}
+
 describe('hierarchy', () => {
   it('should build hierarchy', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
+    const hierarchy = prepare()
     const ancestors = hierarchy.getAncestors(core.class.TxCreateDoc)
     expect(ancestors).toContain(core.class.Tx)
   })
 
   it('isDerived', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
+    const hierarchy = prepare()
     const derived = hierarchy.isDerived(core.class.Space, core.class.Doc)
     expect(derived).toBeTruthy()
     const notDerived = hierarchy.isDerived(core.class.Space, core.class.Class)
     expect(notDerived).not.toBeTruthy()
   })
 
+  it('isImplements', async () => {
+    const hierarchy = prepare()
+    let isImplements = hierarchy.isImplements(test.class.Task, core.interface.DocWithState)
+    expect(isImplements).toBeTruthy()
+
+    isImplements = hierarchy.isImplements(test.class.TaskCheckItem, core.interface.DocWithState)
+    expect(isImplements).toBeTruthy()
+
+    const notImplements = hierarchy.isImplements(core.class.Space, core.interface.DocWithState)
+    expect(notImplements).not.toBeTruthy()
+  })
+
   it('getClass', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
+    const hierarchy = prepare()
     const data = hierarchy.getClass(core.class.TxCreateDoc)
     expect(data).toMatchObject((txes.find((p) => p.objectId === core.class.TxCreateDoc) as TxCreateDoc<Doc>).attributes)
     const notExistClass = 'class:test.MyClass' as Ref<Class<Obj>>
@@ -48,8 +63,7 @@ describe('hierarchy', () => {
   })
 
   it('getDomain', async () => {
-    const hierarchy = new Hierarchy()
-    for (const tx of txes) hierarchy.tx(tx)
+    const hierarchy = prepare()
     const txDomain = hierarchy.getDomain(core.class.TxCreateDoc)
     expect(txDomain).toBe('tx')
     const modelDomain = hierarchy.getDomain(core.class.Class)
