@@ -30,7 +30,7 @@
   <div class="avatar">
     <Avatar size={'medium'} />
   </div>
-  <div class="flex-col">
+  <div class="flex-grow flex-col">
     <div class="header">
       <div class="fs-title">
         {#await getUser(client, value.modifiedBy) then user}
