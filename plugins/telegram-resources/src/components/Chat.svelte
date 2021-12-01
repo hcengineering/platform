@@ -61,18 +61,60 @@
   })
   const client = getClient()
 
-  async function onMessage(event: CustomEvent) {
-    await fetch(url + '/send-msg', {
+  async function sendMsg (to: string, msg: string) {
+    return await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to: contactString?.value ?? '',
-        msg: event.detail
+        to,
+        msg
       })
     })
+  }
+
+  async function addContact (phone: string) {
+    const [lastName, firstName] = object.name.split(',')
+
+    return await fetch(url + '/add-contact', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          firstName: firstName ?? '',
+          lastName: lastName ?? '',
+          phone
+        })
+      })
+  }
+
+  async function onMessage(event: CustomEvent) {
+    const to = contactString?.value ?? ''
+    const sendRes = await sendMsg(to, event.detail)
+
+    if (sendRes.status !== 400 || !to.startsWith('+')) {
+      return
+    }
+
+
+    const err = await sendRes.json()
+    if (err.code !== 'CONTACT_IMPORT_REQUIRED') {
+      return
+    }
+
+    const addRes = await addContact(to)
+
+    if (Math.trunc(addRes.status / 100) !== 2) {
+      const { message } = await addRes.json().catch(() => ({ message: 'Unknown error' }))
+
+      throw Error(message)
+    }
+
+    await sendMsg(to, event.detail)
   }
 
   function isNewDate (messages: TelegramMessage[], i: number): boolean {
