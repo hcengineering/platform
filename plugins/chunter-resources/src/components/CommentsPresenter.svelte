@@ -16,17 +16,17 @@
 
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
-  import { Tooltip, IconComments } from '@anticrm/ui'
+  import { Tooltip, IconThread } from '@anticrm/ui'
   import CommentPopup from './CommentPopup.svelte'
+  import chunter from '@anticrm/chunter'
 
   export let value: Doc & { comments?: number }
-
 </script>
 
 {#if value.comments && value.comments > 0}
-  <Tooltip label={'Comments (' + value.comments + ')'} component={CommentPopup} props={{ objectId: value._id }}>
+  <Tooltip label={chunter.string.Comments} component={CommentPopup} props={{ objectId: value._id }}>
     <div class="sm-tool-icon">
-      <span class="icon"><IconComments size="small"/></span>{value.comments}
+      <span class="icon"><IconThread size="small"/></span>{value.comments}
     </div>
   </Tooltip>
 {/if}

@@ -11,6 +11,7 @@
     "MakePrivateDescription": "Only members can see it",
     "Channel": "Channel",
     "EditUpdate": "Save...",
-    "EditCancel": "Cancel"
+    "EditCancel": "Cancel",
+    "Comments" : "Comments"
   }
 }

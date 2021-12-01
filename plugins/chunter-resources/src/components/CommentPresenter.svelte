@@ -18,6 +18,7 @@
   import type { Comment } from '@anticrm/chunter'
   import { formatName } from '@anticrm/contact'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { TimeSince } from '@anticrm/ui'
   import { getTime, getUser } from '../utils'
 
   export let value: Comment
@@ -25,52 +26,40 @@
   const client = getClient()
 </script>
 
-<div class="container">
-  <div class="avatar"><Avatar size={'medium'} /></div>
-  <div class="message">
-    <div class="header flex-between">
-      {#await getUser(client, value.modifiedBy) then user}
-        {#if user}{formatName(user.name)}{/if}
-      {/await}
-      <span>{getTime(value.modifiedOn)}</span>
+<div class="flex-row-top">
+  <div class="avatar">
+    <Avatar size={'medium'} />
+  </div>
+  <div class="flex-col">
+    <div class="flex-row-top justify-between mb-1">
+      <div class="fs-title">
+        {#await getUser(client, value.modifiedBy) then user}
+          {#if user}{formatName(user.name)}{/if}
+        {/await}
+      </div>
+      <div class="content-trans-color"><TimeSince value={value.modifiedOn} /></div>
     </div>
-    <div class="text"><MessageViewer message={value.message}/></div>
+    <div class="content-color">
+      <MessageViewer message={value.message}/>
+    </div>
   </div>
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-
-    .avatar { min-width: 2.25rem; }
-
-    .message {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      margin-left: 1.1rem;
-
-      .header {
-        font-weight: 500;
-        font-size: 1rem;
-        line-height: 150%;
-        color: var(--theme-caption-color);
-        margin-bottom: .2rem;
-
-        span {
-          margin-left: .5rem;
-          font-weight: 400;
-          font-size: .875rem;
-          line-height: 1.125rem;
-          opacity: .4;
-        }
-      }
-      .text {
-        line-height: 150%;
-        max-width: 20rem;
-
-        :global(p) { margin: 0; }
-      }
+    .avatar {
+      margin-right: 1rem;
+      min-width: 2.25rem;
     }
-  }
+
+    // .message {
+    //   display: flex;
+    //   flex-direction: column;
+    //   width: 100%;
+    //   .text {
+    //     line-height: 150%;
+    //     max-width: 20rem;
+
+    //     :global(p) { margin: 0; }
+    //   }
+    // }
 </style>

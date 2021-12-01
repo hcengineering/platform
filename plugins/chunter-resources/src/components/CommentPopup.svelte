@@ -31,18 +31,12 @@
 
 </script>
 
-<div class="content">
-  {#each comments as comment}
-    <div class="item">
-      <CommentPresenter value={comment} />
-    </div>
-  {/each}
-</div>
+{#each comments as comment}
+  <div class="item">
+    <CommentPresenter value={comment} />
+  </div>
+{/each}
 
 <style lang="scss">
-  .content {
-    .item + .item {
-      margin-top: 1.75rem;
-    }
-  }
+  .item + .item { margin-top: 1.25rem; }
 </style>

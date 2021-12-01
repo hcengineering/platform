@@ -116,6 +116,10 @@ p:last-child { margin-block-end: 0; }
   align-items: center;
   flex-wrap: nowrap;
 }
+.flex-row-top {
+  display: flex;
+  align-items: flex-start;
+}
 .flex-row-reverse {
   display: flex;
   flex-direction: row-reverse;
@@ -138,6 +142,7 @@ p:last-child { margin-block-end: 0; }
   flex-direction: column;
   align-items: stretch;
 }
+.justify-between { justify-content: space-between; }
 
 .safari-gap-1 {
   & > * { margin-right: .25rem; }
