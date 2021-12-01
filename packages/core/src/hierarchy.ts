@@ -74,7 +74,7 @@ export class Hierarchy {
     return data
   }
 
-  getInterface (_interface: Ref<Interface<Obj>>): Interface<Obj> {
+  getInterface (_interface: Ref<Interface<Doc>>): Interface<Doc> {
     const data = this.classifiers.get(_interface)
     if (data === undefined || !this.isInterface(data)) {
       throw new Error('interface not found: ' + _interface)
@@ -113,7 +113,7 @@ export class Hierarchy {
   }
 
   private txCreateDoc (tx: TxCreateDoc<Doc>): void {
-    if ([core.class.Class, core.class.Interface].includes(tx.objectClass)) {
+    if (tx.objectClass === core.class.Class || tx.objectClass === core.class.Interface) {
       const _id = tx.objectId as Ref<Classifier>
       this.classifiers.set(_id, TxProcessor.createDoc2Doc(tx as TxCreateDoc<Classifier>))
       this.addAncestors(_id)
@@ -148,7 +148,7 @@ export class Hierarchy {
    * Check if passed _class implements passed interfaces `from`.
    * It will check for class parents and they interfaces.
    */
-  isImplements<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
+  isImplements<T extends Doc>(_class: Ref<Class<T>>, from: Ref<Interface<T>>): boolean {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
       const klazz = this.getClass(cl)
@@ -163,7 +163,7 @@ export class Hierarchy {
   /**
    * Check if interface is extends passed interface.
    */
-  private isExtends<T extends Obj>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
+  private isExtends<T extends Doc>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
     const result: Ref<Interface<Doc>>[] = []
     const toVisit = extendsOrImplements
     while (toVisit.length > 0) {

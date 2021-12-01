@@ -123,9 +123,8 @@ export type Domain = string & { __domain: true }
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Interface<T extends Obj> extends Classifier {
-  extends?: Ref<Interface<Obj>>[]
-  shortLabel?: IntlString
+export interface Interface<T extends Doc> extends Classifier {
+  extends?: Ref<Interface<Doc>>[]
 }
 
 /**
@@ -134,7 +133,7 @@ export interface Interface<T extends Obj> extends Classifier {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Class<T extends Obj> extends Classifier {
   extends?: Ref<Class<Obj>>
-  implements?: Ref<Interface<Obj>>[]
+  implements?: Ref<Interface<Doc>>[]
   domain?: Domain
   shortLabel?: IntlString
 }

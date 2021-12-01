@@ -28,7 +28,7 @@ function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): Tx
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)
 }
 
-function createInterface (_interface: Ref<Interface<Obj>>, attributes: Data<Interface<Obj>>): TxCreateDoc<Doc> {
+function createInterface (_interface: Ref<Interface<Doc>>, attributes: Data<Interface<Doc>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Interface, core.space.Model, attributes, _interface)
 }
 

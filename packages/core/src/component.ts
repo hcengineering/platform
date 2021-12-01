@@ -28,7 +28,7 @@ export default plugin(coreId, {
     Doc: '' as Ref<Class<Doc>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,
-    Interface: '' as Ref<Class<Interface<Obj>>>,
+    Interface: '' as Ref<Class<Interface<Doc>>>,
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
     TxBulkWrite: '' as Ref<Class<TxBulkWrite>>,

@@ -40,7 +40,7 @@ function getIndex (target: any, property: string): IndexKind | undefined {
 interface ClassTxes {
   _id: Ref<Classifier>
   extends?: Ref<Class<Obj>>
-  implements?: Ref<Interface<Obj>>[]
+  implements?: Ref<Interface<Doc>>[]
   domain?: Domain
   label: IntlString
   icon?: Asset
@@ -107,7 +107,7 @@ export function Model<T extends Obj> (
   _class: Ref<Class<T>>,
   _extends: Ref<Class<Obj>>,
   domain?: Domain,
-  _implements?: Ref<Interface<Obj>>[]
+  _implements?: Ref<Interface<Doc>>[]
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
@@ -122,9 +122,9 @@ export function Model<T extends Obj> (
 /**
  * @public
  */
-export function ModelInterface<T extends Obj> (
+export function Implements<T extends Doc> (
   _interface: Ref<Interface<T>>,
-  _extends?: Ref<Interface<Obj>>[]
+  _extends?: Ref<Interface<Doc>>[]
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
