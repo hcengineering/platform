@@ -301,6 +301,13 @@ export function TypeTimestamp (): Type<string> {
 /**
  * @public
  */
+export function TypeDate (): Type<string> {
+  return { _class: core.class.TypeDate, label: 'TypeDate' as IntlString }
+}
+
+/**
+ * @public
+ */
 export function TypeState (): Type<string> {
   return { _class: core.class.State, label: 'TypeState' as IntlString }
 }

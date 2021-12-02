@@ -32,6 +32,7 @@ import { getClient } from '@anticrm/presentation'
 import contact from '@anticrm/contact'
 
 export let content: string = ''
+export let placeholder: string = 'Type something...'
 
 let element: HTMLElement
 let editor: Editor
@@ -42,6 +43,9 @@ const client = getClient()
 export function submit (): void {
   content = editor.getHTML()
   dispatch('content', content)
+}
+
+export function clear (): void {
   content = ''
   editor.commands.clearContent(false)
 }
@@ -49,10 +53,10 @@ export function submit (): void {
 const HandleEnter = Extension.create({
   addKeyboardShortcuts() {
     return {
-      'Enter': () => {    
+      'Enter': () => {
         submit()
         return true
-      }          
+      }
     }
   },
 })
@@ -66,7 +70,7 @@ onMount(() => {
       StarterKit,
       Highlight,
       // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
-      Placeholder.configure({placeholder: 'Type something...'}),
+      Placeholder.configure({placeholder: placeholder}),
       Mention.configure({
         HTMLAttributes: {
           class: 'mention',
@@ -97,11 +101,13 @@ onMount(() => {
         },
       }),
     ],
-    // content: 'dfgdfg',
     onTransaction: () => {
       // force re-render so `editor.isActive` works as expected
       editor = editor
     },
+    onBlur: () => {
+      dispatch('blur')
+    }
   })
 })
 

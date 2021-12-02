@@ -15,7 +15,7 @@
 
 import type { Account, Arr, Domain, Ref, Space, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Implements, Model, Prop, TypeState, TypeString } from '@anticrm/model'
+import { Implements, Model, Prop, TypeBoolean, TypeState, TypeString } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 import { TDoc } from './core'
@@ -29,8 +29,12 @@ export class TSpace extends TDoc implements Space {
   @Prop(TypeString(), 'Name' as IntlString)
   name!: string
 
+  @Prop(TypeString(), 'Description' as IntlString)
   description!: string
+
+  @Prop(TypeBoolean(), 'Private' as IntlString)
   private!: boolean
+
   members!: Arr<Ref<Account>>
 }
 

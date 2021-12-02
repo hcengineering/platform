@@ -37,10 +37,11 @@
 <div class="ref-container">
   <div class="textInput">
     <div class="inputMsg">
-      <TextEditor content={content} bind:this={textEditor} on:content={
+      <TextEditor bind:content={content} bind:this={textEditor} on:content={
         ev => {
           dispatch('message', ev.detail)
           content = ''
+          textEditor.clear()
         }
       }/>
     </div>

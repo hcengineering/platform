@@ -75,3 +75,6 @@ export class TTypeBoolean extends TType {}
 
 @Model(core.class.TypeTimestamp, core.class.Type)
 export class TTypeTimestamp extends TType {}
+
+@Model(core.class.TypeDate, core.class.Type)
+export class TTypeDate extends TType {}

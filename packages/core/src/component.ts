@@ -46,6 +46,7 @@ export default plugin(coreId, {
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
+    TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
   },
   interface: {

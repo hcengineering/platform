@@ -25,7 +25,7 @@
   // export let _class: Ref<Class<Doc>>
   export let key: string
   export let object: Doc
-  export let maxWidth: string
+  export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let minimize: boolean = false
   export let showHeader: boolean = true
@@ -59,7 +59,7 @@
       <div class="flex-row-center">
         <CircleButton icon={attribute.icon} size={'large'} />
         {#if !minimize}
-          <div class="flex-col with-icon">
+          <div class="flex-col with-icon ml-2">
             {#if showHeader}
               <Label label={attribute.label} />
             {/if}
