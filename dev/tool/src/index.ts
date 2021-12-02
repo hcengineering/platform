@@ -16,7 +16,7 @@
 
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
-import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB, dropWorkspace, dropAccount } from '@anticrm/account'
+import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB, dropWorkspace, dropAccount, listWorkspaces } from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
@@ -161,6 +161,16 @@ program
   .action(async (workspace, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
       await dropWorkspace(db, workspace)
+    })
+  })
+
+program
+  .command('list-workspaces')
+  .description('List workspaces')
+  .action(async () => {
+    return await withDatabase(mongodbUri, async (db) => {
+      const workspacesJSON = JSON.stringify(await listWorkspaces(db), null, 2)
+      console.info(workspacesJSON)
     })
   })
 
