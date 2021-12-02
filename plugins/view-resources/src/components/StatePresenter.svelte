@@ -21,19 +21,17 @@
 
 </script>
 
-<div class="state-container" style="background-color: {value.color}">
+<div class="overflow-label state-container" style="background-color: {value.color}">
   {value.title}
 </div>
 
 <style lang="scss">
   .state-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: .25rem .75rem;
-    width: fit-content;
+    padding: .25rem .5rem;
+    width: 6.25rem;
+    max-width: 6.25rem;
     text-transform: uppercase;
-    font-weight: 500;
+    text-align: center;
     letter-spacing: .5px;
     font-size: .625rem;
     color: #fff;

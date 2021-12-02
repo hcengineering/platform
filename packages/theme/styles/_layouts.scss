@@ -167,6 +167,8 @@ p:last-child { margin-block-end: 0; }
 .sm-tool-icon {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   color: var(--theme-caption-color);
   cursor: pointer;
   .icon {
