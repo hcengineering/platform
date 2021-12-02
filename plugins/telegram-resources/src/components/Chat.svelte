@@ -21,7 +21,7 @@
   import type { TelegramMessage } from '@anticrm/telegram'
   import type { Contact, EmployeeAccount } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { Button, Grid, ScrollBox, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconShare, Button, Grid, ScrollBox, showPopup } from '@anticrm/ui'
   import Message from './Message.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
@@ -40,6 +40,7 @@
   let account: EmployeeAccount | undefined
   let enabled: boolean
   let selected: Ref<TelegramMessage>[] = []
+  let selectable = false
   const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
   const messagesQuery = createQuery()
@@ -138,6 +139,7 @@
   }
 
   function select (id: Ref<TelegramMessage>): void {
+    if (!selectable) return
     const index = selected.indexOf(id)
     if (index === -1) {
       selected.push(id)
@@ -173,20 +175,19 @@
   }
 
   function clear (): void {
+    selectable = false
     selected = []
   }
 </script>
 
-<div class="flex-row-center header">
-  {#if selected.length}
-    <div class="flex-between actions">
-      <Button label={`Share ${selected.length}`} primary on:click={share} />
-      <Button label='Cancel' on:click={clear} />
-    </div>
-  {:else}
+<div class="flex-between header">
+  <div class="flex">
     <div class="icon"><TelegramIcon size={'small'} /></div>
     <div class="title">Telegram</div>
-  {/if}
+  </div>
+  <div>
+    <ActionIcon icon={IconShare} size='medium' label='Share messages' direction='bottom' action={() => { selectable = !selectable }} />
+  </div>
 </div>
 <div class="flex-col h-full right-content">
   <ScrollBox vertical stretch>
@@ -196,16 +197,30 @@
           {#if isNewDate(messages, i)}
             <DateView {message} />
           {/if}
-          <Message {message} selected={selected.includes(message._id)} name={getName(messages, account, i)} on:click={() => {select(message._id)}}/>
+          <Message {message} {selectable} selected={selected.includes(message._id)} name={getName(messages, account, i)} on:select={() => {select(message._id)}}/>
         {/each}
       </Grid>
     {/if}
   </ScrollBox>
 </div>
-<div class="ref-input">
-  {#if enabled}
-    <ReferenceInput on:message={onMessage}/>
+
+<div class="ref-input" class:selectable>
+  {#if selectable}
+    <div class="flex-between">
+      <span>{selected.length} messages selected</span>
+      <div class="flex">
+        <div>
+          <Button label='Cancel' on:click={clear} />
+        </div>
+        <div class="ml-3">
+          <Button label='Publish selected' primary disabled={!selected.length} on:click={share} />
+        </div>
+      </div>
+    </div>
+  {:else if enabled}
+      <ReferenceInput on:message={onMessage}/>
   {:else}
+  <ReferenceInput on:message={onMessage}/>
     <div class="flex-center">
       <Button label='Connect' primary on:click={(e) => {
         showPopup(Connect, {}, e.target)
@@ -217,14 +232,9 @@
 <style lang="scss">
   .header {
     flex-shrink: 0;
-    padding: 0 2.5rem;
+    padding: 0 5.5rem 0 2.5rem;
     height: 4rem;
     border-bottom: 1px solid var(--theme-card-divider);
-
-    .actions {
-      width: 100%;
-      margin-right: 4rem;
-    }
 
     .icon {
       opacity: 0.6;
@@ -241,6 +251,10 @@
 
   .ref-input {
     padding: 1.5rem 2.5rem;
+
+    &.selectable {
+      border-top: 1px solid var(--theme-card-divider);
+    }
   }
 
   .right-content {

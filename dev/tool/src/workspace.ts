@@ -41,12 +41,12 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
     await db.dropDatabase()
 
     console.log('creating model...')
-    const model = txes.filter(tx => tx.objectSpace === core.space.Model)
+    const model = txes.filter((tx) => tx.objectSpace === core.space.Model)
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const data = txes.filter(tx => tx.objectSpace !== core.space.Model)
+    const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
     const token = encode({ email: 'anticrm@hc.engineering', workspace: dbName }, 'secret')
     const url = new URL(`/${token}`, clientUrl)
     const contrib = await createContributingClient(url.href)
@@ -56,7 +56,9 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
     contrib.close()
 
     console.log('create minio bucket')
-    if (!await minio.bucketExists(dbName)) { await minio.makeBucket(dbName, 'k8s') }
+    if (!(await minio.bucketExists(dbName))) {
+      await minio.makeBucket(dbName, 'k8s')
+    }
   } finally {
     await client.close()
   }
@@ -65,7 +67,12 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
 /**
  * @public
  */
-export async function upgradeWorkspace (mongoUrl: string, dbName: string, clientUrl: string, minio: Client): Promise<void> {
+export async function upgradeWorkspace (
+  mongoUrl: string,
+  dbName: string,
+  clientUrl: string,
+  minio: Client
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -81,7 +88,7 @@ export async function upgradeWorkspace (mongoUrl: string, dbName: string, client
     console.log(`${result.deletedCount} transactions deleted.`)
 
     console.log('creating model...')
-    const model = txes.filter(tx => tx.objectSpace === core.space.Model)
+    const model = txes.filter((tx) => tx.objectSpace === core.space.Model)
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${insert.insertedCount} model transactions inserted.`)
   } finally {
@@ -90,8 +97,8 @@ export async function upgradeWorkspace (mongoUrl: string, dbName: string, client
 }
 
 /**
-  * @public
-  */
+ * @public
+ */
 export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName: string, minio: Client): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
@@ -108,7 +115,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
       const minioData: BucketItem[] = []
       const list = await minio.listObjects(dbName, undefined, true)
       await new Promise((resolve) => {
-        list.on('data', data => {
+        list.on('data', (data) => {
           minioData.push(data)
         })
         list.on('end', () => {

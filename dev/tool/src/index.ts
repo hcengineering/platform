@@ -16,7 +16,16 @@
 
 import { program } from 'commander'
 import { MongoClient, Db } from 'mongodb'
-import { getAccount, createAccount, assignWorkspace, createWorkspace, ACCOUNT_DB, dropWorkspace, dropAccount, listWorkspaces } from '@anticrm/account'
+import {
+  getAccount,
+  createAccount,
+  assignWorkspace,
+  createWorkspace,
+  ACCOUNT_DB,
+  dropWorkspace,
+  dropAccount,
+  listWorkspaces
+} from '@anticrm/account'
 import { createContributingClient } from '@anticrm/contrib'
 import core, { TxOperations } from '@anticrm/core'
 import { encode } from 'jwt-simple'
@@ -24,6 +33,7 @@ import { Client } from 'minio'
 import { initWorkspace, upgradeWorkspace, dumpWorkspace } from './workspace'
 
 import contact, { combineName } from '@anticrm/contact'
+import { clearTelegramHistory } from './telegram'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -188,6 +198,29 @@ program
   .description('dump workspace transactions and minio resources')
   .action(async (workspace, fileName, cmd) => {
     return await dumpWorkspace(mongodbUri, workspace, fileName, minio)
+  })
+
+program
+  .command('clear-telegram-history')
+  .description('clear telegram history')
+  .option('-w, --workspace <workspace>', 'target workspace')
+  .action(async (cmd) => {
+    return await withDatabase(mongodbUri, async (db) => {
+      const telegramDB = process.env.TELEGRAM_DATABASE
+      if (telegramDB === undefined) {
+        console.error('please provide TELEGRAM_DATABASE.')
+        process.exit(1)
+      }
+
+      const workspaces = await listWorkspaces(db)
+      const targetWorkspaces =
+        cmd.workspace !== undefined ? workspaces.filter((x) => x.workspace === cmd.workspace) : workspaces
+
+      for (const w of targetWorkspaces) {
+        console.log(`clearing ${w.workspace} history:`)
+        await clearTelegramHistory(mongodbUri, w.workspace, telegramDB)
+      }
+    })
   })
 
 program.parse(process.argv)

@@ -17,10 +17,13 @@
   import type { TelegramMessage } from '@anticrm/telegram'
   import { MessageViewer } from '@anticrm/presentation'
   import { formatName } from '@anticrm/contact'
+  import { CheckBox } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let message: TelegramMessage
   export let name: string | undefined = undefined
   export let selected: boolean = false
+  export let selectable: boolean = false
 
   export let colors: string[] = ['#A5D179', '#77C07B', '#60B96E', '#45AEA3', '#46CBDE', '#47BDF6',
                                  '#5AADF6', '#73A6CD', '#B977CB', '#7C6FCD', '#6F7BC5', '#F28469']
@@ -34,34 +37,45 @@
     }
     return colors[Math.abs(hash) % colors.length]
   }
+
+  const dispatch = createEventDispatcher()
 </script>
 
-<div class="message" class:selected class:incoming={message.incoming} on:click>
-  {#if name}
-    <div class="name" style="color: {getNameColor(name)}">{formatName(name)}</div>
-  {/if}
-  <div class="flex">
-    <div class="text"><MessageViewer message={message.content}/></div>
-    <div class="time">{new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric'})}</div>
+<div class={message.incoming ? "flex-between" : "flex-row-center"} class:outcoming={!message.incoming} on:click={() => { dispatch('select', message) }}>
+  <div class="message" class:incoming={message.incoming} class:mr-4={selectable} class:selected>
+    {#if name}
+      <div class="name" style="color: {getNameColor(name)}">{formatName(name)}</div>
+    {/if}
+    <div class="flex">
+      <div class="text"><MessageViewer message={message.content}/></div>
+      <div class="time">{new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric'})}</div>
+    </div>
   </div>
+  {#if selectable}
+    <div class="check">
+      <CheckBox circle primaryColor bind:checked={selected} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
+  .outcoming {
+    justify-content: end;
+  }
+
   .message {
     max-width: 66%;
     border-radius: .75rem;
     padding: .75rem;
     width: fit-content;
-    justify-self: flex-end;
     background-color: rgba(67, 67, 72, .6);
 
     &.incoming {
       background-color: rgba(67, 67, 72, .3);
-      justify-self: flex-start;
     }
 
     &.selected {
-      background-color: var(--theme-content-trans-color) !important;
+      background-color: var(--primary-button-enabled) !important;
     }
 
     .text {
@@ -76,6 +90,10 @@
       font-size: .75rem;
       font-style: italic;
     }
+  }
+
+  .check {
+    justify-self: flex-end;
   }
 
 </style>
