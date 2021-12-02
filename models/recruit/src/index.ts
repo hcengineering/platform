@@ -15,8 +15,8 @@
 
 import activity from '@anticrm/activity'
 import type { Employee } from '@anticrm/contact'
-import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
-import { Builder, Model, Prop, TypeBoolean, TypeString, UX } from '@anticrm/model'
+import type { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
+import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@anticrm/model-core'
@@ -30,7 +30,22 @@ export const DOMAIN_RECRUIT = 'recruit' as Domain
 
 @Model(recruit.class.Vacancy, core.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
-export class TVacancy extends TSpaceWithStates implements Vacancy {}
+export class TVacancy extends TSpaceWithStates implements Vacancy {
+  @Prop(TypeString(), 'Full description' as IntlString)
+  fullDescription?: string
+
+  @Prop(TypeString(), 'Attachments' as IntlString)
+  attachments?: number
+
+  @Prop(TypeDate(), 'Due date' as IntlString, recruit.icon.Calendar)
+  dueTo?: Timestamp
+
+  @Prop(TypeString(), 'Location' as IntlString, recruit.icon.Location)
+  location?: string
+
+  @Prop(TypeString(), 'Company' as IntlString, recruit.icon.Company)
+  company?: string
+}
 
 @Model(recruit.class.Candidates, core.class.Space)
 @UX(recruit.string.CandidatePools, recruit.icon.RecruitApplication)
@@ -109,7 +124,8 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Vacancies,
           spaceClass: recruit.class.Vacancy,
           addSpaceLabel: recruit.string.CreateVacancy,
-          createComponent: recruit.component.CreateVacancy
+          createComponent: recruit.component.CreateVacancy,
+          component: recruit.component.EditVacancy
         },
         {
           label: recruit.string.CandidatePools,

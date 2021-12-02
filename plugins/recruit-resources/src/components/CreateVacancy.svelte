@@ -49,9 +49,7 @@
       name,
       description,
       private: false,
-      members: [],
-      states: [],
-      order: []
+      members: []
     })
     const s1 = await client.createDoc(core.class.State, id, {
       title: 'Initial',

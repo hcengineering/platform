@@ -22,6 +22,7 @@ import CreateApplication from './components/CreateApplication.svelte'
 import EditCandidate from './components/EditCandidate.svelte'
 import Attachments from './components/Attachments.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
+import EditVacancy from './components/EditVacancy.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
 import TxApplicantUpdate from './components/activity/TxApplicantUpdate.svelte'
@@ -46,7 +47,8 @@ export default async (): Promise<Resources> => ({
     Attachments,
     KanbanCard,
     ApplicationPresenter,
-    ApplicationsPresenter
+    ApplicationsPresenter,
+    EditVacancy
   },
   activity: {
     TxApplicantUpdate

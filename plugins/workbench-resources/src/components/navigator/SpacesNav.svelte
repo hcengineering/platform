@@ -61,7 +61,7 @@
     label: 'Open' as IntlString,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      showPopup(SpacePanel, { _id, spaceClass: model.spaceClass }, 'right')
+      showPopup(model.component ?? SpacePanel, { _id, spaceClass: model.spaceClass }, 'right')
     }
   }
 

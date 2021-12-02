@@ -15,13 +15,19 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, SpaceWithStates, DocWithState, Ref, Class, AttachedDoc } from '@anticrm/core'
+import type { Space, SpaceWithStates, DocWithState, Ref, Class, AttachedDoc, Timestamp } from '@anticrm/core'
 import type { Employee, Person } from '@anticrm/contact'
 
 /**
  * @public
  */
-export interface Vacancy extends SpaceWithStates {}
+export interface Vacancy extends SpaceWithStates {
+  fullDescription?: string
+  attachments?: number
+  dueTo?: Timestamp
+  location?: string
+  company?: string
+}
 
 /**
  * @public
@@ -59,10 +65,14 @@ export default plugin(recruitId, {
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
     Candidate: '' as Ref<Class<Candidate>>,
-    Candidates: '' as Ref<Class<Candidates>>
+    Candidates: '' as Ref<Class<Candidates>>,
+    Vacancy: '' as Ref<Class<Vacancy>>
   },
   icon: {
     RecruitApplication: '' as Asset,
-    Vacancy: '' as Asset
+    Vacancy: '' as Asset,
+    Company: '' as Asset,
+    Location: '' as Asset,
+    Calendar: '' as Asset
   }
 })
