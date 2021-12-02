@@ -123,6 +123,8 @@ onDestroy(() => {
 <style lang="scss" global>
 
 .ProseMirror {
+  overflow-y: auto;
+  max-height: 5.5rem;
   outline: none;
 
   p {
@@ -142,6 +144,9 @@ onDestroy(() => {
     height: 0;
   }
 
+  &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-focused-color); }
+  &::-webkit-scrollbar-corner { background-color: var(--theme-bg-focused-color); }
+  &::-webkit-scrollbar-track { margin: 0; }
 }
 
 </style>
