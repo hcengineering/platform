@@ -32,6 +32,8 @@
   import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
+  import AppItem from './AppItem.svelte'
+  import TopMenu from './icons/TopMenu.svelte'
 
   export let client: Client
 
@@ -75,6 +77,8 @@
 
   const query = createQuery()
   $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
+
+  let visibileNav: boolean = true
 </script>
 
 {#if client}
@@ -88,7 +92,10 @@
   </svg>
   <div class="container">
     <div class="panel-app">
-      <ActivityStatus status="active"/>
+      <div class="flex-col">
+        <ActivityStatus status="active"/>
+        <AppItem icon={TopMenu} label={'Navigator'} selected={!visibileNav} action={async () => { visibileNav = !visibileNav }}/>
+      </div>
       <Applications {apps} active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
         <div class="cursor-pointer" on:click={(el) => { showPopup(AccountPopup, { }, 'account') }}>
@@ -96,7 +103,7 @@
         </div>
       </div>
     </div>
-    {#if navigator}
+    {#if navigator && visibileNav}
     <div class="panel-navigator">
       {#if currentApplication}
         <NavHeader label={currentApplication.label} action={() => {}} />

@@ -15,10 +15,11 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
+  import type { AnySvelteComponent } from '@anticrm/ui'
   import { Icon, Tooltip } from '@anticrm/ui'
 
   export let label: IntlString
-  export let icon: Asset
+  export let icon: Asset | AnySvelteComponent
   export let action: () => Promise<void>
   export let selected: boolean
   export let notify: boolean

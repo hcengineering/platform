@@ -18,7 +18,7 @@
   export let status: string = 'away'
 </script>
 
-<div class="flex-center {status}" style="min-height: 5rem;">
+<div class="flex-center {status}" style="min-height: 2rem;">
   <div class="status"/>
 </div>
 
