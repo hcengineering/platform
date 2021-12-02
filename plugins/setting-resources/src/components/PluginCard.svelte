@@ -28,7 +28,7 @@
   const onDisconnectP = getResource(integrationType.onDisconnect)
 
   async function close(res: any): Promise<void> {
-    if (res.value) {
+    if (res?.value) {
       await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
         type: integrationType._id,
         value: res.value
