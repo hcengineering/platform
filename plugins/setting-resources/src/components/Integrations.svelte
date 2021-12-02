@@ -13,15 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core';
-  import { getMetadata } from '@anticrm/platform';
-  import login from '@anticrm/login'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core';
   import { createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import type { Integration, IntegrationType } from '@anticrm/setting'
   import PluginCard from './PluginCard.svelte'
 
-  const accountId = getMetadata(login.metadata.LoginEmail)
+  const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()
   const integrationQuery = createQuery()
 
@@ -29,7 +27,7 @@
   let integrationTypes: IntegrationType[] = []
 
   typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  integrationQuery.query(setting.class.Integration, { space: accountId as Ref<Space> }, (res) => (integrations = res))
+  integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
 </script>
 
 <div class="cards-container">

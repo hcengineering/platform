@@ -65,11 +65,13 @@
     })
     const res = await response.json()
     connecting = false
-    if (res.tg_code === 'PHONE_CODE_INVALID') {
-      error = 'Invalid code'
-    }
-    if (res.err != null) {
-      throw new Error(res.err)
+
+    if (Math.trunc(response.status / 100) !== 2) {
+      if (res.code === 'PHONE_CODE_INVALID') {
+        error = 'Invalid code'
+      }
+
+      throw new Error(res.message)
     }
 
     return res

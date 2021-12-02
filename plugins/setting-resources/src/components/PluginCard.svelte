@@ -14,23 +14,22 @@
 -->
 <script lang="ts">
   import { Button, Component, Label, Link } from '@anticrm/ui'
-  import { getMetadata, getResource } from '@anticrm/platform'
+  import { getResource } from '@anticrm/platform'
   import { showPopup } from '@anticrm/ui'
   import type { Integration, IntegrationType } from '@anticrm/setting'
   import setting from '@anticrm/setting'
   import { getClient } from '@anticrm/presentation'
-  import type { Ref, Space } from '@anticrm/core'
-  import login from '@anticrm/login'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
-  const accountId = getMetadata(login.metadata.LoginEmail)
+  const accountId = getCurrentAccount()._id
   const client = getClient()
   const onDisconnectP = getResource(integrationType.onDisconnect)
 
   async function close(res: any): Promise<void> {
-    if (res.value) {
-      await client.createDoc(setting.class.Integration, accountId as Ref<Space>, {
+    if (res?.value) {
+      await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
         type: integrationType._id,
         value: res.value
       })
