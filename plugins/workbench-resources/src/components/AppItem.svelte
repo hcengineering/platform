@@ -15,10 +15,11 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
+  import type { AnySvelteComponent } from '@anticrm/ui'
   import { Icon, Tooltip } from '@anticrm/ui'
 
   export let label: IntlString
-  export let icon: Asset
+  export let icon: Asset | AnySvelteComponent
   export let action: () => Promise<void>
   export let selected: boolean
   export let notify: boolean
@@ -27,7 +28,11 @@
 <Tooltip {label}>
   <button class="app" class:selected={selected} on:click={action}>
     <div class="icon-container" class:noty={notify}>
-      <Icon icon={icon} size={'large'}/>
+      {#if typeof (icon) === 'string'}
+        <Icon icon={icon} size={'large'}/>
+      {:else}
+        <svelte:component this={icon} size={'large'} />
+      {/if}
     </div>
     {#if notify}<div class="marker"/>{/if}
   </button>
