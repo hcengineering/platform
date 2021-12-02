@@ -165,7 +165,7 @@ export class Hierarchy {
    */
   private isExtends<T extends Doc>(extendsOrImplements: Ref<Interface<Doc>>[], from: Ref<Interface<T>>): boolean {
     const result: Ref<Interface<Doc>>[] = []
-    const toVisit = extendsOrImplements
+    const toVisit = [...extendsOrImplements]
     while (toVisit.length > 0) {
       const ref = toVisit.shift() as Ref<Interface<Doc>>
       if (ref === from) {
