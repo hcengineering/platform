@@ -16,11 +16,13 @@
 <script lang="ts">
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
+  export let circle: boolean = false
+  export let primaryColor: boolean = false
 </script>
 
 <label class="checkbox">
   <input class="chBox" type="checkbox" bind:checked={checked}>
-  <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <svg class="checkSVG" class:circle class:primaryColor viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     <path class="back" d="M4,0h8c2.2,0,4,1.8,4,4v8c0,2.2-1.8,4-4,4H4c-2.2,0-4-1.8-4-4V4C0,1.8,1.8,0,4,0z"/>
     {#if symbol === 'minus'}
       <rect class="check" x="4" y="7.4" width="8" height="1.2"/>
@@ -55,6 +57,12 @@
           visibility: visible;
           fill: var(--theme-button-bg-enabled);
         }
+        &.primaryColor > .back {
+          fill: var(--trans-primary-button-bg);
+        }
+        &.primaryColor > .check {
+          fill: var(--theme-caption-color);
+        }
         & > .border {
           visibility: hidden;
         }
@@ -74,6 +82,10 @@
       width: 1rem;
       height: 1rem;
       border-radius: .25rem;
+
+      &.circle {
+        border-radius: 50%;
+      }
 
       .back {
         fill: var(--theme-button-bg-hovered);
