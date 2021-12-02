@@ -44,7 +44,7 @@
   let lastName = ''
 
   export function canClose(): boolean {
-    return firstName === '' && lastName === ''
+    return firstName === '' && lastName === '' && resume.uuid === undefined
   }
 
   const object: Candidate = {} as Candidate
