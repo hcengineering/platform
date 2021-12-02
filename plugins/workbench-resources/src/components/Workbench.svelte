@@ -23,13 +23,13 @@
   import type { Ref, Space, Client } from '@anticrm/core'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
   import { setClient, Avatar, createQuery } from '@anticrm/presentation'
-  import workbench from '@anticrm/workbench'
+  import workbench from '../plugin'
 
   import Navigator from './Navigator.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance } from '@anticrm/ui'
+  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
@@ -94,7 +94,14 @@
     <div class="panel-app">
       <div class="flex-col">
         <ActivityStatus status="active"/>
-        <AppItem icon={TopMenu} label={'Navigator'} selected={!visibileNav} action={async () => { visibileNav = !visibileNav }}/>
+        <AppItem
+          icon={TopMenu}
+          label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+          action={async () => {
+            visibileNav = !visibileNav
+            closeTooltip()
+          }}
+        />
       </div>
       <Applications {apps} active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">

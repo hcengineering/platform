@@ -2,6 +2,8 @@
   "string": {
     "More": "More...",
     "Delete": "Delete",
-    "Create": "Create"
+    "Create": "Create",
+    "ShowMenu": "Show menu",
+    "HideMenu": "Hide menu"
   }
 }

@@ -22,6 +22,8 @@ export default mergeIds(workbenchId, workbench, {
   string: {
     More: '' as IntlString,
     Delete: '' as IntlString,
-    Create: '' as IntlString
+    Create: '' as IntlString,
+    ShowMenu: '' as IntlString,
+    HideMenu: '' as IntlString
   }
 })
