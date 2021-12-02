@@ -28,11 +28,7 @@
 <Tooltip {label}>
   <button class="app" class:selected={selected} on:click={action}>
     <div class="icon-container" class:noty={notify}>
-      {#if typeof (icon) === 'string'}
-        <Icon icon={icon} size={'large'}/>
-      {:else}
-        <svelte:component this={icon} size={'large'} />
-      {/if}
+      <Icon icon={icon} size={'large'}/>
     </div>
     {#if notify}<div class="marker"/>{/if}
   </button>
