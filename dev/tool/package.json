@@ -12,7 +12,7 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
-    "run-local": "MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 MINIO_ENDPOINT=localhost ts-node ./src/index.ts",
+    "run-local": "MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 MINIO_ENDPOINT=localhost TELEGRAM_DATABASE=telegram-service ts-node ./src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
@@ -44,6 +44,8 @@
     "@anticrm/contact": "~0.6.2",
     "@anticrm/workspace": "~0.6.0",
     "minio": "^7.0.19",
-    "@anticrm/model-all": "~0.6.0"
+    "@anticrm/model-all": "~0.6.0",
+    "@anticrm/model-telegram": "~0.6.0",
+    "@anticrm/telegram": "~0.6.0"
   }
 }
