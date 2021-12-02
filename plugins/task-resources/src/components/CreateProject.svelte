@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
-
+  import core, { generateId, Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-
+  import { Project } from '@anticrm/task'
+  import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import core from '@anticrm/core'
+  import { createProjectKanban } from '../utils'
 
   const dispatch = createEventDispatcher()
 
@@ -33,24 +32,36 @@
 
   const client = getClient()
 
-  function createProject () {
-    client.createDoc(task.class.Project, core.space.Model, {
-      name,
-      description,
-      private: false,
-      members: []
+  async function createProject (): Promise<void> {
+    const id: Ref<Project> = generateId()
+    await client.createDoc(
+      task.class.Project,
+      core.space.Model,
+      {
+        name,
+        description,
+        private: false,
+        members: []
+      },
+      id
+    )
+
+    await createProjectKanban(id, async (_class, space, data, id) => {
+      await client.createDoc(_class, space, data, id)
     })
   }
 </script>
 
 <SpaceCreateCard
-  label={task.string.CreateProject} 
+  label={task.string.CreateProject}
   okAction={createProject}
   canSave={name.length > 0}
-  on:close={() => { dispatch('close') }}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} focus/>
-    <ToggleWithLabel label={task.string.MakePrivate} description={task.string.MakePrivateDescription}/>
+    <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} focus />
+    <ToggleWithLabel label={task.string.MakePrivate} description={task.string.MakePrivateDescription} />
   </Grid>
 </SpaceCreateCard>

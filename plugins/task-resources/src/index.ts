@@ -19,11 +19,15 @@ import { Resources } from '@anticrm/platform'
 import CreateTask from './components/CreateTask.svelte'
 import CreateProject from './components/CreateProject.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
+import KanbanCard from './components/KanbanCard.svelte'
+
+export { createProjectKanban } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,
     CreateProject,
-    TaskPresenter
+    TaskPresenter,
+    KanbanCard
   }
 })

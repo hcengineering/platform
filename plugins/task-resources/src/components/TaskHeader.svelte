@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { getClient, UserBox } from '@anticrm/presentation'
+  import { AttributeBarEditor, getClient, UserBox } from '@anticrm/presentation'
   import { Task } from '@anticrm/task'
   import task from '../plugin'
 
@@ -29,13 +28,19 @@
 </script>
 
 <div class="flex-between header">
-  <UserBox _class={contact.class.Employee} title={task.string.TaskAssignee} caption='Assignee' bind:value={object.assignee} on:change={change} />
-  <!-- <AttributeBarEditor key={'state'} {object} showHeader={false} /> -->
+  <UserBox
+    _class={contact.class.Employee}
+    title={task.string.TaskAssignee}
+    caption="Assignee"
+    bind:value={object.assignee}
+    on:change={change}
+  />
+  <AttributeBarEditor key={'state'} {object} showHeader={false} />
 </div>
 
 <style lang="scss">
   .header {
     width: 100%;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
   }
 </style>
