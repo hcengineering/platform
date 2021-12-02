@@ -308,8 +308,8 @@ export function TypeDate (): Type<string> {
 /**
  * @public
  */
-export function TypeState (): Type<string> {
-  return { _class: core.class.State, label: 'TypeState' as IntlString }
+export function TypeRef (_class: Ref<Class<Doc>>): Type<string> {
+  return { _class: _class, label: 'TypeRef' as IntlString }
 }
 
 /**

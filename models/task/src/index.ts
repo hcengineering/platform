@@ -16,7 +16,7 @@
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import type { Doc, DocWithState, Domain, FindOptions, Ref } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
+import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TDoc, TSpaceWithStates } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -42,8 +42,8 @@ export class TTask extends TDoc implements Task {
   @Prop(TypeString(), 'Description' as IntlString)
   description!: string
 
-  @Prop(TypeString(), 'Assignee' as IntlString)
-  assignee!: Ref<Employee>
+  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  assignee!: Ref<Employee> | null
 
   @Prop(TypeString(), 'Comments' as IntlString)
   comments!: number

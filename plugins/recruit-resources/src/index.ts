@@ -25,7 +25,6 @@ import KanbanCard from './components/KanbanCard.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
-import TxApplicantUpdate from './components/activity/TxApplicantUpdate.svelte'
 
 import { showPopup } from '@anticrm/ui'
 import { Resources } from '@anticrm/platform'
@@ -49,8 +48,5 @@ export default async (): Promise<Resources> => ({
     ApplicationPresenter,
     ApplicationsPresenter,
     EditVacancy
-  },
-  activity: {
-    TxApplicantUpdate
   }
 })

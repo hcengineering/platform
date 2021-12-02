@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import type { Data, Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
@@ -29,12 +29,12 @@
   let _space = space
   const status: Status = OK
 
-  let assignee: Ref<EmployeeAccount> // | null = null
+  let assignee: Ref<Employee> | null = null
 
   const object: Data<Task> = {
     name: '',
     description: '',
-    assignee: undefined as unknown as Ref<Employee>,
+    assignee: null,
     number: 0
   }
 
@@ -79,7 +79,7 @@
 <Card
   label={task.string.CreateTask}
   okAction={createTask}
-  canSave={object.name.length > 0 && assignee !== undefined}
+  canSave={object.name.length > 0}
   spaceClass={task.class.Project}
   spaceLabel={task.string.ProjectName}
   spacePlaceholder={task.string.SelectProject}
@@ -99,10 +99,12 @@
       focus
     />
     <UserBox
-      _class={contact.class.EmployeeAccount}
+      _class={contact.class.Employee}
       title="Assignee *"
       caption="Assign this task"
       bind:value={assignee}
+      allowDeselect
+      titleDeselect={task.string.TaskUnAssign}
     />
   </Grid>
 </Card>

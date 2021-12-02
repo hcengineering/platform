@@ -13,28 +13,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import contact from '@anticrm/contact'
   import { AttributeBarEditor, getClient, UserBox } from '@anticrm/presentation'
   import { Applicant } from '@anticrm/recruit'
-  import contact from '@anticrm/contact'
 
   export let object: Applicant
   const client = getClient()
 
-  function change () {
-    client.updateDoc(object._class, object.space, object._id, { employee: object.employee })
+  function change() {
+    client.updateCollection(
+      object._class,
+      object.space,
+      object._id,
+      object.attachedTo,
+      object.attachedToClass,
+      object.collection,
+      { employee: object.employee }
+    )
   }
 </script>
 
 <div class="flex-between header">
-  <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={object.employee} on:change={change} />
+  <UserBox
+    _class={contact.class.Employee}
+    title="Assigned recruiter"
+    caption="Recruiters"
+    bind:value={object.employee}
+    on:change={change}
+    allowDeselect
+    titleDeselect={'Unassign recruiter'}
+  />
   <AttributeBarEditor key={'state'} {object} showHeader={false} />
 </div>
 
 <style lang="scss">
   .header {
     width: 100%;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
   }
 </style>

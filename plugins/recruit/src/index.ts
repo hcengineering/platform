@@ -53,7 +53,7 @@ export interface Candidate extends Person {
 export interface Applicant extends DocWithState, AttachedDoc {
   attachments?: number
   comments?: number
-  employee: Ref<Employee>
+  employee: Ref<Employee> | null
 }
 
 /**

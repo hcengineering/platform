@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
 import type { Employee } from '@anticrm/contact'
 import type { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeString, UX } from '@anticrm/model'
+import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@anticrm/model-core'
@@ -80,7 +79,7 @@ export class TCandidate extends TPerson implements Candidate {
 @UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
 export class TApplicant extends TAttachedDoc implements Applicant {
   // We need to declare, to provide property with label
-  @Prop(TypeString(), 'Candidate' as IntlString)
+  @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
   declare attachedTo: Ref<Candidate>
 
   @Prop(TypeString(), 'Attachments' as IntlString)
@@ -89,8 +88,8 @@ export class TApplicant extends TAttachedDoc implements Applicant {
   @Prop(TypeString(), 'Comments' as IntlString)
   comments?: number
 
-  @Prop(TypeString(), 'Assigned recruiter' as IntlString)
-  employee!: Ref<Employee>
+  @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
+  employee!: Ref<Employee> | null
 
   // We need this two to make typescript happy.
   declare state: TDocWithState['state']
@@ -228,14 +227,6 @@ export function createModel (builder: Builder): void {
     attachedTo: recruit.class.Applicant,
     sequence: 0
   })
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    icon: recruit.icon.RecruitApplication,
-    txClass: core.class.TxUpdateDoc,
-    component: recruit.activity.TxApplicantUpdate,
-    display: 'inline'
-  }, recruit.ids.TxApplicantUpdate)
 }
 
 export { default } from './plugin'

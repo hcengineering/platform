@@ -30,6 +30,7 @@ export default mergeIds(taskId, task, {
     SelectProject: '' as IntlString,
     TaskName: '' as IntlString,
     TaskAssignee: '' as IntlString,
+    TaskUnAssign: '' as IntlString,
     TaskDescription: '' as IntlString,
     NoAttachmentsForTask: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,

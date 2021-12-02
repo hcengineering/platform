@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import type { Doc, Ref, Space } from '@anticrm/core'
 import type { IntlString, Resource } from '@anticrm/platform'
-import type { Ref, Space, Doc } from '@anticrm/core'
-import type { AnyComponent } from '@anticrm/ui'
-import type { Action } from '@anticrm/view'
+import { mergeIds } from '@anticrm/platform'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
-import { TxViewlet } from '@anticrm/activity'
+import type { AnyComponent } from '@anticrm/ui'
+import type { Action } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -48,11 +47,5 @@ export default mergeIds(recruitId, recruit, {
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
-  },
-  ids: {
-    TxApplicantUpdate: '' as Ref<TxViewlet>
-  },
-  activity: {
-    TxApplicantUpdate: '' as AnyComponent
   }
 })
