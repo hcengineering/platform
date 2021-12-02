@@ -27,9 +27,9 @@
 
 </script>
 
-<div class="container">
+<div class="flex-col statuses-container">
   {#each states as state}
-    <div class="state flex" on:click={() => { dispatch('close', state) }}>
+    <div class="flex-row-center state" on:click={() => { dispatch('close', state) }}>
       <div class="color" style="background-color: {state.color}"></div>
       {state.title}
     </div>
@@ -37,23 +37,23 @@
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
+  .statuses-container {
+    padding: .5rem;
     max-height: 100%;
     min-width: 10rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     user-select: none;
     filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
 
     .state {
-      margin: 1rem;
+      padding: .5rem;
+      border-radius: .5rem;
       cursor: pointer;
 
+      &:hover { background-color: var(--theme-button-bg-hovered); }
       .color {
         margin-right: .75rem;
         width: 1rem;
