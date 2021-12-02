@@ -15,6 +15,7 @@
     "TaskDescription": "Description",
     "UploadDropFilesHere": "Upload or drop files here",
     "NoAttachmentsForTask": "There are no attachments for this task.",
-    "AssigneeRequired": "Assignee is required"
+    "AssigneeRequired": "Assignee is required",
+    "More": "Options"
   }
 }

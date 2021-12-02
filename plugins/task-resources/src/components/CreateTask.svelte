@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import type { Data, Ref, Space } from '@anticrm/core'
@@ -31,14 +30,14 @@
   const status: Status = OK
 
   let assignee: Ref<EmployeeAccount> // | null = null
-  
+
   const object: Data<Task> = {
     name: '',
     description: '',
     assignee: undefined as unknown as Ref<Employee>,
     number: 0
   }
-  
+
   const dispatch = createEventDispatcher()
   const client = getClient()
   const taskId = generateId()
@@ -52,11 +51,17 @@
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
-  
-    const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
-      $inc: { sequence: 1 }
-    }, true)
-  
+
+    const incResult = await client.updateDoc(
+      view.class.Sequence,
+      view.space.Sequence,
+      sequence._id,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+
     const value: Data<Task> = {
       name: object.name,
       description: object.description,
@@ -71,32 +76,50 @@
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
 
-<Card label={task.string.CreateTask} 
-      okAction={createTask}
-      canSave={object.name.length > 0 && assignee !== undefined}
-      spaceClass={task.class.Project}
-      spaceLabel={task.string.ProjectName}
-      spacePlaceholder={task.string.SelectProject}
-      bind:space={_space}
-      on:close={() => { dispatch('close') }}>
-      <StatusControl slot="error" {status} />
-      <Grid column={1} rowGap={1.5}>
-        <EditBox label={task.string.TaskName} bind:value={object.name} icon={task.icon.Task} placeholder="The boring task" maxWidth="39rem" focus/>
-        <UserBox _class={contact.class.EmployeeAccount} title='Assignee *' caption='Assign this task' bind:value={assignee} />
-      </Grid>
+<Card
+  label={task.string.CreateTask}
+  okAction={createTask}
+  canSave={object.name.length > 0 && assignee !== undefined}
+  spaceClass={task.class.Project}
+  spaceLabel={task.string.ProjectName}
+  spacePlaceholder={task.string.SelectProject}
+  bind:space={_space}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
+  <StatusControl slot="error" {status} />
+  <Grid column={1} rowGap={1.5}>
+    <EditBox
+      label={task.string.TaskName}
+      bind:value={object.name}
+      icon={task.icon.Task}
+      placeholder="The boring task"
+      maxWidth="39rem"
+      focus
+    />
+    <UserBox
+      _class={contact.class.EmployeeAccount}
+      title="Assignee *"
+      caption="Assign this task"
+      bind:value={assignee}
+    />
+  </Grid>
 </Card>
 
 <style lang="scss">
   .channels {
     margin-top: 1.25rem;
-    span { margin-left: .5rem; }
+    span {
+      margin-left: 0.5rem;
+    }
   }
 
   .locations {
     span {
-      margin-bottom: .125rem;
+      margin-bottom: 0.125rem;
       font-weight: 500;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-accent-color);
     }
 
@@ -104,7 +127,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: .75rem;
+      margin-top: 0.75rem;
       color: var(--theme-caption-color);
     }
   }
@@ -117,12 +140,14 @@
 
   .resume {
     margin-top: 1rem;
-    padding: .75rem;
-    background: rgba(255, 255, 255, .05);
-    border: 1px dashed rgba(255, 255, 255, .2);
-    border-radius: .5rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
     backdrop-filter: blur(10px);
-    &.solid { border-style: solid; }
+    &.solid {
+      border-style: solid;
+    }
   }
   // .resume a {
   //   font-size: .75rem;

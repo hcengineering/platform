@@ -15,25 +15,26 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import type { Doc, DocWithState, Domain, FindOptions, Ref } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
-import core, { TDoc, TSpace } from '@anticrm/model-core'
+import core, { TDoc, TSpaceWithStates } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import type { Project, Task } from '@anticrm/task'
+import { createProjectKanban } from '@anticrm/task-resources'
 import task from './plugin'
 
-@Model(task.class.Project, core.class.Space)
+@Model(task.class.Project, core.class.SpaceWithStates)
 @UX('Project' as IntlString, task.icon.Task)
-export class TProject extends TSpace implements Project {}
+export class TProject extends TSpaceWithStates implements Project {}
 
-@Model(task.class.Task, core.class.Doc, 'task' as Domain)
+@Model(task.class.Task, core.class.Doc, 'task' as Domain, [core.interface.DocWithState])
 @UX('Task' as IntlString, task.icon.Task, 'TASK' as IntlString)
 export class TTask extends TDoc implements Task {
-  @Prop(TypeString(), 'No.' as IntlString)
-  number!: number
+  declare number: DocWithState['number']
+  declare state: DocWithState['state']
 
   @Prop(TypeString(), 'Name' as IntlString)
   name!: string
@@ -46,6 +47,9 @@ export class TTask extends TDoc implements Task {
 
   @Prop(TypeString(), 'Comments' as IntlString)
   comments!: number
+
+  @Prop(TypeString(), 'Attachments' as IntlString)
+  attachments!: number
 
   @Prop(TypeString(), 'Labels' as IntlString)
   labels!: string
@@ -104,6 +108,29 @@ export function createModel (builder: Builder): void {
     editor: task.component.EditTask
   })
 
+  builder.createDoc(view.class.Sequence, view.space.Sequence, {
+    attachedTo: task.class.Task,
+    sequence: 0
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: task.class.Task,
+    descriptor: view.viewlet.Kanban,
+    open: task.component.EditTask,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        assignee: contact.class.EmployeeAccount,
+        state: core.class.State
+      }
+    } as FindOptions<Doc>, // TODO: fix
+    config: ['$lookup.attachedTo', '$lookup.state']
+  })
+
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.KanbanCard, {
+    card: task.component.KanbanCard
+  })
+
   builder.createDoc(task.class.Project, core.space.Model, {
     name: 'public',
     description: 'Public tasks',
@@ -111,8 +138,8 @@ export function createModel (builder: Builder): void {
     members: []
   }, task.space.TasksPublic)
 
-  builder.createDoc(view.class.Sequence, view.space.Sequence, {
-    attachedTo: task.class.Task,
-    sequence: 0
-  })
+  createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
+    builder.createDoc(_class, space, data, id)
+    return await Promise.resolve()
+  }).catch((err) => console.error(err))
 }
