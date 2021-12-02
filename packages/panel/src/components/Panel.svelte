@@ -16,11 +16,11 @@
 
 <script lang="ts">
   import activity from '@anticrm/activity'
-  import type { Doc } from '@anticrm/core';
-  import type { Asset } from '@anticrm/platform';
-  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui';
-  import { Icon,IconClose,IconExpand, Component } from '@anticrm/ui';
-  import { createEventDispatcher } from 'svelte';
+  import type { Doc } from '@anticrm/core'
+  import type { Asset } from '@anticrm/platform'
+  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+  import { Icon,IconClose,IconExpand, Component } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
@@ -101,8 +101,8 @@
 
     .header {
       flex-shrink: 0;
-      padding: 0 2.5rem;
-      height: 4.5rem;
+      padding: 0 2.5rem 0 2rem;
+      height: 4rem;
       border-bottom: 1px solid var(--theme-dialog-divider);
 
       .icon { opacity: .6; }
@@ -160,7 +160,7 @@
   .tools {
     position: absolute;
     display: flex;
-    top: 1.75rem;
+    top: 1.5rem;
     right: 2rem;
 
     .tool {

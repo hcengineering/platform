@@ -73,6 +73,7 @@ export default plugin(recruitId, {
     Vacancy: '' as Asset,
     Company: '' as Asset,
     Location: '' as Asset,
-    Calendar: '' as Asset
+    Calendar: '' as Asset,
+    Create: '' as Asset
   }
 })
