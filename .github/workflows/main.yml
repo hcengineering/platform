@@ -42,6 +42,11 @@ jobs:
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
 
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.3.0
+        with:
+          mongodb-version: 4.4
+
       - name: Testing...
         uses: paambaati/codeclimate-action@v2.7.5
         env:
