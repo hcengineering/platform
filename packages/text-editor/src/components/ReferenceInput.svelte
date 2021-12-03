@@ -61,20 +61,21 @@
   .ref-container {
     display: flex;
     flex-direction: column;
-    min-height: 74px;
+    min-height: 4.5rem;
 
     .textInput {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      min-height: 44px;
-      padding: 8px 16px;
+      align-items: flex-end;
+      min-height: 2.75rem;
+      padding: .75rem 1rem;
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
       border-radius: .75rem;
 
       .inputMsg {
         display: flex;
+        align-self: center;
         align-items: center;
         width: 100%;
         height: 100%;
