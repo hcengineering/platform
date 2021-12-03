@@ -62,8 +62,8 @@ export class TAttribute extends TDoc implements AnyAttribute {
   label!: IntlString
 }
 
-@Model(core.class.Type, core.class.Doc)
-export class TType extends TDoc implements Type<any> {
+@Model(core.class.Type, core.class.Obj)
+export class TType extends TObj implements Type<any> {
   label!: IntlString
 }
 

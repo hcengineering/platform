@@ -33,7 +33,7 @@ export interface Task extends Doc {
 
   name: string
   description: string
-  assignee: Ref<Employee>
+  assignee: Ref<Employee> | null
 
   comments?: number
   attachments?: number

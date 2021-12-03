@@ -15,12 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Class, Doc } from '@anticrm/core'
+  import type { AttachedDoc, AttachedDoc, Doc } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
-  import { getClient } from '../utils'
   import view from '@anticrm/view'
+  import { getClient } from '../utils'
 
   // export let _class: Ref<Class<Doc>>
   export let key: string
@@ -45,8 +46,13 @@
     editor = getResource(editorMixin.editor)
   }
 
-  function onChange(value: any) {
-    client.updateDoc(_class, object.space, object._id, { [key]: value }, true).then(result => console.log('UPDATE RESULT', result))
+  function onChange (value: any) {
+    if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+      const adoc = object as AttachedDoc
+      client.updateCollection(_class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { [key]: value })
+    } else {
+      client.updateDoc(_class, object.space, object._id, { [key]: value }, true)
+    }
   }
 </script>
 

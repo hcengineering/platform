@@ -34,6 +34,8 @@
     caption="Assignee"
     bind:value={object.assignee}
     on:change={change}
+    allowDeselect
+    titleDeselect={task.string.TaskUnAssign}
   />
   <AttributeBarEditor key={'state'} {object} showHeader={false} />
 </div>

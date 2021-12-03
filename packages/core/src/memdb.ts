@@ -84,7 +84,7 @@ export abstract class MemDb extends TxProcessor {
       const result: LookupData<T> = {}
       for (const key in lookup) {
         const id = (doc as any)[key] as Ref<Doc>
-        if (id !== undefined) {
+        if (id != null) {
           (result as any)[key] = this.getObject(id)
         }
       }

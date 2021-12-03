@@ -29,8 +29,11 @@
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
-  export let value: Ref<Person>
+  export let value: Ref<Person> | null | undefined
   export let show: boolean = false
+  export let allowDeselect = false
+  export let titleDeselect: IntlString | undefined = undefined
+  
   const dispatch = createEventDispatcher()
 
   let selected: Person | undefined
@@ -40,11 +43,13 @@
 
   const client = getClient()
 
-  async function updateSelected(value: Ref<Person>) {
+  async function updateSelected (value: Ref<Person>) {
     selected = await client.findOne(_class, { _id: value })
   }
 
-  $: updateSelected(value)
+  $: if (value != null) {
+    updateSelected(value)
+  }
 
   onMount(() => {
     if (btn && show) {
@@ -59,10 +64,19 @@
     btn.focus()
     if (!opened) {
       opened = true
-      showPopup(UsersPopup, { _class, title, caption }, container, (result) => {
-        if (result) { 
+      showPopup(UsersPopup, { _class, title, caption, allowDeselect, selected: value, titleDeselect }, container, (result) => {
+        if (result === undefined) {
+          // Value is not changed.
+          opened = false
+          return
+        }
+        if (result != null) {
           value = result._id
           dispatch('change', value)
+        } else {
+          value = null
+          selected = undefined
+          dispatch('change', null)
         }
         opened = false
       })

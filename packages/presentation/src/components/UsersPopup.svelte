@@ -22,17 +22,23 @@
   import type { Ref, Class } from '@anticrm/core'
   import type { Person } from '@anticrm/contact'
   import { createQuery } from '../utils'
+  import { ActionIcon } from '@anticrm/ui'
+  import BlueCheck from './icons/BlueCheck.svelte'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
   export let caption: IntlString
+  export let selected: Ref<Person> | undefined
+
+  export let allowDeselect: boolean = false
+  export let titleDeselect: IntlString | undefined = undefined
 
   let search: string = ''
   let objects: Person[] = []
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { name: { $like: '%'+search+'%' } }, result => { objects = result })
+  $: query.query(_class, { name: { $like: '%' + search + '%' } }, result => { objects = result })
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
@@ -46,7 +52,12 @@
     <div class="flex-col box">
       {#each objects as person}
         <button class="menu-item" on:click={() => { dispatch('close', person) }}>
-          <UserInfo size={'medium'} value={person} />
+          <div class='flex-grow'>
+            <UserInfo size={'medium'} value={person} />
+          </div>
+          {#if allowDeselect && person._id === selected}
+            <ActionIcon direction={'top'} label={titleDeselect ?? 'Deselect'} icon={BlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
+          {/if}
         </button>
       {/each}
     </div>

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, SpaceWithStates } from '@anticrm/core'
@@ -33,7 +32,7 @@
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate> // | null = null
-  export let employee: Ref<Employee> // | null = null
+  export let employee: Ref<Employee> | null = null
 
   export let preserveCandidate = false
 
@@ -56,18 +55,31 @@
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
-    const incResult = await client.updateDoc(view.class.Sequence, view.space.Sequence, sequence._id, {
-      $inc: { sequence: 1 }
-    }, true)
-    const id = await client.addCollection(recruit.class.Applicant, _space, candidate, recruit.class.Candidate, 'applications', {
-      state: state._id,
-      number: incResult.object.sequence,
-      employee: employee
-    })
+    const incResult = await client.updateDoc(
+      view.class.Sequence,
+      view.space.Sequence,
+      sequence._id,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    const id = await client.addCollection(
+      recruit.class.Applicant,
+      _space,
+      candidate,
+      recruit.class.Candidate,
+      'applications',
+      {
+        state: state._id,
+        number: incResult.object.sequence,
+        employee: employee
+      }
+    )
   }
 
   async function validate (candidate: Ref<Candidate>, space: Ref<Space>) {
-    if (candidate === undefined) {
+    if (candidate == null) {
       status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
     } else {
       if (space === undefined) {
@@ -84,22 +96,32 @@
   }
 
   $: validate(candidate, _space)
-
 </script>
 
-<Card label={'Create Application'} 
-      okAction={createApplication}
-      canSave={status.severity === Severity.OK}
-      spaceClass={recruit.class.Vacancy}
-      spaceLabel={'Vacancy'}
-      spacePlaceholder={'Select vacancy'}
-      bind:space={_space}
-      on:close={() => { dispatch('close') }}>
+<Card
+  label={'Create Application'}
+  okAction={createApplication}
+  canSave={status.severity === Severity.OK}
+  spaceClass={recruit.class.Vacancy}
+  spaceLabel={'Vacancy'}
+  spacePlaceholder={'Select vacancy'}
+  bind:space={_space}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
-      <UserBox _class={recruit.class.Candidate} title='Candidate' caption='Candidates' bind:value={candidate} />
+      <UserBox _class={recruit.class.Candidate} title="Candidate" caption="Candidates" bind:value={candidate} />
     {/if}
-    <UserBox _class={contact.class.Employee} title='Assigned recruiter' caption='Recruiters' bind:value={employee} />
+    <UserBox
+      _class={contact.class.Employee}
+      title="Assigned recruiter"
+      caption="Recruiters"
+      bind:value={employee}
+      allowDeselect
+      titleDeselect={'Unassign recruiter'}
+    />
   </Grid>
 </Card>

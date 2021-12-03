@@ -129,8 +129,15 @@
     actions = result
   })
 
-  function getValue (utx: TxUpdateDoc<Doc>, key: string): any {
-    return (utx.operations as any)[key]
+  async function getValue (m: AttributeModel, utx: TxUpdateDoc<Doc>): Promise<any> {
+    const val = (utx.operations as any)[m.key]
+    console.log(m._class, m.key, val, typeof val)
+
+    if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
+      // We have an reference, we need to find a real object to pass for presenter
+      return await client.findOne(m._class, { _id: val as Ref<Doc> })
+    }
+    return val
   }
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     showPopup(
@@ -207,8 +214,14 @@
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m}
-              <span>changed {m.label} to</span>
-              <div class="strong"><svelte:component this={m.presenter} value={getValue(tx.updateTx, m.key)} /></div>
+            {#await getValue(m, tx.updateTx) then value}
+                {#if value === null}
+                  <span>unset {m.label}</span>
+                {:else}
+                  <span>changed {m.label} to</span>                
+                  <div class="strong"><svelte:component this={m.presenter} {value} /></div>
+                {/if}
+              {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             <div>

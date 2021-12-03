@@ -109,6 +109,7 @@ export const viewId = 'view' as Plugin
 export interface AttributeModel {
   key: string
   label: IntlString
+  _class: Ref<Class<Doc>>
   presenter: AnySvelteComponent
 }
 
