@@ -144,8 +144,8 @@ onDestroy(() => {
     height: 0;
   }
 
-  &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-focused-color); }
-  &::-webkit-scrollbar-corner { background-color: var(--theme-bg-focused-color); }
+  &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-accent-hover); }
+  &::-webkit-scrollbar-corner { background-color: var(--theme-bg-accent-hover); }
   &::-webkit-scrollbar-track { margin: 0; }
 }
 
