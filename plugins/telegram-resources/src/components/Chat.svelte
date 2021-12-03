@@ -220,7 +220,6 @@
   {:else if enabled}
       <ReferenceInput on:message={onMessage}/>
   {:else}
-  <ReferenceInput on:message={onMessage}/>
     <div class="flex-center">
       <Button label='Connect' primary on:click={(e) => {
         showPopup(Connect, {}, e.target)
