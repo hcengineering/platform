@@ -14,7 +14,6 @@
     "MakePrivateDescription": "Only members can see it",
     "CreateAnApplication": "Create an application",
     "NoApplicationsForCandidate": "There are no applications for this candidate.",
-    "UploadDropFilesHere": "Upload or drop files here",
     "NoAttachmentsForCandidate": "There are no attachments for this candidate."
   },
   "status": {

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 import type { Ref, Class, Type } from '@anticrm/core'
 import contact, { contactId } from '@anticrm/contact'
 import type { Channel } from '@anticrm/contact'
@@ -23,7 +23,21 @@ import {} from '@anticrm/core'
 export const ids = mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
-    ChannelsPresenter: '' as AnyComponent
+    ChannelsPresenter: '' as AnyComponent,
+    CreatePerson: '' as AnyComponent,
+    EditPerson: '' as AnyComponent,
+    EditOrganization: '' as AnyComponent,
+    CreateOrganization: '' as AnyComponent,
+    CreatePersons: '' as AnyComponent,
+    CreateOrganizations: '' as AnyComponent,
+    OrganizationPresenter: '' as AnyComponent
+  },
+  string: {
+    Organizations: '' as IntlString,
+    Persons: '' as IntlString,
+    Contacts: '' as IntlString,
+    CreatePersons: '' as IntlString,
+    CreateOrganizations: '' as IntlString
   },
   class: {
     TypeChannels: '' as Ref<Class<Type<Channel[]>>>

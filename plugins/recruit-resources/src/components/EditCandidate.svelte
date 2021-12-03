@@ -15,24 +15,18 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Doc, Class } from '@anticrm/core'
-  import { CircleButton, EditBox, Link, showPopup, IconFile as FileIcon, IconAdd, Label, AnyComponent } from '@anticrm/ui'
-  import type { Attachment } from '@anticrm/chunter'
-  import FileUpload from './icons/FileUpload.svelte'
-  import { getClient, createQuery, Channels, AttributeEditor, PDFViewer, Avatar } from '@anticrm/presentation'
+  import type { Ref } from '@anticrm/core'
+  import { CircleButton, EditBox, showPopup, IconAdd, Label, AnyComponent, Component } from '@anticrm/ui'
+  import { getClient, createQuery, Channels, AttributeEditor, AttributesBar, Avatar } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
-  import Attachments from './Attachments.svelte'
   import Edit from './icons/Edit.svelte'
-  import SocialEditor from './SocialEditor.svelte'
-  import AttributesBar from './AttributesBar.svelte'
   import Applications from './Applications.svelte'
-
-  import core from '@anticrm/core'
+  import attachment from '@anticrm/attachment'
 
   import recruit from '../plugin'
-  import { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
+  import contact, { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
 
   export let _id: Ref<Candidate>
   let object: Candidate
@@ -80,7 +74,7 @@
       <!-- <div class="city"><AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="city"/></div> -->
       <div class="flex-row-center channels">
         {#if !object.channels || object.channels.length === 0}
-          <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+          <CircleButton icon={IconAdd} size={'small'} selected on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
           <span><Label label={'Add social links'} /></span>
         {:else}
           <Channels value={object.channels} size={'small'} on:click={(ev) => {
@@ -90,7 +84,7 @@
             }
           }} />
           <div class="ml-1">
-            <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
+            <CircleButton icon={Edit} size={'small'} selected on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { saveChannels(result) })} />
           </div>
         {/if}
       </div>
@@ -102,7 +96,7 @@
   </div>
 
   <div class="mt-14">
-    <Attachments objectId={object._id} _class={object._class} space={object.space} />
+    <Component is={attachment.component.Attachments} props={{ objectId: object._id, _class:object._class, space: object.space, noLabel: recruit.string.NoAttachmentsForCandidate }} />
   </div>
 
 </Panel>

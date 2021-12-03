@@ -24,26 +24,21 @@ import type { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(chunterId, chunter, {
   component: {
-    AttachmentsPresenter: '' as AnyComponent,
-    AttachmentPresenter: '' as AnyComponent,
     CommentsPresenter: '' as AnyComponent,
     CommentPresenter: '' as AnyComponent
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,
-    LeftComment: '' as IntlString,
-    AddAttachment: '' as IntlString
+    LeftComment: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
   },
   ids: {
     TxCommentCreate: '' as Ref<TxViewlet>,
-    TxCommentRemove: '' as Ref<TxViewlet>,
-    TxAttachmentCreate: '' as Ref<TxViewlet>
+    TxCommentRemove: '' as Ref<TxViewlet>
   },
   activity: {
-    TxCommentCreate: '' as AnyComponent,
-    TxAttachmentCreate: '' as AnyComponent
+    TxCommentCreate: '' as AnyComponent
   }
 })

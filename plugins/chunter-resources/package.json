@@ -38,7 +38,6 @@
     "svelte": "^3.37.0",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.2",
-    "@anticrm/view-resources": "~0.6.0",
-    "filesize": "^8.0.3"
+    "@anticrm/view-resources": "~0.6.0"
   }
 }

@@ -21,7 +21,6 @@ loadMetadata(recruit.icon, {
   RecruitApplication: `${icons}#recruitment`,
   Vacancy: `${icons}#vacancy`,
   Location: `${icons}#location`,
-  Company: `${icons}#company`,
   Calendar: `${icons}#calendar`,
   Create: `${icons}#create`
 })

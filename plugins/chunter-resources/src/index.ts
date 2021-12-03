@@ -15,26 +15,20 @@
 
 import CreateChannel from './components/CreateChannel.svelte'
 import ChannelView from './components/ChannelView.svelte'
-import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
-import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
-import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 
-export { AttachmentsPresenter, CommentsPresenter }
+export { CommentsPresenter }
 
 export default async () => ({
   component: {
     CreateChannel,
     ChannelView,
-    AttachmentsPresenter,
-    AttachmentPresenter,
     CommentPresenter,
     CommentsPresenter
   },
   activity: {
-    TxCommentCreate,
-    TxAttachmentCreate
+    TxCommentCreate
   }
 })

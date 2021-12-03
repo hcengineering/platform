@@ -33,7 +33,6 @@ export default mergeIds(taskId, task, {
     TaskUnAssign: '' as IntlString,
     TaskDescription: '' as IntlString,
     NoAttachmentsForTask: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString,
     More: '' as IntlString
   },
   status: {

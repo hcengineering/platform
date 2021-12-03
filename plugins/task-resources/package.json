@@ -38,6 +38,7 @@
     "@anticrm/contact": "~0.6.2",
     "@anticrm/core": "~0.6.11",
     "@anticrm/chunter": "~0.6.1",
+    "@anticrm/attachment": "~0.6.0",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",

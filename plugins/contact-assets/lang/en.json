@@ -1,0 +1,18 @@
+{
+  "string": {
+    "Apply": "Apply",
+    "Contacts": "Contacts",
+    "Persons": "Persons",
+    "Organizations": "Organizations",
+    "CreatePerson": "Create person",
+    "CreatePersons": "Create persons folder",
+    "CreateOrganizations": "Create organizations folder",
+    "Name": "Name",
+    "SelectFolder": "Select folder",
+    "OrganizationsFolder": "Organizations folder",
+    "PersonsFolder": "Persons folder",
+    "AddSocialLinks": "Add social links",
+    "MakePrivate": "Make private",
+    "MakePrivateDescription": "Only members can see it"
+  }
+}

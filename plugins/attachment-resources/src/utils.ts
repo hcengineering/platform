@@ -14,12 +14,9 @@
 // limitations under the License.
 //
 
-import type { Class, Data, Doc, Ref, Space, State } from '@anticrm/core'
+import type { Doc, Ref, Space } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import { Project } from '@anticrm/task'
-import core from '@anticrm/core'
-import view, { Kanban } from '@anticrm/view'
 
 export async function uploadFile (space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
   console.log(file)

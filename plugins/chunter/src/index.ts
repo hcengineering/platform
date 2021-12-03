@@ -47,31 +47,18 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
-export interface Attachment extends AttachedDoc {
-  name: string
-  file: string
-  size: number
-  type: string
-  lastModified: number
-}
-
-/**
- * @public
- */
 export const chunterId = 'chunter' as Plugin
 
 export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
-    Lock: '' as Asset,
-    Attachment: '' as Asset
+    Lock: '' as Asset
   },
   class: {
     Message: '' as Ref<Class<Message>>,
     Backlink: '' as Ref<Class<Backlink>>,
-    Comment: '' as Ref<Class<Comment>>,
-    Attachment: '' as Ref<Class<Attachment>>
+    Comment: '' as Ref<Class<Comment>>
   },
   space: {
     Backlinks: '' as Ref<Space>
