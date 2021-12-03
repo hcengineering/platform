@@ -19,7 +19,7 @@
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import { createProjectKanban } from '../utils'
+  import { createProjectKanban } from '@anticrm/task'
 
   const dispatch = createEventDispatcher()
 
