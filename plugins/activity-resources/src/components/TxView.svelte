@@ -122,7 +122,6 @@
     }
     buildModel(ops).then((m) => {
       model = m
-      console.log('BUILD MODEL:', m)
     })
   }
 
