@@ -23,7 +23,7 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import type { Project, Task } from '@anticrm/task'
-import { createProjectKanban } from '@anticrm/task-resources'
+import { createProjectKanban } from '@anticrm/task'
 import task from './plugin'
 
 @Model(task.class.Project, core.class.SpaceWithStates)
