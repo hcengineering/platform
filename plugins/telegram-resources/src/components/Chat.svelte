@@ -232,7 +232,7 @@
   .header {
     flex-shrink: 0;
     padding: 0 5.5rem 0 2.5rem;
-    height: 4.5rem;
+    height: 4rem;
     border-bottom: 1px solid var(--theme-card-divider);
 
     .icon {

@@ -214,8 +214,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Create Application' as IntlString,
-    icon: view.icon.Table,
+    label: 'Create application' as IntlString,
+    icon: recruit.icon.Create,
     action: recruit.actionImpl.CreateApplication
   }, recruit.action.CreateApplication)
 
