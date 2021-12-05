@@ -310,7 +310,7 @@ export function TypeDate (): Type<string> {
  * @public
  */
 export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
-  return { _class: core.class.TypeString, to: _class, label: 'TypeRef' as IntlString }
+  return { _class: core.class.RefTo, to: _class, label: 'TypeRef' as IntlString }
 }
 
 /**
