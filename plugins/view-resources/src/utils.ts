@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, FindOptions, FindResult, Obj, Ref } from '@anticrm/core'
+import type { Class, Client, Doc, FindOptions, FindResult, Obj, Ref, AttachedDoc, TxOperations, Collection } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 import view, { AttributeModel } from '@anticrm/view'
+import core from '@anticrm/core'
 
 /**
  * @public
@@ -131,4 +132,24 @@ function filterActions (client: Client, _class: Ref<Class<Obj>>, targets: Action
 export async function getActions (client: Client, _class: Ref<Class<Obj>>): Promise<FindResult<Action>> {
   const targets = await client.findAll(view.class.ActionTarget, {})
   return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets) } })
+}
+
+export async function deleteObject (client: Client & TxOperations, object: Doc) {
+  const hierarchy = client.getHierarchy()
+  const attributes = hierarchy.getAllAttributes(object._class)
+  for (const [name, attribute] of attributes) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await client.findAll(collection.of, { attachedTo: object._id })
+      for (const attached of allAttached) {
+        deleteObject(client, attached)
+      }
+    }
+  }
+  if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+    const adoc = object as AttachedDoc
+    client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
+  } else {
+    client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
+  }
 }

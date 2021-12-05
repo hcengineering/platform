@@ -30,6 +30,7 @@ import StringPresenter from './components/StringPresenter.svelte'
 import Table from './components/Table.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
+import { deleteObject } from './utils'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter } from './utils'
@@ -41,13 +42,7 @@ function Delete (object: Doc): void {
     message: 'Do you want to delete this object?'
   }, undefined, (result) => {
     if (result !== undefined) {
-      const client = getClient()
-      if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
-        const adoc = object as AttachedDoc
-        client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
-      } else {
-        client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
-      }
+      deleteObject(getClient(), object)
     }
   })
 }
