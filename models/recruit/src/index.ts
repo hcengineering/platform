@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import type { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX, Collection } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@anticrm/model-core'
@@ -56,13 +56,13 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(chunter.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
 
-  @Prop(TypeString(), 'Applications' as IntlString)
+  @Prop(Collection(recruit.class.Applicant), 'Applications' as IntlString)
   applications?: number
 
   @Prop(TypeBoolean(), 'Onsite' as IntlString)
