@@ -14,13 +14,15 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, Prop, UX, TypeString, Index, TypeTimestamp } from '@anticrm/model'
+import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
 import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import core, { TSpace, TDoc, TAttachedDoc } from '@anticrm/model-core'
 import type { Backlink, Channel, Message, Comment, Attachment } from '@anticrm/chunter'
 import type { AnyComponent } from '@anticrm/ui'
 import activity from '@anticrm/activity'
+import { TAttachment as TOriginAttachment } from '@anticrm/model-attachment'
+import attachment from '@anticrm/attachment'
 
 import workbench from '@anticrm/model-workbench'
 
@@ -29,7 +31,6 @@ import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
-export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 
 @Model(chunter.class.Channel, core.class.Space)
 @UX(chunter.string.Channel, chunter.icon.Hashtag)
@@ -50,33 +51,19 @@ export class TComment extends TAttachedDoc implements Comment {
   message!: string
 }
 
+@Model(chunter.class.Attachment, attachment.class.Attachment)
+@UX('File' as IntlString)
+export class TAttachment extends TOriginAttachment implements Attachment {
+}
+
 @Model(chunter.class.Backlink, chunter.class.Comment)
 export class TBacklink extends TComment implements Backlink {
   backlinkId!: Ref<Doc>
   backlinkClass!: Ref<Class<Doc>>
 }
 
-@Model(chunter.class.Attachment, core.class.AttachedDoc, DOMAIN_ATTACHMENT)
-@UX('File' as IntlString)
-export class TAttachment extends TAttachedDoc implements Attachment {
-  @Prop(TypeString(), 'Name' as IntlString)
-  name!: string
-
-  @Prop(TypeString(), 'File' as IntlString)
-  file!: string
-
-  @Prop(TypeString(), 'Size' as IntlString)
-  size!: number
-
-  @Prop(TypeString(), 'Type' as IntlString)
-  type!: string
-
-  @Prop(TypeTimestamp(), 'Date' as IntlString)
-  lastModified!: number
-}
-
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TComment, TBacklink, TAttachment)
+  builder.createModel(TChannel, TMessage, TComment, TBacklink)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message
@@ -124,10 +111,6 @@ export function createModel (builder: Builder): void {
     members: []
   })
 
-  builder.mixin(chunter.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: chunter.component.AttachmentPresenter
-  })
-
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter
   })
@@ -151,15 +134,6 @@ export function createModel (builder: Builder): void {
     display: 'inline',
     hideOnRemove: true
   }, chunter.ids.TxCommentRemove)
-
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Attachment,
-    icon: chunter.icon.Attachment,
-    txClass: core.class.TxCreateDoc,
-    component: chunter.activity.TxAttachmentCreate,
-    label: chunter.string.AddAttachment,
-    display: 'emphasized'
-  }, chunter.ids.TxAttachmentCreate)
 }
 
 export default chunter

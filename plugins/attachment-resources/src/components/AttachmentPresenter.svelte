@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Attachment } from '@anticrm/chunter'
+  import type { Attachment } from '@anticrm/attachment'
   import { showPopup, closeTooltip } from '@anticrm/ui'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import filesize from 'filesize'

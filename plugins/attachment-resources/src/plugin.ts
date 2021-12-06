@@ -1,5 +1,5 @@
-<!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+//
+// Copyright © 2020 Anticrm Platform Contributors.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,15 +11,16 @@
 // 
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<script lang="ts">
-  import type { Attachment } from "@anticrm/chunter";
-  import type { TxCreateDoc } from "@anticrm/core";
-  import { TxProcessor } from '@anticrm/core';
-  import AttachmentPresenter from "../AttachmentPresenter.svelte";
+import { mergeIds } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
 
-  export let tx: TxCreateDoc<Attachment>
-</script>
+import attachment, { attachmentId } from '@anticrm/attachment'
 
-<AttachmentPresenter value={TxProcessor.createDoc2Doc(tx)}/>
+export default mergeIds(attachmentId, attachment, {
+  string: {
+    NoAttachments: '' as IntlString,
+    UploadDropFilesHere: '' as IntlString
+  }
+})

@@ -34,6 +34,8 @@
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
+    "@anticrm/model-attachment": "~0.6.0",
+    "@anticrm/attachment": "~0.6.0",
     "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/activity": "~0.6.0"
   }

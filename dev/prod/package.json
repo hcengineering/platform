@@ -80,6 +80,9 @@
     "@anticrm/telegram-resources": "~0.6.0",
     "@anticrm/devmodel": "~0.6.0",
     "@anticrm/devmodel-resources": "~0.6.0",
-    "@anticrm/workbench-assets": "~0.6.0"
+    "@anticrm/workbench-assets": "~0.6.0",
+    "@anticrm/attachment": "~0.6.0",
+    "@anticrm/attachment-assets": "~0.6.0",
+    "@anticrm/attachment-resources": "~0.6.0"
   }
 }

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { loadMetadata } from '@anticrm/platform'
-import chunter from '@anticrm/contact'
+import { addStringsLoader, loadMetadata } from '@anticrm/platform'
+import contact, { contactId } from '@anticrm/contact'
 
 const icons = require('../assets/icons.svg')
-loadMetadata(chunter.icon, {
+loadMetadata(contact.icon, {
   Phone: `${icons}#phone`,
   Email: `${icons}#email`,
   Discord: `${icons}#discord`,
@@ -29,5 +29,9 @@ loadMetadata(chunter.icon, {
   VK: `${icons}#vk`,
   WhatsApp: `${icons}#whatsapp`,
   Youtube: `${icons}#youtube`,
-  GitHub: `${icons}#github`
+  GitHub: `${icons}#github`,
+  Person: `${icons}#person`,
+  Company: `${icons}#company`
 })
+addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))
+

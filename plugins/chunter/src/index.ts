@@ -16,6 +16,7 @@
 import { IntlString, plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
+import type { Attachment as OriginAttachment } from '@anticrm/attachment'
 
 /**
  * @public
@@ -47,13 +48,7 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
-export interface Attachment extends AttachedDoc {
-  name: string
-  file: string
-  size: number
-  type: string
-  lastModified: number
-}
+export interface Attachment extends OriginAttachment {}
 
 /**
  * @public
@@ -64,8 +59,7 @@ export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
-    Lock: '' as Asset,
-    Attachment: '' as Asset
+    Lock: '' as Asset
   },
   class: {
     Message: '' as Ref<Class<Message>>,

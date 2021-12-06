@@ -21,6 +21,16 @@ import type { AnyComponent } from '@anticrm/ui'
 /**
  * @public
  */
+export interface Organizations extends Space {}
+
+/**
+ * @public
+ */
+export interface Persons extends Space {}
+
+/**
+ * @public
+ */
 export interface ChannelProvider extends Doc, UXObject {
   placeholder: string
   presenter?: AnyComponent
@@ -40,6 +50,8 @@ export interface Channel {
 export interface Contact extends Doc {
   name: string
   avatar?: string
+  attachments?: number
+  comments?: number
   channels: Channel[]
 }
 
@@ -47,8 +59,6 @@ export interface Contact extends Doc {
  * @public
  */
 export interface Person extends Contact {
-  // email: string
-  // phone: string
   city: string
 }
 
@@ -112,9 +122,14 @@ export default plugin(contactId, {
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
+    Persons: '' as Ref<Class<Persons>>,
     Organization: '' as Ref<Class<Organization>>,
+    Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
+  },
+  component: {
+    SocialEditor: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -136,7 +151,9 @@ export default plugin(contactId, {
     VK: '' as Asset,
     WhatsApp: '' as Asset,
     Youtube: '' as Asset,
-    GitHub: '' as Asset
+    GitHub: '' as Asset,
+    Person: '' as Asset,
+    Company: '' as Asset
   },
   space: {
     Employee: '' as Ref<Space>

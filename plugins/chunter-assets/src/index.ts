@@ -20,8 +20,7 @@ const icons = require('../assets/icons.svg')
 loadMetadata(chunter.icon, {
   Chunter: `${icons}#chunter`,
   Hashtag: `${icons}#hashtag`,
-  Lock: `${icons}#lock`,
-  Attachment: `${icons}#chunter`
+  Lock: `${icons}#lock`
 })
 
 addStringsLoader(chunterId, async (lang: string) => await import(`../lang/${lang}.json`))

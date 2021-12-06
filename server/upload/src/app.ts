@@ -24,7 +24,7 @@ import { Space, Ref, Doc, Account, generateId } from '@anticrm/core'
 // import { TxFactory } from '@anticrm/core'
 import type { Token, IndexedDoc } from '@anticrm/server-core'
 import { createElasticAdapter } from '@anticrm/elastic'
-import chunter from '@anticrm/chunter'
+import attachment from '@anticrm/attachment'
 // import { createContributingClient } from '@anticrm/contrib'
 
 import { Client, ItemBucketMetadata } from 'minio'
@@ -160,7 +160,7 @@ export function start (transactorEndpoint: string, elasticUrl: string, minio: Cl
 
       const indexedDoc: IndexedDoc = {
         id: generateId() + '/attachments/' + name,
-        _class: chunter.class.Attachment,
+        _class: attachment.class.Attachment,
         space,
         modifiedOn: Date.now(),
         modifiedBy: 'core:account:System' as Ref<Account>,

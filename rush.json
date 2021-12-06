@@ -866,5 +866,25 @@
       "projectFolder": "plugins/devmodel",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/attachment",
+      "projectFolder": "plugins/attachment",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/attachment-assets",
+      "projectFolder": "plugins/attachment-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/attachment-resources",
+      "projectFolder": "plugins/attachment-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-attachment",
+      "projectFolder": "models/attachment",
+      "shouldPublish": true
+    }
   ]
 }

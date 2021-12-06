@@ -25,12 +25,14 @@ import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
+import { attachmentId } from '@anticrm/attachment'
 import { clientId } from '@anticrm/client'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
 import '@anticrm/view-assets'
 import '@anticrm/chunter-assets'
+import '@anticrm/attachment-assets'
 import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
@@ -60,4 +62,5 @@ export function configurePlatform() {
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
   addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
+  addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
 }

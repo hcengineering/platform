@@ -39,8 +39,6 @@ export interface Candidates extends Space {}
  */
 export interface Candidate extends Person {
   title?: string
-  attachments?: number
-  comments?: number
   applications?: number
   onsite?: boolean
   remote?: boolean
@@ -71,7 +69,6 @@ export default plugin(recruitId, {
   icon: {
     RecruitApplication: '' as Asset,
     Vacancy: '' as Asset,
-    Company: '' as Asset,
     Location: '' as Asset,
     Calendar: '' as Asset,
     Create: '' as Asset

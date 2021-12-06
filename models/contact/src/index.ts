@@ -18,10 +18,11 @@ import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX, Index } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 
-import core, { TAccount, TDoc, TType } from '@anticrm/model-core'
-import type { Contact, Person, Organization, Employee, Channel, ChannelProvider, EmployeeAccount } from '@anticrm/contact'
-
+import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
+import type { Contact, Person, Persons, Organization, Organizations, Employee, Channel, ChannelProvider, EmployeeAccount } from '@anticrm/contact'
+import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
+import attachment from '@anticrm/model-attachment'
 import { ids as contact } from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -53,6 +54,12 @@ export class TContact extends TDoc implements Contact {
 
   @Prop(TypeChannels(), 'Contact Info' as IntlString)
   channels!: Channel[]
+
+  @Prop(TypeString(), 'Attachments' as IntlString)
+  attachments?: number
+
+  @Prop(TypeString(), 'Comments' as IntlString)
+  comments?: number
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -63,6 +70,7 @@ export class TPerson extends TContact implements Person {
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
+@UX('Organization' as IntlString)
 export class TOrganization extends TContact implements Organization {
 }
 
@@ -76,8 +84,89 @@ export class TEmployeeAccount extends TAccount implements EmployeeAccount {
   name!: string
 }
 
+@Model(contact.class.Organizations, core.class.Space)
+@UX(contact.string.Organizations, contact.icon.Company)
+export class TOrganizations extends TSpace implements Organizations {}
+
+@Model(contact.class.Persons, core.class.Space)
+@UX(contact.string.Persons, contact.icon.Person)
+export class TPersons extends TSpace implements Persons {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TOrganization, TEmployee, TEmployeeAccount)
+  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TPersons, TOrganization, TOrganizations, TEmployee, TEmployeeAccount)
+
+  builder.mixin(contact.class.Persons, core.class.Class, workbench.mixin.SpaceView, {
+    view: {
+      class: contact.class.Person,
+      createItemDialog: contact.component.CreatePerson
+    }
+  })
+
+  builder.mixin(contact.class.Organizations, core.class.Class, workbench.mixin.SpaceView, {
+    view: {
+      class: contact.class.Organization,
+      createItemDialog: contact.component.CreateOrganization
+    }
+  })
+
+  builder.createDoc(workbench.class.Application, core.space.Model, {
+    label: contact.string.Contacts,
+    icon: contact.icon.Person,
+    hidden: false,
+    navigatorModel: {
+      spaces: [
+        {
+          label: contact.string.Persons,
+          spaceClass: contact.class.Persons,
+          addSpaceLabel: contact.string.CreatePersons,
+          createComponent: contact.component.CreatePersons
+        },
+        {
+          label: contact.string.Organizations,
+          spaceClass: contact.class.Organizations,
+          addSpaceLabel: contact.string.CreateOrganizations,
+          createComponent: contact.component.CreateOrganizations
+        }
+      ]
+    }
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: contact.class.Person,
+    descriptor: view.viewlet.Table,
+    open: contact.component.EditPerson,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: { },
+    config: [
+      '',
+      'city',
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
+      'modifiedOn',
+      'channels'
+    ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: contact.class.Organization,
+    descriptor: view.viewlet.Table,
+    open: contact.component.EditOrganization,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: { },
+    config: [
+      '',
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
+      'modifiedOn',
+      'channels'
+    ]
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
+    editor: contact.component.EditPerson
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectEditor, {
+    editor: contact.component.EditOrganization
+  })
 
   builder.mixin(contact.class.TypeChannels, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
@@ -122,6 +211,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.OrganizationPresenter
   })
 }
 

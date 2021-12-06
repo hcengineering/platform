@@ -17,11 +17,11 @@
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Task } from '@anticrm/task'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { Component, EditBox, Grid } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import Attachments from './Attachments.svelte'
+  import attachment from '@anticrm/attachment'
   import TaskHeader from './TaskHeader.svelte'
 
   export let _id: Ref<Task>
@@ -72,7 +72,7 @@
     </Grid>
 
     <div class="mt-14">
-      <Attachments objectId={object._id} _class={object._class} space={object.space} />
+      <Component is={attachment.component.Attachments} props={{ objectId: object._id, _class:object._class, space: object.space, noLabel: task.string.NoAttachmentsForTask }} />
     </div>
   </Panel>
 {/if}

@@ -24,6 +24,7 @@ import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import type { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
+import attachment from '@anticrm/model-attachment'
 
 export const DOMAIN_RECRUIT = 'recruit' as Domain
 
@@ -42,7 +43,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeString(), 'Location' as IntlString, recruit.icon.Location)
   location?: string
 
-  @Prop(TypeString(), 'Company' as IntlString, recruit.icon.Company)
+  @Prop(TypeString(), 'Company' as IntlString, contact.icon.Company)
   company?: string
 }
 
@@ -157,7 +158,7 @@ export function createModel (builder: Builder): void {
       'title',
       'city',
       { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
-      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',
       'channels'
@@ -180,7 +181,7 @@ export function createModel (builder: Builder): void {
       '$lookup.attachedTo',
       '$lookup.state',
       '$lookup.attachedTo.city',
-      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',
       '$lookup.attachedTo.channels']

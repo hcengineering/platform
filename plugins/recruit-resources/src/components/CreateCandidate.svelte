@@ -26,15 +26,15 @@
   import recruit from '../plugin'
   import chunter from '@anticrm/chunter'
   import type { Candidate } from '@anticrm/recruit'
-  import type { Attachment } from '@anticrm/chunter'
+  import attachment from '@anticrm/attachment'
+  import type { Attachment } from '@anticrm/attachment'
 
   import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, IconAdd, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
   import FileUpload from './icons/FileUpload.svelte'
   import Edit from './icons/Edit.svelte'
-  import SocialEditor from './SocialEditor.svelte'
   import YesNo from './YesNo.svelte'
 
-  import { combineName } from '@anticrm/contact';
+  import contact, { combineName } from '@anticrm/contact'
 
   export let space: Ref<Space>
 
@@ -75,7 +75,7 @@
     console.log('resume name', resume.name)
 
     if (resume.uuid !== undefined) {
-      client.addCollection(chunter.class.Attachment, space, id, recruit.class.Candidate, 'attachments', {
+      client.addCollection(attachment.class.Attachment, space, id, recruit.class.Candidate, 'attachments', {
         name: resume.name,
         file: resume.uuid,
         size: resume.size,
@@ -147,12 +147,12 @@
 
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
       <span><Label label={'Add social links'} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">
-        <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+        <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
       </div>
     {/if}
   </div>
@@ -179,10 +179,6 @@
     <div class="row"><Label label={'Onsite'} /><YesNo bind:value={object.onsite} /></div>
     <div class="row"><Label label={'Remote'} /><YesNo bind:value={object.remote} /></div>
   </div>
-  <!-- <svelte:fragment slot="contacts">
-    <Channels value={object.channels} />
-    <CircleButton icon={Edit} label={'Edit'} on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
-  </svelte:fragment> -->
 </Card>
 
 <style lang="scss">

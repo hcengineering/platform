@@ -15,11 +15,27 @@
 //
 
 import PersonPresenter from './components/PersonPresenter.svelte'
+import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
+import CreatePerson from './components/CreatePerson.svelte'
+import CreateOrganization from './components/CreateOrganization.svelte'
+import EditPerson from './components/EditPerson.svelte'
+import EditOrganization from './components/EditOrganization.svelte'
+import CreatePersons from './components/CreatePersons.svelte'
+import CreateOrganizations from './components/CreateOrganizations.svelte'
+import SocialEditor from './components/SocialEditor.svelte'
 
 export default async () => ({
   component: {
     PersonPresenter,
-    ChannelsPresenter
+    OrganizationPresenter,
+    ChannelsPresenter,
+    CreatePerson,
+    CreateOrganization,
+    EditPerson,
+    EditOrganization,
+    CreatePersons,
+    CreateOrganizations,
+    SocialEditor
   },
 })

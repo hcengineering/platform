@@ -41,7 +41,7 @@ async function onClick() {
 <style lang="scss">
   .user-container {
     cursor: pointer;
-    
+
     .user {
       margin-left: .5rem;
       font-weight: 500;

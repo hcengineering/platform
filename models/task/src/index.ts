@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import type { Doc, DocWithState, Domain, FindOptions, Ref } from '@anticrm/core'
@@ -94,7 +95,7 @@ export function createModel (builder: Builder): void {
       '',
       'name',
       '$lookup.assignee',
-      { presenter: chunter.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn'
     ]

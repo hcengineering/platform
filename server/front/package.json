@@ -45,7 +45,7 @@
     "@anticrm/elastic": "~0.6.0",
     "jwt-simple": "^0.5.6",
     "@anticrm/server-core": "~0.6.1",
-    "@anticrm/chunter": "~0.6.0",
+    "@anticrm/attachment": "~0.6.0",
     "@anticrm/contrib": "~0.6.0",
     "minio": "^7.0.19"
   }

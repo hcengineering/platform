@@ -38,7 +38,6 @@ export default mergeIds(recruitId, recruit, {
     CreateCandidate: '' as IntlString,
     CreateAnApplication: '' as IntlString,
     NoApplicationsForCandidate: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString,
     NoAttachmentsForCandidate: '' as IntlString,
 
     FirstName: '' as IntlString,

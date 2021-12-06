@@ -18,14 +18,14 @@
   import type { Ref, Doc } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
 
-  import chunter from '@anticrm/chunter'
+  import attachment from '@anticrm/attachment'
 
   export let objectId: Ref<Doc>
 
 </script>
 
 <Table 
-  _class={chunter.class.Attachment}
+  _class={attachment.class.Attachment}
   config={['', 'lastModified']}
   options={ {} }
   query={ { attachedTo: objectId } }

@@ -15,10 +15,33 @@
 -->
 
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
-  const fill: string = 'var(--theme-caption-color)'
+  import type { Doc } from '@anticrm/core'
+  import AttributeBarEditor from './AttributeBarEditor.svelte'
+
+  export let object: Doc
+  export let keys: string[]
 </script>
 
-<svg class="svg-{size}" {fill} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <path d="M12.9,2.7H3.1c-1,0-1.7,0.8-1.7,1.7v7.5c0,1,0.8,1.7,1.7,1.7h9.9c1,0,1.7-0.8,1.7-1.7V4.4C14.7,3.5,13.9,2.7,12.9,2.7z M12.9,3.7c0.1,0,0.2,0,0.3,0.1L8,7.9L2.8,3.8c0.1,0,0.2-0.1,0.3-0.1H12.9z M12.9,12.6H3.1c-0.4,0-0.7-0.3-0.7-0.7V4.7L7.7,9 C7.8,9,7.9,9.1,8,9.1S8.2,9,8.3,9l5.4-4.3v7.2C13.7,12.3,13.3,12.6,12.9,12.6z"/>
-</svg>
+<div class="flex-row-center small-text">
+  {#each keys as key}
+    <div class="column">
+      <AttributeBarEditor {key} {object} />
+    </div>
+  {/each}
+</div>
+
+<style lang="scss">
+  .column + .column {
+    position: relative;
+    margin-left: 3rem;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -1.5rem;
+      width: 1px;
+      background-color: var(--theme-bg-accent-hover);
+    }
+  }
+</style>
