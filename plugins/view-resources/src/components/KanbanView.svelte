@@ -15,23 +15,16 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, SpaceWithStates, FindOptions, State, TxBulkWrite, TxCUD, AttachedDoc } from '@anticrm/core'
+  import type { AttachedDoc, Class, Doc, FindOptions, Ref, SpaceWithStates, State, TxCUD } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox, AnyComponent } from '@anticrm/ui'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
+  import { AnyComponent, Loading, ScrollBox, showPopup } from '@anticrm/ui'
   import type { Kanban } from '@anticrm/view'
-
-  import { createQuery } from '@anticrm/presentation'
-
+  import view from '@anticrm/view'
   import KanbanPanel from './KanbanPanel.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
-  import KanbanCardEmpty from './KanbanCardEmpty.svelte'
-
-  import core from '@anticrm/core'
-  import view from '@anticrm/view'
 
   export let _class: Ref<Class<(Doc & { state: Ref<State> })>>
   export let space: Ref<SpaceWithStates>
@@ -41,31 +34,42 @@
 
   let kanban: Kanban
   let states: State[] = []
+  let rawStates: State[] = []
+
   let objects: (Doc & { state: Ref<State> })[] = []
+  let rawObjects: Doc[] = []
+  let kanbanStates: Ref<State>[] = []
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(view.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
-  function sort(states: State[]): State[] {
+  $: kanbanStates = kanban?.states ?? []
+
+  function sort (kanban: Kanban, states: State[]): State[] {
     if (kanban === undefined || states.length === 0) { return [] }
     const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
-    return kanban.states.map(id => map.get(id) as State )
+    return kanban.states.map(id => map.get(id) as State)
   }
 
-  function sortObjects<T extends Doc> (objects: T[]): T[] {
+  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): T[] {
     if (kanban === undefined || objects.length === 0) { return [] }
     const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
     const x = kanban.order.map(id => map.get(id) as T)
     return x
   }
 
+
+
   const statesQuery = createQuery()
-  $: statesQuery.query(core.class.State, { _id: { $in: kanban?.states ?? [] } }, result => { states = sort(result) })
+  $: if (kanbanStates.length > 0) statesQuery.query(core.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
+  $: states = sort(kanban, rawStates)
 
   const query = createQuery()
-  $: query.query(_class, { space }, result => { objects = sortObjects(result) }, options)
+  $: query.query(_class, { space }, result => { rawObjects = result }, options)
 
-  function dragover(ev: MouseEvent, object: Doc) {
+  $: objects = sortObjects(kanban, rawObjects)
+
+  function dragover (ev: MouseEvent, object: Doc) {
     if (dragCard !== object) {
       const dragover = objects.indexOf(object)
       objects = objects.filter(x => x !== dragCard)
@@ -75,7 +79,7 @@
 
   let currentOp: Promise<void> | undefined
 
-  async function move(to: number, state: Ref<State>) {
+  async function move (to: number, state: Ref<State>) {
     console.log('INITIAL', dragCardInitialPosition, 'TO', to)
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
@@ -84,7 +88,7 @@
       if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
         const adoc: AttachedDoc = dragCard as AttachedDoc
         // We need to update using updateCollection
-        client.updateCollection(_class, space, id as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection,  { state })
+        client.updateCollection(_class, space, id as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { state })
       } else {
         client.updateDoc(_class, space, id, { state })
       }
@@ -92,7 +96,6 @@
     }
 
     if (dragCardInitialPosition !== to) {
-
       client.updateDoc(view.class.Kanban, space, kanban._id, {
         $move: {
           order: {
@@ -110,7 +113,7 @@
       //     }
       //   }
       // }))
-      
+  
       // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
       //   $pull: {
       //     order: id
@@ -136,13 +139,13 @@
     // }
   }
 
-  function getValue(doc: Doc, key: string): any {
+  function getValue (doc: Doc, key: string): any {
     if (key.length === 0)
-      return doc
+  { return doc }
     const path = key.split('.')
     const len = path.length
     let obj = doc as any
-    for (let i=0; i<len; i++){
+    for (let i = 0; i < len; i++) {
       obj = obj?.[path[i]]
     }
     return obj
@@ -150,7 +153,7 @@
 
   const client = getClient()
 
-  function onClick(object: Doc) {
+  function onClick (object: Doc) {
     showPopup(open, { object, space }, 'float')
   }
 
@@ -158,8 +161,8 @@
   let dragCardInitialPosition: number
   let dragCardInitialState: Ref<State>
 
-  async function cardPresenter(_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
-    const clazz = client.getHierarchy().getClass(_class) 
+  async function cardPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
+    const clazz = client.getHierarchy().getClass(_class)
     const presenterMixin = client.getHierarchy().as(clazz, view.mixin.KanbanCard)
     return await getResource(presenterMixin.card)
   }
@@ -172,7 +175,7 @@
 <div class="kanban-container">
   <ScrollBox>
     <div class="kanban-content">
-      {#each states as state, i}
+      {#each states as state, i (state)}
         <KanbanPanel label={state.title} color={state.color} counter={4}
           on:dragover={(event) => {
             event.preventDefault()
@@ -181,7 +184,7 @@
             }
           }}>
           <!-- <KanbanCardEmpty label={'Create new application'} /> -->
-          {#each objects as object, j}
+          {#each objects as object, j (object)}
             {#if object.state === state._id}
               <div
                 class="step-tb75"
