@@ -15,6 +15,7 @@
 
 import core, {
   Account,
+  AttachedDoc, Collection as TypeCollection, RefTo,
   Attribute, Class, Classifier, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Interface, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
@@ -308,8 +309,15 @@ export function TypeDate (): Type<string> {
 /**
  * @public
  */
-export function TypeRef (_class: Ref<Class<Doc>>): Type<string> {
-  return { _class: _class, label: 'TypeRef' as IntlString }
+export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
+  return { _class: core.class.RefTo, to: _class, label: 'TypeRef' as IntlString }
+}
+
+/**
+ * @public
+ */
+export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>): TypeCollection<T> {
+  return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString }
 }
 
 /**
