@@ -19,7 +19,7 @@
   import type { Doc } from '@anticrm/core'
   import type { Asset } from '@anticrm/platform'
   import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-  import { Icon,IconClose,IconExpand, Component } from '@anticrm/ui'
+  import { Icon, IconClose, IconExpand, IconMoreH, Component, ActionIcon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let title: string
@@ -36,15 +36,13 @@
 
 {#if fullSize}
   <div class="leftSection">
-    <div class="flex-row-center header">
-      <div class="icon">
-        {#if typeof (icon) === 'string'}
-          <Icon {icon} size={'small'} />
-        {:else}
-          <svelte:component this={icon} size={'small'} />
-        {/if}
+    <div class="flex-between header">
+      <Icon {icon} size={'large'} />
+      <div class="flex-grow ml-4 flex-col">
+        <div class="fs-title">{title}</div>
+        <div class="small-text content-dark-color">Candidate pool name</div>
       </div>
-      <div class="title">{title}</div>
+      <ActionIcon icon={IconMoreH} size={'small'} />
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
     <div class="flex-col scroll-container">
@@ -59,14 +57,14 @@
 {:else}
   <div class="unionSection">
     <div class="flex-row-center header">
-      <div class="icon">
-        {#if typeof (icon) === 'string'}
-          <Icon {icon} size={'small'} />
-        {:else}
-          <svelte:component this={icon} size={'small'} />
-        {/if}
+      <div class="content-color">
+        <Icon {icon} size={'large'} />
       </div>
-      <div class="title">{title}</div>
+      <div class="flex-grow ml-4 flex-col">
+        <div class="fs-title">{title}</div>
+        <div class="small-text content-dark-color">Candidate pool name</div>
+      </div>
+      <ActionIcon icon={IconMoreH} size={'small'} />
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
 
@@ -101,19 +99,10 @@
 
     .header {
       flex-shrink: 0;
-      padding: 0 2.5rem 0 2rem;
+      padding: 0 2rem 0 2.5rem;
       height: 4rem;
+      color: var(--theme-content-accent-color);
       border-bottom: 1px solid var(--theme-dialog-divider);
-
-      .icon { opacity: .6; }
-      .title {
-        flex-grow: 1;
-        margin-left: .5rem;
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-        user-select: none;
-      }
     }
 
     .subtitle {
@@ -129,7 +118,9 @@
 
     display: flex;
     flex-direction: column;
-    height: max-content;    
+    height: max-content;   
+    
+    .header { padding: 0 6rem 0 2.5rem; }
   }
 
   .fullSize {
@@ -164,15 +155,10 @@
     right: 2rem;
 
     .tool {
-      margin-left: .75rem;
-      opacity: .4;
+      margin-left: 1rem;
+      color: var(--theme-content-accent-color);
       cursor: pointer;
-
-      .icon {
-        transform-origin: center center;
-        transform: scale(.75);
-      }
-      &:hover { opacity: 1; }
+      &:hover { color: var(--theme-caption-color); }
     }
   }
 

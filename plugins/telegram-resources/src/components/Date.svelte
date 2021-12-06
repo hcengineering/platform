@@ -20,18 +20,18 @@
 
 </script>
 
-<div class="message">
+<div class="datetime-container">
   {new Intl.DateTimeFormat('default', { day: 'numeric', month: 'long' }).format(message.modifiedOn)}
 </div>
 
 <style lang="scss">
-  .message {
-    background-color: var(--theme-menu-divider);
-    border-radius: .75rem;
-    padding: .5rem;
-    width: fit-content;
+  .datetime-container {
     justify-self: center;
-    text-transform: capitalize;
+    margin: .3rem 0;
+    padding: .25rem .75rem;
+    width: fit-content;
+    color: var(--theme-content-accent-color);
+    background-color: var(--theme-menu-divider);
+    border-radius: 1.25rem;
   }
-
 </style>
