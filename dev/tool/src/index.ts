@@ -18,13 +18,13 @@ import {
   ACCOUNT_DB, assignWorkspace, createAccount, createWorkspace, dropAccount, dropWorkspace, getAccount, listWorkspaces
 } from '@anticrm/account'
 import contact, { combineName } from '@anticrm/contact'
-import core from '@anticrm/core'
+import core, { TxOperations } from '@anticrm/core'
 import { program } from 'commander'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import { clearTelegramHistory } from './telegram'
-import { dumpWorkspace, initWorkspace, upgradeWorkspace } from './workspace'
+import { dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -103,24 +103,25 @@ program
       await assignWorkspace(db, email, workspace)
 
       console.log('connecting to transactor...')
-      const { connection, close } = await connect(transactorUrl, workspace)
+      const connection = await connect(transactorUrl, workspace)
+      const ops = new TxOperations(connection, core.account.System)
 
       const name = combineName(account.first, account.last)
 
       console.log('create user in target workspace...')
-      const employee = await connection.createDoc(contact.class.Employee, contact.space.Employee, {
+      const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name,
         city: 'Mountain View',
         channels: []
       })
 
       console.log('create account in target workspace...')
-      await connection.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+      await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email,
         employee,
         name
       })
-      await close()
+      await connection.close()
     })
   })
 
@@ -181,10 +182,17 @@ program
   })
 
 program
-  .command('dump-workspace <name> <fileName>')
+  .command('dump-workspace <workspace> <dirName>')
   .description('dump workspace transactions and minio resources')
-  .action(async (workspace, fileName, cmd) => {
-    return await dumpWorkspace(mongodbUri, workspace, fileName, minio)
+  .action(async (workspace, dirName, cmd) => {
+    return await dumpWorkspace(mongodbUri, workspace, dirName, minio)
+  })
+
+program
+  .command('restore-workspace <workspace> <dirName>')
+  .description('restore workspace transactions and minio resources from previous dump.')
+  .action(async (workspace, dirName, cmd) => {
+    return await restoreWorkspace(mongodbUri, workspace, dirName, minio)
   })
 
 program

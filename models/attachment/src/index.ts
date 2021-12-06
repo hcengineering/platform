@@ -23,6 +23,8 @@ import activity from '@anticrm/activity'
 import view from '@anticrm/model-view'
 import attachment from './plugin'
 
+export { attachmentOperation } from './migration'
+
 export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 
 @Model(attachment.class.Attachment, core.class.AttachedDoc, DOMAIN_ATTACHMENT)

@@ -144,3 +144,5 @@ export function createModel (builder: Builder): void {
     return await Promise.resolve()
   }).catch((err) => console.error(err))
 }
+
+export { taskOperation } from './migration'
