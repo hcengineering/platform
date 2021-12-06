@@ -113,7 +113,7 @@
     {#if navigator && visibileNav}
     <div class="panel-navigator">
       {#if currentApplication}
-        <NavHeader label={currentApplication.label} action={() => {}} />
+        <NavHeader label={currentApplication.label} />
       {/if}
       <Navigator model={navigatorModel} />
     </div>

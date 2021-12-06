@@ -61,6 +61,7 @@
     &.selected { background-color: var(--theme-button-bg-hovered); }
     &.transparent { background-color: rgba(31, 31, 37, .3); }
     &.primary {
+      color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);
       border-color: var(--primary-button-border);
       &:hover { background-color: var(--primary-button-hovered); }

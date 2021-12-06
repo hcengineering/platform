@@ -27,7 +27,7 @@
   </div>
   {#if vacancy}
     <div class="name">{vacancy.name}</div>
-    <div class="description">{vacancy.description}</div>
+    <div class="description">{vacancy.description ?? ''}</div>
   {/if}
 </div>
 

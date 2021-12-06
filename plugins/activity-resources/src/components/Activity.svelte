@@ -56,8 +56,8 @@
 
 {#if fullSize}
   <div class="flex-row-center header">
-    <div class="icon"><IconActivity size={'small'} /></div>
-    <div class="title">Activity</div>
+    <div class="flex-center icon"><IconActivity size={'small'} /></div>
+    <div class="fs-title">Activity</div>
   </div>
   <div class="flex-col h-full right-content">
     <ScrollBox vertical stretch>
@@ -78,8 +78,8 @@
         <slot />
       </div>
       <div class="flex-row-center activity header">
-        <div class="icon"><IconActivity size={'small'} /></div>
-        <div class="title">Activity</div>
+        <div class="flex-center icon"><IconActivity size={'small'} /></div>
+        <div class="fs-title">Activity</div>
       </div>
       <div class="flex-col activity content">
         {#if txes}
@@ -103,15 +103,12 @@
     border-bottom: 1px solid var(--theme-card-divider);
 
     .icon {
-      opacity: 0.6;
-    }
-    .title {
-      flex-grow: 1;
-      margin-left: 0.5rem;
-      font-weight: 500;
-      font-size: 1rem;
+      margin-right: 1rem;
+      width: 2.25rem;
+      height: 2.25rem;
       color: var(--theme-caption-color);
-      user-select: none;
+      background-color: var(--primary-button-enabled);
+      border-radius: 50%;
     }
   }
   .activity {
@@ -133,7 +130,7 @@
 
   .right-content {
     flex-grow: 1;
-    padding: 2.25rem 2.5rem 0;
+    padding: 1.5rem 2.5rem 0;
     background-color: var(--theme-dialog-accent);
   }
 

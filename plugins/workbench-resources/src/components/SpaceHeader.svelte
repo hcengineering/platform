@@ -61,8 +61,8 @@
     grid-auto-columns: min-content;
     gap: .75rem;
     align-items: center;
-    padding: 0 2rem 0 2.5rem;
-    height: 4.5rem;
-    min-height: 4.5rem;
+    padding: 0 1.75rem 0 2.5rem;
+    height: 4rem;
+    min-height: 4rem;
   }
 </style>

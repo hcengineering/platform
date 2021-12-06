@@ -20,48 +20,44 @@
   import Icon from './Icon.svelte'
   import Tooltip from './Tooltip.svelte'
 
-  export let label: IntlString
+  export let label: IntlString = '' as IntlString
   export let direction: TooltipAligment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
-  export let action: (ev?: Event) => Promise<void> | void
+  export let action: (ev?: Event) => Promise<void> | void = async () => { }
   export let invisible: boolean = false
 </script>
 
 <Tooltip {label} {direction}>
   <button class="button {size}" on:click|stopPropagation={action}>
     <div class="icon {size}" class:invisible={invisible}>
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} {size}/>
-      {:else}
-        <svelte:component this={icon} size={size} />
-      {/if}
+      <Icon {icon} {size}/>
     </div>
   </button>
 </Tooltip>
 
 <style lang="scss">
   .button {
-    color: var(--theme-caption-color);
+    color: inherit;
     border-radius: .125rem;
     cursor: pointer;
 
     .icon {
       // transform-origin: center center;
       // transform: scale(.75);
-      color: var(--theme-content-trans-color);
-      &.invisible {
-        opacity: 0;
-      }
+      // color: var(--theme-content-trans-color);
+      &.invisible { opacity: 0; }
     }
     &:hover .icon {
       color: var(--theme-caption-color);
+      opacity: 1;
     }
     &:focus {
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
       .icon {
         color: var(--theme-caption-color);
+        opacity: 1;
       }
     }
   }
