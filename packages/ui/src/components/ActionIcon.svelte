@@ -20,11 +20,11 @@
   import Icon from './Icon.svelte'
   import Tooltip from './Tooltip.svelte'
 
-  export let label: IntlString
+  export let label: IntlString = '' as IntlString
   export let direction: TooltipAligment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
-  export let action: (ev?: Event) => Promise<void> | void
+  export let action: (ev?: Event) => Promise<void> | void = async () => { }
   export let invisible: boolean = false
 </script>
 
