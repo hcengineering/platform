@@ -39,13 +39,13 @@
     "commander": "^8.1.0",
     "@anticrm/account": "~0.6.0",
     "jwt-simple": "^0.5.6",
-    "@anticrm/contrib": "~0.6.0",
     "@anticrm/core": "~0.6.11",
     "@anticrm/contact": "~0.6.2",
-    "@anticrm/workspace": "~0.6.0",
     "minio": "^7.0.19",
     "@anticrm/model-all": "~0.6.0",
     "@anticrm/model-telegram": "~0.6.0",
-    "@anticrm/telegram": "~0.6.0"
+    "@anticrm/telegram": "~0.6.0",
+    "@anticrm/client-resources": "~0.6.4",
+    "ws": "~8.3.0"
   }
 }

@@ -155,7 +155,11 @@ describe('mongo operations', () => {
     const serverStorage = await createServerStorage(conf)
 
     client = await createClient(async (handler) => {
-      return await Promise.resolve(serverStorage)
+      return {
+        findAll: async (_class, query, options) => await serverStorage.findAll(_class, query, options),
+        tx: async (tx) => await serverStorage.tx(tx),
+        close: async () => {}
+      }
     })
 
     operations = new TxOperations(client, core.account.System)

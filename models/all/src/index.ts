@@ -19,7 +19,7 @@ import { createModel as coreModel } from '@anticrm/model-core'
 import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as contactModel } from '@anticrm/model-contact'
-import { createModel as taskModel } from '@anticrm/model-task'
+import { createModel as taskModel, upgradeModel as upgradeTask } from '@anticrm/model-task'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as settingModel } from '@anticrm/model-setting'
@@ -32,6 +32,7 @@ import { createModel as serverViewModel } from '@anticrm/model-server-view'
 import { createModel as activityModel } from '@anticrm/model-activity'
 
 import { createDemo } from '@anticrm/model-demo'
+import { TxOperations } from '@anticrm/core'
 
 const builder = new Builder()
 
@@ -54,3 +55,5 @@ serverViewModel(builder)
 createDemo(builder)
 
 export default builder
+
+export const upgrades: ((client: TxOperations) => Promise<void>) [] = [upgradeTask]

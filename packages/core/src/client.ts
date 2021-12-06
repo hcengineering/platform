@@ -32,7 +32,13 @@ export type TxHander = (tx: Tx) => void
 /**
  * @public
  */
-export interface Client extends Storage {
+export interface Closable {
+  close: () => Promise<void>
+}
+/**
+ * @public
+ */
+export interface Client extends Storage, Closable {
   notify?: (tx: Tx) => void
   getHierarchy: () => Hierarchy
   getModel: () => ModelDb
@@ -46,7 +52,7 @@ export interface Client extends Storage {
 class ClientImpl implements Client {
   notify?: (tx: Tx) => void
 
-  constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage) {
+  constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: Storage & Closable) {
   }
 
   getHierarchy (): Hierarchy { return this.hierarchy }
@@ -90,13 +96,17 @@ class ClientImpl implements Client {
     }
     this.notify?.(tx)
   }
+
+  async close (): Promise<void> {
+    await this.conn.close()
+  }
 }
 
 /**
  * @public
  */
 export async function createClient (
-  connect: (txHandler: TxHander) => Promise<Storage>
+  connect: (txHandler: TxHander) => Promise<Storage & Closable>
 ): Promise<Client> {
   let client: ClientImpl | null = null
   let txBuffer: Tx[] | undefined = []

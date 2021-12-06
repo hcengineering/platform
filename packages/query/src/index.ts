@@ -65,6 +65,10 @@ export class LiveQuery extends TxProcessor implements Client {
     this.client = client
   }
 
+  async close (): Promise<void> {
+    return await this.client.close()
+  }
+
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
   }
@@ -120,12 +124,13 @@ export class LiveQuery extends TxProcessor implements Client {
       callback: callback as (result: Doc[]) => void
     }
     this.queries.push(q)
+    const stack = new Error().stack
     result
       .then((result) => {
         q.callback(result)
       })
-      .catch((err) => {
-        console.log('failed to update Live Query: ', err)
+      .catch((err: any) => {
+        console.log('failed to update Live Query: ', err, stack)
       })
 
     return () => {

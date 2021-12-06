@@ -314,6 +314,26 @@ dependencies:
 
 packages:
 
+  /@anticrm/core/0.6.13:
+    resolution: {integrity: sha512-/JvPMWJe74ePaiQKn4HJaCf1L8bnCHMuOCMAtcWtu1p9eB9Z4H/fGpw47je1xaStQAzn8V4rDFHBokWNqwLLHw==}
+    dependencies:
+      '@anticrm/platform': 0.6.5
+      just-clone: 3.2.1
+    dev: false
+
+  /@anticrm/platform/0.6.5:
+    resolution: {integrity: sha512-NwRA+s2mvqrt045NYrXXjCi/FB7uw9DFnmVqvVt4zozs8HsWtjQlQ7UPQjaqFV4rVZix6LTIGWmHAnvEGwOD5A==}
+    dependencies:
+      intl-messageformat: 9.7.1
+    dev: false
+
+  /@anticrm/workspace/0.6.0:
+    resolution: {integrity: sha512-lwAFFcWCzO+Q0nwB4i9jk1J16knNgSPmzHEoGb3Q86kLqRvVlaTH+aTk3wK1IXzMqDwZjGGWj+U4Oj2AdMswyg==}
+    dependencies:
+      '@anticrm/core': 0.6.13
+      mongodb: 4.1.3
+    dev: false
+
   /@babel/code-frame/7.12.11:
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
     dependencies:
@@ -9398,8 +9418,8 @@ packages:
         optional: true
     dev: false
 
-  /ws/8.2.3:
-    resolution: {integrity: sha512-wBuoj1BDpC6ZQ1B7DWQBYVLphPWkm8i9Y0/3YdHjHKHiohOJ1ws+3OccDWtH+PoC9DZD5WOTrJvNbWvjS6JWaA==}
+  /ws/8.3.0:
+    resolution: {integrity: sha512-Gs5EZtpqZzLvmIM59w4igITU57lrtYVFneaa434VROv4thzJyV6UjIL3D42lslWlI+D4KzLYnxSwtfuiO79sNw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -9801,7 +9821,7 @@ packages:
       eslint-plugin-promise: 5.1.1_eslint@7.32.0
       prettier: 2.4.1
       typescript: 4.4.3
-      ws: 8.2.3
+      ws: 8.3.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -10134,7 +10154,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-CmX0IDsPS79BtfPfKmxiiV8RYuxi+tx7r0UWxqk5zhln5FHF6Fi+cuuUyDmGZ6lYWp8x2q6reBcUdU8WRyJBEg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-eIW+QawzHhuifmrQp4h14fovpjmURIYLHS5q44FP87gajgNpTs+FuNBpvlUFVnK/nmHaKjOtRFVXXO4S16cAcQ==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -10243,7 +10263,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-tvZVIcVZxLJTwI6RVvuk1XXGOGcMji5VFeDQCzhJSif+2dPJIQHEe/HrxNKArqvOXhGyOaA6zbUpftdlAxjQ+A==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-Ja9/9aH8v2JSQzsEtuxG7DFOOB405EoASN2ex9S31NYhYqgIqM8ZaRi5McthYz1e4gkyWFWtOCTHbBccNNOvLg==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -10388,7 +10408,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-7NTZP389oZgueMDG5WTRhgRWuT3VehxnJ5BqV2uWd/M8Yq8SGyIvyqN1vYiRBSkbksGcc+AMxbenH9eGZESB0g==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-AjQvZTFE3GR6hQkU4jFA9M0bJhQhiiBIaZdW+2ALaj3xwAzolD6eSStCUWVWIZgj9uJTSfT8oGTiIw+iISB61Q==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -10735,7 +10755,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-nYgz+aOKNZBwy/q+w0H+/YSchx4IUQZOsnQJka38VLb8V35Oa9HoHDH5GgF79P+af2fN/pkeaR7T0+zhLd8DFQ==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-QyW+pkehvNOEfQL1YqIR/TdE3sNWqhEYYFcIUwl3hJUHG2OnQRce8WOgzFFnC9Vf4ZabkE+bMmjPREpEetOcAw==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -10955,7 +10975,7 @@ packages:
       jwt-simple: 0.5.6
       prettier: 2.4.1
       typescript: 4.4.3
-      ws: 8.2.3
+      ws: 8.3.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -10995,7 +11015,7 @@ packages:
     dev: false
 
   file:projects/setting-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-e9o9HTlJB1bBfRUN5KLhi/nJVaQqV1iFxOvISqV4hCLdMvf0+Yl7LkFqymZj9Oj277JV1HhO+VpSyPORtJcWaA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-I85L1AQz7schJl8/PKyTjw+/svzxhQ9xnlHSQQnMffB1cSQ265P1v7Zt+NERnsqLGD/l3c59nqXep8JrSDf/Tw==, tarball: file:projects/setting-resources.tgz}
     id: file:projects/setting-resources.tgz
     name: '@rush-temp/setting-resources'
     version: 0.0.0
@@ -11056,7 +11076,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-ClICw/CPw4rPYLvKabxpF44rmJKWLI61xTB4FSA75L9FamuJKV73Ncoo0/c5qhxGNcsd2fe1gHTjg6CYGqP1Lg==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-sPfAMSXisFiYJzHMqrsXJ1hN078pUhJbhRJTTtkvnQedDSE8B49p2HwsIJ5ECPpc6Fuhr8wPP5hi4s8esRdzqw==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -11091,7 +11111,7 @@ packages:
     dev: false
 
   file:projects/task.tgz:
-    resolution: {integrity: sha512-yDiMMdXUoCo8/NLkpVdY8exQeuOaf18h+ICzhIEgyYjgEYmPxGCWVZ2qcOgWxEFJkEi6K7Gz5Fbz5wLpfVTD4g==, tarball: file:projects/task.tgz}
+    resolution: {integrity: sha512-Yi88o15ExlXV9xqFXzpmi4I5OjnnY7l6SiQasIC7HqKc5/lG4KFvw/dlZHsFnEbRw3Zxa+laq9MejSMqLEzEVw==, tarball: file:projects/task.tgz}
     name: '@rush-temp/task'
     version: 0.0.0
     dependencies:
@@ -11111,7 +11131,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-k/x0wCwvORFOunkF3rKo5EFEPe7nWrKS75N1NBdm8owykYAie8gLNjOYcmupxe5k237nE7gEeVt4ak9lopwh6w==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-ZneaA8uvCmjuSf+zjIrPM1lzhi1At5Giud4UOzKwz2o0lrC4+npRTtCIZ52ZKjjNoOTmgf/hr9RYrqwCMH+z4g==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -11242,10 +11262,11 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-M+CDNILEFBM+3jv4zU/2ImCQ0wcl2VfMRwI2Ls7ZhXko/+WN5VP4efG2LqK3aer/i3rpCr6gm+nDko7nWtwCZw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-trtuRv8WOxtP7g6+5hqJFhcIO/APD10wyWJN+6o/jYguz03jcGvwupR1qAu4oLv0RCtmqvJZewEHdiQ//sIL1g==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
+      '@anticrm/workspace': 0.6.0
       '@rushstack/heft': 0.41.1
       '@types/heft-jest': 1.0.2
       '@types/minio': 7.0.10
@@ -11265,10 +11286,13 @@ packages:
       prettier: 2.4.1
       ts-node: 10.2.1_8304ecd715830f7c190b4d1dea90b100
       typescript: 4.4.3
+      ws: 8.3.0
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
+      - bufferutil
       - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/ui.tgz_476f694f64637160ae71e12ff57815b9:

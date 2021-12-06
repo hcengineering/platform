@@ -104,9 +104,14 @@ class SessionManager {
 async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promise<void> {
   const request = readRequest(msg)
   const f = (service as any)[request.method]
-  const result = await f.apply(service, request.params)
-  const resp = { id: request.id, result }
-  ws.send(serialize(resp))
+  try {
+    const result = await f.apply(service, request.params)
+    const resp = { id: request.id, result }
+    ws.send(serialize(resp))
+  } catch (err: any) {
+    const resp = { id: request.id, error: err }
+    ws.send(serialize(resp))
+  }
 }
 
 /**

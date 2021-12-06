@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander, TxResult } from '@anticrm/core'
+import type { Class, Closable, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander, TxResult } from '@anticrm/core'
 import type { ReqId } from '@anticrm/platform'
-import { serialize, readResponse } from '@anticrm/platform'
+import { readResponse, serialize } from '@anticrm/platform'
 
 class DeferredPromise {
   readonly promise: Promise<any>
@@ -30,22 +30,28 @@ class DeferredPromise {
   }
 }
 
-class Connection implements Storage {
+class Connection implements Storage, Closable {
   private websocket: WebSocket | null = null
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
+  private readonly interval: number
 
-  constructor (private readonly url: string, private readonly handler: TxHander) {
+  constructor (private readonly url: string, private readonly handler: TxHander, private readonly factory?: (url: string) => any) {
     console.log('connection created')
-    setInterval(() => {
+    this.interval = setInterval(() => {
       console.log('ping')
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.sendRequest('ping')
     }, 10000)
   }
 
+  async close (): Promise<void> {
+    clearInterval(this.interval)
+    this.websocket?.close()
+  }
+
   private openConnection (): Promise<WebSocket> {
-    const websocket = new WebSocket(this.url)
+    const websocket = this.factory !== undefined ? this.factory(this.url) : new WebSocket(this.url)
     websocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
@@ -71,7 +77,7 @@ class Connection implements Storage {
       websocket.onopen = () => {
         resolve(websocket)
       }
-      websocket.onerror = (event) => {
+      websocket.onerror = (event: any) => {
         console.log('client websocket error', event)
         reject(new Error('websocket error'))
       }
@@ -103,6 +109,6 @@ class Connection implements Storage {
 /**
  * @public
  */
-export async function connect (url: string, handler: TxHander): Promise<Storage> {
-  return new Connection(url, handler)
+export async function connect (url: string, handler: TxHander, factory?: (url: string) => any): Promise<Storage & Closable> {
+  return new Connection(url, handler, factory)
 }

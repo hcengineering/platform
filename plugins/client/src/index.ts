@@ -33,7 +33,7 @@ export type ClientHook = (client: Client) => Promise<Client>
 /**
  * @public
  */
-export type ClientFactory = (token: string, endpoint: string) => Promise<Client>
+export type ClientFactory = (token: string, endpoint: string, factory?: (url: string) => any) => Promise<Client>
 
 export default plugin(clientId,
   {

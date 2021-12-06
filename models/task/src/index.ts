@@ -25,6 +25,7 @@ import type { IntlString } from '@anticrm/platform'
 import type { Project, Task } from '@anticrm/task'
 import { createProjectKanban } from '@anticrm/task'
 import task from './plugin'
+import { TxOperations } from '@anticrm/core'
 
 @Model(task.class.Project, core.class.SpaceWithStates)
 @UX('Project' as IntlString, task.icon.Task)
@@ -120,7 +121,7 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        assignee: contact.class.EmployeeAccount,
+        assignee: contact.class.Employee,
         state: core.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
@@ -142,4 +143,21 @@ export function createModel (builder: Builder): void {
     builder.createDoc(_class, space, data, id)
     return await Promise.resolve()
   }).catch((err) => console.error(err))
+}
+
+export async function upgradeModel (client: TxOperations): Promise<void> {
+  if (await client.findOne(view.class.Sequence, { attachedTo: task.class.Task }) === undefined) {
+    console.info('Create sequence for default task project.')
+    // We need to create sequence
+    await client.createDoc(view.class.Sequence, view.space.Sequence, {
+      attachedTo: task.class.Task,
+      sequence: 0
+    })
+  }
+  if (await client.findOne(view.class.Kanban, { attachedTo: task.space.TasksPublic }) === undefined) {
+    console.info('Create kanban for default task project.')
+    createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
+      await client.createDoc(_class, space, data, id)
+    }).catch((err) => console.error(err))
+  }
 }

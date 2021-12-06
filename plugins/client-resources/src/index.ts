@@ -31,12 +31,12 @@ export default async () => {
 
   return {
     function: {
-      GetClient: async (token: string, endpoint: string): Promise<Client> => {
+      GetClient: async (token: string, endpoint: string, factory?: (url: string) => any): Promise<Client> => {
         if (client === undefined) {
           client = await createClient((handler: TxHander) => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
-            return connect(url.href, handler)
+            return connect(url.href, handler, factory)
           })
 
           // Check if we had dev hook for client.

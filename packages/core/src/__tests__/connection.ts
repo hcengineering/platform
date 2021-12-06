@@ -21,8 +21,9 @@ import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
+import { Closable } from '../client'
 
-export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
+export async function connect (handler: (tx: Tx) => void): Promise<Storage & Closable> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -50,6 +51,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
       const result = await Promise.all([model.tx(tx), transactions.tx(tx)])
       return result[0]
       // handler(tx) - we have only one client, should not update?
-    }
+    },
+    close: async () => {}
   }
 }
