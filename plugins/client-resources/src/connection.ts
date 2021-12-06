@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Storage, Tx, TxHander, TxResult } from '@anticrm/core'
-import type { ReqId } from '@anticrm/platform'
-import { serialize, readResponse } from '@anticrm/platform'
+import client, { ClientSocket } from '@anticrm/client'
+import type { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxHander, TxResult } from '@anticrm/core'
+import { getMetadata, readResponse, ReqId, serialize } from '@anticrm/platform'
 
 class DeferredPromise {
   readonly promise: Promise<any>
@@ -30,22 +30,30 @@ class DeferredPromise {
   }
 }
 
-class Connection implements Storage {
-  private websocket: WebSocket | null = null
+class Connection implements ClientConnection {
+  private websocket: ClientSocket | null = null
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
+  private readonly interval: number
 
   constructor (private readonly url: string, private readonly handler: TxHander) {
     console.log('connection created')
-    setInterval(() => {
-      console.log('ping')
+    this.interval = setInterval(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.sendRequest('ping')
     }, 10000)
   }
 
-  private openConnection (): Promise<WebSocket> {
-    const websocket = new WebSocket(this.url)
+  async close (): Promise<void> {
+    clearInterval(this.interval)
+    this.websocket?.close()
+  }
+
+  private openConnection (): Promise<ClientSocket> {
+    // Use defined factory or browser default one.
+    const clientSocketFactory = getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
+
+    const websocket = clientSocketFactory(this.url)
     websocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
@@ -71,7 +79,7 @@ class Connection implements Storage {
       websocket.onopen = () => {
         resolve(websocket)
       }
-      websocket.onerror = (event) => {
+      websocket.onerror = (event: any) => {
         console.log('client websocket error', event)
         reject(new Error('websocket error'))
       }
@@ -103,6 +111,6 @@ class Connection implements Storage {
 /**
  * @public
  */
-export async function connect (url: string, handler: TxHander): Promise<Storage> {
+export async function connect (url: string, handler: TxHander): Promise<ClientConnection> {
   return new Connection(url, handler)
 }

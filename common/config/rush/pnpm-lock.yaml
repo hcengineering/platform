@@ -112,7 +112,6 @@ specifiers:
   '@types/minio': ^7.0.10
   '@types/toposort': ^2.0.3
   '@types/uuid': ^8.3.1
-  '@types/ws': ^7.4.7
   '@typescript-eslint/eslint-plugin': ^5.4.0
   autoprefixer: ^10.2.6
   commander: ^8.1.0
@@ -272,7 +271,6 @@ dependencies:
   '@types/minio': 7.0.10
   '@types/toposort': 2.0.3
   '@types/uuid': 8.3.1
-  '@types/ws': 7.4.7
   '@typescript-eslint/eslint-plugin': 5.4.0_eslint@7.32.0+typescript@4.4.3
   autoprefixer: 10.3.7_postcss@8.3.9
   commander: 8.2.0
@@ -1812,6 +1810,12 @@ packages:
 
   /@types/ws/7.4.7:
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
+    dependencies:
+      '@types/node': 16.10.3
+    dev: false
+
+  /@types/ws/8.2.1:
+    resolution: {integrity: sha512-SqQ+LhVZaJi7c7sYVkjWALDigi/Wy7h7Iu72gkQp8Y8OWw/DddEVBrTSKu86pQftV2+Gm8lYM61hadPKqyaIeg==}
     dependencies:
       '@types/node': 16.10.3
     dev: false
@@ -9733,7 +9737,7 @@ packages:
     dev: false
 
   file:projects/chunter.tgz:
-    resolution: {integrity: sha512-D/Ar+jZ9VwOidVBlO8Kh18DjmojP9ILhHojkN4NsoZ9t1ZoJ8/qiiq3TrEm81KHDqb1NyOm+Bcr8TlhkjchB2g==, tarball: file:projects/chunter.tgz}
+    resolution: {integrity: sha512-xOX07B2Da1f9nijib0VIqW0GNHn3xNwZI3vr7djeIXyvjLCOIXxTATPF0J6q36/AApKTG5SQyRpiFQ1InU9pHA==, tarball: file:projects/chunter.tgz}
     name: '@rush-temp/chunter'
     version: 0.0.0
     dependencies:
@@ -9799,7 +9803,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-7wNt7czMMNeogqSzQY1zCG/iOrTKKY6R52gyFcBxxBGUJtRWj7b7s8JtJ137tP0jZTcLlzhd99utKewQ/BkxQQ==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-I563510HapGECL9TC1qo8OQsLhKaMl/ttdIWN6vL+XOPcJY+YnmLrMmo0UNMcbCo8liNfvrNmjgbnjpSdl2ikg==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -10250,7 +10254,7 @@ packages:
     dev: false
 
   file:projects/model-chunter.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-iB/GGhZOSuGpbKDb2jrxcj5dvndn1Hy61BV3dSxrZf/lBCoaA4SZfd66gWsdBsv17AOMmaWUvFJxxR5S6J2yfg==, tarball: file:projects/model-chunter.tgz}
+    resolution: {integrity: sha512-NoUF0E2WHE7tfG42VyE11efk61UzUHi0Y2pv4QziQVN6uskIzrnS3xUbSRPyEYff9HvffxDJEB5+Ac73rtuPZQ==, tarball: file:projects/model-chunter.tgz}
     id: file:projects/model-chunter.tgz
     name: '@rush-temp/model-chunter'
     version: 0.0.0
@@ -10271,7 +10275,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-85D68dBZHoPJbRnEythE2CGzp1qbwJ3ynLnBaf3TtNvlgukH1NT15fp2zD8W/4RK9QIscv65yO9gAjTeqjxHUw==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-qZPBOQC2Oi/Qxpjt91OM1tGBPwShe2SLIHKmDNGSsk79zzdmW3+ZDrge4VVrK/ngc5P2fJQwpQRXgOkNgz2vnA==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -10334,7 +10338,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-Ja9/9aH8v2JSQzsEtuxG7DFOOB405EoASN2ex9S31NYhYqgIqM8ZaRi5McthYz1e4gkyWFWtOCTHbBccNNOvLg==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-LgqXtVecQ6ZdlAb4ufvWI+kDIeeMFtm/5mXvUXBbGsmg07rCa4tsqfm9uwecj6TvpaPYC3mlyYv/N316VeKeGA==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -10479,7 +10483,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-AjQvZTFE3GR6hQkU4jFA9M0bJhQhiiBIaZdW+2ALaj3xwAzolD6eSStCUWVWIZgj9uJTSfT8oGTiIw+iISB61Q==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-WzEdSzLqN2Fj+TXMdy9pLEsBPMjqlz6eT2nQLwwQgRyPcT6S6qAbEgqTiPZmk10vW2/qA5X6DDAf82yC/8zVJA==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -11333,7 +11337,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-FFa7jbNSC9W0iRlRnNLYvlhWQUYLgCBbgIFsG9Bw0aWy6s8h1EGfJi5cC4b4z31MprdgXh9egR/cpi29fs7bHg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-klTUXsaa1dlq4wR1u+u3vJ8Vh8Z+StBadUgTZ1r0aqYjVXx9npJFqF+PHucl2LbZ0gDeHqC7crbxfGuui9na1Q==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -11341,6 +11345,7 @@ packages:
       '@types/heft-jest': 1.0.2
       '@types/minio': 7.0.10
       '@types/node': 16.10.3
+      '@types/ws': 8.2.1
       '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
       '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
       commander: 8.2.0
@@ -11356,10 +11361,13 @@ packages:
       prettier: 2.4.1
       ts-node: 10.2.1_8304ecd715830f7c190b4d1dea90b100
       typescript: 4.4.3
+      ws: 8.2.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
+      - bufferutil
       - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/ui.tgz_476f694f64637160ae71e12ff57815b9:

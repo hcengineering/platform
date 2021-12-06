@@ -14,24 +14,22 @@
 // limitations under the License.
 //
 
-import { MongoClient, Document } from 'mongodb'
-import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import { createContributingClient } from '@anticrm/contrib'
-import { encode } from 'jwt-simple'
-import { BucketItem, Client } from 'minio'
 import contact from '@anticrm/contact'
-
+import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import builder from '@anticrm/model-all'
 import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
+import { BucketItem, Client } from 'minio'
+import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
+import { connect } from './connect'
 
 const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 
 /**
  * @public
  */
-export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl: string, minio: Client): Promise<void> {
+export async function initWorkspace (mongoUrl: string, dbName: string, transactorUrl: string, minio: Client): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -47,13 +45,12 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
 
     console.log('creating data...')
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
-    const token = encode({ email: 'anticrm@hc.engineering', workspace: dbName }, 'secret')
-    const url = new URL(`/${token}`, clientUrl)
-    const contrib = await createContributingClient(url.href)
+
+    const { connection, close } = await connect(transactorUrl, dbName)
     for (const tx of data) {
-      await contrib.tx(tx)
+      await connection.tx(tx)
     }
-    contrib.close()
+    await close()
 
     console.log('create minio bucket')
     if (!(await minio.bucketExists(dbName))) {
@@ -70,7 +67,7 @@ export async function initWorkspace (mongoUrl: string, dbName: string, clientUrl
 export async function upgradeWorkspace (
   mongoUrl: string,
   dbName: string,
-  clientUrl: string,
+  transactorUrl: string,
   minio: Client
 ): Promise<void> {
   const client = new MongoClient(mongoUrl)

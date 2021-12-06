@@ -13,16 +13,17 @@
 // limitations under the License.
 //
 
-import type { Storage, DocumentQuery, FindResult, TxResult } from '../storage'
 import type { Class, Doc, Ref } from '../classes'
-import type { Tx } from '../tx'
+import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
+import type { DocumentQuery, FindResult, TxResult } from '../storage'
+import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
+export async function connect (handler: (tx: Tx) => void): Promise<ClientConnection> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -50,6 +51,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
       const result = await Promise.all([model.tx(tx), transactions.tx(tx)])
       return result[0]
       // handler(tx) - we have only one client, should not update?
-    }
+    },
+    close: async () => {}
   }
 }

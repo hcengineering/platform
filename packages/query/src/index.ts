@@ -65,6 +65,10 @@ export class LiveQuery extends TxProcessor implements Client {
     this.client = client
   }
 
+  async close (): Promise<void> {
+    return await this.client.close()
+  }
+
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
   }

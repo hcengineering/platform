@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import type { Tx, Storage, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxHander, ServerStorage, TxResult } from '@anticrm/core'
+import type { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxHander, TxResult } from '@anticrm/core'
 import { DOMAIN_TX } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import { protoDeserialize, protoSerialize } from '@anticrm/platform'
 import type { DbConfiguration } from '@anticrm/server-core'
-import { protoSerialize, protoDeserialize } from '@anticrm/platform'
+import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 
-class ServerStorageWrapper implements Storage {
+class ServerStorageWrapper implements ClientConnection {
   constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
 
   findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
@@ -34,6 +34,8 @@ class ServerStorageWrapper implements Storage {
     for (const tx of derived) { this.handler(tx) }
     return result
   }
+
+  async close (): Promise<void> {}
 }
 
 class NullFullTextAdapter implements FullTextAdapter {
@@ -54,7 +56,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
   return new NullFullTextAdapter()
 }
 
-export async function connect (handler: (tx: Tx) => void): Promise<Storage> {
+export async function connect (handler: (tx: Tx) => void): Promise<ClientConnection> {
   const conf: DbConfiguration = {
     domains: {
       [DOMAIN_TX]: 'InMemoryTx'
