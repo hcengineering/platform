@@ -28,5 +28,6 @@ import { plugin } from '@anticrm/platform'
      Minutes: '' as IntlString,
      Hours: '' as IntlString,
      Days: '' as IntlString,
+     Clear: '' as IntlString
    }
  })

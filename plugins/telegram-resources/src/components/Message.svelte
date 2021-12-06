@@ -41,48 +41,32 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class={message.incoming ? "flex-between" : "flex-row-center"} class:outcoming={!message.incoming} on:click={() => { dispatch('select', message) }}>
-  <div class="message" class:incoming={message.incoming} class:mr-4={selectable} class:selected>
-    {#if name}
-      <div class="name" style="color: {getNameColor(name)}">{formatName(name)}</div>
-    {/if}
-    <div class="flex">
-      <div class="text"><MessageViewer message={message.content}/></div>
-      <div class="time">{new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric'})}</div>
+<div class="flex-between" class:selectable on:click|preventDefault={() => { dispatch('select', message) }}>
+  <div class="flex-grow ml-6 flex" class:mr-6={!selectable} class:justify-end={!message.incoming}>
+    <div class="message" class:outcoming={!message.incoming} class:selected>
+      <!-- {#if name}
+        <div class="name" style="color: {getNameColor(name)}">{formatName(name)}</div>
+      {/if} -->
+      <div class="flex">
+        <div class="caption-color mr-4"><MessageViewer message={message.content}/></div>
+        <div class="time">{new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric'})}</div>
+      </div>
     </div>
   </div>
   {#if selectable}
-    <div class="check">
-      <CheckBox circle primaryColor bind:checked={selected} />
-    </div>
+    <div class="ml-4 mr-1"><CheckBox circle primary bind:checked={selected} /></div>
   {/if}
 </div>
 
 <style lang="scss">
-  .outcoming {
-    justify-content: end;
-  }
-
   .message {
+    padding: .5rem .75rem;
     max-width: 66%;
-    border-radius: .75rem;
-    padding: .75rem;
     width: fit-content;
-    background-color: rgba(67, 67, 72, .6);
+    background-color: var(--theme-incoming-msg);
+    border-radius: .75rem;
 
-    &.incoming {
-      background-color: rgba(67, 67, 72, .3);
-    }
-
-    &.selected {
-      background-color: var(--primary-button-enabled) !important;
-    }
-
-    .text {
-      color: var(--theme-caption-color);
-      margin-right: 1.25rem;
-    }
-
+    &.outcoming { background-color: var(--theme-outcoming-msg); }
     .time {
       align-self: flex-end;
       margin-left: auto;
@@ -92,8 +76,9 @@
     }
   }
 
-  .check {
-    justify-self: flex-end;
+  .selectable {
+    margin: 0 .25rem 0 0;
+    cursor: pointer;
+    .selected { background-color: var(--primary-button-enabled); }
   }
-
 </style>

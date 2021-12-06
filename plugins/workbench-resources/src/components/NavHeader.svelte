@@ -19,26 +19,17 @@
   import workbench from '../plugin'
 
   export let label: IntlString
-  export let action: () => Promise<void> | void
+  // export let action: () => Promise<void> | void
 </script>
 
-<div class="container">
-  <span class="overflow-label label"><Label {label}></Label></span>
-  <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/>
+<div class="flex-between navheader-container">
+  <span class="fs-title overflow-label"><Label {label}></Label></span>
+  <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .navheader-container {
     padding: 0 1.75rem;
-    height: 4.5rem;
-
-    .label {
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--theme-caption-color);
-    }
+    height: 4rem;
   }
 </style>

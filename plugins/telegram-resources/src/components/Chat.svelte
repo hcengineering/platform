@@ -21,7 +21,7 @@
   import type { TelegramMessage } from '@anticrm/telegram'
   import type { Contact, EmployeeAccount } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { ActionIcon, IconShare, Button, Grid, ScrollBox, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconShare, Button, Grid, ScrollBox, showPopup, CircleButton } from '@anticrm/ui'
   import Message from './Message.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
@@ -181,15 +181,14 @@
 </script>
 
 <div class="flex-between header">
-  <div class="flex">
-    <div class="icon"><TelegramIcon size={'small'} /></div>
-    <div class="title">Telegram</div>
+  <div class="flex-center icon"><div class="scale-75"><TelegramIcon size={'small'} /></div></div>
+  <div class="flex-grow flex-col">
+    <div class="fs-title">Telegram</div>
+    <div class="small-text content-dark-color">You and Anastasia</div>
   </div>
-  <div>
-    <ActionIcon icon={IconShare} size='medium' label='Share messages' direction='bottom' action={() => { selectable = !selectable }} />
-  </div>
+  <ActionIcon icon={IconShare} size={'medium'} label={'Share messages'} direction={'bottom'} action={async () => { selectable = !selectable }} />
 </div>
-<div class="flex-col h-full right-content">
+<div class="h-full right-content">
   <ScrollBox vertical stretch>
     {#if messages}
       <Grid column={1} rowGap={.3}>
@@ -210,18 +209,18 @@
       <span>{selected.length} messages selected</span>
       <div class="flex">
         <div>
-          <Button label='Cancel' on:click={clear} />
+          <Button label={'Cancel'} size={'small'} on:click={clear} />
         </div>
         <div class="ml-3">
-          <Button label='Publish selected' primary disabled={!selected.length} on:click={share} />
+          <Button label={'Publish selected'} size={'small'} primary disabled={!selected.length} on:click={share} />
         </div>
       </div>
     </div>
   {:else if enabled}
-      <ReferenceInput on:message={onMessage}/>
+    <ReferenceInput on:message={onMessage}/>
   {:else}
     <div class="flex-center">
-      <Button label='Connect' primary on:click={(e) => {
+      <Button label={'Connect'} primary on:click={(e) => {
         showPopup(Connect, {}, e.target)
       }} />
     </div>
@@ -231,34 +230,34 @@
 <style lang="scss">
   .header {
     flex-shrink: 0;
-    padding: 0 5.5rem 0 2.5rem;
+    padding: 0 6rem 0 2.5rem;
     height: 4rem;
+    color: var(--theme-content-accent-color);
     border-bottom: 1px solid var(--theme-card-divider);
 
     .icon {
-      opacity: 0.6;
-    }
-    .title {
-      flex-grow: 1;
-      margin-left: 0.5rem;
-      font-weight: 500;
-      font-size: 1rem;
+      margin-right: 1rem;
+      width: 2.25rem;
+      height: 2.25rem;
       color: var(--theme-caption-color);
-      user-select: none;
+      background-color: var(--primary-button-enabled);
+      border-radius: 50%;
     }
   }
 
   .ref-input {
-    padding: 1.5rem 2.5rem;
+    padding: 0 2.5rem 1.5rem;
 
     &.selectable {
+      padding: .75rem 1.25rem .75rem 2.5rem;
+      color: var(--theme-caption-color);
       border-top: 1px solid var(--theme-card-divider);
     }
   }
 
   .right-content {
     flex-grow: 1;
-    padding: 2.5rem 2.5rem 0;
+    padding: 1.5rem 1rem;
   }
 </style>
 

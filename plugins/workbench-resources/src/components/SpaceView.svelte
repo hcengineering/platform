@@ -60,12 +60,12 @@ function onSearch(ev: Event) {
 {:then viewlets}
 
   {#if viewlets.length > 0}
-    <div class="toolbar">
-      <EditWithIcon icon={IconSearch} placeholder={'Search for something'} on:change={onSearch}/>
+    <div class="flex-between toolbar">
+      <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
 
       <div class="flex">
         {#each viewlets as viewlet, i}
-          <div class="btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
+          <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
             <div class="icon">
               <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
                 <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
@@ -93,32 +93,21 @@ function onSearch(ev: Event) {
 
 <style lang="scss">
   .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1.25rem 2.5rem;
-    height: 2.5rem;
+    margin: 1.25rem 1.75rem 1.75rem 2.5rem;
 
     .btn {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       width: 2.5rem;
       height: 2.5rem;
       background-color: transparent;
       border-radius: .5rem;
       cursor: pointer;
 
-      .icon { opacity: .3; }
-      &:hover .icon {
-        opacity: 1;
-      }
+      .icon { color: var(--theme-content-trans-color); }
+      &:hover .icon { color: var(--theme-caption-color); }
       &.selected {
         background-color: var(--theme-button-bg-enabled);
         cursor: default;
-        &:hover .icon {
-          opacity: .8;
-        }
+        &:hover .icon { color: var(--theme-content-accent-color); }
       }
     }
   }

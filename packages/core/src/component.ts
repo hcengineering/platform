@@ -14,7 +14,7 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Account, AnyAttribute, AttachedDoc, Class, Doc, DocWithState, Interface, Obj, PropertyType, Ref, Space, SpaceWithStates, State, Timestamp, Type } from './classes'
+import type { Account, AnyAttribute, AttachedDoc, Class, Doc, DocWithState, Interface, Obj, PropertyType, Ref, Space, SpaceWithStates, State, Timestamp, Type, Collection, RefTo } from './classes'
 import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
@@ -47,6 +47,8 @@ export default plugin(coreId, {
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
+    RefTo: '' as Ref<Class<RefTo<Doc>>>,
+    Collection: '' as Ref<Class<Collection<AttachedDoc>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
   },
   interface: {

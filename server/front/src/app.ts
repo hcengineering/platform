@@ -114,6 +114,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
           return console.log(err)
         }
         res.status(200)
+        res.set('Cache-Control', 'max-age=604800')
 
         const contentType = stat.metaData['content-type']
         if (contentType !== undefined) {

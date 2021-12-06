@@ -167,6 +167,13 @@ export interface RefTo<T extends Doc> extends Type<Ref<Class<T>>> {
 /**
  * @public
  */
+export interface Collection<T extends AttachedDoc> extends Type<number> {
+  of: Ref<Class<T>>
+}
+
+/**
+ * @public
+ */
 export type Bag<T extends PropertyType> = Record<string, T>
 
 /**

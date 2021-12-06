@@ -82,7 +82,7 @@
   {#each displayItems as item}
     <div on:click|stopPropagation={() => { dispatch('click', item) }}>
     <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-      <CircleButton icon={item.icon} {size} />
+      <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram'} />
     </Tooltip>
     </div>
   {/each}
