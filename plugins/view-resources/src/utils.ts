@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, FindOptions, FindResult, Obj, Ref, AttachedDoc, TxOperations, Collection } from '@anticrm/core'
+import core, { Class, Client, Doc, FindOptions, FindResult, Obj, Ref, AttachedDoc, TxOperations, Collection } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
+import { getAttributePresenterClass } from '@anticrm/presentation'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 import view, { AttributeModel } from '@anticrm/view'
-import core from '@anticrm/core'
 
 /**
  * @public
@@ -46,7 +46,7 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
 
 async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string): Promise<AttributeModel> {
   const attribute = client.getHierarchy().getAttribute(_class, key)
-  let attrClass = attribute.type._class
+  let attrClass = getAttributePresenterClass(attribute)
   const clazz = client.getHierarchy().getClass(attrClass)
   let presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   let parent = clazz.extends

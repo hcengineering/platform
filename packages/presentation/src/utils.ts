@@ -16,8 +16,8 @@
 
 import { onDestroy } from 'svelte'
 
-import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb, TxResult } from '@anticrm/core'
-import { TxOperations } from '@anticrm/core'
+import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb, TxResult, TxOperations, AnyAttribute, RefTo } from '@anticrm/core'
+import core from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { getMetadata  } from '@anticrm/platform'
 
@@ -78,4 +78,15 @@ export function getFileUrl(file: string): string {
   const token = getMetadata(login.metadata.LoginToken)
   const url = `${uploadUrl}?file=${file}&token=${token}`
   return url
+}
+
+/**
+ * @public
+ */
+ export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<Doc>> {
+  let attrClass = attribute.type._class
+  if (attrClass === core.class.RefTo) {
+    attrClass = (attribute.type as RefTo<Doc>).to
+  }
+  return attrClass
 }
