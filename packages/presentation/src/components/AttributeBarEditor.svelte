@@ -15,13 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, AttachedDoc, Doc } from '@anticrm/core'
+  import type { AttachedDoc, Class, Doc, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { getClient } from '../utils'
+  import { getAttributePresenterClass, getClient } from '../utils'
 
   // export let _class: Ref<Class<Doc>>
   export let key: string
@@ -34,13 +34,13 @@
   const _class = object._class
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const attribute = hierarchy.getAttribute(_class, key)
 
-  const typeClassId = attribute?.type._class
+  $: attribute = hierarchy.getAttribute(_class, key)
+  $: typeClassId = (attribute !== undefined) ? getAttributePresenterClass(attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
-  if (typeClassId !== undefined) {
+  $: if (typeClassId !== undefined) {
     const typeClass = hierarchy.getClass(typeClassId)
     const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
     editor = getResource(editorMixin.editor)
