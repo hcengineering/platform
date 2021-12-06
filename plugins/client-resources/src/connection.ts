@@ -39,7 +39,6 @@ class Connection implements ClientConnection {
   constructor (private readonly url: string, private readonly handler: TxHander) {
     console.log('connection created')
     this.interval = setInterval(() => {
-      console.log('ping')
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.sendRequest('ping')
     }, 10000)

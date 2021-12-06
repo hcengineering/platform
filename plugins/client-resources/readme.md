@@ -1,6 +1,6 @@
 # Overview
 
-Package allow to create fully functuional client for platform. This
+Package allow to create a client to interact with running platform.
 
 ## Usage
 
