@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import type { Account, AnyAttribute, AttachedDoc, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type } from '@anticrm/core'
+import type { Account, AnyAttribute, AttachedDoc, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type, Collection, RefTo } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeTimestamp } from '@anticrm/model'
 import core from './component'
@@ -69,6 +69,16 @@ export class TType extends TObj implements Type<any> {
 
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
+
+@Model(core.class.RefTo, core.class.Type)
+export class TRefTo extends TType implements RefTo<Doc> {
+  to!: Ref<Class<Doc>>
+}
+
+@Model(core.class.Collection, core.class.Type)
+export class TCollection extends TType implements Collection<AttachedDoc> {
+  of!: Ref<Class<Doc>>
+}
 
 @Model(core.class.TypeBoolean, core.class.Type)
 export class TTypeBoolean extends TType {}
