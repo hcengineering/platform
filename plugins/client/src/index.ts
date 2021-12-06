@@ -33,12 +33,32 @@ export type ClientHook = (client: Client) => Promise<Client>
 /**
  * @public
  */
+export type ClientSocketFactory = (url: string) => ClientSocket
+
+/**
+ * @public
+ */
+export interface ClientSocket {
+  onmessage?: ((this: ClientSocket, ev: MessageEvent) => any) | null
+  onclose?: ((this: ClientSocket, ev: CloseEvent) => any) | null
+  onopen?: ((this: ClientSocket, ev: Event) => any) | null
+  onerror?: ((this: ClientSocket, ev: Event) => any) | null
+
+  send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void
+
+  close: () => void
+}
+
+/**
+ * @public
+ */
 export type ClientFactory = (token: string, endpoint: string) => Promise<Client>
 
 export default plugin(clientId,
   {
     metadata: {
-      ClientHook: '' as Metadata<Resource<ClientHook>>
+      ClientHook: '' as Metadata<Resource<ClientHook>>,
+      ClientSocketFactory: '' as Metadata<ClientSocketFactory>
     },
     function: {
       GetClient: '' as Resource<ClientFactory>

@@ -78,6 +78,10 @@ class ModelClient implements Client {
     transactions.push({ tx, result })
     return result
   }
+
+  async close (): Promise<void> {
+    await this.client.close()
+  }
 }
 export async function Hook (client: Client): Promise<Client> {
   console.info('devmodel# Client HOOKED by DevModel')

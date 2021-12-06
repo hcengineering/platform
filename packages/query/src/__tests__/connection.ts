@@ -53,6 +53,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<Client> {
       // Not required, since handled in client.
       // handler(tx)
       return {}
-    }
+    },
+    close: async () => {}
   }
 }

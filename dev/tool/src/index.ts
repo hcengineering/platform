@@ -14,26 +14,17 @@
 // limitations under the License.
 //
 
-import { program } from 'commander'
-import { MongoClient, Db } from 'mongodb'
 import {
-  getAccount,
-  createAccount,
-  assignWorkspace,
-  createWorkspace,
-  ACCOUNT_DB,
-  dropWorkspace,
-  dropAccount,
-  listWorkspaces
+  ACCOUNT_DB, assignWorkspace, createAccount, createWorkspace, dropAccount, dropWorkspace, getAccount, listWorkspaces
 } from '@anticrm/account'
-import { createContributingClient } from '@anticrm/contrib'
-import core, { TxOperations } from '@anticrm/core'
-import { encode } from 'jwt-simple'
-import { Client } from 'minio'
-import { initWorkspace, upgradeWorkspace, dumpWorkspace } from './workspace'
-
 import contact, { combineName } from '@anticrm/contact'
+import core from '@anticrm/core'
+import { program } from 'commander'
+import { Client } from 'minio'
+import { Db, MongoClient } from 'mongodb'
+import { connect } from './connect'
 import { clearTelegramHistory } from './telegram'
+import { dumpWorkspace, initWorkspace, upgradeWorkspace } from './workspace'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -112,28 +103,24 @@ program
       await assignWorkspace(db, email, workspace)
 
       console.log('connecting to transactor...')
-      const token = encode({ email: 'anticrm@hc.engineering', workspace }, 'secret')
-      const url = new URL(`/${token}`, transactorUrl)
-      const contrib = await createContributingClient(url.href)
-      const txop = new TxOperations(contrib, core.account.System)
+      const { connection, close } = await connect(transactorUrl, workspace)
 
       const name = combineName(account.first, account.last)
 
       console.log('create user in target workspace...')
-      const employee = await txop.createDoc(contact.class.Employee, contact.space.Employee, {
+      const employee = await connection.createDoc(contact.class.Employee, contact.space.Employee, {
         name,
         city: 'Mountain View',
         channels: []
       })
 
       console.log('create account in target workspace...')
-      await txop.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+      await connection.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email,
         employee,
         name
       })
-
-      contrib.close()
+      await close()
     })
   })
 

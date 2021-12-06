@@ -56,6 +56,8 @@ class NullDbAdapter implements DbAdapter {
   async tx (tx: Tx): Promise<TxResult> {
     return {}
   }
+
+  async close (): Promise<void> {}
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -155,7 +157,11 @@ describe('mongo operations', () => {
     const serverStorage = await createServerStorage(conf)
 
     client = await createClient(async (handler) => {
-      return await Promise.resolve(serverStorage)
+      return {
+        findAll: async (_class, query, options) => await serverStorage.findAll(_class, query, options),
+        tx: async (tx) => await serverStorage.tx(tx),
+        close: async () => {}
+      }
     })
 
     operations = new TxOperations(client, core.account.System)
