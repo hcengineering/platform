@@ -12,57 +12,61 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
+  import Tooltip from './Tooltip.svelte'
+  import ActionIcon from './ActionIcon.svelte'
+  import IconClose from './icons/Close.svelte'
+  import ui from '../plugin'
+  import Label from './Label.svelte'
 
   export let icon: Asset | AnySvelteComponent
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: string = 'placeholder'
+
+  let textHTML: HTMLElement
 </script>
 
-<div class="editbox" style={width ? 'width: ' + width : ''}>
-  <input type="text" bind:value {placeholder} on:change/>
-  <div class="icon">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size={'small'} />
-    {:else}
-      <svelte:component this={icon} size={'small'} />
-    {/if}
-  </div>
+<div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
+  <div class="mr-2"><Icon {icon} size={'small'} /></div>
+  <input bind:this={textHTML} type="text" bind:value {placeholder} on:change/>
+  {#if value}
+    <div class="ml-2 btn" on:click={() => { value = '' }}>
+      <Tooltip label={ui.string.Clear}>
+        <div class="scale-75"><Icon icon={IconClose} size={'small'} /></div>
+      </Tooltip>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
   .editbox {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 0 1rem;
     min-width: 16.75rem;
     height: 2.5rem;
-    background-color: var(--theme-bg-focused-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .5rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-bg-enabled);
+    border: 1px solid var(--theme-bg-accent-hover);
+    border-radius: .75rem;
 
-    &:focus-within {
-      border-color: var(--theme-bg-focused-border);
-    }
+    &:focus-within { border-color: var(--theme-content-trans-color); }
+
     input {
       width: 100%;
-      height: 2.5rem;
-      padding-left: .75rem;
       border: none;
       border-radius: .5rem;
 
-      &::placeholder {
-        color: var(--theme-content-trans-color);
-      }
+      &::placeholder { color: var(--theme-content-accent-color); }
     }
 
-    .icon {
-      margin: .75rem;
-      opacity: .3;
+    .btn {
+      color: var(--theme-content-color);
+      cursor: pointer;
+      &:hover { color: var(--theme-caption-color); }
     }
   }
 </style>
