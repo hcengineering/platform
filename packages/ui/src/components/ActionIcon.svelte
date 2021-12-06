@@ -44,6 +44,7 @@
   .button {
     color: var(--theme-caption-color);
     border-radius: .125rem;
+    cursor: pointer;
 
     .icon {
       // transform-origin: center center;
