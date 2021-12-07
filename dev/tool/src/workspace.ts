@@ -24,6 +24,7 @@ import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
 import { connect } from './connect'
 import { MigrateClientImpl } from './upgrade'
+import { generateModelDiff, printDiff } from './mdiff'
 
 const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 
@@ -240,6 +241,43 @@ export async function restoreWorkspace (mongoUrl: string, dbName: string, fileNa
     for (const d of workspaceInfo.minioData) {
       const data = await readFile(join(minioDbLocation, d.name))
       await minio.putObject(dbName, d.name, data, d.size, d.metaData)
+    }
+  } finally {
+    await client.close()
+  }
+}
+
+export async function diffWorkspace (mongoUrl: string, dbName: string): Promise<void> {
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = client.db(dbName)
+
+    console.log('diffing transactions...')
+
+    const currentModel = await db.collection(DOMAIN_TX).find<Tx>({
+      objectSpace: core.space.Model,
+      modifiedBy: core.account.System,
+      objectClass: { $ne: contact.class.EmployeeAccount }
+    }).toArray()
+
+    const txes = builder.getTxes().filter(tx => {
+      return tx.objectSpace === core.space.Model &&
+        tx.modifiedBy === core.account.System &&
+        (tx as any).objectClass !== contact.class.EmployeeAccount
+    })
+
+    const { diffTx, dropTx } = await generateModelDiff(currentModel, txes)
+    if (diffTx.length > 0) {
+      console.log('DIFF Transactions:')
+
+      printDiff(diffTx)
+    }
+    if (dropTx.length > 0) {
+      console.log('Broken Transactions:')
+      for (const tx of dropTx) {
+        console.log(JSON.stringify(tx, undefined, 2))
+      }
     }
   } finally {
     await client.close()

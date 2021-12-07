@@ -51,6 +51,7 @@
     "ws": "^8.2.0",
     "@anticrm/client": "~0.6.1",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/model": "~0.6.0"
+    "@anticrm/model": "~0.6.0",
+    "fast-equals": "^2.0.3"
   }
 }
