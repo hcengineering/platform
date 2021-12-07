@@ -15,15 +15,20 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
-  import { Avatar } from '@anticrm/presentation'
-  import { closeTooltip, showPopup } from '@anticrm/ui'
-  import EditPerson from './EditPerson.svelte'
+  import { getResource } from '@anticrm/platform'
+  import { Avatar, getClient } from '@anticrm/presentation'
+  import { showPopup } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let value: Person
 
   async function onClick () {
-    closeTooltip()
-    showPopup(EditPerson, { _id: value._id }, 'full')
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const clazz = hierarchy.getClass(value._class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+    const editor = await getResource(editorMixin.editor) 
+    showPopup(editor, { _id: value._id }, 'full')
   }
 </script>
 
