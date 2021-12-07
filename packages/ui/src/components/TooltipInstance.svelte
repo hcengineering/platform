@@ -14,18 +14,24 @@
 -->
 
 <script lang="ts">
+  import { afterUpdate, onDestroy } from 'svelte'
   import { tooltipstore as tooltip, closeTooltip } from '..'
   import type { TooltipAligment } from '..'
   import Label from './Label.svelte'
 
   let tooltipHTML: HTMLElement
+  let nubHTML: HTMLElement
   let dir: TooltipAligment
   let rect: DOMRect
   let rectAnchor: DOMRect
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component
+  let nubDirection: 'top' | 'bottom' | 'left' | 'right' | undefined = undefined
+  let clWidth: number
+  let clHeight: number
 
   $: tooltipSW = $tooltip.component ? false : true
-  $: {
+
+  const fitTooltip = (): void => {
     if (($tooltip.label || $tooltip.component) && tooltipHTML) {
       if ($tooltip.element) {
         const doc = document.body.getBoundingClientRect()
@@ -35,30 +41,39 @@
 
         if ($tooltip.component) {
 
-          if (rectAnchor.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
-            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .75rem)`
+          if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
+            tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
-          } else if (rectAnchor.top > doc.height - rectAnchor.bottom) {
-            tooltipHTML.style.bottom = `calc(${doc.height - rectAnchor.y}px + .75rem)`
-            if (tooltipHTML.clientHeight > rectAnchor.top - 28) {
+          } else if (rect.top > doc.height - rect.bottom) {
+            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + 5px + .25rem)`
+            if (tooltipHTML.clientHeight > rect.top - 28) {
               tooltipHTML.style.top = '1rem'
-              tooltipHTML.style.height = rectAnchor.top - 28 + 'px'
+              tooltipHTML.style.height = rect.top - 28 + 'px'
             }
             dir = 'top'
           } else {
-            tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .75rem)`
-            if (tooltipHTML.clientHeight > doc.height - rectAnchor.bottom - 28) {
+            tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
+            if (tooltipHTML.clientHeight > doc.height - rect.bottom - 28) {
               tooltipHTML.style.bottom = '1rem'
-              tooltipHTML.style.height = doc.height - rectAnchor.bottom - 28 + 'px'
+              tooltipHTML.style.height = doc.height - rect.bottom - 28 + 'px'
             }
             dir = 'bottom'
           }
-          if (rectAnchor.left + tooltipHTML.clientWidth + 16 > doc.width) {
-            tooltipHTML.style.left = ''
-            tooltipHTML.style.right = doc.width - rectAnchor.right + 'px'
-          } else {
-            tooltipHTML.style.left = rectAnchor.left + 'px'
-            tooltipHTML.style.right = ''
+
+          if (rect.width / 2 + rect.left + clWidth / 2 > doc.width - 8)
+            tooltipHTML.style.right = '.5rem'
+          else if (rect.width / 2 + rect.left - clWidth / 2 < 8)
+            tooltipHTML.style.left = '.5rem'
+          else if ((rect.width / 2 + rect.left + clWidth / 2 < doc.width) && (rect.width / 2 + rect.left - clWidth / 2 > 0))
+            tooltipHTML.style.left = rect.width / 2 + rect.left - clWidth / 2 + 'px'
+          else tooltipHTML.style.left = tooltipHTML.style.right = '.5rem'
+
+          if (nubHTML) {
+            nubHTML.style.top = rect.top + 'px'
+            nubHTML.style.left = rect.left + 'px'
+            nubHTML.style.width = rect.width + 'px'
+            nubHTML.style.height = rect.height + 'px'
+            nubDirection = dir
           }
 
         } else {
@@ -122,16 +137,24 @@
       }
     }
   }
+
+  afterUpdate(() => fitTooltip())
+  onDestroy(() => hideTooltip())
 </script>
 
-<svelte:window on:mousemove={(ev) => { whileShow(ev) }} />
+<svelte:window on:resize={fitTooltip} on:mousemove={(ev) => { whileShow(ev) }} />
+<svg class="mask">
+  <clipPath id="nub-bg"><path d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z" /></clipPath>
+  <clipPath id="nub-border"><path d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z" /></clipPath>
+</svg>
 {#if $tooltip.component}
-  <div class="popup" bind:this={tooltipHTML}>
+  <div class="popup" bind:clientWidth={clWidth} bind:clientHeight={clHeight} bind:this={tooltipHTML}>
     {#if $tooltip.label}<div class="header"><Label label={$tooltip.label} /></div>{/if}
     <svelte:component this={$tooltip.component} {...$tooltip.props} />
   </div>
+  <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
 {:else if $tooltip.label}
-  <div class="tooltip {dir}" bind:this={tooltipHTML}>
+  <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
     <Label label={$tooltip.label} />
   </div>
 {/if}
@@ -148,85 +171,146 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    max-width: 30rem;
+    padding: 1rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
+    background-color: var(--theme-tooltip-color);
+    border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
     z-index: 10000;
+  }
+
+  .nub {
+    position: fixed;
+    // background-color: rgba(255, 255, 0, .5);
+    user-select: none;
+    z-index: 10000;
+
+    &::after, &::before {
+      position: absolute;
+      width: 18px;
+      height: 7px;
+    }
+    &::before {
+      background-color: var(--theme-tooltip-color);
+      clip-path: url("#nub-bg");
+      z-index: 1;
+    }
+    &::after {
+      background-color: var(--theme-bg-accent-color);
+      clip-path: url("#nub-border");
+      z-index: 2;
+    }
+
+    &.top::after, &.bottom::after,
+    &.top::before, &.bottom::before,
+    &.right::after, &.left::after,
+    &.right::before, &.left::before { content: ''; }
+    &.top::after, &.bottom::after,
+    &.top::before, &.bottom::before {
+      left: 50%;
+      margin-left: -9px;
+    }
+    &.top::after, &.top::before {
+      top: calc(-7px - .25rem);
+      transform: rotate(180deg);
+    }
+    &.bottom::after, &.bottom::before {
+      bottom: calc(-7px - .25rem);
+    }
+
+    &.right::after, &.left::after,
+    &.right::before, &.left::before {
+      top: 50%;
+      margin-top: -9px;
+    }
+    &.left::after, &.left::before {
+      transform-origin: left top;
+      left: -.25rem;
+      transform: rotate(90deg);
+    }
+    &.right::after, &.right::before {
+      transform-origin: right top;
+      right: -.25rem;
+      transform: rotate(-90deg);
+    }
   }
 
   .tooltip {
     position: fixed;
-    padding: .5rem;
+    padding: .5rem .75rem;
+    text-align: center;
     color: var(--theme-caption-color);
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .5rem;
+    border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
     user-select: none;
-    text-align: center;
     z-index: 10000;
 
-    &::after {
+    &::after, &::before {
       content: '';
       position: absolute;
-      width: .875rem;
-      height: .875rem;
+      width: 18px;
+      height: 7px;
+    }
+    &::before {
       background-color: var(--theme-tooltip-color);
-      border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 0 0 3px;
-      clip-path: polygon(100% 25%, 100% 100%, 25% 100%);
+      clip-path: url("#nub-bg");
+      z-index: 1;
+    }
+    &::after {
+      background-color: var(--theme-bg-accent-color);
+      clip-path: url("#nub-border");
+      z-index: 2;
     }
 
-    &.top::after,
-    &.bottom::after {
+    &.top::after, &.bottom::after,
+    &.top::before, &.bottom::before {
       left: 50%;
-      margin-left: -.5rem;
+      margin-left: -9px;
     }
     &.top {
       bottom: 100%;
-      box-shadow: 0px 8px 20px rgba(0, 0, 0, .35);
-      &::after {
-        bottom: -.3125rem;
-        transform: rotate(45deg);
+      &::after, &::before {
+        bottom: -7px;
+        transform: rotate(180deg);
       }
     }
     &.bottom {
       top: 100%;
-      box-shadow: 0px -8px 20px rgba(0, 0, 0, .35);
-      &::after {
-        top: -.3125rem;
-        transform: rotate(-135deg);
+      &::after, &::before {
+        top: -7px;
       }
     }
 
-    &.right::after,
-    &.left::after {
+    &.right::after, &.left::after,
+    &.right::before, &.left::before {
       top: 50%;
-      margin-top: -.5rem;
+      margin-top: -9px;
     }
     &.right {
       left: 100%;
-      box-shadow: -8px 0px 20px rgba(0, 0, 0, .35);
-      &::after {
-        left: -.3125rem;
-        transform: rotate(135deg);
+      &::after, &::before {
+        transform-origin: right top;
+        left: -25px;
+        transform: rotate(-90deg);
       }
     }
     &.left {
       right: 100%;
-      box-shadow: 8px 0px 20px rgba(0, 0, 0, .35);
-      &::after {
-        right: -.3125rem;
-        transform: rotate(-45deg);
+      &::after, &::before {
+        transform-origin: left top;
+        right: -25px;
+        transform: rotate(90deg);
       }
     }
   }
   .no-arrow {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, .75);
-    &::after {
+    &::after, &::before {
       content: none;
     }
   }
