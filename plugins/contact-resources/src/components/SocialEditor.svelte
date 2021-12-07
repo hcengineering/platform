@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
@@ -24,21 +23,21 @@
   import contact from '../plugin'
 
   export let values: Channel[]
-  let newValues: Channel[] = []
+  const newValues: Channel[] = []
 
   const dispatch = createEventDispatcher()
 
   let providers: ChannelProvider[] = []
 
-  function findValue(provider: Ref<ChannelProvider>): number {
-    for (let i = 0; i<values.length; i++) {
+  function findValue (provider: Ref<ChannelProvider>): number {
+    for (let i = 0; i < values.length; i++) {
       if (values[i].provider === provider) return i
     }
     return -1
   }
 
   const client = getClient()
-  client.findAll(contact.class.ChannelProvider, {}).then(result => { 
+  client.findAll(contact.class.ChannelProvider, {}).then((result) => {
     providers = result
     for (const provider of providers) {
       const i = findValue(provider._id)
@@ -50,10 +49,9 @@
     }
   })
 
-  function filterUndefined(channels: Channel[]): Channel[] {
-    return channels.filter(channel => channel.value !== undefined && channel.value.length > 0)
+  function filterUndefined (channels: Channel[]): Channel[] {
+    return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
   }
-
 </script>
 
 <div class="popup">
@@ -61,12 +59,25 @@
     <div class="popup-block">
       <span>Contact Links</span>
       {#each providers as provider, i}
-        <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} maxWidth={'14.5rem'}/>
+        <EditBox
+          label={provider.label}
+          placeholder={provider.placeholder}
+          bind:value={newValues[i].value}
+          maxWidth={'14.5rem'}
+        />
       {/each}
     </div>
   </ScrollBox>
   <div class="buttons">
-    <div class="btn"><Button label={contact.string.Apply} width={'100%'} on:click={() => { dispatch('close', filterUndefined(newValues)) }}/></div>
+    <div class="btn">
+      <Button
+        label={contact.string.Apply}
+        width={'100%'}
+        on:click={() => {
+          dispatch('close', filterUndefined(newValues))
+        }}
+      />
+    </div>
   </div>
 </div>
 
@@ -81,13 +92,13 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, .6);
+    border-radius: 0.75rem;
+    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, 0.6);
 
     &-block {
       display: grid;
       grid-auto-flow: row;
-      row-gap: .75rem;
+      row-gap: 0.75rem;
 
       span {
         font-weight: 600;
@@ -101,6 +112,8 @@
     display: flex;
     align-items: center;
     margin-top: 1rem;
-    .btn { flex-grow: 1; }
+    .btn {
+      flex-grow: 1;
+    }
   }
 </style>

@@ -16,14 +16,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref } from '@anticrm/core'
-  import { CircleButton, EditBox, showPopup, IconAdd, Label, AnyComponent, Component } from '@anticrm/ui'
+  import { CircleButton, EditBox, showPopup, IconAdd, Label, AnyComponent } from '@anticrm/ui'
   import { getClient, createQuery, Channels, AttributeEditor, AttributesBar, Avatar } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate } from '@anticrm/recruit'
   import Contact from './icons/Contact.svelte'
   import Edit from './icons/Edit.svelte'
   import Applications from './Applications.svelte'
-  import attachment from '@anticrm/attachment'
+  import { Attachments } from '@anticrm/attachment-resources'
 
   import recruit from '../plugin'
   import contact, { combineName, formatName, getFirstName, getLastName } from '@anticrm/contact'
@@ -96,7 +96,7 @@
   </div>
 
   <div class="mt-14">
-    <Component is={attachment.component.Attachments} props={{ objectId: object._id, _class:object._class, space: object.space, noLabel: recruit.string.NoAttachmentsForCandidate }} />
+    <Attachments objectId={object._id} _class={object._class} space={object.space} noLabel={recruit.string.NoAttachmentsForCandidate} />
   </div>
 
 </Panel>

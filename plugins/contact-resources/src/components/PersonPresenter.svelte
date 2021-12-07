@@ -13,35 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-import { getResource } from '@anticrm/platform'
-import { formatName, Person } from '@anticrm/contact'
-import { Avatar, getClient } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
-import view from '@anticrm/view'
+  import { formatName, Person } from '@anticrm/contact'
+  import { Avatar } from '@anticrm/presentation'
+  import { closeTooltip, showPopup } from '@anticrm/ui'
+  import EditPerson from './EditPerson.svelte'
 
-export let value: Person
+  export let value: Person
 
-async function onClick() {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const clazz = hierarchy.getClass(value._class)
-  const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
-  const editor = await getResource(editorMixin.editor) 
-  showPopup(editor, { _id: value._id }, 'full')
-}
+  async function onClick () {
+    closeTooltip()
+    showPopup(EditPerson, { _id: value._id }, 'full')
+  }
 </script>
 
 {#if value}
   <div class="flex-row-center user-container" on:click={onClick}>
-    <Avatar size={'x-small'} avatar={value.avatar}/>
+    <Avatar size={'x-small'} avatar={value.avatar} />
     <div class="overflow-label user">{formatName(value.name)}</div>
   </div>
 {:else}
-  <div class="flex-row-center user-container" on:click={onClick}>
-    Not defined
-  </div>
+  <div class="flex-row-center user-container" on:click={onClick}>Not defined</div>
 {/if}
 
 <style lang="scss">
@@ -49,7 +41,7 @@ async function onClick() {
     cursor: pointer;
 
     .user {
-      margin-left: .5rem;
+      margin-left: 0.5rem;
       font-weight: 500;
       text-align: left;
       color: var(--theme-content-accent-color);

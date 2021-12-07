@@ -216,6 +216,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.OrganizationPresenter
   })
+
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.ContactPresenter
+  })
 }
 
 export { contact as default }

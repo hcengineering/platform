@@ -216,9 +216,9 @@
             {#each model as m}
             {#await getValue(m, tx.updateTx) then value}
                 {#if value === null}
-                  <span>unset {m.label}</span>
+                  <span>unset <Label label={m.label} /></span>
                 {:else}
-                  <span>changed {m.label} to</span>                
+                  <span>changed <Label label={m.label} /> to</span>                
                   <div class="strong"><svelte:component this={m.presenter} {value} /></div>
                 {/if}
               {/await}

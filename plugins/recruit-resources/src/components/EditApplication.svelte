@@ -19,7 +19,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
   import type { Candidate, Applicant, Vacancy } from '@anticrm/recruit'
-  import attachment from '@anticrm/attachment'
+  import { Attachments } from '@anticrm/attachment-resources'
   import Contact from './icons/Contact.svelte'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
@@ -27,7 +27,6 @@
   import recruit from '../plugin'
   import { formatName } from '@anticrm/contact'
   import ApplicantHeader from './ApplicantHeader.svelte'
-  import { Component } from '@anticrm/ui'
 
   export let _id: Ref<Applicant>
   let object: Applicant
@@ -56,7 +55,7 @@
   </div>
 
   <div class="attachments">
-    <Component is={attachment.component.Attachments} props={{ objectId: object._id, _class:object._class, space: object.space, object: object }} />
+    <Attachments objectId={object._id} _class={object._class} space={object.space} />
   </div>
 
 </Panel>

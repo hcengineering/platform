@@ -43,6 +43,7 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/login": "~0.6.1",
+    "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/chunter-resources": "~0.6.0"
   }
 }

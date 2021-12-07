@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
@@ -26,13 +25,13 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let description: string = ''
-  export function canClose(): boolean {
+  const description: string = ''
+  export function canClose (): boolean {
     return name === ''
   }
   const client = getClient()
 
-  function createChannel() {
+  function createChannel () {
     client.createDoc(contact.class.Persons, core.space.Model, {
       name,
       description,
@@ -43,13 +42,15 @@
 </script>
 
 <SpaceCreateCard
-  label={contact.string.CreatePersons} 
+  label={contact.string.CreatePersons}
   okAction={createChannel}
-  canSave={name ? true : false}
-  on:close={() => { dispatch('close') }}
+  canSave={!!name}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={contact.string.Name} icon={IconFolder} bind:value={name} placeholder='Folder' focus/>
-    <ToggleWithLabel label={contact.string.MakePrivate} description={contact.string.MakePrivateDescription}/>
+    <EditBox label={contact.string.Name} icon={IconFolder} bind:value={name} placeholder="Folder" focus />
+    <ToggleWithLabel label={contact.string.MakePrivate} description={contact.string.MakePrivateDescription} />
   </Grid>
 </SpaceCreateCard>

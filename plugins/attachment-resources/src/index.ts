@@ -18,7 +18,7 @@ import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
 
-export { AttachmentsPresenter }
+export { Attachments, AttachmentsPresenter }
 
 export default async () => ({
   component: {
