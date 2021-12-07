@@ -29,7 +29,7 @@
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip } from '@anticrm/ui'
+  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip, ActionIcon, IconEdit } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
@@ -116,6 +116,12 @@
         <NavHeader label={currentApplication.label} />
       {/if}
       <Navigator model={navigatorModel} />
+      <!-- <div class="flex-center safari-gap-2" style="height: 20rem">
+        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'left'} />
+        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'top'} />
+        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'bottom'} />
+        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'right'} />
+      </div> -->
     </div>
     {/if}
     <div class="panel-component">
