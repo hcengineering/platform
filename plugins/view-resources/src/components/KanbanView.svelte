@@ -54,7 +54,7 @@
   function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): T[] {
     if (kanban === undefined || objects.length === 0) { return [] }
     const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
-    const x = kanban.order.map(id => map.get(id) as T)
+    const x = kanban.order.map(id => map.get(id) as T).filter(x => x !== undefined)
     return x
   }
 
