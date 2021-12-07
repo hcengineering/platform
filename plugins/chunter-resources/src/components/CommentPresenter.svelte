@@ -39,22 +39,27 @@
       </div>
       <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
     </div>
-    <div class="content-color">
+    <div class="comment-content">
       <MessageViewer message={value.message}/>
     </div>
   </div>
 </div>
 
 <style lang="scss">
-    .avatar {
-      margin-right: 1rem;
-      min-width: 2.25rem;
-    }
-
-    .header {
-      display: inline-flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: .25rem;
-    }
+  .avatar {
+    margin-right: 1rem;
+    min-width: 2.25rem;
+  }
+  .header {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: .25rem;
+  }
+  .comment-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+  }
 </style>
