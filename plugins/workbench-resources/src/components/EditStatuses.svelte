@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import type { Ref, SpaceWithStates, State, Class, Obj } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, ActionIcon, showPopup, ScrollBox } from '@anticrm/ui'
+  import { CircleButton, IconAdd, Label, IconMoreH, showPopup } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import type { Kanban } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
@@ -90,6 +90,14 @@
     })
   }
 
+  const onColorChange = (state: State) => async (color: string | undefined): Promise<void> => {
+    if (color === undefined) {
+      return
+    }
+
+    await client.updateDoc(core.class.State, state.space, state._id, { color })
+  }
+
   const dispatch = createEventDispatcher()
 
   async function addStatus () {
@@ -142,7 +150,7 @@
             <div class="bar"><Circles /></div>
             <div class="color" style="background-color: {state.color}"
               on:click={() => {
-                showPopup(ColorsPopup, {}, elements[i], (result) => { if (result) state.color = result })
+                showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
               }}
             />
             <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
