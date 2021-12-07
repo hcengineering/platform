@@ -63,7 +63,7 @@ export class TBacklink extends TComment implements Backlink {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TComment, TBacklink)
+  builder.createModel(TChannel, TMessage, TComment, TBacklink, TAttachment)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message
