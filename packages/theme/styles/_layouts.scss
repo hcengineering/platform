@@ -170,6 +170,7 @@ p:last-child { margin-block-end: 0; }
   align-items: center;
   flex-wrap: nowrap;
   white-space: nowrap;
+  width: fit-content;
   color: var(--theme-caption-color);
   cursor: pointer;
   .icon {

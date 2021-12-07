@@ -38,3 +38,7 @@
 >
   <slot />
 </div>
+
+<style lang="scss">
+  .tooltip-trigger { width: fit-content; }
+</style>
