@@ -13,5 +13,10 @@
 // limitations under the License.
 //
 
-export * from './dsl'
-export * from './migration'
+import { MigrateOperation } from '@anticrm/model'
+
+// Import migrate operations.
+import { taskOperation } from '@anticrm/model-task'
+import { attachmentOperation } from '@anticrm/model-attachment'
+
+export const migrateOperations: MigrateOperation[] = [taskOperation, attachmentOperation]

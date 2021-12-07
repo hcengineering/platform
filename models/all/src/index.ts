@@ -58,3 +58,6 @@ serverViewModel(builder)
 createDemo(builder)
 
 export default builder
+
+// Export upgrade procedures
+export { migrateOperations } from './migration'
