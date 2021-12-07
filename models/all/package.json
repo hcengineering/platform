@@ -36,6 +36,7 @@
     "@anticrm/model-task": "~0.6.0",
     "@anticrm/model-chunter": "~0.6.0",
     "@anticrm/model-recruit": "~0.6.0",
+    "@anticrm/model-lead": "~0.6.0",
     "@anticrm/model-setting": "~0.6.0",
     "@anticrm/model-telegram": "~0.6.0",
     "@anticrm/model-demo": "~0.6.0",

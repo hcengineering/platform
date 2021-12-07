@@ -15,13 +15,14 @@
 
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
-  import { showPopup, Label, IconThread, ActionIcon, IconMoreH, IconFile } from '@anticrm/ui'
+  import { showPopup, Label, ActionIcon, IconMoreH } from '@anticrm/ui'
   import type { WithLookup } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
 
   import EditCandidate from './EditCandidate.svelte'
 
-  import { AttachmentsPresenter, CommentsPresenter } from '@anticrm/chunter-resources'
+  import { CommentsPresenter } from '@anticrm/chunter-resources'
+  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 

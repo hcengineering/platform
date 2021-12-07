@@ -885,6 +885,26 @@
       "packageName": "@anticrm/model-attachment",
       "projectFolder": "models/attachment",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/lead",
+      "projectFolder": "plugins/lead",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/lead-assets",
+      "projectFolder": "plugins/lead-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/lead-resources",
+      "projectFolder": "plugins/lead-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-lead",
+      "projectFolder": "models/lead",
+      "shouldPublish": true
     }
   ]
 }

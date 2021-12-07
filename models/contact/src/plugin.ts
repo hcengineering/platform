@@ -23,6 +23,7 @@ import {} from '@anticrm/core'
 export const ids = mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
+    ContactPresenter: '' as AnyComponent,
     ChannelsPresenter: '' as AnyComponent,
     CreatePerson: '' as AnyComponent,
     EditPerson: '' as AnyComponent,

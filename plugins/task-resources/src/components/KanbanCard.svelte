@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentsPresenter, CommentsPresenter } from '@anticrm/chunter-resources'
+  import { CommentsPresenter } from '@anticrm/chunter-resources'
+  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'

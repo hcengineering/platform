@@ -26,6 +26,7 @@ import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
 import { attachmentId } from '@anticrm/attachment'
+import { leadId } from '@anticrm/lead'
 import { clientId } from '@anticrm/client'
 
 import '@anticrm/login-assets'
@@ -37,6 +38,7 @@ import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
 import '@anticrm/setting-assets'
+import '@anticrm/lead-assets'
 import '@anticrm/workbench-assets'
 
 import { setMetadata } from '@anticrm/platform'
@@ -61,6 +63,7 @@ export function configurePlatform() {
   addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
   addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
+  addLocation(leadId, () => import(/* webpackChunkName: "lead" */ '@anticrm/lead-resources'))
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
 }

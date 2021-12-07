@@ -1,0 +1,17 @@
+{
+  "string": {
+    "CreateFunnel": "Create funnel",
+    "CreateLead": "Create lead",
+    "Funnel": "Funnel",
+    "FunnelName": "Funnel name",
+    "Funnels": "Funnels",
+    "MakePrivate": "Make private",
+    "MakePrivateDescription": "Only members can see it",
+    "LeadApplication": "Leads",
+    "SelectFunnel": "Select funnel",
+    "LeadName": "Lead name",
+    "More": "More...",
+    "Customer": "Customer",
+    "SelectCustomer": "Select customer"
+  }
+}

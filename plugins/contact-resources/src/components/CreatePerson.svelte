@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Space, Data } from '@anticrm/core'
@@ -33,7 +32,7 @@
   let firstName = ''
   let lastName = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return firstName === '' && lastName === ''
   }
 
@@ -42,7 +41,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  async function createPerson() {
+  async function createPerson () {
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
@@ -55,34 +54,53 @@
   }
 </script>
 
-<Card label={contact.string.CreatePerson} 
-      okAction={createPerson}
-      canSave={firstName.length > 0 && lastName.length > 0}
-      spaceClass={contact.class.Persons}
-      spaceLabel={contact.string.PersonsFolder}
-      spacePlaceholder={contact.string.SelectFolder}
-      bind:space={_space}
-      on:close={() => { dispatch('close') }}>
-
+<Card
+  label={contact.string.CreatePerson}
+  okAction={createPerson}
+  canSave={firstName.length > 0 && lastName.length > 0}
+  spaceClass={contact.class.Persons}
+  spaceLabel={contact.string.PersonsFolder}
+  spacePlaceholder={contact.string.SelectFolder}
+  bind:space={_space}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <div class="flex-row-center">
     <div class="mr-4">
       <Avatar avatar={object.avatar} size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city}/></div>
+      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName} /></div>
+      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city} /></div>
     </div>
   </div>
 
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+      <CircleButton
+        icon={IconAdd}
+        size={'small'}
+        transparent
+        on:click={(ev) =>
+          showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
+            object.channels = result
+          })}
+      />
       <span><Label label={contact.string.AddSocialLinks} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">
-        <CircleButton icon={IconEdit} size={'small'} transparent on:click={(ev) => showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+        <CircleButton
+          icon={IconEdit}
+          size={'small'}
+          transparent
+          on:click={(ev) =>
+            showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
+              object.channels = result
+            })}
+        />
       </div>
     {/if}
   </div>
@@ -91,6 +109,8 @@
 <style lang="scss">
   .channels {
     margin-top: 1.25rem;
-    span { margin-left: .5rem; }
+    span {
+      margin-left: 0.5rem;
+    }
   }
 </style>

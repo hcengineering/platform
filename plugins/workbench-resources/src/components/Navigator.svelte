@@ -39,7 +39,7 @@
       <TreeSeparator />
     {/if}
   {/if}
-  {#each model.spaces as m}
+  {#each model.spaces as m (m.label)}
     <SpacesNav model={m}/>
   {/each}
 {/if}

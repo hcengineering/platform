@@ -23,7 +23,7 @@
   import { Vacancy } from '@anticrm/recruit'
   import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
-  import attachment from '@anticrm/attachment'
+  import { Attachments } from '@anticrm/attachment-resources'
   import recruit from '../plugin'
 
   export let _id: Ref<Vacancy>
@@ -89,7 +89,7 @@
             </div>
           </div>
           <div class="mt-14">
-            <Component is={attachment.component.Attachments} props={{ objectId: object._id, _class:object._class, space: object.space }} />
+            <Attachments objectId={object._id} _class={object._class} space={object.space} />
           </div>
         {:else if selected === 1}
           <ToggleWithLabel label={'This vacancy is private'} description={recruit.string.MakePrivateDescription}/>
