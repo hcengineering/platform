@@ -49,9 +49,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 20rem;
-    min-width: 20rem;
-    max-width: 20rem;
+    width: 21.25rem;
+    min-width: 21.25rem;
+    max-width: 21.25rem;
     border-radius: 1.25rem;
 
     .header {
@@ -95,7 +95,6 @@
       column-gap: .75rem;
       padding: 1rem 1.75rem 1.75rem;
       height: 5.25rem;
-      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
       overflow: hidden;
       border-radius: 0 0 1.25rem 1.25rem;
     }

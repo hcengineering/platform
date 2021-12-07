@@ -29,14 +29,10 @@
   export let width: string | undefined = undefined
 </script>
 
-<button class="button {size}" class:primary class:transparent disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button class="button {size}" class:transparent class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if icon && !loading}
-    <div class="icon">
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} size={'small'}/>
-      {:else}
-        <svelte:component this={icon} size={'small'} />
-      {/if}
+    <div class="scale-75 icon">
+      <Icon {icon} size={'small'}/>
     </div>
   {/if}
   {#if loading}
@@ -55,13 +51,9 @@
     background-color: var(--theme-button-bg-enabled);
     color: var(--theme-caption-color);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
+    border-radius: .75rem;
 
-    .icon {
-      margin-right: .375rem;
-      transform-origin: center center;
-      transform: scale(.75);
-    }
+    .icon { margin-right: .375rem; }
 
     &:hover {
       background-color: var(--theme-button-bg-hovered);
@@ -81,6 +73,21 @@
       color: rgb(var(--theme-caption-color) / 40%);
       cursor: not-allowed;
     }
+  }
+
+  .transparent {
+    padding: 0 1.25rem;
+    border-radius: .5rem;
+    color: var(--theme-caption-color);
+    background-color: transparent;
+    border-color: var(--theme-card-divider);
+    backdrop-filter: blur(20px);
+
+    &:hover, &:focus, &:active, &:disabled {
+      background-color: transparent;
+      border-color: var(--theme-card-divider);
+    }
+    &:disabled { color: var(--theme-content-dark-color); }
   }
 
   .primary {
@@ -103,66 +110,14 @@
       box-shadow: none;
     }
     &:disabled {
+      color: var(--theme-content-dark-color);
       background-color: var(--primary-button-disabled);
       border-color: var(--primary-button-border);
-      color: rgb(var(--theme-caption-color) / 60%);
       cursor: not-allowed;
     }
   }
-
-  .transparent {
-    padding: 0 1.25rem;
-    font-weight: 500;
-    border-radius: .5rem;
-    color: var(--theme-caption-color);
-    background-color: var(--trans-button-bg);
-    border-color: var(--theme-bg-accent-color);
-
-    &:hover {
-      background-color: var(--trans-button-bg-hovered);
-      border-color: var(--trans-button-border-hovered);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
-    }
-    &:focus {
-      background-color: var(--trans-button-bg-hovered);
-      border-color: var(--primary-button-focused-border);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
-    }
-    &:active {
-      background-color: var(--trans-button-bg);
-      border-color: var(--trans-button-border);
-      box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
-    }
-    &:disabled {
-      background-color: var(--trans-button-bg);
-      border-color: var(--trans-button-border);
-    }
-
-    &.primary {
-      color: var(--trans-primary-button-color);
-      background-color: var(--trans-primary-button-bg);
-      border-color: var(--trans-primary-button-border);
-      backdrop-filter: blur(3px);
-
-      &:hover {
-        background-color: var(--trans-primary-button-bg-hovered);
-        border-color: var(--trans-primary-button-border-hovered);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
-      }
-      &:focus {
-        background-color: var(--trans-primary-button-bg-hovered);
-        border-color: var(--primary-button-focused-border);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .3);
-      }
-      &:active {
-        background-color: var(--trans-primary-button-bg);
-        border-color: var(--trans-primary-button-border);
-        box-shadow: 0 0 1rem rgba(0, 0, 0, .1);
-      }
-      &:disabled {
-        background-color: var(--primary-button-disabled);
-        border-color: var(--trans-primary-button-border);
-      }
-    }
+  .transparent.primary:disabled {
+    background-color: var(--theme-button-trans-primary-disabled);
+    border-color: transparent;
   }
 </style>

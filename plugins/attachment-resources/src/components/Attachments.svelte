@@ -89,6 +89,7 @@
       <CircleButton
         icon={IconAdd}
         size={'small'}
+        selected
         on:click={() => {
           inputFile.click()
         }}
@@ -141,7 +142,7 @@
     flex-direction: column;
 
     .title {
-      margin-right: 0.75rem;
+      margin-right: .75rem;
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
@@ -151,8 +152,8 @@
   .zone-container {
     padding: 1rem;
     color: var(--theme-caption-color);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px dashed rgba(255, 255, 255, 0.16);
-    border-radius: 0.75rem;
+    background: var(--theme-bg-accent-color);
+    border: 1px dashed var(--theme-zone-border-lite);
+    border-radius: .75rem;
   }
 </style>

@@ -36,31 +36,19 @@
 </div>
 
 <style lang="scss">
-  @import '../../../../packages/theme/styles/mixins.scss';
-
   .avatar-container {
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
+    background-color: rgba(196, 196, 204, .2);
     border-radius: 50%;
     pointer-events: none;
 
-    img { object-fit: cover; }
-
-    &.no-img {
+    img {
+      object-fit: cover;
       border: 2px solid var(--theme-avatar-border);
-
-      &::after {
-        content: '';
-        @include bg-layer(var(--theme-avatar-hover), .5);
-        border-radius: 50%;
-      }
-      &::before {
-        content: '';
-        @include bg-layer(var(--theme-avatar-bg), .1);
-        border-radius: 50%;
-      }
     }
+    &.no-img { border-color: transparent; }
   }
 
   .ava-x-small {

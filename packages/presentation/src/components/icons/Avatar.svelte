@@ -28,7 +28,6 @@
 
 <style lang="scss">
   .svg-avatar {
-    fill: var(--theme-caption-color);
     .op { opacity: .05; }
   }
   .x-small {

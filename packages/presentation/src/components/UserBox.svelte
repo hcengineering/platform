@@ -95,7 +95,7 @@
 
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
-    <div class="caption-color">
+    <div class:caption-color={selected} class:content-dark-color={!selected}>
       {#if selected}{getName(selected)}{:else}<Label label={'Not selected'} />{/if}
     </div>
   </div>

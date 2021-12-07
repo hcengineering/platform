@@ -39,7 +39,7 @@
 <form class="card-container" on:submit|preventDefault={ () => {} }>
   <div class="card-bg" />
   <div class="flex-between header">
-    <div class="overflow-label label"><Label {label} /></div>
+    <div class="overflow-label fs-title"><Label {label} /></div>
     {#if $$slots.error}
       <div class="flex-grow error">
         <slot name="error" />
@@ -62,21 +62,15 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 20rem;
-    min-width: 20rem;
-    max-width: 20rem;
+    width: 21.25rem;
+    min-width: 21.25rem;
+    max-width: 21.25rem;
     border-radius: 1.25rem;
 
     .header {
       position: relative;
       flex-shrink: 0;
       padding: 1.75rem;
-
-      .label {
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-      }
 
       .error {
         position: absolute;
@@ -118,7 +112,6 @@
       column-gap: .75rem;
       padding: 1rem 1.75rem 1.75rem;
       height: 5.25rem;
-      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
       overflow: hidden;
       border-radius: 0 0 1.25rem 1.25rem;
     }

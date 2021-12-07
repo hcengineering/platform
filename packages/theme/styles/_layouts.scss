@@ -19,6 +19,7 @@ a {
   font-weight: 500;
   text-decoration: none;
   color: var(--theme-content-accent-color);
+  outline: none;
   &:hover {
     color: var(--theme-caption-color);
     text-decoration: underline;

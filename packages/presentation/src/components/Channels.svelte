@@ -20,6 +20,7 @@
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
 
+  import type { AnyComponent } from '@anticrm/ui'
   import { Tooltip, CircleButton } from '@anticrm/ui'
   import ChannelsPopup from './ChannelsPopup.svelte'
 
@@ -81,9 +82,9 @@
 >
   {#each displayItems as item}
     <div on:click|stopPropagation={() => { dispatch('click', item) }}>
-    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-      <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram'} />
-    </Tooltip>
+      <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
+        <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram'} />
+      </Tooltip>
     </div>
   {/each}
 </div>

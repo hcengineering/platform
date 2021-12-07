@@ -47,7 +47,7 @@
   })
 </script>
 
-<div class="flex-col spaceselect-container"
+<div class="flex-col cursor-pointer"
   bind:this={btn}
   on:click|preventDefault={() => {
     showPopup(SpacesPopup, { _class }, btn, (result) => {
@@ -58,9 +58,9 @@
   }}
 >
   <div class="overflow-label label"><Label {label} /></div>
-  <div class="flex-row-center space" class:selected={selected}>
-    <span class="icon"><IconFolder size={'small'} /></span>
-    <span class="overflow-label">
+  <div class="flex-row-center space">
+    <span class="scale-75 mr-1"><IconFolder size={'small'} /></span>
+    <span class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
       {#if selected}
         {selected.name}
       {:else}
@@ -71,23 +71,10 @@
 </div>
 
 <style lang="scss">
-  .spaceselect-container {
-    cursor: pointer;
-    .label {
-      margin-bottom: .125rem;
-      font-weight: 500;
-      font-size: .75rem;
-      color: var(--theme-content-accent-color);
-    }
-    .space {
-      opacity: .3;
-
-      .icon {
-        transform-origin: center center;
-        transform: scale(.75);
-        margin-right: .25rem;
-      }
-      &.selected { opacity: 1; }
-    }
+  .label {
+    margin-bottom: .125rem;
+    font-weight: 500;
+    font-size: .75rem;
+    color: var(--theme-content-accent-color);
   }
 </style>

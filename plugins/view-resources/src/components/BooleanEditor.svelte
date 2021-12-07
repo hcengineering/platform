@@ -42,7 +42,7 @@
     onChange(value)
   }}
 >
-  <svg class="svg-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <svg class="yesno-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
     <circle class:yes={value === true} class:no={value === false} cx="8" cy="8" r="6"/>
     {#if value === true}
       <polygon fill="#fff" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 "/>
@@ -72,5 +72,9 @@
       font-weight: 500;
       color: var(--theme-caption-color);
     }
+  }
+  .yesno-svg {
+    width: 1rem;
+    height: 1rem;
   }
 </style>

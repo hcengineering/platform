@@ -100,13 +100,13 @@
     flex-shrink: 0;
     padding: 0 2.5rem;
     height: 4rem;
-    border-bottom: 1px solid var(--theme-card-divider);
+    border-bottom: 1px solid var(--theme-zone-bg);
 
     .icon {
       margin-right: 1rem;
       width: 2.25rem;
       height: 2.25rem;
-      color: var(--theme-caption-color);
+      color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);
       border-radius: 50%;
     }
@@ -145,7 +145,7 @@
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      padding: 1.5rem 2.5rem;
+      padding: 3rem 2.5rem;
       height: max-content;
     }
   }
