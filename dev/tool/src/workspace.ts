@@ -18,7 +18,7 @@ import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import builder, { migrateOperations } from '@anticrm/model-all'
 import { existsSync } from 'fs'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, open, readFile, writeFile } from 'fs/promises'
 import { BucketItem, Client, ItemBucketMetadata } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
@@ -157,14 +157,30 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
       }
       for (const d of workspaceInfo.minioData) {
         const stat = await minio.statObject(dbName, d.name)
-        const data = await minio.getObject(dbName, d.name)
-        const allData = []
         d.metaData = stat.metaData
-        let chunk
-        while ((chunk = data.read()) !== null) {
-          allData.push(chunk)
+
+        const fileHandle = await open(join(minioDbLocation, d.name), 'w')
+
+        const data = await minio.getObject(dbName, d.name)
+        const chunks: Buffer[] = []
+
+        await new Promise((resolve) => {
+          data.on('readable', () => {
+            let chunk
+            while ((chunk = data.read()) !== null) {
+              const b = (chunk as Buffer)
+              chunks.push(b)
+            }
+          })
+
+          data.on('end', () => {
+            resolve(null)
+          })
+        })
+        for (const b of chunks) {
+          await fileHandle.write(b)
         }
-        await writeFile(join(minioDbLocation, d.name), allData.join(''))
+        await fileHandle.close()
       }
     }
 
