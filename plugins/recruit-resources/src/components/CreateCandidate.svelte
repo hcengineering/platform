@@ -162,7 +162,7 @@
       on:dragleave={ () => { dragover = false } } 
       on:drop|preventDefault|stopPropagation={drop}>
     {#if resume.uuid}
-      <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid }, 'right') } }/>
+      <Link label={resume.name} href={'#'} icon={FileIcon} maxLenght={16} on:click={ () => { showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right') } }/>
     {:else}
       {#if loading}
         <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
