@@ -27,18 +27,6 @@
 
   --duotone-color: rgba(126, 134, 158, .25);
 
-  --trans-primary-button-color: #fff;
-  --trans-primary-button-bg: #4474F6;
-  --trans-primary-button-border: transparent;
-  --trans-primary-button-bg-hovered: #2A5FF6;
-  --trans-primary-button-border-hovered: transparent;
-  
-  --trans-button-color: #fff;
-  --trans-button-bg: transparent;
-  --trans-button-border: rgba(255, 255, 255, .2);
-  --trans-button-bg-hovered: rgba(255, 255, 255, .05);
-  --trans-button-border-hovered: rgba(255, 255, 255, .25);
-
   --system-error-color: #EE7A7A;
   --system-error-60-color: rgba(238, 122, 122, .6); // #EE7A7A / 60%
 
@@ -47,6 +35,8 @@
   --activity-status-busy: #FCC500;
   --activity-status-away: #9099A2;
 
+  --grayscale-grey-03: #77818E;
+  
   --primary-color-purple-01: #4B38BD;
   --primary-color-purple-02: #6552DB;
   --primary-color-purple-03: #9D92C4;
@@ -66,12 +56,12 @@
   --theme-menu-selection: #1D1D23;
   --theme-menu-divider: rgba(255, 255, 255, .05);
   --theme-scroll-bar: #2C2C34;
-  --theme-dialog-bg: rgba(31, 31, 37, .8);
+  // --theme-dialog-bg: rgba(31, 31, 37, .8);
   --theme-dialog-accent: rgba(255, 255, 255, .03);
   --theme-dialog-divider: rgba(255, 255, 255, .1);
   --theme-dialog-spec: rgba(47, 47, 53, .6);
   --theme-dialog-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
-  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-border-modal: rgba(0, 0, 0, .2);
   --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
   --theme-chat-divider: rgb(36, 36, 41);
   --theme-incoming-msg: rgba(67, 67, 72, .3);
@@ -79,14 +69,13 @@
 
   --theme-card-bg: rgba(222, 222, 240, .2);
   --theme-card-bg-dark: rgba(222, 222, 240, .1);
-  --theme-card-bg-accent: rgba(255, 255, 255, .04);
   --theme-card-divider: rgba(255, 255, 255, .1);
-  --theme-card-shadow: 0px 34px 74px rgba(0, 0, 0, 0.55);
-  --theme-avatar-bg: #E0DAD5;
-  --theme-avatar-hover: rgba(195, 195, 204, .2);
+  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .2);
   --theme-avatar-border: rgba(255, 255, 255, .1);
-  --theme-avatar-shadow: drop-shadow(0px 14px 44px rgba(74, 67, 64, .8));
   --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-zone-bg: rgba(255, 255, 255, .05);
+  --theme-zone-border: rgba(255, 255, 255, .2);
+  --theme-zone-border-lite: rgba(255, 255, 255, .16);
 
   --theme-bg-accent-color: rgba(255, 255, 255, .03);
   --theme-bg-accent-hover: rgba(255, 255, 255, .06);
@@ -95,7 +84,7 @@
   --theme-bg-focused-border: rgba(255, 255, 255, .4);
   --theme-bg-accent-error: rgba(251, 158, 158, .06);
   --theme-on-color: #4474F6;
-  --theme-off-color: #77818E;
+  --theme-off-color: #2A2A30;
   --theme-bg-check: #F2F2F2;
   --theme-tooltip-color: #2F2F34;
   --theme-showmore-color: #484850;
@@ -112,6 +101,10 @@
   --theme-button-border-disabled: rgba(255, 255, 255, .06);
   --theme-button-border-focused: rgba(255, 255, 255, .4);
   --theme-button-border-error: rgba(205, 104, 104, .1);
+  --theme-button-trans-primary-disabled: rgba(255, 255, 255, .1);
+  --theme-circle-select: #1F1F25;
+  --theme-circle-trans: rgba(31, 31, 37, .3);
+  --theme-circle-border: rgba(255, 255, 255, .2);
 
   --theme-table-bg-color: rgba(255, 255, 255, .02);
   --theme-table-bg-hover: rgba(255, 255, 255, .04);
@@ -144,12 +137,12 @@
   --theme-menu-selection: #37363F;
   --theme-menu-divider: rgba(255, 255, 255, .05);
   --theme-scroll-bar: #494852;
-  --theme-dialog-bg: rgba(31, 31, 37, .8);
+  // --theme-dialog-bg: rgba(31, 31, 37, .8);
   --theme-dialog-accent: rgba(255, 255, 255, .03);
   --theme-dialog-divider: rgba(255, 255, 255, .1);
   --theme-dialog-spec: rgba(47, 47, 53, .6);
   --theme-dialog-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
-  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-border-modal: rgba(0, 0, 0, .2);
   --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
   --theme-chat-divider: rgb(66, 65, 76);
   --theme-incoming-msg: rgba(67, 67, 72, .3);
@@ -157,14 +150,13 @@
 
   --theme-card-bg: rgba(222, 222, 240, .2);
   --theme-card-bg-dark: rgba(222, 222, 240, .1);
-  --theme-card-bg-accent: rgba(255, 255, 255, .04);
   --theme-card-divider: rgba(255, 255, 255, .1);
   --theme-card-shadow: 0px 34px 74px rgba(0, 0, 0, 0.55);
-  --theme-avatar-bg: #E0DAD5;
-  --theme-avatar-hover: radial-gradient(86.62% 86.62% at 50% 13.38%, rgba(196, 196, 204, 0.4) 0%, rgba(137, 140, 150, 0.4) 100%);
   --theme-avatar-border: rgba(255, 255, 255, .1);
-  --theme-avatar-shadow: drop-shadow(0px 14px 44px rgba(74, 67, 64, .8));
   --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-zone-bg: rgba(255, 255, 255, .05);
+  --theme-zone-border: rgba(255, 255, 255, .2);
+  --theme-zone-border-lite: rgba(255, 255, 255, .16);
 
   --theme-bg-accent-color: rgba(255, 255, 255, .03);
   --theme-bg-accent-hover: rgba(255, 255, 255, .06);
@@ -173,7 +165,7 @@
   --theme-bg-focused-border: rgba(255, 255, 255, .4);
   --theme-bg-accent-error: rgba(251, 158, 158, .06);
   --theme-on-color: #4474F6;
-  --theme-off-color: #77818E;
+  --theme-off-color: #494853;
   --theme-bg-check: #F2F2F2;
   --theme-tooltip-color: #4D4C58;
   --theme-showmore-color: #484850;
@@ -190,6 +182,10 @@
   --theme-button-border-disabled: rgba(255, 255, 255, .06);
   --theme-button-border-focused: rgba(255, 255, 255, .4);
   --theme-button-border-error: rgba(205, 104, 104, .1);
+  --theme-button-trans-primary-disabled: rgba(255, 255, 255, .1);
+  --theme-circle-select: #3F3E4A;
+  --theme-circle-trans: rgba(31, 31, 37, .3);
+  --theme-circle-border: rgba(255, 255, 255, .2);
 
   --theme-table-bg-color: rgba(255, 255, 255, .02);
   --theme-table-bg-hover: rgba(255, 255, 255, .04);
@@ -221,27 +217,26 @@
   --theme-menu-selection: #DBDBDB;
   --theme-menu-divider: rgba(0, 0, 0, .08);
   --theme-scroll-bar: #CBCBCB;
-  --theme-dialog-bg: rgba(255, 255, 255, .4);
+  // --theme-dialog-bg: rgba(255, 255, 255, .4);
   --theme-dialog-accent: rgba(31, 33, 43, .03);
   --theme-dialog-divider: rgba(31, 33, 43, .06);
   --theme-dialog-spec: rgba(47, 47, 53, .6);
   --theme-dialog-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
-  --theme-border-modal: rgba(0, 0, 0, 0.2);
+  --theme-border-modal: rgba(0, 0, 0, .2);
   --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
   --theme-chat-divider: rgb(233, 233, 233);
   --theme-incoming-msg: rgba(67, 67, 72, .3);
   --theme-outcoming-msg: rgba(67, 67, 72, .6);
 
-  --theme-card-bg: rgba(255, 255, 255, .6);
+  --theme-card-bg: #FFF;
   --theme-card-bg-dark: rgba(255, 255, 255, .3);
-  --theme-card-bg-accent: rgba(0, 0, 0, .04);
   --theme-card-divider: rgba(0, 0, 0, .1);
   --theme-card-shadow: 0px 24px 74px rgba(100, 89, 89, .5);
-  --theme-avatar-bg: #C4C4C4;
-  --theme-avatar-hover: #EEEDED;
-  --theme-avatar-border: rgba(255, 255, 255, .7);
-  --theme-avatar-shadow: drop-shadow(0px 14px 44px rgba(74, 67, 64, .8));
+  --theme-avatar-border: transparent;
   --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-zone-bg: rgba(0, 0, 0, .05);
+  --theme-zone-border: rgba(0, 0, 0, .2);
+  --theme-zone-border-lite: rgba(0, 0, 0, .16);
 
   --theme-bg-accent-color: rgba(0, 0, 0, .03);
   --theme-bg-accent-hover: rgba(0, 0, 0, .05);
@@ -250,7 +245,7 @@
   --theme-bg-focused-border: rgba(0, 0, 0, .4);
   --theme-bg-accent-error: rgba(251, 158, 158, .06);
   --theme-on-color: #4474F6;
-  --theme-off-color: #ECEEF5;
+  --theme-off-color: #DBDBDB;
   --theme-bg-check: #45444F;
   --theme-tooltip-color: #F1F1F4;
   --theme-showmore-color: #484850;
@@ -267,6 +262,10 @@
   --theme-button-border-disabled: rgba(255, 255, 255, .06);
   --theme-button-border-focused: rgba(255, 255, 255, .4);
   --theme-button-border-error: rgba(205, 104, 104, .1);
+  --theme-button-trans-primary-disabled: #E7E7E7;
+  --theme-circle-select: #F7F7F7;
+  --theme-circle-trans: #F7F7F7;
+  --theme-circle-border: rgba(31, 33, 43, .2);
 
   --theme-table-bg-color: rgba(0, 0, 0, .02);
   --theme-table-bg-hover: rgba(0, 0, 0, .04);
@@ -276,10 +275,10 @@
   --theme-popup-border: 1px solid rgba(0, 0, 0, .06);
   --theme-popup-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
 
-  --theme-caption-color: #272121;
-  --theme-content-accent-color: rgba(39, 33, 33, 0.8);
-  --theme-content-color: rgba(39, 33, 33, 0.6);
-  --theme-content-dark-color: rgba(39, 33, 33, 0.4);
+  --theme-caption-color: #1F212B;
+  --theme-content-accent-color: rgba(31, 33, 43, .8);
+  --theme-content-color: rgba(31, 33, 43, .6);
+  --theme-content-dark-color: rgba(31, 33, 43, .4);
   --theme-content-trans-color: rgba(31, 33, 43, 0.3);
 
   --theme-userlink-color: #b92d52;

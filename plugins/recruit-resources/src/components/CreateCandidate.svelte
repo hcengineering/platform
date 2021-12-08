@@ -157,7 +157,7 @@
     {/if}
   </div>
 
-  <div class="flex-center resume" class:solid={dragover} 
+  <div class="flex-center resume" class:solid={dragover || resume.uuid} 
       on:dragover|preventDefault={ () => { dragover = true } } 
       on:dragleave={ () => { dragover = false } } 
       on:drop|preventDefault|stopPropagation={drop}>
@@ -213,15 +213,10 @@
   .resume {
     margin-top: 1rem;
     padding: .75rem;
-    background: rgba(255, 255, 255, .05);
-    border: 1px dashed rgba(255, 255, 255, .2);
+    background: var(--theme-zone-bg);
+    border: 1px dashed var(--theme-zone-border);
     border-radius: .5rem;
     backdrop-filter: blur(10px);
     &.solid { border-style: solid; }
   }
-  // .resume a {
-  //   font-size: .75rem;
-  //   color: var(--theme-content-dark-color);
-  //   &:hover { color: var(--theme-content-color); }
-  // }
 </style>

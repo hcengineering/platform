@@ -25,24 +25,17 @@
   export let primary: boolean = false
 </script>
 
-<div class="icon-button icon-{size}" class:selected class:transparent class:primary on:click on:mousemove>
+<div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click on:mousemove>
   <div class="content">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size={'small'} />
-    {:else}
-      <svelte:component this={icon} size={'small'} />
-    {/if}
+    <Icon {icon} size={'small'} />
   </div>
 </div>
 
 <style lang="scss">
   .icon-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--theme-card-divider);
+    color: var(--theme-caption-color);
+    border: 1px solid var(--theme-circle-border);
     border-radius: 50%;
-    backdrop-filter: blur(3px);
     cursor: pointer;
 
     .content {
@@ -50,16 +43,9 @@
       transform: scale(.75);
       pointer-events: none;
     }
-    &:hover {
-      color: var(--theme-caption-color);
-      border-color: var(--theme-bg-focused-border);
-    }
-    &:active {
-      color: var(--theme-content-accent-color);
-      background-color: var(--theme-bg-accent-color);
-    }
-    &.selected { background-color: var(--theme-button-bg-hovered); }
-    &.transparent { background-color: rgba(31, 31, 37, .3); }
+
+    &.selected { background-color: var(--theme-circle-select); }
+    &.transparent { background-color: var(--theme-circle-trans); }
     &.primary {
       color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);

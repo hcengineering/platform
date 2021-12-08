@@ -57,9 +57,7 @@
 {:else}
   <div class="unionSection">
     <div class="flex-row-center header">
-      <div class="content-color">
-        <Icon {icon} size={'large'} />
-      </div>
+      <Icon {icon} size={'large'} />
       <div class="flex-grow ml-4 flex-col">
         <div class="fs-title">{title}</div>
         <div class="small-text content-dark-color">Candidate pool name</div>
@@ -92,7 +90,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-dialog-bg);
+    background: var(--theme-bg-color);
     border-radius: 1.25rem;
     box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
     backdrop-filter: blur(15px);
@@ -102,14 +100,14 @@
       padding: 0 2rem 0 2.5rem;
       height: 4rem;
       color: var(--theme-content-accent-color);
-      border-bottom: 1px solid var(--theme-dialog-divider);
+      border-bottom: 1px solid var(--theme-zone-bg);
     }
 
     .subtitle {
       flex-shrink: 0;
       padding: 0 2rem;
       height: 3.5rem;
-      border-bottom: 1px solid var(--theme-dialog-divider);
+      border-bottom: 1px solid var(--theme-zone-bg);
     }
   }
 
@@ -134,19 +132,19 @@
     flex-direction: column;
   }
   .leftSection {
-    border-right: 1px solid var(--theme-dialog-divider);
+    border-right: 1px solid var(--theme-card-divider);
     .scroll-container {
       overflow: auto;
-      margin: 2rem 2rem 1.5rem;
+      margin: 2.5rem 2rem 1.5rem;
       .content {
         flex-shrink: 0;
         margin: .5rem .5rem 0;
       }
     }
   }
-  .rightSection {
-    background-color: transparent;
-  }
+  // .rightSection {
+  //   background-color: transparent;
+  // }
 
   .tools {
     position: absolute;

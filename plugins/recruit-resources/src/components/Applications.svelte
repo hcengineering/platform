@@ -41,7 +41,7 @@
 <div class="applications-container">
   <div class="flex-row-center">
     <div class="title">Applications</div>
-    <CircleButton icon={IconAdd} size={'small'} on:click={createApp} />
+    <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
   {#if applications.length > 0}
     <Table 

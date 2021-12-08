@@ -30,7 +30,7 @@
   else if (value === false) value = undefined
   else value = true
 }}>
-  <svg class="svg-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <svg class="yesno-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
     <circle fill="#fff" cx="8" cy="8" r="6"/>
     {#if value === true}
       <polygon fill="#60B96E" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 "/>
@@ -40,28 +40,32 @@
       <path fill="#77818E" d="M7.3,9.3h1.3V9c0.1-0.5,0.6-0.9,1.1-1.4c0.4-0.4,0.8-0.9,0.8-1.6c0-1.1-0.8-1.8-2.2-1.8c-1.4,0-2.4,0.8-2.5,2.2 h1.4c0.1-0.6,0.4-1,1-1C8.8,5.4,9,5.7,9,6.2c0,0.4-0.3,0.7-0.7,1.1c-0.5,0.5-1,0.9-1,1.7V9.3z M8,11.6c0.5,0,0.9-0.4,0.9-0.9 c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9C7.1,11.2,7.5,11.6,8,11.6z"/>
     {/if}
   </svg>
-  <span><Label label={getLabel(value)} /></span>
+  <div class="label"><Label label={getLabel(value)} /></div>
 </div>
 
 <style lang="scss">
   .yesno-container {
-    padding: .25rem .5rem .25rem .25rem;
+    padding: .25rem .5rem .25rem .4rem;
     max-width: fit-content;
     border-radius: 1.25rem;
     user-select: none;
     cursor: pointer;
 
-    background-color: #77818E;
+    background-color: var(--grayscale-grey-03);
     &.yes { background-color: #60B96E; }
     &.no { background-color: #F06C63; }
 
-    span {
-      width: 1.6rem;
+    .label {
+      width: 1.4rem;
       margin-left: .25rem;
       text-transform: uppercase;
       font-weight: 500;
       font-size: .625rem;
-      color: var(--theme-caption-color);
+      color: #FFF;
     }
+  }
+  .yesno-svg {
+    width: 1rem;
+    height: 1rem;
   }
 </style>
