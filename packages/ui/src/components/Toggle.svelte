@@ -25,6 +25,8 @@
 <style lang="scss">
   .toggle {
     display: inline-block;
+    width: 3.25rem;
+    min-width: 3.25rem;
     height: 1.75rem;
     line-height: 1.75rem;
     vertical-align: middle;
@@ -42,43 +44,31 @@
       
       &:checked + .toggle-switch {
         background-color: var(--theme-on-color);
-        &:before {
-          left: 1.625rem;
-        }
+        &:before { left: calc(3.5rem - 1.625rem); }
       }
-      &:not(:disabled) + .toggle-switch {
-        cursor: pointer;
-      }
+      &:not(:disabled) + .toggle-switch { cursor: pointer; }
       &:disabled + .toggle-switch {
         filter: grayscale(70%);
-        &:before {
-          background: #eee;
-        }
+        &:before { background: #eee; }
       }
-      &:focus-within + .toggle-switch {
-        border: 1px solid var(--primary-button-focused-border);
-        box-shadow: 0 0 0 2px var(--primary-button-outline);
-      }
+      // &:focus-within + .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
     }
-    &:active > .toggle-switch {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 2px var(--primary-button-outline);
-    }
+    // &:active > .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
     .toggle-switch {
       position: relative;
       display: inline-block;
       width: 3.5rem;
-      height: 1.875rem;
+      height: 1.75rem;
       border-radius: 3.125rem;
       // vertical-align: top;
       background-color: var(--theme-off-color);
-      border: 1px solid rgba(0, 0, 0, .1);
-      transition: left .2s;
+      box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
+      transition: left .2s, background-color .2s;
       &:before {
         content: '';
         position: absolute;
         top: .125rem;
-        left: .25rem;
+        left: .125rem;
         display: inline-block;
         width: 1.5rem;
         height: 1.5rem;
