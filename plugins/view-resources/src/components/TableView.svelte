@@ -13,18 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { CheckBox, IconDown, IconUp, Label, Loading, ScrollBox, showPopup } from '@anticrm/ui'
   import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
-
-  import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
@@ -39,15 +35,23 @@
   let objects: Doc[]
 
   const query = createQuery()
-  $: query.query(_class, search === '' ? { space } : { $search: search }, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
+  $: query.query(
+    _class,
+    search === '' ? { space } : { $search: search },
+    (result) => {
+      objects = result
+    },
+    { sort: { [sortKey]: sortOrder }, ...options }
+  )
 
-  function getValue(doc: Doc, key: string): any {
-    if (key.length === 0)
+  function getValue (doc: Doc, key: string): any {
+    if (key.length === 0) {
       return doc
+    }
     const path = key.split('.')
     const len = path.length
     let obj = doc as any
-    for (let i=0; i<len; i++){
+    for (let i = 0; i < len; i++) {
       obj = obj?.[path[i]]
     }
     return obj ?? ''
@@ -58,76 +62,96 @@
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, (() => { selectRow = undefined }))
+    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
+      selectRow = undefined
+    })
   }
 
-  function changeSorting(key: string) {
-    if (key === '')
+  function changeSorting (key: string): void {
+    if (key === '') {
       return
+    }
     if (key !== sortKey) {
       sortKey = key
       sortOrder = SortingOrder.Ascending
     } else {
-      sortOrder = (sortOrder === SortingOrder.Ascending) ? SortingOrder.Descending : SortingOrder.Ascending
+      sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
     }
   }
 </script>
 
-{#await buildModel({client, _class, keys: config, options})}
- <Loading/>
+{#await buildModel({ client, _class, keys: config, options })}
+  <Loading />
 {:then model}
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <table class="table-body">
-      <thead>
-        <tr class="tr-head">
-          {#each model as attribute, cellHead}
-            {#if !cellHead}
-              <th>
-                <div class="checkCell" class:checkall={checking}>
-                  <CheckBox symbol={'minus'} />
+  <div class="container">
+    <ScrollBox vertical stretch noShift>
+      <table class="table-body">
+        <thead>
+          <tr class="tr-head">
+            {#each model as attribute, cellHead}
+              {#if !cellHead}
+                <th>
+                  <div class="checkCell" class:checkall={checking}>
+                    <CheckBox symbol={'minus'} />
+                  </div>
+                </th>
+              {/if}
+
+              <th
+                class:sortable={attribute.key}
+                class:sorted={attribute.key === sortKey}
+                on:click={() => changeSorting(attribute.key)}
+              >
+                <div class="flex-row-center">
+                  <Label label={attribute.label} />
+                  {#if attribute.key === sortKey}
+                    <div class="icon">
+                      {#if sortOrder === SortingOrder.Ascending}
+                        <IconUp size={'small'} />
+                      {:else}
+                        <IconDown size={'small'} />
+                      {/if}
+                    </div>
+                  {/if}
                 </div>
               </th>
-            {/if}
-            <th class:sortable={attribute.key} class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
-              <div class="flex-row-center">
-                <Label label = {attribute.label}/>
-                {#if attribute.key === sortKey}
-                  <div class="icon">
-                    {#if sortOrder === SortingOrder.Ascending}
-                      <IconUp size={'small'} />
-                    {:else}
-                      <IconDown size={'small'} />
-                    {/if}
-                  </div>
-                {/if}
-              </div>
-            </th>
-          {/each}
-        </tr>
-      </thead>
-      {#if objects}
-        <tbody>
-          {#each objects as object, row (object._id)}
-            <tr class="tr-body" class:checking class:fixed={row === selectRow}>
-              {#each model as attribute, cell}
-                {#if !cell}
-                  <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
-                  <td><div class="firstCell">
-                    <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
-                    <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
-                  </div></td>
-                {:else}
-                  <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
-                {/if}
-              {/each}
-            </tr>
-          {/each}
-        </tbody>
-      {/if}
-    </table>
-  </ScrollBox>
-</div>
+            {/each}
+          </tr>
+        </thead>
+        {#if objects}
+          <tbody>
+            {#each objects as object, row (object._id)}
+              <tr class="tr-body" class:checking class:fixed={row === selectRow}>
+                {#each model as attribute, cell}
+                  {#if !cell}
+                    <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
+                    <td
+                      ><div class="firstCell">
+                        <svelte:component
+                          this={attribute.presenter}
+                          value={getValue(object, attribute.key)}
+                          {...attribute.props}
+                        />
+                        <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
+                      </div></td
+                    >
+                  {:else}
+                    <td
+                      ><svelte:component
+                        this={attribute.presenter}
+                        value={getValue(object, attribute.key)}
+                        {...attribute.props}
+                      /></td
+                    >
+                  {/if}
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        {/if}
+      </table>
+    </ScrollBox>
+  </div>
 {/await}
 
 <style lang="scss">
@@ -138,7 +162,9 @@
     height: 100%;
   }
 
-  .table-body { width: 100%; }
+  .table-body {
+    width: 100%;
+  }
 
   .firstCell {
     display: flex;
@@ -146,10 +172,12 @@
     align-items: center;
     .menuRow {
       visibility: hidden;
-      margin-left: .5rem;
-      opacity: .6;
+      margin-left: 0.5rem;
+      opacity: 0.6;
       cursor: pointer;
-      &:hover { opacity: 1; }
+      &:hover {
+        opacity: 1;
+      }
     }
   }
   .checkCell {
@@ -158,11 +186,12 @@
     align-items: center;
   }
 
-  th, td {
-    padding: .5rem 1.5rem;
+  th,
+  td {
+    padding: 0.5rem 1.5rem;
     text-align: left;
     &:first-child {
-      padding: 0 .75rem;
+      padding: 0 0.75rem;
       width: 2.5rem;
     }
     &:nth-child(2) {
@@ -176,36 +205,51 @@
     top: 0;
     height: 2.5rem;
     font-weight: 500;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--theme-content-dark-color);
     background-color: var(--theme-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     user-select: none;
     z-index: 5;
 
-    &.sortable { cursor: pointer; }
-    &.sorted .icon {
-      margin-left: .25rem;
-      opacity: .6;
+    &.sortable {
+      cursor: pointer;
     }
-    .checkall { visibility: visible; }
+    &.sorted .icon {
+      margin-left: 0.25rem;
+      opacity: 0.6;
+    }
+    .checkall {
+      visibility: visible;
+    }
   }
 
   .tr-body {
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:hover, &.checking {
+    &:hover,
+    &.checking {
       background-color: var(--theme-table-bg-hover);
-      .checkCell { visibility: visible; }
+      .checkCell {
+        visibility: visible;
+      }
     }
-    &:hover .firstCell .menuRow { visibility: visible; }
-    &:last-child { border-bottom: none; }
+    &:hover .firstCell .menuRow {
+      visibility: visible;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
   .fixed {
     background-color: var(--theme-table-bg-hover);
-    .checkCell { visibility: visible; }
-    .menuRow { visibility: visible; }
+    .checkCell {
+      visibility: visible;
+    }
+    .menuRow {
+      visibility: visible;
+    }
   }
 </style>

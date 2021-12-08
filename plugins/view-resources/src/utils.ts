@@ -14,37 +14,37 @@
 // limitations under the License.
 //
 
-import core, { Class, Client, Doc, FindOptions, FindResult, Obj, Ref, AttachedDoc, TxOperations, Collection } from '@anticrm/core'
+import core, { AttachedDoc, Class, Client, Collection, Doc, FindOptions, FindResult, Obj, Ref, TxOperations } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass } from '@anticrm/presentation'
-import type { AnyComponent } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
-import view, { AttributeModel } from '@anticrm/view'
+import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
+import { ErrorPresenter } from '@anticrm/ui'
 
 /**
  * @public
  */
-export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>>, preserveKey: string): Promise<AttributeModel> {
+export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>>, preserveKey: BuildModelKey): Promise<AttributeModel> {
   const clazz = client.getHierarchy().getClass(_class)
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   if (presenterMixin.presenter === undefined) {
     if (clazz.extends !== undefined) {
       return await getObjectPresenter(client, clazz.extends, preserveKey)
     } else {
-      throw new Error('object presenter not found for ' + preserveKey)
+      throw new Error('object presenter not found for ' + JSON.stringify(preserveKey))
     }
   }
   const presenter = await getResource(presenterMixin.presenter)
   return {
-    key: preserveKey,
+    key: typeof preserveKey === 'string' ? preserveKey : '',
     _class,
     label: clazz.label,
     presenter
   }
 }
 
-async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string): Promise<AttributeModel> {
+async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: BuildModelKey): Promise<AttributeModel> {
   const attribute = client.getHierarchy().getAttribute(_class, key)
   let attrClass = getAttributePresenterClass(attribute)
   const clazz = client.getHierarchy().getClass(attrClass)
@@ -57,25 +57,25 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
     parent = pclazz.extends
   }
   if (presenterMixin.presenter === undefined) {
-    throw new Error('attribute presenter not found for ' + preserveKey)
+    throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
   const presenter = await getResource(presenterMixin.presenter)
   return {
-    key: preserveKey,
+    key: key,
     _class: attrClass,
     label: attribute.label,
     presenter
   }
 }
 
-async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: string, options?: FindOptions<Doc>): Promise<AttributeModel> {
+async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: BuildModelKey, preserveKey: BuildModelKey, options?: FindOptions<Doc>): Promise<AttributeModel> {
   if (typeof key === 'object') {
     const { presenter, label } = key
     return {
       key: '',
       _class,
       label: label as IntlString,
-      presenter: await getResource(presenter as AnyComponent)
+      presenter: await getResource(presenter)
     }
   }
   if (key.length === 0) {
@@ -103,16 +103,25 @@ async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: strin
 }
 
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
-  console.log('building table model for', options._class)
+  console.log('building table model for', options)
   // eslint-disable-next-line array-callback-return
-  const model = options.keys.map(key => {
+  const model = options.keys.map(async key => {
     try {
-      const result = getPresenter(options.client, options._class, key, key, options.options)
-      return result
+      return await getPresenter(options.client, options._class, key, key, options.options)
     } catch (err: any) {
-      if (!(options.ignoreMissing ?? false)) {
-        throw err
+      if ((options.ignoreMissing ?? false)) {
+        return undefined
       }
+      const stringKey = (typeof key === 'string') ? key : key.label
+      console.error('Failed to find presenter for', key, err)
+      const errorPresenter: AttributeModel = {
+        key: '',
+        presenter: ErrorPresenter,
+        label: stringKey as IntlString,
+        _class: core.class.TypeString,
+        props: { error: err }
+      }
+      return errorPresenter
     }
   })
   console.log(model)
@@ -134,7 +143,7 @@ export async function getActions (client: Client, _class: Ref<Class<Obj>>): Prom
   return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets) } })
 }
 
-export async function deleteObject (client: Client & TxOperations, object: Doc) {
+export async function deleteObject (client: Client & TxOperations, object: Doc): Promise<void> {
   const hierarchy = client.getHierarchy()
   const attributes = hierarchy.getAllAttributes(object._class)
   for (const [name, attribute] of attributes) {
@@ -142,7 +151,7 @@ export async function deleteObject (client: Client & TxOperations, object: Doc) 
       const collection = attribute.type as Collection<AttachedDoc>
       const allAttached = await client.findAll(collection.of, { attachedTo: object._id })
       for (const attached of allAttached) {
-        deleteObject(client, attached)
+        deleteObject(client, attached).catch(err => console.log('failed to delete', name, err))
       }
     }
   }
