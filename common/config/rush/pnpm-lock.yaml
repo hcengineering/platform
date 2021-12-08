@@ -95,7 +95,6 @@ specifiers:
   '@rush-temp/workbench': file:./projects/workbench.tgz
   '@rush-temp/workbench-assets': file:./projects/workbench-assets.tgz
   '@rush-temp/workbench-resources': file:./projects/workbench-resources.tgz
-  '@rush-temp/workspace': file:./projects/workspace.tgz
   '@rushstack/heft': ^0.41.1
   '@rushstack/heft-jest-plugin': ^0.1.15
   '@tiptap/core': ~2.0.0-beta.93
@@ -258,7 +257,6 @@ dependencies:
   '@rush-temp/workbench': file:projects/workbench.tgz
   '@rush-temp/workbench-assets': file:projects/workbench-assets.tgz
   '@rush-temp/workbench-resources': file:projects/workbench-resources.tgz_476f694f64637160ae71e12ff57815b9
-  '@rush-temp/workspace': file:projects/workspace.tgz
   '@rushstack/heft': 0.41.1
   '@rushstack/heft-jest-plugin': 0.1.36_@rushstack+heft@0.41.1
   '@tiptap/core': 2.0.0-beta.118
@@ -10277,7 +10275,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-yXQ6Y94ArLiTyq3DzmeZept/i472lkwoCxN5ewQYn+3RnWUwvrWTqv/HnfE4nC1oRaWFinp8rKRRtXt2uvI4EA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-nbSO6SqE93R4cFPMUkIU19Nn5ZAMItWdQ5+7++7lBjqpJUtUxxgWsIPHjk1wmDmdu4LjPq5F5UruZwQQgu7wJw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -10323,7 +10321,7 @@ packages:
     dev: false
 
   file:projects/model-chunter.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-NoUF0E2WHE7tfG42VyE11efk61UzUHi0Y2pv4QziQVN6uskIzrnS3xUbSRPyEYff9HvffxDJEB5+Ac73rtuPZQ==, tarball: file:projects/model-chunter.tgz}
+    resolution: {integrity: sha512-KT7Np67l39Vu7A7j7JP2WznfOhKSgTx2M76ea33TYZiM7Iqn9iJACx7LWBRpAydPw2bkiwWBOH1cbXJIPwQEyg==, tarball: file:projects/model-chunter.tgz}
     id: file:projects/model-chunter.tgz
     name: '@rush-temp/model-chunter'
     version: 0.0.0
@@ -11427,7 +11425,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-yYYJSLJDN7MZB9u4wzXJuUQfQdx3K5eJ1xtcuniq/NO7c2Am0tmCP5F64l7LyGc+kUQpOoj3vBl58H1tjtgJfw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-TNUt6NCYHOiiDDPuhdNtvqtdvWb8N2xFRQAu+Ku3QyKgKH4dMpzV2WNSDnURNSUtN3mCE2OUyiGOLej8B9lbXA==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -11651,34 +11649,5 @@ packages:
       prettier: 2.4.1
       typescript: 4.4.3
     transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  file:projects/workspace.tgz:
-    resolution: {integrity: sha512-YI/sT3YoO5I4h5IxDaQiW3DpmJ4debbG2AdYBK7a3hZcXInHy5JBYlH26oX8C03HkIFoyjXAKAs4rbhd7juy7w==, tarball: file:projects/workspace.tgz}
-    name: '@rush-temp/workspace'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.1
-      '@types/heft-jest': 1.0.2
-      '@types/minio': 7.0.10
-      '@types/node': 16.10.3
-      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
-      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
-      esbuild: 0.12.29
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.1.1_eslint@7.32.0
-      jwt-simple: 0.5.6
-      minio: 7.0.19
-      mongodb: 4.1.3
-      prettier: 2.4.1
-      ts-node: 10.2.1_8304ecd715830f7c190b4d1dea90b100
-      typescript: 4.4.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
       - supports-color
     dev: false
