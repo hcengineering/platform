@@ -97,19 +97,19 @@ export function createModel (builder: Builder): void {
         }
       ]
     }
-  })
+  }, chunter.app.Chunter)
   builder.createDoc(chunter.class.Channel, core.space.Model, {
     name: 'general',
     description: 'General Channel',
     private: false,
     members: []
-  })
+  }, chunter.space.General)
   builder.createDoc(chunter.class.Channel, core.space.Model, {
     name: 'random',
     description: 'Random Talks',
     private: false,
     members: []
-  })
+  }, chunter.space.Random)
 
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter
