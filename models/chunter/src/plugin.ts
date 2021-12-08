@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { chunterId } from '@anticrm/chunter'
+import { Channel, chunterId } from '@anticrm/chunter'
 import chunter from '@anticrm/chunter-resources/src/plugin'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
@@ -21,6 +21,7 @@ import type { Ref } from '@anticrm/core'
 import { ViewletDescriptor } from '@anticrm/view'
 import type { AnyComponent } from '@anticrm/ui'
 import type { TxViewlet } from '@anticrm/activity'
+import { Application } from '@anticrm/workbench'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -40,5 +41,10 @@ export default mergeIds(chunterId, chunter, {
   },
   activity: {
     TxCommentCreate: '' as AnyComponent
-  }
+  },
+  space: {
+    General: '' as Ref<Channel>,
+    Random: '' as Ref<Channel>
+  },
+  app: { Chunter: '' as Ref<Application> }
 })
