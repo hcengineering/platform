@@ -93,7 +93,7 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
     }
     if (options.sort !== undefined) {
-      let sort = {} as any
+      const sort = {} as any
       for (const _key in options.sort) {
         let key = _key as string
         if (_key.startsWith('$lookup.')) {
