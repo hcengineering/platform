@@ -21,8 +21,12 @@
   import ExpandDown from './icons/ExpandDown.svelte'
 
   import { getFileUrl } from '../utils'
+  import { createEventDispatcher } from 'svelte'
 
   export let file: string
+  export let name: string
+
+  const dispatch = createEventDispatcher()
 
 </script>
 
@@ -35,12 +39,12 @@
     <div class="flex-row-center flex-grow">
       <Avatar size={'medium'} />
       <div class="flex-col user">
-        <div class="overflow-label name">Grace Osaka</div>
-        <div class="overflow-label description">Candidate</div>
+        <div class="overflow-label name">{name}</div>
+        <!-- <div class="overflow-label description">Candidate</div> -->
       </div>
     </div>
     <div class="flex-row-center">
-      <div class="tool"><IconClose size={'small'} /></div>
+      <div class="tool" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
     </div>
   </div>
 
