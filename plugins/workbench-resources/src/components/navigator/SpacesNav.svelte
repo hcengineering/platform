@@ -18,6 +18,7 @@
 
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Ref, Space, Doc } from '@anticrm/core'
+  import core from '@anticrm/core'
   import type { SpacesNavModel } from '@anticrm/workbench'
   import { Action, navigate, getCurrentLocation, location, IconAdd, IconMoreH, IconEdit } from '@anticrm/ui'
 
@@ -65,7 +66,8 @@
     }
   }
 
-  function selectSpace(id: Ref<Space>) {
+
+  function selectSpace (id: Ref<Space>) {
     const loc = getCurrentLocation()
     loc.path[2] = id
     loc.path.length = 3
@@ -75,12 +77,20 @@
   onDestroy(location.subscribe(async (loc) => {
     selected = loc.path[2] as Ref<Space>
   }))
+
+  function getActions (space: Space): Action[] {
+    const result = [editSpace]
+    if (client.getHierarchy().isDerived(space._class, core.class.SpaceWithStates)) {
+      result.push(editStatuses)
+    }
+    return result
+  }
 </script>
 
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={[editSpace, editStatuses]} on:click={() => { selectSpace(space._id) }}/>
+      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={getActions(space)} on:click={() => { selectSpace(space._id) }}/>
     {/each}
   </TreeNode>
 </div>
