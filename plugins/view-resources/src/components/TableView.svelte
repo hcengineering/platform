@@ -105,7 +105,7 @@
                   <div class="checkCell" class:checkall={checked.size > 0}>
                     <CheckBox
                       symbol={'minus'}
-                      checked={objects.length === checked.size}
+                      checked={objects?.length === checked.size}
                       on:change={(e) => {
                         objects.map((o) => check(o._id, e))
                       }}
