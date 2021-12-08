@@ -35,16 +35,18 @@
   let kanban: Kanban | undefined
 
   let states: State[] = []
-  let elements: HTMLElement[] = []
+  const elements: HTMLElement[] = []
+  let spaceClassInstance: Class<SpaceWithStates> | undefined
+  let spaceInstance: SpaceWithStates | undefined
 
   const client = getClient()
 
-  function sort(states: State[]): State[] {
+  function sort (states: State[]): State[] {
     if (kanban === undefined || states.length === 0) { return [] }
     console.log(states)
     const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
     console.log(kanban.states)
-    const x = kanban.states.map(id => map.get(id) as State )
+    const x = kanban.states.map(id => map.get(id) as State)
     return x
   }
 
@@ -54,12 +56,18 @@
   const query = createQuery()
   $: query.query(core.class.State, { _id: { $in: kanban?.states ?? [] } }, result => { states = sort(result) })
 
+  const spaceQ = createQuery()
+  $: spaceQ.query<Class<SpaceWithStates>>(core.class.Class, { _id: spaceClass }, result => { spaceClassInstance = result.shift() })
+
+  const spaceI = createQuery()
+  $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, result => { spaceInstance = result.shift() })
+
   let selected: number | undefined
   let dragState: Ref<State>
   let dragStateInitialPosition: number
 
-  function dragswap(ev: MouseEvent, i: number): boolean {
-    let s = selected as number
+  function dragswap (ev: MouseEvent, i: number): boolean {
+    const s = selected as number
     if (i < s) {
       return ev.offsetY < elements[i].offsetHeight / 2
     } else if (i > s) {
@@ -68,8 +76,8 @@
     return false
   }
 
-  function dragover(ev: MouseEvent, i: number) {
-    let s = selected as number
+  function dragover (ev: MouseEvent, i: number) {
+    const s = selected as number
     if (dragswap(ev, i)) {
       const dragover = states[i]
       const dragging = states[s]
@@ -79,7 +87,7 @@
     }
   }
 
-  async function move(to: number) {
+  async function move (to: number) {
     client.updateDoc(view.class.Kanban, _id, (kanban as Kanban)._id, {
       $move: {
         states: {
@@ -118,9 +126,9 @@
     <div class="flex-grow flex-col">
       <div class="flex-row-center">
         <div class="icon"><Status size={'small'} /></div>
-        <span class="overflow-label title">Manage application statuses within vacancy</span>
+        <span class="overflow-label title">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
       </div>
-      <div class="overflow-label subtitle">Vacancy name</div>
+      <div class="overflow-label subtitle">{spaceInstance?.name}</div>
     </div>
     <div class="tool" on:click={() => dispatch('close')}><Close size={'small'} /></div>
   </div>

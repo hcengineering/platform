@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Label from './Label.svelte'
@@ -36,7 +36,7 @@
 
   $: style = maxWidth ? `max-width: ${maxWidth};` : ''
 
-  function computeSize(t: EventTarget | null) {
+  function computeSize (t: EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
@@ -51,6 +51,12 @@
     }
     computeSize(input)
   })
+
+  afterUpdate(() => {
+    computeSize(input)
+  })
+  
+
 </script>
 
 <div class="container" on:click={() => { input.focus() }}>

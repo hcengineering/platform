@@ -15,9 +15,9 @@
 
 import { SvelteComponent } from 'svelte'
 import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
-import { getResource, IntlString } from '@anticrm/platform'
-import { addStringsLoader } from '@anticrm/platform'
-import { uiId } from './plugin' 
+import { getResource, IntlString, addStringsLoader } from '@anticrm/platform'
+import { uiId } from './plugin'
+import { writable, readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
@@ -79,10 +79,9 @@ export { default as IconDelete } from './components/icons/Delete.svelte'
 export { default as IconEdit } from './components/icons/Edit.svelte'
 export { default as IconInfo } from './components/icons/Info.svelte'
 export { default as Menu } from './components/Menu.svelte'
+export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
 
 export * from './utils'
-
-import { writable, readable } from 'svelte/store'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })

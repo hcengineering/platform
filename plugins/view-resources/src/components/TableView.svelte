@@ -14,15 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Class, Doc, Space, FindOptions } from '@anticrm/core'
+  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { CheckBox, IconDown, IconUp, Label, Loading, ScrollBox, showPopup } from '@anticrm/ui'
   import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, ScrollBox, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
-
-  import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
@@ -47,7 +45,9 @@
   )
 
   function getValue (doc: Doc, key: string): any {
-    if (key.length === 0) return doc
+    if (key.length === 0) {
+      return doc
+    }
     const path = key.split('.')
     const len = path.length
     let obj = doc as any
@@ -67,8 +67,10 @@
     })
   }
 
-  function changeSorting (key: string) {
-    if (key === '') return
+  function changeSorting (key: string): void {
+    if (key === '') {
+      return
+    }
     if (key !== sortKey) {
       sortKey = key
       sortOrder = SortingOrder.Ascending
@@ -150,12 +152,22 @@
                     >
                     <td
                       ><div class="firstCell">
-                        <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} />
+                        <svelte:component
+                          this={attribute.presenter}
+                          value={getValue(object, attribute.key)}
+                          {...attribute.props}
+                        />
                         <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
                       </div></td
                     >
                   {:else}
-                    <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} /></td>
+                    <td
+                      ><svelte:component
+                        this={attribute.presenter}
+                        value={getValue(object, attribute.key)}
+                        {...attribute.props}
+                      /></td
+                    >
                   {/if}
                 {/each}
               </tr>

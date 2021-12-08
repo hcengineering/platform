@@ -106,11 +106,21 @@ export const viewId = 'view' as Plugin
 /**
  * @public
  */
+export type BuildModelKey = string | {
+  presenter: AnyComponent
+  label: string
+}
+
+/**
+ * @public
+ */
 export interface AttributeModel {
   key: string
   label: IntlString
   _class: Ref<Class<Doc>>
   presenter: AnySvelteComponent
+  // Extra properties for component
+  props?: Record<string, any>
 }
 
 /**
@@ -119,7 +129,7 @@ export interface AttributeModel {
 export interface BuildModelOptions {
   client: Client
   _class: Ref<Class<Obj>>
-  keys: string[]
+  keys: BuildModelKey[]
   options?: FindOptions<Doc>
   ignoreMissing?: boolean
 }
