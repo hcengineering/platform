@@ -57,6 +57,11 @@
   function lastNameChange() {
     client.updateDoc(recruit.class.Candidate, object.space, object._id, { name: combineName(getFirstName(object.name), lastName) })
   }
+
+  const openActivity = (): void => {
+    rightSection = undefined
+    fullSize = true
+  }
 </script>
 
 {#if object !== undefined}
@@ -95,8 +100,8 @@
         </div>
 
         <div class="flex-row-center">
-          <a href={'#'} class="flex-row-center" on:click={() => { rightSection = undefined }}>
-            <CircleButton icon={IconActivity} size={'small'} primary on:click={() => { rightSection = undefined }} />
+          <a href={'#'} class="flex-row-center" on:click={openActivity}>
+            <CircleButton icon={IconActivity} size={'small'} primary on:click={openActivity} />
             <span class="ml-2 small-text">View activity</span>
           </a>
         </div>
