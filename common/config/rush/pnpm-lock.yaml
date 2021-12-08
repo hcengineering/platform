@@ -9811,7 +9811,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-I563510HapGECL9TC1qo8OQsLhKaMl/ttdIWN6vL+XOPcJY+YnmLrMmo0UNMcbCo8liNfvrNmjgbnjpSdl2ikg==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-5aEH1fHFn/BbM8mJcS2gPNW9koEkNtX8P3uC+iEID5xQPUuJV5rsfba17/Iq2bYj5DeLkyvNO5wAwoECwVCvRA==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -10140,7 +10140,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-JO4mPZzFqoE1LYtroNwlQAUPqc2nbyarfsVlsnAC0uX87jvl7HA78tCDVzuh8LHZfexY0ilrcu1Y0ItOymdT9g==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-o80Jqqi39oV9wTk/nhjlU53bHy92gsqqCQo1nWTsPLlMB+R1nYY5/Yw/GFxsuVHSzbzjmahUnkHIOxltJMSTig==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -10407,7 +10407,7 @@ packages:
     dev: false
 
   file:projects/model-lead.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-uj6uS5KfwNIUxmSBOMO5fZT/OlT3JgXlo4OGEmg0LSGHRXUBI5nAkbLevY81kVQbtN3mKB7MPz1nLm09cxuhSw==, tarball: file:projects/model-lead.tgz}
+    resolution: {integrity: sha512-qEMZ6aUEiEZgFvIMcqR8lTVkKKiUNM4eAa5OeLjnDmY1TkFF60EJpnE0e2D1SzO8zPdS+cDH+jT9FqRvXtkO9A==, tarball: file:projects/model-lead.tgz}
     id: file:projects/model-lead.tgz
     name: '@rush-temp/model-lead'
     version: 0.0.0
@@ -10846,7 +10846,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-BsM4OYUp0S0TI6LsvclxVQ0kG6U9Oj4gbGbD38jUPIy02pVP82bS2WrAWh7/s3H4j+sbUnmmrVRulaDAcw34rw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-EiXyXpntXiKwZYik5KcFitoFzvuRz3SaDN5fdwaB+IYXKXEk7Y+9Q/z8CWX4xpLZDBMDMQyTuj/fJRO2qxC52w==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -10920,7 +10920,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_476f694f64637160ae71e12ff57815b9:
-    resolution: {integrity: sha512-jJZMXXqVj+ovkyBhJrgToGioIbSmbf7otw3GrGcO/SuZ87j21EZHEY5vKaFAhuXDOriTz7UeajmGmUsx2H7okA==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-V7iAy6fX/2McQ0gZjvzHL4qA4ETElxXHEBh6ZnXBuYE8ht0sqLIXSGdgJstxyR++MWTe5ZM7l4GS/re3zYGdnw==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -11241,7 +11241,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_e1367da94684b005adf08f025c517b1a:
-    resolution: {integrity: sha512-zueI7N0xsHL7n4RRTJzNqXaDvrdC/BgotXDMVEFz4TKTvJuwGZ/39TfLaLQM0b/AWvDJV3iG3WS0z9ZMbtHc2g==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-8q7drsS3cuBhtj4PIl+/QIH8QDt0fZWk89fH3FxY/3Oog8Xd5dGkBH4YdPHUSyk9k5u9iS/P8OwvR9CKMBmxRg==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -11427,7 +11427,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-klTUXsaa1dlq4wR1u+u3vJ8Vh8Z+StBadUgTZ1r0aqYjVXx9npJFqF+PHucl2LbZ0gDeHqC7crbxfGuui9na1Q==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-yYYJSLJDN7MZB9u4wzXJuUQfQdx3K5eJ1xtcuniq/NO7c2Am0tmCP5F64l7LyGc+kUQpOoj3vBl58H1tjtgJfw==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -11439,6 +11439,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
       '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
       commander: 8.2.0
+      cross-env: 7.0.3
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c

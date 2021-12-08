@@ -75,7 +75,15 @@ function arrayOrValue (vv: any): any[] {
 export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuery<T>): void {
   const sortFunc = (a: any, b: any): number => {
     for (const key in sortOptions) {
-      const result = typeof a[key] === 'string' ? a[key].localeCompare(b[key]) : a[key] - b[key]
+      let aValue = getNestedValue(key, a)
+      if (typeof aValue === 'object') {
+        aValue = JSON.stringify(aValue)
+      }
+      let bValue = getNestedValue(key, b)
+      if (typeof bValue === 'object') {
+        bValue = JSON.stringify(bValue)
+      }
+      const result = typeof aValue === 'string' ? aValue.localeCompare(bValue) : aValue - bValue
       if (result !== 0) return result * (sortOptions[key] as number)
     }
     return 0

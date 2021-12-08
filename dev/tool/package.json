@@ -12,11 +12,12 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
-    "run-local": "MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 MINIO_ENDPOINT=localhost TELEGRAM_DATABASE=telegram-service ts-node ./src/index.ts",
+    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 MINIO_ENDPOINT=localhost TELEGRAM_DATABASE=telegram-service ts-node ./src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
