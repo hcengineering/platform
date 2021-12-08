@@ -63,18 +63,19 @@ function onSearch(ev: Event) {
     <div class="flex-between toolbar">
       <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
 
-      <div class="flex">
-        {#each viewlets as viewlet, i}
-          <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
-            <div class="icon">
-              <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
-              </Tooltip>
+      {#if viewlets.length > 1}
+        <div class="flex">
+          {#each viewlets as viewlet, i}
+            <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
+              <div class="icon">
+                <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
+                  <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
+                </Tooltip>
+              </div>
             </div>
-          </div>
-        {/each}
-      </div>
-      
+          {/each}
+        </div>
+      {/if}      
     </div>
   {/if}
 
