@@ -92,6 +92,23 @@ abstract class MongoAdapterBase extends TxProcessor {
         pipeline.push({ $lookup: step })
       }
     }
+    if (options.sort !== undefined) {
+      let sort = {} as any
+      for (const _key in options.sort) {
+        let key = _key as string
+        if (_key.startsWith('$lookup.')) {
+          key = key.replace('$lookup.', '')
+          const keys = key.split('.')
+          keys[0] = keys[0] + '_lookup'
+          key = keys.join('.')
+        }
+        sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
+      }
+      pipeline.push({ $sort: sort })
+    }
+    if (options.limit !== undefined) {
+      pipeline.push({ $limit: options.limit })
+    }
     const domain = this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline)
     const result = (await cursor.toArray()) as FindResult<T>
@@ -125,9 +142,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
     const domain = this.hierarchy.getDomain(_class)
     let cursor = this.db.collection(domain).find<T>(this.translateQuery(_class, query))
-    if (options?.limit !== undefined) {
-      cursor = cursor.limit(options.limit)
-    }
+
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
@@ -136,6 +151,9 @@ abstract class MongoAdapterBase extends TxProcessor {
           sort[key] = order
         }
         cursor = cursor.sort(sort)
+      }
+      if (options.limit !== undefined) {
+        cursor = cursor.limit(options.limit)
       }
     }
     return await cursor.toArray()

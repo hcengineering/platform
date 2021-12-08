@@ -114,9 +114,9 @@ export abstract class MemDb extends TxProcessor {
       result = findProperty(result, key, value)
     }
 
-    if (options?.sort !== undefined) resultSort(result, options?.sort)
-
     if (options?.lookup !== undefined) result = this.lookup(result as T[], options.lookup)
+
+    if (options?.sort !== undefined) resultSort(result, options?.sort)
 
     result = result.slice(0, options?.limit)
     return clone(result) as T[]
