@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
@@ -21,15 +20,19 @@
 </script>
 
 <label class="checkbox" class:circle class:primary class:checked>
-  <input class="chBox" type="checkbox" bind:checked={checked}>
+  <input class="chBox" type="checkbox" bind:checked on:change />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if !circle}
-      <path class="back" class:primary d="M4,0h8c2.2,0,4,1.8,4,4v8c0,2.2-1.8,4-4,4H4c-2.2,0-4-1.8-4-4V4C0,1.8,1.8,0,4,0z"/>
+      <path
+        class="back"
+        class:primary
+        d="M4,0h8c2.2,0,4,1.8,4,4v8c0,2.2-1.8,4-4,4H4c-2.2,0-4-1.8-4-4V4C0,1.8,1.8,0,4,0z"
+      />
     {/if}
     {#if symbol === 'minus'}
-      <rect class="check" class:primary x="4" y="7.4" width="8" height="1.2"/>
+      <rect class="check" class:primary x="4" y="7.4" width="8" height="1.2" />
     {:else}
-      <polygon class="check" class:primary points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 "/>
+      <polygon class="check" class:primary points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 " />
     {/if}
   </svg>
 </label>
@@ -57,23 +60,33 @@
       &:checked + .checkSVG {
         & .back {
           fill: var(--theme-bg-check);
-          &.primary { fill: var(--primary-button-enabled); }
+          &.primary {
+            fill: var(--primary-button-enabled);
+          }
         }
         & .check {
           visibility: visible;
           fill: var(--theme-button-bg-enabled);
-          &.primary { fill: var(--primary-button-color); }
+          &.primary {
+            fill: var(--primary-button-color);
+          }
         }
       }
-      &:not(:disabled) + .checkSVG { cursor: pointer; }
-      &:disabled + .checkSVG { filter: grayscale(70%); }
+      &:not(:disabled) + .checkSVG {
+        cursor: pointer;
+      }
+      &:disabled + .checkSVG {
+        filter: grayscale(70%);
+      }
     }
     .checkSVG {
       width: 1rem;
       height: 1rem;
-      border-radius: .25rem;
+      border-radius: 0.25rem;
 
-      .back { fill: var(--theme-button-bg-hovered); }
+      .back {
+        fill: var(--theme-button-bg-hovered);
+      }
       .check {
         visibility: hidden;
         fill: var(--theme-button-bg-enabled);
@@ -88,10 +101,14 @@
     border: 1px solid var(--theme-bg-focused-color);
     border-radius: 50%;
 
-    &.checked { background-color: var(--theme-bg-check); }
+    &.checked {
+      background-color: var(--theme-bg-check);
+    }
     &.primary {
       border-color: transparent;
-      &.checked { background-color: var(--primary-button-enabled); }
+      &.checked {
+        background-color: var(--primary-button-enabled);
+      }
     }
   }
 </style>

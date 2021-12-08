@@ -1,15 +1,15 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -58,7 +58,7 @@
   }
 
   const client = getClient()
-  let checking: boolean = false
+  let checked: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
@@ -78,6 +78,17 @@
       sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
     }
   }
+
+  function check (id: Ref<Doc>, e: Event) {
+    const target = e.target as HTMLInputElement
+    const value = target.checked
+    if (value) {
+      checked.add(id)
+    } else {
+      checked.delete(id)
+    }
+    checked = checked
+  }
 </script>
 
 {#await buildModel({ client, _class, keys: config, options })}
@@ -91,12 +102,17 @@
             {#each model as attribute, cellHead}
               {#if !cellHead}
                 <th>
-                  <div class="checkCell" class:checkall={checking}>
-                    <CheckBox symbol={'minus'} />
+                  <div class="checkCell" class:checkall={checked.size > 0}>
+                    <CheckBox
+                      symbol={'minus'}
+                      checked={objects.length === checked.size}
+                      on:change={(e) => {
+                        objects.map((o) => check(o._id, e))
+                      }}
+                    />
                   </div>
                 </th>
               {/if}
-
               <th
                 class:sortable={attribute.key}
                 class:sorted={attribute.key === sortKey}
@@ -121,10 +137,19 @@
         {#if objects}
           <tbody>
             {#each objects as object, row (object._id)}
-              <tr class="tr-body" class:checking class:fixed={row === selectRow}>
+              <tr class="tr-body" class:checking={checked.has(object._id)} class:fixed={row === selectRow}>
                 {#each model as attribute, cell}
                   {#if !cell}
-                    <td><div class="checkCell"><CheckBox bind:checked={checking} /></div></td>
+                    <td
+                      ><div class="checkCell">
+                        <CheckBox
+                          checked={checked.has(object._id)}
+                          on:change={(e) => {
+                            check(object._id, e)
+                          }}
+                        />
+                      </div></td
+                    >
                     <td
                       ><div class="firstCell">
                         <svelte:component
@@ -218,6 +243,11 @@
     &.sorted .icon {
       margin-left: 0.25rem;
       opacity: 0.6;
+    }
+    &:hover {
+      .checkCell {
+        visibility: visible;
+      }
     }
     .checkall {
       visibility: visible;
