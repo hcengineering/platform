@@ -15,15 +15,13 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Class, Doc, Space, FindOptions, DocumentQuery } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { IconDown, IconUp, Label, Loading, showPopup } from '@anticrm/ui'
   import { buildModel } from '../utils'
-  import { getClient } from '@anticrm/presentation'
-  import { Label, showPopup, Loading, CheckBox, IconDown, IconUp } from '@anticrm/ui'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
-
-  import { createQuery } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -39,13 +37,14 @@
   const q = createQuery()
   $: q.query(_class, query, result => { objects = result }, { sort: { [sortKey]: sortOrder }, ...options })
 
-  function getValue(doc: Doc, key: string): any {
-    if (key.length === 0)
+  function getValue (doc: Doc, key: string): any {
+    if (key.length === 0) {
       return doc
+    }
     const path = key.split('.')
     const len = path.length
     let obj = doc as any
-    for (let i=0; i<len; i++){
+    for (let i = 0; i < len; i++) {
       obj = obj?.[path[i]]
     }
     return obj ?? ''
@@ -55,12 +54,13 @@
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, (() => { selectRow = undefined }))
+    showPopup(Menu, { object }, ev.target as HTMLElement, () => { selectRow = undefined })
   }
 
-  function changeSorting(key: string) {
-    if (key === '')
+  function changeSorting (key: string): void {
+    if (key === '') {
       return
+    }
     if (key !== sortKey) {
       sortKey = key
       sortOrder = SortingOrder.Ascending
@@ -69,8 +69,7 @@
     }
   }
 </script>
-
-{#await buildModel({client, _class, keys: config, options})}
+{#await buildModel({ client, _class, keys: config, options })}
   <Loading/>
 {:then model}
   <table class="table-body">
@@ -100,12 +99,12 @@
           <tr class="tr-body" class:fixed={row === selectRow}>
             {#each model as attribute, cell}
               {#if !cell}
-                <td><div class="firstCell">
-                  <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/>
+                <td><div class="firstCell">                  
+                  <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} {...attribute.props}/>
                   <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
                 </div></td>
               {:else}
-                <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)}/></td>
+                <td><svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} {...attribute.props}/></td>
               {/if}
             {/each}
           </tr>

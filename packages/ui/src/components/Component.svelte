@@ -20,6 +20,7 @@
   // import Icon from './Icon.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
+import ErrorPresenter from './ErrorPresenter.svelte';
 
   export let is: AnyComponent
   export let props = {}
@@ -36,8 +37,8 @@
     </Ctor>
   </ErrorBoundary>
 {:catch err}
-  ERROR: {console.log(err, JSON.stringify(component))}
-  {props}
-  {err}
+  <pre style='max-height: 140px; overflow: auto;'>
+    <ErrorPresenter error={err}/>
+  </pre>
   <!-- <Icon icon={ui.icon.Error} size="32" /> -->
 {/await}
