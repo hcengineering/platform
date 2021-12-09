@@ -57,7 +57,7 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
 
-  @Prop(Collection(chunter.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
