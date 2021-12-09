@@ -66,7 +66,6 @@ class Connection implements ClientConnection {
           promise.resolve(resp.result)
         }
       } else {
-        console.log('handle', resp)
         this.handler(resp.result as Tx)
       }
     }

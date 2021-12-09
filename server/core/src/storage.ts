@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import type { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
-import core, { Hierarchy, DOMAIN_TX, ModelDb, TxFactory } from '@anticrm/core'
+import core, { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxCollectionCUD, AttachedDoc, DOMAIN_MODEL, Hierarchy, DOMAIN_TX, ModelDb, TxFactory } from '@anticrm/core'
 import type { FullTextAdapterFactory, FullTextAdapter } from './types'
 import { FullTextIndex } from './fulltext'
 import { Triggers } from './triggers'
@@ -112,6 +111,13 @@ class TServerStorage implements ServerStorage {
       const _id = colTx.objectId
       const _class = colTx.objectClass
       let attachedTo: Doc | undefined
+
+      // Skip model operations
+      if (this.hierarchy.getDomain(_class) === DOMAIN_MODEL) {
+        // We could not update increments for model classes
+        return []
+      }
+
       if (colTx.tx._class === core.class.TxCreateDoc) {
         attachedTo = (await this.findAll(_class, { _id }))[0]
         const txFactory = new TxFactory(tx.modifiedBy)
