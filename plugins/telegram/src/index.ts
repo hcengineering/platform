@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class, Space } from '@anticrm/core'
+import type { Doc, Ref, Class, Space, AttachedDoc } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { IntegrationType, Handler } from '@anticrm/setting'
 
@@ -27,6 +27,22 @@ export interface TelegramMessage extends Doc {
   incoming: boolean
   contactPhone?: string
   contactUserName?: string
+}
+
+/**
+ * @public
+ */
+export interface SharedTelegramMessage extends Doc {
+  content: string
+  incoming: boolean
+  sender: string
+}
+
+/**
+ * @public
+ */
+export interface SharedTelegramMessages extends AttachedDoc {
+  messages: SharedTelegramMessage[]
 }
 
 /**
@@ -47,7 +63,8 @@ export default plugin(telegramId, {
     DisconnectHandler: '' as Handler
   },
   class: {
-    Message: '' as Ref<Class<TelegramMessage>>
+    Message: '' as Ref<Class<TelegramMessage>>,
+    SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
   },
   space: {
     Telegram: '' as Ref<Space>

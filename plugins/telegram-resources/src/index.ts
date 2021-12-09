@@ -19,12 +19,16 @@ import login from '@anticrm/login'
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
+import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Chat,
     Connect,
     IconTelegram
+  },
+  activity: {
+    TxSharedCreate
   },
   handler: {
     DisconnectHandler: async () => {
