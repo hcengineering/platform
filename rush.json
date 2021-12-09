@@ -847,6 +847,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/telegram-assets",
+      "projectFolder": "plugins/telegram-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/telegram-resources",
       "projectFolder": "plugins/telegram-resources",
       "shouldPublish": true

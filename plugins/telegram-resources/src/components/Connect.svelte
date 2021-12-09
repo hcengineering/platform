@@ -30,21 +30,21 @@
   let error: string | undefined = undefined
   const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
-  async function requestCode(): Promise<void> {
+  async function requestCode (): Promise<void> {
     const res = await sendRequest('/signin', { phone })
     if (res.next === 'code') {
       requested = true
     }
   }
 
-  async function sendPassword(): Promise<void> {
+  async function sendPassword (): Promise<void> {
     const res = await sendRequest('/signin/pass', { phone, pass: password })
     if (res.next === 'end') {
       dispatch('close')
     }
   }
 
-  async function sendCode(): Promise<void> {
+  async function sendCode (): Promise<void> {
     const res = await sendRequest('/signin/code', { phone, code: code })
     if (res.next === 'pass') {
       secondFactor = true
@@ -53,7 +53,7 @@
     }
   }
 
-  async function sendRequest(path: string, data: any): Promise<any> {
+  async function sendRequest (path: string, data: any): Promise<any> {
     connecting = true
     const response = await fetch(url + path, {
       method: 'POST',
@@ -77,7 +77,7 @@
     return res
   }
 
-  function back() {
+  function back () {
     password = ''
     code = ''
     phone = ''
@@ -85,12 +85,19 @@
     secondFactor = false
   }
 
-  $: label = connecting ? 'Connecting...' : (requested || secondFactor ? 'Connect' : 'Next')
+  $: label = connecting ? 'Connecting...' : requested || secondFactor ? 'Connect' : 'Next'
 
   $: disabled = checkDisabled(connecting, secondFactor, password, requested, error, code, phone)
 
-  function checkDisabled (connecting: boolean, secondFactor: boolean, password: string,
-    requested: boolean, error: string | undefined, code: string, phone: string): boolean {
+  function checkDisabled (
+    connecting: boolean,
+    secondFactor: boolean,
+    password: string,
+    requested: boolean,
+    error: string | undefined,
+    code: string,
+    phone: string
+  ): boolean {
     if (connecting) return true
     if (secondFactor) return password.length === 0
     if (requested) {
@@ -126,17 +133,17 @@
       <EditBox label={'Password'} password placeholder={'password'} bind:value={password} />
     {:else if requested}
       <p><Label label={'Enter the 5-digit code you received on your Telegram account.'} /></p>
-      <PinPad length={5} bind:value={code} bind:error={error} />
+      <PinPad length={5} bind:value={code} bind:error />
     {:else}
       <p><Label label={'Enter your Telegram phone number to connect your account.'} /></p>
       <EditBox label={'Phone number'} placeholder={'+1 555 333 7777'} bind:value={phone} />
     {/if}
-      <div class="footer">
-        <Button {label} primary {disabled} on:click={click} />
-        {#if requested || secondFactor}
-          <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
-        {/if}
-      </div>
+    <div class="footer">
+      <Button {label} primary {disabled} on:click={click} />
+      {#if requested || secondFactor}
+        <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
+      {/if}
+    </div>
   </div>
 </div>
 

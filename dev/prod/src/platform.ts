@@ -38,6 +38,7 @@ import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
 import '@anticrm/setting-assets'
+import '@anticrm/telegram-assets'
 import '@anticrm/lead-assets'
 import '@anticrm/workbench-assets'
 
