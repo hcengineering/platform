@@ -10596,7 +10596,7 @@ packages:
     dev: false
 
   file:projects/model-telegram.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-oI4WA/RYV5ysSU0CW4rNteA4lw0LQxMiocloVoTR4mFXJufk2XvowGM7rPmz+R5iCxHBbq4GJuyGl9zV8co3lA==, tarball: file:projects/model-telegram.tgz}
+    resolution: {integrity: sha512-gX4sxOAmyhOLZcvbafW4Y+QoV56klkSDoF5WRdScXT0Ms9MGAuUN9NBPCScxExogjTClR7C3F0dSl8pByjRWpA==, tarball: file:projects/model-telegram.tgz}
     id: file:projects/model-telegram.tgz
     name: '@rush-temp/model-telegram'
     version: 0.0.0
@@ -11298,9 +11298,24 @@ packages:
     dev: false
 
   file:projects/telegram-assets.tgz:
-    resolution: {integrity: sha512-HfYOSnLDzMEUc9wqoCldC9mNx5+MDhDQdZSqrA2A8w/4AVaw+z0ap+ma5w19G8XPbWDp2ygb3RXEIrx19ojXqw==, tarball: file:projects/telegram-assets.tgz}
+    resolution: {integrity: sha512-+RMskj3YaFqYW/oXFI6A8yNm81Y7TiYOvWcOMtmQOTFNXewE0Xfcmst0N8+o4aAlkIIzFukzG6OqGR8dCdWuRw==, tarball: file:projects/telegram-assets.tgz}
     name: '@rush-temp/telegram-assets'
     version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.1
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.10.3
+      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
+      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.1.1_eslint@7.32.0
+      prettier: 2.4.1
+      typescript: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   file:projects/telegram-resources.tgz_476f694f64637160ae71e12ff57815b9:

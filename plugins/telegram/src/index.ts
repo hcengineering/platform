@@ -64,6 +64,7 @@ export default plugin(telegramId, {
   },
   class: {
     Message: '' as Ref<Class<TelegramMessage>>,
+    SharedMessage: '' as Ref<Class<SharedTelegramMessage>>,
     SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
   },
   space: {

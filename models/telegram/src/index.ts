@@ -15,7 +15,7 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, TypeBoolean, Prop } from '@anticrm/model'
+import { Builder, Model, TypeString, TypeBoolean, Prop, Collection } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'
@@ -43,7 +43,7 @@ export class TTelegramMessage extends TDoc implements TelegramMessage {
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TSharedTelegramMessages extends TAttachedDoc implements SharedTelegramMessages {
-  @Prop(TypeString(), 'Messages' as IntlString)
+  @Prop(Collection(telegram.class.SharedMessage), 'Messages' as IntlString)
   messages!: SharedTelegramMessage[]
 }
 
