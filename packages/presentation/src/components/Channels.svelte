@@ -30,6 +30,7 @@
   export let value: Channel[] | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
+  export let integration: boolean = false
 
   interface Item {
     label: IntlString,
@@ -83,7 +84,7 @@
   {#each displayItems as item}
     <div on:click|stopPropagation={() => { dispatch('click', item) }}>
       <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-        <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram'} />
+        <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram' && integration} />
       </Tooltip>
     </div>
   {/each}
