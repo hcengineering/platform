@@ -1,25 +1,26 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref } from '@anticrm/core'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, AnyComponent } from '@anticrm/ui'
   import { getClient, createQuery, Channels } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
-
+  import setting from '@anticrm/setting'
+  import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { Organization } from '@anticrm/contact'
   import Company from './icons/Company.svelte'
@@ -49,6 +50,13 @@
   function nameChange () {
     client.updateDoc(object._class, object.space, object._id, { name: object.name })
   }
+
+  const accountId = getCurrentAccount()._id
+  let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
+  const settingsQuery = createQuery()
+  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 </script>
 
 {#if object !== undefined}
@@ -86,6 +94,7 @@
             <Channels
               value={object.channels}
               size={'small'}
+              {integrations}
               on:click={(ev) => {
                 if (ev.detail.presenter) {
                   fullSize = true

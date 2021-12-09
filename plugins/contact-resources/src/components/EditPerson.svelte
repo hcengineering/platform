@@ -15,11 +15,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref } from '@anticrm/core'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, AnyComponent } from '@anticrm/ui'
   import { AttributesBar, getClient, createQuery, Channels, Avatar } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
-
+  import setting from '@anticrm/setting'
+  import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { combineName, formatName, getFirstName, getLastName, Person } from '@anticrm/contact'
   import { Attachments } from '@anticrm/attachment-resources'
@@ -61,6 +62,13 @@
       name: combineName(getFirstName(object.name), lastName)
     })
   }
+
+  const accountId = getCurrentAccount()._id
+  let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
+  const settingsQuery = createQuery()
+  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => {
+    integrations = new Set(res.map((p) => p.type))
+  })
 </script>
 
 {#if object !== undefined}
@@ -103,6 +111,7 @@
             <Channels
               value={object.channels}
               size={'small'}
+              {integrations}
               on:click={(ev) => {
                 if (ev.detail.presenter) {
                   fullSize = true
