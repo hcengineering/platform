@@ -35,12 +35,16 @@
     if (res.next === 'code') {
       requested = true
     }
+
+    if (res.next === 'end') {
+      dispatch('close', { value: phone })
+    }
   }
 
   async function sendPassword (): Promise<void> {
     const res = await sendRequest('/signin/pass', { phone, pass: password })
     if (res.next === 'end') {
-      dispatch('close')
+      dispatch('close', { value: phone })
     }
   }
 

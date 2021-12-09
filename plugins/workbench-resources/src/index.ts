@@ -14,6 +14,7 @@
 //
 
 import WorkbenchApp from './components/WorkbenchApp.svelte'
+import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 
 /*!
  * Anticrm Platform™ Workbench Plugin
@@ -22,6 +23,7 @@ import WorkbenchApp from './components/WorkbenchApp.svelte'
  */
 export default async () => ({
   component: {
-    WorkbenchApp
+    WorkbenchApp,
+    ApplicationPresenter
   }
 })

@@ -239,9 +239,15 @@ p:last-child { margin-block-end: 0; }
 }
 
 .h-full { height: 100%; }
+.w-full { width: 100%;  }
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-xsmall {
+  width: 0.857em;
+  height: 0.857em;
+}
+
 .svg-small {
   width: 1.143em;
   height: 1.143em;

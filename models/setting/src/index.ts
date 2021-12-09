@@ -62,6 +62,12 @@ export function createModel (builder: Builder): void {
           component: setting.component.Integrations
         },
         {
+          id: 'statuses',
+          label: setting.string.ManageStatuses,
+          icon: setting.icon.Statuses,
+          component: setting.component.ManageStatuses
+        },
+        {
           id: 'support',
           label: setting.string.Support,
           icon: setting.icon.Support,

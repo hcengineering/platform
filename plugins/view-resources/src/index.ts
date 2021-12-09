@@ -33,6 +33,8 @@ import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
+export { default as KanbanEditor } from './components/KanbanEditor.svelte'
+export { default as KanbanTemplateSelector } from './components/KanbanTemplateSelector.svelte'
 export { buildModel, getActions, getObjectPresenter } from './utils'
 export { Table }
 

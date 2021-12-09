@@ -71,3 +71,8 @@ export interface ListItem {
   item: any | undefined
   label: string
 }
+
+export interface DumbDropdownItem {
+  id: string
+  label: IntlString | string
+}

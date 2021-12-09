@@ -15,34 +15,29 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Grid, Dropdown } from '@anticrm/ui'
 
+  import core, { Ref, State } from '@anticrm/core'
+  import { EditBox, Grid, Dropdown } from '@anticrm/ui'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
+  import view, { KanbanTemplate } from '@anticrm/view'
+  import { KanbanTemplateSelector } from '@anticrm/view-resources'
+  
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
 
   import recruit from '../plugin'
-  import core from '@anticrm/core'
-  import view from '@anticrm/view'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   let description: string = ''
+  let templateId: Ref<KanbanTemplate> | undefined
 
   export function canClose(): boolean {
     return name === ''
   }
 
   const client = getClient()
-
-  const colors = [
-    '#7C6FCD',
-    '#6F7BC5',
-    '#A5D179',
-    '#77C07B',
-    '#F28469'
-  ]
 
   async function createVacancy() {
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
@@ -51,35 +46,35 @@
       private: false,
       members: []
     })
-    const s1 = await client.createDoc(core.class.State, id, {
-      title: 'Initial',
-      color: colors[0]
-    })
-    const s2 = await client.createDoc(core.class.State, id, {
-      title: 'Interview 1',
-      color: colors[1]
-    })
-    const s3 = await client.createDoc(core.class.State, id, {
-      title: 'Interview 2',
-      color: colors[2]
-    })
-    const s4 = await client.createDoc(core.class.State, id, {
-      title: 'Interview 3',
-      color: colors[3]
-    })
-    const s5 = await client.createDoc(core.class.State, id, {
-      title: 'Interview 4',
-      color: colors[4]
-    })
-    const s6 = await client.createDoc(core.class.State, id, {
-      title: 'Final',
-      color: colors[0]
-    })
-    // await client.updateDoc(recruit.class.Vacancy, core.space.Model, id, {
-    // })
+
+    if (templateId === undefined) {
+      await client.createDoc(view.class.Kanban, id, {
+        attachedTo: id,
+        states: [],
+        order: []
+      })
+
+      return
+    }
+
+    const template = await client.findOne(view.class.KanbanTemplate, { _id: templateId })
+
+    if (template === undefined) {
+      throw Error(`Failed to find target kanban template: ${templateId}`)
+    }
+    
+    const tmplStates = await client.findAll(core.class.State, { _id: { $in: template.states } })
+
+    const states = await Promise.all(
+      template.states
+        .map((id) => tmplStates.find((x) => x._id === id))
+        .filter((tstate): tstate is State => tstate !== undefined)
+        .map(async (state) => await client.createDoc(core.class.State, id, { color: state.color, title: state.title }))
+    )
+
     await client.createDoc(view.class.Kanban, id, {
       attachedTo: id,
-      states: [s1, s2, s3, s4, s5, s6],
+      states,
       order: []
     })
   }
@@ -94,5 +89,6 @@
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth="39rem" focus/>
     <Dropdown icon={Company} label={'Company *'} placeholder={'Company'} />
+    <KanbanTemplateSelector folders={[recruit.space.VacancyTemplates]} bind:template={templateId}/>
   </Grid>
 </SpaceCreateCard>

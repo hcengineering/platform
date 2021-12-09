@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
+  export let size: 'xsmall' | 'small' | 'medium' | 'large'
   const fill: string = 'currentColor'
 </script>
 

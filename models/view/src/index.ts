@@ -16,11 +16,13 @@
 import type { IntlString, Asset, Resource } from '@anticrm/platform'
 import type { Ref, Class, Space, Doc, Arr, Domain, State } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Mixin, Builder } from '@anticrm/model'
+import { Model, Mixin, Builder, Prop, TypeString, TypeRef, Collection } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban, Sequence } from '@anticrm/view'
+import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban, Sequence, KanbanTemplateSpace, KanbanTemplate, BaseKanban } from '@anticrm/view'
+import workbench from '@anticrm/workbench'
+import type { Application } from '@anticrm/workbench'
 
-import core, { TDoc, TClass } from '@anticrm/model-core'
+import core, { TDoc, TClass, TSpace } from '@anticrm/model-core'
 
 import view from './plugin'
 
@@ -73,11 +75,32 @@ export class TActionTarget extends TDoc implements ActionTarget {
   action!: Ref<Action>
 }
 
-@Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
-export class TKanban extends TDoc implements Kanban {
-  attachedTo!: Ref<Space>
+@Model(view.class.BaseKanban, core.class.Doc, DOMAIN_KANBAN)
+export class TBaseKanban extends TDoc implements BaseKanban {
   states!: Arr<Ref<State>>
+}
+
+@Model(view.class.Kanban, view.class.BaseKanban, DOMAIN_KANBAN)
+export class TKanban extends TBaseKanban implements Kanban {
+  attachedTo!: Ref<Space>
   order!: Arr<Ref<Doc>>
+}
+
+@Model(view.class.KanbanTemplateSpace, core.class.Space, DOMAIN_MODEL)
+export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
+  icon!: AnyComponent
+}
+
+@Model(view.class.KanbanTemplate, view.class.BaseKanban, DOMAIN_KANBAN)
+export class TKanbanTemplate extends TBaseKanban implements KanbanTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+
+  @Prop(Collection(core.class.State), 'States' as IntlString)
+  states!: Arr<Ref<State>>
+
+  @Prop(TypeRef(workbench.class.Application), 'Application' as IntlString)
+  application?: Ref<Application>
 }
 
 @Model(view.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
@@ -87,7 +110,7 @@ export class TSequence extends TDoc implements Sequence {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TKanban, TSequence)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TBaseKanban, TKanban, TSequence, TKanbanTemplateSpace, TKanbanTemplate)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor
