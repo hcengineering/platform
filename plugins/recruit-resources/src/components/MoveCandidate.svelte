@@ -75,8 +75,10 @@
     <SpaceSelect _class={recruit.class.Candidates} label="Candidate’s pool" bind:value={space} />
   </div>
   <div class="footer">
-    <Button label="Move" disabled={space === candidate.space} primary on:click={move} />
+    <Button label="Move" size="small" width="100px" disabled={space === candidate.space} primary on:click={move} />
     <Button
+      size="small"
+      width="100px"
       label={ui.string.Cancel}
       on:click={() => {
         dispatch('close')
