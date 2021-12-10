@@ -28,6 +28,22 @@
       "console": "integratedTerminal",
       "sourceMaps": true,
       "protocol": "inspector"
-    }
+    },
+    {
+      "name": "Debug generator",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts", "gen-recruit", "ws1", "20"],
+      "env": {
+        "TRANSACTOR_URL":"ws:/localhost:3333",
+        "MINIO_ACCESS_KEY":"minioadmin",
+        "MINIO_SECRET_KEY":"minioadmin",
+        "MINIO_ENDPOINT":"localhost"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register" ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/dev/generator",
+      "protocol": "inspector"
+    },    
   ]
 }

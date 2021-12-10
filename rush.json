@@ -900,6 +900,11 @@
       "packageName": "@anticrm/model-lead",
       "projectFolder": "models/lead",
       "shouldPublish": true
-    }
+    },
+    {
+      "packageName": "@anticrm/generator",
+      "projectFolder": "dev/generator",
+      "shouldPublish": false
+    },
   ]
 }

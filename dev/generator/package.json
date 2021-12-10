@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/tool",
+  "name": "@anticrm/generator",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,12 +12,11 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
-    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ts-node ./src/index.ts",
+    "run-local": "TRANSACTOR_URL=ws:/localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ts-node ./src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
@@ -27,23 +26,22 @@
     "eslint": "^7.32.0",
     "ts-node": "^10.2.1",
     "esbuild": "^0.12.26",
-    "@types/minio": "^7.0.10",
-    "@types/node": "^16.7.5",
+    "@types/node": "~16.11.12",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
     "typescript": "^4.3.5",
-    "@types/ws": "^8.2.1"
+    "@types/ws": "^8.2.1",
+    "@types/faker": "~5.5.9",
+    "@types/minio": "^7.0.10"
   },
   "dependencies": {
-    "mongodb": "^4.1.1",
     "commander": "^8.1.0",
     "@anticrm/account": "~0.6.0",
     "jwt-simple": "^0.5.6",
     "@anticrm/core": "~0.6.11",
     "@anticrm/contact": "~0.6.2",
-    "minio": "^7.0.19",
     "@anticrm/model-all": "~0.6.0",
     "@anticrm/model-telegram": "~0.6.0",
     "@anticrm/telegram": "~0.6.0",
@@ -51,6 +49,16 @@
     "ws": "^8.2.0",
     "@anticrm/client": "~0.6.1",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/model": "~0.6.0"
+    "@anticrm/model": "~0.6.0",
+    "@anticrm/recruit": "~0.6.2",
+    "faker": "~5.5.3",
+    "@anticrm/model-recruit": "~0.6.0",
+    "@anticrm/chunter": "~0.6.1",
+    "pdfkit": "~0.13.0",
+    "@anticrm/attachment": "~0.6.1",
+    "minio": "^7.0.19",
+    "@types/pdfkit": "~0.12.3",
+    "@anticrm/view": "~0.6.0",
+    "jpeg-js": "~0.4.3"
   }
 }
