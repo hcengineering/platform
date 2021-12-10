@@ -57,7 +57,8 @@ export function createModel (builder: Builder): void {
       label: 'Telegram' as IntlString,
       icon: contact.icon.Telegram,
       placeholder: '@appleseed',
-      presenter: telegram.component.Chat
+      presenter: telegram.component.Chat,
+      integrationType: telegram.integrationType.Telegram
     },
     contact.channelProvider.Telegram
   )

@@ -34,6 +34,7 @@ export interface Persons extends Space {}
 export interface ChannelProvider extends Doc, UXObject {
   placeholder: string
   presenter?: AnyComponent
+  integrationType?: Ref<Doc>
 }
 
 /**

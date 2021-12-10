@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
+  import type { Doc, Ref } from '@anticrm/core'
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
@@ -30,26 +29,29 @@
   export let value: Channel[] | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
-  export let integration: boolean = false
+  export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
   interface Item {
-    label: IntlString,
-    icon: Asset,
-    value: string,
+    label: IntlString
+    icon: Asset
+    value: string
     presenter?: AnyComponent
+    integration: boolean
   }
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function getProviders(): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
+  async function getProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
     const providers = await client.findAll(contact.class.ChannelProvider, {})
     const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
-    for (const provider of providers) { map.set(provider._id, provider) }
+    for (const provider of providers) {
+      map.set(provider._id, provider)
+    }
     return map
   }
 
-  async function update(value: Channel[]) {
+  async function update (value: Channel[]) {
     const result = []
     const map = await getProviders()
     for (const item of value) {
@@ -59,7 +61,8 @@
           label: provider.label as IntlString,
           icon: provider.icon as Asset,
           value: item.value,
-          presenter: provider.presenter
+          presenter: provider.presenter,
+          integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
         })
       } else {
         console.log('provider not found: ', item.provider)
@@ -82,9 +85,13 @@
   class:reverse
 >
   {#each displayItems as item}
-    <div on:click|stopPropagation={() => { dispatch('click', item) }}>
+    <div
+      on:click|stopPropagation={() => {
+        dispatch('click', item)
+      }}
+    >
       <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-        <CircleButton icon={item.icon} {size} primary={item.label === 'Telegram' && integration} />
+        <CircleButton icon={item.icon} {size} primary={item.integration} />
       </Tooltip>
     </div>
   {/each}
