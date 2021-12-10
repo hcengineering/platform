@@ -170,6 +170,7 @@
       height: 100%;
       border-radius: 1.25rem;
       background-color: var(--theme-bg-color);
+      overflow: hidden;
     }
   }
 </style>

@@ -15,12 +15,14 @@
 -->
 
 <script lang="ts">
+  import core from '@anticrm/core'
   import type { Ref } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import view, { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/view'
   import setting from '@anticrm/setting'
-import TemplateMenu from './TemplateMenu.svelte';
+
+  import TemplateMenu from './TemplateMenu.svelte';
 
   export let folder: KanbanTemplateSpace | undefined
   export let template: KanbanTemplate | undefined
@@ -48,8 +50,18 @@ import TemplateMenu from './TemplateMenu.svelte';
       return
     }
 
+    const doneStates = await Promise.all([
+      client.createDoc(core.class.WonState, folder._id, {
+        title: 'Won'
+      }),
+      client.createDoc(core.class.LostState, folder._id, {
+        title: 'Lost'
+      })
+    ])
+
     await client.createDoc(view.class.KanbanTemplate, folder._id, {
       states: [],
+      doneStates,
       title: 'New Template'
     })
   }
@@ -69,7 +81,7 @@ import TemplateMenu from './TemplateMenu.svelte';
       <div class="item flex-between" class:selected={t._id === template?._id} on:click={() => select(t)}>
         <AttributeEditor maxWidth="20rem" _class={view.class.KanbanTemplate} object={t} key="title"/>
         <div class="tool hover-trans"
-          on:click={(ev) => {
+          on:click|stopPropagation={(ev) => {
             showPopup(TemplateMenu, { template: t }, ev.target, () => {})
           }}
         >

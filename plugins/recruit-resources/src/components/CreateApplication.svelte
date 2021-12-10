@@ -72,6 +72,7 @@
       'applications',
       {
         state: state._id,
+        doneState: null,
         number: incResult.object.sequence,
         employee: employee
       }

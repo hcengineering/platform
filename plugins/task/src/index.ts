@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { Class, Data, Doc, Ref, Space, State } from '@anticrm/core'
+import type { Class, Data, Doc, DoneState, Ref, Space, State } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import core from '@anticrm/core'
@@ -84,12 +84,31 @@ export async function createProjectKanban (
     ids.push(sid)
   }
 
+  const rawDoneStates = [
+    { class: core.class.WonState, title: 'Won' },
+    { class: core.class.LostState, title: 'Lost' }
+  ]
+  const doneStates: Array<Ref<DoneState>> = []
+  for (const st of rawDoneStates) {
+    const sid = (projectId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
+    await factory(
+      st.class,
+      projectId,
+      {
+        title: st.title
+      },
+      sid
+    )
+    doneStates.push(sid)
+  }
+
   await factory(
     view.class.Kanban,
     projectId,
     {
       attachedTo: projectId,
       states: ids,
+      doneStates,
       order: []
     },
     (projectId + '.kanban.') as Ref<Kanban>

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, State, Space } from '@anticrm/core'
+  import type { Ref, State, Space, Doc, DoneState } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, IconMoreH, showPopup } from '@anticrm/ui'
   import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
   import type { BaseKanban } from '@anticrm/view'
@@ -28,26 +28,35 @@
   export let kanban: BaseKanban
 
   let states: State[] = []
+  let doneStates: DoneState[] = []
   const elements: HTMLElement[] = []
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  function sort (order: Ref<State>[], states: State[]): State[] {
-    if (states.length === 0) {
+  function sort <T extends Doc>(order: Ref<T>[], items: T[]): T[] {
+    if (items.length === 0) {
       return []
     }
 
-    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
+    const itemMap = new Map(items.map(x => [x._id, x]))
     const x = order
-      .map(id => map.get(id))
-      .filter((x): x is State => x !== undefined)
+      .map(id => itemMap.get(id))
+      .filter((x): x is T => x !== undefined)
 
     return x
   }
 
   const statesQ = createQuery()
   $: statesQ.query(core.class.State, { _id: { $in: kanban.states ?? [] } }, result => { states = sort(kanban.states, result) })
+
+  const doneStatesQ = createQuery()
+  $: doneStatesQ.query(core.class.DoneState, { _id: { $in: kanban.doneStates }}, (result) => { doneStates = sort(kanban.doneStates, result) })
+
+  let wonStates: DoneState[] = []
+  let lostStates: DoneState[] = []
+  $: wonStates = doneStates.filter((x) => x._class === core.class.WonState)
+  $: lostStates = doneStates.filter((x) => x._class === core.class.LostState)
 
   let space: Space | undefined
   const spaceQ = createQuery()
@@ -106,54 +115,95 @@
   }
 </script>
 
-<div class="flex-col w-full">
-  <div class="flex-no-shrink flex-between states-header">
-    <Label label={'ACTIVE STATUSES'} />
-    <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
-  </div>
-  <div class="content">
-    {#each states as state, i}
-      {#if state}
-        <div bind:this={elements[i]} class="flex-between states" draggable={true}
-          on:dragover|preventDefault={(ev) => {
-            dragover(ev, i)
-          }}
-          on:drop|preventDefault={() => {
-            move(i)
-          }}
-          on:dragstart={() => {
-            selected = i
-            dragState = states[i]._id
-          }}
-          on:dragend={() => {
-            selected = undefined
-          }}
-        >
-          <div class="bar"><Circles /></div>
-          <div class="color" style="background-color: {state.color}"
-            on:click={() => {
-              showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
+<div class="root w-full">
+  <div class="flex-col w-full">
+    <div class="flex-no-shrink flex-between states-header">
+      <Label label={'ACTIVE STATUSES'} />
+      <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
+    </div>
+    <div class="content">
+      {#each states as state, i}
+        {#if state}
+          <div bind:this={elements[i]} class="flex-between states" draggable={true}
+            on:dragover|preventDefault={(ev) => {
+              dragover(ev, i)
             }}
-          />
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-          <div class="tool hover-trans"
-            on:click={(ev) => {
-              if (space === undefined) {
-                return
-              }
-
-              showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { kanban, state, space }) }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+            on:drop|preventDefault={() => {
+              move(i)
+            }}
+            on:dragstart={() => {
+              selected = i
+              dragState = states[i]._id
+            }}
+            on:dragend={() => {
+              selected = undefined
             }}
           >
-            <IconMoreH size={'medium'} />
+            <div class="bar"><Circles /></div>
+            <div class="color" style="background-color: {state.color}"
+              on:click={() => {
+                showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
+              }}
+            />
+            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
+            <div class="tool hover-trans"
+              on:click={(ev) => {
+                if (space === undefined) {
+                  return
+                }
+
+                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { kanban, state, space }) }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
+              }}
+            >
+              <IconMoreH size={'medium'} />
+            </div>
           </div>
-        </div>
-      {/if}
-    {/each}
+        {/if}
+      {/each}
+    </div>
+  </div>
+  <div class="flex-col w-full">
+    <div class="flex-no-shrink states-header">
+      <Label label={'DONE STATUS / WON'} />
+    </div>
+    <div class="content">
+      {#each wonStates as state, i}
+        {#if state}
+          <div class="states flex-row-center">
+            <div class="bar"/>
+            <div class="color" style="background-color: #a5d179"/>
+            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
+          </div>
+        {/if}
+      {/each}
+    </div>
+  </div>
+  <div class="flex-col w-full">
+    <div class="flex-no-shrink states-header">
+      <Label label={'DONE STATUS / LOST'} />
+    </div>
+    <div class="content">
+      {#each lostStates as state, i}
+        {#if state}
+          <div class="states flex-row-center">
+            <div class="bar"/>
+            <div class="color" style="background-color: #f28469"/>
+            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
+          </div>
+        {/if}
+      {/each}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
+  .root {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(1px, max-content) min-content min-content;
+    gap: 2rem;
+    height: 100%;
+  }
   .states {
     padding: .625rem 1rem;
     color: #fff;

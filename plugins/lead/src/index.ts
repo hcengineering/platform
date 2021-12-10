@@ -16,7 +16,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
-import core from '@anticrm/core'
+import core, { DoneState } from '@anticrm/core'
 import view, { Kanban } from '@anticrm/view'
 import type { Class, Data, Doc, DocWithState, Ref, Space, SpaceWithStates, State } from '@anticrm/core'
 import type { Contact } from '@anticrm/contact'
@@ -83,6 +83,23 @@ export async function createKanban (
     )
     ids.push(sid)
   }
+  const rawDoneStates = [
+    { class: core.class.WonState, title: 'Won' },
+    { class: core.class.LostState, title: 'Lost' }
+  ]
+  const doneStates: Array<Ref<DoneState>> = []
+  for (const st of rawDoneStates) {
+    const sid = (funnelId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
+    await factory(
+      st.class,
+      funnelId,
+      {
+        title: st.title
+      },
+      sid
+    )
+    doneStates.push(sid)
+  }
 
   await factory(
     view.class.Kanban,
@@ -90,6 +107,7 @@ export async function createKanban (
     {
       attachedTo: funnelId,
       states: ids,
+      doneStates,
       order: []
     },
     (funnelId + '.kanban.') as Ref<Kanban>

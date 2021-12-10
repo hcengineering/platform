@@ -124,6 +124,9 @@
         cursor: pointer;
       }
     }
-    .content { margin: 1rem 2.5rem 1rem 2.5rem; }
+    .content {
+      overflow: auto;
+      margin: 1rem 2.5rem 1rem 2.5rem;
+    }
   }
 </style>

@@ -92,8 +92,9 @@ export class TApplicant extends TAttachedDoc implements Applicant {
   @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
   employee!: Ref<Employee> | null
 
-  // We need this two to make typescript happy.
+  // We need these to make typescript happy.
   declare state: TDocWithState['state']
+  declare doneState: TDocWithState['doneState']
   declare number: TDocWithState['number']
 }
 

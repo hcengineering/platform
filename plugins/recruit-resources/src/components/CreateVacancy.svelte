@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import core, { Ref, State } from '@anticrm/core'
+  import core, { DoneState, Ref, State } from '@anticrm/core'
   import { EditBox, Grid, Dropdown } from '@anticrm/ui'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
   import view, { KanbanTemplate } from '@anticrm/view'
@@ -51,6 +51,14 @@
       await client.createDoc(view.class.Kanban, id, {
         attachedTo: id,
         states: [],
+        doneStates: await Promise.all([
+          client.createDoc(core.class.WonState, id, {
+            title: 'Won'
+          }),
+          client.createDoc(core.class.LostState, id, {
+            title: 'Lost'
+          })
+        ]),
         order: []
       })
 
@@ -64,7 +72,6 @@
     }
     
     const tmplStates = await client.findAll(core.class.State, { _id: { $in: template.states } })
-
     const states = await Promise.all(
       template.states
         .map((id) => tmplStates.find((x) => x._id === id))
@@ -72,9 +79,18 @@
         .map(async (state) => await client.createDoc(core.class.State, id, { color: state.color, title: state.title }))
     )
 
+    const tmplDoneStates = await client.findAll(core.class.DoneState, { _id: { $in: template.doneStates }})
+    const doneStates = await Promise.all(
+      template.doneStates
+        .map((id) => tmplDoneStates.find((x) => x._id === id))
+        .filter((tstate): tstate is DoneState => tstate !== undefined)
+        .map(async (state) => await client.createDoc(state._class, id, { title: state.title }))
+    )
+
     await client.createDoc(view.class.Kanban, id, {
       attachedTo: id,
       states,
+      doneStates,
       order: []
     })
   }

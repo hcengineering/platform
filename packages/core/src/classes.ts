@@ -232,8 +232,26 @@ export interface State extends Doc {
 /**
  * @public
  */
+export interface DoneState extends Doc {
+  title: string
+}
+
+/**
+ * @public
+ */
+export interface WonState extends DoneState {}
+
+/**
+ * @public
+ */
+export interface LostState extends DoneState {}
+
+/**
+ * @public
+ */
 export interface DocWithState extends Doc {
   state: Ref<State>
+  doneState: Ref<DoneState> | null
   number: number
 }
 

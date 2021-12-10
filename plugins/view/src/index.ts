@@ -16,7 +16,7 @@
 
 import type { Plugin, Asset, Resource, IntlString } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj } from '@anticrm/core'
+import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj, DoneState } from '@anticrm/core'
 
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
@@ -86,6 +86,7 @@ export interface ActionTarget extends Doc {
  */
 export interface BaseKanban extends Doc {
   states: Arr<Ref<State>>
+  doneStates: Arr<Ref<DoneState>>
 }
 
 /**

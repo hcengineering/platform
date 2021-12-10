@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Domain, Ref, Space, State } from '@anticrm/core'
+import type { Account, Arr, Domain, Ref, Space, State, DoneState, WonState, LostState } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Implements, Model, Prop, TypeBoolean, TypeRef, TypeString } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
@@ -51,10 +51,25 @@ export class TState extends TDoc implements State {
   color!: string
 }
 
+@Model(core.class.DoneState, core.class.Doc, DOMAIN_STATE)
+export class TDoneState extends TDoc implements DoneState {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+}
+
+@Model(core.class.WonState, core.class.DoneState, DOMAIN_STATE)
+export class TWonState extends TDoneState implements WonState {}
+
+@Model(core.class.LostState, core.class.DoneState, DOMAIN_STATE)
+export class TLostState extends TDoneState implements LostState {}
+
 @Implements(core.interface.DocWithState)
 export class TDocWithState extends TDoc {
   @Prop(TypeRef(core.class.State), 'State' as IntlString)
   state!: Ref<State>
+
+  @Prop(TypeRef(core.class.DoneState), 'Done Status' as IntlString)
+  doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), 'No.' as IntlString)
   number!: number

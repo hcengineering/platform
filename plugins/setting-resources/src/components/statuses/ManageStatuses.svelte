@@ -82,7 +82,7 @@
     gap: 10px;
 
     padding: 24px 42px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--theme-bg-accent-hover);
 
     font-size: 1rem;
     font-weight: 500;
@@ -102,7 +102,7 @@
     padding: 2rem 2.5rem 1rem;
     flex-shrink: 0;
     flex-grow: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid var(--theme-bg-accent-hover);
   }
 
   .templates {
@@ -110,7 +110,7 @@
     padding: 2rem 2.5rem 1rem;
     flex-shrink: 0;
     flex-grow: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid var(--theme-bg-accent-hover);
   }
 
   .statuses {

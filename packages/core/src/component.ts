@@ -14,6 +14,7 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { DoneState, LostState, WonState } from '.'
 import type { Account, AnyAttribute, AttachedDoc, Class, Doc, DocWithState, Interface, Obj, PropertyType, Ref, Space, SpaceWithStates, State, Timestamp, Type, Collection, RefTo } from './classes'
 import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
@@ -43,6 +44,9 @@ export default plugin(coreId, {
     SpaceWithStates: '' as Ref<Class<SpaceWithStates>>,
     Account: '' as Ref<Class<Account>>,
     State: '' as Ref<Class<State>>,
+    DoneState: '' as Ref<Class<DoneState>>,
+    WonState: '' as Ref<Class<WonState>>,
+    LostState: '' as Ref<Class<LostState>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
