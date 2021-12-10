@@ -31,8 +31,8 @@
   import view from '@anticrm/view'
 
   export let space: Ref<SpaceWithStates>
-  export let candidate: Ref<Candidate> // | null = null
-  export let employee: Ref<Employee> | null = null
+  export let candidate: Ref<Candidate>
+  export let employee: Ref<Employee>
 
   export let preserveCandidate = false
 
@@ -79,7 +79,7 @@
   }
 
   async function validate (candidate: Ref<Candidate>, space: Ref<Space>) {
-    if (candidate == null) {
+    if (candidate == undefined) {
       status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
     } else {
       if (space === undefined) {
