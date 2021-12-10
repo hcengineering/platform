@@ -160,7 +160,14 @@ export interface IncOptions<T extends Doc> {
 /**
  * @public
  */
-export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T> & IncOptions<T>
+export interface SpaceUpdate {
+  space?: Ref<Space>
+}
+
+/**
+ * @public
+ */
+export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T> & IncOptions<T> & SpaceUpdate
 
 /**
  * @public

@@ -136,12 +136,17 @@ export function createModel (builder: Builder): void {
       ]
     }
   })
-  builder.createDoc(recruit.class.Candidates, core.space.Model, {
-    name: 'public',
-    description: 'Public Candidates',
-    private: false,
-    members: []
-  }, recruit.space.CandidatesPublic)
+  builder.createDoc(
+    recruit.class.Candidates,
+    core.space.Model,
+    {
+      name: 'public',
+      description: 'Public Candidates',
+      private: false,
+      members: []
+    },
+    recruit.space.CandidatesPublic
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Candidate,
@@ -184,7 +189,8 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',
-      '$lookup.attachedTo.channels']
+      '$lookup.attachedTo.channels'
+    ]
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -213,15 +219,36 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationPresenter
   })
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Create application' as IntlString,
-    icon: recruit.icon.Create,
-    action: recruit.actionImpl.CreateApplication
-  }, recruit.action.CreateApplication)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Create application' as IntlString,
+      icon: recruit.icon.Create,
+      action: recruit.actionImpl.CreateApplication
+    },
+    recruit.action.CreateApplication
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Candidate,
     action: recruit.action.CreateApplication
+  })
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Move' as IntlString,
+      icon: recruit.icon.Move,
+      action: recruit.actionImpl.MoveCandidate
+    },
+    recruit.action.MoveCandidate
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Candidate,
+    action: recruit.action.MoveCandidate
   })
 
   builder.createDoc(view.class.Sequence, view.space.Sequence, {

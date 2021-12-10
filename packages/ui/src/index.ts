@@ -150,3 +150,5 @@ export const ticker = readable(Date.now(), set => {
 addStringsLoader(uiId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })
+
+export { default } from './plugin'

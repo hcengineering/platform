@@ -23,10 +23,12 @@ import type { Action } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
-    CreateApplication: '' as Ref<Action>
+    CreateApplication: '' as Ref<Action>,
+    MoveCandidate: '' as Ref<Action>
   },
   actionImpl: {
-    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>
+    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>,
+    MoveCandidate: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     RecruitApplication: '' as IntlString,
