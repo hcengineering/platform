@@ -71,7 +71,6 @@ export default plugin(recruitId, {
     Vacancy: '' as Asset,
     Location: '' as Asset,
     Calendar: '' as Asset,
-    Create: '' as Asset,
-    Move: '' as Asset
+    Create: '' as Asset
   }
 })

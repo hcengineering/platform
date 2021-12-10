@@ -14,68 +14,81 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Candidate } from '@anticrm/recruit'
   import { Label, Button } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
-  import recruit from '../plugin'
-  import { Ref, Space } from '@anticrm/core'
+  import core, { AttachedDoc, Collection, Doc, Ref, Space } from '@anticrm/core'
   import { SpaceSelect } from '@anticrm/presentation'
   import { createEventDispatcher } from 'svelte'
-  import chunter from '@anticrm/chunter'
-  import attachment from '@anticrm/attachment'
   import ui from '@anticrm/ui'
+  import view from '../plugin'
+  import { translate } from '@anticrm/platform'
 
-  export let candidate: Candidate
-  let space: Ref<Space> = candidate.space
+  export let object: Doc
+  let currentSpace: Space | undefined
+  let space: Ref<Space> = object.space
   const client = getClient()
   const dispatch = createEventDispatcher()
+  const hierarchy = client.getHierarchy()
+  let label = ''
+  $: _class = currentSpace ? hierarchy.getClass(currentSpace._class).label : undefined
+  let classLabel = ''
+  $: translate(hierarchy.getClass(object._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
+  $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
 
-  async function move (): Promise<void> {
-    client.updateDoc(candidate._class, candidate.space, candidate._id, {
-      space: space
-    })
-    client
-      .findAll(chunter.class.Comment, {
-        attachedTo: candidate._id,
-        space: candidate.space
+  async function move (doc: Doc): Promise<void> {
+    console.log('start move')
+    console.log(doc)
+    const attributes = hierarchy.getAllAttributes(doc._class)
+    for (const [name, attribute] of attributes) {
+      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+        const collection = attribute.type as Collection<AttachedDoc>
+        console.log('find collection')
+        console.log(collection)
+        const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
+        console.log(allAttached)
+        for (const attached of allAttached) {
+          move(attached).catch((err) => console.log('failed to move', name, err))
+        }
+      }
+    }
+    if (doc.space === object.space) {
+      console.log('move doc')
+      console.log(doc)
+      client.updateDoc(doc._class, doc.space, doc._id, {
+        space: space
       })
-      .then((comments) =>
-        comments.forEach((comment) => {
-          client.updateDoc(comment._class, comment.space, comment._id, {
-            space: space
-          })
-        })
-      )
-    client
-      .findAll(attachment.class.Attachment, {
-        attachedTo: candidate._id,
-        space: candidate.space
-      })
-      .then((attachments) =>
-        attachments.forEach((attachment) => {
-          client.updateDoc(attachment._class, attachment.space, attachment._id, {
-            space: space
-          })
-        })
-      )
-
+    }
+    console.log('close')
     dispatch('close')
   }
+
+  $: client.findOne(core.class.Space, { _id: object.space }).then((res) => (currentSpace = res))
 </script>
 
 <div class="container">
   <div class="header fs-title">
-    <Label label="Move candidate" />
+    <Label label={view.string.MoveClass} params={{ class: label }} />
   </div>
   <div class="description">
-    <Label label="Select the pool you want to move candidate to." />
+    <Label label={view.string.SelectToMove} params={{ class: label, classLabel: classLabel }} />
   </div>
   <div class="spaceSelect">
-    <SpaceSelect _class={recruit.class.Candidates} label="Candidate’s pool" bind:value={space} />
+    {#if currentSpace}
+      <SpaceSelect _class={currentSpace._class} label={_class ?? ''} bind:value={space} />
+    {/if}
   </div>
   <div class="footer">
-    <Button label="Move" size="small" width="100px" disabled={space === candidate.space} primary on:click={move} />
+    <Button
+      label="Move"
+      size="small"
+      width="100px"
+      disabled={space === object?.space}
+      primary
+      on:click={() => {
+        move(object)
+      }}
+    />
     <Button
       size="small"
       width="100px"

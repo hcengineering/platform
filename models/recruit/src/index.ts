@@ -128,7 +128,7 @@ export function createModel (builder: Builder): void {
           component: recruit.component.EditVacancy
         },
         {
-          label: recruit.string.CandidatePools,
+          label: recruit.string.Candidates,
           spaceClass: recruit.class.Candidates,
           addSpaceLabel: recruit.string.CreateCandidates,
           createComponent: recruit.component.CreateCandidates
@@ -233,22 +233,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Candidate,
     action: recruit.action.CreateApplication
-  })
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: 'Move' as IntlString,
-      icon: recruit.icon.Move,
-      action: recruit.actionImpl.MoveCandidate
-    },
-    recruit.action.MoveCandidate
-  )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Candidate,
-    action: recruit.action.MoveCandidate
   })
 
   builder.createDoc(view.class.Sequence, view.space.Sequence, {

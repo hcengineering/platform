@@ -24,7 +24,6 @@ import KanbanCard from './components/KanbanCard.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
-import MoveCandidate from './components/MoveCandidate.svelte'
 
 import { showPopup } from '@anticrm/ui'
 import { Resources } from '@anticrm/platform'
@@ -33,14 +32,9 @@ async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
 }
 
-async function moveCandidate (object: Doc): Promise<void> {
-  showPopup(MoveCandidate, { candidate: object })
-}
-
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    CreateApplication: createApplication,
-    MoveCandidate: moveCandidate
+    CreateApplication: createApplication
   },
   component: {
     CreateVacancy,

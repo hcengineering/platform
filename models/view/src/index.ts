@@ -148,6 +148,17 @@ export function createModel (builder: Builder): void {
     action: view.action.Delete
   })
 
+  builder.createDoc(view.class.Action, core.space.Model, {
+    label: 'Move' as IntlString,
+    icon: view.icon.Move,
+    action: view.actionImpl.Move
+  }, view.action.Move)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: core.class.Doc,
+    action: view.action.Move
+  })
+
   builder.createDoc(core.class.Space, core.space.Model, {
     name: 'Sequences',
     description: 'Internal space to store sequence numbers',
