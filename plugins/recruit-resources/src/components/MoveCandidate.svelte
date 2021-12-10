@@ -71,7 +71,9 @@
   <div class="description">
     <Label label="Select the pool you want to move candidate to." />
   </div>
-  <SpaceSelect _class={recruit.class.Candidates} label="Candidate’s pool" bind:value={space} />
+  <div class="spaceSelect">
+    <SpaceSelect _class={recruit.class.Candidates} label="Candidate’s pool" bind:value={space} />
+  </div>
   <div class="footer">
     <Button label="Move" disabled={space === candidate.space} primary on:click={move} />
     <Button
@@ -87,12 +89,19 @@
   .container {
     display: flex;
     flex-direction: column;
-    background-color: var(--theme-bg-color);
+    background-color: var(--theme-button-bg-hovered);
     border-radius: 1.25rem;
     padding: 2rem 1.75rem 1.75rem 1.75rem;
 
     .description {
       margin: 1rem 0;
+    }
+
+    .spaceSelect {
+      background-color: var(--theme-button-bg-enabled);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1rem;
+      border: 0.5px solid var(--theme-bg-accent-color);
     }
 
     .footer {
