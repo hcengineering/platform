@@ -61,7 +61,7 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   }
   const presenter = await getResource(presenterMixin.presenter)
   return {
-    key: key,
+    key: typeof preserveKey === 'string' ? preserveKey : '',
     _class: attrClass,
     label: attribute.label,
     presenter
