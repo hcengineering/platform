@@ -82,7 +82,7 @@
 </script>
 
 {#if client}
-  <svg class="mask">
+  <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"/>
     </clipPath>
@@ -116,12 +116,6 @@
         <NavHeader label={currentApplication.label} />
       {/if}
       <Navigator model={navigatorModel} />
-      <!-- <div class="flex-center safari-gap-2" style="height: 20rem">
-        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'left'} />
-        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'top'} />
-        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'bottom'} />
-        <ActionIcon icon={IconEdit} label={workbench.string.ShowMenu} size={'small'} direction={'right'} />
-      </div> -->
     </div>
     {/if}
     <div class="panel-component">
@@ -143,11 +137,6 @@
 {/if}
 
 <style lang="scss">
-  .mask {
-    position: absolute;
-    width: 0;
-    height: 0;
-  }
   .container {
     display: flex;
     height: 100%;

@@ -44,6 +44,7 @@ button {
   user-select: none;
 }
 input {
+  min-width: 0;
   font: inherit;
   background-color: transparent;
   outline: none;
@@ -255,6 +256,12 @@ p:last-child { margin-block-end: 0; }
 }
 .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
 
+.svg-mask {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
 .scale-75 {
   transform-origin: center center;
   transform: scale(.75);
@@ -304,6 +311,7 @@ a.no-line {
   text-overflow: ellipsis;
   overflow: hidden;
   user-select: none;
+  min-width: 0;
 }
 
 .focused-button {

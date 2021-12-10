@@ -94,7 +94,7 @@
         {:else if selected === 1}
           <ToggleWithLabel label={'This vacancy is private'} description={recruit.string.MakePrivateDescription}/>
         {:else if selected === 2}
-          <Component is={activity.component.Activity} props={{object}} />
+          <Component is={activity.component.Activity} props={{object, transparent: true}} />
         {/if}
       </div>
     </div>
@@ -176,8 +176,8 @@
     flex-grow: 1;
     overflow-x: hidden;
     overflow-y: auto;
-    margin: 1rem 0;
-    padding: 1.5rem 2.5rem;
+    margin: 1rem 2rem;
+    padding: 1.5rem .5rem;
 
     .box {
       margin-right: 1px;
