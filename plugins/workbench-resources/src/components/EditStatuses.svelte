@@ -20,7 +20,7 @@
   import type { Ref, SpaceWithStates, State, Class, Obj, Space } from '@anticrm/core'
   import { Label, showPopup } from '@anticrm/ui'
   import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
-  import type { BaseKanban, Kanban } from '@anticrm/view'
+  import type { Kanban } from '@anticrm/view'
   import { KanbanEditor } from '@anticrm/view-resources'
   import Close from './icons/Close.svelte'
   import Status from './icons/Status.svelte'
@@ -48,8 +48,12 @@
   const spaceI = createQuery()
   $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, result => { spaceInstance = result.shift() })
 
-  async function deleteState({ kanban, state, space }: { kanban: BaseKanban, state: State, space: Space }) {
-    const spaceClassInstance = client.getHierarchy().getClass(space._class)
+  async function deleteState({ state }: { state: State }) {
+    if (spaceInstance === undefined) {
+      return
+    }
+
+    const spaceClassInstance = client.getHierarchy().getClass(spaceInstance._class)
     const spaceView = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
     const containingClass = spaceView.view.class
 
@@ -65,7 +69,7 @@
         label: 'Delete status',
         message: 'Do you want to delete this status?'
       }, undefined, async (result) => {
-        if (result) {
+        if (result && kanban !== undefined) {
           await client.updateDoc(kanban._class, kanban.space, kanban._id, { $pull: { states: state._id } })
           client.removeDoc(state._class, state.space, state._id)
         }

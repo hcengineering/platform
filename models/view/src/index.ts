@@ -16,13 +16,28 @@
 import type { IntlString, Asset, Resource } from '@anticrm/platform'
 import type { Ref, Class, Space, Doc, Arr, Domain, State, DoneState } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Mixin, Builder, Prop, TypeString, TypeRef, Collection } from '@anticrm/model'
+import { Model, Mixin, Builder, Prop, Collection, TypeString } from '@anticrm/model'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor, Viewlet, AttributeEditor, AttributePresenter, KanbanCard, ObjectEditor, Action, ActionTarget, Kanban, Sequence, KanbanTemplateSpace, KanbanTemplate, BaseKanban } from '@anticrm/view'
-import workbench from '@anticrm/workbench'
-import type { Application } from '@anticrm/workbench'
+import type {
+  ViewletDescriptor,
+  Viewlet,
+  AttributeEditor,
+  AttributePresenter,
+  KanbanCard,
+  ObjectEditor,
+  Action,
+  ActionTarget,
+  Kanban,
+  Sequence,
+  KanbanTemplateSpace,
+  KanbanTemplate,
+  StateTemplate,
+  DoneStateTemplate,
+  WonStateTemplate,
+  LostStateTemplate
+} from '@anticrm/view'
 
-import core, { TDoc, TClass, TSpace } from '@anticrm/model-core'
+import core, { TDoc, TClass, TSpace, TAttachedDoc } from '@anticrm/model-core'
 
 import view from './plugin'
 
@@ -75,14 +90,10 @@ export class TActionTarget extends TDoc implements ActionTarget {
   action!: Ref<Action>
 }
 
-@Model(view.class.BaseKanban, core.class.Doc, DOMAIN_KANBAN)
-export class TBaseKanban extends TDoc implements BaseKanban {
+@Model(view.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
+export class TKanban extends TDoc implements Kanban {
   states!: Arr<Ref<State>>
   doneStates!: Arr<Ref<DoneState>>
-}
-
-@Model(view.class.Kanban, view.class.BaseKanban, DOMAIN_KANBAN)
-export class TKanban extends TBaseKanban implements Kanban {
   attachedTo!: Ref<Space>
   order!: Arr<Ref<Doc>>
 }
@@ -92,16 +103,40 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   icon!: AnyComponent
 }
 
-@Model(view.class.KanbanTemplate, view.class.BaseKanban, DOMAIN_KANBAN)
-export class TKanbanTemplate extends TBaseKanban implements KanbanTemplate {
+@Model(view.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
 
-  @Prop(Collection(core.class.State), 'States' as IntlString)
-  states!: Arr<Ref<State>>
+  @Prop(TypeString(), 'Color' as IntlString)
+  color!: string
+}
 
-  @Prop(TypeRef(workbench.class.Application), 'Application' as IntlString)
-  application?: Ref<Application>
+@Model(view.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+}
+
+@Model(view.class.WonStateTemplate, view.class.DoneStateTemplate, DOMAIN_KANBAN)
+export class TWonStateTemplate extends TDoneStateTemplate implements WonStateTemplate {}
+
+@Model(view.class.LostStateTemplate, view.class.DoneStateTemplate, DOMAIN_KANBAN)
+export class TLostStateTemplate extends TDoneStateTemplate implements LostStateTemplate {}
+
+@Model(view.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)
+export class TKanbanTemplate extends TDoc implements KanbanTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+
+  states!: Arr<Ref<StateTemplate>>
+  doneStates!: Arr<Ref<DoneStateTemplate>>
+
+  @Prop(Collection(view.class.StateTemplate), 'States' as IntlString)
+  statesC!: number
+
+  @Prop(Collection(view.class.DoneStateTemplate), 'Done States' as IntlString)
+  doneStatesC!: number
 }
 
 @Model(view.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
@@ -111,7 +146,24 @@ export class TSequence extends TDoc implements Sequence {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TKanbanCard, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TBaseKanban, TKanban, TSequence, TKanbanTemplateSpace, TKanbanTemplate)
+  builder.createModel(
+    TAttributeEditor,
+    TAttributePresenter,
+    TKanbanCard,
+    TObjectEditor,
+    TViewletDescriptor,
+    TViewlet,
+    TAction,
+    TActionTarget,
+    TKanban,
+    TSequence,
+    TKanbanTemplateSpace,
+    TStateTemplate,
+    TDoneStateTemplate,
+    TWonStateTemplate,
+    TLostStateTemplate,
+    TKanbanTemplate
+  )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor
@@ -149,23 +201,38 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StatePresenter
   })
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Table' as IntlString,
-    icon: view.icon.Table,
-    component: view.component.TableView
-  }, view.viewlet.Table)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Table' as IntlString,
+      icon: view.icon.Table,
+      component: view.component.TableView
+    },
+    view.viewlet.Table
+  )
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Kanban' as IntlString,
-    icon: view.icon.Kanban,
-    component: view.component.KanbanView
-  }, view.viewlet.Kanban)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Kanban' as IntlString,
+      icon: view.icon.Kanban,
+      component: view.component.KanbanView
+    },
+    view.viewlet.Kanban
+  )
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Delete' as IntlString,
-    icon: view.icon.Delete,
-    action: view.actionImpl.Delete
-  }, view.action.Delete)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Delete' as IntlString,
+      icon: view.icon.Delete,
+      action: view.actionImpl.Delete
+    },
+    view.action.Delete
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: core.class.Doc,

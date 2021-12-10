@@ -14,24 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, State, Space, Doc, DoneState } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, showPopup } from '@anticrm/ui'
-  import { createQuery, getClient, AttributeEditor } from '@anticrm/presentation'
-  import type { BaseKanban } from '@anticrm/view'
-  import Circles from './icons/Circles.svelte'
-  import ColorsPopup from './ColorsPopup.svelte'
-  import StatusesPopup from './StatusesPopup.svelte'
+  import type { Ref, State, Doc, DoneState } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Kanban } from '@anticrm/view'
 
   import core from '@anticrm/core'
+  import StatesEditor from './StatesEditor.svelte'
 
-  export let kanban: BaseKanban
+  export let kanban: Kanban
 
   let states: State[] = []
-  let doneStates: DoneState[] = []
-  const elements: HTMLElement[] = []
 
-  const dispatch = createEventDispatcher()
+  let doneStates: DoneState[] = []
+  let wonStates: DoneState[] = []
+  let lostStates: DoneState[] = []
+  $: wonStates = doneStates.filter((x) => x._class === core.class.WonState)
+  $: lostStates = doneStates.filter((x) => x._class === core.class.LostState)
+
   const client = getClient()
 
   function sort <T extends Doc>(order: Ref<T>[], items: T[]): T[] {
@@ -53,56 +52,18 @@
   const doneStatesQ = createQuery()
   $: doneStatesQ.query(core.class.DoneState, { _id: { $in: kanban.doneStates }}, (result) => { doneStates = sort(kanban.doneStates, result) })
 
-  let wonStates: DoneState[] = []
-  let lostStates: DoneState[] = []
-  $: wonStates = doneStates.filter((x) => x._class === core.class.WonState)
-  $: lostStates = doneStates.filter((x) => x._class === core.class.LostState)
-
-  let space: Space | undefined
-  const spaceQ = createQuery()
-  $: spaceQ.query(core.class.Space, { _id: kanban.space }, (result) => { space = result[0] })
-
-  let selected: number | undefined
-  let dragState: Ref<State>
-
-  function dragswap (ev: MouseEvent, i: number): boolean {
-    const s = selected as number
-    if (i < s) {
-      return ev.offsetY < elements[i].offsetHeight / 2
-    } else if (i > s) {
-      return ev.offsetY > elements[i].offsetHeight / 2
-    }
-    return false
-  }
-
-  function dragover (ev: MouseEvent, i: number) {
-    const s = selected as number
-    if (dragswap(ev, i)) {
-      [states[i], states[s]] = [states[s], states[i]]
-      selected = i
-    }
-  }
-
-  async function move (to: number) {
+  async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<State>, position: number } }) {
     client.updateDoc(kanban._class, kanban.space, kanban._id, {
       $move: {
         states: {
-          $value: dragState,
-          $position: to
+          $value: stateID,
+          $position: position
         }
       }
     })
   }
 
-  const onColorChange = (state: State) => async (color: string | undefined): Promise<void> => {
-    if (color === undefined) {
-      return
-    }
-
-    await client.updateDoc(core.class.State, state.space, state._id, { color })
-  }
-
-  async function addStatus () {
+  async function onAdd () {
     const state = await client.createDoc(core.class.State, kanban.space, {
       title: 'New State',
       color: '#7C6FCD'
@@ -115,129 +76,4 @@
   }
 </script>
 
-<div class="root w-full">
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink flex-between states-header">
-      <Label label={'ACTIVE STATUSES'} />
-      <div on:click={addStatus}><CircleButton icon={IconAdd} size={'medium'} /></div>
-    </div>
-    <div class="content">
-      {#each states as state, i}
-        {#if state}
-          <div bind:this={elements[i]} class="flex-between states" draggable={true}
-            on:dragover|preventDefault={(ev) => {
-              dragover(ev, i)
-            }}
-            on:drop|preventDefault={() => {
-              move(i)
-            }}
-            on:dragstart={() => {
-              selected = i
-              dragState = states[i]._id
-            }}
-            on:dragend={() => {
-              selected = undefined
-            }}
-          >
-            <div class="bar"><Circles /></div>
-            <div class="color" style="background-color: {state.color}"
-              on:click={() => {
-                showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
-              }}
-            />
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-            <div class="tool hover-trans"
-              on:click={(ev) => {
-                if (space === undefined) {
-                  return
-                }
-
-                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { kanban, state, space }) }, ev.target, (result) => { if (result) console.log('StatusesPopup:', result) })
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          </div>
-        {/if}
-      {/each}
-    </div>
-  </div>
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink states-header">
-      <Label label={'DONE STATUS / WON'} />
-    </div>
-    <div class="content">
-      {#each wonStates as state, i}
-        {#if state}
-          <div class="states flex-row-center">
-            <div class="bar"/>
-            <div class="color" style="background-color: #a5d179"/>
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-          </div>
-        {/if}
-      {/each}
-    </div>
-  </div>
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink states-header">
-      <Label label={'DONE STATUS / LOST'} />
-    </div>
-    <div class="content">
-      {#each lostStates as state, i}
-        {#if state}
-          <div class="states flex-row-center">
-            <div class="bar"/>
-            <div class="color" style="background-color: #f28469"/>
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={core.class.State} object={state} key="title"/></div>
-          </div>
-        {/if}
-      {/each}
-    </div>
-  </div>
-</div>
-
-<style lang="scss">
-  .root {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(1px, max-content) min-content min-content;
-    gap: 2rem;
-    height: 100%;
-  }
-  .states {
-    padding: .625rem 1rem;
-    color: #fff;
-    background-color: rgba(67, 67, 72, .3);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
-    user-select: none;
-
-    &-header {
-      margin-bottom: 1rem;
-      font-weight: 600;
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-
-    .bar {
-      margin-right: .375rem;
-      width: .375rem;
-      height: 1rem;
-      opacity: .4;
-      cursor: grabbing;
-    }
-    .color {
-      margin-right: .75rem;
-      width: 1rem;
-      height: 1rem;
-      border-radius: .25rem;
-      cursor: pointer;
-    }
-    .tool { margin-left: 1rem; }
-  }
-  .states + .states { margin-top: .5rem; }
-
-  .content {
-    overflow-y: auto;
-  }
-</style>
+<StatesEditor {states} {wonStates} {lostStates} on:add={onAdd} on:delete on:move={onMove}/>

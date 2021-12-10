@@ -15,11 +15,11 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, Doc, Class, State } from '@anticrm/core'
+  import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import { getClient, MessageBox } from '@anticrm/presentation'
   import { Label, Icon, showPopup } from '@anticrm/ui'
-  import type { BaseKanban, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/view'
-  import { KanbanEditor } from '@anticrm/view-resources'
+  import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/view'
+  import { KanbanTemplateEditor } from '@anticrm/view-resources'
   import setting from '@anticrm/setting'
 
   import Folders from './Folders.svelte'
@@ -34,14 +34,18 @@
 
   const client = getClient()
 
-  function deleteState ({ kanban, state }: { kanban: BaseKanban, state: State }) {
+  function deleteState ({ state }: { state: StateTemplate }) {
+    if (template === undefined) {
+      return
+    }
+
     showPopup(MessageBox, {
         label: 'Delete status',
         message: 'Do you want to delete this status?'
       }, undefined, async (result) => {
-        if (result) {
-          await client.updateDoc(kanban._class, kanban.space, kanban._id, { $pull: { states: state._id }})
-          await client.removeDoc(state._class, state.space, state._id)
+        if (result && template !== undefined) {
+          await client.updateDoc(template._class, template.space, template._id, { $pull: { states: state._id }})
+          await client.removeCollection(state._class, template.space, state._id, template._id, template._class, 'statesC')
         }
       })
   }
@@ -63,7 +67,7 @@
     </div>
     <div class="statuses flex-stretch">
       {#if template !== undefined}
-        <KanbanEditor kanban={template} on:delete={(e) => deleteState(e.detail)}/>
+        <KanbanTemplateEditor kanban={template} on:delete={(e) => deleteState(e.detail)}/>
       {/if}
     </div>
   </div>

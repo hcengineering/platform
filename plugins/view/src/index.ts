@@ -16,7 +16,7 @@
 
 import type { Plugin, Asset, Resource, IntlString } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj, DoneState } from '@anticrm/core'
+import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj, DoneState, AttachedDoc, WonState, LostState } from '@anticrm/core'
 
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
@@ -84,23 +84,6 @@ export interface ActionTarget extends Doc {
 /**
  * @public
  */
-export interface BaseKanban extends Doc {
-  states: Arr<Ref<State>>
-  doneStates: Arr<Ref<DoneState>>
-}
-
-/**
- * @public
- */
-export interface Kanban extends BaseKanban {
-  attachedTo: Ref<Space>
-  states: Arr<Ref<State>>
-  order: Arr<Ref<Doc>>
-}
-
-/**
- * @public
- */
 export interface Sequence extends Doc {
   attachedTo: Ref<Class<Doc>>
   sequence: number
@@ -109,8 +92,42 @@ export interface Sequence extends Doc {
 /**
  * @public
  */
-export interface KanbanTemplate extends BaseKanban {
+export interface Kanban extends Doc {
+  attachedTo: Ref<Space>
+  states: Arr<Ref<State>>
+  doneStates: Arr<Ref<DoneState>>
+  order: Arr<Ref<Doc>>
+}
+
+/**
+ * @public
+ */
+export interface StateTemplate extends AttachedDoc, State {}
+
+/**
+ * @public
+ */
+export interface DoneStateTemplate extends AttachedDoc, DoneState {}
+
+/**
+ * @public
+ */
+export interface WonStateTemplate extends DoneStateTemplate, WonState {}
+
+/**
+ * @public
+ */
+export interface LostStateTemplate extends DoneStateTemplate, LostState {}
+
+/**
+ * @public
+ */
+export interface KanbanTemplate extends Doc {
   title: string
+  states: Arr<Ref<StateTemplate>>
+  doneStates: Arr<Ref<DoneStateTemplate>>
+  statesC: number
+  doneStatesC: number
 }
 
 /**
@@ -168,9 +185,12 @@ export default plugin(viewId, {
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
     ActionTarget: '' as Ref<Class<ActionTarget>>,
-    BaseKanban: '' as Ref<Class<BaseKanban>>,
     Kanban: '' as Ref<Class<Kanban>>,
     Sequence: '' as Ref<Class<Sequence>>,
+    StateTemplate: '' as Ref<Class<StateTemplate>>,
+    DoneStateTemplate: '' as Ref<Class<DoneStateTemplate>>,
+    WonStateTemplate: '' as Ref<Class<WonStateTemplate>>,
+    LostStateTemplate: '' as Ref<Class<LostStateTemplate>>,
     KanbanTemplate: '' as Ref<Class<KanbanTemplate>>,
     KanbanTemplateSpace: '' as Ref<Class<KanbanTemplateSpace>>
   },

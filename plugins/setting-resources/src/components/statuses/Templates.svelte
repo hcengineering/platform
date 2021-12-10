@@ -15,14 +15,13 @@
 -->
 
 <script lang="ts">
-  import core from '@anticrm/core'
+  import core, { generateId } from '@anticrm/core'
   import type { Ref } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import view, { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/view'
+  import view, { KanbanTemplate, KanbanTemplateSpace, LostStateTemplate, WonStateTemplate } from '@anticrm/view'
+  import { ContextMenu } from '@anticrm/view-resources'
   import setting from '@anticrm/setting'
-
-  import TemplateMenu from './TemplateMenu.svelte';
 
   export let folder: KanbanTemplateSpace | undefined
   export let template: KanbanTemplate | undefined
@@ -50,20 +49,50 @@
       return
     }
 
-    const doneStates = await Promise.all([
-      client.createDoc(core.class.WonState, folder._id, {
-        title: 'Won'
-      }),
-      client.createDoc(core.class.LostState, folder._id, {
-        title: 'Lost'
-      })
-    ])
+    const space = folder._id
 
-    await client.createDoc(view.class.KanbanTemplate, folder._id, {
+    const template = await client.createDoc(view.class.KanbanTemplate, space, {
       states: [],
-      doneStates,
+      doneStates: [],
+      doneStatesC: 0,
+      statesC: 0,
       title: 'New Template'
     })
+
+    const doneStates = [
+      {
+        id: generateId<WonStateTemplate>(),
+        class: view.class.WonStateTemplate,
+        title: 'Won'
+      },
+      {
+        id: generateId<LostStateTemplate>(),
+        class: view.class.LostStateTemplate,
+        title: 'Lost'
+      }
+    ]
+
+    await Promise.all(doneStates.map(async (ds) => {
+      await client.addCollection(
+        ds.class,
+        space,
+        template,
+        view.class.KanbanTemplate,
+        'doneStatesC',
+        {
+          title: ds.title
+        },
+        ds.id
+      )
+    }))
+
+    for (const ds of doneStates) {
+      await client.updateDoc(view.class.KanbanTemplate, space, template, {
+        $push: {
+          doneStates: ds.id
+        }
+      })
+    }
   }
 
   function select (item: KanbanTemplate) {
@@ -82,7 +111,7 @@
         <AttributeEditor maxWidth="20rem" _class={view.class.KanbanTemplate} object={t} key="title"/>
         <div class="tool hover-trans"
           on:click|stopPropagation={(ev) => {
-            showPopup(TemplateMenu, { template: t }, ev.target, () => {})
+            showPopup(ContextMenu, { object: t }, ev.target, () => {})
           }}
         >
           <IconMoreH size="medium" />
