@@ -274,7 +274,6 @@
   :global(.msgactivity-container + .msgactivity-container::before) {
     content: '';
   }
-  // :global(.msgactivity-container > *:last-child::after) { content: none; }
 
   .menuOptions {
     margin-left: .5rem;

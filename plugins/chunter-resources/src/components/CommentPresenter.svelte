@@ -57,10 +57,12 @@
     margin-bottom: .25rem;
   }
   .comment-content {
+    overflow: hidden;
+    visibility: visible;
     display: -webkit-box;
     -webkit-line-clamp: 7;
-    -webkit-box-orient: vertical;  
-    text-overflow: ellipsis;
-    overflow: hidden;
+    line-clamp: 7;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical;
   }
 </style>

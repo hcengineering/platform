@@ -42,7 +42,7 @@
         <div class="fs-title">{title}</div>
         <div class="small-text content-dark-color">Candidate pool name</div>
       </div>
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <ActionIcon icon={IconMoreH} size={'medium'} />
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
     <div class="flex-col scroll-container">

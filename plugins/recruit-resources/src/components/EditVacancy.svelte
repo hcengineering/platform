@@ -178,6 +178,7 @@
     overflow-y: auto;
     margin: 1rem 2rem;
     padding: 1.5rem .5rem;
+    height: 100%;
 
     .box {
       margin-right: 1px;
