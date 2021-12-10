@@ -41,7 +41,6 @@
       color: var(--theme-content-dark-color);
     }
     .title {
-      font-weight: 500;
       text-align: left;
       overflow: hidden;
       white-space: nowrap;

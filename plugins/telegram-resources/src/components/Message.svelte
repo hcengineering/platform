@@ -97,6 +97,7 @@
       color: var(--theme-content-trans-color);
       font-size: 0.75rem;
       font-style: italic;
+      white-space: nowrap;
     }
   }
 

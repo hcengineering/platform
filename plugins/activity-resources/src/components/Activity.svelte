@@ -23,8 +23,9 @@
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
-  export let fullSize: boolean = false
   export let object: Doc
+  export let fullSize: boolean = false
+  export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
 
@@ -54,12 +55,14 @@
   })
 </script>
 
-{#if fullSize}
-  <div class="flex-row-center header">
-    <div class="flex-center icon"><IconActivity size={'small'} /></div>
-    <div class="fs-title">Activity</div>
-  </div>
-  <div class="flex-col h-full right-content">
+{#if fullSize || transparent}
+  {#if !transparent}
+    <div class="flex-row-center header">
+      <div class="flex-center icon"><IconActivity size={'small'} /></div>
+      <div class="fs-title">Activity</div>
+    </div>
+  {/if}
+  <div class="h-full right-content" class:transparent>
     <ScrollBox vertical stretch>
       {#if txes}
         <Grid column={1} rowGap={1.5}>
@@ -70,7 +73,7 @@
       {/if}
     </ScrollBox>
   </div>
-  <div class="ref-input"><ReferenceInput on:message={onMessage} /></div>
+  <div class="ref-input" class:transparent><ReferenceInput on:message={onMessage} /></div>
 {:else}
   <div class="unionSection">
     <ScrollBox vertical stretch noShift>
@@ -126,12 +129,23 @@
   .ref-input {
     background-color: var(--theme-bg-accent-color);
     padding: 1.5rem 2.5rem;
+    &.transparent {
+      padding: 1.5rem 0 0;
+      background-color: transparent;
+    }
   }
 
   .right-content {
     flex-grow: 1;
     padding: 1.5rem 2.5rem 0;
     background-color: var(--theme-dialog-accent);
+    &.transparent {
+      min-height: 0;
+      height: 100%;
+      max-height: 100%;
+      padding: 0;
+      background-color: transparent;
+    }
   }
 
   .unionSection {
