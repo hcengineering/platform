@@ -28,14 +28,14 @@
   export let value: string | undefined = undefined
   export let placeholder: string = 'placeholder'
 
-  let textHTML: HTMLElement
+  let textHTML: HTMLInputElement
 </script>
 
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value {placeholder} on:change/>
   {#if value}
-    <div class="ml-2 btn" on:click={() => { value = '' }}>
+    <div class="ml-2 btn" on:click={() => { textHTML.value = ''; textHTML.dispatchEvent(new Event('change')) }}>
       <Tooltip label={ui.string.Clear}>
         <div class="scale-75"><Icon icon={IconClose} size={'small'} /></div>
       </Tooltip>
