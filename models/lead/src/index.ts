@@ -134,6 +134,14 @@ export function createModel (builder: Builder): void {
     sequence: 0
   })
 
+  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+    name: 'Funnels',
+    description: 'Manage funnel statuses',
+    members: [],
+    private: false,
+    icon: lead.component.TemplatesIcon
+  }, lead.space.FunnelTemplates)
+
   createKanban(lead.space.DefaultFunnel, async (_class, space, data, id) => {
     builder.createDoc(_class, space, data, id)
     return await Promise.resolve()

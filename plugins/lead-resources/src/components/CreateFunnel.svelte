@@ -14,17 +14,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { generateId, Ref } from '@anticrm/core'
+  import core, { Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import { createKanban, Funnel } from '@anticrm/lead'
+  import view, { createKanban, KanbanTemplate } from '@anticrm/view'
+  import { KanbanTemplateSelector } from '@anticrm/view-resources'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   const description: string = ''
+  let templateId: Ref<KanbanTemplate> | undefined
 
   export function canClose (): boolean {
     return name === ''
@@ -33,8 +35,11 @@
   const client = getClient()
 
   async function createFunnel (): Promise<void> {
-    const id: Ref<Funnel> = generateId()
-    await client.createDoc(
+    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+      throw Error(`Failed to find target kanban template: ${templateId}`)
+    }
+
+    const id = await client.createDoc(
       lead.class.Funnel,
       core.space.Model,
       {
@@ -42,13 +47,10 @@
         description,
         private: false,
         members: []
-      },
-      id
+      }
     )
 
-    await createKanban(id, async (_class, space, data, id) => {
-      await client.createDoc(_class, space, data, id)
-    })
+    await createKanban(client, id, templateId)
   }
 </script>
 
@@ -63,5 +65,6 @@
   <Grid column={1} rowGap={1.5}>
     <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={'Funnel name'} focus />
     <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />
+    <KanbanTemplateSelector folders={[lead.space.FunnelTemplates]} bind:template={templateId}/>
   </Grid>
 </SpaceCreateCard>

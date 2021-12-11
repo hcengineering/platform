@@ -20,12 +20,14 @@ import CreateTask from './components/CreateTask.svelte'
 import CreateProject from './components/CreateProject.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,
     CreateProject,
     TaskPresenter,
-    KanbanCard
+    KanbanCard,
+    TemplatesIcon
   }
 })

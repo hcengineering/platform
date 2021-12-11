@@ -17,7 +17,7 @@
 import { plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import core, { DoneState } from '@anticrm/core'
-import view, { Kanban } from '@anticrm/view'
+import view, { Kanban, KanbanTemplateSpace } from '@anticrm/view'
 import type { Class, Data, Doc, DocWithState, Ref, Space, SpaceWithStates, State } from '@anticrm/core'
 import type { Contact } from '@anticrm/contact'
 
@@ -51,6 +51,9 @@ export default plugin(leadId, {
     Funnel: '' as Asset,
     Lead: '' as Asset,
     LeadApplication: '' as Asset
+  },
+  space: {
+    FunnelTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })
 

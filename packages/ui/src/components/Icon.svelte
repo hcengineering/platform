@@ -17,7 +17,7 @@
   import { AnySvelteComponent } from '../types';
 
   export let icon: Asset | AnySvelteComponent
-  export let size: 'small' | 'medium' | 'large'
+  export let size: 'xsmall' | 'small' | 'medium' | 'large'
   export let fill = 'currentColor'
   export let filled: boolean = false
 
@@ -42,6 +42,11 @@
 {/if}
 
 <style lang="scss">
+  .xsmall {
+    width: 0.857em;
+    height: 0.857em;
+  }
+
   .small {
     width: 1.143em;
     height: 1.143em;

@@ -20,6 +20,7 @@ import CreateLead from './components/CreateLead.svelte'
 import EditLead from './components/EditLead.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import LeadPresenter from './components/LeadPresenter.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -27,6 +28,7 @@ export default async (): Promise<Resources> => ({
     CreateLead,
     EditLead,
     KanbanCard,
-    LeadPresenter
+    LeadPresenter,
+    TemplatesIcon
   }
 })

@@ -139,6 +139,14 @@ export function createModel (builder: Builder): void {
     members: []
   }, task.space.TasksPublic)
 
+  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+    name: 'Projects',
+    description: 'Manage project statuses',
+    members: [],
+    private: false,
+    icon: task.component.TemplatesIcon
+  }, task.space.ProjectTemplates)
+
   createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
     builder.createDoc(_class, space, data, id)
     return await Promise.resolve()

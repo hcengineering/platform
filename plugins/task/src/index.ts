@@ -18,7 +18,7 @@ import type { Class, Data, Doc, DoneState, Ref, Space, State } from '@anticrm/co
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import core from '@anticrm/core'
-import view, { Kanban } from '@anticrm/view'
+import view, { Kanban, KanbanTemplateSpace } from '@anticrm/view'
 
 /**
  * @public
@@ -52,6 +52,9 @@ export default plugin(taskId, {
   },
   icon: {
     Task: '' as Asset
+  },
+  space: {
+    ProjectTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })
 

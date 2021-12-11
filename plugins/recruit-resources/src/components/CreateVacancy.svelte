@@ -16,10 +16,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import core, { Class, DoneState, Ref, State } from '@anticrm/core'
+  import core, { Ref } from '@anticrm/core'
   import { EditBox, Grid, Dropdown } from '@anticrm/ui'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import view, { DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/view'
+  import view, { KanbanTemplate, createKanban } from '@anticrm/view'
   import { KanbanTemplateSelector } from '@anticrm/view-resources'
   
   import Company from './icons/Company.svelte'
@@ -40,6 +40,10 @@
   const client = getClient()
 
   async function createVacancy() {
+    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+      throw Error(`Failed to find target kanban template: ${templateId}`)
+    }
+
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
       name,
       description,
@@ -47,64 +51,7 @@
       members: []
     })
 
-    if (templateId === undefined) {
-      await client.createDoc(view.class.Kanban, id, {
-        attachedTo: id,
-        states: [],
-        doneStates: await Promise.all([
-          client.createDoc(core.class.WonState, id, {
-            title: 'Won'
-          }),
-          client.createDoc(core.class.LostState, id, {
-            title: 'Lost'
-          })
-        ]),
-        order: []
-      })
-
-      return
-    }
-
-    const template = await client.findOne(view.class.KanbanTemplate, { _id: templateId })
-
-    if (template === undefined) {
-      throw Error(`Failed to find target kanban template: ${templateId}`)
-    }
-    
-    const tmplStates = await client.findAll(view.class.StateTemplate, { attachedTo: template._id })
-    const states = await Promise.all(
-      template.states
-        .map((id) => tmplStates.find((x) => x._id === id))
-        .filter((tstate): tstate is StateTemplate => tstate !== undefined)
-        .map(async (state) => await client.createDoc(core.class.State, id, { color: state.color, title: state.title }))
-    )
-
-    const doneClassMap = new Map<Ref<Class<DoneStateTemplate>>, Ref<Class<DoneState>>>([
-      [view.class.WonStateTemplate, core.class.WonState],
-      [view.class.LostStateTemplate, core.class.LostState]
-    ])
-    const tmplDoneStates = await client.findAll(view.class.DoneStateTemplate, { attachedTo: template._id })
-    const doneStates = (await Promise.all(
-      template.doneStates
-        .map((id) => tmplDoneStates.find((x) => x._id === id))
-        .filter((tstate): tstate is DoneStateTemplate => tstate !== undefined)
-        .map(async (state) => {
-          const cl = doneClassMap.get(state._class)
-
-          if (cl === undefined) {
-            return
-          }
-        
-          return await client.createDoc(cl, id, { title: state.title })
-        })
-    )).filter((x): x is Ref<DoneState> => x !== undefined)
-
-    await client.createDoc(view.class.Kanban, id, {
-      attachedTo: id,
-      states,
-      doneStates,
-      order: []
-    })
+    await createKanban(client, id, templateId)
   }
 </script>
 
