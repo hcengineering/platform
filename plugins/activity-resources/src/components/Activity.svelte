@@ -163,4 +163,5 @@
       height: max-content;
     }
   }
+  :global(.grid .msgactivity-container:last-child::after) { content: none; } // Remove the line in the last Activity message
 </style>
