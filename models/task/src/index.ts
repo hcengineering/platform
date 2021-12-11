@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+// To help typescript locate view plugin properly
+import type {} from '@anticrm/view'
+
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'

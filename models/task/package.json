@@ -37,6 +37,7 @@
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/view": "~0.6.0"
   }
 }

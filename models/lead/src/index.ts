@@ -14,6 +14,9 @@
 // limitations under the License.
 //
 
+// To help typescript locate view plugin properly
+import type {} from '@anticrm/view'
+
 import type { Contact } from '@anticrm/contact'
 import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
 import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
