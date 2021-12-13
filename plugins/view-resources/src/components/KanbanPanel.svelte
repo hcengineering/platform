@@ -23,7 +23,7 @@
   export let addAction: () => void | undefined
 </script>
 
-<div class="panel-container step-lr75" on:dragover on:drop>
+<div class="panel-container step-lr75">
   <div class="header">
     <div class="bar" style="background-color: {color}" />
     <div class="flex-between label">
@@ -36,7 +36,7 @@
       </div>
     </div>
   </div>
-  <div class="scroll">
+  <div class="scroll" on:dragover on:drop>
     <ScrollBox vertical>
       <slot />
     </ScrollBox>
