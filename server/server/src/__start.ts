@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Add this to the VERY top of the first file loaded in your app
 import { start } from '.'
 
 const url = process.env.MONGO_URL
@@ -39,4 +40,3 @@ const close = (): void => {
 }
 process.on('SIGINT', close)
 process.on('SIGTERM', close)
-process.on('exit', close)

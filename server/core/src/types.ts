@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext } from '@anticrm/core'
 import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
@@ -88,5 +88,5 @@ export interface Token {
  * @public
  */
 export interface WithFind {
-  findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  findAll: <T extends Doc> (ctx: MeasureContext, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
 }

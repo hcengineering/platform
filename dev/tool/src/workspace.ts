@@ -223,7 +223,9 @@ export async function restoreWorkspace (
       const collection = db.collection(c.name)
       await collection.deleteMany({})
       const data = JSON.parse((await readFile(fileName + c.name + '.json')).toString()) as Document[]
-      await collection.insertMany(data)
+      if (data.length > 0) {
+        await collection.insertMany(data)
+      }
     }
 
     console.log('Restore minio objects')

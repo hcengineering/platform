@@ -22,5 +22,6 @@ export * from './client'
 export * from './operator'
 export * from './query'
 export * from './server'
+export * from './measurements'
 
 export { default, coreId } from './component'

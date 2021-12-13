@@ -53,9 +53,7 @@ class ElasticAdapter implements FullTextAdapter {
           }
         }
       })
-      console.log(result)
       const hits = result.body.hits.hits as any[]
-      console.log('hits', hits)
       return hits.map(hit => hit._source)
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
@@ -64,34 +62,28 @@ class ElasticAdapter implements FullTextAdapter {
   }
 
   async index (doc: IndexedDoc): Promise<TxResult> {
-    console.log('eastic: index', doc)
     if (doc.data === undefined) {
       try {
-        const resp = await this.client.index({
+        await this.client.index({
           index: this.db,
           id: doc.id,
           type: '_doc',
           body: doc
         })
-        console.log('resp', resp)
-        console.log('error', (resp.meta as any)?.body?.error)
       } catch (err: any) {
-        console.log('elastic-exception', err)
+        console.error('elastic-exception', err)
       }
     } else {
-      console.log('attachment pipeline')
       try {
-        const resp = await this.client.index({
+        await this.client.index({
           index: this.db,
           id: doc.id,
           type: '_doc',
           pipeline: 'attachment',
           body: doc
         })
-        console.log('resp', resp)
-        console.log('error', (resp.meta as any)?.body?.error)
       } catch (err: any) {
-        console.log('elastic-exception', err)
+        console.error('elastic-exception', err)
       }
     }
     return {}
@@ -99,16 +91,15 @@ class ElasticAdapter implements FullTextAdapter {
 
   async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
     try {
-      const resp = await this.client.update({
+      await this.client.update({
         index: this.db,
         id,
         body: {
           doc: update
         }
       })
-      console.log('update', resp)
     } catch (err: any) {
-      console.log('elastic-exception', err)
+      console.error('elastic-exception', err)
     }
 
     return {}
