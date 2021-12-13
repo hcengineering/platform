@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Doc } from '@anticrm/core'
-import core from '@anticrm/core'
+import type { Doc } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { getClient, MessageBox } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
@@ -31,25 +30,36 @@ import Table from './components/Table.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import { deleteObject } from './utils'
+import MoveView from './components/Move.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter } from './utils'
 export { Table }
 
 function Delete (object: Doc): void {
-  showPopup(MessageBox, {
-    label: 'Delete object',
-    message: 'Do you want to delete this object?'
-  }, undefined, (result) => {
-    if (result) {
-      deleteObject(getClient(), object)
+  showPopup(
+    MessageBox,
+    {
+      label: 'Delete object',
+      message: 'Do you want to delete this object?'
+    },
+    undefined,
+    (result) => {
+      if (result) {
+        deleteObject(getClient(), object)
+      }
     }
-  })
+  )
+}
+
+async function Move (object: Doc): Promise<void> {
+  showPopup(MoveView, { object })
 }
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    Delete
+    Delete,
+    Move
   },
   component: {
     StringEditor,

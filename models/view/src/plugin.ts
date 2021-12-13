@@ -21,10 +21,12 @@ import view, { viewId, Action } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {
   action: {
-    Delete: '' as Ref<Action>
+    Delete: '' as Ref<Action>,
+    Move: '' as Ref<Action>
   },
   actionImpl: {
-    Delete: '' as Resource<(doc: Doc) => Promise<void>>
+    Delete: '' as Resource<(doc: Doc) => Promise<void>>,
+    Move: '' as Resource<(doc: Doc) => Promise<void>>
   },
   component: {
     StringEditor: '' as AnyComponent,

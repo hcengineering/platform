@@ -2,7 +2,8 @@
   "string": {
     "RecruitApplication": "Recruiting",
     "Vacancies": "Vacancies",
-    "CandidatePools": "Candidates",
+    "CandidatePools": "Candidate’s pool",
+    "Candidates": "Candidates",
     "VacancyName": "Vacancy Title *",
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",

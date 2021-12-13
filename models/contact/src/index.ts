@@ -85,11 +85,11 @@ export class TEmployeeAccount extends TAccount implements EmployeeAccount {
 }
 
 @Model(contact.class.Organizations, core.class.Space)
-@UX(contact.string.Organizations, contact.icon.Company)
+@UX(contact.string.OrganizationsFolder, contact.icon.Company)
 export class TOrganizations extends TSpace implements Organizations {}
 
 @Model(contact.class.Persons, core.class.Space)
-@UX(contact.string.Persons, contact.icon.Person)
+@UX(contact.string.PersonsFolder, contact.icon.Person)
 export class TPersons extends TSpace implements Persons {}
 
 export function createModel (builder: Builder): void {
