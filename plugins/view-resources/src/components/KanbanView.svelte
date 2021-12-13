@@ -1,15 +1,15 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -20,7 +20,7 @@
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { AnySvelteComponent } from '@anticrm/ui'
-  import { AnyComponent, Loading, ScrollBox, showPopup } from '@anticrm/ui'
+  import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
   import type { Kanban } from '@anticrm/view'
   import view from '@anticrm/view'
   import KanbanPanel from './KanbanPanel.svelte'
@@ -58,8 +58,6 @@
     return x
   }
 
-
-
   const statesQuery = createQuery()
   $: if (kanbanStates.length > 0) statesQuery.query(core.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
   $: states = sort(kanban, rawStates)
@@ -77,10 +75,7 @@
     }
   }
 
-  let currentOp: Promise<void> | undefined
-
-  async function move (to: number, state: Ref<State>) {
-    console.log('INITIAL', dragCardInitialPosition, 'TO', to)
+  async function move (state: Ref<State>) {
     const id = dragCard._id
     const txes: TxCUD<Doc>[] = []
 
@@ -92,73 +87,25 @@
       } else {
         client.updateDoc(_class, space, id, { state })
       }
-      // txes.push(client.txFactory.createTxUpdateDoc(_class, space, id, { state }))
     }
 
-    if (dragCardInitialPosition !== to) {
+    if (dragCardInitialPosition !== dragCardEndPosition) {
       client.updateDoc(view.class.Kanban, space, kanban._id, {
         $move: {
           order: {
             $value: id,
-            $position: to
+            $position: dragCardEndPosition
           }
         }
       })
-
-      // txes.push(client.txFactory.createTxUpdateDoc(view.class.Kanban, space, kanban._id, {
-      //   $move: {
-      //     order: {
-      //       $value: id,
-      //       $position: to
-      //     }
-      //   }
-      // }))
-  
-      // await client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      //   $pull: {
-      //     order: id
-      //   }
-      // })
-
-      // client.updateDoc(core.class.SpaceWithStates, core.space.Model, space, {
-      //   $push: {
-      //     order: {
-      //       $each: [id],
-      //       $position: to
-      //     }
-      //   }
-      // })
     }
-
-    // if (txes.length > 0) {
-    //   const updateTx = client.txFactory.createTxBulkWrite(space, txes)
-    //   if (currentOp) {
-    //     await currentOp
-    //   }
-    //   currentOp = client.tx(updateTx).then(() => console.log('move done')).catch(err => console.log('move error ' + err))
-    // }
-  }
-
-  function getValue (doc: Doc, key: string): any {
-    if (key.length === 0)
-  { return doc }
-    const path = key.split('.')
-    const len = path.length
-    let obj = doc as any
-    for (let i = 0; i < len; i++) {
-      obj = obj?.[path[i]]
-    }
-    return obj
   }
 
   const client = getClient()
 
-  function onClick (object: Doc) {
-    showPopup(open, { object, space }, 'float')
-  }
-
   let dragCard: Doc
   let dragCardInitialPosition: number
+  let dragCardEndPosition: number
   let dragCardInitialState: Ref<State>
 
   async function cardPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
@@ -182,6 +129,9 @@
             if (dragCard.state !== state._id) {
               dragCard.state = state._id
             }
+          }}
+          on:drop={() => {
+            move(state._id)
           }}>
           <!-- <KanbanCardEmpty label={'Create new application'} /> -->
           {#each objects as object, j (object)}
@@ -190,15 +140,17 @@
                 class="step-tb75"
                 on:dragover|preventDefault={(ev) => {
                   dragover(ev, object)
+                  dragCardEndPosition = j
                 }}
                 on:drop|preventDefault={() => {
-                  move(j, state._id)
+                  dragCardEndPosition = j
                 }} 
               >
                 <svelte:component this={presenter} {object} draggable={true}
                 on:dragstart={() => {
                   dragCardInitialState = state._id
                   dragCardInitialPosition = j
+                  dragCardEndPosition = j
                   dragCard = objects[j]
                 }}/>
               </div>
