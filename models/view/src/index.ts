@@ -259,3 +259,5 @@ export function createModel (builder: Builder): void {
 }
 
 export default view
+
+export { viewOperation } from './migration'
