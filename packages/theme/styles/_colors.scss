@@ -67,12 +67,13 @@
   --theme-incoming-msg: rgba(67, 67, 72, .3);
   --theme-outcoming-msg: rgba(67, 67, 72, .6);
 
-  --theme-card-bg: rgba(222, 222, 240, .2);
+  --theme-card-bg: #282830;
   --theme-card-bg-dark: rgba(222, 222, 240, .1);
   --theme-card-divider: rgba(255, 255, 255, .1);
-  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .2);
+  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .8);
   --theme-avatar-border: rgba(255, 255, 255, .1);
-  --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-msgbox-bg: #26262B;
+  --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
   --theme-zone-bg: rgba(255, 255, 255, .05);
   --theme-zone-border: rgba(255, 255, 255, .2);
   --theme-zone-border-lite: rgba(255, 255, 255, .16);
@@ -148,12 +149,13 @@
   --theme-incoming-msg: rgba(67, 67, 72, .3);
   --theme-outcoming-msg: rgba(67, 67, 72, .6);
 
-  --theme-card-bg: rgba(222, 222, 240, .2);
+  --theme-card-bg: #282830;
   --theme-card-bg-dark: rgba(222, 222, 240, .1);
   --theme-card-divider: rgba(255, 255, 255, .1);
-  --theme-card-shadow: 0px 34px 74px rgba(0, 0, 0, 0.55);
+  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .8);
   --theme-avatar-border: rgba(255, 255, 255, .1);
-  --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-msgbox-bg: #45444F;
+  --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
   --theme-zone-bg: rgba(255, 255, 255, .05);
   --theme-zone-border: rgba(255, 255, 255, .2);
   --theme-zone-border-lite: rgba(255, 255, 255, .16);
@@ -231,9 +233,10 @@
   --theme-card-bg: #FFF;
   --theme-card-bg-dark: rgba(255, 255, 255, .3);
   --theme-card-divider: rgba(0, 0, 0, .1);
-  --theme-card-shadow: 0px 24px 74px rgba(100, 89, 89, .5);
+  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .2);
   --theme-avatar-border: transparent;
-  --theme-msgbox-bg: rgba(170, 170, 191, .25);
+  --theme-msgbox-bg: #F2F2F2;
+  --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .2);
   --theme-zone-bg: rgba(0, 0, 0, .05);
   --theme-zone-border: rgba(0, 0, 0, .2);
   --theme-zone-border-lite: rgba(0, 0, 0, .16);

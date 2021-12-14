@@ -43,8 +43,7 @@
     background: var(--theme-msgbox-bg);
     border-radius: 1.25rem;
     user-select: none;
-    box-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
-    backdrop-filter: blur(10px);
+    box-shadow: var(--theme-msgbox-shadow);
 
     .title {
       margin-bottom: 1rem;
