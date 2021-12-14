@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import type { AttachedData, Data, Doc, Ref, Space } from '@anticrm/core'
+  import { AttachedData, calcRank, Data, Doc, Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -63,6 +63,11 @@
       throw new Error('sequence object not found')
     }
 
+    const lastOne = await client.findOne(
+      task.class.Task,
+      { state: state._id },
+      { sort: { rank: SortingOrder.Descending } }
+    )
     const incResult = await client.updateDoc(
       task.class.Sequence,
       task.space.Sequence,
@@ -79,7 +84,8 @@
       assignee,
       number: (incResult as any).object.sequence,
       doneState: null,
-      state: state._id
+      state: state._id,
+      rank: calcRank(lastOne, undefined)
     }
 
     await client.addCollection(task.class.Issue, _space, parent?._id ?? task.global.Task, parent?._class ?? task.class.Issue, 'tasks', value, taskId)

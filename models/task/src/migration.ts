@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Domain, DOMAIN_TX, Ref, TxCUD, TxOperations } from '@anticrm/core'
+import { Class, Doc, Domain, DOMAIN_TX, genRanks, Ref, Space, TxCUD, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrateUpdate,
@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createProjectKanban } from '@anticrm/task'
+import { createProjectKanban, Task } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -157,5 +157,54 @@ export const taskOperation: MigrateOperation = {
         }
       })
     )
+
+    const allTasks = await client.findAll(task.class.Task, {})
+    const unsortedTasks = allTasks
+      .filter(x => x.rank === undefined)
+    const groupedUnsortedTasks = new Map<Ref<Space>, Task[]>()
+
+    unsortedTasks.forEach((task) => {
+      const existing = groupedUnsortedTasks.get(task.space) ?? []
+      groupedUnsortedTasks.set(task.space, [...existing, task])
+    })
+
+    for (const [space, tasks] of groupedUnsortedTasks.entries()) {
+      const kanban = await client.findOne(task.class.Kanban, { attachedTo: space })
+
+      if (kanban === undefined) {
+        console.error(`Failed to find kanban attached to space '${space}'`)
+        continue
+      }
+
+      const { order }: { order: Ref<Task>[] } = kanban as any
+
+      if (order === undefined) {
+        console.error(`Kanban doesn't contain order: ${kanban._id}`)
+        continue
+      }
+
+      const orderedTasks = order
+        .map((id) => tasks.find(x => x._id === id))
+        .filter((task): task is Task => task !== undefined)
+      const ranks = genRanks(orderedTasks.length)
+
+      for (const task of orderedTasks) {
+        const rank = ranks.next().value
+
+        if (rank === undefined) {
+          console.error('Failed to generate rank')
+          break
+        }
+
+        await ops.updateDoc(
+          task._class,
+          task.space,
+          task._id,
+          {
+            rank
+          }
+        )
+      }
+    }
   }
 }

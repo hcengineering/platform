@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+import { LexoRank, LexoDecimal, LexoNumeralSystem36 } from 'lexorank'
+import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
+
 import type { Doc, Ref, Account } from './classes'
 
 function toHex (value: number, chars: number): string {
@@ -58,4 +61,31 @@ export function getCurrentAccount (): Account { return currentAccount }
  */
 export function setCurrentAccount (account: Account): void {
   currentAccount = account
+}
+
+/**
+ * @public
+ */
+export const genRanks = (count: number): Generator<string, void, unknown> =>
+  (function * () {
+    const sys = new LexoNumeralSystem36()
+    const base = 36
+    const max = base ** 6
+    const gap = LexoDecimal.parse(Math.trunc(max / (count + 2)).toString(base), sys)
+    let cur = LexoDecimal.parse('0', sys)
+
+    for (let i = 0; i < count; i++) {
+      cur = cur.add(gap)
+      yield new LexoRank(LexoRankBucket.BUCKET_0, cur).toString()
+    }
+  })()
+
+/**
+ * @public
+ */
+export const calcRank = (prev?: { rank: string }, next?: { rank: string }): string => {
+  const a = prev?.rank !== undefined ? LexoRank.parse(prev.rank) : LexoRank.min()
+  const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
+
+  return a.between(b).toString()
 }

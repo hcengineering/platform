@@ -109,8 +109,7 @@ export async function createKanban (
     {
       attachedTo: funnelId,
       states: ids,
-      doneStates,
-      order: []
+      doneStates
     },
     (funnelId + '.kanban') as Ref<Kanban>
   )

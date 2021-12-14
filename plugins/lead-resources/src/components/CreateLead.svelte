@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@anticrm/contact'
-  import { Data, Ref, Space } from '@anticrm/core'
+  import { calcRank, Data, Ref, SortingOrder, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -52,6 +52,11 @@
       throw new Error('sequence object not found')
     }
 
+    const lastOne = await client.findOne(
+      lead.class.Lead,
+      { state: state._id },
+      { sort: { rank: SortingOrder.Descending } }
+    )
     const incResult = await client.updateDoc(
       task.class.Sequence,
       task.space.Sequence,
@@ -70,7 +75,8 @@
       customer: customer!,
       attachedTo: customer!,
       attachedToClass: contact.class.Contact,
-      collection: 'leads'
+      collection: 'leads',
+      rank: calcRank(lastOne, undefined)
     }
 
     await client.createDoc(lead.class.Lead, _space, value, leadId)

@@ -15,7 +15,7 @@
 
 import type { Account, Arr, Ref, Space } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
+import { Implements, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 import { TDoc } from './core'
@@ -39,4 +39,9 @@ export class TSpace extends TDoc implements Space {
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
 export class TAccount extends TDoc implements Account {
   email!: string
+}
+@Implements(core.interface.DocWithRank)
+export class TDocWithRank extends TDoc {
+  @Prop(TypeString(), 'Rank' as IntlString)
+  rank!: string
 }

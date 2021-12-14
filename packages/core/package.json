@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "just-clone": "^3.2.1"
+    "just-clone": "^3.2.1",
+    "lexorank": "~1.0.4"
   }
 }

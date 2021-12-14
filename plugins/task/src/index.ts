@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Client, Data, Doc, Mixin, Ref, Space, TxOperations } from '@anticrm/core'
+import type { AttachedDoc, Class, Client, Data, Doc, DocWithRank, Mixin, Ref, Space, TxOperations } from '@anticrm/core'
 import { Arr } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -51,7 +51,7 @@ export interface LostState extends DoneState {}
 /**
  * @public
  */
-export interface Task extends AttachedDoc {
+export interface Task extends AttachedDoc, DocWithRank {
   state: Ref<State>
   doneState: Ref<DoneState> | null
   number: number
@@ -97,7 +97,6 @@ export interface Kanban extends Doc {
   attachedTo: Ref<Space>
   states: Arr<Ref<State>>
   doneStates: Arr<Ref<DoneState>>
-  order: Arr<Ref<Doc>>
 }
 
 /**
@@ -248,8 +247,7 @@ export async function createProjectKanban (
     {
       attachedTo: projectId,
       states: ids,
-      doneStates,
-      order: []
+      doneStates
     },
     (projectId + '.kanban') as Ref<Kanban>
   )
@@ -270,8 +268,7 @@ export async function createKanban (client: Client & TxOperations, attachedTo: R
         client.createDoc(task.class.LostState, attachedTo, {
           title: 'Lost'
         })
-      ]),
-      order: []
+      ])
     })
   }
 
@@ -312,7 +309,6 @@ export async function createKanban (client: Client & TxOperations, attachedTo: R
   return await client.createDoc(task.class.Kanban, attachedTo, {
     attachedTo,
     states,
-    doneStates,
-    order: []
+    doneStates
   })
 }

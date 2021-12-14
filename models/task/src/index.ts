@@ -61,7 +61,7 @@ export class TLostState extends TDoneState implements LostState {}
  *
  * No domain is specified, since pure Tasks could not exists
  */
-@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
+@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [core.interface.DocWithRank])
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), 'State' as IntlString)
   state!: Ref<State>
@@ -74,6 +74,8 @@ export class TTask extends TAttachedDoc implements Task {
 
   // @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
   assignee!: Ref<Employee> | null
+
+  declare rank: string
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
@@ -120,7 +122,6 @@ export class TKanban extends TDoc implements Kanban {
   states!: Arr<Ref<State>>
   doneStates!: Arr<Ref<DoneState>>
   attachedTo!: Ref<Space>
-  order!: Arr<Ref<Doc>>
 }
 
 @Model(task.class.KanbanTemplateSpace, core.class.Space, DOMAIN_MODEL)

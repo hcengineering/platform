@@ -46,8 +46,7 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
     {
       attachedTo: spaceId,
       states,
-      doneStates,
-      order: []
+      doneStates
     }
   )
   return states
