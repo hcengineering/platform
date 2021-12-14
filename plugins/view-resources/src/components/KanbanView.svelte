@@ -129,9 +129,22 @@
   }
 
   const onDone = (state: DoneState) => async () => {
-    await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
-      doneState: state._id
-    })
+    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
+      const adoc: AttachedDoc = dragCard as Doc as AttachedDoc
+      await client.updateCollection(
+        _class,
+        space,
+        adoc._id as Ref<Doc> as Ref<AttachedDoc>,
+        adoc.attachedTo,
+        adoc.attachedToClass,
+        adoc.collection,
+        { doneState: state._id }
+      )
+    } else {
+      await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
+        doneState: state._id
+      })
+    }
 
     isDragging = false
     hoveredDoneState = undefined

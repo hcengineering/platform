@@ -36,7 +36,15 @@ export const recruitOperation: MigrateOperation = {
         console.info('Upgrade application:', application._id)
 
         try {
-          await ops.updateDoc(application._class, application.space, application._id, { doneState: null })
+          await ops.updateCollection(
+            application._class,
+            application.space,
+            application._id,
+            application.attachedTo,
+            application.attachedToClass,
+            application.collection,
+            { doneState: null }
+          )
         } catch (err: unknown) {
           console.error(err)
         }
