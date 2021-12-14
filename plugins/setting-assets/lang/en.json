@@ -1,9 +1,14 @@
 {
   "string": {
     "Setting": "Setting",
+    "ManageStatuses": "Manage Statuses",
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
-    "Terms": "Terms"
+    "Terms": "Terms",
+
+    "Folders": "Folders",
+    "Templates": "Templates",
+    "Delete": "Delete"
   }
 }

@@ -44,7 +44,8 @@ export default mergeIds(recruitId, recruit, {
     KanbanCard: '' as AnyComponent,
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
-    EditVacancy: '' as AnyComponent
+    EditVacancy: '' as AnyComponent,
+    TemplatesIcon: '' as AnyComponent
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

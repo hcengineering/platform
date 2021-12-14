@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg')
 loadMetadata(setting.icon, {
   Setting: `${icons}#settings`,
   Integrations: `${icons}#integration`,
+  Statuses: `${icons}#statuses`,
   Support: `${icons}#support`,
   Privacy: `${icons}#privacy`,
   Terms: `${icons}#terms`

@@ -15,13 +15,15 @@
 
 import type { IntlString, Asset } from '@anticrm/platform'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Mixin, Builder } from '@anticrm/model'
+import { Model, Mixin, Builder, UX } from '@anticrm/model'
 import type { Application, SpaceView, ViewConfiguration } from '@anticrm/workbench'
+import view from '@anticrm/view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 import workbench from './plugin'
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
+@UX('Application' as IntlString)
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
@@ -35,6 +37,9 @@ export class TSpaceView extends TClass implements SpaceView {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TApplication, TSpaceView)
+  builder.mixin(workbench.class.Application, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: workbench.component.ApplicationPresenter
+  })
 }
 
 export default workbench

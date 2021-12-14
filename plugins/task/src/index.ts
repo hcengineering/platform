@@ -14,11 +14,11 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { Class, Data, Doc, Ref, Space, State } from '@anticrm/core'
+import type { Class, Data, Doc, DocWithState, DoneState, Ref, Space, State } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import core from '@anticrm/core'
-import view, { Kanban } from '@anticrm/view'
+import view, { Kanban, KanbanTemplateSpace } from '@anticrm/view'
 
 /**
  * @public
@@ -28,7 +28,7 @@ export interface Project extends Space {}
 /**
  * @public
  */
-export interface Task extends Doc {
+export interface Task extends DocWithState {
   number: number // Sequence number
 
   name: string
@@ -52,6 +52,9 @@ export default plugin(taskId, {
   },
   icon: {
     Task: '' as Asset
+  },
+  space: {
+    ProjectTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })
 
@@ -84,12 +87,31 @@ export async function createProjectKanban (
     ids.push(sid)
   }
 
+  const rawDoneStates = [
+    { class: core.class.WonState, title: 'Won' },
+    { class: core.class.LostState, title: 'Lost' }
+  ]
+  const doneStates: Array<Ref<DoneState>> = []
+  for (const st of rawDoneStates) {
+    const sid = (projectId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
+    await factory(
+      st.class,
+      projectId,
+      {
+        title: st.title
+      },
+      sid
+    )
+    doneStates.push(sid)
+  }
+
   await factory(
     view.class.Kanban,
     projectId,
     {
       attachedTo: projectId,
       states: ids,
+      doneStates,
       order: []
     },
     (projectId + '.kanban.') as Ref<Kanban>

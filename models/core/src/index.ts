@@ -16,7 +16,7 @@
 import { Builder } from '@anticrm/model'
 import core from './component'
 import { TAttribute, TClass, TDoc, TMixin, TObj, TType, TTypeString, TTypeBoolean, TTypeTimestamp, TTypeDate, TAttachedDoc, TCollection, TRefTo } from './core'
-import { TSpace, TAccount, TState, TSpaceWithStates, TDocWithState } from './security'
+import { TSpace, TAccount, TState, TDoneState, TWonState, TLostState, TSpaceWithStates, TDocWithState } from './security'
 import { TTx, TTxCreateDoc, TTxMixin, TTxUpdateDoc, TTxCUD, TTxPutBag, TTxRemoveDoc, TTxBulkWrite, TTxCollectionCUD } from './tx'
 
 export * from './core'
@@ -52,6 +52,9 @@ export function createModel (builder: Builder): void {
     TRefTo,
     TCollection,
     TTypeDate,
-    TState
+    TState,
+    TDoneState,
+    TWonState,
+    TLostState
   )
 }

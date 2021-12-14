@@ -17,6 +17,7 @@ import { plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Space, SpaceWithStates, DocWithState, Ref, Class, AttachedDoc, Timestamp } from '@anticrm/core'
 import type { Employee, Person } from '@anticrm/contact'
+import type { KanbanTemplateSpace } from '@anticrm/view'
 
 /**
  * @public
@@ -72,5 +73,8 @@ export default plugin(recruitId, {
     Location: '' as Asset,
     Calendar: '' as Asset,
     Create: '' as Asset
+  },
+  space: {
+    VacancyTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })

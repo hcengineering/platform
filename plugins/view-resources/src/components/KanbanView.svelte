@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, Class, Doc, FindOptions, Ref, SpaceWithStates, State, TxCUD } from '@anticrm/core'
+  import type { AttachedDoc, Class, Doc, DoneState, FindOptions, LostState, Ref, SpaceWithStates, State, TxCUD, WonState } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -26,24 +26,30 @@
   import KanbanPanel from './KanbanPanel.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
-  export let _class: Ref<Class<(Doc & { state: Ref<State> })>>
+  type Item = Doc & { state: Ref<State>, doneState: Ref<DoneState> | null }
+
+  export let _class: Ref<Class<Item>>
   export let space: Ref<SpaceWithStates>
   export let open: AnyComponent
-  export let options: FindOptions<Doc> | undefined
+  export let options: FindOptions<Item> | undefined
   export let config: string[]
 
   let kanban: Kanban
   let states: State[] = []
   let rawStates: State[] = []
 
-  let objects: (Doc & { state: Ref<State> })[] = []
-  let rawObjects: Doc[] = []
+  let objects: (Item | undefined)[] = []
+  let rawObjects: Item[] = []
   let kanbanStates: Ref<State>[] = []
+  let kanbanDoneStates: Ref<DoneState>[] = []
+  let wonState: WonState | undefined
+  let lostState: LostState | undefined
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(view.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
   $: kanbanStates = kanban?.states ?? []
+  $: kanbanDoneStates = kanban?.doneStates ?? []
 
   function sort (kanban: Kanban, states: State[]): State[] {
     if (kanban === undefined || states.length === 0) { return [] }
@@ -51,23 +57,31 @@
     return kanban.states.map(id => map.get(id) as State)
   }
 
-  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): T[] {
+  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): (T | undefined)[] {
     if (kanban === undefined || objects.length === 0) { return [] }
-    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
-    const x = kanban.order.map(id => map.get(id) as T)
-    return x
+    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<T>, T>())
+    return kanban.order
+      .map(id => map.get(id as Ref<T>))
   }
 
   const statesQuery = createQuery()
   $: if (kanbanStates.length > 0) statesQuery.query(core.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
   $: states = sort(kanban, rawStates)
 
+  const doneStatesQ = createQuery()
+  $: if (kanbanDoneStates.length > 0) {
+    doneStatesQ.query(core.class.DoneState, { _id: { $in: kanbanDoneStates }}, (result) => {
+      wonState = result.find((x) => x._class === core.class.WonState)
+      lostState = result.find((x) => x._class === core.class.LostState)
+    })
+  }
+
   const query = createQuery()
-  $: query.query(_class, { space }, result => { rawObjects = result }, options)
+  $: query.query(_class, { space, doneState: null }, result => { rawObjects = result }, options)
 
   $: objects = sortObjects(kanban, rawObjects)
 
-  function dragover (ev: MouseEvent, object: Doc) {
+  function dragover (ev: MouseEvent, object: Item) {
     if (dragCard !== object) {
       const dragover = objects.indexOf(object)
       objects = objects.filter(x => x !== dragCard)
@@ -81,9 +95,9 @@
 
     if (dragCardInitialState !== state) {
       if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
-        const adoc: AttachedDoc = dragCard as AttachedDoc
+        const adoc: AttachedDoc = dragCard as Doc as AttachedDoc
         // We need to update using updateCollection
-        client.updateCollection(_class, space, id as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { state })
+        client.updateCollection(_class, space, id as Ref<Doc> as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { state })
       } else {
         client.updateDoc(_class, space, id, { state })
       }
@@ -103,7 +117,7 @@
 
   const client = getClient()
 
-  let dragCard: Doc
+  let dragCard: Item
   let dragCardInitialPosition: number
   let dragCardEndPosition: number
   let dragCardInitialState: Ref<State>
@@ -114,64 +128,156 @@
     return await getResource(presenterMixin.card)
   }
 
+  const onDone = (state: DoneState) => async () => {
+    await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
+      doneState: state._id
+    })
+
+    isDragging = false
+    hoveredDoneState = undefined
+  }
+
+  let isDragging = false
+  let hoveredDoneState: Ref<DoneState> | undefined
 </script>
 
 {#await cardPresenter(_class)}
  <Loading/>
 {:then presenter}
-<div class="kanban-container">
-  <ScrollBox>
-    <div class="kanban-content">
-      {#each states as state, i (state)}
-        <KanbanPanel label={state.title} color={state.color} counter={4}
-          on:dragover={(event) => {
-            event.preventDefault()
-            if (dragCard.state !== state._id) {
-              dragCard.state = state._id
-            }
-          }}
-          on:drop={() => {
-            move(state._id)
-          }}>
-          <!-- <KanbanCardEmpty label={'Create new application'} /> -->
-          {#each objects as object, j (object)}
-            {#if object.state === state._id}
-              <div
-                class="step-tb75"
-                on:dragover|preventDefault={(ev) => {
-                  dragover(ev, object)
-                  dragCardEndPosition = j
-                }}
-                on:drop|preventDefault={() => {
-                  dragCardEndPosition = j
-                }} 
-              >
-                <svelte:component this={presenter} {object} draggable={true}
-                on:dragstart={() => {
-                  dragCardInitialState = state._id
-                  dragCardInitialPosition = j
-                  dragCardEndPosition = j
-                  dragCard = objects[j]
-                }}/>
-              </div>
-            {/if}
-          {/each}
-        </KanbanPanel>
-      {/each}
-      <KanbanPanelEmpty label={'Add new column'} />
+<div class="flex-col kanban-container">
+  <div class="scrollable">
+    <ScrollBox>
+      <div class="kanban-content">
+        {#each states as state (state)}
+          <KanbanPanel label={state.title} color={state.color} counter={4}
+            on:dragover={(event) => {
+              event.preventDefault()
+              if (dragCard.state !== state._id) {
+                dragCard.state = state._id
+              }
+            }}
+            on:drop={() => {
+              move(state._id)
+              isDragging = false
+            }}>
+            <!-- <KanbanCardEmpty label={'Create new application'} /> -->
+            {#each objects as object, j (object)}
+              {#if object !== undefined && object.state === state._id}
+                <div
+                  class="step-tb75"
+                  on:dragover|preventDefault={(ev) => {
+                    dragover(ev, object)
+                    dragCardEndPosition = j
+                  }}
+                  on:drop|preventDefault={() => {
+                    dragCardEndPosition = j
+                    isDragging = false
+                  }} 
+                >
+                  <svelte:component this={presenter} {object} draggable={true}
+                  on:dragstart={() => {
+                    dragCardInitialState = state._id
+                    dragCardInitialPosition = j
+                    dragCardEndPosition = j
+                    dragCard = object
+                    isDragging = true
+                  }}
+                  on:dragend={() => {
+                    isDragging = false
+                  }}/>
+                </div>
+              {/if}
+            {/each}
+          </KanbanPanel>
+        {/each}
+        <KanbanPanelEmpty label={'Add new column'} />
+      </div>
+    </ScrollBox>
+  </div>
+  {#if isDragging && wonState !== undefined && lostState !== undefined}
+    <div class="done-panel">
+      <div
+        class="done-item flex-center w-full" 
+        class:hovered={hoveredDoneState === wonState._id}
+        on:dragenter={() => {
+          hoveredDoneState = wonState?._id
+        }}
+        on:dragleave={() => {
+          hoveredDoneState = undefined
+        }}
+        on:dragover|preventDefault={() => {}}
+        on:drop={onDone(wonState)}>
+        <div class="done-icon won"/>
+        {wonState.title}
+      </div>
+      <div
+        class="done-item flex-center w-full"
+        class:hovered={hoveredDoneState === lostState._id}
+        on:dragenter={() => {
+          console.log('enter')
+          hoveredDoneState = lostState?._id
+        }}
+        on:dragleave={() => {
+          console.log('leave')
+          hoveredDoneState = undefined
+        }}
+        on:dragover|preventDefault={() => {}}
+        on:drop={onDone(lostState)}>
+        <div class="done-icon lost"/>
+        {lostState.title}
+      </div>
     </div>
-  </ScrollBox>
+  {/if}
 </div>
 {/await}
 
 <style lang="scss">
   .kanban-container {
-    margin-bottom: 1.25rem;
     height: 100%;
   }
   .kanban-content {
     display: flex;
     margin: 0 2.5rem;
     height: 100%;
+  }
+
+  .done-panel {
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    height: 4rem;
+    border-top: 1px solid var(--theme-bg-accent-hover);
+  }
+
+  .done-item {
+    gap: 0.5rem;
+    color: var(--theme-content-accent-color);
+
+    margin: 0.5rem 2.5rem;
+
+    &.hovered {
+      background-color: var(--theme-bg-selection);
+      border-radius: 12px;
+      border: 1px dashed var(--theme-bg-accent-hover);
+    }
+  }
+
+  .done-icon {
+    width: 0.5rem;
+    height: 0.5rem;
+
+    border-radius: 50%;
+
+    &.won {
+      background-color: #a5d179;
+    }
+
+    &.lost {
+      background-color: #f28469;
+    }
+  }
+  .scrollable {
+    height: 100%;
+    margin-bottom: 0.25rem;
   }
 </style>

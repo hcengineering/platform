@@ -15,6 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
   import type { Data, Ref, Space } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -47,6 +48,11 @@
   }
 
   async function createTask () {
+    const state = await client.findOne(core.class.State, { space: _space })
+    if (state === undefined) {
+      throw new Error('create application: state not found')
+    }
+  
     const sequence = await client.findOne(view.class.Sequence, { attachedTo: task.class.Task })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -66,7 +72,9 @@
       name: object.name,
       description: object.description,
       assignee,
-      number: (incResult as any).object.sequence
+      number: (incResult as any).object.sequence,
+      doneState: null,
+      state: state._id
     }
 
     await client.createDoc(task.class.Task, _space, value, taskId)

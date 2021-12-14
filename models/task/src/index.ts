@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+// To help typescript locate view plugin properly
+import type {} from '@anticrm/view'
+
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
@@ -36,6 +39,7 @@ export class TProject extends TSpaceWithStates implements Project {}
 export class TTask extends TDoc implements Task {
   declare number: DocWithState['number']
   declare state: DocWithState['state']
+  declare doneState: DocWithState['doneState']
 
   @Prop(TypeString(), 'Name' as IntlString)
   name!: string
@@ -138,6 +142,14 @@ export function createModel (builder: Builder): void {
     private: false,
     members: []
   }, task.space.TasksPublic)
+
+  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+    name: 'Projects',
+    description: 'Manage project statuses',
+    members: [],
+    private: false,
+    icon: task.component.TemplatesIcon
+  }, task.space.ProjectTemplates)
 
   createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
     builder.createDoc(_class, space, data, id)

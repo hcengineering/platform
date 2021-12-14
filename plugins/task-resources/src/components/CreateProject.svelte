@@ -13,18 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { generateId, Ref } from '@anticrm/core'
+  import core, { Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import { Project } from '@anticrm/task'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import { createProjectKanban } from '@anticrm/task'
+  import view, { createKanban, KanbanTemplate } from '@anticrm/view'
+  import { KanbanTemplateSelector } from '@anticrm/view-resources'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   const description: string = ''
+  let templateId: Ref<KanbanTemplate> | undefined
 
   export function canClose (): boolean {
     return name === ''
@@ -33,8 +34,11 @@
   const client = getClient()
 
   async function createProject (): Promise<void> {
-    const id: Ref<Project> = generateId()
-    await client.createDoc(
+    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+      throw Error(`Failed to find target kanban template: ${templateId}`)
+    }
+
+    const id = await client.createDoc(
       task.class.Project,
       core.space.Model,
       {
@@ -42,13 +46,10 @@
         description,
         private: false,
         members: []
-      },
-      id
+      }
     )
 
-    await createProjectKanban(id, async (_class, space, data, id) => {
-      await client.createDoc(_class, space, data, id)
-    })
+    await createKanban(client, id, templateId)
   }
 </script>
 
@@ -63,5 +64,6 @@
   <Grid column={1} rowGap={1.5}>
     <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} focus />
     <ToggleWithLabel label={task.string.MakePrivate} description={task.string.MakePrivateDescription} />
+    <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId}/>
   </Grid>
 </SpaceCreateCard>

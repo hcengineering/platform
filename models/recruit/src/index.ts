@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
+import { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
 import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX, Collection } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
@@ -22,7 +22,7 @@ import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@an
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
 import attachment from '@anticrm/model-attachment'
 
@@ -92,8 +92,9 @@ export class TApplicant extends TAttachedDoc implements Applicant {
   @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
   employee!: Ref<Employee> | null
 
-  // We need this two to make typescript happy.
+  // We need these to make typescript happy.
   declare state: TDocWithState['state']
+  declare doneState: TDocWithState['doneState']
   declare number: TDocWithState['number']
 }
 
@@ -239,6 +240,14 @@ export function createModel (builder: Builder): void {
     attachedTo: recruit.class.Applicant,
     sequence: 0
   })
+
+  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+    name: 'Vacancies',
+    description: 'Manage vacancy statuses',
+    members: [],
+    private: false,
+    icon: recruit.component.TemplatesIcon
+  }, recruit.space.VacancyTemplates)
 }
 
 export { default } from './plugin'

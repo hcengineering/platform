@@ -15,13 +15,15 @@
 
 import Integrations from './components/Integrations.svelte'
 import ConnectEmail from './components/integrations/ConnectEmail.svelte'
+import ManageStatuses from './components/statuses/ManageStatuses.svelte'
 import IconGmail from './components/icons/Gmail.svelte'
 
 export default async () => ({
   component: {
     Integrations,
     ConnectEmail,
-    IconGmail
+    IconGmail,
+    ManageStatuses
   },
   handler: {
     EmailDisconnectHandler: async () => {}

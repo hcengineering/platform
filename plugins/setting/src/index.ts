@@ -58,6 +58,7 @@ export default plugin(settingId, {
   component: {
     Setting: '' as AnyComponent,
     Integrations: '' as AnyComponent,
+    ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,
@@ -70,13 +71,18 @@ export default plugin(settingId, {
   string: {
     Setting: '' as IntlString,
     Integrations: '' as IntlString,
+    ManageStatuses: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,
-    Terms: '' as IntlString
+    Terms: '' as IntlString,
+    Folders: '' as IntlString,
+    Templates: '' as IntlString,
+    Delete: '' as IntlString
   },
   icon: {
     Setting: '' as Asset,
     Integrations: '' as Asset,
+    Statuses: '' as Asset,
     Support: '' as Asset,
     Privacy: '' as Asset,
     Terms: '' as Asset
