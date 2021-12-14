@@ -51,7 +51,6 @@ specifiers:
   '@rush-temp/model-server-chunter': file:./projects/model-server-chunter.tgz
   '@rush-temp/model-server-core': file:./projects/model-server-core.tgz
   '@rush-temp/model-server-recruit': file:./projects/model-server-recruit.tgz
-  '@rush-temp/model-server-task': file:./projects/model-server-task.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
   '@rush-temp/model-telegram': file:./projects/model-telegram.tgz
@@ -74,8 +73,6 @@ specifiers:
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-recruit': file:./projects/server-recruit.tgz
   '@rush-temp/server-recruit-resources': file:./projects/server-recruit-resources.tgz
-  '@rush-temp/server-task': file:./projects/server-task.tgz
-  '@rush-temp/server-task-resources': file:./projects/server-task-resources.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/setting': file:./projects/setting.tgz
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
@@ -220,7 +217,6 @@ dependencies:
   '@rush-temp/model-server-chunter': file:projects/model-server-chunter.tgz_typescript@4.4.3
   '@rush-temp/model-server-core': file:projects/model-server-core.tgz_typescript@4.4.3
   '@rush-temp/model-server-recruit': file:projects/model-server-recruit.tgz_typescript@4.4.3
-  '@rush-temp/model-server-task': file:projects/model-server-task.tgz_typescript@4.4.3
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.4.3
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.4.3
   '@rush-temp/model-telegram': file:projects/model-telegram.tgz_typescript@4.4.3
@@ -243,8 +239,6 @@ dependencies:
   '@rush-temp/server-core': file:projects/server-core.tgz
   '@rush-temp/server-recruit': file:projects/server-recruit.tgz
   '@rush-temp/server-recruit-resources': file:projects/server-recruit-resources.tgz
-  '@rush-temp/server-task': file:projects/server-task.tgz
-  '@rush-temp/server-task-resources': file:projects/server-task-resources.tgz
   '@rush-temp/server-ws': file:projects/server-ws.tgz
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz
@@ -10770,7 +10764,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-XyhGIWfnSxUKXSXQ/yfvCx+S5xqBMJ4eko1pDFv0v048sQJy6fefxg3LOLyCDodNzsa5KxGdqvk7Y8H7Izop0g==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-iCugm1e/KTBXZ0FNnog/eP07l49sFIDU2orN0vAMUJ5pgZC7T38LSjnOL2y80OmoTbQK/3G2eH7Or+bxOYk2Cg==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -10837,7 +10831,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-qZPBOQC2Oi/Qxpjt91OM1tGBPwShe2SLIHKmDNGSsk79zzdmW3+ZDrge4VVrK/ngc5P2fJQwpQRXgOkNgz2vnA==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-ffJA0hXhTeEjKGbCFKTgYk9ch8JsAnZKmDOtyTSzE+tmIklA0Q1gWQGwqttPSgrGVQuy2UXkYXv1m7cnhBICxg==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -11006,27 +11000,6 @@ packages:
     resolution: {integrity: sha512-naLC1z6vcLj5qo2rYq2u+5aOz8aSBbfC154v4F5zab4tHqjcwTdjhasyuJPbdm5NLXbW8TWIkocf27mUtXfR0Q==, tarball: file:projects/model-server-recruit.tgz}
     id: file:projects/model-server-recruit.tgz
     name: '@rush-temp/model-server-recruit'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.1
-      '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
-      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.1.1_eslint@7.32.0
-      prettier: 2.4.1
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
-  file:projects/model-server-task.tgz_typescript@4.4.3:
-    resolution: {integrity: sha512-FZRz0sa1wBabVBBZietKGBDDF6vrJzSH6bcWlm8K3OkLl9jHoZlXRjBHIx4f0Vo1DSIPSH++/gULbgNAsd2p1A==, tarball: file:projects/model-server-task.tgz}
-    id: file:projects/model-server-task.tgz
-    name: '@rush-temp/model-server-task'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.1
@@ -11339,7 +11312,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.42.1+typescript@4.4.3:
-    resolution: {integrity: sha512-jgSulZmT4Kq28boQo8BJQrdkcN660EtY7XUH0QWcgGYHDBXFiGfP4eoIxAJL4wtb/JKwKLEkwG+SwTUIuIb7Xw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-cWieTfrEsukKvJvSGr/ZOX6Vo4aZQHGDpOrE2smLt21Rk+/lSNpUcpAKKGRoFmW08sWkQoYrU6BdPMgw4+/UNQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -11573,47 +11546,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/server-task-resources.tgz:
-    resolution: {integrity: sha512-Y2B9G8w4IpTnfIoDV+LtiARLb568CfTKG28VyMc2faS4QUz62f3PLU+ODB8NxwG5f1LsJf8DLrZM8fPRzYdc6w==, tarball: file:projects/server-task-resources.tgz}
-    name: '@rush-temp/server-task-resources'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.1
-      '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
-      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.1.1_eslint@7.32.0
-      prettier: 2.4.1
-      typescript: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  file:projects/server-task.tgz:
-    resolution: {integrity: sha512-qaB/cZSAPKuvTUfBv5wsqD0r/YoQO/hy7rD7WBC0lx2TOWIp0/aacYKVkEltinbYjJzP4gg9cQQNful4Mvpp5Q==, tarball: file:projects/server-task.tgz}
-    name: '@rush-temp/server-task'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.1
-      '@types/heft-jest': 1.0.2
-      '@types/node': 16.11.12
-      '@typescript-eslint/eslint-plugin': 5.4.0_87dbf04088b125598d0271706532eaf3
-      '@typescript-eslint/parser': 5.4.0_eslint@7.32.0+typescript@4.4.3
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_05a8ea1454e6ca4c9f98b94b8f3abf9c
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.1.1_eslint@7.32.0
-      prettier: 2.4.1
-      typescript: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   file:projects/server-ws.tgz:
     resolution: {integrity: sha512-MSFFpLjIMFt0oyH4+8JUkNOkCNtdEtMDoxcyN7+kDdz44wSZjSOmheJHYkXO6JTEffcaaRhQ9vO/e7MBNMeoxQ==, tarball: file:projects/server-ws.tgz}
     name: '@rush-temp/server-ws'
@@ -11641,7 +11573,7 @@ packages:
     dev: false
 
   file:projects/server.tgz:
-    resolution: {integrity: sha512-fFYknnDfAOz+iq8INHKSgCjYUkbxqLiHIBM55W8QtmZq0R8hMLEwCcLiyNqL1iCgXKs8sGHf+aMbZcciBNi1Ow==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-UBFOAisptjpTNIZoU6hWJVBKTk7mftZU0Dz+pJiVhMBJSD+iW393yv4v9GedEpor5rIYDGGcps7IVCXZlr76tw==, tarball: file:projects/server.tgz}
     name: '@rush-temp/server'
     version: 0.0.0
     dependencies:
