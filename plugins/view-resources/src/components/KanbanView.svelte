@@ -38,7 +38,7 @@
   let states: State[] = []
   let rawStates: State[] = []
 
-  let objects: Item[] = []
+  let objects: (Item | undefined)[] = []
   let rawObjects: Item[] = []
   let kanbanStates: Ref<State>[] = []
   let kanbanDoneStates: Ref<DoneState>[] = []
@@ -57,12 +57,11 @@
     return kanban.states.map(id => map.get(id) as State)
   }
 
-  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): T[] {
+  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): (T | undefined)[] {
     if (kanban === undefined || objects.length === 0) { return [] }
-    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<Doc>, Doc>())
+    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<T>, T>())
     return kanban.order
-      .map(id => map.get(id))
-      .filter((x): x is T => x !== undefined)
+      .map(id => map.get(id as Ref<T>))
   }
 
   const statesQuery = createQuery()
@@ -149,7 +148,7 @@
   <div class="scrollable">
     <ScrollBox>
       <div class="kanban-content">
-        {#each states as state, i (state)}
+        {#each states as state (state)}
           <KanbanPanel label={state.title} color={state.color} counter={4}
             on:dragover={(event) => {
               event.preventDefault()
@@ -163,7 +162,7 @@
             }}>
             <!-- <KanbanCardEmpty label={'Create new application'} /> -->
             {#each objects as object, j (object)}
-              {#if object.state === state._id}
+              {#if object !== undefined && object.state === state._id}
                 <div
                   class="step-tb75"
                   on:dragover|preventDefault={(ev) => {
@@ -180,7 +179,7 @@
                     dragCardInitialState = state._id
                     dragCardInitialPosition = j
                     dragCardEndPosition = j
-                    dragCard = objects[j]
+                    dragCard = object
                     isDragging = true
                   }}
                   on:dragend={() => {
