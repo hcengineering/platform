@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { Class, Data, Doc, DoneState, Ref, Space, State } from '@anticrm/core'
+import type { Class, Data, Doc, DocWithState, DoneState, Ref, Space, State } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import core from '@anticrm/core'
@@ -28,7 +28,7 @@ export interface Project extends Space {}
 /**
  * @public
  */
-export interface Task extends Doc {
+export interface Task extends DocWithState {
   number: number // Sequence number
 
   name: string

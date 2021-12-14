@@ -39,6 +39,7 @@ export class TProject extends TSpaceWithStates implements Project {}
 export class TTask extends TDoc implements Task {
   declare number: DocWithState['number']
   declare state: DocWithState['state']
+  declare doneState: DocWithState['doneState']
 
   @Prop(TypeString(), 'Name' as IntlString)
   name!: string
