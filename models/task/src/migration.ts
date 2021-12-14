@@ -51,5 +51,19 @@ export const taskOperation: MigrateOperation = {
     } else {
       console.log('Task: => public project Kanban is ok')
     }
+
+    const outdatedTasks = (await client.findAll(task.class.Task, {}))
+      .filter((x) => x.doneState === undefined)
+
+    await Promise.all(
+      outdatedTasks.map(async (task) => {
+        console.info('Upgrade task:', task._id)
+        try {
+          await ops.updateDoc(task._class, task.space, task._id, { doneState: null })
+        } catch (err: unknown) {
+          console.error(err)
+        }
+      })
+    )
   }
 }

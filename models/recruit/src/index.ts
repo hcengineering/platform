@@ -251,3 +251,5 @@ export function createModel (builder: Builder): void {
 }
 
 export { default } from './plugin'
+
+export { recruitOperation } from './migration'

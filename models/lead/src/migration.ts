@@ -42,5 +42,20 @@ export const leadOperation: MigrateOperation = {
     } else {
       console.log('Lead: => default funnel Kanban is ok')
     }
+
+    const outdatedLeads = (await client.findAll(lead.class.Lead, {}))
+      .filter((x) => x.doneState === undefined)
+
+    await Promise.all(
+      outdatedLeads.map(async (lead) => {
+        console.info('Upgrade lead:', lead._id)
+
+        try {
+          await ops.updateDoc(lead._class, lead.space, lead._id, { doneState: null })
+        } catch (err: unknown) {
+          console.error(err)
+        }
+      })
+    )
   }
 }
