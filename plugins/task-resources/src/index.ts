@@ -21,6 +21,27 @@ import CreateProject from './components/CreateProject.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import { Doc } from '@anticrm/core'
+import { showPopup } from '@anticrm/ui'
+
+import KanbanView from './components/kanban/KanbanView.svelte'
+import StateEditor from './components/state/StateEditor.svelte'
+import StatePresenter from './components/state/StatePresenter.svelte'
+import EditStatuses from './components/state/EditStatuses.svelte'
+import { SpaceWithStates } from '@anticrm/task'
+
+export { default as KanbanTemplateEditor } from './components/kanban/KanbanTemplateEditor.svelte'
+export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
+
+export { default as Tasks } from './components/Tasks.svelte'
+
+async function createTask (object: Doc): Promise<void> {
+  showPopup(CreateTask, { parent: object._id, space: object.space })
+}
+
+async function editStatuses (object: SpaceWithStates): Promise<void> {
+  showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'right')
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -28,6 +49,13 @@ export default async (): Promise<Resources> => ({
     CreateProject,
     TaskPresenter,
     KanbanCard,
-    TemplatesIcon
+    TemplatesIcon,
+    KanbanView,
+    StatePresenter,
+    StateEditor
+  },
+  actionImpl: {
+    CreateTask: createTask,
+    EditStatuses: editStatuses
   }
 })

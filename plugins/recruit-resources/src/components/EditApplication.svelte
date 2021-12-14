@@ -57,7 +57,6 @@
   <div class="attachments">
     <Attachments objectId={object._id} _class={object._class} space={object.space} />
   </div>
-
 </Panel>
 {/if}
 
@@ -65,7 +64,7 @@
   .attachments {
     margin-top: 3.5rem;
   }
-
+  
   .grid-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;

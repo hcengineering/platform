@@ -16,6 +16,8 @@
     "NoAttachmentsForTask": "There are no attachments for this task.",
     "AssigneeRequired": "Assignee is required",
     "More": "Options",
-    "TaskUnAssign": "Unassign"
+    "TaskUnAssign": "Unassign",
+    "NoTaskForObject": "No tasks defined",
+    "Delete": "Delete"
   }
 }

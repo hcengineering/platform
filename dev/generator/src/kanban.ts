@@ -1,6 +1,7 @@
-import core, { DoneState, Ref, SpaceWithStates, State, TxOperations } from '@anticrm/core'
+
+import { Ref, TxOperations } from '@anticrm/core'
+import task, { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
 import { findOrUpdate } from './utils'
-import view, { Kanban } from '@anticrm/view'
 
 export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, client: TxOperations): Promise<Ref<State>[]> {
   const rawStates = [
@@ -13,7 +14,7 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
   const states: Array<Ref<State>> = []
   for (const st of rawStates) {
     const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
-    await findOrUpdate(client, spaceId, core.class.State,
+    await findOrUpdate(client, spaceId, task.class.State,
       sid,
       {
         title: st.name,
@@ -24,8 +25,8 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
   }
 
   const rawDoneStates = [
-    { class: core.class.WonState, title: 'Won' },
-    { class: core.class.LostState, title: 'Lost' }
+    { class: task.class.WonState, title: 'Won' },
+    { class: task.class.LostState, title: 'Lost' }
   ]
   const doneStates: Array<Ref<DoneState>> = []
   for (const st of rawDoneStates) {
@@ -40,7 +41,7 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
   }
 
   await findOrUpdate(client, spaceId,
-    view.class.Kanban,
+    task.class.Kanban,
     ('generated-' + spaceId + '.kanban') as Ref<Kanban>,
     {
       attachedTo: spaceId,

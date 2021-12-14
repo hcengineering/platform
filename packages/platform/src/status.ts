@@ -56,7 +56,7 @@ export class PlatformError<P extends Record<string, any>> extends Error {
   readonly status: Status<P>
 
   constructor (status: Status<P>) {
-    super(`${status.severity}: ${status.code}`)
+    super(`${status.severity}: ${status.code} ${JSON.stringify(status.params)}`)
     this.status = status
   }
 }

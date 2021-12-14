@@ -19,7 +19,7 @@ import login from '@anticrm/login'
 import { clientId } from '@anticrm/client'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverViewId } from '@anticrm/server-view'
+import { serverViewId } from '@anticrm/server-task'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -33,7 +33,7 @@ export function configurePlatformDev() {
     addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
     addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/dev-server-chunter-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
-    addLocation(serverViewId, () => import(/* webpackChunkName: "server-view" */ '@anticrm/server-view-resources'))
+    addLocation(serverViewId, () => import(/* webpackChunkName: "server-task" */ '@anticrm/server-task-resources'))
 
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()

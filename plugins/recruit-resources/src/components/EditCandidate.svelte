@@ -166,7 +166,7 @@
     <div class="mt-14">
       <Applications objectId={object._id} _class={object._class} space={object.space} />
     </div>
-
+    
     <div class="mt-14">
       <Attachments
         objectId={object._id}

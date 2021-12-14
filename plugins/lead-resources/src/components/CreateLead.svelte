@@ -15,15 +15,15 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@anticrm/contact'
-  import core, { Data, Ref, Space } from '@anticrm/core'
+  import { Data, Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
   import type { Lead } from '@anticrm/lead'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
+  import task from '@anticrm/task'
 
   export let space: Ref<Space>
 
@@ -43,18 +43,18 @@
   }
 
   async function createLead () {
-    const state = await client.findOne(core.class.State, { space: _space })
+    const state = await client.findOne(task.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
-    const sequence = await client.findOne(view.class.Sequence, { attachedTo: lead.class.Lead })
+    const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
 
     const incResult = await client.updateDoc(
-      view.class.Sequence,
-      view.space.Sequence,
+      task.class.Sequence,
+      task.space.Sequence,
       sequence._id,
       {
         $inc: { sequence: 1 }
@@ -67,7 +67,10 @@
       doneState: null,
       number: (incResult as any).object.sequence,
       title: title,
-      customer: customer!
+      customer: customer!,
+      attachedTo: customer!,
+      attachedToClass: contact.class.Contact,
+      collection: 'leads'
     }
 
     await client.createDoc(lead.class.Lead, _space, value, leadId)

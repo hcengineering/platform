@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation';
+  import { createQuery } from '@anticrm/presentation'
   import { DumbDropdown } from '@anticrm/ui'
-  import type { DumbDropdownItem } from '@anticrm/ui/src/types';
-  import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/view'
-  import view from '@anticrm/view'
+  import type { DumbDropdownItem } from '@anticrm/ui/src/types'
+  import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
+  import task from '@anticrm/task'
 
   export let folders: Ref<KanbanTemplateSpace>[]
   export let template: Ref<KanbanTemplate> | undefined = undefined
 
   let templates: KanbanTemplate[] = []
   const templatesQ = createQuery()
-  $: templatesQ.query(view.class.KanbanTemplate, { space: { $in: folders }}, (result) => { templates = result })
+  $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: folders } }, (result) => { templates = result })
 
   let items: DumbDropdownItem[] = []
   $: items = [

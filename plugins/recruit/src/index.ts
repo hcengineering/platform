@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
+import type { Person } from '@anticrm/contact'
+import type { Class, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Plugin, Asset } from '@anticrm/platform'
-import type { Space, SpaceWithStates, DocWithState, Ref, Class, AttachedDoc, Timestamp } from '@anticrm/core'
-import type { Employee, Person } from '@anticrm/contact'
-import type { KanbanTemplateSpace } from '@anticrm/view'
+import type { SpaceWithStates, Task } from '@anticrm/task'
 
 /**
  * @public
@@ -49,10 +49,9 @@ export interface Candidate extends Person {
 /**
  * @public
  */
-export interface Applicant extends DocWithState, AttachedDoc {
+export interface Applicant extends Task {
   attachments?: number
   comments?: number
-  employee: Ref<Employee> | null
 }
 
 /**
@@ -73,8 +72,5 @@ export default plugin(recruitId, {
     Location: '' as Asset,
     Calendar: '' as Asset,
     Create: '' as Asset
-  },
-  space: {
-    VacancyTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })

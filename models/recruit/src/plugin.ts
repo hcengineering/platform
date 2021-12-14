@@ -20,8 +20,13 @@ import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
+import { Application } from '@anticrm/workbench'
+import '@anticrm/task'
 
 export default mergeIds(recruitId, recruit, {
+  app: {
+    Recruit: '' as Ref<Application>
+  },
   action: {
     CreateApplication: '' as Ref<Action>
   },

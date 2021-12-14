@@ -19,9 +19,9 @@ import view, { viewId } from '@anticrm/view'
 const icons = require('../assets/icons.svg')
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
-  Kanban: `${icons}#kanban`,
   Delete: `${icons}#delete`,
-  Move: `${icons}#move`
+  Move: `${icons}#move`,
+  MoreH: `${icons}#more-h`
 })
 
 addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))

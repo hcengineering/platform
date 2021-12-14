@@ -15,7 +15,8 @@
 -->
 
 <script lang="ts">
-  import core, { Ref, State } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
+  import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import { showPopup } from '@anticrm/ui'
   import StatePresenter from './StatePresenter.svelte'
@@ -28,7 +29,7 @@
   let opened: boolean = false
 
   const query = createQuery()
-  $: query.query(core.class.State, { _id: value }, (res) => { 
+  $: query.query(task.class.State, { _id: value }, (res) => {
     state = res[0]
   }, { limit: 1 })
 </script>
@@ -39,7 +40,7 @@
       if (!opened) {
         opened = true
         showPopup(StatesPopup, { space: state.space }, container, (result) => {
-          if (result) { 
+          if (result) {
             value = result._id
             onChange(value)
            }

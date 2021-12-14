@@ -17,14 +17,14 @@
 <script lang="ts">
   import { createQuery } from '@anticrm/presentation'
   import { Label, Component } from '@anticrm/ui'
-  import view, { KanbanTemplateSpace } from '@anticrm/view'
+  import task, { KanbanTemplateSpace } from '@anticrm/task'
   import setting from '@anticrm/setting'
 
 
   export let folder: KanbanTemplateSpace | undefined
   let folders: KanbanTemplateSpace[] = []
   const query = createQuery()
-  $: query.query(view.class.KanbanTemplateSpace, {}, (result) => { folders = result })
+  $: query.query(task.class.KanbanTemplateSpace, {}, (result) => { folders = result })
 
   $: if (folder === undefined && folders.length > 0) {
     folder = folders[0]
