@@ -64,6 +64,7 @@
 
     const value: Data<Lead> = {
       state: state._id,
+      doneState: null,
       number: (incResult as any).object.sequence,
       title: title,
       customer: customer!
