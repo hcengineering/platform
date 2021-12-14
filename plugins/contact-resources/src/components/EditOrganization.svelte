@@ -14,29 +14,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, AnyComponent } from '@anticrm/ui'
+  import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels } from '@anticrm/presentation'
-  import { Panel } from '@anticrm/panel'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { Organization } from '@anticrm/contact'
   import Company from './icons/Company.svelte'
-  import { Attachments } from '@anticrm/attachment-resources'
 
-  export let _id: Ref<Organization>
-  let object: Organization
-  let rightSection: AnyComponent | undefined
-  let fullSize: boolean = false
+  export let object: Organization
 
   const client = getClient()
-
-  const query = createQuery()
-  $: query.query(contact.class.Organization, { _id }, (result) => {
-    object = result[0]
-  })
 
   const dispatch = createEventDispatcher()
 
@@ -57,28 +47,23 @@
   $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => {
     integrations = new Set(res.map((p) => p.type))
   })
+
+  onMount(() => {
+    dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
+  })
 </script>
 
 {#if object !== undefined}
-  <Panel
-    icon={contact.icon.Company}
-    title={object.name}
-    {rightSection}
-    {fullSize}
-    {object}
-    on:close={() => {
-      dispatch('close')
-    }}
-  >
-    <div class="flex-row-center">
-      <div class="mr-8 flex-center logo">
-        <Company size={'large'} />
+  <div class="flex-row-center">
+    <div class="mr-8 flex-center logo">
+      <Company size={'large'} />
+    </div>
+    <div class="flex-grow flex-col">
+      <div class="name">
+        <EditBox placeholder="John" maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
       </div>
-      <div class="flex-col">
-        <div class="name">
-          <EditBox placeholder="John" maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
-        </div>
-        <div class="flex-row-center channels">
+      <div class="flex-between channels">
+        <div class="flex-row-center">
           {#if !object.channels || object.channels.length === 0}
             <CircleButton
               icon={IconAdd}
@@ -91,17 +76,7 @@
             />
             <span><Label label={contact.string.AddSocialLinks} /></span>
           {:else}
-            <Channels
-              value={object.channels}
-              size={'small'}
-              {integrations}
-              on:click={(ev) => {
-                if (ev.detail.presenter) {
-                  fullSize = true
-                  rightSection = ev.detail.presenter
-                }
-              }}
-            />
+            <Channels value={object.channels} size={'small'} {integrations} on:click />
             <div class="ml-1">
               <CircleButton
                 icon={IconEdit}
@@ -115,13 +90,16 @@
             </div>
           {/if}
         </div>
+
+        <div class="flex-row-center">
+          <a href={'#'} class="flex-row-center" on:click>
+            <CircleButton icon={IconActivity} size={'small'} primary on:click />
+            <span class="ml-2 small-text">View activity</span>
+          </a>
+        </div>
       </div>
     </div>
-
-    <div class="mt-14">
-      <Attachments objectId={object._id} _class={object._class} space={object.space} />
-    </div>
-  </Panel>
+  </div>
 {/if}
 
 <style lang="scss">
