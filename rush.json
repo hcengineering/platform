@@ -737,18 +737,18 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-view-resources",
-      "projectFolder": "server/view-resources",
+      "packageName": "@anticrm/server-task-resources",
+      "projectFolder": "server/task-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-view",
-      "projectFolder": "server/view",
+      "packageName": "@anticrm/server-task",
+      "projectFolder": "server/task",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-view",
-      "projectFolder": "models/server-view",
+      "packageName": "@anticrm/model-server-task",
+      "projectFolder": "models/server-task",
       "shouldPublish": true
     },
     {

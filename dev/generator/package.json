@@ -58,7 +58,7 @@
     "@anticrm/attachment": "~0.6.1",
     "minio": "^7.0.19",
     "@types/pdfkit": "~0.12.3",
-    "@anticrm/view": "~0.6.0",
+    "@anticrm/task": "~0.6.0",
     "jpeg-js": "~0.4.3"
   }
 }

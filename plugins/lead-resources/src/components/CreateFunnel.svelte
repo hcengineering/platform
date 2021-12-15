@@ -19,8 +19,8 @@
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import view, { createKanban, KanbanTemplate } from '@anticrm/view'
-  import { KanbanTemplateSelector } from '@anticrm/view-resources'
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import { KanbanTemplateSelector } from '@anticrm/task-resources'
 
   const dispatch = createEventDispatcher()
 
@@ -35,7 +35,7 @@
   const client = getClient()
 
   async function createFunnel (): Promise<void> {
-    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 

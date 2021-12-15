@@ -44,13 +44,13 @@ describe('hierarchy', () => {
 
   it('isImplements', async () => {
     const hierarchy = prepare()
-    let isImplements = hierarchy.isImplements(test.class.Task, core.interface.DocWithState)
+    let isImplements = hierarchy.isImplements(test.class.Task, test.interface.WithState)
     expect(isImplements).toBeTruthy()
 
-    isImplements = hierarchy.isImplements(test.class.TaskCheckItem, core.interface.DocWithState)
+    isImplements = hierarchy.isImplements(test.class.TaskCheckItem, test.interface.WithState)
     expect(isImplements).toBeTruthy()
 
-    const notImplements = hierarchy.isImplements(core.class.Space, core.interface.DocWithState)
+    const notImplements = hierarchy.isImplements(core.class.Space, test.interface.WithState)
     expect(notImplements).not.toBeTruthy()
   })
 

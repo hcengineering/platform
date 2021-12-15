@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,14 +14,20 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import type { Resource, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import type { TriggerFunc } from '@anticrm/server-core'
 
-import serverCore from '@anticrm/server-core'
-import core from '@anticrm/core'
-import serverView from '@anticrm/server-view'
+/**
+ * @public
+ */
+export const serverViewId = 'server-task' as Plugin
 
-export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverView.trigger.OnDocWithState
-  })
-}
+/**
+ * @public
+ */
+export default plugin(serverViewId, {
+  trigger: {
+    OnTask: '' as Resource<TriggerFunc>
+  }
+})

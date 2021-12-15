@@ -16,15 +16,11 @@
 
 <script lang="ts">
 
-  import type { Applicant, Candidate } from '@anticrm/recruit'
-  import { CircleButton, showPopup, closeTooltip } from '@anticrm/ui'
-  import Vacancy from './icons/Vacancy.svelte'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import EditApplication from './EditApplication.svelte'
-  import { Table } from '@anticrm/view-resources'
-
-  import recruit from '@anticrm/recruit'
   import core from '@anticrm/core'
+  import type { Candidate } from '@anticrm/recruit'
+  import recruit from '@anticrm/recruit'
+  import task from '@anticrm/task'
+  import { Table } from '@anticrm/view-resources'
 
   export let value: Candidate
 
@@ -36,7 +32,7 @@
   options={
     {
       lookup: {
-        state: core.class.State,
+        state: task.class.State,
         space: core.class.Space
       }
     }

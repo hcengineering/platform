@@ -30,7 +30,7 @@ import { createModel as leadModel } from '@anticrm/model-lead'
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
 import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
-import { createModel as serverViewModel } from '@anticrm/model-server-view'
+import { createModel as serverViewModel } from '@anticrm/model-server-task'
 import { createModel as activityModel } from '@anticrm/model-activity'
 
 import { createDemo } from '@anticrm/model-demo'

@@ -18,8 +18,8 @@
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import { getClient, MessageBox } from '@anticrm/presentation'
   import { Label, Icon, showPopup } from '@anticrm/ui'
-  import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/view'
-  import { KanbanTemplateEditor } from '@anticrm/view-resources'
+  import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
+  import { KanbanTemplateEditor } from '@anticrm/task-resources'
   import setting from '@anticrm/setting'
 
   import Folders from './Folders.svelte'
@@ -40,14 +40,14 @@
     }
 
     showPopup(MessageBox, {
-        label: 'Delete status',
-        message: 'Do you want to delete this status?'
-      }, undefined, async (result) => {
-        if (result && template !== undefined) {
-          await client.updateDoc(template._class, template.space, template._id, { $pull: { states: state._id }})
-          await client.removeCollection(state._class, template.space, state._id, template._id, template._class, 'statesC')
-        }
-      })
+      label: 'Delete status',
+      message: 'Do you want to delete this status?'
+    }, undefined, async (result) => {
+      if (result && template !== undefined) {
+        await client.updateDoc(template._class, template.space, template._id, { $pull: { states: state._id } })
+        await client.removeCollection(state._class, template.space, state._id, template._id, template._class, 'statesC')
+      }
+    })
   }
 </script>
 

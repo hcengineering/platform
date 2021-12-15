@@ -21,9 +21,6 @@ import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
-import KanbanView from './components/KanbanView.svelte'
-import StateEditor from './components/StateEditor.svelte'
-import StatePresenter from './components/StatePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
 import Table from './components/Table.svelte'
@@ -33,9 +30,6 @@ import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
-export { default as KanbanEditor } from './components/KanbanEditor.svelte'
-export { default as KanbanTemplateEditor } from './components/KanbanTemplateEditor.svelte'
-export { default as KanbanTemplateSelector } from './components/KanbanTemplateSelector.svelte'
 export { buildModel, getActions, getObjectPresenter } from './utils'
 export { Table }
 
@@ -69,10 +63,7 @@ export default async (): Promise<Resources> => ({
     StringPresenter,
     BooleanPresenter,
     BooleanEditor,
-    StatePresenter,
-    StateEditor,
     TableView,
-    KanbanView,
     TimestampPresenter,
     DateEditor,
     DatePresenter

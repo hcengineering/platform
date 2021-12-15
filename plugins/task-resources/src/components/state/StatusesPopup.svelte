@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Label, IconDelete as Delete } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import task from '../../plugin'
 
   export let onDelete: () => void
   
@@ -28,7 +28,7 @@
     <div class="icon">
       <Delete size={'medium'} />
     </div>
-    <div class="flex-grow"><Label label={view.string.Delete} /></div>
+    <div class="flex-grow"><Label label={task.string.Delete} /></div>
   </div>
 </div>
 

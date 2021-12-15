@@ -15,13 +15,18 @@
 //
 
 import type { Ref, Space } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
 import { leadId } from '@anticrm/lead'
 import lead from '@anticrm/lead-resources/src/plugin'
+import type { IntlString } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
+import '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
+import { Application } from '@anticrm/workbench'
 
 export default mergeIds(leadId, lead, {
+  app: {
+    Lead: '' as Ref<Application>
+  },
   string: {
     Funnel: '' as IntlString,
     Funnels: '' as IntlString,

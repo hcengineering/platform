@@ -14,16 +14,25 @@
 // limitations under the License.
 //
 
-import type { Ref, Space } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
+import type { Doc, Ref, Space } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import task, { taskId } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Application } from '@anticrm/workbench'
+import type { Action } from '@anticrm/view'
 
 export default mergeIds(taskId, task, {
   app: {
     Tasks: '' as Ref<Application>
+  },
+  action: {
+    CreateTask: '' as Ref<Action>,
+    EditStatuses: '' as Ref<Action>
+  },
+  actionImpl: {
+    CreateTask: '' as Resource<(object: Doc) => Promise<void>>,
+    EditStatuses: '' as Resource<(object: Doc) => Promise<void>>
   },
   component: {
     ProjectView: '' as AnyComponent,
@@ -32,7 +41,10 @@ export default mergeIds(taskId, task, {
     EditTask: '' as AnyComponent,
     TaskPresenter: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
-    TemplatesIcon: '' as AnyComponent
+    TemplatesIcon: '' as AnyComponent,
+    StatePresenter: '' as AnyComponent,
+    StateEditor: '' as AnyComponent,
+    KanbanView: '' as AnyComponent
   },
   string: {
     Task: '' as IntlString,

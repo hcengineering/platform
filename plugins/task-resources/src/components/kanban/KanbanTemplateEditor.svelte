@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, State, Space, Doc, generateId } from '@anticrm/core'
+  import { Ref, Space, Doc, generateId } from '@anticrm/core'
   import core from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/view'
-  import view from '@anticrm/view'
+  import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/task'
+  import task from '@anticrm/task'
 
-  import StatesEditor from './StatesEditor.svelte'
+  import StatesEditor from '../state/StatesEditor.svelte'
 
   export let kanban: KanbanTemplate
 
@@ -29,8 +29,8 @@
   let doneStates: DoneStateTemplate[] = []
   let wonStates: DoneStateTemplate[] = []
   let lostStates: DoneStateTemplate[] = []
-  $: wonStates = doneStates.filter((x) => x._class === view.class.WonStateTemplate)
-  $: lostStates = doneStates.filter((x) => x._class === view.class.LostStateTemplate)
+  $: wonStates = doneStates.filter((x) => x._class === task.class.WonStateTemplate)
+  $: lostStates = doneStates.filter((x) => x._class === task.class.LostStateTemplate)
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -49,10 +49,10 @@
   }
 
   const statesQ = createQuery()
-  $: statesQ.query(view.class.StateTemplate, { attachedTo: kanban._id }, result => { states = sort(kanban.states, result) })
+  $: statesQ.query(task.class.StateTemplate, { attachedTo: kanban._id }, result => { states = sort(kanban.states, result) })
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(view.class.DoneStateTemplate, { attachedTo: kanban._id }, (result) => { doneStates = sort(kanban.doneStates, result) })
+  $: doneStatesQ.query(task.class.DoneStateTemplate, { attachedTo: kanban._id }, (result) => { doneStates = sort(kanban.doneStates, result) })
 
   let space: Space | undefined
   const spaceQ = createQuery()
@@ -72,7 +72,7 @@
   async function onAdd () {
     const stateID = generateId<StateTemplate>()
     await client.addCollection(
-      view.class.StateTemplate,
+      task.class.StateTemplate,
       kanban.space,
       kanban._id,
       kanban._class,

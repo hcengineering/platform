@@ -19,36 +19,83 @@ import type {} from '@anticrm/view'
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import type { Doc, DocWithState, Domain, FindOptions, Ref } from '@anticrm/core'
-import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space } from '@anticrm/core'
+import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
-import core, { TDoc, TSpaceWithStates } from '@anticrm/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type { Project, Task } from '@anticrm/task'
+import type { Kanban, KanbanCard, Project, State, Issue, Sequence, DoneState, WonState, LostState, KanbanTemplateSpace, StateTemplate, DoneStateTemplate, WonStateTemplate, LostStateTemplate, KanbanTemplate, Task } from '@anticrm/task'
 import { createProjectKanban } from '@anticrm/task'
 import task from './plugin'
+import { AnyComponent } from '@anticrm/ui'
 
-@Model(task.class.Project, core.class.SpaceWithStates)
+export { default } from './plugin'
+
+export const DOMAIN_TASK = 'task' as Domain
+export const DOMAIN_STATE = 'state' as Domain
+export const DOMAIN_KANBAN = 'kanban' as Domain
+@Model(task.class.State, core.class.Doc, DOMAIN_STATE)
+export class TState extends TDoc implements State {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+
+  color!: string
+}
+
+@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE)
+export class TDoneState extends TDoc implements DoneState {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+}
+
+@Model(task.class.WonState, task.class.DoneState, DOMAIN_STATE)
+export class TWonState extends TDoneState implements WonState {}
+
+@Model(task.class.LostState, task.class.DoneState, DOMAIN_STATE)
+export class TLostState extends TDoneState implements LostState {}
+
+/**
+ * @public
+ *
+ * No domain is specified, since pure Tasks could not exists
+ */
+@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
+export class TTask extends TAttachedDoc implements Task {
+  @Prop(TypeRef(task.class.State), 'State' as IntlString)
+  state!: Ref<State>
+
+  @Prop(TypeRef(task.class.DoneState), 'Done Status' as IntlString)
+  doneState!: Ref<DoneState> | null
+
+  @Prop(TypeString(), 'No.' as IntlString)
+  number!: number
+
+  // @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  assignee!: Ref<Employee> | null
+}
+
+@Model(task.class.SpaceWithStates, core.class.Space)
+export class TSpaceWithStates extends TSpace {
+}
+
+@Model(task.class.Project, task.class.SpaceWithStates)
 @UX('Project' as IntlString, task.icon.Task)
 export class TProject extends TSpaceWithStates implements Project {}
 
-@Model(task.class.Task, core.class.Doc, 'task' as Domain, [core.interface.DocWithState])
-@UX('Task' as IntlString, task.icon.Task, 'TASK' as IntlString)
-export class TTask extends TDoc implements Task {
-  declare number: DocWithState['number']
-  declare state: DocWithState['state']
-  declare doneState: DocWithState['doneState']
+@Model(task.class.Issue, task.class.Task, DOMAIN_TASK)
+@UX('Task' as IntlString, task.icon.Task, 'Task' as IntlString)
+export class TIssue extends TTask implements Issue {
+  // We need to declare, to provide property with label
+  @Prop(TypeRef(core.class.Doc), 'Parent' as IntlString)
+  declare attachedTo: Ref<Doc>
 
   @Prop(TypeString(), 'Name' as IntlString)
   name!: string
 
   @Prop(TypeString(), 'Description' as IntlString)
   description!: string
-
-  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
-  assignee!: Ref<Employee> | null
 
   @Prop(TypeString(), 'Comments' as IntlString)
   comments!: number
@@ -58,13 +105,93 @@ export class TTask extends TDoc implements Task {
 
   @Prop(TypeString(), 'Labels' as IntlString)
   labels!: string
+
+  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  declare assignee: Ref<Employee> | null
+}
+
+@Mixin(task.mixin.KanbanCard, core.class.Class)
+export class TKanbanCard extends TClass implements KanbanCard {
+  card!: AnyComponent
+}
+
+@Model(task.class.Kanban, core.class.Doc, DOMAIN_KANBAN)
+export class TKanban extends TDoc implements Kanban {
+  states!: Arr<Ref<State>>
+  doneStates!: Arr<Ref<DoneState>>
+  attachedTo!: Ref<Space>
+  order!: Arr<Ref<Doc>>
+}
+
+@Model(task.class.KanbanTemplateSpace, core.class.Space, DOMAIN_MODEL)
+export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
+  icon!: AnyComponent
+}
+
+@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+export class TStateTemplate extends TAttachedDoc implements StateTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+
+  @Prop(TypeString(), 'Color' as IntlString)
+  color!: string
+}
+
+@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+}
+
+@Model(task.class.WonStateTemplate, task.class.DoneStateTemplate, DOMAIN_KANBAN)
+export class TWonStateTemplate extends TDoneStateTemplate implements WonStateTemplate {}
+
+@Model(task.class.LostStateTemplate, task.class.DoneStateTemplate, DOMAIN_KANBAN)
+export class TLostStateTemplate extends TDoneStateTemplate implements LostStateTemplate {}
+
+@Model(task.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)
+export class TKanbanTemplate extends TDoc implements KanbanTemplate {
+  @Prop(TypeString(), 'Title' as IntlString)
+  title!: string
+
+  states!: Arr<Ref<StateTemplate>>
+  doneStates!: Arr<Ref<DoneStateTemplate>>
+
+  @Prop(Collection(task.class.StateTemplate), 'States' as IntlString)
+  statesC!: number
+
+  @Prop(Collection(task.class.DoneStateTemplate), 'Done States' as IntlString)
+  doneStatesC!: number
+}
+
+@Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
+export class TSequence extends TDoc implements Sequence {
+  attachedTo!: Ref<Class<Doc>>
+  sequence!: number
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TProject, TTask)
+  builder.createModel(
+    TState,
+    TDoneState,
+    TWonState,
+    TLostState,
+    TKanbanCard,
+    TKanban,
+    TKanbanTemplateSpace,
+    TStateTemplate,
+    TDoneStateTemplate,
+    TWonStateTemplate,
+    TLostStateTemplate,
+    TKanbanTemplate,
+    TSequence,
+    TTask,
+    TSpaceWithStates,
+    TProject,
+    TIssue)
   builder.mixin(task.class.Project, core.class.Class, workbench.mixin.SpaceView, {
     view: {
-      class: task.class.Task,
+      class: task.class.Issue,
       createItemDialog: task.component.CreateTask
     }
   })
@@ -86,7 +213,7 @@ export function createModel (builder: Builder): void {
   }, task.app.Tasks)
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: task.class.Task,
+    attachTo: task.class.Issue,
     descriptor: view.viewlet.Table,
     open: task.component.EditTask,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -105,34 +232,38 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.mixin(task.class.Task, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
     presenter: task.component.TaskPresenter
   })
 
-  builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditor, {
+  builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectEditor, {
     editor: task.component.EditTask
   })
 
-  builder.createDoc(view.class.Sequence, view.space.Sequence, {
-    attachedTo: task.class.Task,
+  builder.createDoc(task.class.Sequence, task.space.Sequence, {
+    attachedTo: task.class.Issue,
     sequence: 0
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: task.class.Task,
-    descriptor: view.viewlet.Kanban,
+    attachTo: task.class.Issue,
+    descriptor: task.viewlet.Kanban,
     open: task.component.EditTask,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
         assignee: contact.class.Employee,
-        state: core.class.State
+        state: task.class.State
+        // attachedTo: core.class.Doc
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.attachedTo', '$lookup.state']
+    config: [
+      // '$lookup.attachedTo',
+      '$lookup.state',
+      '$lookup.assignee']
   })
 
-  builder.mixin(task.class.Task, core.class.Class, view.mixin.KanbanCard, {
+  builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
     card: task.component.KanbanCard
   })
 
@@ -143,7 +274,7 @@ export function createModel (builder: Builder): void {
     members: []
   }, task.space.TasksPublic)
 
-  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+  builder.createDoc(task.class.KanbanTemplateSpace, core.space.Model, {
     name: 'Projects',
     description: 'Manage project statuses',
     members: [],
@@ -155,6 +286,44 @@ export function createModel (builder: Builder): void {
     builder.createDoc(_class, space, data, id)
     return await Promise.resolve()
   }).catch((err) => console.error(err))
+
+  builder.createDoc(view.class.Action, core.space.Model, {
+    label: 'Create task' as IntlString,
+    icon: task.icon.Task,
+    action: task.actionImpl.CreateTask
+  }, task.action.CreateTask)
+
+  builder.createDoc(view.class.Action, core.space.Model, {
+    label: 'Edit Statuses' as IntlString,
+    icon: view.icon.MoreH,
+    action: task.actionImpl.EditStatuses
+  }, task.action.EditStatuses)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.SpaceWithStates,
+    action: task.action.EditStatuses
+  })
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
+    editor: task.component.StateEditor
+  })
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.StatePresenter
+  })
+
+  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
+    label: 'Kanban' as IntlString,
+    icon: task.icon.Kanban,
+    component: task.component.KanbanView
+  }, task.viewlet.Kanban)
+
+  builder.createDoc(core.class.Space, core.space.Model, {
+    name: 'Sequences',
+    description: 'Internal space to store sequence numbers',
+    members: [],
+    private: false
+  }, task.space.Sequence)
 }
 
 export { taskOperation } from './migration'

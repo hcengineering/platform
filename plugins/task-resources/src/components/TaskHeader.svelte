@@ -16,14 +16,14 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { AttributeBarEditor, getClient, UserBox } from '@anticrm/presentation'
-  import { Task } from '@anticrm/task'
+  import { Issue } from '@anticrm/task'
   import task from '../plugin'
 
-  export let object: Task
+  export let object: Issue
   const client = getClient()
 
   function change () {
-    client.updateDoc(object._class, object.space, object._id, { assignee: object.assignee })
+    client.updateCollection(object._class, object.space, object._id, object.attachedTo, object.attachedToClass, object.collection, { assignee: object.assignee })
   }
 </script>
 

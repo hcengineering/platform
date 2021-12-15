@@ -14,15 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref } from '@anticrm/core'
+  import { AttributeEditor, getClient } from '@anticrm/presentation'
+  import type { DoneState, State } from '@anticrm/task'
+  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, State, DoneState } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, IconMoreH, showPopup } from '@anticrm/ui'
-  import { getClient, AttributeEditor } from '@anticrm/presentation'
-  import Circles from './icons/Circles.svelte'
   import ColorsPopup from './ColorsPopup.svelte'
+  import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
-
-  import core from '@anticrm/core'
 
   export let states: State[] = []
   export let wonStates: DoneState[] = []

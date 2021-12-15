@@ -14,21 +14,20 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { Doc, Domain, FindOptions, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX, Collection } from '@anticrm/model'
+import { Doc, FindOptions, Ref, Timestamp } from '@anticrm/core'
+import { Builder, Collection, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDocWithState, TSpace, TSpaceWithStates } from '@anticrm/model-core'
+import core, { TSpace } from '@anticrm/model-core'
+import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
-import attachment from '@anticrm/model-attachment'
 
-export const DOMAIN_RECRUIT = 'recruit' as Domain
-
-@Model(recruit.class.Vacancy, core.class.SpaceWithStates)
+@Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
 export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeString(), 'Full description' as IntlString)
@@ -76,9 +75,9 @@ export class TCandidate extends TPerson implements Candidate {
   source?: string
 }
 
-@Model(recruit.class.Applicant, core.class.AttachedDoc, DOMAIN_RECRUIT, [core.interface.DocWithState])
+@Model(recruit.class.Applicant, task.class.Task)
 @UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
-export class TApplicant extends TAttachedDoc implements Applicant {
+export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
   declare attachedTo: Ref<Candidate>
@@ -90,12 +89,7 @@ export class TApplicant extends TAttachedDoc implements Applicant {
   comments?: number
 
   @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
-  employee!: Ref<Employee> | null
-
-  // We need these to make typescript happy.
-  declare state: TDocWithState['state']
-  declare doneState: TDocWithState['doneState']
-  declare number: TDocWithState['number']
+  declare assignee: Ref<Employee> | null
 }
 
 export function createModel (builder: Builder): void {
@@ -136,7 +130,7 @@ export function createModel (builder: Builder): void {
         }
       ]
     }
-  })
+  }, recruit.app.Recruit)
   builder.createDoc(
     recruit.class.Candidates,
     core.space.Model,
@@ -179,7 +173,7 @@ export function createModel (builder: Builder): void {
     options: {
       lookup: {
         attachedTo: recruit.class.Candidate,
-        state: core.class.State
+        state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [
@@ -196,19 +190,19 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
-    descriptor: view.viewlet.Kanban,
+    descriptor: task.viewlet.Kanban,
     open: recruit.component.EditCandidate,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
         attachedTo: recruit.class.Candidate,
-        state: core.class.State
+        state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.channels']
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.KanbanCard, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })
 
@@ -236,12 +230,17 @@ export function createModel (builder: Builder): void {
     action: recruit.action.CreateApplication
   })
 
-  builder.createDoc(view.class.Sequence, view.space.Sequence, {
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Candidate,
+    action: task.action.CreateTask
+  })
+
+  builder.createDoc(task.class.Sequence, task.space.Sequence, {
     attachedTo: recruit.class.Applicant,
     sequence: 0
   })
 
-  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+  builder.createDoc(task.class.KanbanTemplateSpace, core.space.Model, {
     name: 'Vacancies',
     description: 'Manage vacancy statuses',
     members: [],
@@ -250,6 +249,5 @@ export function createModel (builder: Builder): void {
   }, recruit.space.VacancyTemplates)
 }
 
-export { default } from './plugin'
-
 export { recruitOperation } from './migration'
+export { default } from './plugin'

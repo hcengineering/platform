@@ -118,14 +118,13 @@ class TServerStorage implements ServerStorage {
         return []
       }
 
-      if (colTx.tx._class === core.class.TxCreateDoc) {
-        attachedTo = (await this.findAll(_class, { _id }))[0]
-        const txFactory = new TxFactory(tx.modifiedBy)
-        return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: 1 } })]
-      } else if (colTx.tx._class === core.class.TxRemoveDoc) {
-        attachedTo = (await this.findAll(_class, { _id }))[0]
-        const txFactory = new TxFactory(tx.modifiedBy)
-        return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: -1 } })]
+      const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
+      if (isCreateTx || colTx.tx._class === core.class.TxRemoveDoc) {
+        attachedTo = (await this.findAll(_class, { _id }, { limit: 1 }))[0]
+        if (attachedTo !== undefined) {
+          const txFactory = new TxFactory(tx.modifiedBy)
+          return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: isCreateTx ? 1 : -1 } })]
+        }
       }
     }
     return []

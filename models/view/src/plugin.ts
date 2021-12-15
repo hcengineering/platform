@@ -33,12 +33,9 @@ export default mergeIds(viewId, view, {
     StringPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
-    StatePresenter: '' as AnyComponent,
-    StateEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
-    TableView: '' as AnyComponent,
-    KanbanView: '' as AnyComponent
+    TableView: '' as AnyComponent
   }
 })

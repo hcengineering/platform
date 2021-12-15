@@ -18,13 +18,13 @@
   import { formatName } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
-  import type { Task } from '@anticrm/task'
+  import type { Issue } from '@anticrm/task'
   import { ActionIcon, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
 
-  export let object: WithLookup<Task>
+  export let object: WithLookup<Issue>
   export let draggable: boolean
 
   const showMenu = (ev?: Event): void => {

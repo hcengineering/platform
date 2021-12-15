@@ -29,7 +29,7 @@
       object.attachedTo,
       object.attachedToClass,
       object.collection,
-      { employee: object.employee }
+      { assignee: object.assignee }
     )
   }
 </script>
@@ -39,7 +39,7 @@
     _class={contact.class.Employee}
     title="Assigned recruiter"
     caption="Recruiters"
-    bind:value={object.employee}
+    bind:value={object.assignee}
     on:change={change}
     allowDeselect
     titleDeselect={'Unassign recruiter'}
