@@ -15,22 +15,29 @@
 //
 
 import { Doc, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import task from '@anticrm/model-task'
+import task, { DOMAIN_TASK } from '@anticrm/model-task'
 import { createKanban } from '@anticrm/lead'
 import lead from './plugin'
 
+function logInfo (msg: string, result: MigrationResult): void {
+  if (result.updated > 0) {
+    console.log(`Lead: Migrate ${msg} ${result.updated}`)
+  }
+}
+
 export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-
+    // Update done states for tasks
+    logInfo('lead done states', await client.update(DOMAIN_TASK, { _class: lead.class.Lead, doneState: { $exists: false } }, { doneState: null }))
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Lead: Performing model upgrades')
 
     const ops = new TxOperations(client, core.account.System)
     if (await client.findOne(task.class.Kanban, { attachedTo: lead.space.DefaultFunnel }) === undefined) {
-      console.info('Create kanban for default funnel.')
+      console.info('Lead: Create kanban for default funnel.')
       await createKanban(lead.space.DefaultFunnel, async (_class, space, data, id) => {
         const doc = await ops.findOne<Doc>(_class, { _id: id })
         if (doc === undefined) {
@@ -44,29 +51,14 @@ export const leadOperation: MigrateOperation = {
     }
 
     if (await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead }) === undefined) {
-      console.info('Create sequence for default task project.')
+      console.info('Lead: Create sequence for default task project.')
       // We need to create sequence
       await ops.createDoc(task.class.Sequence, task.space.Sequence, {
         attachedTo: lead.class.Lead,
         sequence: 0
       })
     } else {
-      console.log('Task: => sequence is ok')
+      console.log('Lead: => sequence is ok')
     }
-
-    const outdatedLeads = (await client.findAll(lead.class.Lead, {}))
-      .filter((x) => x.doneState === undefined)
-
-    await Promise.all(
-      outdatedLeads.map(async (lead) => {
-        console.info('Upgrade lead:', lead._id)
-
-        try {
-          await ops.updateDoc(lead._class, lead.space, lead._id, { doneState: null })
-        } catch (err: unknown) {
-          console.error(err)
-        }
-      })
-    )
   }
 }

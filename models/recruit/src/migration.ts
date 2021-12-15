@@ -13,42 +13,36 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
-
+import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import { DOMAIN_TASK } from '@anticrm/model-task'
 import recruit from './plugin'
 
+function logInfo (msg: string, result: MigrationResult): void {
+  if (result.updated > 0) {
+    console.log(`Recruit: Migrate ${msg} ${result.updated}`)
+  }
+}
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    logInfo('done for Applicants', await client.update(DOMAIN_TASK, { _class: recruit.class.Applicant, doneState: { $exists: false } }, { doneState: null }))
 
+    logInfo('$move employee => assignee', await client.update(
+      DOMAIN_TASK,
+      { _class: recruit.class.Applicant, employee: { $exists: true } },
+      { $rename: { employee: 'assignee' } }
+    ))
+
+    const employees = (await client.find(DOMAIN_CONTACT, { _class: contact.class.Employee })).map(emp => emp._id)
+
+    // update assignee to unassigned if there is no employee exists.
+    logInfo('applicants wrong assignee', await client.update(
+      DOMAIN_TASK,
+      { _class: recruit.class.Applicant, assignee: { $not: { $in: employees } } },
+      { assignee: null }
+    ))
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Recruit: Performing model upgrades')
-
-    const ops = new TxOperations(client, core.account.System)
-
-    const outdatedApplications = (await client.findAll(recruit.class.Applicant, {}))
-      .filter((x) => x.doneState === undefined)
-
-    await Promise.all(
-      outdatedApplications.map(async (application) => {
-        console.info('Upgrade application:', application._id)
-
-        try {
-          await ops.updateCollection(
-            application._class,
-            application.space,
-            application._id,
-            application.attachedTo,
-            application.attachedToClass,
-            application.collection,
-            { doneState: null }
-          )
-        } catch (err: unknown) {
-          console.error(err)
-        }
-      })
-    )
   }
 }
