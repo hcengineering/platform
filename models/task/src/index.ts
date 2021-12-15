@@ -20,7 +20,7 @@ import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import type { Doc, DocWithState, Domain, FindOptions, Ref } from '@anticrm/core'
-import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TDoc, TSpaceWithStates } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -50,10 +50,10 @@ export class TTask extends TDoc implements Task {
   @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
   assignee!: Ref<Employee> | null
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments!: number
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments!: number
 
   @Prop(TypeString(), 'Labels' as IntlString)

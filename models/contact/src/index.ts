@@ -15,7 +15,7 @@
 
 import type { Domain, Type, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX, Index } from '@anticrm/model'
+import { Builder, Model, Prop, TypeString, UX, Index, Collection } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 
 import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
@@ -24,6 +24,7 @@ import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import attachment from '@anticrm/model-attachment'
 import { ids as contact } from './plugin'
+import chunter from '@anticrm/model-chunter'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
@@ -55,10 +56,10 @@ export class TContact extends TDoc implements Contact {
   @Prop(TypeChannels(), 'Contact Info' as IntlString)
   channels!: Channel[]
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
 }
 

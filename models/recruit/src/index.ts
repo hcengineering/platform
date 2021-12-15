@@ -34,7 +34,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeString(), 'Full description' as IntlString)
   fullDescription?: string
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 
   @Prop(TypeDate(), 'Due date' as IntlString, recruit.icon.Calendar)
@@ -57,12 +57,6 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
-  attachments?: number
-
-  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
-  comments?: number
-
   @Prop(Collection(recruit.class.Applicant), 'Applications' as IntlString)
   applications?: number
 
@@ -83,10 +77,10 @@ export class TApplicant extends TAttachedDoc implements Applicant {
   @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
   declare attachedTo: Ref<Candidate>
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
 
   @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
