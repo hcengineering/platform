@@ -18,8 +18,8 @@
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
-  import view, { createKanban, KanbanTemplate } from '@anticrm/view'
-  import { KanbanTemplateSelector } from '@anticrm/view-resources'
+  import { createKanban, KanbanTemplate } from '@anticrm/task'
+  import KanbanTemplateSelector from './kanban/KanbanTemplateSelector.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -34,7 +34,7 @@
   const client = getClient()
 
   async function createProject (): Promise<void> {
-    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 

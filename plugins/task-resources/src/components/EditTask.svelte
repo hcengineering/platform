@@ -16,7 +16,7 @@
   import type { Ref } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Task } from '@anticrm/task'
+  import type { Issue } from '@anticrm/task'
   import { EditBox, Grid } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
@@ -24,11 +24,11 @@
   import { Attachments } from '@anticrm/attachment-resources'
   import TaskHeader from './TaskHeader.svelte'
 
-  export let _id: Ref<Task>
-  let object: Task
+  export let _id: Ref<Issue>
+  let object: Issue
 
   const query = createQuery()
-  $: query.query(task.class.Task, { _id }, (result) => {
+  $: query.query(task.class.Issue, { _id }, (result) => {
     object = result[0]
   })
 
@@ -36,7 +36,7 @@
   const client = getClient()
 
   function change (field: string, value: any) {
-    client.updateDoc(task.class.Task, object.space, object._id, { [field]: value })
+    client.updateCollection(object._class, object.space, object._id, object.attachedTo, object.attachedToClass, object.collection, { [field]: value })
   }
 </script>
 

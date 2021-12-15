@@ -28,6 +28,9 @@ export interface MigrationClient {
 
   // Allow to raw update documents inside domain.
   update: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: MigrateUpdate<T>) => Promise<MigrationResult>
+
+  // Move documents per domain
+  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
 }
 
 /**

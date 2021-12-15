@@ -69,4 +69,22 @@ export class MigrateClientImpl implements MigrationClient {
       return { matched: result.matchedCount, updated: result.modifiedCount }
     }
   }
+
+  async move <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain): Promise<MigrationResult> {
+    const q = this.translateQuery(query)
+    const cursor = this.db.collection(sourceDomain).find<T>(q)
+    const target = this.db.collection(targetDomain)
+    const result: MigrationResult = {
+      matched: 0,
+      updated: 0
+    }
+    let doc: Document | null
+    while ((doc = await cursor.next()) != null) {
+      await target.insertOne(doc)
+      result.matched++
+      result.updated++
+    }
+    await this.db.collection(sourceDomain).deleteMany(q)
+    return result
+  }
 }

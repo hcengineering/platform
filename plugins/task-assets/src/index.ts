@@ -19,6 +19,8 @@ import task, {taskId} from '@anticrm/task'
 const icons = require('../assets/icons.svg')
 loadMetadata(task.icon, {
   Task: `${icons}#task`,
+  Kanban: `${icons}#kanban`,
+  Status: `${icons}#status`
 })
 
 addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))
