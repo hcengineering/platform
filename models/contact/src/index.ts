@@ -34,7 +34,6 @@ import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import attachment from '@anticrm/model-attachment'
 import { ids as contact } from './plugin'
-import chunter from '@anticrm/model-chunter'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
