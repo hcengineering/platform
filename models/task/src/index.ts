@@ -97,9 +97,6 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeString(), 'Description' as IntlString)
   description!: string
 
-  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
-  assignee!: Ref<Employee> | null
-
   @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments!: number
 
