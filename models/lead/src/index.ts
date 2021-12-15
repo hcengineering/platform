@@ -19,7 +19,7 @@ import type { Contact } from '@anticrm/contact'
 import type { Doc, FindOptions, Ref } from '@anticrm/core'
 import type { Funnel, Lead } from '@anticrm/lead'
 import { createKanban } from '@anticrm/lead'
-import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -44,10 +44,10 @@ export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
   customer!: Ref<Contact>
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
 }
 

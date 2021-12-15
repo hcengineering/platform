@@ -97,10 +97,10 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeString(), 'Description' as IntlString)
   description!: string
 
-  @Prop(TypeString(), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments!: number
 
-  @Prop(TypeString(), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments!: number
 
   @Prop(TypeString(), 'Labels' as IntlString)
