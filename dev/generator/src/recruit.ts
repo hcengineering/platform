@@ -98,7 +98,7 @@ export async function generateContacts (transactorUrl: string, dbName: string, o
 
       const applicant: AttachedData<Applicant> = {
         number: faker.datatype.number(),
-        employee: faker.random.arrayElement(emoloyeeIds),
+        assignee: faker.random.arrayElement(emoloyeeIds),
         state: faker.random.arrayElement(states),
         doneState: null
       }

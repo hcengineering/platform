@@ -2,6 +2,8 @@
   "string": {
     "MoveClass": "Move {class}",
     "SelectToMove": "Select the {classLabel} you want to move {class} to.",
-    "Delete": "Delete"
+    "Delete": "Delete",
+    "Move": "Move",
+    "Cancel": "Cancel"
   }
 }

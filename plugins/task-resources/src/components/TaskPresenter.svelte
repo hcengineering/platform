@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Task } from '@anticrm/task'
+  import type { Issue } from '@anticrm/task'
   import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import EditTask from './EditTask.svelte'
   import { getClient } from '@anticrm/presentation'
   import task from '../plugin'
 
-  export let value: Task
+  export let value: Issue
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel

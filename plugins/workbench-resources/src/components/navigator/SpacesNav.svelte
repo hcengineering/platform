@@ -14,24 +14,18 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte'
-
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import type { Ref, Space, Doc } from '@anticrm/core'
+  import type { Doc, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
+  import { getResource, IntlString } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Action, getCurrentLocation, IconAdd, IconEdit, location, navigate, showPopup } from '@anticrm/ui'
+  import { getActions as getContributedActions } from '@anticrm/view-resources'
   import type { SpacesNavModel } from '@anticrm/workbench'
-  import { Action, navigate, getCurrentLocation, location, IconAdd, IconMoreH, IconEdit } from '@anticrm/ui'
-
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
-
+  import { onDestroy } from 'svelte'
   import { classIcon } from '../../utils'
-
-  import TreeNode from './TreeNode.svelte'
-  import TreeItem from './TreeItem.svelte'
-
-  import EditStatuses from '../EditStatuses.svelte'
   import SpacePanel from './SpacePanel.svelte'
+  import TreeItem from './TreeItem.svelte'
+  import TreeNode from './TreeNode.svelte'
 
   export let model: SpacesNavModel
   
@@ -47,14 +41,6 @@
     icon: IconAdd,
     action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
       showPopup(model.createComponent, {}, ev?.target as HTMLElement)
-    }
-  }
-
-  const editStatuses: Action = {
-    label: 'Edit Statuses' as IntlString,
-    icon: IconMoreH,
-    action: async (_id: Ref<Doc>): Promise<void> => {
-      showPopup(EditStatuses, { _id, spaceClass: model.spaceClass }, 'right')
     }
   }
 
@@ -78,10 +64,19 @@
     selected = loc.path[2] as Ref<Space>
   }))
 
-  function getActions (space: Space): Action[] {
+  async function getActions (space: Space): Promise<Action[]> {
     const result = [editSpace]
-    if (client.getHierarchy().isDerived(space._class, core.class.SpaceWithStates)) {
-      result.push(editStatuses)
+
+    const extraActions = await getContributedActions(client, space._class, core.class.Space)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (props, ev) => {
+          const impl = await getResource(act.action)
+          await impl(space)
+        }
+      })
     }
     return result
   }
@@ -90,7 +85,9 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} actions={getActions(space)} on:click={() => { selectSpace(space._id) }}/>
+      {#await getActions(space) then actions}
+        <TreeItem _id={space._id} title={space.name} icon={classIcon(client, space._class)} selected={selected === space._id} {actions} on:click={() => { selectSpace(space._id) }}/>
+      {/await}
     {/each}
   </TreeNode>
 </div>

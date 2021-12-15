@@ -14,12 +14,11 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
-import type { Asset, Plugin } from '@anticrm/platform'
-import core, { DoneState } from '@anticrm/core'
-import view, { Kanban, KanbanTemplateSpace } from '@anticrm/view'
-import type { Class, Data, Doc, DocWithState, Ref, Space, SpaceWithStates, State } from '@anticrm/core'
 import type { Contact } from '@anticrm/contact'
+import type { Class, Data, Doc, Ref, Space } from '@anticrm/core'
+import type { Asset, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import task, { DoneState, Kanban, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@anticrm/task'
 
 /**
  * @public
@@ -29,7 +28,7 @@ export interface Funnel extends SpaceWithStates {}
 /**
  * @public
  */
-export interface Lead extends DocWithState {
+export interface Lead extends Task {
   title: string
   customer: Ref<Contact>
 
@@ -76,7 +75,7 @@ export async function createKanban (
   for (const st of states) {
     const sid = (funnelId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
     await factory(
-      core.class.State,
+      task.class.State,
       funnelId,
       {
         title: st.name,
@@ -87,8 +86,8 @@ export async function createKanban (
     ids.push(sid)
   }
   const rawDoneStates = [
-    { class: core.class.WonState, title: 'Won' },
-    { class: core.class.LostState, title: 'Lost' }
+    { class: task.class.WonState, title: 'Won' },
+    { class: task.class.LostState, title: 'Lost' }
   ]
   const doneStates: Array<Ref<DoneState>> = []
   for (const st of rawDoneStates) {
@@ -105,7 +104,7 @@ export async function createKanban (
   }
 
   await factory(
-    view.class.Kanban,
+    task.class.Kanban,
     funnelId,
     {
       attachedTo: funnelId,
@@ -113,6 +112,6 @@ export async function createKanban (
       doneStates,
       order: []
     },
-    (funnelId + '.kanban.') as Ref<Kanban>
+    (funnelId + '.kanban') as Ref<Kanban>
   )
 }

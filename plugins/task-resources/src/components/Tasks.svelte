@@ -15,43 +15,43 @@
 
 <script lang="ts">
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
-  import type { Applicant } from '@anticrm/recruit'
+  import type { Issue } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
-  import CreateApplication from './CreateApplication.svelte'
-  import FileDuo from "./icons/FileDuo.svelte"
+  import CreateTask from './CreateTask.svelte'
+  // import FileDuo from "./icons/FileDuo.svelte"
   import { Table } from '@anticrm/view-resources'
 
-  import task from '@anticrm/task'
-  import recruit from '../plugin'
+  import core from '@anticrm/core'
+  import task from '../plugin'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
 
-  let applications: Applicant[] = []
+  let tasks: Issue[] = []
 
   const query = createQuery()
-  $: query.query(recruit.class.Applicant, { attachedTo: objectId }, result => { applications = result })
+  $: query.query(task.class.Issue, { attachedTo: objectId }, result => { tasks = result })
 
   const createApp = (ev: MouseEvent): void =>
-    showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
+    showPopup(CreateTask, { parent: { _id: objectId, _class, space } }, ev.target as HTMLElement, () => {})
 </script>
 
 <div class="applications-container">
   <div class="flex-row-center">
-    <div class="title">Applications</div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
+    <div class="title">Tasks</div>
+    <CircleButton icon={IconAdd} size={'small'} on:click={createApp} />
   </div>
-  {#if applications.length > 0}
+  {#if tasks.length > 0}
     <Table 
-      _class={recruit.class.Applicant}
+      _class={task.class.Issue}
       config={['', '$lookup.space.name', '$lookup.state']}
       options={
         {
           lookup: {
             state: task.class.State,
-            space: task.class.Space
+            space: core.class.Space
           }
         }
       }
@@ -59,12 +59,12 @@
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
-      <FileDuo size={'large'} />
+      <!-- <FileDuo size={'large'} /> -->
       <div class="small-text content-dark-color mt-2">
-        <Label label={recruit.string.NoApplicationsForCandidate} />
+        <Label label={task.string.NoTaskForObject} />
       </div>
       <div class="small-text">
-        <a href={'#'} on:click={createApp}><Label label={recruit.string.CreateAnApplication} /></a>
+        <a href={'#'} on:click={createApp}><Label label={task.string.CreateTask} /></a>
       </div>
     </div>
   {/if}
