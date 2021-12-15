@@ -67,10 +67,10 @@
 </script>
 
 <div class="container">
-  <div class="header fs-title">
+  <div class="overflow-label fs-title mb-4">
     <Label label={view.string.MoveClass} params={{ class: label }} />
   </div>
-  <div class="description">
+  <div class="content-accent-color mb-4">
     <Label label={view.string.SelectToMove} params={{ class: label, classLabel: classLabel }} />
   </div>
   <div class="spaceSelect">
@@ -80,19 +80,19 @@
   </div>
   <div class="footer">
     <Button
-      label="Move"
-      size="small"
-      width="100px"
+      label={view.string.Move}
+      size={'small'}
       disabled={space === object?.space}
+      transparent
       primary
       on:click={() => {
         move(object)
       }}
     />
     <Button
-      size="small"
-      width="100px"
-      label={ui.string.Cancel}
+      size={'small'}
+      label={view.string.Cancel}
+      transparent
       on:click={() => {
         dispatch('close')
       }}
@@ -104,19 +104,19 @@
   .container {
     display: flex;
     flex-direction: column;
-    background-color: var(--theme-button-bg-hovered);
+    padding: 2rem 1.75rem 1.75rem;
+    width: 25rem;
+    max-width: 40rem;
+    background: var(--theme-msgbox-bg);
     border-radius: 1.25rem;
-    padding: 2rem 1.75rem 1.75rem 1.75rem;
-
-    .description {
-      margin: 1rem 0;
-    }
+    user-select: none;
+    box-shadow: var(--theme-msgbox-shadow);
 
     .spaceSelect {
+      padding: 1rem 1.25rem;
       background-color: var(--theme-button-bg-enabled);
-      border-radius: 0.75rem;
-      padding: 1.25rem 1rem;
-      border: 0.5px solid var(--theme-bg-accent-color);
+      border: 1px solid var(--theme-bg-accent-color);
+      border-radius: .75rem;
     }
 
     .footer {
@@ -127,9 +127,7 @@
       justify-content: start;
       align-items: center;
       margin-top: 1rem;
-      column-gap: 0.75rem;
-      mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
-      overflow: hidden;
+      column-gap: .5rem;
     }
   }
 </style>

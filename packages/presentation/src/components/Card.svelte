@@ -124,7 +124,6 @@
       right: 0;
       background-color: var(--theme-card-bg);
       border-radius: 1.25rem;
-      backdrop-filter: blur(15px);
       box-shadow: var(--theme-card-shadow);
       z-index: -1;
     }

@@ -25,11 +25,11 @@
 </script>
 
 <div class="msgbox-container">
-  <div class="overflow-label title"><Label {label} /></div>
+  <div class="overflow-label fs-title mb-4"><Label {label} /></div>
   <div class="message"><Label label={message} /></div>
   <div class="footer">
-    <Button label={'Ok'} size={'small'} primary on:click={() => dispatch('close', true)} />
-    <Button label={'Cancel'} size={'small'} on:click={() => dispatch('close', false)} />
+    <Button label={'Ok'} size={'small'} transparent primary on:click={() => dispatch('close', true)} />
+    <Button label={'Cancel'} size={'small'} transparent on:click={() => dispatch('close', false)} />
   </div>
 </div>
 
@@ -43,15 +43,8 @@
     background: var(--theme-msgbox-bg);
     border-radius: 1.25rem;
     user-select: none;
-    box-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
-    backdrop-filter: blur(10px);
+    box-shadow: var(--theme-msgbox-shadow);
 
-    .title {
-      margin-bottom: 1rem;
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--theme-caption-color);
-    }
     .message {
       margin-bottom: 1.75rem;
       color: var(--theme-content-accent-color);
