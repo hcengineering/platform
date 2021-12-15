@@ -39,7 +39,7 @@ export interface Trigger extends Doc {
  * @public
  */
 export interface IndexedDoc {
-  id: string
+  id: Ref<Doc>
   _class: Ref<Class<Doc>>
   space: Ref<Space>
   modifiedOn: Timestamp
