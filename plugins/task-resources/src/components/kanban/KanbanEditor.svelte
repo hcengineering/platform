@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, State, Doc, DoneState } from '@anticrm/core'
+  import type { Ref, Doc } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban } from '@anticrm/view'
+  import type { Kanban, State, DoneState } from '@anticrm/task'
+  import task from '@anticrm/task'
 
-  import core from '@anticrm/core'
-  import StatesEditor from './StatesEditor.svelte'
+  import StatesEditor from '../state/StatesEditor.svelte'
 
   export let kanban: Kanban
 
@@ -28,12 +28,12 @@
   let doneStates: DoneState[] = []
   let wonStates: DoneState[] = []
   let lostStates: DoneState[] = []
-  $: wonStates = doneStates.filter((x) => x._class === core.class.WonState)
-  $: lostStates = doneStates.filter((x) => x._class === core.class.LostState)
+  $: wonStates = doneStates.filter((x) => x._class === task.class.WonState)
+  $: lostStates = doneStates.filter((x) => x._class === task.class.LostState)
 
   const client = getClient()
 
-  function sort <T extends Doc>(order: Ref<T>[], items: T[]): T[] {
+  function sort <T extends Doc> (order: Ref<T>[], items: T[]): T[] {
     if (items.length === 0) {
       return []
     }
@@ -47,10 +47,10 @@
   }
 
   const statesQ = createQuery()
-  $: statesQ.query(core.class.State, { _id: { $in: kanban.states ?? [] } }, result => { states = sort(kanban.states, result) })
+  $: statesQ.query(task.class.State, { _id: { $in: kanban.states ?? [] } }, result => { states = sort(kanban.states, result) })
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(core.class.DoneState, { _id: { $in: kanban.doneStates }}, (result) => { doneStates = sort(kanban.doneStates, result) })
+  $: doneStatesQ.query(task.class.DoneState, { _id: { $in: kanban.doneStates } }, (result) => { doneStates = sort(kanban.doneStates, result) })
 
   async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<State>, position: number } }) {
     client.updateDoc(kanban._class, kanban.space, kanban._id, {
@@ -64,7 +64,7 @@
   }
 
   async function onAdd () {
-    const state = await client.createDoc(core.class.State, kanban.space, {
+    const state = await client.createDoc(task.class.State, kanban.space, {
       title: 'New State',
       color: '#7C6FCD'
     })

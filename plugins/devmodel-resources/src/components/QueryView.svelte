@@ -49,7 +49,7 @@
           </Tooltip>          
         </td>
         <td>
-            <ActionIcon direction={undefined} size='small' icon={view.icon.Kanban} label={toIntl('Perform Class Query')} action={() => {
+            <ActionIcon direction={undefined} size='small' icon={view.icon.MoreH} label={toIntl('Perform Class Query')} action={() => {
           }}/>
         </td>
         </tr>

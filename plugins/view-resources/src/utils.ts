@@ -128,19 +128,28 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
   return (await Promise.all(model)).filter(a => a !== undefined) as AttributeModel[]
 }
 
-function filterActions (client: Client, _class: Ref<Class<Obj>>, targets: ActionTarget[]): Array<Ref<Action>> {
+function filterActions (client: Client, _class: Ref<Class<Obj>>, targets: ActionTarget[], derived: Ref<Class<Doc>> = core.class.Doc): Array<Ref<Action>> {
   const result: Array<Ref<Action>> = []
+  const hierarchy = client.getHierarchy()
   for (const target of targets) {
-    if (client.getHierarchy().isDerived(_class, target.target)) {
+    if (hierarchy.isDerived(_class, target.target) && client.getHierarchy().isDerived(target.target, derived)) {
       result.push(target.action)
     }
   }
   return result
 }
 
-export async function getActions (client: Client, _class: Ref<Class<Obj>>): Promise<FindResult<Action>> {
+/**
+ * @public
+ *
+ * Find all action contributions applicable for specified _class.
+ * If derivedFrom is specifie, only actions applicable to derivedFrom class will be used.
+ * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
+ * we won't recieve Doc contribution but recieve Space ones.
+ */
+export async function getActions (client: Client, _class: Ref<Class<Obj>>, derived: Ref<Class<Doc>> = core.class.Doc): Promise<FindResult<Action>> {
   const targets = await client.findAll(view.class.ActionTarget, {})
-  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets) } })
+  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets, derived) } })
 }
 
 export async function deleteObject (client: Client & TxOperations, object: Doc): Promise<void> {

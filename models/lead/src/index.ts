@@ -15,31 +15,29 @@
 //
 
 // To help typescript locate view plugin properly
-import type {} from '@anticrm/view'
-
 import type { Contact } from '@anticrm/contact'
-import type { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import type { Doc, FindOptions, Ref } from '@anticrm/core'
+import type { Funnel, Lead } from '@anticrm/lead'
+import { createKanban } from '@anticrm/lead'
 import { Builder, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TDocWithState, TSpaceWithStates } from '@anticrm/model-core'
+import core from '@anticrm/model-core'
+import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type { Funnel, Lead } from '@anticrm/lead'
-import { createKanban } from '@anticrm/lead'
+import type { } from '@anticrm/view'
 import lead from './plugin'
-import attachment from '@anticrm/model-attachment'
 
-export const DOMAIN_LEAD = 'lead' as Domain
-
-@Model(lead.class.Funnel, core.class.SpaceWithStates)
+@Model(lead.class.Funnel, task.class.SpaceWithStates)
 @UX(lead.string.Funnel, lead.icon.Funnel)
 export class TFunnel extends TSpaceWithStates implements Funnel {}
 
-@Model(lead.class.Lead, core.class.Doc, DOMAIN_LEAD, [core.interface.DocWithState])
+@Model(lead.class.Lead, task.class.Task)
 @UX('Lead' as IntlString)
-export class TLead extends TDocWithState implements Lead {
+export class TLead extends TTask implements Lead {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
 
@@ -77,7 +75,7 @@ export function createModel (builder: Builder): void {
         }
       ]
     }
-  })
+  }, lead.app.Lead)
   builder.createDoc(lead.class.Funnel, core.space.Model, {
     name: 'Funnel',
     description: 'Default funnel',
@@ -93,7 +91,7 @@ export function createModel (builder: Builder): void {
     options: {
       lookup: {
         customer: contact.class.Contact,
-        state: core.class.State
+        state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [
@@ -108,19 +106,19 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
-    descriptor: view.viewlet.Kanban,
+    descriptor: task.viewlet.Kanban,
     open: lead.component.EditLead,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
         customer: contact.class.Contact,
-        state: core.class.State
+        state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: ['$lookup.customer', '$lookup.state']
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.KanbanCard, {
+  builder.mixin(lead.class.Lead, core.class.Class, task.mixin.KanbanCard, {
     card: lead.component.KanbanCard
   })
 
@@ -132,12 +130,12 @@ export function createModel (builder: Builder): void {
     presenter: lead.component.LeadPresenter
   })
 
-  builder.createDoc(view.class.Sequence, view.space.Sequence, {
+  builder.createDoc(task.class.Sequence, task.space.Sequence, {
     attachedTo: lead.class.Lead,
     sequence: 0
   })
 
-  builder.createDoc(view.class.KanbanTemplateSpace, core.space.Model, {
+  builder.createDoc(task.class.KanbanTemplateSpace, core.space.Model, {
     name: 'Funnels',
     description: 'Manage funnel statuses',
     members: [],
@@ -151,5 +149,5 @@ export function createModel (builder: Builder): void {
   }).catch((err) => console.error(err))
 }
 
-export { default } from './plugin'
 export { leadOperation } from './migration'
+export { default } from './plugin'

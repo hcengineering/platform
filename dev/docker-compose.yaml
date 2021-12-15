@@ -18,7 +18,7 @@ services:
     volumes:
       - files:/data
   elastic:
-    image: 'elasticsearch:7.14.0'
+    image: 'elasticsearch:7.14.2'
     command: |
       /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;      
       /usr/local/bin/docker-entrypoint.sh eswrapper"

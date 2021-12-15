@@ -15,14 +15,14 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, Class, Doc, DoneState, FindOptions, LostState, Ref, SpaceWithStates, State, TxCUD, WonState } from '@anticrm/core'
+  import type { AttachedDoc, Class, Doc, FindOptions, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
+  import task, { DoneState, LostState, WonState } from '@anticrm/task'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
-  import type { Kanban } from '@anticrm/view'
-  import view from '@anticrm/view'
   import KanbanPanel from './KanbanPanel.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
@@ -46,7 +46,7 @@
   let lostState: LostState | undefined
 
   const kanbanQuery = createQuery()
-  $: kanbanQuery.query(view.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
+  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
   $: kanbanStates = kanban?.states ?? []
   $: kanbanDoneStates = kanban?.doneStates ?? []
@@ -65,14 +65,14 @@
   }
 
   const statesQuery = createQuery()
-  $: if (kanbanStates.length > 0) statesQuery.query(core.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
+  $: if (kanbanStates.length > 0) statesQuery.query(task.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
   $: states = sort(kanban, rawStates)
 
   const doneStatesQ = createQuery()
   $: if (kanbanDoneStates.length > 0) {
-    doneStatesQ.query(core.class.DoneState, { _id: { $in: kanbanDoneStates }}, (result) => {
-      wonState = result.find((x) => x._class === core.class.WonState)
-      lostState = result.find((x) => x._class === core.class.LostState)
+    doneStatesQ.query(task.class.DoneState, { _id: { $in: kanbanDoneStates } }, (result) => {
+      wonState = result.find((x) => x._class === task.class.WonState)
+      lostState = result.find((x) => x._class === task.class.LostState)
     })
   }
 
@@ -91,7 +91,6 @@
 
   async function move (state: Ref<State>) {
     const id = dragCard._id
-    const txes: TxCUD<Doc>[] = []
 
     if (dragCardInitialState !== state) {
       if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
@@ -99,12 +98,12 @@
         // We need to update using updateCollection
         client.updateCollection(_class, space, id as Ref<Doc> as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { state })
       } else {
-        client.updateDoc(_class, space, id, { state })
+        client.updateDoc<Task>(_class, space, id as Ref<Task>, { state })
       }
     }
 
     if (dragCardInitialPosition !== dragCardEndPosition) {
-      client.updateDoc(view.class.Kanban, space, kanban._id, {
+      client.updateDoc(task.class.Kanban, space, kanban._id, {
         $move: {
           order: {
             $value: id,
@@ -124,14 +123,27 @@
 
   async function cardPresenter (_class: Ref<Class<Doc>>): Promise<AnySvelteComponent> {
     const clazz = client.getHierarchy().getClass(_class)
-    const presenterMixin = client.getHierarchy().as(clazz, view.mixin.KanbanCard)
+    const presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
     return await getResource(presenterMixin.card)
   }
 
   const onDone = (state: DoneState) => async () => {
-    await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
-      doneState: state._id
-    })
+    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
+      const adoc: AttachedDoc = dragCard as Doc as AttachedDoc
+      await client.updateCollection<Doc, Task>(
+        _class,
+        space,
+        adoc._id as Ref<Task>,
+        adoc.attachedTo,
+        adoc.attachedToClass,
+        adoc.collection,
+        { doneState: state._id }
+      )
+    } else {
+      await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
+        doneState: state._id
+      })
+    }
 
     isDragging = false
     hoveredDoneState = undefined

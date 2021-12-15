@@ -19,8 +19,8 @@
   import core, { Ref } from '@anticrm/core'
   import { EditBox, Grid, Dropdown } from '@anticrm/ui'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import view, { KanbanTemplate, createKanban } from '@anticrm/view'
-  import { KanbanTemplateSelector } from '@anticrm/view-resources'
+  import task, { KanbanTemplate, createKanban } from '@anticrm/task'
+  import { KanbanTemplateSelector } from '@anticrm/task-resources'
   
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
@@ -40,7 +40,7 @@
   const client = getClient()
 
   async function createVacancy() {
-    if (templateId !== undefined && await client.findOne(view.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 

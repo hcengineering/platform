@@ -24,7 +24,7 @@ import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import { clearTelegramHistory } from './telegram'
-import { dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
+import { diffWorkspace, dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -193,6 +193,13 @@ program
   .description('restore workspace transactions and minio resources from previous dump.')
   .action(async (workspace, dirName, cmd) => {
     return await restoreWorkspace(mongodbUri, workspace, dirName, minio)
+  })
+
+program
+  .command('diff-workspace <workspace>')
+  .description('restore workspace transactions and minio resources from previous dump.')
+  .action(async (workspace, cmd) => {
+    return await diffWorkspace(mongodbUri, workspace)
   })
 
 program

@@ -19,7 +19,7 @@
   import type { Ref } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import view, { KanbanTemplate, KanbanTemplateSpace, LostStateTemplate, WonStateTemplate } from '@anticrm/view'
+  import task, { KanbanTemplate, KanbanTemplateSpace, LostStateTemplate, WonStateTemplate } from '@anticrm/task'
   import { ContextMenu } from '@anticrm/view-resources'
   import setting from '@anticrm/setting'
 
@@ -30,7 +30,7 @@
   let templateMap = new Map<Ref<KanbanTemplate>, KanbanTemplate>()
   const templatesQ = createQuery()
   $: if (folder !== undefined) {
-    templatesQ.query(view.class.KanbanTemplate, { space: folder._id }, (result) => {
+    templatesQ.query(task.class.KanbanTemplate, { space: folder._id }, (result) => {
       templates = result
     })
   }
@@ -51,7 +51,7 @@
 
     const space = folder._id
 
-    const template = await client.createDoc(view.class.KanbanTemplate, space, {
+    const template = await client.createDoc(task.class.KanbanTemplate, space, {
       states: [],
       doneStates: [],
       doneStatesC: 0,
@@ -62,12 +62,12 @@
     const doneStates = [
       {
         id: generateId<WonStateTemplate>(),
-        class: view.class.WonStateTemplate,
+        class: task.class.WonStateTemplate,
         title: 'Won'
       },
       {
         id: generateId<LostStateTemplate>(),
-        class: view.class.LostStateTemplate,
+        class: task.class.LostStateTemplate,
         title: 'Lost'
       }
     ]
@@ -77,7 +77,7 @@
         ds.class,
         space,
         template,
-        view.class.KanbanTemplate,
+        task.class.KanbanTemplate,
         'doneStatesC',
         {
           title: ds.title
@@ -87,7 +87,7 @@
     }))
 
     for (const ds of doneStates) {
-      await client.updateDoc(view.class.KanbanTemplate, space, template, {
+      await client.updateDoc(task.class.KanbanTemplate, space, template, {
         $push: {
           doneStates: ds.id
         }
@@ -108,7 +108,7 @@
   <div class="content">
     {#each templates as t (t._id)}
       <div class="item flex-between" class:selected={t._id === template?._id} on:click={() => select(t)}>
-        <AttributeEditor maxWidth="20rem" _class={view.class.KanbanTemplate} object={t} key="title"/>
+        <AttributeEditor maxWidth="20rem" _class={task.class.KanbanTemplate} object={t} key="title"/>
         <div class="tool hover-trans"
           on:click|stopPropagation={(ev) => {
             showPopup(ContextMenu, { object: t }, ev.target, () => {})

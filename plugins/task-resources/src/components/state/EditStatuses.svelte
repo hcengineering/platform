@@ -15,19 +15,15 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  import type { Ref, SpaceWithStates, State, Class, Obj, Space } from '@anticrm/core'
-  import { Label, showPopup } from '@anticrm/ui'
-  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
-  import type { Kanban } from '@anticrm/view'
-  import { KanbanEditor } from '@anticrm/view-resources'
-  import Close from './icons/Close.svelte'
-  import Status from './icons/Status.svelte'
-  import workbench from '../plugin'
-
+  import type { Class, Obj, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
-  import view from '@anticrm/view'
+  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
+  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
+  import task from '@anticrm/task'
+  import KanbanEditor from '../kanban/KanbanEditor.svelte'
+  import { Icon, IconClose, Label, showPopup } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import workbench from '@anticrm/workbench'
 
   export let _id: Ref<SpaceWithStates>
   export let spaceClass: Ref<Class<Obj>>
@@ -40,7 +36,7 @@
   const dispatch = createEventDispatcher()
 
   const kanbanQ = createQuery()
-  $: kanbanQ.query(view.class.Kanban, { attachedTo: _id }, result => { kanban = result[0] })
+  $: kanbanQ.query(task.class.Kanban, { attachedTo: _id }, result => { kanban = result[0] })
 
   const spaceQ = createQuery()
   $: spaceQ.query<Class<SpaceWithStates>>(core.class.Class, { _id: spaceClass }, result => { spaceClassInstance = result.shift() })
@@ -48,7 +44,7 @@
   const spaceI = createQuery()
   $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, result => { spaceInstance = result.shift() })
 
-  async function deleteState({ state }: { state: State }) {
+  async function deleteState ({ state }: { state: State }) {
     if (spaceInstance === undefined) {
       return
     }
@@ -82,12 +78,12 @@
   <div class="flex-between header">
     <div class="flex-grow flex-col">
       <div class="flex-row-center">
-        <div class="icon"><Status size={'small'} /></div>
+        <div class="icon"><Icon icon={task.icon.Status} size={'small'} /></div>
         <span class="overflow-label title">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
       </div>
       <div class="overflow-label subtitle">{spaceInstance?.name}</div>
     </div>
-    <div class="tool" on:click={() => dispatch('close')}><Close size={'small'} /></div>
+    <div class="tool" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
   </div>
   <div class="flex-grow flex-col content">
     {#if kanban !== undefined}

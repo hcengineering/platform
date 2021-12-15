@@ -14,53 +14,58 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import type { Data, Ref, Space } from '@anticrm/core'
-  import core from '@anticrm/core'
+  import type { AttachedData, Data, Doc, Ref, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import { Task } from '@anticrm/task'
+  import { Issue, State } from '@anticrm/task'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
 
   export let space: Ref<Space>
+  export let parent: Pick<Doc, '_id' | '_class'> | undefined
 
   let _space = space
+
+  $: _space = space
   const status: Status = OK
 
   let assignee: Ref<Employee> | null = null
 
-  const object: Data<Task> = {
+  const object: Data<Issue> = {
     name: '',
     description: '',
     assignee: null,
-    number: 0
+    number: 0,
+    attachedTo: task.global.Task,
+    attachedToClass: task.class.Issue,
+    collection: 'tasks',
+    state: '' as Ref<State>
   }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const taskId = generateId()
+  const taskId: Ref<Issue> = generateId()
 
   export function canClose (): boolean {
     return object.name !== ''
   }
 
   async function createTask () {
-    const state = await client.findOne(core.class.State, { space: _space })
+    const state = await client.findOne(task.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
   
-    const sequence = await client.findOne(view.class.Sequence, { attachedTo: task.class.Task })
+    const sequence = await client.findOne(task.class.Sequence, { attachedTo: task.class.Issue })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
 
     const incResult = await client.updateDoc(
-      view.class.Sequence,
-      view.space.Sequence,
+      task.class.Sequence,
+      task.space.Sequence,
       sequence._id,
       {
         $inc: { sequence: 1 }
@@ -68,7 +73,7 @@
       true
     )
 
-    const value: Data<Task> = {
+    const value: AttachedData<Issue> = {
       name: object.name,
       description: object.description,
       assignee,
@@ -77,8 +82,7 @@
       state: state._id
     }
 
-    await client.createDoc(task.class.Task, _space, value, taskId)
-    dispatch('close')
+    await client.addCollection(task.class.Issue, _space, parent?._id ?? task.global.Task, parent?._class ?? task.class.Issue, 'tasks', value, taskId)
   }
 </script>
 
@@ -87,7 +91,7 @@
 <Card
   label={task.string.CreateTask}
   okAction={createTask}
-  canSave={object.name.length > 0}
+  canSave={object.name.length > 0 && _space != null}
   spaceClass={task.class.Project}
   spaceLabel={task.string.ProjectName}
   spacePlaceholder={task.string.SelectProject}

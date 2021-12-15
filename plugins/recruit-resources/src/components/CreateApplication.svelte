@@ -13,26 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, SpaceWithStates } from '@anticrm/core'
-  import { Status, OK, Severity } from '@anticrm/platform'
-  import { DatePicker, EditBox, Tabs, Section, Grid, Status as StatusControl } from '@anticrm/ui'
-  import { UserBox, Card, UserInfo, Avatar } from '@anticrm/presentation'
-  import type { Employee, Person } from '@anticrm/contact'
-  import type { Candidate } from '@anticrm/recruit'
-  import Address from './icons/Address.svelte'
-  import Attachment from './icons/Attachment.svelte'
-
-  import { getClient } from '@anticrm/presentation'
-
-  import core from '@anticrm/core'
-  import recruit from '../plugin'
+  import type { Employee } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import view from '@anticrm/view'
+  import type { Ref, Space } from '@anticrm/core'
+  import { OK, Severity, Status } from '@anticrm/platform'
+  import { Card, getClient, UserBox } from '@anticrm/presentation'
+  import type { Candidate } from '@anticrm/recruit'
+  import type { SpaceWithStates } from '@anticrm/task'
+  import task from '@anticrm/task'
+  import { Grid, Status as StatusControl } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import recruit from '../plugin'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
-  export let employee: Ref<Employee>
+  export let assignee: Ref<Employee>
 
   export let preserveCandidate = false
 
@@ -43,21 +38,21 @@
   const client = getClient()
 
   export function canClose (): boolean {
-    return candidate === undefined && employee === undefined
+    return candidate === undefined && assignee === undefined
   }
 
   async function createApplication () {
-    const state = await client.findOne(core.class.State, { space: _space })
+    const state = await client.findOne(task.class.State, { space: _space })
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
-    const sequence = await client.findOne(view.class.Sequence, { attachedTo: recruit.class.Applicant })
+    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
     const incResult = await client.updateDoc(
-      view.class.Sequence,
-      view.space.Sequence,
+      task.class.Sequence,
+      task.space.Sequence,
       sequence._id,
       {
         $inc: { sequence: 1 }
@@ -74,13 +69,13 @@
         state: state._id,
         doneState: null,
         number: incResult.object.sequence,
-        employee: employee
+        assignee: assignee
       }
     )
   }
 
   async function validate (candidate: Ref<Candidate>, space: Ref<Space>) {
-    if (candidate == undefined) {
+    if (candidate === undefined) {
       status = new Status(Severity.INFO, recruit.status.CandidateRequired, {})
     } else {
       if (space === undefined) {
@@ -120,7 +115,7 @@
       _class={contact.class.Employee}
       title="Assigned recruiter"
       caption="Recruiters"
-      bind:value={employee}
+      bind:value={assignee}
       allowDeselect
       titleDeselect={'Unassign recruiter'}
     />

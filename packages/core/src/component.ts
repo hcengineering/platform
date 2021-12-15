@@ -14,8 +14,7 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { DoneState, LostState, WonState } from '.'
-import type { Account, AnyAttribute, AttachedDoc, Class, Doc, DocWithState, Interface, Obj, PropertyType, Ref, Space, SpaceWithStates, State, Timestamp, Type, Collection, RefTo } from './classes'
+import type { Account, AnyAttribute, AttachedDoc, Class, Doc, Interface, Obj, PropertyType, Ref, Space, Timestamp, Type, Collection, RefTo } from './classes'
 import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
@@ -41,12 +40,7 @@ export default plugin(coreId, {
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
     TxPutBag: '' as Ref<Class<TxPutBag<PropertyType>>>,
     Space: '' as Ref<Class<Space>>,
-    SpaceWithStates: '' as Ref<Class<SpaceWithStates>>,
     Account: '' as Ref<Class<Account>>,
-    State: '' as Ref<Class<State>>,
-    DoneState: '' as Ref<Class<DoneState>>,
-    WonState: '' as Ref<Class<WonState>>,
-    LostState: '' as Ref<Class<LostState>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
@@ -54,9 +48,6 @@ export default plugin(coreId, {
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     Collection: '' as Ref<Class<Collection<AttachedDoc>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
-  },
-  interface: {
-    DocWithState: '' as Ref<Interface<DocWithState>>
   },
   space: {
     Tx: '' as Ref<Space>,

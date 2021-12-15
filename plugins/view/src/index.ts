@@ -14,11 +14,9 @@
 // limitations under the License.
 //
 
-import core from '@anticrm/core'
-import type { Plugin, Asset, Resource, IntlString } from '@anticrm/platform'
+import type { Class, Client, Doc, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Ref, Mixin, UXObject, Space, FindOptions, Class, Doc, Arr, State, Client, Obj, DoneState, AttachedDoc, WonState, LostState, TxOperations } from '@anticrm/core'
-
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
 /**
@@ -33,13 +31,6 @@ export interface AttributeEditor extends Class<Doc> {
  */
 export interface AttributePresenter extends Class<Doc> {
   presenter: AnyComponent
-}
-
-/**
- * @public
- */
-export interface KanbanCard extends Class<Doc> {
-  card: AnyComponent
 }
 
 /**
@@ -85,62 +76,6 @@ export interface ActionTarget extends Doc {
 /**
  * @public
  */
-export interface Sequence extends Doc {
-  attachedTo: Ref<Class<Doc>>
-  sequence: number
-}
-
-/**
- * @public
- */
-export interface Kanban extends Doc {
-  attachedTo: Ref<Space>
-  states: Arr<Ref<State>>
-  doneStates: Arr<Ref<DoneState>>
-  order: Arr<Ref<Doc>>
-}
-
-/**
- * @public
- */
-export interface StateTemplate extends AttachedDoc, State {}
-
-/**
- * @public
- */
-export interface DoneStateTemplate extends AttachedDoc, DoneState {}
-
-/**
- * @public
- */
-export interface WonStateTemplate extends DoneStateTemplate, WonState {}
-
-/**
- * @public
- */
-export interface LostStateTemplate extends DoneStateTemplate, LostState {}
-
-/**
- * @public
- */
-export interface KanbanTemplate extends Doc {
-  title: string
-  states: Arr<Ref<StateTemplate>>
-  doneStates: Arr<Ref<DoneStateTemplate>>
-  statesC: number
-  doneStatesC: number
-}
-
-/**
- * @public
- */
-export interface KanbanTemplateSpace extends Space {
-  icon: AnyComponent
-}
-
-/**
- * @public
- */
 export const viewId = 'view' as Plugin
 
 /**
@@ -181,100 +116,22 @@ const view = plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
-    KanbanCard: '' as Ref<Mixin<KanbanCard>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
-    ActionTarget: '' as Ref<Class<ActionTarget>>,
-    Kanban: '' as Ref<Class<Kanban>>,
-    Sequence: '' as Ref<Class<Sequence>>,
-    StateTemplate: '' as Ref<Class<StateTemplate>>,
-    DoneStateTemplate: '' as Ref<Class<DoneStateTemplate>>,
-    WonStateTemplate: '' as Ref<Class<WonStateTemplate>>,
-    LostStateTemplate: '' as Ref<Class<LostStateTemplate>>,
-    KanbanTemplate: '' as Ref<Class<KanbanTemplate>>,
-    KanbanTemplateSpace: '' as Ref<Class<KanbanTemplateSpace>>
+    ActionTarget: '' as Ref<Class<ActionTarget>>
   },
   viewlet: {
-    Table: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
-  },
-  space: {
-    Sequence: '' as Ref<Space>
+    Table: '' as Ref<ViewletDescriptor>
   },
   icon: {
     Table: '' as Asset,
-    Kanban: '' as Asset,
     Delete: '' as Asset,
+    MoreH: '' as Asset,
     Move: '' as Asset
-  },
-  string: {
-    Delete: '' as IntlString
   }
 })
 export default view
-
-/**
- * @public
- */
-export async function createKanban (client: Client & TxOperations, attachedTo: Ref<Space>, templateId?: Ref<KanbanTemplate>): Promise<Ref<Kanban>> {
-  if (templateId === undefined) {
-    return await client.createDoc(view.class.Kanban, attachedTo, {
-      attachedTo,
-      states: [],
-      doneStates: await Promise.all([
-        client.createDoc(core.class.WonState, attachedTo, {
-          title: 'Won'
-        }),
-        client.createDoc(core.class.LostState, attachedTo, {
-          title: 'Lost'
-        })
-      ]),
-      order: []
-    })
-  }
-
-  const template = await client.findOne(view.class.KanbanTemplate, { _id: templateId })
-
-  if (template === undefined) {
-    throw Error(`Failed to find target kanban template: ${templateId}`)
-  }
-
-  const tmplStates = await client.findAll(view.class.StateTemplate, { attachedTo: template._id })
-  const states = await Promise.all(
-    template.states
-      .map((id) => tmplStates.find((x) => x._id === id))
-      .filter((tstate): tstate is StateTemplate => tstate !== undefined)
-      .map(async (state) => await client.createDoc(core.class.State, attachedTo, { color: state.color, title: state.title }))
-  )
-
-  const doneClassMap = new Map<Ref<Class<DoneStateTemplate>>, Ref<Class<DoneState>>>([
-    [view.class.WonStateTemplate, core.class.WonState],
-    [view.class.LostStateTemplate, core.class.LostState]
-  ])
-  const tmplDoneStates = await client.findAll(view.class.DoneStateTemplate, { attachedTo: template._id })
-  const doneStates = (await Promise.all(
-    template.doneStates
-      .map((id) => tmplDoneStates.find((x) => x._id === id))
-      .filter((tstate): tstate is DoneStateTemplate => tstate !== undefined)
-      .map(async (state) => {
-        const cl = doneClassMap.get(state._class)
-
-        if (cl === undefined) {
-          return
-        }
-
-        return await client.createDoc(cl, attachedTo, { title: state.title })
-      })
-  )).filter((x): x is Ref<DoneState> => x !== undefined)
-
-  return await client.createDoc(view.class.Kanban, attachedTo, {
-    attachedTo,
-    states,
-    doneStates,
-    order: []
-  })
-}

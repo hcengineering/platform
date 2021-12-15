@@ -17,7 +17,7 @@
 import { Doc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import view from '@anticrm/model-view'
+import task from '@anticrm/model-task'
 import { createKanban } from '@anticrm/lead'
 import lead from './plugin'
 
@@ -29,7 +29,7 @@ export const leadOperation: MigrateOperation = {
     console.log('Lead: Performing model upgrades')
 
     const ops = new TxOperations(client, core.account.System)
-    if (await client.findOne(view.class.Kanban, { attachedTo: lead.space.DefaultFunnel }) === undefined) {
+    if (await client.findOne(task.class.Kanban, { attachedTo: lead.space.DefaultFunnel }) === undefined) {
       console.info('Create kanban for default funnel.')
       await createKanban(lead.space.DefaultFunnel, async (_class, space, data, id) => {
         const doc = await ops.findOne<Doc>(_class, { _id: id })
@@ -42,5 +42,31 @@ export const leadOperation: MigrateOperation = {
     } else {
       console.log('Lead: => default funnel Kanban is ok')
     }
+
+    if (await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead }) === undefined) {
+      console.info('Create sequence for default task project.')
+      // We need to create sequence
+      await ops.createDoc(task.class.Sequence, task.space.Sequence, {
+        attachedTo: lead.class.Lead,
+        sequence: 0
+      })
+    } else {
+      console.log('Task: => sequence is ok')
+    }
+
+    const outdatedLeads = (await client.findAll(lead.class.Lead, {}))
+      .filter((x) => x.doneState === undefined)
+
+    await Promise.all(
+      outdatedLeads.map(async (lead) => {
+        console.info('Upgrade lead:', lead._id)
+
+        try {
+          await ops.updateDoc(lead._class, lead.space, lead._id, { doneState: null })
+        } catch (err: unknown) {
+          console.error(err)
+        }
+      })
+    )
   }
 }

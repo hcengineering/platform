@@ -15,15 +15,16 @@
 -->
 
 <script lang="ts">
-  import core, { Ref, SpaceWithStates, State } from "@anticrm/core"
-  import { createQuery } from "@anticrm/presentation"
-  import { createEventDispatcher } from "svelte"
+  import { Ref } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import task, { SpaceWithStates, State } from '@anticrm/task'
+  import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
   let states: State[] = []
   const dispatch = createEventDispatcher()
   const statesQuery = createQuery()
-  statesQuery.query(core.class.State, { space }, (res) => states = res)
+  statesQuery.query(task.class.State, { space }, (res) => { states = res })
 
 </script>
 
