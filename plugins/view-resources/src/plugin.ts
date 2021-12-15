@@ -21,6 +21,8 @@ import view, { viewId } from '@anticrm/view'
 export default mergeIds(viewId, view, {
   string: {
     MoveClass: '' as IntlString,
-    SelectToMove: '' as IntlString
+    SelectToMove: '' as IntlString,
+    Move: '' as IntlString,
+    Cancel: '' as IntlString
   }
 })
