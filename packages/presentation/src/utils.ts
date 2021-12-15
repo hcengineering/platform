@@ -16,8 +16,24 @@
 
 import { onDestroy } from 'svelte'
 
-import { Doc, Ref, Class, DocumentQuery, FindOptions, Client, Hierarchy, Tx, getCurrentAccount, ModelDb, TxResult, TxOperations, AnyAttribute, RefTo } from '@anticrm/core'
-import core from '@anticrm/core'
+import core, {
+  Doc,
+  Ref,
+  Class,
+  DocumentQuery,
+  FindOptions,
+  Client,
+  Hierarchy,
+  Tx,
+  getCurrentAccount,
+  ModelDb,
+  TxResult,
+  TxOperations,
+  AnyAttribute,
+  RefTo,
+  Collection,
+  AttachedDoc
+} from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { getMetadata } from '@anticrm/platform'
 
@@ -57,7 +73,7 @@ export function setClient (_client: Client): void {
   liveQuery = new LQ(_client)
   client = new UIClient(_client, liveQuery)
   _client.notify = (tx: Tx) => {
-    liveQuery.tx(tx).catch(err => console.log(err))
+    liveQuery.tx(tx).catch((err) => console.log(err))
   }
 }
 
@@ -65,16 +81,26 @@ export class LiveQuery {
   private unsubscribe = () => {}
 
   constructor () {
-    onDestroy(() => { console.log('onDestroy query'); this.unsubscribe() })
+    onDestroy(() => {
+      console.log('onDestroy query')
+      this.unsubscribe()
+    })
   }
 
-  query<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, callback: (result: T[]) => void, options?: FindOptions<T>): void {
+  query<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: T[]) => void,
+    options?: FindOptions<T>
+  ): void {
     this.unsubscribe()
     this.unsubscribe = liveQuery.query(_class, query, callback, options)
   }
 }
 
-export function createQuery (): LiveQuery { return new LiveQuery() }
+export function createQuery (): LiveQuery {
+  return new LiveQuery()
+}
 
 export function getFileUrl (file: string): string {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
@@ -90,6 +116,9 @@ export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<
   let attrClass = attribute.type._class
   if (attrClass === core.class.RefTo) {
     attrClass = (attribute.type as RefTo<Doc>).to
+  }
+  if (attrClass === core.class.Collection) {
+    attrClass = (attribute.type as Collection<AttachedDoc>).of
   }
   return attrClass
 }

@@ -178,7 +178,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
       const indexedDoc: IndexedDoc = {
-        id: generateId() + '/attachments/' + name,
+        id: generateId() + '/attachments/' + name as Ref<Doc>,
         _class: attachment.class.Attachment,
         space,
         modifiedOn: Date.now(),
@@ -249,7 +249,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
               const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
               const indexedDoc: IndexedDoc = {
-                id: generateId() + '/attachments/' + 'Profile.pdf',
+                id: generateId() + '/attachments/' + 'Profile.pdf' as Ref<Doc>,
                 _class: attachment.class.Attachment,
                 space,
                 modifiedOn: Date.now(),

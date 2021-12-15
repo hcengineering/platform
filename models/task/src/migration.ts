@@ -37,6 +37,8 @@ export const taskOperation: MigrateOperation = {
     // Since we should not have Task class instances, we convert them all to Issue.
     await migrateClass(client, DOMAIN_TASK, task.class.Task, task.class.Issue)
     await migrateClass(client, DOMAIN_STATE, 'core:class:State' as Ref<Class<Doc>>, task.class.State)
+    await migrateClass(client, DOMAIN_STATE, 'core:class:WonState' as Ref<Class<Doc>>, task.class.WonState)
+    await migrateClass(client, DOMAIN_STATE, 'core:class:LostState' as Ref<Class<Doc>>, task.class.LostState)
     await migrateClass(client, DOMAIN_KANBAN, 'view:class:Kanban' as Ref<Class<Doc>>, task.class.Kanban)
     await migrateClass(client, DOMAIN_KANBAN, 'view:class:Sequence' as Ref<Class<Doc>>, task.class.Sequence, { space: task.space.Sequence }, { objectSpace: task.space.Sequence })
 

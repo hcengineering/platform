@@ -14,32 +14,58 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import type { Account, AnyAttribute, AttachedDoc, Class, ClassifierKind, Doc, Domain, Mixin, Obj, Ref, Space, Timestamp, Type, Collection, RefTo } from '@anticrm/core'
+import type {
+  Account,
+  AnyAttribute,
+  AttachedDoc,
+  Class,
+  ClassifierKind,
+  Doc,
+  Domain,
+  Mixin,
+  Obj,
+  Ref,
+  Space,
+  Timestamp,
+  Type,
+  Collection,
+  RefTo
+} from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Prop, TypeTimestamp } from '@anticrm/model'
+import { Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core from './component'
 
 // C O R E
 @Model(core.class.Obj, core.class.Obj)
 export class TObj implements Obj {
+  @Prop(TypeRef(core.class.Class), 'Class' as IntlString)
   _class!: Ref<Class<this>>
 }
 
 @Model(core.class.Doc, core.class.Obj)
 export class TDoc extends TObj implements Doc {
+  @Prop(TypeRef(core.class.Doc), 'Id' as IntlString)
   _id!: Ref<this>
+
+  @Prop(TypeRef(core.class.Space), 'Space' as IntlString)
   space!: Ref<Space>
 
   @Prop(TypeTimestamp(), 'Modified On' as IntlString)
   modifiedOn!: Timestamp
 
+  @Prop(TypeRef(core.class.Account), 'Modiified By' as IntlString)
   modifiedBy!: Ref<Account>
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)
 export class TAttachedDoc extends TDoc implements AttachedDoc {
+  @Prop(TypeRef(core.class.Doc), 'Attached to' as IntlString)
   attachedTo!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Class), 'Attached to class' as IntlString)
   attachedToClass!: Ref<Class<Doc>>
+
+  @Prop(TypeString(), 'Collection' as IntlString)
   collection!: string
 }
 

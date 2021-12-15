@@ -16,7 +16,7 @@
   import attachment from '../plugin'
   import type { Attachment } from '@anticrm/attachment'
   import type { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { IntlString, setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, Label, Spinner } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
@@ -142,7 +142,7 @@
     flex-direction: column;
 
     .title {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
@@ -154,6 +154,6 @@
     color: var(--theme-caption-color);
     background: var(--theme-bg-accent-color);
     border: 1px dashed var(--theme-zone-border-lite);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
   }
 </style>

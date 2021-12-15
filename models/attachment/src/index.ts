@@ -53,14 +53,23 @@ export function createModel (builder: Builder): void {
     presenter: attachment.component.AttachmentPresenter
   })
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: attachment.class.Attachment,
-    icon: attachment.icon.Attachment,
-    txClass: core.class.TxCreateDoc,
-    component: attachment.activity.TxAttachmentCreate,
-    label: attachment.string.AddAttachment,
-    display: 'emphasized'
-  }, attachment.ids.TxAttachmentCreate)
+  builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributeEditor, {
+    editor: attachment.component.Attachments
+  })
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: attachment.class.Attachment,
+      icon: attachment.icon.Attachment,
+      txClass: core.class.TxCreateDoc,
+      component: attachment.activity.TxAttachmentCreate,
+      label: attachment.string.AddAttachment,
+      display: 'emphasized'
+    },
+    attachment.ids.TxAttachmentCreate
+  )
 }
 
 export default attachment

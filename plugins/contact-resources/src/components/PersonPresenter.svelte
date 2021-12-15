@@ -15,20 +15,14 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
-  import { getResource } from '@anticrm/platform'
-  import { Avatar, getClient } from '@anticrm/presentation'
+  import { Avatar } from '@anticrm/presentation'
   import { showPopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import EditContact from './EditContact.svelte'
 
   export let value: Person
 
   async function onClick () {
-    const client = getClient()
-    const hierarchy = client.getHierarchy()
-    const clazz = hierarchy.getClass(value._class)
-    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
-    const editor = await getResource(editorMixin.editor) 
-    showPopup(editor, { _id: value._id }, 'full')
+    showPopup(EditContact, { _id: value._id }, 'full')
   }
 </script>
 

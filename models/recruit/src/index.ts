@@ -51,7 +51,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 export class TCandidates extends TSpace implements Candidates {}
 
 @Model(recruit.class.Candidate, contact.class.Person)
-@UX('Candidate' as IntlString)
+@UX('Candidate' as IntlString, contact.icon.Person)
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
@@ -101,6 +101,10 @@ export function createModel (builder: Builder): void {
       class: recruit.class.Candidate,
       createItemDialog: recruit.component.CreateCandidate
     }
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeEditor, {
+    editor: recruit.component.Applications
   })
 
   builder.createDoc(workbench.class.Application, core.space.Model, {

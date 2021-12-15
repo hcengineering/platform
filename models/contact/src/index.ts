@@ -17,9 +17,19 @@ import type { Domain, Type, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX, Index, Collection } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
-
+import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
-import type { Contact, Person, Persons, Organization, Organizations, Employee, Channel, ChannelProvider, EmployeeAccount } from '@anticrm/contact'
+import type {
+  Contact,
+  Person,
+  Persons,
+  Organization,
+  Organizations,
+  Employee,
+  Channel,
+  ChannelProvider,
+  EmployeeAccount
+} from '@anticrm/contact'
 import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import attachment from '@anticrm/model-attachment'
@@ -64,20 +74,18 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX('Person' as IntlString)
+@UX('Person' as IntlString, contact.icon.Person)
 export class TPerson extends TContact implements Person {
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX('Organization' as IntlString)
-export class TOrganization extends TContact implements Organization {
-}
+@UX('Organization' as IntlString, contact.icon.Company)
+export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
-export class TEmployee extends TPerson implements Employee {
-}
+export class TEmployee extends TPerson implements Employee {}
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {
@@ -94,7 +102,17 @@ export class TOrganizations extends TSpace implements Organizations {}
 export class TPersons extends TSpace implements Persons {}
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannelProvider, TTypeChannels, TContact, TPerson, TPersons, TOrganization, TOrganizations, TEmployee, TEmployeeAccount)
+  builder.createModel(
+    TChannelProvider,
+    TTypeChannels,
+    TContact,
+    TPerson,
+    TPersons,
+    TOrganization,
+    TOrganizations,
+    TEmployee,
+    TEmployeeAccount
+  )
 
   builder.mixin(contact.class.Persons, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -137,7 +155,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     open: contact.component.EditPerson,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: { },
+    options: {},
     config: [
       '',
       'city',
@@ -152,13 +170,8 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     open: contact.component.EditOrganization,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: { },
-    config: [
-      '',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
-      'modifiedOn',
-      'channels'
-    ]
+    options: {},
+    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files' }, 'modifiedOn', 'channels']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
@@ -177,42 +190,72 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.ChannelsPresenter
   })
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Email' as IntlString,
-    icon: contact.icon.Email,
-    placeholder: 'john.appleseed@apple.com'
-  }, contact.channelProvider.Email)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Email' as IntlString,
+      icon: contact.icon.Email,
+      placeholder: 'john.appleseed@apple.com'
+    },
+    contact.channelProvider.Email
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Phone' as IntlString,
-    icon: contact.icon.Phone,
-    placeholder: '+1 555 333 7777'
-  }, contact.channelProvider.Phone)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Phone' as IntlString,
+      icon: contact.icon.Phone,
+      placeholder: '+1 555 333 7777'
+    },
+    contact.channelProvider.Phone
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'LinkedIn' as IntlString,
-    icon: contact.icon.LinkedIn,
-    placeholder: 'https://linkedin.com/in/jappleseed'
-  }, contact.channelProvider.LinkedIn)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'LinkedIn' as IntlString,
+      icon: contact.icon.LinkedIn,
+      placeholder: 'https://linkedin.com/in/jappleseed'
+    },
+    contact.channelProvider.LinkedIn
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'Twitter' as IntlString,
-    icon: contact.icon.Twitter,
-    placeholder: '@appleseed'
-  }, contact.channelProvider.Twitter)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Twitter' as IntlString,
+      icon: contact.icon.Twitter,
+      placeholder: '@appleseed'
+    },
+    contact.channelProvider.Twitter
+  )
 
-  builder.createDoc(contact.class.ChannelProvider, core.space.Model, {
-    label: 'GitHub' as IntlString,
-    icon: contact.icon.GitHub,
-    placeholder: '@appleseed'
-  }, contact.channelProvider.GitHub)
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'GitHub' as IntlString,
+      icon: contact.icon.GitHub,
+      placeholder: '@appleseed'
+    },
+    contact.channelProvider.GitHub
+  )
 
-  builder.createDoc(core.class.Space, core.space.Model, {
-    name: 'Employees',
-    description: 'Employees',
-    private: false,
-    members: []
-  }, contact.space.Employee)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      name: 'Employees',
+      description: 'Employees',
+      private: false,
+      members: []
+    },
+    contact.space.Employee
+  )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter

@@ -50,7 +50,8 @@ export default mergeIds(recruitId, recruit, {
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
     EditVacancy: '' as AnyComponent,
-    TemplatesIcon: '' as AnyComponent
+    TemplatesIcon: '' as AnyComponent,
+    Applications: '' as AnyComponent
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
