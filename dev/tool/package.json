@@ -57,6 +57,13 @@
     "@anticrm/elastic": "~0.6.0",
     "@anticrm/server-core": "~0.6.1",
     "@anticrm/model-attachment": "~0.6.0",
-    "@anticrm/mongo": "~0.6.0"
+    "@anticrm/mongo": "~0.6.0",
+    "@anticrm/dev-storage": "~0.6.0",
+    "@anticrm/server-chunter": "~0.6.1",
+    "@anticrm/server-chunter-resources": "~0.6.0",
+    "@anticrm/server-recruit": "~0.6.0",
+    "@anticrm/server-recruit-resources": "~0.6.0",
+    "@anticrm/server-task": "~0.6.0",
+    "@anticrm/server-task-resources": "~0.6.0"
   }
 }

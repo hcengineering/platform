@@ -14,15 +14,19 @@
 // limitations under the License.
 //
 
-import core, { Account, Doc, DOMAIN_TX, generateId, Hierarchy, ModelDb, Ref, Tx } from '@anticrm/core'
+import core, { Account, Doc, DOMAIN_TX, generateId, Ref, ServerStorage, Tx } from '@anticrm/core'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Db, MongoClient } from 'mongodb'
 import { Client } from 'minio'
-import { listMinioObjects } from './minio'
 import { createElasticAdapter } from '@anticrm/elastic'
-import { FullTextAdapter, FullTextIndex, IndexedDoc } from '@anticrm/server-core'
+import { createServerStorage, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
-import { createMongoAdapter } from '@anticrm/mongo'
+import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
+import { serverChunterId } from '@anticrm/server-chunter'
+import { serverRecruitId } from '@anticrm/server-recruit'
+import { serverViewId } from '@anticrm/server-task'
+import { addLocation } from '@anticrm/platform'
+import { listMinioObjects } from './minio'
 
 export async function rebuildElastic (
   mongoUrl: string,
@@ -35,10 +39,10 @@ export async function rebuildElastic (
 }
 
 async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
-  return await new Promise((resolve, reject) => {
-    const client = new ElasticClient({
-      node: elasticUrl
-    })
+  const client = new ElasticClient({
+    node: elasticUrl
+  })
+  await new Promise((resolve, reject) => {
     client.indices.exists(
       {
         index: dbName
@@ -56,25 +60,28 @@ async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
             }
           )
         } else {
-          resolve()
+          resolve(result)
         }
       }
     )
   })
+  await client.close()
 }
 
 async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, elasticUrl: string): Promise<void> {
+  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
+  addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
+  addLocation(serverViewId, () => import('@anticrm/server-task-resources'))
   const mongoClient = new MongoClient(mongoUrl)
   try {
     await mongoClient.connect()
     const db = mongoClient.db(dbName)
     const elastic = await createElasticAdapter(elasticUrl, dbName)
-    const fullTextIndex = await createFullTextIndex(db, elastic, mongoUrl, dbName)
-    const txes = (await db.collection(DOMAIN_TX).find().toArray()) as Tx[]
-    for (const tx of txes) {
-      try {
-        await fullTextIndex.tx(tx)
-      } catch {}
+    const storage = await createStorage(mongoUrl, elasticUrl, dbName)
+    const txes = (await db.collection(DOMAIN_TX).find().sort({ _id: 1 }).toArray()) as Tx[]
+    const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
+    for (const tx of data) {
+      await storage.tx(tx)
     }
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)
@@ -88,25 +95,29 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   }
 }
 
-async function createFullTextIndex (
-  db: Db,
-  elastic: FullTextAdapter,
-  mongoUrl: string,
-  dbName: string
-): Promise<FullTextIndex> {
-  const modelTxes = await db
-    .collection(DOMAIN_TX)
-    .find<Tx>({ objectSpace: core.space.Model })
-    .sort({ _id: 1 })
-    .toArray()
-  const hierarchy = new Hierarchy()
-  const modelDb = new ModelDb(hierarchy)
-  modelTxes.map((tx) => hierarchy.tx(tx))
-  for (const tx of modelTxes) {
-    await modelDb.tx(tx)
+async function createStorage (mongoUrl: string, elasticUrl: string, workspace: string): Promise<ServerStorage> {
+  const conf: DbConfiguration = {
+    domains: {
+      [DOMAIN_TX]: 'MongoTx'
+    },
+    defaultAdapter: 'InMemory',
+    adapters: {
+      MongoTx: {
+        factory: createInMemoryTxAdapter,
+        url: mongoUrl
+      },
+      InMemory: {
+        factory: createInMemoryAdapter,
+        url: ''
+      }
+    },
+    fulltextAdapter: {
+      factory: createElasticAdapter,
+      url: elasticUrl
+    },
+    workspace
   }
-  const mongoAdapter = await createMongoAdapter(hierarchy, mongoUrl, dbName, modelDb)
-  return new FullTextIndex(hierarchy, elastic, mongoAdapter)
+  return await createServerStorage(conf)
 }
 
 async function indexAttachment (
