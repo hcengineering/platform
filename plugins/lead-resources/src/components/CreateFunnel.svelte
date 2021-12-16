@@ -63,7 +63,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={'Funnel name'} focus />
+    <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={'Funnel name'} maxWidth={'16rem'} focus />
     <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />
     <KanbanTemplateSelector folders={[lead.space.FunnelTemplates]} bind:template={templateId}/>
   </Grid>

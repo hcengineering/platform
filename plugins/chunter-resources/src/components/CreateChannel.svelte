@@ -48,7 +48,7 @@
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={chunter.string.ChannelName} icon={IconFolder} bind:value={name} placeholder={'Channel'} focus/>
+    <EditBox label={chunter.string.ChannelName} icon={IconFolder} bind:value={name} placeholder={'Channel'} maxWidth={'16rem'} focus/>
     <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription}/>
   </Grid>
 </SpaceCreateCard>

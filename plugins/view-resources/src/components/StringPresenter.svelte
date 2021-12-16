@@ -15,9 +15,7 @@
 -->
 
 <script lang="ts">
-
-export let value: string
-
+  export let value: string
 </script>
 
-{value}
+<span class="lines-limit-2">{value}</span>

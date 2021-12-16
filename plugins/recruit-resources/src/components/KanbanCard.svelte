@@ -39,8 +39,8 @@
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
-        <div class="fs-title over-underline" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
-        <div class="small-text">{object.$lookup?.attachedTo?.title ?? ''}</div>
+        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
+        <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
     </div>
     <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />

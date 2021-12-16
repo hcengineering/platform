@@ -332,6 +332,16 @@ a.no-line {
   user-select: none;
   min-width: 0;
 }
+.lines-limit-2 {
+  min-width: 0;
+  overflow: hidden;
+  visibility: visible;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  /* autoprefixer: ignore next */
+  -webkit-box-orient: vertical;
+}
 
 .focused-button {
   background-color: var(--theme-button-bg-focused);

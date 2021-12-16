@@ -39,8 +39,8 @@
         <div class="sm-tool-icon step-lr75">
           <TaskPresenter value={object} />
         </div>
-        <div class="fs-title">{object.name}</div>
-        <div class="small-text">{object.description}</div>
+        <div class="fs-title lines-limit-2">{object.name}</div>
+        <div class="small-text lines-limit-2">{object.description}</div>
       </div>
     </div>
   </div>
