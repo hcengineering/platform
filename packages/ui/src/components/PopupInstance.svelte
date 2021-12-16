@@ -26,7 +26,6 @@
   export let zIndex: number
 
   let modalHTML: HTMLElement
-  let modalOHTML: HTMLElement
   let componentInstance: any
   let show: boolean = false
 
@@ -97,7 +96,7 @@
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
 </div>
-<div bind:this={modalOHTML} class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
+<div class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
 <style lang="scss">
   .popup {
