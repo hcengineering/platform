@@ -209,7 +209,7 @@
   {#if isDragging && wonState !== undefined && lostState !== undefined}
     <div class="done-panel">
       <div
-        class="done-item flex-center w-full" 
+        class="flex-grow flex-center done-item" 
         class:hovered={hoveredDoneState === wonState._id}
         on:dragenter={() => {
           hoveredDoneState = wonState?._id
@@ -219,11 +219,11 @@
         }}
         on:dragover|preventDefault={() => {}}
         on:drop={onDone(wonState)}>
-        <div class="done-icon won"/>
+        <div class="done-icon won mr-2"/>
         {wonState.title}
       </div>
       <div
-        class="done-item flex-center w-full"
+        class="flex-grow flex-center done-item"
         class:hovered={hoveredDoneState === lostState._id}
         on:dragenter={() => {
           console.log('enter')
@@ -235,7 +235,7 @@
         }}
         on:dragover|preventDefault={() => {}}
         on:drop={onDone(lostState)}>
-        <div class="done-icon lost"/>
+        <div class="done-icon lost mr-2"/>
         {lostState.title}
       </div>
     </div>
@@ -245,6 +245,7 @@
 
 <style lang="scss">
   .kanban-container {
+    position: relative;
     height: 100%;
   }
   .kanban-content {
@@ -254,42 +255,42 @@
   }
 
   .done-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
     display: flex;
-    align-items: stretch;
+    align-items: center;
     justify-content: stretch;
-    height: 4rem;
-    border-top: 1px solid var(--theme-bg-accent-hover);
+    padding: .5rem 2.5rem;
+    background-color: var(--theme-bg-color);
+    border-top: 1px solid var(--theme-dialog-divider);
   }
 
   .done-item {
-    gap: 0.5rem;
-    color: var(--theme-content-accent-color);
-
-    margin: 0.5rem 2.5rem;
+    height: 3rem;
+    color: var(--theme-caption-color);
+    border: 1px dashed transparent;
+    border-radius: .75rem;
 
     &.hovered {
-      background-color: var(--theme-bg-selection);
-      border-radius: 12px;
-      border: 1px dashed var(--theme-bg-accent-hover);
+      background-color: var(--theme-button-bg-enabled);
+      border-color: var(--theme-dialog-divider);
     }
   }
 
   .done-icon {
-    width: 0.5rem;
-    height: 0.5rem;
-
+    width: .5rem;
+    height: .5rem;
     border-radius: 50%;
 
-    &.won {
-      background-color: #a5d179;
-    }
-
-    &.lost {
-      background-color: #f28469;
-    }
+    &.won { background-color: #27B166; }
+    &.lost { background-color: #F96E50; }
   }
+
   .scrollable {
     height: 100%;
-    margin-bottom: 0.25rem;
+    margin-bottom: .25rem;
   }
 </style>

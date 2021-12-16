@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { Ref } from '@anticrm/core'
   import { AttributeEditor, getClient } from '@anticrm/presentation'
@@ -72,105 +73,89 @@
   }
 </script>
 
-<div class="root w-full">
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink flex-between states-header">
-      <Label label={'ACTIVE STATUSES'} />
-      <div on:click={onAdd}><CircleButton icon={IconAdd} size={'medium'} /></div>
-    </div>
-    <div class="content">
-      {#each states as state, i}
-        {#if state}
-          <div bind:this={elements[i]} class="flex-between states" draggable={true}
-            on:dragover|preventDefault={(ev) => {
-              dragover(ev, i)
+<div class="flex-col">
+  <div class="flex-no-shrink flex-between trans-title">
+    <Label label={'ACTIVE STATUSES'} />
+    <div on:click={onAdd}><CircleButton icon={IconAdd} size={'medium'} /></div>
+  </div>
+  <div class="overflow-y-auto mt-3">
+    {#each states as state, i}
+      {#if state}
+        <div bind:this={elements[i]} class="flex-between states" draggable={true}
+          on:dragover|preventDefault={(ev) => {
+            dragover(ev, i)
+          }}
+          on:drop|preventDefault={() => {
+            onMove(i)
+          }}
+          on:dragstart={() => {
+            selected = i
+            dragState = states[i]._id
+          }}
+          on:dragend={() => {
+            selected = undefined
+          }}
+        >
+          <div class="bar"><Circles /></div>
+          <div class="color" style="background-color: {state.color}"
+            on:click={() => {
+              showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
             }}
-            on:drop|preventDefault={() => {
-              onMove(i)
-            }}
-            on:dragstart={() => {
-              selected = i
-              dragState = states[i]._id
-            }}
-            on:dragend={() => {
-              selected = undefined
+          />
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
+          <div class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
             }}
           >
-            <div class="bar"><Circles /></div>
-            <div class="color" style="background-color: {state.color}"
-              on:click={() => {
-                showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
-              }}
-            />
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={state._class} object={state} key="title"/></div>
-            <div class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
+            <IconMoreH size={'medium'} />
           </div>
-        {/if}
-      {/each}
-    </div>
+        </div>
+      {/if}
+    {/each}
   </div>
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink states-header">
-      <Label label={'DONE STATUS / WON'} />
-    </div>
-    <div class="content">
-      {#each wonStates as state, i}
-        {#if state}
-          <div class="states flex-row-center">
-            <div class="bar"/>
-            <div class="color" style="background-color: #a5d179"/>
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={state._class} object={state} key="title"/></div>
-          </div>
-        {/if}
-      {/each}
-    </div>
+</div>
+<div class="flex-col mt-9">
+  <div class="flex-no-shrink trans-title">
+    <Label label={'DONE STATUS / WON'} />
   </div>
-  <div class="flex-col w-full">
-    <div class="flex-no-shrink states-header">
-      <Label label={'DONE STATUS / LOST'} />
-    </div>
-    <div class="content">
-      {#each lostStates as state, i}
-        {#if state}
-          <div class="states flex-row-center">
-            <div class="bar"/>
-            <div class="color" style="background-color: #f28469"/>
-            <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={state._class} object={state} key="title"/></div>
-          </div>
-        {/if}
-      {/each}
-    </div>
+  <div class="overflow-y-auto mt-4">
+    {#each wonStates as state, i}
+      {#if state}
+        <div class="states flex-row-center">
+          <div class="bar"/>
+          <div class="color" style="background-color: #a5d179"/>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
+        </div>
+      {/if}
+    {/each}
+  </div>
+</div>
+<div class="flex-col mt-9">
+  <div class="flex-no-shrink trans-title">
+    <Label label={'DONE STATUS / LOST'} />
+  </div>
+  <div class="overflow-y-auto mt-4">
+    {#each lostStates as state, i}
+      {#if state}
+        <div class="states flex-row-center">
+          <div class="bar"/>
+          <div class="color" style="background-color: #f28469"/>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={state._class} object={state} key="title"/></div>
+        </div>
+      {/if}
+    {/each}
   </div>
 </div>
 
 <style lang="scss">
-  .root {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(1px, max-content) min-content min-content;
-    gap: 2rem;
-    height: 100%;
-  }
   .states {
-    padding: .625rem 1rem;
-    color: #fff;
-    background-color: rgba(67, 67, 72, .3);
+    padding: .5rem 1rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
     user-select: none;
-
-    &-header {
-      margin-bottom: 1rem;
-      font-weight: 600;
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
 
     .bar {
       margin-right: .375rem;
@@ -189,8 +174,4 @@
     .tool { margin-left: 1rem; }
   }
   .states + .states { margin-top: .5rem; }
-
-  .content {
-    overflow-y: auto;
-  }
 </style>

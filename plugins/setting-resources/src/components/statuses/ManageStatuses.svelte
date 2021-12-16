@@ -51,21 +51,21 @@
   }
 </script>
 
-<div class="root">
-  <div class="header">
-    <Icon icon={setting.icon.Statuses} size="large"/>
-    <Label label={setting.string.ManageStatuses}/>
+<div class="flex-col h-full">
+  <div class="flex-row-center header">
+    <div class="content-color mr-3"><Icon icon={setting.icon.Statuses} size={'medium'} /></div>
+    <div class="fs-title"><Label label={setting.string.ManageStatuses}/></div>
   </div>
-  <div class="content">
-    <div class="folders flex-stretch">
+  <div class="flex-row-top h-full overflow-x-auto scroll-m-10">
+    <div class="flex-col section">
       <Folders bind:folder={folder}/>
     </div>
-    <div class="templates flex-stretch">
+    <div class="flex-col section">
       {#if folder !== undefined}
         <Templates {folder} bind:template={template}/>
       {/if}
     </div>
-    <div class="statuses flex-stretch">
+    <div class="flex-col section max">
       {#if template !== undefined}
         <KanbanTemplateEditor kanban={template} on:delete={(e) => deleteState(e.detail)}/>
       {/if}
@@ -74,52 +74,25 @@
 </div>
 
 <style lang="scss">
-  .root {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
   .header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 24px 42px;
-    border-bottom: 1px solid var(--theme-bg-accent-hover);
-
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--theme-caption-color);
+    padding: 0 1.75rem 0 2.5rem;
+    height: 4rem;
+    min-height: 4rem;
+    border-bottom: 1px solid var(--theme-menu-divider);
   }
 
-  .content {
-    display: flex;
-    align-items: stretch;
+  .section {
+    overflow-y: auto;
+    padding: 1.75rem 2.5rem;
+    min-width: 25rem;
+    max-width: 25rem;
     height: 100%;
-    width: 100%;
-    overflow: auto;
-  }
-
-  .folders {
-    width: 380px;
-    padding: 2rem 2.5rem 1rem;
-    flex-shrink: 0;
-    flex-grow: 0;
-    border-right: 1px solid var(--theme-bg-accent-hover);
-  }
-
-  .templates {
-    width: 380px;
-    padding: 2rem 2.5rem 1rem;
-    flex-shrink: 0;
-    flex-grow: 0;
-    border-right: 1px solid var(--theme-bg-accent-hover);
-  }
-
-  .statuses {
-    width: 100%;
-    padding: 2rem 2.5rem 1rem;
-    flex-grow: 1;
+    border-right: 1px solid var(--theme-menu-divider);
+    
+    &.max {
+      width: 40rem;
+      max-width: 40rem;
+      border-right: none;
+    }
   }
 </style>

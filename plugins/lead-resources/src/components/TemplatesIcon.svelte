@@ -3,16 +3,12 @@
   import lead from '@anticrm/lead'
 </script>
 
-<div class="root">
-  <Icon icon={lead.icon.LeadApplication} size="xsmall" />
+<div class="flex-center template-icon">
+  <Icon icon={lead.icon.LeadApplication} size="small" />
 </div>
 
 <style lang="scss">
-  .root {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+  .template-icon {
     width: 100%;
     height: 100%;
     color: #fff;

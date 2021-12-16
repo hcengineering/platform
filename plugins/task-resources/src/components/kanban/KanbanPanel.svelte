@@ -50,7 +50,7 @@
     align-items: stretch;
     width: 20rem;
     height: 100%;
-    background-color: var(--theme-button-bg-enabled);
+    background-color: var(--theme-bg-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
 

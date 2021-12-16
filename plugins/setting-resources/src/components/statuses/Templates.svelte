@@ -100,60 +100,38 @@
   }
 </script>
 
-<div class="root flex-col w-full">
-  <div class="header">
-    <Label label={setting.string.Templates}/>
-    <CircleButton icon={IconAdd} size="medium" on:click={createTemplate} />
-  </div>
-  <div class="content">
-    {#each templates as t (t._id)}
-      <div class="item flex-between" class:selected={t._id === template?._id} on:click={() => select(t)}>
-        <AttributeEditor maxWidth="20rem" _class={task.class.KanbanTemplate} object={t} key="title"/>
-        <div class="tool hover-trans"
-          on:click|stopPropagation={(ev) => {
-            showPopup(ContextMenu, { object: t }, ev.target, () => {})
-          }}
-        >
-          <IconMoreH size="medium" />
-        </div>
+<div class="flex-between trans-title mb-3">
+  <Label label={setting.string.Templates}/>
+  <CircleButton icon={IconAdd} size="medium" on:click={createTemplate} />
+</div>
+<div class="flex-col overflow-y-auto">
+  {#each templates as t (t._id)}
+    <div class="flex-between item" class:selected={t._id === template?._id} on:click={() => select(t)}>
+      <AttributeEditor maxWidth={'18rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
+      <div class="hover-trans"
+        on:click|stopPropagation={(ev) => {
+          showPopup(ContextMenu, { object: t }, ev.target, () => {})
+        }}
+      >
+        <IconMoreH size={'medium'} />
       </div>
-    {/each}
-  </div>
+    </div>
+  {/each}
 </div>
 
 <style lang="scss">
-  .root {
-    gap: 1rem;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--theme-content-trans-color);
-    font-size: 0.75rem;
-
-    height: 1.75rem;
-  }
-
-  .content {
-    display: flex; 
-    flex-direction: column;
-
-    overflow-y: auto;
-  }
-
   .item {
-    padding: 10px 20px;
-
+    min-height: 2.5rem;
+    padding: 0 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 12px;
     cursor: pointer;
 
-    &:hover, &.selected {
+    &:hover { background-color: var(--theme-bg-accent-color); }
+    &.selected {
       background-color: var(--theme-button-bg-enabled);
-      border-radius: 12px;
+      border-color: var(--theme-bg-accent-color);
+      cursor: auto;
     }
   }
 </style>
