@@ -15,27 +15,24 @@
 -->
 
 <script lang="ts">
-  import type { State } from '@anticrm/task'
+  import type { DoneState } from '@anticrm/task'
+  import task from '@anticrm/task'
 
-  export let value: State
+  export let value: DoneState
+
+  $: color = value._class === task.class.WonState ? '#a5d179' : '#f28469'
 
 </script>
 
-<div class="overflow-label state-container" style="background-color: {value.color}">
-  {value.title}
-</div>
+{#if value }
+  <div class="overflow-label state-container" style="background-color: {color};">    
+  </div>
+{/if}
 
 <style lang="scss">
   .state-container {
-    padding: .25rem .5rem;
-    width: 6.25rem;
-    max-width: 6.25rem;
-    text-transform: uppercase;
-    text-align: center;
-    letter-spacing: .5px;
-    font-size: .625rem;
-    color: #fff;
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .25rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.5rem;
   }
 </style>
