@@ -19,6 +19,7 @@
   import { Label, Component } from '@anticrm/ui'
   import task, { KanbanTemplateSpace } from '@anticrm/task'
   import setting from '@anticrm/setting'
+  import IconArrowRight from '../icons/ArrowRight.svelte'
 
 
   export let folder: KanbanTemplateSpace | undefined
@@ -35,12 +36,12 @@
   }
 </script>
 
-<div class="flex-between trans-title mb-3">
+<div class="flex-between trans-title header mb-3">
   <Label label={setting.string.Folders}/>
 </div>
 <div class="flex-col overflow-y-auto">
   {#each folders as f (f._id)}
-    <div class="flex-row-center item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
+    <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
       <div class="icon mr-4">
         <Component is={f.icon}/>
       </div>
@@ -52,20 +53,25 @@
           {f.description}
         </div>
       </div>
+      {#if f._id === folder?._id}
+        <div class="caption-color ml-4"><IconArrowRight size={'small'} /></div>
+      {/if}
     </div>
   {/each}
 </div>
 
 <style lang="scss">
+  .header { min-height: 1.75rem; }
   .item {
-    padding: 1.75rem;
-    border: 1px solid transparent;
+    padding: 1.25rem 1rem 1.25rem 1.25rem;
+    background-color: var(--theme-button-bg-enabled);
+    border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
     cursor: pointer;
 
-    &:hover { background-color: var(--theme-bg-accent-color); }
+    &:hover { background-color: var(--theme-button-bg-hovered); }
     &.selected {
-      background-color: var(--theme-button-bg-enabled);
+      background-color: var(--theme-button-bg-pressed);
       border-color: var(--theme-bg-accent-color);
       cursor: auto;
     }
