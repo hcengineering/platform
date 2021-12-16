@@ -35,86 +35,47 @@
   }
 </script>
 
-<div class="root flex-col w-full">
-  <div class="header">
-    <Label label={setting.string.Folders}/>
-  </div>
-  <div class="content">
-    {#each folders as f (f._id)}
-      <div class="item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
-        <div class="item-icon">
-          <Component is={f.icon}/>
+<div class="flex-between trans-title mb-3">
+  <Label label={setting.string.Folders}/>
+</div>
+<div class="flex-col overflow-y-auto">
+  {#each folders as f (f._id)}
+    <div class="flex-row-center item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
+      <div class="icon mr-4">
+        <Component is={f.icon}/>
+      </div>
+      <div class="flex-grow flex-col">
+        <div class="fs-title overflow-label">
+          {f.name}
         </div>
-        <div class="item-content">
-          <div class="item-name">
-            {f.name}
-          </div>
-          <div class="item-description">
-            {f.description}
-          </div>
+        <div class="small-text content-dark-color overflow-label">
+          {f.description}
         </div>
       </div>
-    {/each}
-  </div>
+    </div>
+  {/each}
 </div>
 
 <style lang="scss">
-  .root {
-    gap: 1rem;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--theme-content-trans-color);
-    font-size: 0.75rem;
-    height: 1.75rem;
-  }
-
-  .content {
-    display: flex; 
-    flex-direction: column;
-    
-    overflow-y: auto;
-  }
-
   .item {
-    display: flex;
-    padding: 20px;
-
+    padding: 1.75rem;
+    border: 1px solid transparent;
+    border-radius: .75rem;
     cursor: pointer;
 
-    &:hover, &.selected {
+    &:hover { background-color: var(--theme-bg-accent-color); }
+    &.selected {
       background-color: var(--theme-button-bg-enabled);
-      border-radius: 12px;
+      border-color: var(--theme-bg-accent-color);
+      cursor: auto;
     }
   }
+  .item + .item { margin-top: .75rem; }
 
-  .item-icon {
-    width: 36px;
-    height: 36px;
+  .icon {
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: 50%;
     overflow: hidden;
-
-    margin-right: 1rem;
-  }
-
-  .item-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .item-name {
-    color: var(--theme-caption-color);
-    font-size: 1rem;
-    font-weight: 500;
-  }
-
-  .item-description {
-    color: var(--theme-content-dark-color);
   }
 </style>

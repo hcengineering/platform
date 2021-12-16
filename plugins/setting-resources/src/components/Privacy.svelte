@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { getCurrentAccount, Ref, Space } from '@anticrm/core';
   import { createQuery } from '@anticrm/presentation'
@@ -20,26 +21,21 @@
   import PluginCard from './PluginCard.svelte'
   import { Icon, Label } from '@anticrm/ui'
 
-  const accountId = getCurrentAccount()._id
-  const typeQuery = createQuery()
-  const integrationQuery = createQuery()
+  // const accountId = getCurrentAccount()._id
+  // const typeQuery = createQuery()
+  // const integrationQuery = createQuery()
 
-  let integrations: Integration[] = []
-  let integrationTypes: IntegrationType[] = []
+  // let integrations: Integration[] = []
+  // let integrationTypes: IntegrationType[] = []
 
-  typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
+  // typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
+  // integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
 </script>
 
 <div class="flex-col h-full">
   <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.Integrations} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.Integrations}/></div>
-  </div>
-  <div class="cards-container">
-    {#each integrationTypes as integrationType (integrationType._id)}
-      <PluginCard integration={integrations.find((p) => p.type === integrationType._id)} {integrationType} />
-    {/each}
+    <div class="content-color mr-3"><Icon icon={setting.icon.Privacy} size={'medium'} /></div>
+    <div class="fs-title"><Label label={setting.string.Privacy}/></div>
   </div>
 </div>
 
@@ -49,13 +45,5 @@
     height: 4rem;
     min-height: 4rem;
     border-bottom: 1px solid var(--theme-menu-divider);
-  }
-
-  .cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
-    grid-auto-rows: minmax(12.5rem, auto);
-    grid-gap: 1.5rem;
-    padding: 3rem;
   }
 </style>

@@ -2,16 +2,12 @@
   import VacancyIcon from './icons/Vacancy.svelte'
 </script>
 
-<div class="root">
-  <VacancyIcon size="xsmall" />
+<div class="flex-center template-icon">
+  <VacancyIcon size="small" />
 </div>
 
 <style lang="scss">
-  .root {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+  .template-icon {
     width: 100%;
     height: 100%;
     color: #fff;

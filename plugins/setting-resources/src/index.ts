@@ -13,14 +13,22 @@
 // limitations under the License.
 //
 
+import Setting from './components/Setting.svelte'
 import Integrations from './components/Integrations.svelte'
-import ConnectEmail from './components/integrations/ConnectEmail.svelte'
 import ManageStatuses from './components/statuses/ManageStatuses.svelte'
+import Support from './components/Support.svelte'
+import Privacy from './components/Privacy.svelte'
+import Terms from './components/Terms.svelte'
+import ConnectEmail from './components/integrations/ConnectEmail.svelte'
 import IconGmail from './components/icons/Gmail.svelte'
 
 export default async () => ({
   component: {
+    Setting,
     Integrations,
+    Support,
+    Privacy,
+    Terms,
     ConnectEmail,
     IconGmail,
     ManageStatuses

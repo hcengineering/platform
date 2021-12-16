@@ -1,18 +1,14 @@
 <script lang="ts">
   import { Icon } from '@anticrm/ui'
-  import task from '@anticrm/task'
+  import IconFolder from './icons/Folder.svelte'
 </script>
 
-<div class="root">
-  <Icon icon={task.icon.Task} size="xsmall" />
+<div class="flex-center template-icon">
+  <Icon icon={IconFolder} size="small" />
 </div>
 
 <style lang="scss">
-  .root {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+  .template-icon {
     width: 100%;
     height: 100%;
     color: #fff;

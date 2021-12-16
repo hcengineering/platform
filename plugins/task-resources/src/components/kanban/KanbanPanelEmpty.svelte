@@ -40,7 +40,7 @@
     height: 100%;
     padding: .75rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-enabled);
+    background-color: var(--theme-bg-color);
     border: 1px dotted var(--theme-bg-accent-color);
     border-radius: .75rem;
     cursor: pointer;
@@ -59,9 +59,7 @@
     }
 
     &:hover {
-      background-color: var(--theme-bg-accent-hover);
-      box-shadow: 0 .75rem 2.5rem rgba(0, 0, 0, .15);
-
+      background-color: var(--theme-bg-accent-color);
       .circle .icon { opacity: 1; }
     }
   }
