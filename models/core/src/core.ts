@@ -50,10 +50,10 @@ export class TDoc extends TObj implements Doc {
   @Prop(TypeRef(core.class.Space), 'Space' as IntlString)
   space!: Ref<Space>
 
-  @Prop(TypeTimestamp(), 'Modified On' as IntlString)
+  @Prop(TypeTimestamp(), 'Modified' as IntlString)
   modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), 'Modiified By' as IntlString)
+  @Prop(TypeRef(core.class.Account), 'Modified By' as IntlString)
   modifiedBy!: Ref<Account>
 }
 
