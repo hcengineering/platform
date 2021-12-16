@@ -15,7 +15,7 @@
 //
 
 import type { Contact } from '@anticrm/contact'
-import type { Class, Data, Doc, Ref, Space } from '@anticrm/core'
+import { Class, Data, Doc, genRanks, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import task, { DoneState, Kanban, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@anticrm/task'
@@ -71,45 +71,55 @@ export async function createKanban (
     { color: '#F28469', name: 'Contract conclusion' },
     { color: '#7C6FCD', name: 'Done' }
   ]
-  const ids: Array<Ref<State>> = []
+  const stateRank = genRanks(states.length)
   for (const st of states) {
     const sid = (funnelId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
+    const rank = stateRank.next().value
+
+    if (rank === undefined) {
+      throw Error('Failed to generate rank')
+    }
+
     await factory(
       task.class.State,
       funnelId,
       {
         title: st.name,
-        color: st.color
+        color: st.color,
+        rank
       },
       sid
     )
-    ids.push(sid)
   }
-  const rawDoneStates = [
+  const doneStates = [
     { class: task.class.WonState, title: 'Won' },
     { class: task.class.LostState, title: 'Lost' }
   ]
-  const doneStates: Array<Ref<DoneState>> = []
-  for (const st of rawDoneStates) {
+  const doneStateRank = genRanks(doneStates.length)
+  for (const st of doneStates) {
+    const rank = doneStateRank.next().value
+
+    if (rank === undefined) {
+      throw Error('Failed to generate rank')
+    }
+
     const sid = (funnelId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
     await factory(
       st.class,
       funnelId,
       {
-        title: st.title
+        title: st.title,
+        rank
       },
       sid
     )
-    doneStates.push(sid)
   }
 
   await factory(
     task.class.Kanban,
     funnelId,
     {
-      attachedTo: funnelId,
-      states: ids,
-      doneStates
+      attachedTo: funnelId
     },
     (funnelId + '.kanban') as Ref<Kanban>
   )

@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import core, { generateId } from '@anticrm/core'
+  import core, { generateId, genRanks } from '@anticrm/core'
   import type { Ref } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
@@ -52,23 +52,22 @@
     const space = folder._id
 
     const template = await client.createDoc(task.class.KanbanTemplate, space, {
-      states: [],
-      doneStates: [],
       doneStatesC: 0,
       statesC: 0,
       title: 'New Template'
     })
 
+    const ranks = [...genRanks(2)]
     const doneStates = [
       {
-        id: generateId<WonStateTemplate>(),
         class: task.class.WonStateTemplate,
-        title: 'Won'
+        title: 'Won',
+        rank: ranks[0]
       },
       {
-        id: generateId<LostStateTemplate>(),
         class: task.class.LostStateTemplate,
-        title: 'Lost'
+        title: 'Lost',
+        rank: ranks[1]
       }
     ]
 
@@ -80,19 +79,11 @@
         task.class.KanbanTemplate,
         'doneStatesC',
         {
-          title: ds.title
-        },
-        ds.id
+          title: ds.title,
+          rank: ds.rank
+        }
       )
     }))
-
-    for (const ds of doneStates) {
-      await client.updateDoc(task.class.KanbanTemplate, space, template, {
-        $push: {
-          doneStates: ds.id
-        }
-      })
-    }
   }
 
   function select (item: KanbanTemplate) {

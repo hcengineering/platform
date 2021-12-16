@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, Doc, generateId } from '@anticrm/core'
+  import { Ref, Space, SortingOrder, calcRank } from '@anticrm/core'
   import core from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/task'
@@ -35,42 +35,49 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  function sort <T extends Doc>(order: Ref<T>[], items: T[]): T[] {
-    if (items.length === 0) {
-      return []
-    }
-
-    const itemMap = new Map(items.map(x => [x._id, x]))
-    const x = order
-      .map(id => itemMap.get(id))
-      .filter((x): x is T => x !== undefined)
-
-    return x
-  }
-
   const statesQ = createQuery()
-  $: statesQ.query(task.class.StateTemplate, { attachedTo: kanban._id }, result => { states = sort(kanban.states, result) })
+  $: statesQ.query(task.class.StateTemplate, { attachedTo: kanban._id }, result => { states = result }, {
+    sort: {
+      rank: SortingOrder.Ascending
+    }
+  })
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(task.class.DoneStateTemplate, { attachedTo: kanban._id }, (result) => { doneStates = sort(kanban.doneStates, result) })
+  $: doneStatesQ.query(task.class.DoneStateTemplate, { attachedTo: kanban._id }, (result) => { doneStates = result }, {
+    sort: {
+      rank: SortingOrder.Ascending
+    }
+  })
 
   let space: Space | undefined
   const spaceQ = createQuery()
   $: spaceQ.query(core.class.Space, { _id: kanban.space }, (result) => { space = result[0] })
 
   async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<StateTemplate>, position: number } }) {
-    client.updateDoc(kanban._class, kanban.space, kanban._id, {
-      $move: {
-        states: {
-          $value: stateID,
-          $position: position
-        }
+    const [prev, next] = [states[position - 1], states[position + 1]]
+    const state = states.find((x) => x._id === stateID)
+
+    if (state === undefined) {
+      return
+    }
+
+    await client.updateDoc(
+      state._class,
+      state.space,
+      state._id,
+      {
+        rank: calcRank(prev, next)
       }
-    })
+    )
   }
 
   async function onAdd () {
-    const stateID = generateId<StateTemplate>()
+    const lastOne = await client.findOne(
+      task.class.StateTemplate,
+      { attachedTo: kanban._id },
+      { sort: { rank: SortingOrder.Descending } }
+    )
+
     await client.addCollection(
       task.class.StateTemplate,
       kanban.space,
@@ -79,16 +86,10 @@
       'statesC',
       {
         title: 'New State',
-        color: '#7C6FCD'
-      },
-      stateID
-    )
-
-    await client.updateDoc(kanban._class, kanban.space, kanban._id, {
-      $push: {
-        states: stateID
+        color: '#7C6FCD',
+        rank: calcRank(lastOne, undefined)
       }
-    })
+    )
   }
 
   function onDelete ({ detail: { state } }: { detail: { state: State }}) {

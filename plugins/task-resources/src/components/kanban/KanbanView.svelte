@@ -36,33 +36,26 @@
 
   let kanban: Kanban
   let states: State[] = []
-  let rawStates: State[] = []
 
   let objects: Item[] = []
-  let kanbanStates: Ref<State>[] = []
-  let kanbanDoneStates: Ref<DoneState>[] = []
   let wonState: WonState | undefined
   let lostState: LostState | undefined
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
-  $: kanbanStates = kanban?.states ?? []
-  $: kanbanDoneStates = kanban?.doneStates ?? []
-
-  function sort (kanban: Kanban, states: State[]): State[] {
-    if (kanban === undefined || states.length === 0) { return [] }
-    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
-    return kanban.states.map(id => map.get(id) as State)
+  const statesQuery = createQuery()
+  $: if (kanban !== undefined) {
+    statesQuery.query(task.class.State, { space: kanban.space }, result => { states = result }, {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
+    })
   }
 
-  const statesQuery = createQuery()
-  $: if (kanbanStates.length > 0) statesQuery.query(task.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
-  $: states = sort(kanban, rawStates)
-
   const doneStatesQ = createQuery()
-  $: if (kanbanDoneStates.length > 0) {
-    doneStatesQ.query(task.class.DoneState, { _id: { $in: kanbanDoneStates } }, (result) => {
+  $: if (kanban !== undefined) {
+    doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => {
       wonState = result.find((x) => x._class === task.class.WonState)
       lostState = result.find((x) => x._class === task.class.LostState)
     })
