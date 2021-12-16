@@ -15,7 +15,14 @@
 //
 
 import {
-  ACCOUNT_DB, assignWorkspace, createAccount, createWorkspace, dropAccount, dropWorkspace, getAccount, listWorkspaces
+  ACCOUNT_DB,
+  assignWorkspace,
+  createAccount,
+  createWorkspace,
+  dropAccount,
+  dropWorkspace,
+  getAccount,
+  listWorkspaces
 } from '@anticrm/account'
 import contact, { combineName } from '@anticrm/contact'
 import core, { TxOperations } from '@anticrm/core'
@@ -23,6 +30,7 @@ import { program } from 'commander'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { connect } from './connect'
+import { rebuildElastic } from './elastic'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
 
@@ -53,6 +61,12 @@ if (minioAccessKey === undefined) {
 const minioSecretKey = process.env.MINIO_SECRET_KEY
 if (minioSecretKey === undefined) {
   console.error('please provide minio secret key')
+  process.exit(1)
+}
+
+const elasticUrl = process.env.ELASTIC_URL
+if (elasticUrl === undefined) {
+  console.error('please provide elastic url')
   process.exit(1)
 }
 
@@ -192,7 +206,7 @@ program
   .command('restore-workspace <workspace> <dirName>')
   .description('restore workspace transactions and minio resources from previous dump.')
   .action(async (workspace, dirName, cmd) => {
-    return await restoreWorkspace(mongodbUri, workspace, dirName, minio)
+    return await restoreWorkspace(mongodbUri, workspace, dirName, minio, elasticUrl)
   })
 
 program
@@ -223,6 +237,14 @@ program
         await clearTelegramHistory(mongodbUri, w.workspace, telegramDB)
       }
     })
+  })
+
+program
+  .command('rebuild-elastic')
+  .description('rebuild elastic index')
+  .option('-w, --workspace <workspace>', 'target workspace')
+  .action(async (w, cmd) => {
+    await rebuildElastic(mongodbUri, w.workspace, minio, elasticUrl)
   })
 
 program.parse(process.argv)

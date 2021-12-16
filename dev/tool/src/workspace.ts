@@ -19,19 +19,26 @@ import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import builder, { migrateOperations } from '@anticrm/model-all'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
-import { BucketItem, Client, ItemBucketMetadata } from 'minio'
+import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
 import { connect } from './connect'
 import { MigrateClientImpl } from './upgrade'
 import { generateModelDiff, printDiff } from './mdiff'
+import { listMinioObjects, MinioWorkspaceItem } from './minio'
+import { rebuildElastic } from './elastic'
 
 const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 
 /**
  * @public
  */
-export async function initWorkspace (mongoUrl: string, dbName: string, transactorUrl: string, minio: Client): Promise<void> {
+export async function initWorkspace (
+  mongoUrl: string,
+  dbName: string,
+  transactorUrl: string,
+  minio: Client
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -114,8 +121,6 @@ interface CollectionInfo {
   file: string
 }
 
-type MinioWorkspaceItem = BucketItem & { metaData: ItemBucketMetadata }
-
 interface WorkspaceInfo {
   version: string
   collections: CollectionInfo[]
@@ -169,7 +174,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
           data.on('readable', () => {
             let chunk
             while ((chunk = data.read()) !== null) {
-              const b = (chunk as Buffer)
+              const b = chunk as Buffer
               chunks.push(b)
             }
           })
@@ -191,21 +196,13 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
   }
 }
 
-async function listMinioObjects (minio: Client, dbName: string): Promise<MinioWorkspaceItem[]> {
-  const items: MinioWorkspaceItem[] = []
-  const list = await minio.listObjects(dbName, undefined, true)
-  await new Promise((resolve) => {
-    list.on('data', (data) => {
-      items.push({ ...data, metaData: {} })
-    })
-    list.on('end', () => {
-      resolve(null)
-    })
-  })
-  return items
-}
-
-export async function restoreWorkspace (mongoUrl: string, dbName: string, fileName: string, minio: Client): Promise<void> {
+export async function restoreWorkspace (
+  mongoUrl: string,
+  dbName: string,
+  fileName: string,
+  minio: Client,
+  elasticUrl: string
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -231,7 +228,7 @@ export async function restoreWorkspace (mongoUrl: string, dbName: string, fileNa
 
     console.log('Restore minio objects')
     if (await minio.bucketExists(dbName)) {
-      const objectNames = (await listMinioObjects(minio, dbName)).map(i => i.name)
+      const objectNames = (await listMinioObjects(minio, dbName)).map((i) => i.name)
       await minio.removeObjects(dbName, objectNames)
       await minio.removeBucket(dbName)
     }
@@ -242,6 +239,8 @@ export async function restoreWorkspace (mongoUrl: string, dbName: string, fileNa
       const data = await readFile(join(minioDbLocation, d.name))
       await minio.putObject(dbName, d.name, data, d.size, d.metaData)
     }
+
+    await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
   } finally {
     await client.close()
   }
@@ -255,16 +254,21 @@ export async function diffWorkspace (mongoUrl: string, dbName: string): Promise<
 
     console.log('diffing transactions...')
 
-    const currentModel = await db.collection(DOMAIN_TX).find<Tx>({
+    const currentModel = await db
+      .collection(DOMAIN_TX)
+      .find<Tx>({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
       objectClass: { $ne: contact.class.EmployeeAccount }
-    }).toArray()
+    })
+      .toArray()
 
-    const txes = builder.getTxes().filter(tx => {
-      return tx.objectSpace === core.space.Model &&
+    const txes = builder.getTxes().filter((tx) => {
+      return (
+        tx.objectSpace === core.space.Model &&
         tx.modifiedBy === core.account.System &&
         (tx as any).objectClass !== contact.class.EmployeeAccount
+      )
     })
 
     const { diffTx, dropTx } = await generateModelDiff(currentModel, txes)

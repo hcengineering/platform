@@ -14,7 +14,20 @@
 // limitations under the License.
 //
 
-export * from './types'
-export * from './fulltext'
-export * from './storage'
-export { default } from './plugin'
+import { BucketItem, Client, ItemBucketMetadata } from 'minio'
+
+export type MinioWorkspaceItem = BucketItem & { metaData: ItemBucketMetadata }
+
+export async function listMinioObjects (minio: Client, dbName: string): Promise<MinioWorkspaceItem[]> {
+  const items: MinioWorkspaceItem[] = []
+  const list = await minio.listObjects(dbName, undefined, true)
+  await new Promise((resolve) => {
+    list.on('data', (data) => {
+      items.push({ ...data, metaData: {} })
+    })
+    list.on('end', () => {
+      resolve(null)
+    })
+  })
+  return items
+}
