@@ -22,7 +22,7 @@
   import { ActionIcon, IconMoreH, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import lead from '../plugin'
-  import EditLead from './EditLead.svelte'
+  import { EditTask } from '@anticrm/task-resources'
 
   export let object: WithLookup<Lead>
   export let draggable: boolean
@@ -32,7 +32,7 @@
   }
 
   function showLead () {
-    showPopup(EditLead, { _id: object._id }, 'full')
+    showPopup(EditTask, { _id: object._id }, 'full')
   }
 </script>
 
@@ -63,7 +63,7 @@
           }}
           icon={IconMoreH}
           size={'small'}
-          />
+        />
       </div>
     </div>
   </div>

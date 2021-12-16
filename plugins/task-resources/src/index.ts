@@ -21,6 +21,7 @@ import CreateProject from './components/CreateProject.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import EditIssue from './components/EditIssue.svelte'
 import { Doc } from '@anticrm/core'
 import { showPopup } from '@anticrm/ui'
 
@@ -34,6 +35,7 @@ export { default as KanbanTemplateEditor } from './components/kanban/KanbanTempl
 export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
 
 export { default as Tasks } from './components/Tasks.svelte'
+export { default as EditTask } from './components/EditTask.svelte'
 
 async function createTask (object: Doc): Promise<void> {
   showPopup(CreateTask, { parent: object._id, space: object.space })
@@ -48,6 +50,7 @@ export default async (): Promise<Resources> => ({
     CreateTask,
     CreateProject,
     TaskPresenter,
+    EditIssue,
     KanbanCard,
     TemplatesIcon,
     KanbanView,

@@ -13,26 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import type { Applicant } from '@anticrm/recruit'
+  import { closeTooltip, IconFile, showPopup } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+  import { EditTask } from '@anticrm/task-resources'
 
-import type { Applicant } from '@anticrm/recruit'
-import { closeTooltip, IconFile, showPopup } from '@anticrm/ui'
-import EditApplication from './EditApplication.svelte'
-import { getClient } from '@anticrm/presentation'
+  export let value: Applicant
 
-export let value: Applicant
+  const client = getClient()
+  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-const client = getClient()
-const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
-
-function show () {
-  closeTooltip()
-  showPopup(EditApplication, { _id: value._id }, 'full')
-}
-
+  function show () {
+    closeTooltip()
+    showPopup(EditTask, { _id: value._id }, 'full')
+  }
 </script>
 
 <div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><IconFile size={'small'}/></span>&nbsp;{shortLabel}-{value.number}
+  <span class="icon"><IconFile size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
 </div>

@@ -70,7 +70,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX('Application' as IntlString, recruit.icon.RecruitApplication, 'APP' as IntlString)
+@UX('Application' as IntlString, recruit.icon.Application, 'APP' as IntlString)
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
@@ -107,28 +107,33 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.Applications
   })
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: recruit.string.RecruitApplication,
-    icon: recruit.icon.RecruitApplication,
-    hidden: false,
-    navigatorModel: {
-      spaces: [
-        {
-          label: recruit.string.Vacancies,
-          spaceClass: recruit.class.Vacancy,
-          addSpaceLabel: recruit.string.CreateVacancy,
-          createComponent: recruit.component.CreateVacancy,
-          component: recruit.component.EditVacancy
-        },
-        {
-          label: recruit.string.Candidates,
-          spaceClass: recruit.class.Candidates,
-          addSpaceLabel: recruit.string.CreateCandidates,
-          createComponent: recruit.component.CreateCandidates
-        }
-      ]
-    }
-  }, recruit.app.Recruit)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: recruit.string.RecruitApplication,
+      icon: recruit.icon.RecruitApplication,
+      hidden: false,
+      navigatorModel: {
+        spaces: [
+          {
+            label: recruit.string.Vacancies,
+            spaceClass: recruit.class.Vacancy,
+            addSpaceLabel: recruit.string.CreateVacancy,
+            createComponent: recruit.component.CreateVacancy,
+            component: recruit.component.EditVacancy
+          },
+          {
+            label: recruit.string.Candidates,
+            spaceClass: recruit.class.Candidates,
+            addSpaceLabel: recruit.string.CreateCandidates,
+            createComponent: recruit.component.CreateCandidates
+          }
+        ]
+      }
+    },
+    recruit.app.Recruit
+  )
   builder.createDoc(
     recruit.class.Candidates,
     core.space.Model,
@@ -144,7 +149,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Candidate,
     descriptor: view.viewlet.Table,
-    open: recruit.component.EditCandidate,
+    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       // lookup: {
@@ -166,7 +171,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: view.viewlet.Table,
-    open: recruit.component.EditCandidate,
+    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -189,7 +194,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.Kanban,
-    open: recruit.component.EditCandidate,
+    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -206,6 +211,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Candidate, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditCandidate
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditor, {
+    editor: recruit.component.EditApplication
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
@@ -238,13 +247,18 @@ export function createModel (builder: Builder): void {
     sequence: 0
   })
 
-  builder.createDoc(task.class.KanbanTemplateSpace, core.space.Model, {
-    name: 'Vacancies',
-    description: 'Manage vacancy statuses',
-    members: [],
-    private: false,
-    icon: recruit.component.TemplatesIcon
-  }, recruit.space.VacancyTemplates)
+  builder.createDoc(
+    task.class.KanbanTemplateSpace,
+    core.space.Model,
+    {
+      name: 'Vacancies',
+      description: 'Manage vacancy statuses',
+      members: [],
+      private: false,
+      icon: recruit.component.TemplatesIcon
+    },
+    recruit.space.VacancyTemplates
+  )
 }
 
 export { recruitOperation } from './migration'

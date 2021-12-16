@@ -14,46 +14,52 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, UserBox } from '@anticrm/presentation'
-  import type { Lead } from '@anticrm/lead'
+  import { getClient } from '@anticrm/presentation'
+  import type { Issue } from '@anticrm/task'
   import { EditBox, Grid } from '@anticrm/ui'
-  import contact from '@anticrm/contact'
   import { createEventDispatcher, onMount } from 'svelte'
-  import lead from '../plugin'
+  import task from '../plugin'
 
-  export let object: Lead
+  export let object: Issue
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   function change (field: string, value: any) {
-    client.updateDoc(object._class, object.space, object._id, { [field]: value })
+    client.updateCollection(
+      object._class,
+      object.space,
+      object._id,
+      object.attachedTo,
+      object.attachedToClass,
+      object.collection,
+      { [field]: value }
+    )
   }
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'number', 'title', 'customer'] })
+    dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
 </script>
 
 {#if object !== undefined}
   <Grid column={1} rowGap={1.5}>
     <EditBox
-      label={lead.string.LeadName}
-      bind:value={object.title}
-      icon={lead.icon.Lead}
-      placeholder="The simple lead"
+      label={task.string.TaskName}
+      bind:value={object.name}
+      icon={task.icon.Task}
+      placeholder="The boring task"
       maxWidth="39rem"
       focus
-      on:change={(evt) => change('title', object.title)}
+      on:change={(evt) => change('name', object.name)}
     />
-    <UserBox
-      _class={contact.class.Contact}
-      title="Customer"
-      caption="Select customer"
-      bind:value={object.customer}
-      on:change={() => {
-        change('customer', object.customer)
-      }}
+    <EditBox
+      label={task.string.TaskDescription}
+      bind:value={object.description}
+      icon={task.icon.Task}
+      placeholder="Description"
+      maxWidth="39rem"
+      on:change={(evt) => change('description', object.description)}
     />
   </Grid>
 {/if}
