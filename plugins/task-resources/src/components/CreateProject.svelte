@@ -62,7 +62,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} focus />
+    <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} maxWidth={'16rem'} focus />
     <ToggleWithLabel label={task.string.MakePrivate} description={task.string.MakePrivateDescription} />
     <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId}/>
   </Grid>

@@ -107,7 +107,7 @@
       bind:value={object.name}
       icon={task.icon.Task}
       placeholder="The boring task"
-      maxWidth="39rem"
+      maxWidth={'16rem'}
       focus
     />
     <UserBox

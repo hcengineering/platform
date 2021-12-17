@@ -50,7 +50,7 @@
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.CandidatesName} icon={IconFolder} bind:value={name} placeholder={'Talent Pool'} focus/>
+    <EditBox label={recruit.string.CandidatesName} icon={IconFolder} bind:value={name} placeholder={'Talent Pool'} maxWidth={'16rem'} focus/>
     <ToggleWithLabel label={recruit.string.MakePrivate} description={recruit.string.MakePrivateDescription}/>
   </Grid>
 </SpaceCreateCard>

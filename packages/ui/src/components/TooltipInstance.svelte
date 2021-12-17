@@ -118,7 +118,7 @@
   }
 
   const hideTooltip = (): void => {
-    tooltipHTML.style.visibility = 'hidden'
+    if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
     closeTooltip()
   }
 

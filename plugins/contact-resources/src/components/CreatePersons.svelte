@@ -50,7 +50,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={contact.string.Name} icon={IconFolder} bind:value={name} placeholder="Folder" focus />
+    <EditBox label={contact.string.Name} icon={IconFolder} bind:value={name} placeholder="Folder" maxWidth={'16rem'} focus />
     <ToggleWithLabel label={contact.string.MakePrivate} description={contact.string.MakePrivateDescription} />
   </Grid>
 </SpaceCreateCard>

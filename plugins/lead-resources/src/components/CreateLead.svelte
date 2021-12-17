@@ -97,7 +97,7 @@
       bind:value={title}
       icon={lead.icon.Lead}
       placeholder="The simple lead"
-      maxWidth="39rem"
+      maxWidth={'16rem'}
       focus
     />
     <UserBox _class={contact.class.Contact} title="Customer" caption="Select customer" bind:value={customer} />
