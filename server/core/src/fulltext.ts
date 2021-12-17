@@ -34,6 +34,9 @@ import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = [] as AnyAttribute[]
 
+/**
+ * @public
+ */
 export class FullTextIndex extends TxProcessor implements Storage {
   private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute[]>()
 
@@ -160,9 +163,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
 
   private getContent (attributes: AnyAttribute[] | undefined, doc: Doc): any[] {
     if (attributes === undefined) return []
-    return attributes.map((attr) =>
-      (doc as any)[attr.name]?.toString() ?? ''
-    )
+    return attributes.map((attr) => (doc as any)[attr.name]?.toString() ?? '')
   }
 
   private async updateAttachedDocs (tx: TxUpdateDoc<Doc>, update: any): Promise<void> {

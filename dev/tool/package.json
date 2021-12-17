@@ -12,7 +12,7 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
-    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ts-node ./src/index.ts",
+    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 ts-node ./src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
@@ -52,6 +52,18 @@
     "@anticrm/client": "~0.6.1",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model": "~0.6.0",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^2.0.3",
+    "@elastic/elasticsearch": "^7.14.0",
+    "@anticrm/elastic": "~0.6.0",
+    "@anticrm/server-core": "~0.6.1",
+    "@anticrm/model-attachment": "~0.6.0",
+    "@anticrm/mongo": "~0.6.0",
+    "@anticrm/dev-storage": "~0.6.0",
+    "@anticrm/server-chunter": "~0.6.1",
+    "@anticrm/server-chunter-resources": "~0.6.0",
+    "@anticrm/server-recruit": "~0.6.0",
+    "@anticrm/server-recruit-resources": "~0.6.0",
+    "@anticrm/server-task": "~0.6.0",
+    "@anticrm/server-task-resources": "~0.6.0"
   }
 }

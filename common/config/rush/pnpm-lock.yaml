@@ -11880,10 +11880,11 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-Ymz2K4mDdajWonLpamGYn7fTN7OqKKjW6SWBB0iZzBxb9BtZOpIY3IVaV9Bm3PYDpm7WOgJ82EjwZbO9+nczFQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-lU+YKp5b1L8tgTQ+RopEhvT+Jn94y4eIclpXgrcaLG+xk2YAfRdF+fTD8QyA09jXAlWL9Eua+mi3GD/P0a+KJQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
+      '@elastic/elasticsearch': 7.15.0
       '@rushstack/heft': 0.41.1
       '@types/heft-jest': 1.0.2
       '@types/minio': 7.0.10
