@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
@@ -118,7 +119,7 @@
                 class:sorted={attribute.key === sortKey}
                 on:click={() => changeSorting(attribute.key)}
               >
-                <div class="flex-row-center">
+                <div class="flex-row-center whitespace-nowrap">
                   <Label label={attribute.label} />
                   {#if attribute.key === sortKey}
                     <div class="icon">

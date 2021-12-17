@@ -77,7 +77,7 @@
       <tr class="tr-head">
         {#each model as attribute}
           <th class:sortable={attribute.key} class:sorted={attribute.key === sortKey} on:click={() => changeSorting(attribute.key)}>
-            <div class="flex-row-center">
+            <div class="flex-row-center whitespace-nowrap">
               <Label label = {attribute.label}/>
               {#if attribute.key === sortKey}
                 <div class="icon">
