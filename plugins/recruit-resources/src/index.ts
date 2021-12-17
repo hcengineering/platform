@@ -26,6 +26,7 @@ import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Applications from './components/Applications.svelte'
+import EditApplication from './components/EditApplication.svelte'
 
 import { showPopup } from '@anticrm/ui'
 import { Resources } from '@anticrm/platform'
@@ -44,6 +45,7 @@ export default async (): Promise<Resources> => ({
     CreateCandidate,
     CreateApplication,
     EditCandidate,
+    EditApplication,
     KanbanCard,
     ApplicationPresenter,
     ApplicationsPresenter,

@@ -1,7 +1,7 @@
 {
   "string": {
     "UploadDropFilesHere": "Upload or drop files here",
-    "NoAttachments": "There are no attachments",
+    "NoAttachments": "There are no attachments for this",
     "AddAttachment": "uploaded an attachment"
   }
 }

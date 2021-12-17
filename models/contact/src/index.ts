@@ -152,7 +152,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Person,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditPerson,
+    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
     config: [
@@ -167,7 +167,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Organization,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditOrganization,
+    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
     config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files' }, 'modifiedOn', 'channels']

@@ -14,8 +14,7 @@
     "CandidatesName": "Pool name *",
     "MakePrivateDescription": "Only members can see it",
     "CreateAnApplication": "Create an application",
-    "NoApplicationsForCandidate": "There are no applications for this candidate.",
-    "NoAttachmentsForCandidate": "There are no attachments for this candidate."
+    "NoApplicationsForCandidate": "There are no applications for this candidate."
   },
   "status": {
     "CandidateRequired": "Please select candidate"

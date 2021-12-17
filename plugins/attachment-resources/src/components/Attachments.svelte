@@ -1,14 +1,15 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
-// 
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -16,7 +17,7 @@
   import attachment from '../plugin'
   import type { Attachment } from '@anticrm/attachment'
   import type { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { IntlString, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, Label, Spinner } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
@@ -26,7 +27,6 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
-  export let noLabel: IntlString = attachment.string.NoAttachments
 
   let attachments: Attachment[] = []
 
@@ -39,6 +39,7 @@
   let loading = 0
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   async function createAttachment (file: File) {
     loading++
@@ -78,6 +79,7 @@
   }
 
   let dragover = false
+  $: classLabel = hierarchy.getClass(_class).label
 </script>
 
 <div class="attachments-container">
@@ -120,7 +122,10 @@
     >
       <UploadDuo size={'large'} />
       <div class="small-text content-dark-color mt-2">
-        <Label label={noLabel} />
+        <Label label={attachment.string.NoAttachments} />
+        <span class="lower">
+          <Label label={classLabel} />
+        </span>
       </div>
       <div class="small-text">
         <a href={'#'} on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></a>
@@ -155,5 +160,9 @@
     background: var(--theme-bg-accent-color);
     border: 1px dashed var(--theme-zone-border-lite);
     border-radius: 0.75rem;
+  }
+
+  .lower {
+    text-transform: lowercase;
   }
 </style>

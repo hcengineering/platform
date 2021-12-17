@@ -26,7 +26,24 @@ import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type { Kanban, KanbanCard, Project, State, Issue, Sequence, DoneState, WonState, LostState, KanbanTemplateSpace, StateTemplate, DoneStateTemplate, WonStateTemplate, LostStateTemplate, KanbanTemplate, Task } from '@anticrm/task'
+import type {
+  Kanban,
+  KanbanCard,
+  Project,
+  State,
+  Issue,
+  Sequence,
+  DoneState,
+  WonState,
+  LostState,
+  KanbanTemplateSpace,
+  StateTemplate,
+  DoneStateTemplate,
+  WonStateTemplate,
+  LostStateTemplate,
+  KanbanTemplate,
+  Task
+} from '@anticrm/task'
 import { createProjectKanban } from '@anticrm/task'
 import task from './plugin'
 import { AnyComponent } from '@anticrm/ui'
@@ -77,8 +94,7 @@ export class TTask extends TAttachedDoc implements Task {
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
-export class TSpaceWithStates extends TSpace {
-}
+export class TSpaceWithStates extends TSpace {}
 
 @Model(task.class.Project, task.class.SpaceWithStates)
 @UX('Project' as IntlString, task.icon.Task)
@@ -188,7 +204,8 @@ export function createModel (builder: Builder): void {
     TTask,
     TSpaceWithStates,
     TProject,
-    TIssue)
+    TIssue
+  )
   builder.mixin(task.class.Project, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: task.class.Issue,
@@ -196,21 +213,26 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: task.string.ApplicationLabelTask,
-    icon: task.icon.Task,
-    hidden: false,
-    navigatorModel: {
-      spaces: [
-        {
-          label: task.string.Projects,
-          spaceClass: task.class.Project,
-          addSpaceLabel: task.string.CreateProject,
-          createComponent: task.component.CreateProject
-        }
-      ]
-    }
-  }, task.app.Tasks)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: task.string.ApplicationLabelTask,
+      icon: task.icon.Task,
+      hidden: false,
+      navigatorModel: {
+        spaces: [
+          {
+            label: task.string.Projects,
+            spaceClass: task.class.Project,
+            addSpaceLabel: task.string.CreateProject,
+            createComponent: task.component.CreateProject
+          }
+        ]
+      }
+    },
+    task.app.Tasks
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
@@ -237,7 +259,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectEditor, {
-    editor: task.component.EditTask
+    editor: task.component.EditIssue
   })
 
   builder.createDoc(task.class.Sequence, task.space.Sequence, {
@@ -260,44 +282,65 @@ export function createModel (builder: Builder): void {
     config: [
       // '$lookup.attachedTo',
       '$lookup.state',
-      '$lookup.assignee']
+      '$lookup.assignee'
+    ]
   })
 
   builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
     card: task.component.KanbanCard
   })
 
-  builder.createDoc(task.class.Project, core.space.Model, {
-    name: 'public',
-    description: 'Public tasks',
-    private: false,
-    members: []
-  }, task.space.TasksPublic)
+  builder.createDoc(
+    task.class.Project,
+    core.space.Model,
+    {
+      name: 'public',
+      description: 'Public tasks',
+      private: false,
+      members: []
+    },
+    task.space.TasksPublic
+  )
 
-  builder.createDoc(task.class.KanbanTemplateSpace, core.space.Model, {
-    name: 'Projects',
-    description: 'Manage project statuses',
-    members: [],
-    private: false,
-    icon: task.component.TemplatesIcon
-  }, task.space.ProjectTemplates)
+  builder.createDoc(
+    task.class.KanbanTemplateSpace,
+    core.space.Model,
+    {
+      name: 'Projects',
+      description: 'Manage project statuses',
+      members: [],
+      private: false,
+      icon: task.component.TemplatesIcon
+    },
+    task.space.ProjectTemplates
+  )
 
   createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
     builder.createDoc(_class, space, data, id)
     return await Promise.resolve()
   }).catch((err) => console.error(err))
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Create task' as IntlString,
-    icon: task.icon.Task,
-    action: task.actionImpl.CreateTask
-  }, task.action.CreateTask)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Create task' as IntlString,
+      icon: task.icon.Task,
+      action: task.actionImpl.CreateTask
+    },
+    task.action.CreateTask
+  )
 
-  builder.createDoc(view.class.Action, core.space.Model, {
-    label: 'Edit Statuses' as IntlString,
-    icon: view.icon.MoreH,
-    action: task.actionImpl.EditStatuses
-  }, task.action.EditStatuses)
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Edit Statuses' as IntlString,
+      icon: view.icon.MoreH,
+      action: task.actionImpl.EditStatuses
+    },
+    task.action.EditStatuses
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: task.class.SpaceWithStates,
@@ -312,18 +355,28 @@ export function createModel (builder: Builder): void {
     presenter: task.component.StatePresenter
   })
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Kanban' as IntlString,
-    icon: task.icon.Kanban,
-    component: task.component.KanbanView
-  }, task.viewlet.Kanban)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Kanban' as IntlString,
+      icon: task.icon.Kanban,
+      component: task.component.KanbanView
+    },
+    task.viewlet.Kanban
+  )
 
-  builder.createDoc(core.class.Space, core.space.Model, {
-    name: 'Sequences',
-    description: 'Internal space to store sequence numbers',
-    members: [],
-    private: false
-  }, task.space.Sequence)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      name: 'Sequences',
+      description: 'Internal space to store sequence numbers',
+      members: [],
+      private: false
+    },
+    task.space.Sequence
+  )
 }
 
 export { taskOperation } from './migration'

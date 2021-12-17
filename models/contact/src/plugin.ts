@@ -27,6 +27,7 @@ export const ids = mergeIds(contactId, contact, {
     ChannelsPresenter: '' as AnyComponent,
     CreatePerson: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
+    EditContact: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     CreateOrganization: '' as AnyComponent,
     CreatePersons: '' as AnyComponent,
