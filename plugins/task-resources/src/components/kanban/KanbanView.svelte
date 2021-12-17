@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, Class, Doc, FindOptions, Ref } from '@anticrm/core'
+  import { AttachedDoc, calcRank, Class, Doc, DocumentUpdate, DocWithRank, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -26,7 +26,7 @@
   import KanbanPanel from './KanbanPanel.svelte'
   // import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
-  type Item = Doc & { state: Ref<State>, doneState: Ref<DoneState> | null }
+  type Item = DocWithRank & { state: Ref<State>, doneState: Ref<DoneState> | null }
 
   export let _class: Ref<Class<Item>>
   export let space: Ref<SpaceWithStates>
@@ -36,50 +36,38 @@
 
   let kanban: Kanban
   let states: State[] = []
-  let rawStates: State[] = []
 
-  let objects: (Item | undefined)[] = []
-  let rawObjects: Item[] = []
-  let kanbanStates: Ref<State>[] = []
-  let kanbanDoneStates: Ref<DoneState>[] = []
+  let objects: Item[] = []
   let wonState: WonState | undefined
   let lostState: LostState | undefined
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
 
-  $: kanbanStates = kanban?.states ?? []
-  $: kanbanDoneStates = kanban?.doneStates ?? []
-
-  function sort (kanban: Kanban, states: State[]): State[] {
-    if (kanban === undefined || states.length === 0) { return [] }
-    const map = states.reduce((map, state) => { map.set(state._id, state); return map }, new Map<Ref<State>, State>())
-    return kanban.states.map(id => map.get(id) as State)
-  }
-
-  function sortObjects<T extends Doc> (kanban: Kanban, objects: T[]): (T | undefined)[] {
-    if (kanban === undefined || objects.length === 0) { return [] }
-    const map = objects.reduce((map, doc) => { map.set(doc._id, doc); return map }, new Map<Ref<T>, T>())
-    return kanban.order
-      .map(id => map.get(id as Ref<T>))
-  }
-
   const statesQuery = createQuery()
-  $: if (kanbanStates.length > 0) statesQuery.query(task.class.State, { _id: { $in: kanbanStates } }, result => { rawStates = result })
-  $: states = sort(kanban, rawStates)
+  $: if (kanban !== undefined) {
+    statesQuery.query(task.class.State, { space: kanban.space }, result => { states = result }, {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
+    })
+  }
 
   const doneStatesQ = createQuery()
-  $: if (kanbanDoneStates.length > 0) {
-    doneStatesQ.query(task.class.DoneState, { _id: { $in: kanbanDoneStates } }, (result) => {
+  $: if (kanban !== undefined) {
+    doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => {
       wonState = result.find((x) => x._class === task.class.WonState)
       lostState = result.find((x) => x._class === task.class.LostState)
     })
   }
 
   const query = createQuery()
-  $: query.query(_class, { space, doneState: null }, result => { rawObjects = result }, options)
-
-  $: objects = sortObjects(kanban, rawObjects)
+  $: query.query(_class, { space, doneState: null }, result => { objects = result }, {
+    ...options,
+    sort: {
+      rank: SortingOrder.Ascending
+    },
+  })
 
   function dragover (ev: MouseEvent, object: Item) {
     if (dragCard !== object) {
@@ -89,28 +77,44 @@
     }
   }
 
+  async function updateItem (item: Item, update: DocumentUpdate<Item>) {
+    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
+      const adoc: AttachedDoc = item as Doc as AttachedDoc
+      await client.updateCollection(
+        _class,
+        space,
+        adoc._id as Ref<Doc> as Ref<AttachedDoc>,
+        adoc.attachedTo,
+        adoc.attachedToClass,
+        adoc.collection,
+        update
+      )
+    } else {
+      await client.updateDoc(item._class, item.space, item._id, update)
+    }
+  }
+
   async function move (state: Ref<State>) {
-    const id = dragCard._id
+    let updates: DocumentUpdate<Item> = {}
 
     if (dragCardInitialState !== state) {
-      if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
-        const adoc: AttachedDoc = dragCard as Doc as AttachedDoc
-        // We need to update using updateCollection
-        client.updateCollection(_class, space, id as Ref<Doc> as Ref<AttachedDoc>, adoc.attachedTo, adoc.attachedToClass, adoc.collection, { state })
-      } else {
-        client.updateDoc<Task>(_class, space, id as Ref<Task>, { state })
+      updates = {
+        ...updates,
+        state
       }
     }
 
     if (dragCardInitialPosition !== dragCardEndPosition) {
-      client.updateDoc(task.class.Kanban, space, kanban._id, {
-        $move: {
-          order: {
-            $value: id,
-            $position: dragCardEndPosition
-          }
-        }
-      })
+      const [prev, next] = [objects[dragCardEndPosition - 1], objects[dragCardEndPosition + 1]]
+
+      updates = {
+        ...updates,
+        rank: calcRank(prev, next)
+      }
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await updateItem(dragCard, updates)
     }
   }
 
@@ -128,25 +132,9 @@
   }
 
   const onDone = (state: DoneState) => async () => {
-    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
-      const adoc: AttachedDoc = dragCard as Doc as AttachedDoc
-      await client.updateCollection<Doc, Task>(
-        _class,
-        space,
-        adoc._id as Ref<Task>,
-        adoc.attachedTo,
-        adoc.attachedToClass,
-        adoc.collection,
-        { doneState: state._id }
-      )
-    } else {
-      await client.updateDoc(dragCard._class, dragCard.space, dragCard._id, {
-        doneState: state._id
-      })
-    }
-
     isDragging = false
     hoveredDoneState = undefined
+    await updateItem(dragCard, { doneState: state._id })
   }
 
   let isDragging = false
@@ -174,7 +162,7 @@
             }}>
             <!-- <KanbanCardEmpty label={'Create new application'} /> -->
             {#each objects as object, j (object)}
-              {#if object !== undefined && object.state === state._id}
+              {#if object.state === state._id}
                 <div
                   class="step-tb75"
                   on:dragover|preventDefault={(ev) => {
@@ -226,11 +214,9 @@
         class="flex-grow flex-center done-item"
         class:hovered={hoveredDoneState === lostState._id}
         on:dragenter={() => {
-          console.log('enter')
           hoveredDoneState = lostState?._id
         }}
         on:dragleave={() => {
-          console.log('leave')
           hoveredDoneState = undefined
         }}
         on:dragover|preventDefault={() => {}}

@@ -1,5 +1,5 @@
 
-import { Ref, TxOperations } from '@anticrm/core'
+import { genRanks, Ref, TxOperations } from '@anticrm/core'
 import task, { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
 import { findOrUpdate } from './utils'
 
@@ -12,42 +12,55 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
     { color: '#F28469', name: 'Invalid' }
   ]
   const states: Array<Ref<State>> = []
+  const stateRanks = genRanks(rawStates.length)
   for (const st of rawStates) {
+    const rank = stateRanks.next().value
+
+    if (rank === undefined) {
+      console.error('Failed to generate rank')
+      break
+    }
+
     const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
     await findOrUpdate(client, spaceId, task.class.State,
       sid,
       {
         title: st.name,
-        color: st.color
+        color: st.color,
+        rank
       }
     )
     states.push(sid)
   }
 
-  const rawDoneStates = [
+  const doneStates = [
     { class: task.class.WonState, title: 'Won' },
     { class: task.class.LostState, title: 'Lost' }
   ]
-  const doneStates: Array<Ref<DoneState>> = []
-  for (const st of rawDoneStates) {
+  const doneStateRanks = genRanks(doneStates.length)
+  for (const st of doneStates) {
+    const rank = doneStateRanks.next().value
+
+    if (rank === undefined) {
+      console.error('Failed to generate rank')
+      break
+    }
+
     const sid = ('generated-' + spaceId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
     await findOrUpdate(client, spaceId, st.class,
       sid,
       {
-        title: st.title
+        title: st.title,
+        rank
       }
     )
-    doneStates.push(sid)
   }
 
   await findOrUpdate(client, spaceId,
     task.class.Kanban,
     ('generated-' + spaceId + '.kanban') as Ref<Kanban>,
     {
-      attachedTo: spaceId,
-      states,
-      doneStates,
-      order: []
+      attachedTo: spaceId
     }
   )
   return states

@@ -14,8 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Client, Data, Doc, Mixin, Ref, Space, TxOperations } from '@anticrm/core'
-import { Arr } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Data, Doc, DocWithRank, genRanks, Mixin, Ref, Space, TxOperations } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -26,7 +25,7 @@ import { ViewletDescriptor } from '@anticrm/view'
 /**
  * @public
  */
-export interface State extends Doc {
+export interface State extends DocWithRank {
   title: string
   color: string
 }
@@ -34,7 +33,7 @@ export interface State extends Doc {
 /**
  * @public
  */
-export interface DoneState extends Doc {
+export interface DoneState extends DocWithRank {
   title: string
 }
 
@@ -51,7 +50,7 @@ export interface LostState extends DoneState {}
 /**
  * @public
  */
-export interface Task extends AttachedDoc {
+export interface Task extends AttachedDoc, DocWithRank {
   state: Ref<State>
   doneState: Ref<DoneState> | null
   number: number
@@ -95,9 +94,6 @@ export interface KanbanCard extends Class<Doc> {
  */
 export interface Kanban extends Doc {
   attachedTo: Ref<Space>
-  states: Arr<Ref<State>>
-  doneStates: Arr<Ref<DoneState>>
-  order: Arr<Ref<Doc>>
 }
 
 /**
@@ -133,8 +129,6 @@ export interface LostStateTemplate extends DoneStateTemplate, LostState {}
   */
 export interface KanbanTemplate extends Doc {
   title: string
-  states: Arr<Ref<StateTemplate>>
-  doneStates: Arr<Ref<DoneStateTemplate>>
   statesC: number
   doneStatesC: number
 }
@@ -209,47 +203,56 @@ export async function createProjectKanban (
     { color: '#A5D179', name: 'Done' },
     { color: '#F28469', name: 'Invalid' }
   ]
-  const ids: Array<Ref<State>> = []
+  const stateRank = genRanks(states.length)
   for (const st of states) {
+    const rank = stateRank.next().value
+
+    if (rank === undefined) {
+      throw Error('Failed to generate rank')
+    }
+
     const sid = (projectId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
     await factory(
       task.class.State,
       projectId,
       {
         title: st.name,
-        color: st.color
+        color: st.color,
+        rank
       },
       sid
     )
-    ids.push(sid)
   }
 
-  const rawDoneStates = [
+  const doneStates = [
     { class: task.class.WonState, title: 'Won' },
     { class: task.class.LostState, title: 'Lost' }
   ]
-  const doneStates: Array<Ref<DoneState>> = []
-  for (const st of rawDoneStates) {
+  const doneStateRank = genRanks(doneStates.length)
+  for (const st of doneStates) {
+    const rank = doneStateRank.next().value
+
+    if (rank === undefined) {
+      throw Error('Failed to generate rank')
+    }
+
     const sid = (projectId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
     await factory(
       st.class,
       projectId,
       {
-        title: st.title
+        title: st.title,
+        rank
       },
       sid
     )
-    doneStates.push(sid)
   }
 
   await factory(
     task.class.Kanban,
     projectId,
     {
-      attachedTo: projectId,
-      states: ids,
-      doneStates,
-      order: []
+      attachedTo: projectId
     },
     (projectId + '.kanban') as Ref<Kanban>
   )
@@ -260,18 +263,19 @@ export async function createProjectKanban (
  */
 export async function createKanban (client: Client & TxOperations, attachedTo: Ref<Space>, templateId?: Ref<KanbanTemplate>): Promise<Ref<Kanban>> {
   if (templateId === undefined) {
+    const ranks = [...genRanks(2)]
+    await Promise.all([
+      client.createDoc(task.class.WonState, attachedTo, {
+        title: 'Won',
+        rank: ranks[0]
+      }),
+      client.createDoc(task.class.LostState, attachedTo, {
+        title: 'Lost',
+        rank: ranks[1]
+      })
+    ])
     return await client.createDoc(task.class.Kanban, attachedTo, {
-      attachedTo,
-      states: [],
-      doneStates: await Promise.all([
-        client.createDoc(task.class.WonState, attachedTo, {
-          title: 'Won'
-        }),
-        client.createDoc(task.class.LostState, attachedTo, {
-          title: 'Lost'
-        })
-      ]),
-      order: []
+      attachedTo
     })
   }
 
@@ -282,37 +286,34 @@ export async function createKanban (client: Client & TxOperations, attachedTo: R
   }
 
   const tmplStates = await client.findAll(task.class.StateTemplate, { attachedTo: template._id })
-  const states = await Promise.all(
-    template.states
-      .map((id) => tmplStates.find((x) => x._id === id))
-      .filter((tstate): tstate is StateTemplate => tstate !== undefined)
-      .map(async (state) => await client.createDoc(task.class.State, attachedTo, { color: state.color, title: state.title }))
-  )
+  await Promise.all(
+    tmplStates.map(async (state) => await client.createDoc(
+      task.class.State,
+      attachedTo,
+      {
+        color: state.color,
+        title: state.title,
+        rank: state.rank
+      })))
 
   const doneClassMap = new Map<Ref<Class<DoneStateTemplate>>, Ref<Class<DoneState>>>([
     [task.class.WonStateTemplate, task.class.WonState],
     [task.class.LostStateTemplate, task.class.LostState]
   ])
   const tmplDoneStates = await client.findAll(task.class.DoneStateTemplate, { attachedTo: template._id })
-  const doneStates = (await Promise.all(
-    template.doneStates
-      .map((id) => tmplDoneStates.find((x) => x._id === id))
-      .filter((tstate): tstate is DoneStateTemplate => tstate !== undefined)
-      .map(async (state) => {
-        const cl = doneClassMap.get(state._class)
+  await Promise.all(
+    tmplDoneStates.map(async (state) => {
+      const cl = doneClassMap.get(state._class)
 
-        if (cl === undefined) {
-          return
-        }
+      if (cl === undefined) {
+        return
+      }
 
-        return await client.createDoc(cl, attachedTo, { title: state.title })
-      })
-  )).filter((x): x is Ref<DoneState> => x !== undefined)
+      return await client.createDoc(cl, attachedTo, { title: state.title, rank: state.rank })
+    })
+  )
 
   return await client.createDoc(task.class.Kanban, attachedTo, {
-    attachedTo,
-    states,
-    doneStates,
-    order: []
+    attachedTo
   })
 }

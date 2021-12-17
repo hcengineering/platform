@@ -71,8 +71,6 @@
     "@anticrm/contact-assets": "~0.6.0",
     "@anticrm/server-recruit": "~0.6.1",
     "@anticrm/server-recruit-resources": "~0.6.0",
-    "@anticrm/server-task": "~0.6.0",
-    "@anticrm/server-task-resources": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
     "@anticrm/activity-assets": "~0.6.0",
     "@anticrm/activity-resources": "~0.6.0",

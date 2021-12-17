@@ -1,5 +1,5 @@
 import contact from '@anticrm/contact'
-import core, { AttachedData, Data, generateId, Ref, TxOperations } from '@anticrm/core'
+import core, { AttachedData, Data, generateId, genRanks, Ref, TxOperations } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
 import faker from 'faker'
@@ -79,7 +79,7 @@ export async function generateContacts (transactorUrl: string, dbName: string, o
     }
     const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>
 
-    console.log('Creating vacandy', vacancy.name)
+    console.log('Creating vacancy', vacancy.name)
     // Update or create candidate
     await findOrUpdate(client, core.space.Model, recruit.class.Vacancy, vacancyId, vacancy)
 
@@ -93,14 +93,22 @@ export async function generateContacts (transactorUrl: string, dbName: string, o
 
     console.log('States generated', vacancy.name)
 
+    const rankGen = genRanks(candidates.length)
     for (const candidateId of candidates) {
+      const rank = rankGen.next().value
+
+      if (rank === undefined) {
+        throw Error('Failed to generate rank')
+      }
+
       const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
 
       const applicant: AttachedData<Applicant> = {
         number: faker.datatype.number(),
         assignee: faker.random.arrayElement(emoloyeeIds),
         state: faker.random.arrayElement(states),
-        doneState: null
+        doneState: null,
+        rank
       }
 
       // Update or create candidate

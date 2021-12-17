@@ -15,7 +15,8 @@
 <script lang="ts">
   import type { Employee } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import type { Ref, Space } from '@anticrm/core'
+  import { Ref, SortingOrder, Space } from '@anticrm/core'
+  import { calcRank } from '@anticrm/core'
   import { OK, Severity, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
@@ -50,6 +51,12 @@
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
+
+    const lastOne = await client.findOne(
+      recruit.class.Applicant,
+      { state: state._id },
+      { sort: { rank: SortingOrder.Descending } }
+    )
     const incResult = await client.updateDoc(
       task.class.Sequence,
       task.space.Sequence,
@@ -59,7 +66,7 @@
       },
       true
     )
-    const id = await client.addCollection(
+    await client.addCollection(
       recruit.class.Applicant,
       _space,
       candidate,
@@ -69,7 +76,8 @@
         state: state._id,
         doneState: null,
         number: incResult.object.sequence,
-        assignee: assignee
+        assignee: assignee,
+        rank: calcRank(lastOne, undefined)
       }
     )
   }

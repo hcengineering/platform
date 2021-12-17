@@ -53,18 +53,22 @@ export { default } from './plugin'
 export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
-@Model(task.class.State, core.class.Doc, DOMAIN_STATE)
+@Model(task.class.State, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
 export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
 
   color!: string
+
+  declare rank: string
 }
 
-@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE)
+@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
+
+  declare rank: string
 }
 
 @Model(task.class.WonState, task.class.DoneState, DOMAIN_STATE)
@@ -78,7 +82,7 @@ export class TLostState extends TDoneState implements LostState {}
  *
  * No domain is specified, since pure Tasks could not exists
  */
-@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK)
+@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [core.interface.DocWithRank])
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), 'State' as IntlString)
   state!: Ref<State>
@@ -91,6 +95,8 @@ export class TTask extends TAttachedDoc implements Task {
 
   // @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
   assignee!: Ref<Employee> | null
+
+  declare rank: string
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
@@ -136,7 +142,6 @@ export class TKanban extends TDoc implements Kanban {
   states!: Arr<Ref<State>>
   doneStates!: Arr<Ref<DoneState>>
   attachedTo!: Ref<Space>
-  order!: Arr<Ref<Doc>>
 }
 
 @Model(task.class.KanbanTemplateSpace, core.class.Space, DOMAIN_MODEL)
@@ -144,19 +149,23 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   icon!: AnyComponent
 }
 
-@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [core.interface.DocWithRank])
 export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
 
   @Prop(TypeString(), 'Color' as IntlString)
   color!: string
+
+  declare rank: string
 }
 
-@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN)
+@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [core.interface.DocWithRank])
 export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
+
+  declare rank: string
 }
 
 @Model(task.class.WonStateTemplate, task.class.DoneStateTemplate, DOMAIN_KANBAN)
@@ -169,9 +178,6 @@ export class TLostStateTemplate extends TDoneStateTemplate implements LostStateT
 export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
-
-  states!: Arr<Ref<StateTemplate>>
-  doneStates!: Arr<Ref<DoneStateTemplate>>
 
   @Prop(Collection(task.class.StateTemplate), 'States' as IntlString)
   statesC!: number

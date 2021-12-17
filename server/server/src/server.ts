@@ -24,7 +24,6 @@ import type { DbConfiguration, DbAdapter } from '@anticrm/server-core'
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverViewId } from '@anticrm/server-task'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
@@ -42,7 +41,6 @@ async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string,
 export function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): () => void {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
-  addLocation(serverViewId, () => import('@anticrm/server-task-resources'))
 
   return startJsonRpc((workspace: string) => {
     const conf: DbConfiguration = {

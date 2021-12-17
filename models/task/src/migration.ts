@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Domain, DOMAIN_TX, Ref, TxCUD, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Doc, DocWithRank, Domain, DOMAIN_TX, genRanks, Ref, Space, TxCUD, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrateUpdate,
@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createProjectKanban } from '@anticrm/task'
+import { createProjectKanban, KanbanTemplate } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -134,28 +134,148 @@ export const taskOperation: MigrateOperation = {
 
     console.log('View: Performing model upgrades')
 
-    const kanbans = (await client.findAll(task.class.Kanban, {})).filter((kanban) => kanban.doneStates == null)
+    await createMissingDoneStates(client, ops)
+    await updateRankItems({ client, ops, _class: task.class.State, extractOrder: (kanban) => kanban.states })
+    await updateRankItems({ client, ops, _class: task.class.DoneState, extractOrder: (kanban) => kanban.doneStates })
+    await updateRankItems({ client, ops, _class: task.class.Task, extractOrder: (kanban) => kanban.order })
+    await updateTemplateRankItems({ client, ops, _class: task.class.StateTemplate, extractOrder: (kanban) => kanban.states })
+    await updateTemplateRankItems({ client, ops, _class: task.class.DoneStateTemplate, extractOrder: (kanban) => kanban.doneStates })
+  }
+}
 
-    await Promise.all(
-      kanbans.map(async (kanban) => {
-        console.log(`Updating kanban: ${kanban._id}`)
+async function createMissingDoneStates (client: Client, ops: TxOperations): Promise<void> {
+  const spacesWithStates = await client.findAll(task.class.SpaceWithStates, {})
+  const doneStates = await client.findAll(task.class.DoneState, {})
+  const spaceIdsWithDoneStates = new Set(doneStates.map(x => x.space))
+  const outdatedSpaces = spacesWithStates.filter((space) => !spaceIdsWithDoneStates.has(space._id))
+
+  const pairRanks = [...genRanks(2)]
+
+  await Promise.all(
+    outdatedSpaces
+      .map(async (space) => {
+        console.log(`Creating done states for space: ${space._id}`)
         try {
-          const doneStates = await Promise.all([
-            ops.createDoc(task.class.WonState, kanban.space, {
-              title: 'Won'
+          await Promise.all([
+            ops.createDoc(task.class.WonState, space._id, {
+              title: 'Won',
+              rank: pairRanks[0]
             }),
-            ops.createDoc(task.class.LostState, kanban.space, {
-              title: 'Lost'
+            ops.createDoc(task.class.LostState, space._id, {
+              title: 'Lost',
+              rank: pairRanks[1]
             })
           ])
-
-          await ops.updateDoc(kanban._class, kanban.space, kanban._id, {
-            doneStates
-          })
         } catch (e) {
           console.error(e)
         }
-      })
-    )
+      }))
+}
+
+async function updateRankItems<T extends DocWithRank> ({
+  client,
+  ops,
+  _class,
+  extractOrder
+}: {
+  client: Client
+  ops: TxOperations
+  _class: Ref<Class<T>>
+  extractOrder: (kanban: any) => Ref<T>[]
+}): Promise<void> {
+  const allItems = await client.findAll(_class, {})
+  const unorderedItems = allItems
+    .filter((item) => item.rank === undefined)
+  const groupedUnsortedItems = new Map<Ref<Space>, T[]>()
+
+  unorderedItems.forEach((item) => {
+    const existing = groupedUnsortedItems.get(item.space) ?? []
+    groupedUnsortedItems.set(item.space, [...existing, item])
+  })
+
+  for (const [space, items] of groupedUnsortedItems.entries()) {
+    const kanban = await client.findOne(task.class.Kanban, { attachedTo: space })
+
+    if (kanban === undefined) {
+      console.error(`Failed to find kanban attached to space '${space}'`)
+      continue
+    }
+
+    const order = extractOrder(kanban)
+
+    if (order === undefined) {
+      console.error(`Kanban doesn't contain items order: ${kanban._id}`)
+      continue
+    }
+
+    const orderedItems = order
+      .map((id) => items.find(x => x._id === id))
+      .filter((items): items is T => items !== undefined)
+    const ranks = genRanks(orderedItems.length)
+
+    for (const item of orderedItems) {
+      const rank = ranks.next().value
+
+      if (rank === undefined) {
+        console.error('Failed to generate rank')
+        break
+      }
+
+      await ops.updateDoc(item._class as Ref<Class<DocWithRank>>, item.space, item._id, { rank })
+    }
+  }
+}
+
+async function updateTemplateRankItems<T extends DocWithRank & AttachedDoc> ({
+  client,
+  ops,
+  _class,
+  extractOrder
+}: {
+  client: Client
+  ops: TxOperations
+  _class: Ref<Class<T>>
+  extractOrder: (kanban: any) => Ref<T>[]
+}): Promise<void> {
+  const allItems = await client.findAll(_class, {})
+  const unorderedItems = allItems
+    .filter((state) => state.rank === undefined)
+  const groupedUnsortedItems = new Map<Ref<Doc>, T[]>()
+
+  unorderedItems.forEach((item) => {
+    const existing = groupedUnsortedItems.get(item.attachedTo) ?? []
+    groupedUnsortedItems.set(item.attachedTo, [...existing, item])
+  })
+
+  for (const [attachedTo, items] of groupedUnsortedItems.entries()) {
+    const kanban = await client.findOne(task.class.KanbanTemplate, { _id: attachedTo as Ref<KanbanTemplate> })
+
+    if (kanban === undefined) {
+      console.error(`Failed to find kanban '${attachedTo}'`)
+      continue
+    }
+
+    const order = extractOrder(kanban)
+
+    if (order === undefined) {
+      console.error(`Kanban doesn't contain items order: ${kanban._id}`)
+      continue
+    }
+
+    const orderedItems = order
+      .map((id) => items.find(x => x._id === id))
+      .filter((items): items is T => items !== undefined)
+    const ranks = genRanks(orderedItems.length)
+
+    for (const item of orderedItems) {
+      const rank = ranks.next().value
+
+      if (rank === undefined) {
+        console.error('Failed to generate rank')
+        break
+      }
+
+      await ops.updateDoc(item._class as Ref<Class<DocWithRank>>, item.space, item._id, { rank })
+    }
   }
 }

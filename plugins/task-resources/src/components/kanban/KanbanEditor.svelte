@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Doc } from '@anticrm/core'
+  import { Ref, Doc, SortingOrder, calcRank } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, State, DoneState } from '@anticrm/task'
   import task from '@anticrm/task'
@@ -33,45 +33,49 @@
 
   const client = getClient()
 
-  function sort <T extends Doc> (order: Ref<T>[], items: T[]): T[] {
-    if (items.length === 0) {
-      return []
-    }
-
-    const itemMap = new Map(items.map(x => [x._id, x]))
-    const x = order
-      .map(id => itemMap.get(id))
-      .filter((x): x is T => x !== undefined)
-
-    return x
-  }
-
   const statesQ = createQuery()
-  $: statesQ.query(task.class.State, { _id: { $in: kanban.states ?? [] } }, result => { states = sort(kanban.states, result) })
+  $: statesQ.query(task.class.State, { space: kanban.space }, result => { states = result}, {
+    sort: {
+      rank: SortingOrder.Ascending
+    }
+  })
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(task.class.DoneState, { _id: { $in: kanban.doneStates } }, (result) => { doneStates = sort(kanban.doneStates, result) })
+  $: doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => { doneStates = result }, {
+    sort: {
+      rank: SortingOrder.Ascending
+    }
+  })
 
   async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<State>, position: number } }) {
-    client.updateDoc(kanban._class, kanban.space, kanban._id, {
-      $move: {
-        states: {
-          $value: stateID,
-          $position: position
-        }
+    const [prev, next] = [states[position - 1], states[position + 1]]
+    const state = states.find((x) => x._id === stateID)
+
+    if (state === undefined) {
+      return
+    }
+
+    await client.updateDoc(
+      state._class,
+      state.space,
+      state._id,
+      {
+        rank: calcRank(prev, next)
       }
-    })
+    )
   }
 
   async function onAdd () {
-    const state = await client.createDoc(task.class.State, kanban.space, {
+    const lastOne = await client.findOne(
+      task.class.State,
+      { space: kanban.space },
+      { sort: { rank: SortingOrder.Descending } }
+    )
+
+    await client.createDoc(task.class.State, kanban.space, {
       title: 'New State',
-      color: '#7C6FCD'
-    })
-    await client.updateDoc(kanban._class, kanban.space, kanban._id, {
-      $push: {
-        states: state
-      }
+      color: '#7C6FCD',
+      rank: calcRank(lastOne, undefined)
     })
   }
 </script>
