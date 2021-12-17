@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
   import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
@@ -21,6 +20,7 @@
 
   import type { Ref, Class, Space } from '@anticrm/core'
   import { createQuery } from '../utils'
+  import presentation from '..'
 
   export let _class: Ref<Class<Space>>
 
@@ -36,7 +36,7 @@
 <div class="popup">
   <div class="flex-col">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-    <div class="label"><Label label={'SUGGESTED'} /></div>
+    <div class="label"><Label label={presentation.string.Suggested} /></div>
   </div>
   <div class="flex-grow scroll">
     <div class="flex-col h-full box">
