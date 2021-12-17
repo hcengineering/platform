@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import { AttachedData, calcRank, Data, Doc, Ref, Space } from '@anticrm/core'
+  import { AttachedData, calcRank, Data, Doc, Ref, SortingOrder, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -41,7 +41,9 @@
     attachedTo: task.global.Task,
     attachedToClass: task.class.Issue,
     collection: 'tasks',
-    state: '' as Ref<State>
+    state: '' as Ref<State>,
+    doneState: null,
+    rank: ''
   }
 
   const dispatch = createEventDispatcher()
