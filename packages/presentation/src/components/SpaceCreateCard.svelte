@@ -19,6 +19,7 @@
 
   import { createEventDispatcher } from 'svelte'
   import { Button, Label } from '@anticrm/ui'
+  import presentation from '..'
 
   export let label: IntlString
   export let okAction: () => void
@@ -39,8 +40,8 @@
   </div>
   <div class="content"><slot /></div>
   <div class="footer">
-    <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={presentation.string.Create} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => { dispatch('close') }} />
   </div>
 </form>
 

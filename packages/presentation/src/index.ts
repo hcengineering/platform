@@ -14,6 +14,9 @@
 // limitations under the License.
 //
 
+import { addStringsLoader } from '@anticrm/platform'
+import { presentationId } from './plugin'
+
 export * from './utils'
 
 export { default as UserBox } from './components/UserBox.svelte'
@@ -29,3 +32,9 @@ export { default as PDFViewer } from './components/PDFViewer.svelte'
 export { default as MessageBox } from './components/MessageBox.svelte'
 export { default as SpaceCreateCard } from './components/SpaceCreateCard.svelte'
 export { default as SpaceSelect } from './components/SpaceSelect.svelte'
+
+addStringsLoader(presentationId, async (lang: string) => {
+  return await import(`../lang/${lang}.json`)
+})
+
+export { default } from './plugin'

@@ -22,6 +22,7 @@
 
   import { getFileUrl } from '../utils'
   import { createEventDispatcher } from 'svelte'
+  import presentation from '..'
 
   export let file: string
   export let name: string
@@ -48,12 +49,12 @@
     </div>
   </div>
 
-  <iframe class="flex-grow content" src={getFileUrl(file)}/>
+  <iframe class="flex-grow content" src={getFileUrl(file)} title=""/>
 
   <div class="flex-between footer">
     <div class="flex-row-reverse">
-      <Button label={'Download'} primary />
-      <Button label={'Delete'} />
+      <Button label={presentation.string.Download} primary />
+      <Button label={presentation.string.Delete} />
     </div>
     <div class="flex-row-center">
       <CircleButton icon={ExpandDown} />
@@ -64,7 +65,6 @@
 </div>
 
 <style lang="scss">
-
   .pdfviewer-container {
     display: flex;
     flex-direction: column;
@@ -96,11 +96,11 @@
         font-size: 1rem;
         color: black;
       }
-      .description {
-        font-size: .75rem;
-        color: #1F212B;
-        opacity: .6;
-      }
+      // .description {
+      //   font-size: .75rem;
+      //   color: #1F212B;
+      //   opacity: .6;
+      // }
       .tool {
         margin-left: 0.75rem;
         opacity: .4;

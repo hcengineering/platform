@@ -25,14 +25,15 @@
 </script>
 
 {#if value }
-  <div class="overflow-label state-container" style="background-color: {color};">    
+  <div class="flex-center">
+    <div class="state-container" style="background-color: {color};" />    
   </div>
 {/if}
 
 <style lang="scss">
   .state-container {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 0.5rem;
+    width: .5rem;
+    height: .5rem;
+    border-radius: .5rem;
   }
 </style>

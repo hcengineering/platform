@@ -17,6 +17,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import { Label, Button } from '@anticrm/ui'
+  import presentation from '..'
 
   export let label: IntlString
   export let message: IntlString
@@ -28,8 +29,8 @@
   <div class="overflow-label fs-title mb-4"><Label {label} /></div>
   <div class="message"><Label label={message} /></div>
   <div class="footer">
-    <Button label={'Ok'} size={'small'} transparent primary on:click={() => dispatch('close', true)} />
-    <Button label={'Cancel'} size={'small'} transparent on:click={() => dispatch('close', false)} />
+    <Button label={presentation.string.Ok} size={'small'} transparent primary on:click={() => dispatch('close', true)} />
+    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => dispatch('close', false)} />
   </div>
 </div>
 

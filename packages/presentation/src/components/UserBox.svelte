@@ -26,6 +26,7 @@
   import type { Ref, Class } from '@anticrm/core'
   import contact, { Contact, formatName } from '@anticrm/contact'
   import { createEventDispatcher } from 'svelte'
+  import presentation from '..'
 
   export let _class: Ref<Class<Contact>>
   export let title: IntlString
@@ -96,7 +97,7 @@
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
     <div class:caption-color={selected} class:content-dark-color={!selected}>
-      {#if selected}{getName(selected)}{:else}<Label label={'Not selected'} />{/if}
+      {#if selected}{getName(selected)}{:else}<Label label={presentation.string.NotSelected} />{/if}
     </div>
   </div>
 </div>

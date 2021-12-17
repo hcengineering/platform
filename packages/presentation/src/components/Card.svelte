@@ -24,6 +24,7 @@
   // import ScrollBox from './ScrollBox.svelte'
   import { Button, Label } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
+  import presentation from '..'
 
   export let spaceClass: Ref<Class<Space>>
   export let space: Ref<Space>
@@ -52,8 +53,8 @@
     <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
   </div>
   <div class="footer">
-    <Button disabled={!canSave} label={'Create'} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={'Cancel'} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={presentation.string.Create} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => { dispatch('close') }} />
   </div>
 </form>
 

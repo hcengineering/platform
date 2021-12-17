@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
 // 
@@ -12,20 +12,25 @@
 // 
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<script lang="ts">
-  import type { Ref } from '@anticrm/core'
-  import type { Person } from '@anticrm/contact'
+import type { IntlString, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
 
-  export let objectId: Ref<Person>
-  export let title: string
-</script>
+/**
+ * @public
+ */
+export const presentationId = 'presentation' as Plugin
 
-<span class="person">{title}</span>
-
-<style lang="scss">
-  .person {
-    border: 1px solid red;
+export default plugin(presentationId, {
+  string: {
+    Create: '' as IntlString,
+    Cancel: '' as IntlString,
+    Ok: '' as IntlString,
+    Download: '' as IntlString,
+    Delete: '' as IntlString,
+    Suggested: '' as IntlString,
+    NotSelected: '' as IntlString,
+    Deselect: '' as IntlString
   }
-</style>
+})

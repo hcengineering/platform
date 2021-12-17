@@ -22,6 +22,7 @@
   import type { Ref, Class } from '@anticrm/core'
   import type { Person } from '@anticrm/contact'
   import { createQuery } from '../utils'
+  import presentation from '..'
   import { ActionIcon } from '@anticrm/ui'
   import BlueCheck from './icons/BlueCheck.svelte'
 
@@ -56,7 +57,7 @@
             <UserInfo size={'medium'} value={person} />
           </div>
           {#if allowDeselect && person._id === selected}
-            <ActionIcon direction={'top'} label={titleDeselect ?? 'Deselect'} icon={BlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
+            <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={BlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
           {/if}
         </button>
       {/each}

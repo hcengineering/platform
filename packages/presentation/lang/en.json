@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Create": "Create",
+    "Cancel": "Cancel",
+    "Ok": "Ok",
+    "Download": "Download",
+    "Delete": "Delete",
+    "Suggested": "Suggested",
+    "NotSelected": "Not selected",
+    "Deselect": "Deselect"
+  }
+}
