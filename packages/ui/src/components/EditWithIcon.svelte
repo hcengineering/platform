@@ -18,10 +18,8 @@
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
   import Tooltip from './Tooltip.svelte'
-  import ActionIcon from './ActionIcon.svelte'
   import IconClose from './icons/Close.svelte'
   import ui from '../plugin'
-  import Label from './Label.svelte'
 
   export let icon: Asset | AnySvelteComponent
   export let width: string | undefined = undefined
