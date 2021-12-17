@@ -24,7 +24,7 @@
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
   import KanbanPanel from './KanbanPanel.svelte'
-  import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
+  // import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
   type Item = Doc & { state: Ref<State>, doneState: Ref<DoneState> | null }
 
@@ -202,7 +202,7 @@
             {/each}
           </KanbanPanel>
         {/each}
-        <KanbanPanelEmpty label={'Add new column'} />
+        <!-- <KanbanPanelEmpty label={'Add new column'} /> -->
       </div>
     </ScrollBox>
   </div>
