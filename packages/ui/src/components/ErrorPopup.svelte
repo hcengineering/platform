@@ -22,7 +22,9 @@ export let error: any
 
 {error.message}
 <pre>
-  {#if error.status.params}
+  {#if error?.status?.params}
     {JSON.stringify(error.status.params, undefined, 2)}
+  {:else}
+    {JSON.stringify(error, undefined, 2)}
   {/if}
 </pre>

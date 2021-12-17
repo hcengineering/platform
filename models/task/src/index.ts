@@ -87,7 +87,7 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), 'State' as IntlString)
   state!: Ref<State>
 
-  @Prop(TypeRef(task.class.DoneState), 'Done Status' as IntlString)
+  @Prop(TypeRef(task.class.DoneState), 'Done' as IntlString)
   doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), 'No.' as IntlString)
@@ -383,6 +383,10 @@ export function createModel (builder: Builder): void {
     },
     task.space.Sequence
   )
+
+  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.DoneStatePresenter
+  })
 }
 
 export { taskOperation } from './migration'

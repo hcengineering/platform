@@ -176,14 +176,18 @@ export function createModel (builder: Builder): void {
     options: {
       lookup: {
         attachedTo: recruit.class.Candidate,
-        state: task.class.State
+        state: task.class.State,
+        assignee: contact.class.Employee,
+        doneState: task.class.DoneState
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       '$lookup.attachedTo',
+      '$lookup.assignee',
       '$lookup.state',
-      '$lookup.attachedTo.city',
+      '$lookup.doneState',
+      // '$lookup.attachedTo.city',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
       'modifiedOn',

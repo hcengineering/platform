@@ -44,6 +44,7 @@ export default mergeIds(taskId, task, {
     KanbanCard: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     StatePresenter: '' as AnyComponent,
+    DoneStatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
     KanbanView: '' as AnyComponent
   },

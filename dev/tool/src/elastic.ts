@@ -24,7 +24,6 @@ import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverViewId } from '@anticrm/server-task'
 import { addLocation } from '@anticrm/platform'
 import { listMinioObjects } from './minio'
 
@@ -71,7 +70,6 @@ async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
 async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, elasticUrl: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
-  addLocation(serverViewId, () => import('@anticrm/server-task-resources'))
   const mongoClient = new MongoClient(mongoUrl)
   try {
     await mongoClient.connect()

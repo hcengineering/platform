@@ -28,6 +28,7 @@ import { showPopup } from '@anticrm/ui'
 import KanbanView from './components/kanban/KanbanView.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
+import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
 import { SpaceWithStates } from '@anticrm/task'
 
@@ -55,7 +56,8 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     StatePresenter,
-    StateEditor
+    StateEditor,
+    DoneStatePresenter
   },
   actionImpl: {
     CreateTask: createTask,

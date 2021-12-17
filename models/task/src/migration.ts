@@ -81,6 +81,12 @@ export const taskOperation: MigrateOperation = {
     await migrateClass(
       client,
       DOMAIN_KANBAN,
+      'view:class:WonStateTemplate' as Ref<Class<Doc>>,
+      task.class.WonStateTemplate
+    )
+    await migrateClass(
+      client,
+      DOMAIN_KANBAN,
       'view:class:LostStateTemplate' as Ref<Class<Doc>>,
       task.class.LostStateTemplate
     )
