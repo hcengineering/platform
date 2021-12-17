@@ -48,6 +48,7 @@ interface ClassTxes {
   txes: Array<NoIDs<Tx>>
   kind: ClassifierKind
   shortLabel?: IntlString
+  sortingKey?: string
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -159,13 +160,15 @@ export function Mixin<T extends Obj> (
 export function UX<T extends Obj> (
   label: IntlString,
   icon?: Asset,
-  shortLabel?: IntlString
+  shortLabel?: IntlString,
+  sortingKey?: string
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label
     txes.icon = icon
     txes.shortLabel = shortLabel
+    txes.sortingKey = sortingKey
   }
 }
 
@@ -194,7 +197,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
       ...(tx.kind === ClassifierKind.INTERFACE ? { extends: tx.implements } : { extends: tx.extends, implements: tx.implements }),
       label: tx.label,
       icon: tx.icon,
-      shortLabel: tx.shortLabel
+      shortLabel: tx.shortLabel,
+      sortingKey: tx.sortingKey
     },
     objectId
   )

@@ -36,11 +36,16 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
     }
   }
   const presenter = await getResource(presenterMixin.presenter)
+  const key = typeof preserveKey === 'string' ? preserveKey : ''
+  const sortingKey = clazz.sortingKey ?
+   (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) 
+   : key
   return {
-    key: typeof preserveKey === 'string' ? preserveKey : '',
+    key,
     _class,
     label: clazz.label,
-    presenter
+    presenter,
+    sortingKey
   }
 }
 
@@ -62,6 +67,7 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   const presenter = await getResource(presenterMixin.presenter)
   return {
     key: typeof preserveKey === 'string' ? preserveKey : '',
+    sortingKey: typeof preserveKey === 'string' ? preserveKey : '',
     _class: attrClass,
     label: attribute.label,
     presenter
@@ -70,9 +76,10 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
 
 async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: BuildModelKey, preserveKey: BuildModelKey, options?: FindOptions<Doc>): Promise<AttributeModel> {
   if (typeof key === 'object') {
-    const { presenter, label } = key
+    const { presenter, label, sortingKey } = key
     return {
       key: '',
+      sortingKey: sortingKey ?? '',
       _class,
       label: label as IntlString,
       presenter: await getResource(presenter)
@@ -116,6 +123,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
       console.error('Failed to find presenter for', key, err)
       const errorPresenter: AttributeModel = {
         key: '',
+        sortingKey: '',
         presenter: ErrorPresenter,
         label: stringKey as IntlString,
         _class: core.class.TypeString,

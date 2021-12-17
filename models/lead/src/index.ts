@@ -36,7 +36,7 @@ import lead from './plugin'
 export class TFunnel extends TSpaceWithStates implements Funnel {}
 
 @Model(lead.class.Lead, task.class.Task)
-@UX('Lead' as IntlString, lead.icon.Lead)
+@UX('Lead' as IntlString, lead.icon.Lead, undefined, 'title')
 export class TLead extends TTask implements Lead {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -108,8 +108,8 @@ export function createModel (builder: Builder): void {
       '',
       '$lookup.customer',
       '$lookup.state',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.customer.channels'
     ]

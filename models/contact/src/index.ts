@@ -73,14 +73,14 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX('Person' as IntlString, contact.icon.Person)
+@UX('Person' as IntlString, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX('Organization' as IntlString, contact.icon.Company)
+@UX('Organization' as IntlString, contact.icon.Company, undefined, 'name')
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
@@ -158,7 +158,7 @@ export function createModel (builder: Builder): void {
     config: [
       '',
       'city',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
       'channels'
     ]
@@ -170,7 +170,7 @@ export function createModel (builder: Builder): void {
     open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
-    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files' }, 'modifiedOn', 'channels']
+    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' }, 'modifiedOn', 'channels']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {

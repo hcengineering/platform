@@ -54,6 +54,7 @@ export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
+@UX('State' as IntlString, undefined, undefined, 'title')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -64,6 +65,7 @@ export class TState extends TDoc implements State {
 }
 
 @Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
+@UX('Done' as IntlString, undefined, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -107,7 +109,7 @@ export class TSpaceWithStates extends TSpace {}
 export class TProject extends TSpaceWithStates implements Project {}
 
 @Model(task.class.Issue, task.class.Task, DOMAIN_TASK)
-@UX('Task' as IntlString, task.icon.Task, 'Task' as IntlString)
+@UX('Task' as IntlString, task.icon.Task, 'Task' as IntlString, 'number')
 export class TIssue extends TTask implements Issue {
   // We need to declare, to provide property with label
   @Prop(TypeRef(core.class.Doc), 'Parent' as IntlString)
@@ -254,8 +256,8 @@ export function createModel (builder: Builder): void {
       '',
       'name',
       '$lookup.assignee',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn'
     ]
   })

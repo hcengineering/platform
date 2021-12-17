@@ -84,6 +84,7 @@ export const viewId = 'view' as Plugin
 export type BuildModelKey = string | {
   presenter: AnyComponent
   label: string
+  sortingKey?: string
 }
 
 /**
@@ -96,6 +97,7 @@ export interface AttributeModel {
   presenter: AnySvelteComponent
   // Extra properties for component
   props?: Record<string, any>
+  sortingKey: string
 }
 
 /**

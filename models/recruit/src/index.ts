@@ -70,7 +70,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX('Application' as IntlString, recruit.icon.Application, 'APP' as IntlString)
+@UX('Application' as IntlString, recruit.icon.Application, 'APP' as IntlString, 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
@@ -160,9 +160,9 @@ export function createModel (builder: Builder): void {
       '',
       'title',
       'city',
-      { presenter: recruit.component.ApplicationsPresenter, label: 'Apps' },
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      { presenter: recruit.component.ApplicationsPresenter, label: 'Apps', sortingKey: 'applications' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
       'channels'
     ]
@@ -187,9 +187,8 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      // '$lookup.attachedTo.city',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.channels'
     ]
