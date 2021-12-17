@@ -15,11 +15,12 @@
 
 <script lang="ts">
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
+  import core from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
   import { createQuery } from '@anticrm/presentation'
   import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
   import CreateApplication from './CreateApplication.svelte'
-  import FileDuo from "./icons/FileDuo.svelte"
+  import FileDuo from './icons/FileDuo.svelte'
   import { Table } from '@anticrm/view-resources'
 
   import task from '@anticrm/task'
@@ -51,7 +52,7 @@
         {
           lookup: {
             state: task.class.State,
-            space: task.class.Space
+            space: core.class.Space
           }
         }
       }
