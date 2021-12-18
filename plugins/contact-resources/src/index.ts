@@ -20,6 +20,7 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
+import EditContact from './components/EditContact.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import CreatePersons from './components/CreatePersons.svelte'
@@ -27,7 +28,7 @@ import CreateOrganizations from './components/CreateOrganizations.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import { Resources } from '@anticrm/platform'
 
-export { ContactPresenter }
+export { ContactPresenter, EditContact }
 
 export default async (): Promise<Resources> => ({
   component: {

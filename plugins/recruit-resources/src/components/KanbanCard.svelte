@@ -25,12 +25,13 @@
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
+  import { EditContact } from '@anticrm/contact-resources'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
   function showCandidate() {
-    showPopup(EditCandidate, { _id: object.attachedTo }, 'full')
+    showPopup(EditContact, { _id: object.attachedTo }, 'full')
   }
 </script>
 
@@ -39,7 +40,7 @@
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-col ml-2">
-        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}><Label label={formatName(object.$lookup?.attachedTo?.name)} /></div>
+        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>{formatName(object.$lookup?.attachedTo?.name)}</div>
         <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
     </div>
