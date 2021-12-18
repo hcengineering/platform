@@ -14,6 +14,7 @@
 //
 
 import core, {
+  ArrOf as TypeArrOf,
   Account,
   AttachedDoc, Collection as TypeCollection, RefTo,
   Attribute, Class, Classifier, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Interface, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
@@ -322,6 +323,13 @@ export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
  */
 export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>): TypeCollection<T> {
   return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString }
+}
+
+/**
+ * @public
+ */
+export function ArrOf<T extends PropertyType> (type: Type<T>): TypeArrOf<T> {
+  return { _class: core.class.ArrOf, of: type, label: 'Array' as IntlString }
 }
 
 /**

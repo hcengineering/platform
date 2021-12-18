@@ -64,10 +64,12 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   if (presenterMixin.presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
+  const resultKey = typeof preserveKey === 'string' ? preserveKey : ''
+  const sortingKey = attribute.type._class === core.class.ArrOf ? resultKey + '.length' : resultKey
   const presenter = await getResource(presenterMixin.presenter)
   return {
-    key: typeof preserveKey === 'string' ? preserveKey : '',
-    sortingKey: typeof preserveKey === 'string' ? preserveKey : '',
+    key: resultKey,
+    sortingKey,
     _class: attrClass,
     label: attribute.label,
     presenter
