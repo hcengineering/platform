@@ -35,7 +35,6 @@
     "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/model-contact": "~0.6.1",
     "@anticrm/recruit": "~0.6.0",
-    "@anticrm/recruit-resources": "~0.6.0",
     "@anticrm/chunter": "~0.6.0",
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-chunter": "~0.6.0",
