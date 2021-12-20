@@ -20,6 +20,7 @@ import { onMount, onDestroy, createEventDispatcher } from 'svelte'
 import { Editor, Extension } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
+import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import Placeholder from '@tiptap/extension-placeholder'
 import Mention from '@tiptap/extension-mention'
@@ -69,6 +70,7 @@ onMount(() => {
       HandleEnter,
       StarterKit,
       Highlight,
+      Link,
       // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
       Placeholder.configure({placeholder: placeholder}),
       Mention.configure({

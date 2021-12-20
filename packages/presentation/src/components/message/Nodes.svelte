@@ -51,6 +51,8 @@
         <ol><svelte:self nodes={node.childNodes}/></ol>
       {:else if node.nodeName === 'LI'}
         <li><svelte:self nodes={node.childNodes}/></li>
+      {:else if node.nodeName === 'A'}
+        <a href={node.getAttribute('href')}><svelte:self nodes={node.childNodes}/></a>
       {:else if node.nodeName === 'SPAN'}
         <Person objectId={node.getAttribute('data-id')} title={node.getAttribute('data-label')} />
       {:else}

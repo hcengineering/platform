@@ -104,7 +104,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const db = mongoClient.db(dbName)
     const elastic = await createElasticAdapter(elasticUrl, dbName)
     const storage = await createStorage(mongoUrl, elasticUrl, dbName)
-    const txes = (await db.collection(DOMAIN_TX).find().sort({ _id: 1 }).toArray()) as Tx[]
+    const txes = (await db.collection<Tx>(DOMAIN_TX).find().sort({ _id: 1 }).toArray())
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
     for (const tx of data) {
       await storage.tx(tx)
