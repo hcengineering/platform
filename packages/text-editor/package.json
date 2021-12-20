@@ -40,6 +40,7 @@
     "@tiptap/extension-highlight": "~2.0.0-beta.15",
     "@tiptap/extension-placeholder": "~2.0.0-beta.26",
     "@tiptap/extension-mention": "~2.0.0-beta.63",
-    "@tiptap/extension-typography": "~2.0.0-beta.13"
+    "@tiptap/extension-typography": "~2.0.0-beta.13",
+    "@tiptap/extension-link": "~2.0.0-beta.33"
   }
 }

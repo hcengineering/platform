@@ -32,7 +32,8 @@ import core, {
   AnyAttribute,
   RefTo,
   Collection,
-  AttachedDoc
+  AttachedDoc,
+  ArrOf
 } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { getMetadata } from '@anticrm/platform'
@@ -119,6 +120,9 @@ export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<
   }
   if (attrClass === core.class.Collection) {
     attrClass = (attribute.type as Collection<AttachedDoc>).of
+  }
+  if (attrClass === core.class.ArrOf) {
+    attrClass = (attribute.type as ArrOf<AttachedDoc>).of._class
   }
   return attrClass
 }

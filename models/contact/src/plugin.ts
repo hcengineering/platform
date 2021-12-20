@@ -44,6 +44,6 @@ export const ids = mergeIds(contactId, contact, {
     CreateOrganizations: '' as IntlString
   },
   class: {
-    TypeChannels: '' as Ref<Class<Type<Channel[]>>>
+    TypeChannel: '' as Ref<Class<Type<Channel>>>
   }
 })

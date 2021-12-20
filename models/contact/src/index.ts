@@ -15,7 +15,7 @@
 
 import type { Domain, Type, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX, Index, Collection } from '@anticrm/model'
+import { Builder, Model, Prop, TypeString, UX, Index, Collection, ArrOf } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
@@ -44,14 +44,14 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
   placeholder!: string
 }
 
-@Model(contact.class.TypeChannels, core.class.Type)
+@Model(contact.class.TypeChannel, core.class.Type)
 export class TTypeChannels extends TType {}
 
 /**
  * @public
  */
-export function TypeChannels (): Type<Channel[]> {
-  return { _class: contact.class.TypeChannels, label: 'TypeChannels' as IntlString }
+export function TypeChannel (): Type<Channel> {
+  return { _class: contact.class.TypeChannel, label: 'Channel' as IntlString }
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
@@ -62,7 +62,7 @@ export class TContact extends TDoc implements Contact {
 
   avatar?: string
 
-  @Prop(TypeChannels(), 'Contact Info' as IntlString)
+  @Prop(ArrOf(TypeChannel()), 'Contact Info' as IntlString)
   channels!: Channel[]
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
@@ -73,14 +73,14 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX('Person' as IntlString, contact.icon.Person)
+@UX('Person' as IntlString, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {
   @Prop(TypeString(), 'City' as IntlString)
   city!: string
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX('Organization' as IntlString, contact.icon.Company)
+@UX('Organization' as IntlString, contact.icon.Company, undefined, 'name')
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
@@ -158,7 +158,7 @@ export function createModel (builder: Builder): void {
     config: [
       '',
       'city',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files' },
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
       'channels'
     ]
@@ -170,7 +170,7 @@ export function createModel (builder: Builder): void {
     open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
-    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files' }, 'modifiedOn', 'channels']
+    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' }, 'modifiedOn', 'channels']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
@@ -185,7 +185,7 @@ export function createModel (builder: Builder): void {
     editor: contact.component.EditOrganization
   })
 
-  builder.mixin(contact.class.TypeChannels, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.TypeChannel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
   })
 

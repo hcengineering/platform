@@ -14,6 +14,7 @@
 //
 
 import core, {
+  ArrOf as TypeArrOf,
   Account,
   AttachedDoc, Collection as TypeCollection, RefTo,
   Attribute, Class, Classifier, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Interface, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
@@ -48,6 +49,7 @@ interface ClassTxes {
   txes: Array<NoIDs<Tx>>
   kind: ClassifierKind
   shortLabel?: IntlString
+  sortingKey?: string
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -159,13 +161,15 @@ export function Mixin<T extends Obj> (
 export function UX<T extends Obj> (
   label: IntlString,
   icon?: Asset,
-  shortLabel?: IntlString
+  shortLabel?: IntlString,
+  sortingKey?: string
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label
     txes.icon = icon
     txes.shortLabel = shortLabel
+    txes.sortingKey = sortingKey
   }
 }
 
@@ -194,7 +198,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
       ...(tx.kind === ClassifierKind.INTERFACE ? { extends: tx.implements } : { extends: tx.extends, implements: tx.implements }),
       label: tx.label,
       icon: tx.icon,
-      shortLabel: tx.shortLabel
+      shortLabel: tx.shortLabel,
+      sortingKey: tx.sortingKey
     },
     objectId
   )
@@ -318,6 +323,13 @@ export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
  */
 export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>): TypeCollection<T> {
   return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString }
+}
+
+/**
+ * @public
+ */
+export function ArrOf<T extends PropertyType> (type: Type<T>): TypeArrOf<T> {
+  return { _class: core.class.ArrOf, of: type, label: 'Array' as IntlString }
 }
 
 /**

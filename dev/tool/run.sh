@@ -22,6 +22,7 @@ export MINIO_SECRET_KEY=$(kubectl get secret minio -o jsonpath="{.data.secretKey
 kubectl run anticrm-tool --rm --tty -i --restart='Never' \
   --env="MONGO_URL=$MONGO_URL" \
   --env="TRANSACTOR_URL=ws://transactor/" \
+  --env="ELASTIC_URL=http://10.1.96.8:9200/" \
   --env="TELEGRAM_DATABASE=telegram-service" \
   --env="MINIO_ENDPOINT=$MINIO_ENDPOINT" \
   --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \

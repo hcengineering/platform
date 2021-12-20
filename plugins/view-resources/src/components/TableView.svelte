@@ -115,13 +115,13 @@
                 </th>
               {/if}
               <th
-                class:sortable={attribute.key}
-                class:sorted={attribute.key === sortKey}
-                on:click={() => changeSorting(attribute.key)}
+                class:sortable={attribute.sortingKey}
+                class:sorted={attribute.sortingKey === sortKey}
+                on:click={() => changeSorting(attribute.sortingKey)}
               >
                 <div class="flex-row-center whitespace-nowrap">
                   <Label label={attribute.label} />
-                  {#if attribute.key === sortKey}
+                  {#if attribute.sortingKey === sortKey}
                     <div class="icon">
                       {#if sortOrder === SortingOrder.Ascending}
                         <IconUp size={'small'} />
