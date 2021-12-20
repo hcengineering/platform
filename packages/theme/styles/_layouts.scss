@@ -205,6 +205,7 @@ p:last-child { margin-block-end: 0; }
 .mt-10 { margin-top: 2.5rem; }
 .mt-14 { margin-top: 3.5rem; }
 .mb-1 { margin-bottom: .25rem; }
+.mb-2 { margin-bottom: .5rem; }
 .mb-3 { margin-bottom: .75rem; }
 .mb-4 { margin-bottom: 1rem; }
 
@@ -246,6 +247,8 @@ p:last-child { margin-block-end: 0; }
 
 .h-full { height: 100%; }
 .w-full { width: 100%;  }
+.min-w-0 { min-width: 0; }
+.min-h-0 { min-height: 0; }
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
@@ -332,15 +335,22 @@ a.no-line {
   user-select: none;
   min-width: 0;
 }
-.lines-limit-2 {
+
+.lines-limit-2, .lines-limit-4 {
   min-width: 0;
   overflow: hidden;
   visibility: visible;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   /* autoprefixer: ignore next */
   -webkit-box-orient: vertical;
+}
+.lines-limit-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;  
+}
+.lines-limit-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;  
 }
 
 .focused-button {

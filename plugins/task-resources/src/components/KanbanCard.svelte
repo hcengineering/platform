@@ -33,41 +33,25 @@
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
-  <div class="content">
-    <div class="flex-row-center">
-      <div class="flex-col ml-2">
-        <div class="sm-tool-icon step-lr75">
-          <TaskPresenter value={object} />
-        </div>
-        <div class="fs-title lines-limit-2">{object.name}</div>
-        <div class="small-text lines-limit-2">{object.description}</div>
-      </div>
-    </div>
+  <div class="flex-between mb-2">
+    <TaskPresenter value={object} />
+    <ActionIcon label={task.string.More} action={(evt) => { showMenu(evt) }} icon={IconMoreH} size={'small'} />
   </div>
+  <div class="caption-color mb-3 lines-limit-4">{object.name}</div>
+  <!-- <div class="small-text lines-limit-2">{object.description}</div> -->
   <div class="flex-between">
-    {#if object.$lookup?.assignee}
-      <div class="flex-center safari-gap-1">
-        <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
-        <Label label={formatName(object.$lookup?.assignee?.name)} />
-      </div>
-    {/if}
-    <div class="flex-row-reverse">
-      <ActionIcon
-        label={task.string.More}
-        action={(evt) => {
-          showMenu(evt)
-        }}
-        icon={IconMoreH}
-        size={'small'}
-      />
-      {#if (object.comments ?? 0) > 0}
-        <div class="step-lr75"><CommentsPresenter value={object} /></div>
-      {/if}
+    <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
       {/if}
+      {#if (object.comments ?? 0) > 0}
+        <div class="step-lr75"><CommentsPresenter value={object} /></div>
+      {/if}
     </div>
-  </div>
+    {#if object.$lookup?.assignee}
+      <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
+    {/if}
+</div>
 </div>
 
 <style lang="scss">
@@ -75,18 +59,11 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, 0.06);
-    border-radius: 0.75rem;
+    background-color: rgba(222, 222, 240, .06);
+    border-radius: .75rem;
     user-select: none;
     backdrop-filter: blur(10px);
 
-    .content {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-    &.draggable {
-      cursor: grab;
-    }
+    &.draggable { cursor: grab; }
   }
 </style>

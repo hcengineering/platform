@@ -36,15 +36,13 @@
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
-  <div class="content">
-    <div class="flex-row-center">
-      <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
-      <div class="flex-col ml-2">
-        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>{formatName(object.$lookup?.attachedTo?.name)}</div>
-        <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
-      </div>
+  <div class="flex-between mb-3">
+    <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
+    <div class="flex-grow flex-col min-w-0 ml-2">
+      <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>{formatName(object.$lookup?.attachedTo?.name)}</div>
+      <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
     </div>
-    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'} />
+    <div class="tool"><ActionIcon label={'More...'} icon={IconMoreH} size={'small'} /></div>
   </div>
   <div class="flex-between">
     <div class="flex-row-center">
@@ -72,11 +70,7 @@
     user-select: none;
     backdrop-filter: blur(10px);
 
-    .content {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
     &.draggable { cursor: grab; }
   }
+  .tool { align-self: start; }
 </style>
