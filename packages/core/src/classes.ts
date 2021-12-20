@@ -211,6 +211,7 @@ export interface Space extends Doc {
   description: string
   private: boolean
   members: Arr<Ref<Account>>
+  archived: boolean
 }
 
 /**

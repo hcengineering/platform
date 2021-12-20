@@ -75,6 +75,7 @@ export async function generateContacts (transactorUrl: string, dbName: string, o
       location: faker.address.city(),
       company: faker.company.companyName(),
       members: accountIds,
+      archived: false,
       private: false
     }
     const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>

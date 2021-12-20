@@ -34,7 +34,7 @@
   let spaces: Space[] = []
   let selected: Ref<Space> | undefined = undefined
 
-  $: query.query(model.spaceClass, {}, result => { spaces = result })
+  $: query.query(model.spaceClass, { archived: false }, result => { spaces = result })
 
   const addSpace: Action = {
     label: model.addSpaceLabel,
@@ -72,7 +72,7 @@
       result.push({
         icon: act.icon ?? IconEdit,
         label: act.label,
-        action: async (props, ev) => {
+        action: async () => {
           const impl = await getResource(act.action)
           await impl(space)
         }

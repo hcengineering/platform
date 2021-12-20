@@ -26,7 +26,8 @@
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
-  export let options: FindOptions<Doc> | undefined
+  export let options: FindOptions<Doc> | undefined = undefined
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey|string)[]
 
   let sortKey = 'modifiedOn'
@@ -53,9 +54,9 @@
 
   const client = getClient()
 
-  const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
+  const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => { selectRow = undefined })
+    showPopup(Menu, { object, baseMenuClass }, ev.target as HTMLElement, () => { selectRow = undefined })
   }
 
   function changeSorting (key: string): void {

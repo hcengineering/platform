@@ -38,6 +38,7 @@
       name,
       description,
       private: false,
+      archived: false,
       members: []
     })
   }

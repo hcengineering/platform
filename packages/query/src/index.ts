@@ -229,7 +229,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
   // Check if query is partially matched.
   private matchQuery (q: Query, tx: TxUpdateDoc<Doc>): boolean {
-    if (!this.client.getHierarchy().isDerived(q._class, tx.objectClass)) {
+    if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
       return false
     }
 

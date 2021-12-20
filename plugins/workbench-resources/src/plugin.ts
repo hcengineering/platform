@@ -14,9 +14,9 @@
 //
 
 import { mergeIds } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
 
 import workbench, { workbenchId } from '@anticrm/workbench'
-import { IntlString } from '@anticrm/platform'
 
 export default mergeIds(workbenchId, workbench, {
   string: {
@@ -24,6 +24,8 @@ export default mergeIds(workbenchId, workbench, {
     Delete: '' as IntlString,
     Create: '' as IntlString,
     ShowMenu: '' as IntlString,
-    HideMenu: '' as IntlString
+    HideMenu: '' as IntlString,
+    Archive: '' as IntlString,
+    Archived: '' as IntlString
   }
 })

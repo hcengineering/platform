@@ -36,6 +36,7 @@
       name,
       description,
       private: false,
+      archived: false,
       members: [getCurrentAccount()._id]
     })
   }
