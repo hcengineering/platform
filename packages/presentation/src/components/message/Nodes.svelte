@@ -43,6 +43,8 @@
         <h1><svelte:self nodes={node.childNodes}/></h1>
       {:else if node.nodeName === 'H2'}
         <h2><svelte:self nodes={node.childNodes}/></h2>
+      {:else if node.nodeName === 'H3'}
+        <h3><svelte:self nodes={node.childNodes}/></h3>
       {:else if node.nodeName === 'UL'}
         <ul><svelte:self nodes={node.childNodes}/></ul>
       {:else if node.nodeName === 'OL'}
