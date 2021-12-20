@@ -15,12 +15,12 @@
 -->
 
 <script lang="ts">
-  import { AttachedDoc, calcRank, Class, Doc, DocumentUpdate, DocWithRank, FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { AttachedDoc, Class, Doc, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
-  import task, { DoneState, LostState, WonState } from '@anticrm/task'
+  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
+  import task, { DoneState, LostState, WonState, DocWithRank, calcRank } from '@anticrm/task'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
   import KanbanPanel from './KanbanPanel.svelte'

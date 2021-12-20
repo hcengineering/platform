@@ -14,11 +14,20 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { AttachedDoc, Class, Client, Data, Doc, DocWithRank, genRanks, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Data, Doc, Interface, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
+
+import { genRanks } from './utils'
+
+/**
+ * @public
+ */
+export interface DocWithRank extends Doc {
+  rank: string
+}
 
 // S T A T E
 
@@ -162,6 +171,9 @@ export const taskId = 'task' as Plugin
 const task = plugin(taskId, {
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
+  },
+  interface: {
+    DocWithRank: '' as Ref<Interface<DocWithRank>>
   },
   class: {
     Issue: '' as Ref<Class<Issue>>,
@@ -331,3 +343,5 @@ export async function createKanban (client: Client & TxOperations, attachedTo: R
     attachedTo
   })
 }
+
+export * from './utils'

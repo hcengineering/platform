@@ -17,11 +17,11 @@
   import { Label, Button, Status as StatusControl } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
-  import core, { AttachedDoc, Collection, Doc, Ref, Space, SortingOrder, calcRank, Client, Class } from '@anticrm/core'
+  import core, { AttachedDoc, Collection, Doc, Ref, Space, SortingOrder, Client, Class } from '@anticrm/core'
   import { SpaceSelect } from '@anticrm/presentation'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import task, { Task } from '@anticrm/task'
+  import task, { Task, calcRank } from '@anticrm/task'
   import { getResource, OK, Resource, Status, translate } from '@anticrm/platform'
 
   export let object: Doc
