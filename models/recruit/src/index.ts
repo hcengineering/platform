@@ -225,6 +225,10 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationPresenter
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectValidator, {
+    validator: recruit.validator.ApplicantValidator
+  })
+
   builder.createDoc(
     view.class.Action,
     core.space.Model,

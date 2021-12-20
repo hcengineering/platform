@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space } from '@anticrm/core'
+import type { Class, Client, Doc, Ref, Space } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Builder, Mixin, Model } from '@anticrm/model'
 import core, { TClass, TDoc } from '@anticrm/model-core'
-import type { Asset, IntlString, Resource } from '@anticrm/platform'
+import type { Asset, IntlString, Resource, Status } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionTarget, AttributeEditor, AttributePresenter, ObjectEditor, Viewlet, ViewletDescriptor } from '@anticrm/view'
+import type { Action, ActionTarget, AttributeEditor, AttributePresenter, ObjectEditor, ObjectValidator, Viewlet, ViewletDescriptor } from '@anticrm/view'
 import view from './plugin'
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
@@ -35,6 +35,11 @@ export class TAttributePresenter extends TClass implements AttributePresenter {
 @Mixin(view.mixin.ObjectEditor, core.class.Class)
 export class TObjectEditor extends TClass implements ObjectEditor {
   editor!: AnyComponent
+}
+
+@Mixin(view.mixin.ObjectValidator, core.class.Class)
+export class TObjectValidator extends TClass implements ObjectValidator {
+  validator!: Resource<(<T extends Doc>(doc: T, client: Client) => Promise<Status<{}>>)>
 }
 
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
@@ -65,7 +70,7 @@ export class TActionTarget extends TDoc implements ActionTarget {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TObjectValidator)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor

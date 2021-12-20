@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Space } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { Client, Doc, Ref, Space } from '@anticrm/core'
+import type { IntlString, Resource, Status } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
@@ -39,6 +39,9 @@ export default mergeIds(recruitId, recruit, {
     CandidatePools: '' as IntlString,
     Candidates: '' as IntlString,
     Vacancy: '' as IntlString
+  },
+  validator: {
+    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   },
   component: {
     CreateVacancy: '' as AnyComponent,
