@@ -15,11 +15,12 @@
 -->
 
 <script lang="ts">
-  import { Label } from '@anticrm/ui'
-  import activity from '@anticrm/activity'
+  import Label from './Label.svelte'
+  import ui from '..'
 
   export let limit: number = 240
   export let ignore: boolean = false
+  export let fixed: boolean = false
 
   let cHeight: number
   let bigger: boolean = false
@@ -37,11 +38,12 @@
     class="showMore-content"
     class:crop={!ignore && crop}
     class:full={bigger && !ignore && !crop}
+    style={(!ignore && crop) ? `max-height: ${limit}px;` : ''}
   ><slot /></div>
 
-  {#if !ignore && bigger}
+  {#if !ignore && bigger && !fixed}
     <div class="showMore" class:outter={cHeight > limit} on:click={toggle}>
-      <Label label={(cHeight > limit) ? activity.string.ShowLess : activity.string.ShowMore} />
+      <Label label={(cHeight > limit) ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>
   {/if}
 </div>

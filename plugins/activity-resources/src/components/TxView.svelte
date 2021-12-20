@@ -31,12 +31,12 @@
     Label,
     Menu,
     showPopup,
-    TimeSince
+    TimeSince,
+    ShowMore
   } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
-  import ShowMore from './ShowMore.svelte'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>

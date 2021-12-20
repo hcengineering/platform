@@ -18,7 +18,7 @@
   import type { Comment } from '@anticrm/chunter'
   import { formatName } from '@anticrm/contact'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { TimeSince } from '@anticrm/ui'
+  import { TimeSince, ShowMore } from '@anticrm/ui'
   import { getTime, getUser } from '../utils'
 
   export let value: Comment
@@ -39,9 +39,9 @@
       </div>
       <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
     </div>
-    <div class="comment-content">
+    <ShowMore limit={126} fixed>
       <MessageViewer message={value.message}/>
-    </div>
+    </ShowMore>
   </div>
 </div>
 
@@ -56,13 +56,13 @@
     align-items: baseline;
     margin-bottom: .25rem;
   }
-  .comment-content {
-    overflow: hidden;
-    visibility: visible;
-    display: -webkit-box;
-    -webkit-line-clamp: 7;
-    line-clamp: 7;
-    /* autoprefixer: ignore next */
-    -webkit-box-orient: vertical;
-  }
+  // .comment-content {
+  //   overflow: hidden;
+  //   visibility: visible;
+  //   display: -webkit-box;
+  //   -webkit-line-clamp: 7;
+  //   line-clamp: 7;
+  //   /* autoprefixer: ignore next */
+  //   -webkit-box-orient: vertical;
+  // }
 </style>
