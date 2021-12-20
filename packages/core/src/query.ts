@@ -1,3 +1,4 @@
+import { DocumentQuery } from '.'
 import { Doc } from './classes'
 import { createPredicates, isPredicate } from './predicate'
 import { SortingQuery } from './storage'
@@ -101,4 +102,19 @@ function getValue (key: string, obj: any): any {
     value = JSON.stringify(value)
   }
   return value
+}
+/**
+ * @public
+ */
+export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>): Doc[] {
+  let result = [...docs]
+  for (const key in query) {
+    if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
+    const value = (query as any)[key]
+    result = findProperty(result, key, value)
+    if (result.length === 0) {
+      break
+    }
+  }
+  return result
 }

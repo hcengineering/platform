@@ -18,7 +18,7 @@ import clone from 'just-clone'
 import type { Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { findProperty, resultSort } from './query'
+import { matchQuery, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Refs, Storage, TxResult, WithLookup } from './storage'
 import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
@@ -108,11 +108,7 @@ export abstract class MemDb extends TxProcessor {
       result = this.getObjectsByClass(_class)
     }
 
-    for (const key in query) {
-      if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
-      const value = (query as any)[key]
-      result = findProperty(result, key, value)
-    }
+    result = matchQuery(result, query)
 
     if (options?.lookup !== undefined) result = this.lookup(result as T[], options.lookup)
 

@@ -14,8 +14,8 @@
 //
 
 import { IntlString, mergeIds } from '@anticrm/platform'
-
 import task, { taskId } from '@anticrm/task'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(taskId, task, {
   string: {
@@ -35,9 +35,22 @@ export default mergeIds(taskId, task, {
     More: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,
     NoTaskForObject: '' as IntlString,
-    Delete: '' as IntlString
+    Delete: '' as IntlString,
+    NoTodoItems: '' as IntlString,
+    TodoName: '' as IntlString,
+    TodoState: '' as IntlString,
+    DoneState: '' as IntlString,
+    UndoneState: '' as IntlString,
+    TodoDueDate: '' as IntlString,
+    TodoDescription: '' as IntlString,
+    TodoEdit: '' as IntlString,
+    TodoSave: '' as IntlString,
+    TodoCreate: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
+  },
+  component: {
+    TodoStatePresenter: '' as AnyComponent
   }
 })

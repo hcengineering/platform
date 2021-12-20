@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Class, Client, Collection, Doc, FindOptions, FindResult, Obj, Ref, TxOperations } from '@anticrm/core'
+import core, { AttachedDoc, Class, Client, Collection, Doc, FindOptions, FindResult, Obj, Ref, TxOperations, matchQuery } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass } from '@anticrm/presentation'
@@ -41,9 +41,9 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
    (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) 
    : key
   return {
-    key,
+    key: preserveKey.key,
     _class,
-    label: clazz.label,
+    label: preserveKey.label ?? clazz.label,
     presenter,
     sortingKey
   }
@@ -68,16 +68,16 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   const sortingKey = attribute.type._class === core.class.ArrOf ? resultKey + '.length' : resultKey
   const presenter = await getResource(presenterMixin.presenter)
   return {
-    key: resultKey,
+    key: preserveKey.key,
     sortingKey,
     _class: attrClass,
-    label: attribute.label,
+    label: preserveKey.label ?? attribute.label,
     presenter
   }
 }
 
 async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: BuildModelKey, preserveKey: BuildModelKey, options?: FindOptions<Doc>): Promise<AttributeModel> {
-  if (typeof key === 'object') {
+  if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
     return {
       key: '',
@@ -87,41 +87,41 @@ async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: Build
       presenter: await getResource(presenter)
     }
   }
-  if (key.length === 0) {
+  if (key.key.length === 0) {
     return await getObjectPresenter(client, _class, preserveKey)
   } else {
-    const split = key.split('.')
+    const split = key.key.split('.')
     if (split[0] === '$lookup') {
       const lookupClass = (options?.lookup as any)[split[1]] as Ref<Class<Obj>>
       if (lookupClass === undefined) {
         throw new Error('lookup class does not provided for ' + split[1])
       }
-      const lookupKey = split[2] ?? ''
+      const lookupKey = { ...key, key: split[2] ?? '' }
       const model = await getPresenter(client, lookupClass, lookupKey, preserveKey)
-      if (lookupKey === '') {
+      if (lookupKey.key === '') {
         const attribute = client.getHierarchy().getAttribute(_class, split[1])
         model.label = attribute.label
       } else {
-        const attribute = client.getHierarchy().getAttribute(lookupClass, lookupKey)
+        const attribute = client.getHierarchy().getAttribute(lookupClass, lookupKey.key)
         model.label = attribute.label
       }
       return model
     }
-    return await getAttributePresenter(client, _class, key, preserveKey)
+    return await getAttributePresenter(client, _class, key.key, preserveKey)
   }
 }
 
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
   console.log('building table model for', options)
   // eslint-disable-next-line array-callback-return
-  const model = options.keys.map(async key => {
+  const model = options.keys.map(key => typeof key === 'string' ? { key: key } : key).map(async key => {
     try {
       return await getPresenter(options.client, options._class, key, key, options.options)
     } catch (err: any) {
       if ((options.ignoreMissing ?? false)) {
         return undefined
       }
-      const stringKey = (typeof key === 'string') ? key : key.label
+      const stringKey = key.label ?? key.key
       console.error('Failed to find presenter for', key, err)
       const errorPresenter: AttributeModel = {
         key: '',
@@ -138,11 +138,17 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
   return (await Promise.all(model)).filter(a => a !== undefined) as AttributeModel[]
 }
 
-function filterActions (client: Client, _class: Ref<Class<Obj>>, targets: ActionTarget[], derived: Ref<Class<Doc>> = core.class.Doc): Array<Ref<Action>> {
+function filterActions (client: Client, doc: Doc, targets: ActionTarget[], derived: Ref<Class<Doc>> = core.class.Doc): Array<Ref<Action>> {
   const result: Array<Ref<Action>> = []
   const hierarchy = client.getHierarchy()
   for (const target of targets) {
-    if (hierarchy.isDerived(_class, target.target) && client.getHierarchy().isDerived(target.target, derived)) {
+    if (target.query !== undefined) {
+      const r = matchQuery([doc], target.query)
+      if (r.length === 0) {
+        continue
+      }
+    }
+    if (hierarchy.isDerived(doc._class, target.target) && client.getHierarchy().isDerived(target.target, derived)) {
       result.push(target.action)
     }
   }
@@ -157,9 +163,9 @@ function filterActions (client: Client, _class: Ref<Class<Obj>>, targets: Action
  * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
  * we won't recieve Doc contribution but recieve Space ones.
  */
-export async function getActions (client: Client, _class: Ref<Class<Obj>>, derived: Ref<Class<Doc>> = core.class.Doc): Promise<FindResult<Action>> {
+export async function getActions (client: Client, doc: Doc, derived: Ref<Class<Doc>> = core.class.Doc): Promise<FindResult<Action>> {
   const targets = await client.findAll(view.class.ActionTarget, {})
-  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, _class, targets, derived) } })
+  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, doc, targets, derived) } })
 }
 
 export async function deleteObject (client: Client & TxOperations, object: Doc): Promise<void> {

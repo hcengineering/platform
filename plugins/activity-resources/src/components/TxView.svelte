@@ -33,7 +33,7 @@
     showPopup,
     TimeSince
   } from '@anticrm/ui'
-  import type { Action, AttributeModel } from '@anticrm/view'
+  import type { AttributeModel } from '@anticrm/view'
   import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
   import { activityKey, ActivityKey, DisplayTx } from '../activity'
   import ShowMore from './ShowMore.svelte'
@@ -53,7 +53,6 @@
   let props: any
   let employee: EmployeeAccount | undefined
   let model: AttributeModel[] = []
-  let actions: Action[] = []
 
   let edit = false
 
@@ -74,7 +73,7 @@
     }
     const docClass: Class<Doc> = client.getModel().getObject(doc._class)
 
-    const presenter = await getObjectPresenter(client, doc._class, 'doc-presenter')
+    const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
     if (presenter !== undefined) {
       return {
         display: 'inline',
@@ -125,10 +124,6 @@
     })
   }
 
-  $: getActions(client, tx.tx.objectClass).then((result) => {
-    actions = result
-  })
-
   async function getValue (m: AttributeModel, utx: TxUpdateDoc<Doc>): Promise<any> {
     const val = (utx.operations as any)[m.key]
     console.log(m._class, m.key, val, typeof val)
@@ -140,6 +135,7 @@
     return val
   }
   const showMenu = async (ev: MouseEvent): Promise<void> => {
+    const actions = await getActions(client, tx.doc as Doc)
     showPopup(
       Menu,
       {

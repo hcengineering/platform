@@ -19,7 +19,6 @@
   import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Menu } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
   import { getActions } from '../utils'
 
   export let object: Doc
@@ -31,20 +30,18 @@
   }[] = []
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
-
-  async function invokeAction(action: Resource<(object: Doc) => Promise<void>>) {
-    dispatch('close')
+  
+  async function invokeAction (action: Resource<(object: Doc) => Promise<void>>) {
     const impl = await getResource(action)
     await impl(object)
   }
 
-  getActions(client, object._class).then(result => { 
+  getActions(client, object).then(result => {
     actions = result.map(a => ({
       label: a.label,
       icon: a.icon,
       action: () => { invokeAction(a.action) }
-    }) )
+    }))
   })
 
 </script>

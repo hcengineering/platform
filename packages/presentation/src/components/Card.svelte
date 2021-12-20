@@ -26,13 +26,16 @@
   import SpaceSelect from './SpaceSelect.svelte'
   import presentation from '..'
 
-  export let spaceClass: Ref<Class<Space>>
+  export let spaceClass: Ref<Class<Space>> | undefined = undefined
   export let space: Ref<Space>
-  export let spaceLabel: IntlString
-  export let spacePlaceholder: IntlString
+  export let spaceLabel: IntlString | undefined = undefined
+  export let spacePlaceholder: IntlString | undefined = undefined
   export let label: IntlString
   export let okAction: () => void
   export let canSave: boolean = false
+
+  export let okLabel: IntlString = presentation.string.Create
+  export let cancelLabel: IntlString = presentation.string.Cancel
 
   const dispatch = createEventDispatcher()
 </script>
@@ -48,13 +51,15 @@
     {/if}
   </div>
   <div class="content"><slot /></div>
-  <div class="flex-col pool">
-    <div class="separator" />
-    <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
-  </div>
+  {#if spaceClass && spaceLabel && spacePlaceholder}
+    <div class="flex-col pool">
+      <div class="separator" />
+      <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+    </div>
+  {/if}
   <div class="footer">
-    <Button disabled={!canSave} label={presentation.string.Create} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={okLabel} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={cancelLabel} size={'small'} transparent on:click={() => { dispatch('close') }} />
   </div>
 </form>
 

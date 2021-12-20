@@ -19,6 +19,7 @@
   import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { IconDown, IconUp, Label, Loading, showPopup } from '@anticrm/ui'
+  import { BuildModelKey } from '@anticrm/view'
   import { buildModel } from '../utils'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
@@ -26,7 +27,7 @@
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
   export let options: FindOptions<Doc> | undefined
-  export let config: string[]
+  export let config: (BuildModelKey|string)[]
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
