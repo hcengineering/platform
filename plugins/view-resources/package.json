@@ -35,6 +35,7 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/view": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
+    "@anticrm/task": "~0.6.0",
     "@anticrm/presentation": "~0.6.2"
   }
 }

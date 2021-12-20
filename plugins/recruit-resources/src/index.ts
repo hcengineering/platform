@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Doc } from '@anticrm/core'
+import type { Client, Doc } from '@anticrm/core'
 
 import CreateVacancy from './components/CreateVacancy.svelte'
 import CreateCandidates from './components/CreateCandidates.svelte'
@@ -29,15 +29,37 @@ import Applications from './components/Applications.svelte'
 import EditApplication from './components/EditApplication.svelte'
 
 import { showPopup } from '@anticrm/ui'
-import { Resources } from '@anticrm/platform'
+import { OK, Resources, Severity, Status } from '@anticrm/platform'
+import { Applicant } from '@anticrm/recruit'
+import recruit from './plugin'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
 }
 
+export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
+  if (applicant.attachedTo === undefined) {
+    return new Status(Severity.INFO, recruit.status.CandidateRequired, {})
+  }
+  if (applicant.space === undefined) {
+    return new Status(Severity.INFO, recruit.status.VacancyRequired, {})
+  }
+  const applicants = await client.findAll(recruit.class.Applicant, {
+    space: applicant.space,
+    attachedTo: applicant.attachedTo
+  })
+  if (applicants.filter((p) => p._id !== applicant._id).length > 0) {
+    return new Status(Severity.ERROR, recruit.status.ApplicationExists, {})
+  }
+  return OK
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateApplication: createApplication
+  },
+  validator: {
+    ApplicantValidator: applicantValidator
   },
   component: {
     CreateVacancy,

@@ -25,22 +25,35 @@ function logInfo (msg: string, result: MigrationResult): void {
 }
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    logInfo('done for Applicants', await client.update(DOMAIN_TASK, { _class: recruit.class.Applicant, doneState: { $exists: false } }, { doneState: null }))
+    logInfo(
+      'done for Applicants',
+      await client.update(
+        DOMAIN_TASK,
+        { _class: recruit.class.Applicant, doneState: { $exists: false } },
+        { doneState: null }
+      )
+    )
 
-    logInfo('$move employee => assignee', await client.update(
-      DOMAIN_TASK,
-      { _class: recruit.class.Applicant, employee: { $exists: true } },
-      { $rename: { employee: 'assignee' } }
-    ))
+    logInfo(
+      '$move employee => assignee',
+      await client.update(
+        DOMAIN_TASK,
+        { _class: recruit.class.Applicant, employee: { $exists: true } },
+        { $rename: { employee: 'assignee' } }
+      )
+    )
 
-    const employees = (await client.find(DOMAIN_CONTACT, { _class: contact.class.Employee })).map(emp => emp._id)
+    const employees = (await client.find(DOMAIN_CONTACT, { _class: contact.class.Employee })).map((emp) => emp._id)
 
     // update assignee to unassigned if there is no employee exists.
-    logInfo('applicants wrong assignee', await client.update(
-      DOMAIN_TASK,
-      { _class: recruit.class.Applicant, assignee: { $not: { $in: employees } } },
-      { assignee: null }
-    ))
+    logInfo(
+      'applicants wrong assignee',
+      await client.update(
+        DOMAIN_TASK,
+        { _class: recruit.class.Applicant, assignee: { $not: { $in: employees } } },
+        { assignee: null }
+      )
+    )
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Recruit: Performing model upgrades')

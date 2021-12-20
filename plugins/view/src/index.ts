@@ -15,7 +15,7 @@
 //
 
 import type { Class, Client, Doc, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
-import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
@@ -38,6 +38,13 @@ export interface AttributePresenter extends Class<Doc> {
  */
 export interface ObjectEditor extends Class<Doc> {
   editor: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface ObjectValidator extends Class<Doc> {
+  validator: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
 }
 
 /**
@@ -118,7 +125,8 @@ const view = plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
-    ObjectEditor: '' as Ref<Mixin<ObjectEditor>>
+    ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
+    ObjectValidator: '' as Ref<Mixin<ObjectValidator>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
