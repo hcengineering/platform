@@ -17,6 +17,16 @@
     "More": "Options",
     "TaskUnAssign": "Unassign",
     "NoTaskForObject": "No tasks defined",
-    "Delete": "Delete"
+    "Delete": "Delete",
+    "NoTodoItems": "No to do's defined",
+    "TodoName": "Name",
+    "TodoState": "State",
+    "DoneState": "done",
+    "UndoneState": "todo",
+    "TodoDueDate": "Due to",
+    "TodoDescription": "To do description *",
+    "TodoEdit": "Edit To Do",
+    "TodoSave": "Save",
+    "TodoCreate": "Create To Do"
   }
 }

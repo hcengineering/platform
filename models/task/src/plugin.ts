@@ -28,11 +28,15 @@ export default mergeIds(taskId, task, {
   },
   action: {
     CreateTask: '' as Ref<Action>,
-    EditStatuses: '' as Ref<Action>
+    EditStatuses: '' as Ref<Action>,
+    TodoItemMarkDone: '' as Ref<Action>,
+    TodoItemMarkUnDone: '' as Ref<Action>
   },
   actionImpl: {
     CreateTask: '' as Resource<(object: Doc) => Promise<void>>,
-    EditStatuses: '' as Resource<(object: Doc) => Promise<void>>
+    EditStatuses: '' as Resource<(object: Doc) => Promise<void>>,
+    TodoItemMarkDone: '' as Resource<(object: Doc) => Promise<void>>,
+    TodoItemMarkUnDone: '' as Resource<(object: Doc) => Promise<void>>
   },
   component: {
     ProjectView: '' as AnyComponent,
@@ -46,7 +50,9 @@ export default mergeIds(taskId, task, {
     StatePresenter: '' as AnyComponent,
     DoneStatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
-    KanbanView: '' as AnyComponent
+    KanbanView: '' as AnyComponent,
+    Todos: '' as AnyComponent,
+    TodoItemPresenter: '' as AnyComponent
   },
   string: {
     Task: '' as IntlString,

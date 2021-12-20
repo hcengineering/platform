@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
+import type { Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
@@ -75,9 +75,11 @@ export interface Action extends Doc, UXObject {
 /**
  * @public
  */
-export interface ActionTarget extends Doc {
-  target: Ref<Class<Doc>>
+export interface ActionTarget<T extends Doc=Doc> extends Doc {
+  target: Ref<Class<T>>
   action: Ref<Action>
+
+  query?: DocumentQuery<T>
 }
 
 /**
@@ -88,9 +90,10 @@ export const viewId = 'view' as Plugin
 /**
  * @public
  */
-export type BuildModelKey = string | {
-  presenter: AnyComponent
-  label: string
+export interface BuildModelKey {
+  key: string
+  presenter?: AnyComponent
+  label?: IntlString
   sortingKey?: string
 }
 
@@ -113,7 +116,7 @@ export interface AttributeModel {
 export interface BuildModelOptions {
   client: Client
   _class: Ref<Class<Obj>>
-  keys: BuildModelKey[]
+  keys: (BuildModelKey | string)[]
   options?: FindOptions<Doc>
   ignoreMissing?: boolean
 }

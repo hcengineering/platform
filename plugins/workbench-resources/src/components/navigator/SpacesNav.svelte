@@ -67,7 +67,7 @@
   async function getActions (space: Space): Promise<Action[]> {
     const result = [editSpace]
 
-    const extraActions = await getContributedActions(client, space._class, core.class.Space)
+    const extraActions = await getContributedActions(client, space, core.class.Space)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,

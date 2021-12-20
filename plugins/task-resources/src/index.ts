@@ -24,13 +24,17 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import EditIssue from './components/EditIssue.svelte'
 import { Doc } from '@anticrm/core'
 import { showPopup } from '@anticrm/ui'
+import { getClient } from '@anticrm/presentation'
 
 import KanbanView from './components/kanban/KanbanView.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
 import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
-import { SpaceWithStates } from '@anticrm/task'
+import { SpaceWithStates, TodoItem } from '@anticrm/task'
+import Todos from './components/todos/Todos.svelte'
+import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
+import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 
 export { default as KanbanTemplateEditor } from './components/kanban/KanbanTemplateEditor.svelte'
 export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
@@ -46,6 +50,19 @@ async function editStatuses (object: SpaceWithStates): Promise<void> {
   showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'right')
 }
 
+async function toggleDone (value: boolean, object: TodoItem): Promise<void> {
+  await getClient().updateCollection(
+    object._class,
+    object.space,
+    object._id,
+    object.attachedTo,
+    object.attachedToClass,
+    object.collection, {
+      done: value
+    }
+  )
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,
@@ -57,10 +74,15 @@ export default async (): Promise<Resources> => ({
     KanbanView,
     StatePresenter,
     StateEditor,
-    DoneStatePresenter
+    DoneStatePresenter,
+    Todos,
+    TodoItemPresenter,
+    TodoStatePresenter
   },
   actionImpl: {
     CreateTask: createTask,
-    EditStatuses: editStatuses
+    EditStatuses: editStatuses,
+    TodoItemMarkDone: async (obj: TodoItem) => await toggleDone(true, obj),
+    TodoItemMarkUnDone: async (obj: TodoItem) => await toggleDone(false, obj)
   }
 })

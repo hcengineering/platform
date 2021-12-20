@@ -14,13 +14,13 @@
 //
 
 // To help typescript locate view plugin properly
-import type {} from '@anticrm/view'
+import type { ActionTarget } from '@anticrm/view'
 
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space } from '@anticrm/core'
-import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -42,7 +42,8 @@ import type {
   WonStateTemplate,
   LostStateTemplate,
   KanbanTemplate,
-  Task
+  Task,
+  TodoItem
 } from '@anticrm/task'
 import { createProjectKanban } from '@anticrm/task'
 import task from './plugin'
@@ -99,6 +100,22 @@ export class TTask extends TAttachedDoc implements Task {
   assignee!: Ref<Employee> | null
 
   declare rank: string
+
+  @Prop(Collection(task.class.TodoItem), "Todo's" as IntlString)
+  todoItems!: number
+}
+
+@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
+@UX('Todo' as IntlString)
+export class TTodoItem extends TAttachedDoc implements TodoItem {
+  @Prop(TypeString(), 'Name' as IntlString, task.icon.Task)
+  name!: string
+
+  @Prop(TypeBoolean(), 'Complete' as IntlString)
+  done!: boolean
+
+  @Prop(TypeDate(), 'Due date' as IntlString)
+  dueTo?: Timestamp
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
@@ -212,7 +229,8 @@ export function createModel (builder: Builder): void {
     TTask,
     TSpaceWithStates,
     TProject,
-    TIssue
+    TIssue,
+    TTodoItem
   )
   builder.mixin(task.class.Project, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -388,6 +406,51 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
     presenter: task.component.DoneStatePresenter
+  })
+
+  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.AttributeEditor, {
+    editor: task.component.Todos
+  })
+
+  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.TodoItemPresenter
+  })
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Mark as done' as IntlString,
+      icon: task.icon.TodoCheck,
+      action: task.actionImpl.TodoItemMarkDone
+    },
+    task.action.TodoItemMarkDone
+  )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Mark as undone' as IntlString,
+      icon: task.icon.TodoUnCheck,
+      action: task.actionImpl.TodoItemMarkUnDone
+    },
+    task.action.TodoItemMarkUnDone
+  )
+
+  builder.createDoc<ActionTarget<TodoItem>>(view.class.ActionTarget, core.space.Model, {
+    target: task.class.TodoItem,
+    action: task.action.TodoItemMarkDone,
+    query: {
+      done: false
+    }
+  })
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.TodoItem,
+    action: task.action.TodoItemMarkUnDone,
+    query: {
+      done: true
+    }
   })
 }
 

@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { AttachedDoc, Class, Client, Data, Doc, DocWithRank, genRanks, Mixin, Ref, Space, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Data, Doc, DocWithRank, genRanks, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -55,6 +55,17 @@ export interface Task extends AttachedDoc, DocWithRank {
   doneState: Ref<DoneState> | null
   number: number
   assignee: Ref<Employee> | null
+
+  todoItems?: number
+}
+
+/**
+ * @public
+ */
+export interface TodoItem extends AttachedDoc {
+  name: string
+  done: boolean
+  dueTo?: Timestamp
 }
 
 /**
@@ -168,7 +179,8 @@ const task = plugin(taskId, {
     WonStateTemplate: '' as Ref<Class<WonStateTemplate>>,
     LostStateTemplate: '' as Ref<Class<LostStateTemplate>>,
     KanbanTemplate: '' as Ref<Class<KanbanTemplate>>,
-    KanbanTemplateSpace: '' as Ref<Class<KanbanTemplateSpace>>
+    KanbanTemplateSpace: '' as Ref<Class<KanbanTemplateSpace>>,
+    TodoItem: '' as Ref<Class<TodoItem>>
   },
   viewlet: {
     Kanban: '' as Ref<ViewletDescriptor>
@@ -176,7 +188,9 @@ const task = plugin(taskId, {
   icon: {
     Task: '' as Asset,
     Kanban: '' as Asset,
-    Status: '' as Asset
+    Status: '' as Asset,
+    TodoCheck: '' as Asset,
+    TodoUnCheck: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.

@@ -20,7 +20,9 @@ const icons = require('../assets/icons.svg')
 loadMetadata(task.icon, {
   Task: `${icons}#task`,
   Kanban: `${icons}#kanban`,
-  Status: `${icons}#status`
+  Status: `${icons}#status`,
+  TodoCheck: `${icons}#todo-check`,
+  TodoUnCheck: `${icons}#todo-uncheck`
 })
 
 addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))
