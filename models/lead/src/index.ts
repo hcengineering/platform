@@ -15,7 +15,7 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Contact } from '@anticrm/contact'
+import type { Contact, Employee } from '@anticrm/contact'
 import type { Doc, FindOptions, Ref } from '@anticrm/core'
 import type { Funnel, Lead } from '@anticrm/lead'
 import { createKanban } from '@anticrm/lead'
@@ -49,6 +49,9 @@ export class TLead extends TTask implements Lead {
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
+
+  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  declare assignee: Ref<Employee> | null
 }
 
 export function createModel (builder: Builder): void {
