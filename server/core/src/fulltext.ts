@@ -68,7 +68,8 @@ export class FullTextIndex extends TxProcessor implements Storage {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     console.log('search', query)
-    const docs = await this.adapter.search(query)
+    const { _id, $search, ...mainQuery } = query
+    const docs = await this.adapter.search($search)
     console.log(docs)
     const ids: Ref<Doc>[] = []
     for (const doc of docs) {
@@ -77,7 +78,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
         ids.push(doc.attachedTo)
       }
     }
-    return await this.dbStorage.findAll(_class, { _id: { $in: ids as any } }, options) // TODO: remove `as any`
+    return await this.dbStorage.findAll(_class, { _id: { $in: ids as any }, ...mainQuery }, options) // TODO: remove `as any`
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>): AnyAttribute[] | undefined {

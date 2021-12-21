@@ -14,30 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
-  import { ScrollBox } from '@anticrm/ui'
-  import Table from './Table.svelte'
-
-  export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
-  export let options: FindOptions<Doc> | undefined
-  export let config: string[]
-  export let search: string
-
-  $: query = search === '' ? { space } : { $search: search, space }
+  export let size: 'small' | 'medium' | 'large'
+  const fill: string = 'currentColor'
 </script>
 
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <Table {_class} {config} {options} {query} enableChecking />
-  </ScrollBox>
-</div>
-
-<style lang="scss">
-  .container {
-    flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
-    height: 100%;
-  }
-</style>
+<svg class="svg-{size}" {fill} fill-opacity="0.0" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="8" cy="8" r="6" stroke="white" />
+  <path d="M12 12L4 4" stroke="white" />
+</svg>

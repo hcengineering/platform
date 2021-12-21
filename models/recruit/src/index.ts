@@ -208,6 +208,32 @@ export function createModel (builder: Builder): void {
     config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.channels']
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: recruit.class.Applicant,
+    descriptor: task.viewlet.StatusTable,
+    open: contact.component.EditContact,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        attachedTo: recruit.class.Candidate,
+        state: task.class.State,
+        assignee: contact.class.Employee,
+        doneState: task.class.DoneState
+      }
+    } as FindOptions<Doc>, // TODO: fix
+    config: [
+      '',
+      '$lookup.attachedTo',
+      '$lookup.assignee',
+      '$lookup.state',
+      '$lookup.doneState',
+      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      'modifiedOn',
+      '$lookup.attachedTo.channels'
+    ]
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })

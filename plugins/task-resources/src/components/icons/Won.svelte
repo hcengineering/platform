@@ -14,30 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
-  import { ScrollBox } from '@anticrm/ui'
-  import Table from './Table.svelte'
-
-  export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
-  export let options: FindOptions<Doc> | undefined
-  export let config: string[]
-  export let search: string
-
-  $: query = search === '' ? { space } : { $search: search, space }
+  export let size: 'small' | 'medium' | 'large'
+  const fill: string = 'currentColor'
 </script>
 
-<div class="container">
-  <ScrollBox vertical stretch noShift>
-    <Table {_class} {config} {options} {query} enableChecking />
-  </ScrollBox>
-</div>
-
-<style lang="scss">
-  .container {
-    flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
-    height: 100%;
-  }
-</style>
+<svg class="svg-{size}" {fill} fill-opacity="0.0" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M4 10V3.83337C4 3.59767 4 3.47982 4.07322 3.4066C4.14645 3.33337 4.2643 3.33337 4.5 3.33337H10.7929C11.3066 3.33337 11.5635 3.33337 11.6274 3.4877C11.6913 3.64203 11.5097 3.82366 11.1464 4.18693L8.94951 6.38386C8.81618 6.5172 8.74951 6.58386 8.74951 6.66671C8.74951 6.74955 8.81618 6.81622 8.94951 6.94955L11.1464 9.14649C11.5097 9.50975 11.6913 9.69138 11.6274 9.84571C11.5635 10 11.3066 10 10.7929 10H4ZM4 10V12.6667"
+    stroke="white"
+    stroke-linecap="round"
+  />
+</svg>

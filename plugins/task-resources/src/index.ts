@@ -35,6 +35,7 @@ import { SpaceWithStates, TodoItem } from '@anticrm/task'
 import Todos from './components/todos/Todos.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
+import StatusTableView from './components/StatusTableView.svelte'
 
 export { default as KanbanTemplateEditor } from './components/kanban/KanbanTemplateEditor.svelte'
 export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
@@ -57,7 +58,8 @@ async function toggleDone (value: boolean, object: TodoItem): Promise<void> {
     object._id,
     object.attachedTo,
     object.attachedToClass,
-    object.collection, {
+    object.collection,
+    {
       done: value
     }
   )
@@ -77,7 +79,8 @@ export default async (): Promise<Resources> => ({
     DoneStatePresenter,
     Todos,
     TodoItemPresenter,
-    TodoStatePresenter
+    TodoStatePresenter,
+    StatusTableView
   },
   actionImpl: {
     CreateTask: createTask,

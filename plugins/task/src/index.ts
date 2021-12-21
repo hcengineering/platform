@@ -14,7 +14,20 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { AttachedDoc, Class, Client, Data, Doc, DocWithRank, genRanks, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
+import {
+  AttachedDoc,
+  Class,
+  Client,
+  Data,
+  Doc,
+  DocWithRank,
+  genRanks,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp,
+  TxOperations
+} from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -71,8 +84,7 @@ export interface TodoItem extends AttachedDoc {
 /**
  * @public
  */
-export interface SpaceWithStates extends Space {
-}
+export interface SpaceWithStates extends Space {}
 
 /**
  * @public
@@ -121,23 +133,23 @@ export interface Sequence extends Doc {
 export interface StateTemplate extends AttachedDoc, State {}
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface DoneStateTemplate extends AttachedDoc, DoneState {}
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface WonStateTemplate extends DoneStateTemplate, WonState {}
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface LostStateTemplate extends DoneStateTemplate, LostState {}
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface KanbanTemplate extends Doc {
   title: string
   statesC: number
@@ -145,8 +157,8 @@ export interface KanbanTemplate extends Doc {
 }
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface KanbanTemplateSpace extends Space {
   icon: AnyComponent
 }
@@ -183,7 +195,8 @@ const task = plugin(taskId, {
     TodoItem: '' as Ref<Class<TodoItem>>
   },
   viewlet: {
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    StatusTable: '' as Ref<ViewletDescriptor>
   },
   icon: {
     Task: '' as Asset,
@@ -275,7 +288,11 @@ export async function createProjectKanban (
 /**
  * @public
  */
-export async function createKanban (client: Client & TxOperations, attachedTo: Ref<Space>, templateId?: Ref<KanbanTemplate>): Promise<Ref<Kanban>> {
+export async function createKanban (
+  client: Client & TxOperations,
+  attachedTo: Ref<Space>,
+  templateId?: Ref<KanbanTemplate>
+): Promise<Ref<Kanban>> {
   if (templateId === undefined) {
     const ranks = [...genRanks(2)]
     await Promise.all([
@@ -301,14 +318,15 @@ export async function createKanban (client: Client & TxOperations, attachedTo: R
 
   const tmplStates = await client.findAll(task.class.StateTemplate, { attachedTo: template._id })
   await Promise.all(
-    tmplStates.map(async (state) => await client.createDoc(
-      task.class.State,
-      attachedTo,
-      {
-        color: state.color,
-        title: state.title,
-        rank: state.rank
-      })))
+    tmplStates.map(
+      async (state) =>
+        await client.createDoc(task.class.State, attachedTo, {
+          color: state.color,
+          title: state.title,
+          rank: state.rank
+        })
+    )
+  )
 
   const doneClassMap = new Map<Ref<Class<DoneStateTemplate>>, Ref<Class<DoneState>>>([
     [task.class.WonStateTemplate, task.class.WonState],
