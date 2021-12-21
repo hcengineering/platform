@@ -145,7 +145,8 @@ const view = plugin(viewId, {
     Delete: '' as Asset,
     MoreH: '' as Asset,
     Move: '' as Asset,
-    Archive: '' as Asset
+    Archive: '' as Asset,
+    Statuses: '' as Asset
   }
 })
 export default view

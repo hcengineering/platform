@@ -20,7 +20,7 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreH } from '@anticrm/ui'
+  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreV } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -64,7 +64,7 @@
     </div>
   {:else if actions.length > 1}
     <div class="tool" on:click|stopPropagation={onMenuClick}>
-      <IconMoreH size={'small'} />
+      <IconMoreV size={'small'} />
     </div>
   {/if}
   {#if notifications > 0 && collapsed}

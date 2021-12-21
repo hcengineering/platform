@@ -18,7 +18,7 @@
   import core from '@anticrm/core'
   import { getResource, IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Action, getCurrentLocation, IconAdd, IconEdit, location, navigate, showPopup } from '@anticrm/ui'
+  import { Action, getCurrentLocation, IconAdd, IconEdit, IconPreview, location, navigate, showPopup } from '@anticrm/ui'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import type { SpacesNavModel } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
@@ -45,8 +45,8 @@
   }
 
   const editSpace: Action = {
-    label: 'Open' as IntlString,
-    icon: IconEdit,
+    label: 'Preview' as IntlString,
+    icon: IconPreview,
     action: async (_id: Ref<Doc>): Promise<void> => {
       showPopup(model.component ?? SpacePanel, { _id, spaceClass: model.spaceClass }, 'right')
     }

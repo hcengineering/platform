@@ -382,7 +382,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: 'Edit Statuses' as IntlString,
-      icon: view.icon.MoreH,
+      icon: view.icon.Statuses,
       action: task.actionImpl.EditStatuses
     },
     task.action.EditStatuses
