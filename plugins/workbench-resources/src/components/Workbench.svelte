@@ -29,11 +29,12 @@
   import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
-  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip, ActionIcon, IconEdit } from '@anticrm/ui'
+  import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip, ActionIcon, IconEdit, AnySvelteComponent } from '@anticrm/ui'
   import core from '@anticrm/core'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import TopMenu from './icons/TopMenu.svelte'
+  import Archive from './Archive.svelte'
 
   export let client: Client
 
@@ -42,6 +43,7 @@
   let currentApp: Ref<Application> | undefined
   let currentApplication: Application | undefined
   let currentSpace: Ref<Space> | undefined
+  let ownSpecialComponent: AnySvelteComponent | undefined
   let specialComponent: AnyComponent | undefined
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
@@ -52,21 +54,36 @@
     currentApplication = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]
     navigatorModel = currentApplication?.navigatorModel
     let currentFolder = loc.path[2] as Ref<Space>
+    ownSpecialComponent = getOwnSpecialComponent(currentFolder)
+
+    if (ownSpecialComponent !== undefined) {
+      return
+    }
+  
     specialComponent = getSpecialComponent(currentFolder)
-    if (!specialComponent) {
-      currentSpace = currentFolder
-      const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
-      if (space) {
-        const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
-        const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
-        currentView = view.view
-        createItemDialog = currentView.createItemDialog
-      } else {
-        currentView = undefined
-        createItemDialog = undefined
-      }
+
+    if (specialComponent !== undefined) {
+      return
+    }
+
+    currentSpace = currentFolder
+    const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
+    if (space) {
+      const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
+      const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
+      currentView = view.view
+      createItemDialog = currentView.createItemDialog
+    } else {
+      currentView = undefined
+      createItemDialog = undefined
     }
   }))
+
+  function getOwnSpecialComponent (id: string): AnySvelteComponent | undefined {
+    if (id === 'archive') {
+      return Archive
+    }
+  }
 
   function getSpecialComponent (id: string): AnyComponent | undefined {
     let special = navigatorModel?.specials?.find((x) => x.id === id)
@@ -119,7 +136,9 @@
     </div>
     {/if}
     <div class="panel-component">
-      {#if specialComponent}
+      {#if ownSpecialComponent}
+        <svelte:component this={ownSpecialComponent} model={navigatorModel} />
+      {:else if specialComponent}
         <Component is={specialComponent} />
       {:else}
         <SpaceHeader space={currentSpace} {createItemDialog} />

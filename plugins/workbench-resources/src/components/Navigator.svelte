@@ -14,17 +14,36 @@
 -->
 
 <script lang="ts">
-  import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
+  import core from '@anticrm/core'
+  import type { Space } from '@anticrm/core'
+  import type { NavigatorModel } from '@anticrm/workbench'
+  import { getCurrentLocation, navigate } from '@anticrm/ui'
+  import { createQuery } from '@anticrm/presentation'
+  import view from '@anticrm/view'
+
+  import workbench from '../plugin'
+
   import SpacesNav from './navigator/SpacesNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
 
   export let model: NavigatorModel | undefined
+  
+  const query = createQuery()
+  let archivedSpaces: Space[] = []
+  $: if (model) {
+    query.query(
+      core.class.Space,
+      {
+        _class: { $in: model.spaces.map(x => x.spaceClass) },
+        archived: true
+      },
+      (result) => { archivedSpaces = result })
+  }
 
-  function selectSpecial (sp: SpecialNavModel): void {
+  function selectSpecial (id: string): void {
     const loc = getCurrentLocation()
-    loc.path[2] = sp.id
+    loc.path[2] = id
     loc.path.length = 3
     navigate(loc)
   }
@@ -33,13 +52,26 @@
 {#if model}
   {#if model.specials}
     {#each model.specials as special}
-      <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special)} />
+      <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
     {/each}
-    {#if model.spaces.length}
+  {/if}
+  {#if archivedSpaces.length > 0}
+    <SpecialElement label={workbench.string.Archive} icon={view.icon.Archive} on:click={() => selectSpecial('archive')} />
+  {/if}
+  {#if model.spaces.length}
+    <div class="separator">
       <TreeSeparator />
-    {/if}
+    </div>
   {/if}
   {#each model.spaces as m (m.label)}
     <SpacesNav model={m}/>
   {/each}
 {/if}
+
+<style lang="scss">
+  .separator {
+    &:nth-child(2) {
+      display: none;
+    }
+  }
+</style>

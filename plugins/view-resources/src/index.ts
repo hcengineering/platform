@@ -31,7 +31,7 @@ import MoveView from './components/Move.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter } from './utils'
-export { Table }
+export { Table, TableView }
 
 function Delete (object: Doc): void {
   showPopup(
@@ -55,8 +55,12 @@ async function Move (object: Doc): Promise<void> {
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    Delete,
-    Move
+    Delete: {
+      apply: Delete
+    },
+    Move: {
+      apply: Move
+    }
   },
   component: {
     StringEditor,

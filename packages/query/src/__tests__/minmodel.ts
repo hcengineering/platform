@@ -97,7 +97,8 @@ export function genMinModel (): TxCUD<Doc>[] {
       name: 'Sp1',
       description: '',
       private: false,
-      members: [u1, u2]
+      members: [u1, u2],
+      archived: false
     })
   )
 
@@ -106,7 +107,8 @@ export function genMinModel (): TxCUD<Doc>[] {
       name: 'Sp2',
       description: '',
       private: false,
-      members: [u1]
+      members: [u1],
+      archived: false
     })
   )
   return txes

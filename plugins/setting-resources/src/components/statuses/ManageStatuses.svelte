@@ -21,6 +21,7 @@
   import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
   import { KanbanTemplateEditor } from '@anticrm/task-resources'
   import setting from '@anticrm/setting'
+  import task from '@anticrm/task'
 
   import Folders from './Folders.svelte'
   import Templates from './Templates.svelte'
@@ -53,7 +54,7 @@
 
 <div class="flex-col h-full">
   <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.Statuses} size={'medium'} /></div>
+    <div class="content-color mr-3"><Icon icon={task.icon.ManageStatuses} size={'medium'} /></div>
     <div class="fs-title"><Label label={setting.string.ManageStatuses}/></div>
   </div>
   <div class="flex-row-top h-full overflow-x-auto scroll-m-10">

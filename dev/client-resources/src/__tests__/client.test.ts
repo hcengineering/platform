@@ -36,6 +36,7 @@ describe('client', () => {
       name: 'xxx',
       description: 'desc',
       private: false,
+      archived: false,
       members: []
     })
     const txes = await client.findAll(core.class.Space, { name: 'xxx' })

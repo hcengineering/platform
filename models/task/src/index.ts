@@ -323,6 +323,7 @@ export function createModel (builder: Builder): void {
       name: 'public',
       description: 'Public tasks',
       private: false,
+      archived: false,
       members: []
     },
     task.space.TasksPublic
@@ -336,6 +337,7 @@ export function createModel (builder: Builder): void {
       description: 'Manage project statuses',
       members: [],
       private: false,
+      archived: false,
       icon: task.component.TemplatesIcon
     },
     task.space.ProjectTemplates
@@ -368,9 +370,50 @@ export function createModel (builder: Builder): void {
     task.action.EditStatuses
   )
 
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Archive' as IntlString,
+      icon: view.icon.Archive,
+      action: task.actionImpl.ArchiveSpace
+    },
+    task.action.ArchiveSpace
+  )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Unarchive' as IntlString,
+      icon: view.icon.Archive,
+      action: task.actionImpl.UnarchiveSpace
+    },
+    task.action.UnarchiveSpace
+  )
+
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: task.class.SpaceWithStates,
-    action: task.action.EditStatuses
+    action: task.action.EditStatuses,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.SpaceWithStates,
+    action: task.action.ArchiveSpace,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.SpaceWithStates,
+    action: task.action.UnarchiveSpace,
+    query: {
+      archived: true
+    }
   })
 
   builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
@@ -399,7 +442,8 @@ export function createModel (builder: Builder): void {
       name: 'Sequences',
       description: 'Internal space to store sequence numbers',
       members: [],
-      private: false
+      private: false,
+      archived: false
     },
     task.space.Sequence
   )

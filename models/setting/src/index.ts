@@ -19,6 +19,7 @@ import core, { TDoc } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
 import type { Integration, IntegrationType, Handler } from '@anticrm/setting'
 import type { IntlString } from '@anticrm/platform'
+import task from '@anticrm/task'
 
 import workbench from '@anticrm/model-workbench'
 import { AnyComponent } from '@anticrm/ui'
@@ -64,7 +65,7 @@ export function createModel (builder: Builder): void {
         {
           id: 'statuses',
           label: setting.string.ManageStatuses,
-          icon: setting.icon.Statuses,
+          icon: task.icon.ManageStatuses,
           component: setting.component.ManageStatuses
         },
         {

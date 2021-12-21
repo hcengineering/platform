@@ -33,6 +33,9 @@ export class TSpace extends TDoc implements Space {
   @Prop(TypeBoolean(), 'Private' as IntlString)
   private!: boolean
 
+  @Prop(TypeBoolean(), 'Archived' as IntlString)
+  archived!: boolean
+
   members!: Arr<Ref<Account>>
 }
 
