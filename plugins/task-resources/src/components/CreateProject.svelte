@@ -28,7 +28,7 @@
   let templateId: Ref<KanbanTemplate> | undefined
 
   export function canClose (): boolean {
-    return name === ''
+    return name === '' && templateId !== undefined
   }
 
   const client = getClient()

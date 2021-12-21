@@ -28,12 +28,10 @@
   $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: folders } }, (result) => { templates = result })
 
   let items: DumbDropdownItem[] = []
-  $: items = [
-    { id: '', label: 'No template' },
-    ...templates.map(x => ({ id: x._id, label: x.title }))
-  ]
-  let selectedItem: string = ''
-  $: template = selectedItem === '' ? undefined : selectedItem as Ref<KanbanTemplate>
+  $: items = templates.map(x => ({ id: x._id, label: x.title }))
+
+  let selectedItem: string | undefined
+  $: template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
 </script>
 
 <DumbDropdown {items} bind:selected={selectedItem} title="Statuses" />

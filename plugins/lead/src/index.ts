@@ -18,7 +18,7 @@ import type { Contact } from '@anticrm/contact'
 import { Class, Data, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import task, { DoneState, Kanban, KanbanTemplateSpace, SpaceWithStates, State, Task, genRanks } from '@anticrm/task'
+import task, { CreateFn, genRanks, createKanbanTemplate, DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@anticrm/task'
 
 /**
  * @public
@@ -41,7 +41,7 @@ export interface Lead extends Task {
  */
 export const leadId = 'lead' as Plugin
 
-export default plugin(leadId, {
+const lead = plugin(leadId, {
   class: {
     Lead: '' as Ref<Class<Lead>>,
     Funnel: '' as Ref<Class<Funnel>>
@@ -53,8 +53,28 @@ export default plugin(leadId, {
   },
   space: {
     FunnelTemplates: '' as Ref<KanbanTemplateSpace>
+  },
+  template: {
+    DefaultFunnel: '' as Ref<KanbanTemplate>
   }
 })
+
+export default lead
+
+const defaultKanban = {
+  states: [
+    { color: '#7C6FCD', title: 'Incoming' },
+    { color: '#6F7BC5', title: 'Negotation' },
+    { color: '#77C07B', title: 'Offer preparing' },
+    { color: '#A5D179', title: 'Make a decision' },
+    { color: '#F28469', title: 'Contract conclusion' },
+    { color: '#7C6FCD', title: 'Done' }
+  ],
+  doneStates: [
+    { isWon: true, title: 'Won' },
+    { isWon: false, title: 'Lost' }
+  ]
+}
 
 /**
  * @public
@@ -63,17 +83,10 @@ export async function createKanban (
   funnelId: Ref<Funnel>,
   factory: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, data: Data<T>, id: Ref<T>) => Promise<void>
 ): Promise<void> {
-  const states = [
-    { color: '#7C6FCD', name: 'Incoming' },
-    { color: '#6F7BC5', name: 'Negotation' },
-    { color: '#77C07B', name: 'Offer preparing' },
-    { color: '#A5D179', name: 'Make a decision' },
-    { color: '#F28469', name: 'Contract conclusion' },
-    { color: '#7C6FCD', name: 'Done' }
-  ]
+  const { states, doneStates } = defaultKanban
   const stateRank = genRanks(states.length)
   for (const st of states) {
-    const sid = (funnelId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
+    const sid = (funnelId + '.state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<State>
     const rank = stateRank.next().value
 
     if (rank === undefined) {
@@ -84,17 +97,14 @@ export async function createKanban (
       task.class.State,
       funnelId,
       {
-        title: st.name,
+        title: st.title,
         color: st.color,
         rank
       },
       sid
     )
   }
-  const doneStates = [
-    { class: task.class.WonState, title: 'Won' },
-    { class: task.class.LostState, title: 'Lost' }
-  ]
+
   const doneStateRank = genRanks(doneStates.length)
   for (const st of doneStates) {
     const rank = doneStateRank.next().value
@@ -105,7 +115,7 @@ export async function createKanban (
 
     const sid = (funnelId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
     await factory(
-      st.class,
+      st.isWon ? task.class.WonState : task.class.LostState,
       funnelId,
       {
         title: st.title,
@@ -123,4 +133,17 @@ export async function createKanban (
     },
     (funnelId + '.kanban') as Ref<Kanban>
   )
+}
+
+/**
+ * @public
+ */
+export const createDefaultKanbanTemplate = async (create: CreateFn): Promise<void> => {
+  await createKanbanTemplate(create)({
+    kanbanId: lead.template.DefaultFunnel,
+    space: lead.space.FunnelTemplates,
+    title: 'Default funnel',
+    states: defaultKanban.states,
+    doneStates: defaultKanban.doneStates
+  })
 }

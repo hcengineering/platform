@@ -18,7 +18,7 @@ import { Doc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import task, { DOMAIN_TASK } from '@anticrm/model-task'
-import { createKanban } from '@anticrm/lead'
+import { createDefaultKanbanTemplate, createKanban } from '@anticrm/lead'
 import lead from './plugin'
 
 function logInfo (msg: string, result: MigrationResult): void {
@@ -59,6 +59,15 @@ export const leadOperation: MigrateOperation = {
       })
     } else {
       console.log('Lead: => sequence is ok')
+    }
+
+    if (await client.findOne(core.class.TxCreateDoc, { objectId: lead.template.DefaultFunnel }) === undefined) {
+      await createDefaultKanbanTemplate(async (
+        props,
+        attrs
+      ): Promise<void> => {
+        await ops.createDoc(props.class, props.space, attrs, props.id)
+      })
     }
   }
 }

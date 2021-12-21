@@ -13,11 +13,9 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
 import type { IntlString, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
-import { KanbanTemplateSpace } from '@anticrm/task'
 
 export default mergeIds(recruitId, recruit, {
   status: {
@@ -39,8 +37,5 @@ export default mergeIds(recruitId, recruit, {
     NoApplicationsForCandidate: '' as IntlString,
     FirstName: '' as IntlString,
     LastName: '' as IntlString
-  },
-  space: {
-    VacancyTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })
