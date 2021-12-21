@@ -15,22 +15,50 @@
 
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
+  import { onMount, onDestroy } from 'svelte/internal'
   import Label from './Label.svelte'
   import StatusesBarElement from './StatusesBarElement.svelte'
 
   export let items: IntlString[]
                     = ['New' as IntlString, 'In progress' as IntlString, 'Interview' as IntlString, 'Interview' as IntlString, 'Final' as IntlString]
   export let selected: IntlString | undefined = undefined
+
+  let div: HTMLElement
+  let maskLeft: boolean = false
+  let maskRight: boolean = false
+  let mask: 'left' | 'right' | 'both' | 'none' = 'none'
+
+  const checkMask = (): void => {
+    maskLeft = (div && div.scrollLeft > 1) ? true : false
+    maskRight = (div && div.scrollWidth - div.scrollLeft - div.clientWidth > 1) ? true : false
+    if (maskLeft || maskRight) {
+      if (maskLeft && maskRight) mask = 'both'
+      else if (maskLeft) mask = 'left'
+      else if (maskRight) mask = 'right'
+    } else mask = 'none'
+  }
+
+  const selectItem = (ev: Event, item: IntlString): void => {
+    const el: HTMLElement = ev.currentTarget as HTMLElement
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    selected = item
+  }
+
+  onMount(() => {
+    if (div) {
+      checkMask()
+      div.addEventListener('scroll', checkMask)
+    }
+  })
+  onDestroy(() => { if (div) div.removeEventListener('scroll', checkMask) })
 </script>
 
-<div class="flex-row-center statusesbar-container">
+<div bind:this={div} class="flex-row-center statusesbar-container {mask}">
   {#each items as item, i}
     <div
       class="flex-row-center cursor-pointer step-lr25"
       class:selected={item === selected}
-      on:click={() => {
-        if (item !== selected) selected = item
-      }}
+      on:click={(ev) => { if (item !== selected) selectItem(ev, item) }}
     >
       <StatusesBarElement side={'left'} kind={i ? 'arrow' : 'round'} selected={item === selected} />
       <div class="flex-row-center overflow-label label">
@@ -45,10 +73,12 @@
   .statusesbar-container {
     overflow-x: auto;
     padding: .125rem 0;
+
     &::-webkit-scrollbar:horizontal { height: .125rem; }
     &::-webkit-scrollbar-track { margin: .25rem; }
     &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-accent-color); }
   }
+
   .label {
     padding: .5rem 2rem;
     height: 2.25rem;
@@ -67,4 +97,8 @@
       border-color: transparent;
     }
   }
+  .left { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
+  .right { mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
+  .both { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem, rgba(0, 0, 0, 1) calc(100% - 1rem), rgba(0, 0, 0, 0) 100%); }
+  .none { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 1); }
 </style>
