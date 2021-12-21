@@ -52,9 +52,7 @@ export default plugin(activityId, {
     Delete: '' as IntlString,
     Edit: '' as IntlString,
     Options: '' as IntlString,
-    Edited: '' as IntlString,
-    ShowMore: '' as IntlString,
-    ShowLess: '' as IntlString
+    Edited: '' as IntlString
   },
   icon: {
     Activity: '' as Asset
