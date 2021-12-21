@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import { AttachedData, calcRank, Data, Doc, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { AttachedData, Data, Doc, Ref, SortingOrder, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import { Issue, State } from '@anticrm/task'
+  import { calcRank, Issue, State } from '@anticrm/task'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'

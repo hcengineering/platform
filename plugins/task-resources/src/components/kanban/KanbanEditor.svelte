@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Doc, SortingOrder, calcRank } from '@anticrm/core'
+  import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, State, DoneState } from '@anticrm/task'
-  import task from '@anticrm/task'
+  import task, { calcRank } from '@anticrm/task'
 
   import StatesEditor from '../state/StatesEditor.svelte'
 

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@anticrm/contact'
-  import { calcRank, Data, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { Data, Ref, SortingOrder, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -23,7 +23,7 @@
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import task from '@anticrm/task'
+  import task, { calcRank } from '@anticrm/task'
 
   export let space: Ref<Space>
 

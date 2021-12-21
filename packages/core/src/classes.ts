@@ -220,10 +220,3 @@ export interface Space extends Doc {
 export interface Account extends Doc {
   email: string
 }
-
-/**
- * @public
- */
-export interface DocWithRank extends Doc {
-  rank: string
-}
