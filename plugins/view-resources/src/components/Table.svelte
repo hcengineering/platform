@@ -63,7 +63,7 @@
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
+    showPopup(Menu, { object, baseMenuClass }, ev.target as HTMLElement, () => {
       selectRow = undefined
     })
   }

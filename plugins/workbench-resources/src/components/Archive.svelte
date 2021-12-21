@@ -19,7 +19,7 @@
   import { translate } from '@anticrm/platform'
   import { Label, Icon } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { TableView } from '@anticrm/view-resources'
+  import { Table } from '@anticrm/view-resources'
   import { createQuery } from '@anticrm/presentation'
   import { NavigatorModel } from '@anticrm/workbench'
 
@@ -60,10 +60,11 @@
     <div class="fs-title"><Label label={workbench.string.Archived} params={{ object: spaceName }} /></div>
   </div>
   {#if spaceSample !== undefined}
-  <TableView
+  <Table
     _class={spaceSample._class}
     config={['name', 'company', 'location', 'modifiedOn']}
     options={{}}
+    enableChecking={true}
     baseMenuClass={core.class.Space}
     query={{
       _class: { $in: model?.spaces.map(x => x.spaceClass) ?? [] },
