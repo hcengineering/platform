@@ -20,6 +20,7 @@ import {
   Client,
   Data,
   Doc,
+  Interface,
   Mixin,
   Ref,
   Space,
