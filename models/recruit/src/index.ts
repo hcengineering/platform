@@ -141,7 +141,8 @@ export function createModel (builder: Builder): void {
       name: 'public',
       description: 'Public Candidates',
       private: false,
-      members: []
+      members: [],
+      archived: false
     },
     recruit.space.CandidatesPublic
   )
@@ -288,6 +289,7 @@ export function createModel (builder: Builder): void {
       description: 'Manage vacancy statuses',
       members: [],
       private: false,
+      archived: false,
       icon: recruit.component.TemplatesIcon
     },
     recruit.space.VacancyTemplates

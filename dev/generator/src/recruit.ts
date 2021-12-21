@@ -1,7 +1,8 @@
 import contact from '@anticrm/contact'
-import core, { AttachedData, Data, generateId, genRanks, Ref, TxOperations } from '@anticrm/core'
+import core, { AttachedData, Data, generateId, Ref, TxOperations } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
+import { genRanks } from '@anticrm/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
 import { Client } from 'minio'
@@ -75,6 +76,7 @@ export async function generateContacts (transactorUrl: string, dbName: string, o
       location: faker.address.city(),
       company: faker.company.companyName(),
       members: accountIds,
+      archived: false,
       private: false
     }
     const vacancyId = (options.random ? `vacancy-${generateId()}-${i}` : `vacancy-genid-${i}`) as Ref<Vacancy>

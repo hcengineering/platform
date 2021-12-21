@@ -15,10 +15,10 @@
 //
 
 import type { Contact } from '@anticrm/contact'
-import { Class, Data, Doc, genRanks, Ref, Space } from '@anticrm/core'
+import { Class, Data, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import task, { DoneState, Kanban, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@anticrm/task'
+import task, { DoneState, Kanban, KanbanTemplateSpace, SpaceWithStates, State, Task, genRanks } from '@anticrm/task'
 
 /**
  * @public

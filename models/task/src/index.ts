@@ -20,7 +20,7 @@ import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Implements, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -54,7 +54,7 @@ export { default } from './plugin'
 export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
-@Model(task.class.State, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
+@Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
 @UX('State' as IntlString, undefined, undefined, 'rank')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
@@ -65,7 +65,7 @@ export class TState extends TDoc implements State {
   declare rank: string
 }
 
-@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [core.interface.DocWithRank])
+@Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
 @UX('Done' as IntlString, undefined, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), 'Title' as IntlString)
@@ -85,7 +85,7 @@ export class TLostState extends TDoneState implements LostState {}
  *
  * No domain is specified, since pure Tasks could not exists
  */
-@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [core.interface.DocWithRank])
+@Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), 'State' as IntlString)
   state!: Ref<State>
@@ -168,7 +168,7 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
   icon!: AnyComponent
 }
 
-@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [core.interface.DocWithRank])
+@Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -179,7 +179,7 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   declare rank: string
 }
 
-@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [core.interface.DocWithRank])
+@Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -211,8 +211,15 @@ export class TSequence extends TDoc implements Sequence {
   sequence!: number
 }
 
+@Implements(task.interface.DocWithRank)
+export class TDocWithRank extends TDoc {
+  @Prop(TypeString(), 'Rank' as IntlString)
+  rank!: string
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TDocWithRank,
     TState,
     TDoneState,
     TWonState,
@@ -334,6 +341,7 @@ export function createModel (builder: Builder): void {
       name: 'public',
       description: 'Public tasks',
       private: false,
+      archived: false,
       members: []
     },
     task.space.TasksPublic
@@ -347,6 +355,7 @@ export function createModel (builder: Builder): void {
       description: 'Manage project statuses',
       members: [],
       private: false,
+      archived: false,
       icon: task.component.TemplatesIcon
     },
     task.space.ProjectTemplates
@@ -379,9 +388,50 @@ export function createModel (builder: Builder): void {
     task.action.EditStatuses
   )
 
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Archive' as IntlString,
+      icon: view.icon.Archive,
+      action: task.actionImpl.ArchiveSpace
+    },
+    task.action.ArchiveSpace
+  )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: 'Unarchive' as IntlString,
+      icon: view.icon.Archive,
+      action: task.actionImpl.UnarchiveSpace
+    },
+    task.action.UnarchiveSpace
+  )
+
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: task.class.SpaceWithStates,
-    action: task.action.EditStatuses
+    action: task.action.EditStatuses,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.SpaceWithStates,
+    action: task.action.ArchiveSpace,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.SpaceWithStates,
+    action: task.action.UnarchiveSpace,
+    query: {
+      archived: true
+    }
   })
 
   builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
@@ -410,7 +460,8 @@ export function createModel (builder: Builder): void {
       name: 'Sequences',
       description: 'Internal space to store sequence numbers',
       members: [],
-      private: false
+      private: false,
+      archived: false
     },
     task.space.Sequence
   )

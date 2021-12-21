@@ -82,7 +82,6 @@ export default plugin(settingId, {
   icon: {
     Setting: '' as Asset,
     Integrations: '' as Asset,
-    Statuses: '' as Asset,
     Support: '' as Asset,
     Privacy: '' as Asset,
     Terms: '' as Asset

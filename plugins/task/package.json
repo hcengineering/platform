@@ -30,6 +30,7 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/contact": "~0.6.2",
     "@anticrm/view": "~0.6.0",
-    "@anticrm/ui": "~0.6.0"
+    "@anticrm/ui": "~0.6.0",
+    "lexorank": "~1.0.4"
   }
 }

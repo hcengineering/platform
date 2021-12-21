@@ -180,6 +180,7 @@ export function genMinModel (): TxCUD<Doc>[] {
       name: 'Sp1',
       description: '',
       private: false,
+      archived: false,
       members: [u1, u2]
     })
   )
@@ -189,6 +190,7 @@ export function genMinModel (): TxCUD<Doc>[] {
       name: 'Sp2',
       description: '',
       private: false,
+      archived: false,
       members: [u1]
     })
   )

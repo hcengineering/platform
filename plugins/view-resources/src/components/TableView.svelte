@@ -14,22 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import { ScrollBox } from '@anticrm/ui'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
-  export let options: FindOptions<Doc> | undefined
+  export let space: Ref<Space> | undefined = undefined
+  export let query: DocumentQuery<Doc> = {}
+  export let options: FindOptions<Doc> | undefined = undefined
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: string[]
-  export let search: string
+  export let search: string = ''
 
   $: query = search === '' ? { space } : { $search: search, space }
 </script>
 
 <div class="container">
   <ScrollBox vertical stretch noShift>
-    <Table {_class} {config} {options} {query} enableChecking />
+    <Table {_class} {config} {options} {query} {baseMenuClass} enableChecking />
   </ScrollBox>
 </div>
 

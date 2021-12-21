@@ -95,12 +95,14 @@ export function createModel (builder: Builder): void {
     name: 'general',
     description: 'General Channel',
     private: false,
+    archived: false,
     members: []
   }, chunter.space.General)
   builder.createDoc(chunter.class.Channel, core.space.Model, {
     name: 'random',
     description: 'Random Talks',
     private: false,
+    archived: false,
     members: []
   }, chunter.space.Random)
 

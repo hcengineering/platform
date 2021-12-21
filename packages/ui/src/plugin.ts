@@ -20,14 +20,16 @@ import { plugin } from '@anticrm/platform'
 /**
  * @public
  */
- export const uiId = 'ui' as Plugin
+export const uiId = 'ui' as Plugin
 
- export default plugin(uiId, {
-   string: {
-     Cancel: '' as IntlString,
-     Minutes: '' as IntlString,
-     Hours: '' as IntlString,
-     Days: '' as IntlString,
-     Clear: '' as IntlString
-   }
- })
+export default plugin(uiId, {
+  string: {
+    Cancel: '' as IntlString,
+    Minutes: '' as IntlString,
+    Hours: '' as IntlString,
+    Days: '' as IntlString,
+    Clear: '' as IntlString,
+    ShowMore: '' as IntlString,
+    ShowLess: '' as IntlString
+  }
+})

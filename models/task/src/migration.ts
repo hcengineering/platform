@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Client, Doc, DocWithRank, Domain, DOMAIN_TX, genRanks, Ref, Space, TxCUD, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Doc, Domain, DOMAIN_TX, Ref, Space, TxCUD, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrateUpdate,
@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createProjectKanban, KanbanTemplate } from '@anticrm/task'
+import { createProjectKanban, DocWithRank, genRanks, KanbanTemplate } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 

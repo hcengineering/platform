@@ -1,6 +1,6 @@
 
-import { genRanks, Ref, TxOperations } from '@anticrm/core'
-import task, { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
+import { Ref, TxOperations } from '@anticrm/core'
+import task, { DoneState, genRanks, Kanban, SpaceWithStates, State } from '@anticrm/task'
 import { findOrUpdate } from './utils'
 
 export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, client: TxOperations): Promise<Ref<State>[]> {

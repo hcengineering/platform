@@ -31,12 +31,13 @@ describe('client', () => {
       private: false,
       name: 'NewSpace',
       description: '',
+      archived: false,
       members: []
     })
     const result2 = await client.findAll(klass, {})
     expect(result2).toHaveLength(3)
 
-    await client.createDoc(klass, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [] })
+    await client.createDoc(klass, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [], archived: false })
     const result3 = await client.findAll(klass, {})
     expect(result3).toHaveLength(4)
   })

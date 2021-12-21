@@ -4,6 +4,8 @@
     "Delete": "Delete",
     "Create": "Create",
     "ShowMenu": "Show menu",
-    "HideMenu": "Hide menu"
+    "HideMenu": "Hide menu",
+    "Archive": "Archive",
+    "Archived": "Archived {object}"
   }
 }

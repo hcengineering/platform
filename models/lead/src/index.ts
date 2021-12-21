@@ -91,6 +91,7 @@ export function createModel (builder: Builder): void {
       name: 'Funnel',
       description: 'Default funnel',
       private: false,
+      archived: false,
       members: []
     },
     lead.space.DefaultFunnel
@@ -157,6 +158,7 @@ export function createModel (builder: Builder): void {
       description: 'Manage funnel statuses',
       members: [],
       private: false,
+      archived: false,
       icon: lead.component.TemplatesIcon
     },
     lead.space.FunnelTemplates

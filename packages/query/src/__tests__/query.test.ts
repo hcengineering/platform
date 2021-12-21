@@ -97,6 +97,7 @@ describe('query', () => {
       name: '#0',
       description: '',
       members: [],
+      archived: false,
       x: 0
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
@@ -104,6 +105,7 @@ describe('query', () => {
       name: '#1',
       description: '',
       members: [],
+      archived: false,
       x: 1
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
@@ -111,6 +113,7 @@ describe('query', () => {
       name: '#2',
       description: '',
       members: [],
+      archived: false,
       x: 2
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
@@ -118,6 +121,7 @@ describe('query', () => {
       name: '#3',
       description: '',
       members: [],
+      archived: false,
       x: 3
     })
     await pp
@@ -144,18 +148,21 @@ describe('query', () => {
       private: false,
       name: '#1',
       description: '',
+      archived: false,
       members: []
     })
     await factory.createDoc(core.class.Space, core.space.Model, {
       private: false,
       name: '#2',
       description: '',
+      archived: false,
       members: []
     })
     await factory.createDoc(core.class.Space, core.space.Model, {
       private: false,
       name: '#3',
       description: '',
+      archived: false,
       members: []
     })
   })
@@ -180,6 +187,7 @@ describe('query', () => {
       private: false,
       name: '#1',
       description: '',
+      archived: false,
       members: []
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
@@ -187,6 +195,7 @@ describe('query', () => {
       private: false,
       name: '#2',
       description: '',
+      archived: false,
       members: []
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
@@ -194,6 +203,7 @@ describe('query', () => {
       private: false,
       name: '#3',
       description: '',
+      archived: false,
       members: []
     })
     await pp
@@ -244,6 +254,7 @@ describe('query', () => {
         private: true,
         name: i.toString(),
         description: '',
+        archived: false,
         members: []
       })
     }

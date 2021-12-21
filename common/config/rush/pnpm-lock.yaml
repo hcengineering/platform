@@ -1877,13 +1877,13 @@ packages:
   /@types/ws/7.4.7:
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
-      '@types/node': 16.11.14
+      '@types/node': 17.0.0
     dev: false
 
   /@types/ws/8.2.2:
     resolution: {integrity: sha512-NOn5eIcgWLOo6qW8AcuLZ7G8PycXu0xTxxkS6Q18VWFxgPUSOwV0pBj2a/4viNZVu25i7RIB7GttdkAIUUXOOg==}
     dependencies:
-      '@types/node': 16.11.14
+      '@types/node': 17.0.0
     dev: false
 
   /@types/yargs-parser/20.2.1:
@@ -2771,6 +2771,7 @@ packages:
 
   /bindings/1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
+    requiresBuild: true
     dependencies:
       file-uri-to-path: 1.0.0
     dev: false
@@ -4737,6 +4738,7 @@ packages:
 
   /file-uri-to-path/1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
+    requiresBuild: true
     dev: false
     optional: true
 
@@ -6987,6 +6989,7 @@ packages:
 
   /nan/2.15.0:
     resolution: {integrity: sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==}
+    requiresBuild: true
     dev: false
     optional: true
 
@@ -10586,7 +10589,7 @@ packages:
     dev: false
 
   file:projects/core.tgz:
-    resolution: {integrity: sha512-Xjk/aGZgRnNWYrQpTy8f2H8oQVVIvbkX6MdesJnRH7AjJTI2RtloF+8sUQMSjSahPh7thHwaYyDVlJ37vMXXNQ==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-1RXdycw5v+KGu+kmqXvnrKAZpNYbc0U/rInLVwKYJ17U/hED4ONAIPEaVDxp+fxgyPHpEo7AQjZe2aD87ogwtg==, tarball: file:projects/core.tgz}
     name: '@rush-temp/core'
     version: 0.0.0
     dependencies:
@@ -11265,7 +11268,7 @@ packages:
     dev: false
 
   file:projects/model-setting.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-U6P3iLbt33/iJI21fs7trAHtpwWzmI/zJn+3qyxjjnFP88i11vmbd1zfb6+GYu5muRCutqNi1pTX/5cDo+NtrA==, tarball: file:projects/model-setting.tgz}
+    resolution: {integrity: sha512-zwbVN3PDOfDeqGcL36IHQIufdePTd68yLUm83rfIg4v8+uilseid981y/BrAysmxTXAfhVYWlDmtYXvNPS4DMQ==, tarball: file:projects/model-setting.tgz}
     id: file:projects/model-setting.tgz
     name: '@rush-temp/model-setting'
     version: 0.0.0
@@ -11948,7 +11951,7 @@ packages:
     dev: false
 
   file:projects/task.tgz:
-    resolution: {integrity: sha512-H61a9iYDCDExaqx08I8pBpSZj2gDyDvF+K+R/QjML1YouYeUa1M1UPpjfz4DHwT7a67TJCasvqJ9nh0/ZNvcDw==, tarball: file:projects/task.tgz}
+    resolution: {integrity: sha512-hVBsBOFHd4nIZZipEk0yQP/C0/oQLXFcky7Q8cH37+nNFNdq4JN+MGhrfFnwWL7WzjxYEX2MW/UdiRpFszzhjA==, tarball: file:projects/task.tgz}
     name: '@rush-temp/task'
     version: 0.0.0
     dependencies:
@@ -11961,6 +11964,7 @@ packages:
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      lexorank: 1.0.4
       prettier: 2.5.1
       typescript: 4.5.4
     transitivePeerDependencies:
@@ -12199,7 +12203,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-hpnFAMhZPPs+w9TmZF4XlddOrE2XwPH58k0/CJrj303Lyb8g4IDfN29B/G+sv8npFpAXUIc+w9JhV5IsMxZJJg==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-oT79PCOUvwaL6QgjuwTNVJJqyE82WDmBx37jF5/c6SpSrYNF14+hN41rrPReKQyhhxkyrBts73IePyHxIn653Q==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0

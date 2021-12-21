@@ -65,12 +65,13 @@ describe('memdb', () => {
       private: false,
       name: 'NewSpace',
       description: '',
-      members: []
+      members: [],
+      archived: false
     })
     const result2 = await client.findAll(core.class.Space, {})
     expect(result2).toHaveLength(3)
 
-    await client.createDoc(core.class.Space, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [] })
+    await client.createDoc(core.class.Space, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [], archived: false })
     const result3 = await client.findAll(core.class.Space, {})
     expect(result3).toHaveLength(4)
   })
@@ -180,7 +181,8 @@ describe('memdb', () => {
       name: 'name',
       description: 'desc',
       private: false,
-      members: []
+      members: [],
+      archived: false
     })
     const account = await model.createDoc(core.class.Account, core.space.Model, { email: 'email' })
     await model.updateDoc(core.class.Space, core.space.Model, space, { $push: { members: account } })

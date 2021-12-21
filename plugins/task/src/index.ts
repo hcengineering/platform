@@ -20,8 +20,6 @@ import {
   Client,
   Data,
   Doc,
-  DocWithRank,
-  genRanks,
   Mixin,
   Ref,
   Space,
@@ -32,6 +30,15 @@ import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
+
+import { genRanks } from './utils'
+
+/**
+ * @public
+ */
+export interface DocWithRank extends Doc {
+  rank: string
+}
 
 // S T A T E
 
@@ -175,6 +182,9 @@ const task = plugin(taskId, {
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
   },
+  interface: {
+    DocWithRank: '' as Ref<Interface<DocWithRank>>
+  },
   class: {
     Issue: '' as Ref<Class<Issue>>,
     Project: '' as Ref<Class<Project>>,
@@ -203,7 +213,8 @@ const task = plugin(taskId, {
     Kanban: '' as Asset,
     Status: '' as Asset,
     TodoCheck: '' as Asset,
-    TodoUnCheck: '' as Asset
+    TodoUnCheck: '' as Asset,
+    ManageStatuses: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.
@@ -349,3 +360,5 @@ export async function createKanban (
     attachedTo
   })
 }
+
+export * from './utils'

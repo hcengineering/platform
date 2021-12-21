@@ -23,8 +23,9 @@
   export let actions: {
     label: IntlString
     icon?: Asset | AnySvelteComponent
-    action: () => void | Promise<void>
+    action: (ctx?: any) => void | Promise<void>
   }[] = []
+  export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()  
 </script>
@@ -33,7 +34,7 @@
   {#each actions as action}
     <div class="flex-row-center menu-item" on:click={() => { 
       dispatch('close')
-      action.action() 
+      action.action(ctx) 
     }}>
       {#if action.icon}
         <div class="scale-75">
