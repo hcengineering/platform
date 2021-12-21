@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
+import core, { TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
 import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
 import { DOMAIN_TASK } from '@anticrm/model-task'
+import { createDefaultKanbanTemplate } from '@anticrm/recruit'
 import recruit from './plugin'
 
 function logInfo (msg: string, result: MigrationResult): void {
@@ -57,5 +59,15 @@ export const recruitOperation: MigrateOperation = {
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Recruit: Performing model upgrades')
+
+    const ops = new TxOperations(client, core.account.System)
+    if (await client.findOne(core.class.TxCreateDoc, { objectId: recruit.template.DefaultVacancy }) === undefined) {
+      await createDefaultKanbanTemplate(async (
+        props,
+        attrs
+      ): Promise<void> => {
+        await ops.createDoc(props.class, props.space, attrs, props.id)
+      })
+    }
   }
 }

@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, Ref, Timestamp } from '@anticrm/core'
+import { Class, Data, Doc, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
 import { Builder, Collection, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
@@ -25,6 +25,7 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import { createDefaultKanbanTemplate } from '@anticrm/task'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
@@ -294,6 +295,23 @@ export function createModel (builder: Builder): void {
     },
     recruit.space.VacancyTemplates
   )
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  createDefaultKanbanTemplate(async <T extends Doc>(
+    props: {
+      id?: Ref<T>
+      space: Ref<Space>
+      class: Ref<Class<T>>
+    },
+    attrs: Data<T>
+  ): Promise<void> => {
+    builder.createDoc(
+      props.class,
+      props.space,
+      attrs,
+      props.id
+    )
+  })
 }
 
 export { recruitOperation } from './migration'

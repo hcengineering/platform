@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createProjectKanban, DocWithRank, genRanks, KanbanTemplate } from '@anticrm/task'
+import { createDefaultKanbanTemplate, createProjectKanban, KanbanTemplate, DocWithRank, genRanks } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -136,6 +136,15 @@ export const taskOperation: MigrateOperation = {
       }).catch((err) => console.error(err))
     } else {
       console.log('Task: => public project Kanban is ok')
+    }
+
+    if (await client.findOne(core.class.TxCreateDoc, { objectId: task.template.DefaultProject }) === undefined) {
+      await createDefaultKanbanTemplate(async (
+        props,
+        attrs
+      ): Promise<void> => {
+        await ops.createDoc(props.class, props.space, attrs, props.id)
+      })
     }
 
     console.log('View: Performing model upgrades')

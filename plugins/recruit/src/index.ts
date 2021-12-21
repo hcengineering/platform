@@ -17,7 +17,7 @@ import type { Person } from '@anticrm/contact'
 import type { Class, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { SpaceWithStates, Task } from '@anticrm/task'
+import { CreateFn, createKanbanTemplate, KanbanTemplate, KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 
 /**
  * @public
@@ -59,7 +59,10 @@ export interface Applicant extends Task {
  */
 export const recruitId = 'recruit' as Plugin
 
-export default plugin(recruitId, {
+/**
+ * @public
+ */
+const recruit = plugin(recruitId, {
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
     Candidate: '' as Ref<Class<Candidate>>,
@@ -73,5 +76,39 @@ export default plugin(recruitId, {
     Calendar: '' as Asset,
     Create: '' as Asset,
     Application: '' as Asset
+  },
+  space: {
+    VacancyTemplates: '' as Ref<KanbanTemplateSpace>
+  },
+  template: {
+    DefaultVacancy: '' as Ref<KanbanTemplate>
   }
 })
+
+export default recruit
+
+const defaultKanban = {
+  states: [
+    { color: '#7C6FCD', title: 'HR Interview' },
+    { color: '#6F7BC5', title: 'Technical Interview' },
+    { color: '#77C07B', title: 'Test task' },
+    { color: '#A5D179', title: 'Offer' }
+  ],
+  doneStates: [
+    { isWon: true, title: 'Won' },
+    { isWon: false, title: 'Lost' }
+  ]
+}
+
+/**
+ * @public
+ */
+export const createDefaultKanbanTemplate = async (create: CreateFn): Promise<void> => {
+  await createKanbanTemplate(create)({
+    kanbanId: recruit.template.DefaultVacancy,
+    space: recruit.space.VacancyTemplates,
+    title: 'Default vacancy',
+    states: defaultKanban.states,
+    doneStates: defaultKanban.doneStates
+  })
+}

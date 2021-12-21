@@ -19,7 +19,7 @@ import type { ActionTarget } from '@anticrm/view'
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Arr, Class, Data, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
 import { Builder, Collection, Implements, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
@@ -45,7 +45,7 @@ import type {
   Task,
   TodoItem
 } from '@anticrm/task'
-import { createProjectKanban } from '@anticrm/task'
+import { createProjectKanban, createDefaultKanbanTemplate } from '@anticrm/task'
 import task from './plugin'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -513,6 +513,23 @@ export function createModel (builder: Builder): void {
     query: {
       done: true
     }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  createDefaultKanbanTemplate(async <T extends Doc>(
+    props: {
+      id?: Ref<T>
+      space: Ref<Space>
+      class: Ref<Class<T>>
+    },
+    attrs: Data<T>
+  ): Promise<void> => {
+    builder.createDoc(
+      props.class,
+      props.space,
+      attrs,
+      props.id
+    )
   })
 }
 
