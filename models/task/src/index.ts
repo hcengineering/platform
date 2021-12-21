@@ -55,7 +55,7 @@ export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX('State' as IntlString, undefined, undefined, 'title')
+@UX('State' as IntlString, undefined, undefined, 'rank')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -245,6 +245,17 @@ export function createModel (builder: Builder): void {
       createItemDialog: task.component.CreateTask
     }
   })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: 'Status' as IntlString,
+      icon: task.icon.Status,
+      component: task.component.StatusTableView
+    },
+    task.viewlet.StatusTable
+  )
 
   builder.createDoc(
     workbench.class.Application,
