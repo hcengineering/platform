@@ -211,6 +211,7 @@ export interface Space extends Doc {
   description: string
   private: boolean
   members: Arr<Ref<Account>>
+  archived: boolean
 }
 
 /**
@@ -218,11 +219,4 @@ export interface Space extends Doc {
  */
 export interface Account extends Doc {
   email: string
-}
-
-/**
- * @public
- */
-export interface DocWithRank extends Doc {
-  rank: string
 }

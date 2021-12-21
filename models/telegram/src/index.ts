@@ -87,6 +87,7 @@ export function createModel (builder: Builder): void {
       name: 'Telegram',
       description: 'Space for all telegram messages',
       private: false,
+      archived: false,
       members: []
     },
     telegram.space.Telegram

@@ -251,6 +251,7 @@ export function createModel (builder: Builder): void {
       name: 'Employees',
       description: 'Employees',
       private: false,
+      archived: false,
       members: []
     },
     contact.space.Employee

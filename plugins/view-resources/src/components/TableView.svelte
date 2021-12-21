@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Class, Doc, FindOptions, Ref, Space } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, IconDown, IconUp, Label, Loading, ScrollBox, showPopup } from '@anticrm/ui'
@@ -24,10 +24,12 @@
   import Menu from './Menu.svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let space: Ref<Space>
-  export let options: FindOptions<Doc> | undefined
+  export let space: Ref<Space> | undefined = undefined
+  export let query: DocumentQuery<Doc> = {}
+  export let options: FindOptions<Doc> | undefined = undefined
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: string[]
-  export let search: string
+  export let search: string = ''
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
@@ -35,10 +37,14 @@
 
   let objects: Doc[]
 
-  const query = createQuery()
-  $: query.query(
+  const q = createQuery()
+  $: q.query(
     _class,
-    search === '' ? { space } : { $search: search },
+    {
+      ...query,
+      ...search !== '' ? { $search: search } : {},
+      ...search === '' && space !== undefined ? { space } : {}
+    },
     (result) => {
       objects = result
     },
@@ -63,7 +69,7 @@
 
   const showMenu = (ev: MouseEvent, object: Doc, row: number): void => {
     selectRow = row
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
+    showPopup(Menu, { object, baseMenuClass }, ev.target as HTMLElement, () => {
       selectRow = undefined
     })
   }

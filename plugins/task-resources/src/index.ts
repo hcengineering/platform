@@ -24,7 +24,7 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import EditIssue from './components/EditIssue.svelte'
 import { Doc } from '@anticrm/core'
 import { showPopup } from '@anticrm/ui'
-import { getClient } from '@anticrm/presentation'
+import { getClient, MessageBox } from '@anticrm/presentation'
 
 import KanbanView from './components/kanban/KanbanView.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
@@ -63,6 +63,48 @@ async function toggleDone (value: boolean, object: TodoItem): Promise<void> {
   )
 }
 
+async function ArchiveSpace (object: SpaceWithStates): Promise<void> {
+  showPopup(
+    MessageBox,
+    {
+      label: 'Archive',
+      message: `Do you want to archive ${object.name}?`
+    },
+    undefined,
+    (result: boolean) => {
+      if (result) {
+        const client = getClient()
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        client.updateDoc(object._class, object.space, object._id, {
+          archived: true
+        })
+      }
+    }
+  )
+}
+
+async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
+  showPopup(
+    MessageBox,
+    {
+      label: 'Unarchive',
+      message: `Do you want to unarchive ${object.name}?`
+    },
+    undefined,
+    (result: boolean) => {
+      if (result) {
+        const client = getClient()
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        client.updateDoc(object._class, object.space, object._id, {
+          archived: false
+        })
+      }
+    }
+  )
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,
@@ -83,6 +125,8 @@ export default async (): Promise<Resources> => ({
     CreateTask: createTask,
     EditStatuses: editStatuses,
     TodoItemMarkDone: async (obj: TodoItem) => await toggleDone(true, obj),
-    TodoItemMarkUnDone: async (obj: TodoItem) => await toggleDone(false, obj)
+    TodoItemMarkUnDone: async (obj: TodoItem) => await toggleDone(false, obj),
+    ArchiveSpace,
+    UnarchiveSpace
   }
 })

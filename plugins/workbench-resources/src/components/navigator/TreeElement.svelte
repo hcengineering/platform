@@ -20,7 +20,7 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon } from '@anticrm/ui'
+  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreH } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -34,9 +34,15 @@
   export let actions: Action[] = []
 
   const dispatch = createEventDispatcher()
+
+  let hovered = false
+  function onMenuClick(ev: MouseEvent) {
+    hovered = true
+    showPopup(Menu, { actions, ctx: _id }, ev.target as HTMLElement, () => { hovered = false })
+  }
 </script>
 
-<div class="container" class:selected
+<div class="container" class:selected class:hovered
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
@@ -52,11 +58,15 @@
   <span class="label" class:sub={node}>
     {#if label}<Label {label}/>{:else}{title}{/if}
   </span>
-  {#each actions as action}
+  {#if actions.length === 1}
     <div class="tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(ev) => { action.action(_id, ev) }} />
+      <ActionIcon label={actions[0].label} icon={actions[0].icon} size={'small'} action={(ev) => { actions[0].action(_id, ev) }} />
     </div>
-  {/each}
+  {:else if actions.length > 1}
+    <div class="tool" on:click|stopPropagation={onMenuClick}>
+      <IconMoreH size={'small'} />
+    </div>
+  {/if}
   {#if notifications > 0 && collapsed}
     <div class="counter">{notifications}</div>
   {/if}
@@ -106,7 +116,7 @@
       color: var(--theme-caption-color);
     }
 
-    &:hover {
+    &:hover, &.hovered {
       background-color: var(--theme-button-bg-enabled);
       .tool {
         visibility: visible;

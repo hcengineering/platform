@@ -85,6 +85,7 @@
 
     .scroll {
       margin: 0 .75rem .75rem;
+      min-height: 0;
       height: 100%;
     }
   }

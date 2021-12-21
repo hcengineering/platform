@@ -16,6 +16,7 @@
 import { MigrateOperation } from '@anticrm/model'
 
 // Import migrate operations.
+import { coreOperation } from '@anticrm/model-core'
 import { taskOperation } from '@anticrm/model-task'
 import { attachmentOperation } from '@anticrm/model-attachment'
 import { leadOperation } from '@anticrm/model-lead'
@@ -23,6 +24,7 @@ import { recruitOperation } from '@anticrm/model-recruit'
 import { viewOperation } from '@anticrm/model-view'
 
 export const migrateOperations: MigrateOperation[] = [
+  coreOperation,
   taskOperation,
   attachmentOperation,
   leadOperation,

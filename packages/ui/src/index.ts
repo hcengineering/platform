@@ -62,6 +62,7 @@ export { default as TimeSince } from './components/TimeSince.svelte'
 export { default as Dropdown } from './components/Dropdown.svelte'
 export { default as DumbDropdown } from './components/DumbDropdown.svelte'
 export { default as ShowMore } from './components/ShowMore.svelte'
+export { default as StatusesBar } from './components/StatusesBar.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconClose } from './components/icons/Close.svelte'
