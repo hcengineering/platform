@@ -59,3 +59,5 @@ export default builder
 
 // Export upgrade procedures
 export { migrateOperations } from './migration'
+
+export { createDeps } from './creation'

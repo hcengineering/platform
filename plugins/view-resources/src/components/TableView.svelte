@@ -29,17 +29,17 @@
   $: query = search === '' ? { space } : { $search: search, space }
 </script>
 
-<div class="container">
+<div class="tableview-container">
   <ScrollBox vertical stretch noShift>
     <Table {_class} {config} {options} {query} {baseMenuClass} enableChecking />
   </ScrollBox>
 </div>
 
 <style lang="scss">
-  .container {
+  .tableview-container {
     flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
+    margin-bottom: .75rem;
+    min-height: 0;
     height: 100%;
   }
 </style>

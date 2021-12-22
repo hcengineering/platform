@@ -37,9 +37,7 @@
       action.action(ctx) 
     }}>
       {#if action.icon}
-        <div class="scale-75">
-          <Icon icon={action.icon} size={'medium'} />
-        </div>
+        <Icon icon={action.icon} size={'small'} />
       {/if}
       <div class="ml-3"><Label label={action.label} /></div>
     </div>

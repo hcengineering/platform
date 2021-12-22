@@ -125,4 +125,5 @@
       cursor: auto;
     }
   }
+  .item + .item { margin-top: .75rem; }
 </style>

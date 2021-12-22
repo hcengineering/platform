@@ -78,7 +78,7 @@
   <div class="flex-between header">
     <div class="flex-grow flex-col">
       <div class="flex-row-center">
-        <div class="icon"><Icon icon={task.icon.Status} size={'small'} /></div>
+        <div class="icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
         <span class="overflow-label title">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
       </div>
       <div class="overflow-label subtitle">{spaceInstance?.name}</div>
