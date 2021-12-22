@@ -16,6 +16,7 @@
 import { AttachedDoc, Class, Doc, Domain, DOMAIN_TX, Ref, TxCollectionCUD, TxCreateDoc, TxCUD, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
+  MigrateUpdate,
   MigrationClient,
   MigrationResult,
   MigrationUpgradeClient
