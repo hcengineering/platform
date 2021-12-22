@@ -15,7 +15,7 @@
 //
 
 import type { Doc, Ref, TxResult } from '@anticrm/core'
-import type { FullTextAdapter, IndexedDoc, SearchQuery } from '@anticrm/server-core'
+import type { FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 
 import { Client } from '@elastic/elasticsearch'
 
@@ -27,15 +27,16 @@ class ElasticAdapter implements FullTextAdapter {
   }
 
   async search (
-    query: SearchQuery
+    search: string
   ): Promise<IndexedDoc[]> {
+    const query = search.replace(/[\\/+\-=&><!()|{}^"~*&:[\]]/g, '\\$&')
     try {
       const result = await this.client.search({
         index: this.db,
         body: {
           query: {
             multi_match: {
-              query: query.$search,
+              query: query,
               fields: [
                 'content0',
                 'content1',
