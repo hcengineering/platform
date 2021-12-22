@@ -13,15 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   export let size: 'small' | 'medium' | 'large'
   const fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} fill-opacity="0.0" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <path
-    d="M4 10V3.83337C4 3.59767 4 3.47982 4.07322 3.4066C4.14645 3.33337 4.2643 3.33337 4.5 3.33337H10.7929C11.3066 3.33337 11.5635 3.33337 11.6274 3.4877C11.6913 3.64203 11.5097 3.82366 11.1464 4.18693L8.94951 6.38386C8.81618 6.5172 8.74951 6.58386 8.74951 6.66671C8.74951 6.74955 8.81618 6.81622 8.94951 6.94955L11.1464 9.14649C11.5097 9.50975 11.6913 9.69138 11.6274 9.84571C11.5635 10 11.3066 10 10.7929 10H4ZM4 10V12.6667"
-    stroke="white"
-    stroke-linecap="round"
-  />
+<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4,13.2c-0.3,0-0.5-0.2-0.5-0.5V3.8c0-0.3,0-0.6,0.2-0.8s0.5-0.2,0.8-0.2h6.3c0.6,0,1.1,0,1.3,0.5c0.2,0.5-0.1,0.8-0.6,1.2 L9.4,6.7l2.1,2.1c0.5,0.5,0.8,0.8,0.6,1.2c-0.2,0.5-0.7,0.5-1.3,0.5H4.5v2.2C4.5,12.9,4.3,13.2,4,13.2z M4.5,9.5h6.3L8.6,7.3 C8.4,7.1,8.2,7,8.2,6.7c0-0.3,0.2-0.5,0.3-0.6l2.2-2.2H4.5V9.5z"/>
 </svg>

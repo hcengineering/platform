@@ -81,7 +81,6 @@ export { default as IconShare } from './components/icons/Share.svelte'
 export { default as IconDelete } from './components/icons/Delete.svelte'
 export { default as IconEdit } from './components/icons/Edit.svelte'
 export { default as IconInfo } from './components/icons/Info.svelte'
-export { default as IconPreview } from './components/icons/Preview.svelte'
 export { default as Menu } from './components/Menu.svelte'
 export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
 

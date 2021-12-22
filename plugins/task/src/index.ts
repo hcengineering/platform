@@ -212,7 +212,6 @@ const task = plugin(taskId, {
   icon: {
     Task: '' as Asset,
     Kanban: '' as Asset,
-    Status: '' as Asset,
     TodoCheck: '' as Asset,
     TodoUnCheck: '' as Asset,
     ManageStatuses: '' as Asset

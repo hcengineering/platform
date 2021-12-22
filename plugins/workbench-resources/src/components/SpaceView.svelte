@@ -66,13 +66,11 @@ function onSearch(ev: Event) {
       {#if viewlets.length > 1}
         <div class="flex">
           {#each viewlets as viewlet, i}
-            <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
-              <div class="icon">
-                <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-                  <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
-                </Tooltip>
+            <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
+              <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
+                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
               </div>
-            </div>
+            </Tooltip>
           {/each}
         </div>
       {/if}      
@@ -103,18 +101,20 @@ function onSearch(ev: Event) {
       border-radius: .5rem;
       cursor: pointer;
 
-      .icon { color: var(--theme-content-trans-color); }
-      &:hover .icon { color: var(--theme-caption-color); }
+      color: var(--theme-content-trans-color);
+      &:hover { color: var(--theme-caption-color); }
       &.selected {
+        color: var(--theme-content-accent-color);
         background-color: var(--theme-button-bg-enabled);
         cursor: default;
-        &:hover .icon { color: var(--theme-content-accent-color); }
+        &:hover { color: var(--theme-caption-color); }
       }
     }
   }
   .container {
     display: flex;
     flex-direction: column;
-    height: calc(100% - 9.5rem);
+    min-height: 0;
+    height: 100%;
   }
 </style>
