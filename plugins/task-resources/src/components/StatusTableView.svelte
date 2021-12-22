@@ -89,121 +89,109 @@
   $: updateQuery()
 </script>
 
-<div class="container">
-  <div class="flex-between mb-4 mt-4 header">
-    <div class="flex-row-center">
-      <div
-        class="button flex-center"
-        class:active={!doneStatusesView}
-        on:click={() => {
-          doneStatusesView = false
-          state = undefined
-          selectedDoneStates.clear()
-          updateQuery()
-        }}
-      >
-        <Label label={'All statuses'} />
-      </div>
-      <div
-        class="button flex-center ml-4"
-        class:active={doneStatusesView}
-        on:click={() => {
-          doneStatusesView = true
-          state = undefined
-          selectedDoneStates.clear()
-          updateQuery()
-        }}
-      >
-        <Label label={'Done statuses'} />
-      </div>
+<div class="flex-between mb-4 header">
+  <div class="flex-row-center buttons">
+    <div
+      class="button flex-center"
+      class:active={!doneStatusesView}
+      on:click={() => {
+        doneStatusesView = false
+        state = undefined
+        selectedDoneStates.clear()
+        updateQuery()
+      }}
+    >
+      <Label label={'All statuses'} />
     </div>
-    <div class="flex-row-center caption-color states">
-      {#if doneStatusesView}
-        {#each doneStates as state}
-          <div
-            class="doneState flex-row-center"
-            class:won={state._class === task.class.WonState}
-            class:lost={state._class === task.class.LostState}
-            class:disable={!selectedDoneStates.has(state._id)}
-            on:click={() => {
-              doneStateClick(state._id)
-            }}
-          >
-            {#if state._class === task.class.WonState}
-              <Won size="medium" />
-            {:else}
-              <Lost size="medium" />
-            {/if}
-            <span class="ml-2">
-              {state.title}
-            </span>
-          </div>
-        {/each}
-      {:else}
-        <StatesBar bind:state {space} on:change={updateQuery} />
-      {/if}
+    <div
+      class="button flex-center ml-3"
+      class:active={doneStatusesView}
+      on:click={() => {
+        doneStatusesView = true
+        state = undefined
+        selectedDoneStates.clear()
+        updateQuery()
+      }}
+    >
+      <Label label={'Done statuses'} />
     </div>
   </div>
-  <div class="container">
-    <ScrollBox vertical stretch noShift>
-      <Table {_class} {query} config={resConfig} {options} enableChecking />
-    </ScrollBox>
+  <div class="flex-row-center caption-color states">
+    {#if doneStatusesView}
+      {#each doneStates as state}
+        <div
+          class="doneState flex-row-center"
+          class:won={state._class === task.class.WonState}
+          class:lost={state._class === task.class.LostState}
+          class:disable={!selectedDoneStates.has(state._id)}
+          on:click={() => {
+            doneStateClick(state._id)
+          }}
+        >
+          {#if state._class === task.class.WonState}
+            <Won size="medium" />
+          {:else}
+            <Lost size="medium" />
+          {/if}
+          <span class="ml-2">
+            {state.title}
+          </span>
+        </div>
+      {/each}
+    {:else}
+      <StatesBar bind:state {space} on:change={updateQuery} />
+    {/if}
   </div>
+</div>
+<div class="statustableview-container">
+  <ScrollBox vertical stretch noShift>
+    <Table {_class} {query} config={resConfig} {options} enableChecking />
+  </ScrollBox>
 </div>
 
 <style lang="scss">
-  .container {
+  .statustableview-container {
     flex-grow: 1;
-    position: relative;
-    padding-bottom: 2.5rem;
+    margin-bottom: .75rem;
+    min-height: 0;
     height: 100%;
   }
 
   .header {
     margin-left: 2.5rem;
     margin-right: 1.75rem;
-
-    .states {
-      max-width: 75%;
-    }
+    .buttons { padding: 0.125rem 0; }
+    .states { max-width: 75%; }
   }
 
   .button {
-    cursor: pointer;
     height: 2.5rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
+    padding: .5rem .75rem;
+    border: 1px solid transparent;
+    border-radius: .5rem;
+    cursor: pointer;
+
     &:hover {
       background-color: var(--theme-button-bg-enabled);
-      border: 1px solid var(--theme-button-border-enabled);
+      border-color: var(--theme-button-border-enabled);
     }
     &.active {
       background-color: var(--theme-button-bg-enabled);
       color: var(--theme-caption-color);
-      border: 1px solid var(--theme-button-border-enabled);
+      border-color: var(--theme-button-border-enabled);
     }
   }
+
   .doneState {
-    cursor: pointer;
+    padding: .5rem .75rem;
     height: 2.5rem;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
     border: 1px solid var(--theme-button-border-enabled);
+    border-radius: .5rem;
+    cursor: pointer;
 
-    &.won {
-      background-color: #60b96e;
-    }
-
-    &.lost {
-      background-color: #f06c63;
-    }
-
-    &.disable {
-      background-color: var(--theme-button-bg-enabled);
-    }
+    &.won { background-color: #60b96e; }
+    &.lost { background-color: #f06c63; }
+    &.disable { background-color: var(--theme-button-bg-enabled); }
   }
-
-  .doneState + .doneState {
-    margin-left: 0.5rem;
-  }
+  .doneState + .doneState { margin-left: .75rem; }
 </style>

@@ -251,7 +251,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: 'Status' as IntlString,
-      icon: task.icon.Status,
+      icon: task.icon.ManageStatuses,
       component: task.component.StatusTableView
     },
     task.viewlet.StatusTable
@@ -382,7 +382,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: 'Edit Statuses' as IntlString,
-      icon: view.icon.MoreH,
+      icon: view.icon.Statuses,
       action: task.actionImpl.EditStatuses
     },
     task.action.EditStatuses
