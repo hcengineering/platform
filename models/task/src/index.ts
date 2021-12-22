@@ -19,7 +19,7 @@ import type { ActionTarget } from '@anticrm/view'
 import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Data, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
 import { Builder, Collection, Implements, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
@@ -45,7 +45,6 @@ import type {
   Task,
   TodoItem
 } from '@anticrm/task'
-import { createProjectKanban, createDefaultKanbanTemplate } from '@anticrm/task'
 import task from './plugin'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -306,11 +305,6 @@ export function createModel (builder: Builder): void {
     editor: task.component.EditIssue
   })
 
-  builder.createDoc(task.class.Sequence, task.space.Sequence, {
-    attachedTo: task.class.Issue,
-    sequence: 0
-  })
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: task.viewlet.Kanban,
@@ -360,11 +354,6 @@ export function createModel (builder: Builder): void {
     },
     task.space.ProjectTemplates
   )
-
-  createProjectKanban(task.space.TasksPublic, async (_class, space, data, id) => {
-    builder.createDoc(_class, space, data, id)
-    return await Promise.resolve()
-  }).catch((err) => console.error(err))
 
   builder.createDoc(
     view.class.Action,
@@ -514,23 +503,7 @@ export function createModel (builder: Builder): void {
       done: true
     }
   })
-
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  createDefaultKanbanTemplate(async <T extends Doc>(
-    props: {
-      id?: Ref<T>
-      space: Ref<Space>
-      class: Ref<Class<T>>
-    },
-    attrs: Data<T>
-  ): Promise<void> => {
-    builder.createDoc(
-      props.class,
-      props.space,
-      attrs,
-      props.id
-    )
-  })
 }
 
 export { taskOperation } from './migration'
+export { createDeps, createKanbanTemplate } from './creation'

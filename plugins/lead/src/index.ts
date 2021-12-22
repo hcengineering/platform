@@ -15,10 +15,10 @@
 //
 
 import type { Contact } from '@anticrm/contact'
-import { Class, Data, Doc, Ref, Space } from '@anticrm/core'
+import type { Class, Ref } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import task, { CreateFn, genRanks, createKanbanTemplate, DoneState, Kanban, KanbanTemplate, KanbanTemplateSpace, SpaceWithStates, State, Task } from '@anticrm/task'
+import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 
 /**
  * @public
@@ -53,97 +53,7 @@ const lead = plugin(leadId, {
   },
   space: {
     FunnelTemplates: '' as Ref<KanbanTemplateSpace>
-  },
-  template: {
-    DefaultFunnel: '' as Ref<KanbanTemplate>
   }
 })
 
 export default lead
-
-const defaultKanban = {
-  states: [
-    { color: '#7C6FCD', title: 'Incoming' },
-    { color: '#6F7BC5', title: 'Negotation' },
-    { color: '#77C07B', title: 'Offer preparing' },
-    { color: '#A5D179', title: 'Make a decision' },
-    { color: '#F28469', title: 'Contract conclusion' },
-    { color: '#7C6FCD', title: 'Done' }
-  ],
-  doneStates: [
-    { isWon: true, title: 'Won' },
-    { isWon: false, title: 'Lost' }
-  ]
-}
-
-/**
- * @public
- */
-export async function createKanban (
-  funnelId: Ref<Funnel>,
-  factory: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, data: Data<T>, id: Ref<T>) => Promise<void>
-): Promise<void> {
-  const { states, doneStates } = defaultKanban
-  const stateRank = genRanks(states.length)
-  for (const st of states) {
-    const sid = (funnelId + '.state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<State>
-    const rank = stateRank.next().value
-
-    if (rank === undefined) {
-      throw Error('Failed to generate rank')
-    }
-
-    await factory(
-      task.class.State,
-      funnelId,
-      {
-        title: st.title,
-        color: st.color,
-        rank
-      },
-      sid
-    )
-  }
-
-  const doneStateRank = genRanks(doneStates.length)
-  for (const st of doneStates) {
-    const rank = doneStateRank.next().value
-
-    if (rank === undefined) {
-      throw Error('Failed to generate rank')
-    }
-
-    const sid = (funnelId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
-    await factory(
-      st.isWon ? task.class.WonState : task.class.LostState,
-      funnelId,
-      {
-        title: st.title,
-        rank
-      },
-      sid
-    )
-  }
-
-  await factory(
-    task.class.Kanban,
-    funnelId,
-    {
-      attachedTo: funnelId
-    },
-    (funnelId + '.kanban') as Ref<Kanban>
-  )
-}
-
-/**
- * @public
- */
-export const createDefaultKanbanTemplate = async (create: CreateFn): Promise<void> => {
-  await createKanbanTemplate(create)({
-    kanbanId: lead.template.DefaultFunnel,
-    space: lead.space.FunnelTemplates,
-    title: 'Default funnel',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
-  })
-}
