@@ -15,6 +15,7 @@
 
 import { createClient, Client } from '@anticrm/core'
 import { getMetadata, getResource } from '@anticrm/platform'
+import { createDeps } from '@anticrm/model-all'
 import { connect } from './connection'
 import clientPlugin from '@anticrm/client'
 
@@ -31,6 +32,7 @@ export default async () => {
       GetClient: async (): Promise<Client> => {
         if (client === undefined) {
           client = await createClient(connect)
+          await createDeps(client)
         }
         // Check if we had dev hook for client.
         // Check if we had dev hook for client.
