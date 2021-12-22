@@ -22,7 +22,6 @@ import { Lead } from '@anticrm/lead'
 import lead from './plugin'
 import contact from '@anticrm/model-contact'
 
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function logInfo (msg: string, result: MigrationResult): void {
   if (result.updated > 0) {
