@@ -19,7 +19,7 @@ import { leadId } from '@anticrm/lead'
 import lead from '@anticrm/lead-resources/src/plugin'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import '@anticrm/task'
+import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Application } from '@anticrm/workbench'
 
@@ -42,5 +42,8 @@ export default mergeIds(leadId, lead, {
   },
   space: {
     DefaultFunnel: '' as Ref<Space>
+  },
+  template: {
+    DefaultFunnel: '' as Ref<KanbanTemplate>
   }
 })

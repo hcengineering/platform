@@ -17,7 +17,7 @@
 import type { Doc, Ref, Space } from '@anticrm/core'
 import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import task, { taskId } from '@anticrm/task'
+import task, { KanbanTemplate, taskId } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Application } from '@anticrm/workbench'
 import type { Action } from '@anticrm/view'
@@ -67,5 +67,8 @@ export default mergeIds(taskId, task, {
   },
   space: {
     TasksPublic: '' as Ref<Space>
+  },
+  template: {
+    DefaultProject: '' as Ref<KanbanTemplate>
   }
 })

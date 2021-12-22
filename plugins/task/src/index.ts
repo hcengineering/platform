@@ -17,8 +17,6 @@ import type { Employee } from '@anticrm/contact'
 import {
   AttachedDoc,
   Class,
-  Client,
-  Data,
   Doc,
   Interface,
   Mixin,
@@ -223,91 +221,17 @@ const task = plugin(taskId, {
   space: {
     ProjectTemplates: '' as Ref<KanbanTemplateSpace>,
     Sequence: '' as Ref<Space>
-  },
-  template: {
-    DefaultProject: '' as Ref<KanbanTemplate>
   }
 })
+
 export default task
-
-const defaultKanban = {
-  states: [
-    { color: '#7C6FCD', title: 'Open' },
-    { color: '#6F7BC5', title: 'In Progress' },
-    { color: '#77C07B', title: 'Under review' },
-    { color: '#A5D179', title: 'Done' },
-    { color: '#F28469', title: 'Invalid' }
-  ],
-  doneStates: [
-    { isWon: true, title: 'Won' },
-    { isWon: false, title: 'Lost' }
-  ]
-}
-
-/**
- * @public
- */
-export async function createProjectKanban (
-  projectId: Ref<Project>,
-  factory: <T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, data: Data<T>, id: Ref<T>) => Promise<void>
-): Promise<void> {
-  const { states, doneStates } = defaultKanban
-  const stateRank = genRanks(states.length)
-  for (const st of states) {
-    const rank = stateRank.next().value
-
-    if (rank === undefined) {
-      throw Error('Failed to generate rank')
-    }
-
-    const sid = (projectId + '.state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<State>
-    await factory(
-      task.class.State,
-      projectId,
-      {
-        title: st.title,
-        color: st.color,
-        rank
-      },
-      sid
-    )
-  }
-
-  const doneStateRank = genRanks(doneStates.length)
-  for (const st of doneStates) {
-    const rank = doneStateRank.next().value
-
-    if (rank === undefined) {
-      throw Error('Failed to generate rank')
-    }
-
-    const sid = (projectId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
-    await factory(
-      st.isWon ? task.class.WonState : task.class.LostState,
-      projectId,
-      {
-        title: st.title,
-        rank
-      },
-      sid
-    )
-  }
-
-  await factory(
-    task.class.Kanban,
-    projectId,
-    {
-      attachedTo: projectId
-    },
-    (projectId + '.kanban') as Ref<Kanban>
-  )
-}
+export * from './utils'
 
 /**
  * @public
  */
 export async function createKanban (
-  client: Client & TxOperations,
+  client: TxOperations,
   attachedTo: Ref<Space>,
   templateId?: Ref<KanbanTemplate>
 ): Promise<Ref<Kanban>> {
@@ -365,87 +289,5 @@ export async function createKanban (
 
   return await client.createDoc(task.class.Kanban, attachedTo, {
     attachedTo
-  })
-}
-
-export * from './utils'
-
-/**
- * @public
- */
-export type CreateFn = <T extends Doc>(
-  props: {
-    id?: Ref<T>
-    space: Ref<Space>
-    class: Ref<Class<T>>
-  },
-  attrs: Data<T>
-) => Promise<void>
-
-/**
- * @public
- */
-export interface KanbanTemplateData {
-  kanbanId: Ref<KanbanTemplate>
-  space: Ref<Space>
-  title: KanbanTemplate['title']
-  states: Pick<StateTemplate, 'title' | 'color'>[]
-  doneStates: (Pick<DoneStateTemplate, 'title'> & { isWon: boolean })[]
-}
-
-/**
- * @public
- */
-export const createKanbanTemplate = (create: CreateFn) =>
-  async (data: KanbanTemplateData) => {
-    await create(
-      {
-        id: data.kanbanId,
-        space: data.space,
-        class: task.class.KanbanTemplate
-      },
-      {
-        doneStatesC: data.doneStates.length,
-        statesC: data.states.length,
-        title: data.title
-      }
-    )
-
-    const doneStateRanks = [...genRanks(data.doneStates.length)]
-    await Promise.all(data.doneStates.map((st, i) => create({
-      space: data.space,
-      class: st.isWon ? task.class.WonStateTemplate : task.class.LostStateTemplate
-    }, {
-      attachedTo: data.kanbanId,
-      attachedToClass: task.class.KanbanTemplate,
-      collection: 'doneStatesC',
-      rank: doneStateRanks[i],
-      title: st.title
-    })))
-
-    const stateRanks = [...genRanks(data.states.length)]
-    await Promise.all(data.states.map((st, i) => create({
-      space: data.space,
-      class: task.class.StateTemplate
-    }, {
-      attachedTo: data.kanbanId,
-      attachedToClass: task.class.KanbanTemplate,
-      collection: 'statesC',
-      rank: stateRanks[i],
-      title: st.title,
-      color: st.color
-    })))
-  }
-
-/**
- * @public
- */
-export const createDefaultKanbanTemplate = async (create: CreateFn): Promise<void> => {
-  await createKanbanTemplate(create)({
-    kanbanId: task.template.DefaultProject,
-    space: task.space.ProjectTemplates,
-    title: 'Default project',
-    states: defaultKanban.states,
-    doneStates: defaultKanban.doneStates
   })
 }

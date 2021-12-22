@@ -21,7 +21,7 @@ import recruit from '@anticrm/recruit-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
-import '@anticrm/task'
+import { KanbanTemplate } from '@anticrm/task'
 
 export default mergeIds(recruitId, recruit, {
   app: {
@@ -59,5 +59,8 @@ export default mergeIds(recruitId, recruit, {
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
+  },
+  template: {
+    DefaultVacancy: '' as Ref<KanbanTemplate>
   }
 })

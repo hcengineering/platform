@@ -14,13 +14,9 @@
 // limitations under the License.
 //
 
-import { Doc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
-import task, { DOMAIN_TASK } from '@anticrm/model-task'
-import { createDefaultKanbanTemplate, createKanban } from '@anticrm/lead'
-import lead from './plugin'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function logInfo (msg: string, result: MigrationResult): void {
   if (result.updated > 0) {
     console.log(`Lead: Migrate ${msg} ${result.updated}`)
@@ -28,46 +24,6 @@ function logInfo (msg: string, result: MigrationResult): void {
 }
 
 export const leadOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    // Update done states for tasks
-    logInfo('lead done states', await client.update(DOMAIN_TASK, { _class: lead.class.Lead, doneState: { $exists: false } }, { doneState: null }))
-  },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    console.log('Lead: Performing model upgrades')
-
-    const ops = new TxOperations(client, core.account.System)
-    if (await client.findOne(task.class.Kanban, { attachedTo: lead.space.DefaultFunnel }) === undefined) {
-      console.info('Lead: Create kanban for default funnel.')
-      await createKanban(lead.space.DefaultFunnel, async (_class, space, data, id) => {
-        const doc = await ops.findOne<Doc>(_class, { _id: id })
-        if (doc === undefined) {
-          await ops.createDoc(_class, space, data, id)
-        } else {
-          await ops.updateDoc(_class, space, id, data)
-        }
-      }).catch((err) => console.error(err))
-    } else {
-      console.log('Lead: => default funnel Kanban is ok')
-    }
-
-    if (await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead }) === undefined) {
-      console.info('Lead: Create sequence for default task project.')
-      // We need to create sequence
-      await ops.createDoc(task.class.Sequence, task.space.Sequence, {
-        attachedTo: lead.class.Lead,
-        sequence: 0
-      })
-    } else {
-      console.log('Lead: => sequence is ok')
-    }
-
-    if (await client.findOne(core.class.TxCreateDoc, { objectId: lead.template.DefaultFunnel }) === undefined) {
-      await createDefaultKanbanTemplate(async (
-        props,
-        attrs
-      ): Promise<void> => {
-        await ops.createDoc(props.class, props.space, attrs, props.id)
-      })
-    }
-  }
+  async migrate (client: MigrationClient): Promise<void> {},
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

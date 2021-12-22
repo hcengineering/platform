@@ -13,21 +13,15 @@
 // limitations under the License.
 //
 
-import {
-  MigrateOperation,
-  MigrationClient,
-  MigrationResult,
-  MigrationUpgradeClient
-} from '@anticrm/model'
+import type { Client } from '@anticrm/core'
+import { createDeps as createTaskDeps } from '@anticrm/model-task'
+import { createDeps as createLeadDeps } from '@anticrm/model-lead'
+import { createDeps as createRecruitDeps } from '@anticrm/model-recruit'
+import { createDeps as createDemoDeps } from '@anticrm/model-demo'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function logInfo (msg: string, result: MigrationResult): void {
-  if (result.updated > 0) {
-    console.log(`Task: Migrate ${msg} ${result.updated}`)
-  }
-}
-
-export const taskOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+export async function createDeps (client: Client): Promise<void> {
+  await createTaskDeps(client)
+  await createLeadDeps(client)
+  await createRecruitDeps(client)
+  await createDemoDeps(client)
 }

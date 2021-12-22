@@ -16,9 +16,8 @@
 
 // To help typescript locate view plugin properly
 import type { Contact, Employee } from '@anticrm/contact'
-import type { Class, Data, Doc, FindOptions, Ref, Space } from '@anticrm/core'
+import type { Doc, FindOptions, Ref } from '@anticrm/core'
 import type { Funnel, Lead } from '@anticrm/lead'
-import { createKanban } from '@anticrm/lead'
 import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
@@ -28,7 +27,6 @@ import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import { createDefaultKanbanTemplate } from '@anticrm/task'
 import type {} from '@anticrm/view'
 import lead from './plugin'
 
@@ -146,11 +144,6 @@ export function createModel (builder: Builder): void {
     presenter: lead.component.LeadPresenter
   })
 
-  builder.createDoc(task.class.Sequence, task.space.Sequence, {
-    attachedTo: lead.class.Lead,
-    sequence: 0
-  })
-
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
@@ -164,29 +157,8 @@ export function createModel (builder: Builder): void {
     },
     lead.space.FunnelTemplates
   )
-
-  createKanban(lead.space.DefaultFunnel, async (_class, space, data, id) => {
-    builder.createDoc(_class, space, data, id)
-    return await Promise.resolve()
-  }).catch((err) => console.error(err))
-
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  createDefaultKanbanTemplate(async <T extends Doc>(
-    props: {
-      id?: Ref<T>
-      space: Ref<Space>
-      class: Ref<Class<T>>
-    },
-    attrs: Data<T>
-  ): Promise<void> => {
-    builder.createDoc(
-      props.class,
-      props.space,
-      attrs,
-      props.id
-    )
-  })
 }
 
-export { leadOperation } from './migration'
 export { default } from './plugin'
+export { leadOperation } from './migration'
+export { createDeps } from './creation'
