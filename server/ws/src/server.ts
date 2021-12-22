@@ -14,19 +14,18 @@
 // limitations under the License.
 //
 
-import { readRequest, serialize, Response } from '@anticrm/platform'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, ServerStorage, Tx, TxResult } from '@anticrm/core'
+import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
 import type { Token } from '@anticrm/server-core'
 import { createServer, IncomingMessage } from 'http'
-import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
+import WebSocket, { Server } from 'ws'
 
-import type { Doc, Ref, Class, FindOptions, FindResult, Tx, DocumentQuery, Storage, ServerStorage, TxResult } from '@anticrm/core'
-
-let LOGGING_ENABLED = true
+let LOGGING_ENABLED = false
 
 export function disableLogging (): void { LOGGING_ENABLED = false }
 
-class Session implements Storage {
+class Session {
   constructor (
     private readonly manager: SessionManager,
     private readonly token: Token,
@@ -35,15 +34,16 @@ class Session implements Storage {
 
   async ping (): Promise<string> { console.log('ping'); return 'pong!' }
 
-  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
-    return await this.storage.findAll(_class, query, options)
+  async findAll <T extends Doc>(ctx: MeasureContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+    return await this.storage.findAll(ctx, _class, query, options)
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
-    const [result, derived] = await this.storage.tx(tx)
+  async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
+    const [result, derived] = await this.storage.tx(ctx, tx)
+
     this.manager.broadcast(this, this.token, { result: tx })
-    for (const tx of derived) {
-      this.manager.broadcast(null, this.token, { result: tx })
+    for (const dtx of derived) {
+      this.manager.broadcast(null, this.token, { result: dtx })
     }
     return result
   }
@@ -101,15 +101,19 @@ class SessionManager {
   }
 }
 
-async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promise<void> {
+async function handleRequest<S extends Session> (ctx: MeasureContext, service: S, ws: WebSocket, msg: string): Promise<void> {
   const request = readRequest(msg)
   const f = (service as any)[request.method]
   try {
-    const result = await f.apply(service, request.params)
-    const resp = { id: request.id, result }
+    const params = [ctx, ...request.params]
+    const result = await f.apply(service, params)
+    const resp: Response<any> = { id: request.id, result }
     ws.send(serialize(resp))
   } catch (err: any) {
-    const resp = { id: request.id, error: err }
+    const resp: Response<any> = {
+      id: request.id,
+      error: unknownError(err)
+    }
     ws.send(serialize(resp))
   }
 }
@@ -120,7 +124,7 @@ async function handleRequest<S> (service: S, ws: WebSocket, msg: string): Promis
  * @param port -
  * @param host -
  */
-export function start (storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): () => void {
+export function start (ctx: MeasureContext, storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): () => void {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager()
@@ -133,11 +137,11 @@ export function start (storageFactory: (workspace: string) => Promise<ServerStor
     ws.on('message', (msg: string) => { buffer.push(msg) })
     const session = await sessions.addSession(ws, token, storageFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('message', async (msg: string) => await handleRequest(session, ws, msg))
+    ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
     ws.on('close', (code: number, reason: string) => sessions.close(ws, token, code, reason))
 
     for (const msg of buffer) {
-      await handleRequest(session, ws, msg)
+      await handleRequest(ctx, session, ws, msg)
     }
   })
 

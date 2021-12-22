@@ -1,9 +1,9 @@
 
-import { Ref, TxOperations } from '@anticrm/core'
+import { MeasureContext, Ref, TxOperations } from '@anticrm/core'
 import task, { DoneState, genRanks, Kanban, SpaceWithStates, State } from '@anticrm/task'
 import { findOrUpdate } from './utils'
 
-export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, client: TxOperations): Promise<Ref<State>[]> {
+export async function createUpdateSpaceKanban (ctx: MeasureContext, spaceId: Ref<SpaceWithStates>, client: TxOperations): Promise<Ref<State>[]> {
   const rawStates = [
     { color: '#7C6FCD', name: 'Initial' },
     { color: '#6F7BC5', name: 'Intermidiate' },
@@ -22,14 +22,15 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
     }
 
     const sid = ('generated-' + spaceId + '.state.' + st.name.toLowerCase().replace(' ', '_')) as Ref<State>
-    await findOrUpdate(client, spaceId, task.class.State,
+
+    await ctx.with('find-or-update', {}, (ctx) => findOrUpdate(ctx, client, spaceId, task.class.State,
       sid,
       {
         title: st.name,
         color: st.color,
         rank
       }
-    )
+    ))
     states.push(sid)
   }
 
@@ -47,21 +48,20 @@ export async function createUpdateSpaceKanban (spaceId: Ref<SpaceWithStates>, cl
     }
 
     const sid = ('generated-' + spaceId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
-    await findOrUpdate(client, spaceId, st.class,
+    await ctx.with('gen-done-state', {}, (ctx) => findOrUpdate(ctx, client, spaceId, st.class,
       sid,
       {
         title: st.title,
         rank
       }
-    )
+    ))
   }
 
-  await findOrUpdate(client, spaceId,
-    task.class.Kanban,
+  await ctx.with('create-kanban', {}, (ctx) => findOrUpdate(ctx, client, spaceId, task.class.Kanban,
     ('generated-' + spaceId + '.kanban') as Ref<Kanban>,
     {
       attachedTo: spaceId
     }
-  )
+  ))
   return states
 }

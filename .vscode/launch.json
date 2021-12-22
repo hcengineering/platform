@@ -11,7 +11,9 @@
       "args": ["src/__start.ts"],
       "env": {
         "ELASTIC_URL": "http://localhost:9200",
-        "MONGO_URL": "mongodb://localhost:27017"
+        "MONGO_URL": "mongodb://localhost:27017",
+        "APM_SERVER_URL2": "http://localhost:8200",
+        "METRICS_CONSOLE": "true" // Show metrics in console evert 30 seconds.
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -43,6 +45,26 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register" ],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/generator",
+      "protocol": "inspector"
+    },    
+    {
+      "name": "Debug tool",
+      "type": "node",
+      "request": "launch",
+      // "args": ["src/index.ts", "import-xml", "ws1", "/Users/haiodo/Develop/private/hardware/suho/Кандидаты/Кандидаты.xml"],
+      "args": ["src/index.ts", "restore-workspace", "ws1", "../../temp/ws1/"],
+      "env": {
+        "MINIO_ACCESS_KEY":"minioadmin",
+        "MINIO_SECRET_KEY":"minioadmin",
+        "MINIO_ENDPOINT":"localhost",
+        "MONGO_URL":"mongodb://localhost:27017",
+        "TRANSACTOR_URL":"ws:/localhost:3333",
+        "TELEGRAM_DATABASE":"telegram-service",
+        "ELASTIC_URL":"http://localhost:9200",
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register" ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/dev/tool",
       "protocol": "inspector"
     },    
   ]

@@ -236,6 +236,14 @@
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "node templates/apply.js"
     },
+    {
+      "commandKind": "global",
+      "name": "ts-clean",
+      "summary": "Clean tsconfig.tsbuildinfo",
+      "description": "Clean typescript incremental cache",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "find .|grep tsconfig.tsbuildinfo | xargs rm | pwd"
+    },    
   ],
 
   /**
