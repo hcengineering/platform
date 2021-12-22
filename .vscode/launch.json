@@ -51,7 +51,6 @@
       "name": "Debug tool",
       "type": "node",
       "request": "launch",
-      // "args": ["src/index.ts", "import-xml", "ws1", "/Users/haiodo/Develop/private/hardware/suho/Кандидаты/Кандидаты.xml"],
       "args": ["src/index.ts", "restore-workspace", "ws1", "../../temp/ws1/"],
       "env": {
         "MINIO_ACCESS_KEY":"minioadmin",

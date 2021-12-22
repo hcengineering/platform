@@ -26,6 +26,10 @@ class ElasticAdapter implements FullTextAdapter {
   ) {
   }
 
+  async close (): Promise<void> {
+    await this.client.close()
+  }
+
   async search (
     search: string
   ): Promise<IndexedDoc[]> {
@@ -110,7 +114,7 @@ class ElasticAdapter implements FullTextAdapter {
 /**
  * @public
  */
-export async function createElasticAdapter (url: string, dbName: string): Promise<FullTextAdapter> {
+export async function createElasticAdapter (url: string, dbName: string): Promise<FullTextAdapter & {close: () => Promise<void>}> {
   const client = new Client({
     node: url
   })
