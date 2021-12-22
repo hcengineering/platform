@@ -14,6 +14,7 @@
 -->
 
 <script lang="ts">
+  import { SortingOrder } from '@anticrm/core'
   import type { Doc, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
   import { getResource, IntlString } from '@anticrm/platform'
@@ -34,7 +35,7 @@
   let spaces: Space[] = []
   let selected: Ref<Space> | undefined = undefined
 
-  $: query.query(model.spaceClass, { archived: false }, result => { spaces = result })
+  $: query.query(model.spaceClass, { archived: false }, result => { spaces = result }, { sort: { name: SortingOrder.Ascending }})
 
   const addSpace: Action = {
     label: model.addSpaceLabel,
