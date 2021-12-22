@@ -14,10 +14,32 @@
 // limitations under the License.
 //
 
-import core, { ServerStorage, Domain, Tx, TxCUD, Doc, Ref, Class, DocumentQuery, FindResult, FindOptions, Storage, TxBulkWrite, TxResult, TxCollectionCUD, AttachedDoc, DOMAIN_MODEL, Hierarchy, DOMAIN_TX, ModelDb, TxFactory } from '@anticrm/core'
-import type { FullTextAdapterFactory, FullTextAdapter } from './types'
+import core, {
+  AttachedDoc,
+  Class,
+  Doc,
+  DocumentQuery,
+  Domain,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  MeasureContext,
+  ModelDb,
+  Ref,
+  ServerStorage,
+  Storage,
+  Tx,
+  TxBulkWrite,
+  TxCollectionCUD,
+  TxCUD,
+  TxFactory,
+  TxResult
+} from '@anticrm/core'
 import { FullTextIndex } from './fulltext'
 import { Triggers } from './triggers'
+import type { FullTextAdapter, FullTextAdapterFactory } from './types'
 
 /**
  * @public
@@ -87,7 +109,7 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (tx: Tx): Promise<TxResult> {
+  private async routeTx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
     if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
@@ -96,7 +118,7 @@ class TServerStorage implements ServerStorage {
       if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
         const bulkWrite = tx as TxBulkWrite
         for (const tx of bulkWrite.txes) {
-          await this.tx(tx)
+          await this.tx(ctx, tx)
         }
       } else {
         throw new Error('not implemented (routeTx)')
@@ -105,7 +127,7 @@ class TServerStorage implements ServerStorage {
     }
   }
 
-  async processCollection (tx: Tx): Promise<Tx[]> {
+  async processCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
     if (tx._class === core.class.TxCollectionCUD) {
       const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
       const _id = colTx.objectId
@@ -120,55 +142,86 @@ class TServerStorage implements ServerStorage {
 
       const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
       if (isCreateTx || colTx.tx._class === core.class.TxRemoveDoc) {
-        attachedTo = (await this.findAll(_class, { _id }, { limit: 1 }))[0]
+        attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
         if (attachedTo !== undefined) {
           const txFactory = new TxFactory(tx.modifiedBy)
-          return [txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, { $inc: { [colTx.collection]: isCreateTx ? 1 : -1 } })]
+          return [
+            txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
+              $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+            })
+          ]
         }
       }
     }
     return []
   }
 
-  async findAll<T extends Doc> (
+  async findAll<T extends Doc>(
+    ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.hierarchy.getDomain(clazz)
-    console.log('server findall', query)
-    if (Object.keys(query)[0] === '$search') {
-      return await this.fulltext.findAll(clazz, query, options)
-    }
-    return await this.getAdapter(domain).findAll(clazz, query, options)
+    return await ctx.with('find-all', {}, (ctx) => {
+      const domain = this.hierarchy.getDomain(clazz)
+      if (Object.keys(query)[0] === '$search') {
+        return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+      }
+      return ctx.with('db-find-all', { _class: clazz, domain }, () =>
+        this.getAdapter(domain).findAll(clazz, query, options)
+      )
+    })
   }
 
-  async tx (tx: Tx): Promise<[TxResult, Tx[]]> {
+  async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
-    await this.getAdapter(DOMAIN_TX).tx(tx)
+    const _class = txClass(tx)
+    const objClass = txObjectClass(tx)
+    return await ctx.with('tx', { _class, objClass }, async (ctx) => {
+      await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
 
-    if (tx.objectSpace === core.space.Model) {
-      // maintain hiearachy and triggers
-      this.hierarchy.tx(tx)
-      await this.triggers.tx(tx)
-      await this.modelDb.tx(tx)
-    }
-    // store object
-    const result = await this.routeTx(tx)
-    // invoke triggers and store derived objects
-    const derived = [...await this.processCollection(tx), ...await this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this), this.hierarchy)]
-    for (const tx of derived) {
-      await this.routeTx(tx)
-    }
-    // index object
-    await this.fulltext.tx(tx)
-    // index derived objects
-    for (const tx of derived) {
-      await this.fulltext.tx(tx)
-    }
+      if (tx.objectSpace === core.space.Model) {
+        // maintain hiearachy and triggers
+        this.hierarchy.tx(tx)
+        await this.triggers.tx(tx)
+        await this.modelDb.tx(tx)
+      }
 
-    return [result, derived]
+      let derived: Tx[] = []
+      let result: TxResult = {}
+      // store object
+      result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
+      // invoke triggers and store derived objects
+      derived = [
+        ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
+        ...(await ctx.with('process-triggers', {}, (ctx) =>
+          this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this, ctx), this.hierarchy)
+        ))
+      ]
+
+      for (const tx of derived) {
+        await ctx.with('derived-route-tx', { _class: txClass(tx) }, (ctx) => this.routeTx(ctx, tx))
+      }
+
+      // index object
+      await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, tx))
+      // index derived objects
+      for (const tx of derived) {
+        await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
+      }
+      return [result, derived]
+    })
   }
+}
+
+function txObjectClass (tx: Tx): string {
+  return tx._class === core.class.TxCollectionCUD
+    ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass
+    : (tx as TxCUD<Doc>).objectClass
+}
+
+function txClass (tx: Tx): string {
+  return tx._class === core.class.TxCollectionCUD ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class : tx._class
 }
 
 /**

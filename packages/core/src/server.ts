@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '.'
 import type { Doc, Class, Ref } from './classes'
 import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
 import type { Tx } from './tx'
@@ -23,9 +24,10 @@ import type { Tx } from './tx'
  */
 export interface ServerStorage {
   findAll: <T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<[TxResult, Tx[]]>
+  tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
 }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX } from '@anticrm/core'
+import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
 import type { Ref, Doc, TxResult } from '@anticrm/core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
@@ -48,7 +48,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 export async function start (port: number, host?: string): Promise<void> {
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
 
-  startJsonRpc(() => {
+  startJsonRpc(new MeasureMetricsContext('server', {}), () => {
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'InMemoryTx'

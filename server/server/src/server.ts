@@ -24,6 +24,7 @@ import type { DbConfiguration, DbAdapter } from '@anticrm/server-core'
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
+import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
@@ -42,7 +43,7 @@ export function start (dbUrl: string, fullTextUrl: string, port: number, host?: 
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
 
-  return startJsonRpc((workspace: string) => {
+  return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',

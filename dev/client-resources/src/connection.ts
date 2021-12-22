@@ -13,24 +13,25 @@
 // limitations under the License.
 //
 
-import type { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxHander, TxResult } from '@anticrm/core'
-import { DOMAIN_TX } from '@anticrm/core'
+import { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxHander, TxResult, DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { protoDeserialize, protoSerialize } from '@anticrm/platform'
 import type { DbConfiguration } from '@anticrm/server-core'
 import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 
 class ServerStorageWrapper implements ClientConnection {
-  constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
+  measureCtx = new MeasureMetricsContext('client', {})
+  constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {
+  }
 
   findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
-    return this.storage.findAll(c, q, o)
+    return this.storage.findAll(this.measureCtx, c, q, o)
   }
 
   async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
-    const [result, derived] = await this.storage.tx(_tx)
+    const [result, derived] = await this.storage.tx(this.measureCtx, _tx)
     for (const tx of derived) { this.handler(tx) }
     return result
   }
