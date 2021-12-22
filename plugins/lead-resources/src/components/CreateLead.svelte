@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@anticrm/contact'
-  import { Data, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { AttachedData, Ref, SortingOrder, Space } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -36,7 +36,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const leadId = generateId()
+  const leadId = generateId() as Ref<Lead>
 
   export function canClose (): boolean {
     return title !== ''
@@ -67,19 +67,16 @@
       true
     )
 
-    const value: Data<Lead> = {
+    const value: AttachedData<Lead> = {
       state: state._id,
       doneState: null,
       number: (incResult as any).object.sequence,
       title: title,
       customer: customer!,
-      attachedTo: customer!,
-      attachedToClass: contact.class.Contact,
-      collection: 'leads',
       rank: calcRank(lastOne, undefined)
     }
 
-    await client.createDoc(lead.class.Lead, _space, value, leadId)
+    await client.addCollection(lead.class.Lead, _space, customer!, contact.class.Contact, 'leads', value, leadId)
     dispatch('close')
   }
 </script>

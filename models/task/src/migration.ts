@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Client, Doc, Domain, DOMAIN_TX, Ref, Space, TxCUD, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Client, Doc, Domain, DOMAIN_TX, Ref, Space, TxCollectionCUD, TxCreateDoc, TxCUD, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrateUpdate,
@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createDefaultKanbanTemplate, createProjectKanban, KanbanTemplate, DocWithRank, genRanks } from '@anticrm/task'
+import { createDefaultKanbanTemplate, createProjectKanban, KanbanTemplate, DocWithRank, genRanks, Issue } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -43,6 +43,11 @@ async function migrateClass<T extends Doc> (
   logInfo(
     `${from} => ${to} Transactions`,
     await client.update<TxCUD<Doc>>(DOMAIN_TX, { objectClass: from }, { ...txExtraOps, objectClass: to })
+  )
+  logInfo(
+    `${from} => ${to} Collection transactions`,
+    // eslint-disable-next-line
+    await client.update<TxCollectionCUD<Doc, AttachedDoc>>(DOMAIN_TX, { ['tx.objectClass']: from }, { ['tx.objectClass']: to })
   )
 }
 
@@ -109,6 +114,35 @@ export const taskOperation: MigrateOperation = {
 
     // Update done states for tasks
     await client.update(DOMAIN_TASK, { _class: task.class.Issue, doneState: { $exists: false } }, { doneState: null })
+    const txes = await client.find<TxCreateDoc<Issue>>(DOMAIN_TX, {
+      _class: core.class.TxCreateDoc,
+      objectClass: task.class.Issue
+    })
+    for (const tx of txes) {
+      if (tx.attributes.attachedTo !== undefined) continue
+      await client.update<TxCreateDoc<Issue>>(DOMAIN_TX, { _id: tx._id }, {
+        attributes: {
+          ...tx.attributes,
+          attachedTo: task.global.Task,
+          attachedToClass: task.class.Issue
+        }
+      })
+    }
+    const nullTxes = await client.find<TxCollectionCUD<Doc, AttachedDoc>>(DOMAIN_TX, {
+      objectClass: null
+    })
+    for (const tx of nullTxes) {
+      console.log(tx)
+      const doc = await client.find<TxCreateDoc<AttachedDoc>>(DOMAIN_TX, {
+        objectId: tx.tx.objectId,
+        _class: core.class.TxCreateDoc
+      })
+      await client.update<TxCollectionCUD<Doc, AttachedDoc>>(DOMAIN_TX, { _id: tx._id }, {
+        objectId: doc[0].attributes.attachedTo,
+        objectClass: doc[0].attributes.attachedToClass,
+        collection: doc[0].attributes.collection
+      })
+    }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Task: Performing model upgrades')
@@ -155,6 +189,16 @@ export const taskOperation: MigrateOperation = {
     await updateRankItems({ client, ops, _class: task.class.Task, extractOrder: (kanban) => kanban.order })
     await updateTemplateRankItems({ client, ops, _class: task.class.StateTemplate, extractOrder: (kanban) => kanban.states })
     await updateTemplateRankItems({ client, ops, _class: task.class.DoneStateTemplate, extractOrder: (kanban) => kanban.doneStates })
+
+    const tasks = await client.findAll(task.class.Issue, {})
+    for (const doc of tasks) {
+      if (doc.attachedTo === undefined) {
+        await ops.updateDoc(doc._class, doc.space, doc._id, {
+          attachedTo: task.global.Task,
+          attachedToClass: task.class.Issue
+        })
+      }
+    }
   }
 }
 

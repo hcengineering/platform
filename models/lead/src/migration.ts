@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
-import { Doc, TxOperations } from '@anticrm/core'
+import { Doc, DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import task, { DOMAIN_TASK } from '@anticrm/model-task'
-import { createDefaultKanbanTemplate, createKanban } from '@anticrm/lead'
+import { createDefaultKanbanTemplate, createKanban, Lead } from '@anticrm/lead'
 import lead from './plugin'
+import contact from '@anticrm/model-contact'
 
 function logInfo (msg: string, result: MigrationResult): void {
   if (result.updated > 0) {
@@ -31,6 +32,20 @@ export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // Update done states for tasks
     logInfo('lead done states', await client.update(DOMAIN_TASK, { _class: lead.class.Lead, doneState: { $exists: false } }, { doneState: null }))
+    const txes = await client.find<TxCreateDoc<Lead>>(DOMAIN_TX, {
+      _class: core.class.TxCreateDoc,
+      objectClass: lead.class.Lead
+    })
+    for (const tx of txes) {
+      if (tx.attributes.attachedTo !== undefined) continue
+      await client.update<TxCreateDoc<Lead>>(DOMAIN_TX, { _id: tx._id }, {
+        attributes: {
+          ...tx.attributes,
+          attachedTo: tx.attributes.customer,
+          attachedToClass: contact.class.Contact
+        }
+      })
+    }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Lead: Performing model upgrades')
@@ -68,6 +83,16 @@ export const leadOperation: MigrateOperation = {
       ): Promise<void> => {
         await ops.createDoc(props.class, props.space, attrs, props.id)
       })
+    }
+
+    const leads = await client.findAll(lead.class.Lead, {})
+    for (const lead of leads) {
+      if (lead.attachedTo === undefined) {
+        await ops.updateDoc(lead._class, lead.space, lead._id, {
+          attachedTo: lead.customer,
+          attachedToClass: contact.class.Contact
+        })
+      }
     }
   }
 }
