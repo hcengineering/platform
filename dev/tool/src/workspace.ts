@@ -16,7 +16,7 @@
 
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import builder, { migrateOperations } from '@anticrm/model-all'
+import builder, { migrateOperations, createDeps } from '@anticrm/model-all'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
 import { Client } from 'minio'
@@ -39,6 +39,10 @@ export async function initWorkspace (
   transactorUrl: string,
   minio: Client
 ): Promise<void> {
+  if (txes.some(tx => tx.objectSpace !== core.space.Model)) {
+    throw Error('Model txes must target only core.space.Model')
+  }
+
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -48,17 +52,13 @@ export async function initWorkspace (
     await db.dropDatabase()
 
     console.log('creating model...')
-    const model = txes.filter((tx) => tx.objectSpace === core.space.Model)
+    const model = txes
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
-
     const connection = await connect(transactorUrl, dbName)
-    for (const tx of data) {
-      await connection.tx(tx)
-    }
+    await createDeps(connection)
     await connection.close()
 
     console.log('create minio bucket')
@@ -79,6 +79,10 @@ export async function upgradeWorkspace (
   transactorUrl: string,
   minio: Client
 ): Promise<void> {
+  if (txes.some(tx => tx.objectSpace !== core.space.Model)) {
+    throw Error('Model txes must target only core.space.Model')
+  }
+
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -94,7 +98,7 @@ export async function upgradeWorkspace (
     console.log(`${result.deletedCount} transactions deleted.`)
 
     console.log('creating model...')
-    const model = txes.filter((tx) => tx.objectSpace === core.space.Model)
+    const model = txes
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
     console.log(`${insert.insertedCount} model transactions inserted.`)
 
@@ -223,7 +227,9 @@ export async function restoreWorkspace (
       const collection = db.collection(c.name)
       await collection.deleteMany({})
       const data = JSON.parse((await readFile(fileName + c.name + '.json')).toString()) as Document[]
-      await collection.insertMany(data)
+      if (data.length > 0) {
+        await collection.insertMany(data)
+      }
     }
 
     console.log('Restore minio objects')

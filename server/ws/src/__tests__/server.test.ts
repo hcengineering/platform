@@ -20,18 +20,20 @@ import type { Token } from '@anticrm/server-core'
 import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
-import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx, TxResult } from '@anticrm/core'
+import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx, TxResult, MeasureContext } from '@anticrm/core'
+import { MeasureMetricsContext } from '@anticrm/core'
 
 describe('server', () => {
   disableLogging()
 
-  start(async () => ({
+  start(new MeasureMetricsContext('test', {}), async () => ({
     findAll: async <T extends Doc>(
+      ctx: MeasureContext,
       _class: Ref<Class<T>>,
       query: DocumentQuery<T>,
       options?: FindOptions<T>
     ): Promise<FindResult<T>> => ([]),
-    tx: async (tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []])
+    tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []])
   }), 3333)
 
   function connect (): WebSocket {

@@ -56,6 +56,7 @@ program
   .command('gen-recruit <workspace> <count>')
   .description('generate a bunch of random candidates with attachemnts and comments.')
   .option('-r, --random', 'generate random ids. So every call will add count <count> more candidates.', false)
+  .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
   .action(async (workspace: string, count: number, cmd) => {
     return await generateContacts(transactorUrl, workspace, {
       contacts: count,
@@ -65,7 +66,8 @@ program
         min: 1, max: 3, deleteFactor: 20
       },
       vacancy: 3,
-      applicantUpdateFactor: 70
+      applicants: { min: 50, max: 200, applicantUpdateFactor: 70 },
+      lite: (cmd.lite as boolean)
     }, minio)
   })
 

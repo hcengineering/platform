@@ -20,7 +20,6 @@ const icons = require('../assets/icons.svg')
 loadMetadata(task.icon, {
   Task: `${icons}#task`,
   Kanban: `${icons}#kanban`,
-  Status: `${icons}#status`,
   TodoCheck: `${icons}#todo-check`,
   TodoUnCheck: `${icons}#todo-uncheck`,
   ManageStatuses: `${icons}#manage-statuses`

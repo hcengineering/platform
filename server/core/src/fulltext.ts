@@ -14,22 +14,25 @@
 // limitations under the License.
 //
 
+import type { AttachedDoc, Class, Doc, Obj, Ref, TxCreateDoc, TxResult, TxUpdateDoc } from '@anticrm/core'
 import core, {
-  Hierarchy,
   AnyAttribute,
-  Storage,
+  Collection,
   DocumentQuery,
   FindOptions,
   FindResult,
-  TxProcessor,
+  Hierarchy,
+  MeasureContext,
+  PropertyType,
+  Tx,
+  TxBulkWrite,
+  TxCollectionCUD,
   TxMixin,
+  TxProcessor,
   TxPutBag,
-  TxRemoveDoc,
-  Collection
+  TxRemoveDoc
 } from '@anticrm/core'
-import type { AttachedDoc, TxUpdateDoc, TxCreateDoc, Doc, Ref, Class, Obj, TxResult } from '@anticrm/core'
-
-import type { IndexedDoc, FullTextAdapter, WithFind } from './types'
+import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const NO_INDEX = [] as AnyAttribute[]
@@ -37,32 +40,76 @@ const NO_INDEX = [] as AnyAttribute[]
 /**
  * @public
  */
-export class FullTextIndex extends TxProcessor implements Storage {
+export class FullTextIndex implements WithFind {
   private readonly indexes = new Map<Ref<Class<Obj>>, AnyAttribute[]>()
 
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly adapter: FullTextAdapter,
     private readonly dbStorage: WithFind
-  ) {
-    super()
-  }
+  ) {}
 
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    console.log('FullTextIndex.txPutBag: Method not implemented.')
+  protected async txPutBag (ctx: MeasureContext, tx: TxPutBag<any>): Promise<TxResult> {
+    // console.log('FullTextIndex.txPutBag: Method not implemented.')
     return {}
   }
 
-  protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
+  protected async txRemoveDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<TxResult> {
+    // console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
     return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+  protected txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
+  async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
+    switch (tx._class) {
+      case core.class.TxCreateDoc:
+        return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
+      case core.class.TxCollectionCUD:
+        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
+      case core.class.TxUpdateDoc:
+        return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
+      case core.class.TxRemoveDoc:
+        return await this.txRemoveDoc(ctx, tx as TxRemoveDoc<Doc>)
+      case core.class.TxMixin:
+        return await this.txMixin(ctx, tx as TxMixin<Doc, Doc>)
+      case core.class.TxPutBag:
+        return await this.txPutBag(ctx, tx as TxPutBag<PropertyType>)
+      case core.class.TxBulkWrite:
+        return await this.txBulkWrite(ctx, tx as TxBulkWrite)
+    }
+    throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
+  }
+
+  protected txCollectionCUD (ctx: MeasureContext, tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
+    // We need update only create transactions to contain attached, attachedToClass.
+    if (tx.tx._class === core.class.TxCreateDoc) {
+      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
+      const d: TxCreateDoc<AttachedDoc> = {
+        ...createTx,
+        attributes: {
+          ...createTx.attributes,
+          attachedTo: tx.objectId,
+          attachedToClass: tx.objectClass,
+          collection: tx.collection
+        }
+      }
+      return this.txCreateDoc(ctx, d)
+    }
+    return this.tx(ctx, tx.tx)
+  }
+
+  protected async txBulkWrite (ctx: MeasureContext, bulkTx: TxBulkWrite): Promise<TxResult> {
+    for (const tx of bulkTx.txes) {
+      await this.tx(ctx, tx)
+    }
+    return {}
+  }
+
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -79,7 +126,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
         ids.push(doc.attachedTo)
       }
     }
-    return await this.dbStorage.findAll(_class, { _id: { $in: ids as any }, ...mainQuery }, options) // TODO: remove `as any`
+    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: ids as any }, ...mainQuery }, options) // TODO: remove `as any`
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>): AnyAttribute[] | undefined {
@@ -103,14 +150,14 @@ export class FullTextIndex extends TxProcessor implements Storage {
     }
   }
 
-  protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
+  protected async txCreateDoc (ctx: MeasureContext, tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     const doc = TxProcessor.createDoc2Doc(tx)
     let parentContent: any[] = []
     if (this.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const attachedDoc = doc as AttachedDoc
       const parentDoc = (
-        await this.dbStorage.findAll(attachedDoc.attachedToClass, { _id: attachedDoc.attachedTo }, { limit: 1 })
+        await this.dbStorage.findAll(ctx, attachedDoc.attachedToClass, { _id: attachedDoc.attachedTo }, { limit: 1 })
       )[0]
       if (parentDoc !== undefined) {
         const parentAttributes = this.getFullTextAttributes(parentDoc._class)
@@ -141,7 +188,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
     return await this.adapter.index(indexedDoc)
   }
 
-  protected override async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+  protected async txUpdateDoc (ctx: MeasureContext, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     let result = {}
     if (attributes === undefined) return result
@@ -158,7 +205,7 @@ export class FullTextIndex extends TxProcessor implements Storage {
     }
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
-      await this.updateAttachedDocs(tx, update)
+      await this.updateAttachedDocs(ctx, tx, update)
     }
     return result
   }
@@ -168,14 +215,14 @@ export class FullTextIndex extends TxProcessor implements Storage {
     return attributes.map((attr) => (doc as any)[attr.name]?.toString() ?? '')
   }
 
-  private async updateAttachedDocs (tx: TxUpdateDoc<Doc>, update: any): Promise<void> {
-    const doc = (await this.dbStorage.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  private async updateAttachedDocs (ctx: MeasureContext, tx: TxUpdateDoc<Doc>, update: any): Promise<void> {
+    const doc = (await this.dbStorage.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
     if (doc === undefined) return
     const attributes = this.hierarchy.getAllAttributes(doc._class)
     for (const attribute of attributes.values()) {
       if (this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
         const collection = attribute.type as Collection<AttachedDoc>
-        const allAttached = await this.dbStorage.findAll(collection.of, { attachedTo: tx.objectId })
+        const allAttached = await this.dbStorage.findAll(ctx, collection.of, { attachedTo: tx.objectId })
         if (allAttached.length === 0) continue
         const attributes = this.getFullTextAttributes(tx.objectClass)
         const shift = attributes?.length ?? 0

@@ -16,7 +16,7 @@
 import { IntlString, Resources } from '@anticrm/platform'
 import ModelView from './components/ModelView.svelte'
 import QueryView from './components/QueryView.svelte'
-import core, { Class, Client, Doc, DocumentQuery, FindOptions, Ref, FindResult, Hierarchy, ModelDb, Tx, TxResult, WithLookup } from '@anticrm/core'
+import core, { Class, Client, Doc, DocumentQuery, FindOptions, Ref, FindResult, Hierarchy, ModelDb, Tx, TxResult, WithLookup, Metrics } from '@anticrm/core'
 import { Builder } from '@anticrm/model'
 import workbench from '@anticrm/workbench'
 import view from '@anticrm/view'
@@ -45,6 +45,9 @@ class ModelClient implements Client {
       this.notify?.(tx)
       console.info('devmodel# notify=>', tx, this.client.getModel())
       notifications.push(tx)
+      if (notifications.length > 500) {
+        notifications.shift()
+      }
     }
   }
 
@@ -62,6 +65,9 @@ class ModelClient implements Client {
     const result = await this.client.findOne(_class, query, options)
     console.info('devmodel# findOne=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel())
     queries.push({ _class, query, options, result: result !== undefined ? [result] : [], findOne: true })
+    if (queries.length > 100) {
+      queries.shift()
+    }
     return result
   }
 
@@ -69,6 +75,9 @@ class ModelClient implements Client {
     const result = await this.client.findAll(_class, query, options)
     console.info('devmodel# findAll=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel())
     queries.push({ _class, query, options, result, findOne: false })
+    if (queries.length > 100) {
+      queries.shift()
+    }
     return result
   }
 
@@ -76,6 +85,9 @@ class ModelClient implements Client {
     const result = await this.client.tx(tx)
     console.info('devmodel# tx=>', tx, result)
     transactions.push({ tx, result })
+    if (transactions.length > 100) {
+      transactions.shift()
+    }
     return result
   }
 

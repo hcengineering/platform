@@ -17,14 +17,10 @@
 import core, {
   Account,
   Class,
-  Doc,
-  FindOptions,
-  DocumentQuery,
-  DOMAIN_TX,
-  FindResult,
+  Doc, DocumentQuery,
+  DOMAIN_TX, FindOptions, FindResult,
   generateId,
-  Hierarchy,
-  ModelDb,
+  Hierarchy, MeasureMetricsContext, ModelDb,
   Ref,
   ServerStorage,
   Tx,
@@ -36,10 +32,11 @@ import core, {
   TxResult,
   TxUpdateDoc
 } from '@anticrm/core'
-import { Client as ElasticClient } from '@elastic/elasticsearch'
-import { Db, MongoClient } from 'mongodb'
-import { Client } from 'minio'
 import { createElasticAdapter } from '@anticrm/elastic'
+import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
+import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
+import { addLocation } from '@anticrm/platform'
+import { serverChunterId } from '@anticrm/server-chunter'
 import {
   createServerStorage,
   DbAdapter,
@@ -48,11 +45,10 @@ import {
   IndexedDoc,
   TxAdapter
 } from '@anticrm/server-core'
-import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
-import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
-import { serverChunterId } from '@anticrm/server-chunter'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { addLocation } from '@anticrm/platform'
+import { Client as ElasticClient } from '@elastic/elasticsearch'
+import { Client } from 'minio'
+import { Db, MongoClient } from 'mongodb'
 import { listMinioObjects } from './minio'
 
 export async function rebuildElastic (
@@ -106,8 +102,9 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const storage = await createStorage(mongoUrl, elasticUrl, dbName)
     const txes = (await db.collection<Tx>(DOMAIN_TX).find().sort({ _id: 1 }).toArray())
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
+    const metricsCtx = new MeasureMetricsContext('elastic', {})
     for (const tx of data) {
-      await storage.tx(tx)
+      await storage.tx(metricsCtx, tx)
     }
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)

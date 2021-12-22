@@ -13,24 +13,19 @@
 // limitations under the License.
 //
 
-import type {
+import core, {
   Class,
   Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Ref,
-  Tx,
+  DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions,
+  FindResult, Hierarchy, isOperator, ModelDb, Ref, SortingOrder, Tx,
   TxCreateDoc,
-  TxMixin,
-  TxPutBag,
+  TxMixin, TxProcessor, TxPutBag,
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc
 } from '@anticrm/core'
-import core, { DOMAIN_MODEL, DOMAIN_TX, Hierarchy, isOperator, ModelDb, SortingOrder, TxProcessor } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-import { Db, Document, Filter, Sort } from 'mongodb'
+import { Collection, Db, Document, Filter, Sort } from 'mongodb'
 import { getMongoClient } from './utils'
 
 function translateDoc (doc: Doc): Document {
@@ -270,12 +265,13 @@ class MongoAdapter extends MongoAdapterBase {
     }
   }
 
-  override tx (tx: Tx): Promise<TxResult> {
-    return super.tx(tx)
+  override async tx (tx: Tx): Promise<TxResult> {
+    return await super.tx(tx)
   }
 }
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
+  txColl: Collection | undefined
   protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
@@ -297,8 +293,16 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    await this.db.collection(DOMAIN_TX).insertOne(translateDoc(tx))
+    await this.txCollection().insertOne(translateDoc(tx))
     return {}
+  }
+
+  private txCollection (): Collection {
+    if (this.txColl !== undefined) {
+      return this.txColl
+    }
+    this.txColl = this.db.collection(DOMAIN_TX)
+    return this.txColl
   }
 
   async getModel (): Promise<Tx[]> {

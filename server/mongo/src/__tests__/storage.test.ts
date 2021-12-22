@@ -16,6 +16,7 @@
 import core, {
   Class,
   Client,
+  ClientConnection,
   createClient,
   Doc,
   DocumentQuery,
@@ -24,13 +25,13 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
-  Hierarchy, ModelDb,
-  Ref,
+  Hierarchy, ModelDb, Ref,
   SortingOrder,
   Space,
   Tx,
   TxOperations,
-  TxResult
+  TxResult,
+  MeasureMetricsContext
 } from '@anticrm/core'
 import { createServerStorage, DbAdapter, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { MongoClient } from 'mongodb'
@@ -155,13 +156,14 @@ describe('mongo operations', () => {
       workspace: dbId
     }
     const serverStorage = await createServerStorage(conf)
-
+    const ctx = new MeasureMetricsContext('client', {})
     client = await createClient(async (handler) => {
-      return {
-        findAll: async (_class, query, options) => await serverStorage.findAll(_class, query, options),
-        tx: async (tx) => await serverStorage.tx(tx),
+      const st: ClientConnection = {
+        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
+        tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
         close: async () => {}
       }
+      return st
     })
 
     operations = new TxOperations(client, core.account.System)
