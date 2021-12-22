@@ -116,6 +116,7 @@ export class FullTextIndex implements WithFind {
   ): Promise<FindResult<T>> {
     console.log('search', query)
     const { _id, $search, ...mainQuery } = query
+    if ($search === undefined) return []
     const docs = await this.adapter.search($search)
     console.log(docs)
     const ids: Ref<Doc>[] = []

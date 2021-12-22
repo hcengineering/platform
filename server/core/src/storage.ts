@@ -164,7 +164,7 @@ class TServerStorage implements ServerStorage {
   ): Promise<FindResult<T>> {
     return await ctx.with('find-all', {}, (ctx) => {
       const domain = this.hierarchy.getDomain(clazz)
-      if (Object.keys(query)[0] === '$search') {
+      if (query.$search !== undefined && query.$search.length > 0) {
         return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
       }
       return ctx.with('db-find-all', { _class: clazz, domain }, () =>

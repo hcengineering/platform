@@ -61,15 +61,10 @@ export interface IndexedDoc {
 /**
  * @public
  */
-export type SearchQuery = any // TODO: replace with DocumentQuery
-
-/**
- * @public
- */
 export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
-  search: (query: SearchQuery) => Promise<IndexedDoc[]>
+  search: (search: string) => Promise<IndexedDoc[]>
 }
 
 /**
