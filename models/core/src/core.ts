@@ -29,7 +29,8 @@ import type {
   Timestamp,
   Type,
   Collection,
-  RefTo
+  RefTo,
+  ArrOf
 } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
@@ -104,6 +105,11 @@ export class TRefTo extends TType implements RefTo<Doc> {
 @Model(core.class.Collection, core.class.Type)
 export class TCollection extends TType implements Collection<AttachedDoc> {
   of!: Ref<Class<Doc>>
+}
+
+@Model(core.class.ArrOf, core.class.Type)
+export class TArrOf extends TType implements ArrOf<Doc> {
+  of!: Type<Doc>
 }
 
 @Model(core.class.TypeBoolean, core.class.Type)

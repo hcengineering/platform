@@ -73,10 +73,10 @@ export class TDoneState extends TDoc implements DoneState {
   declare rank: string
 }
 
-@Model(task.class.WonState, task.class.DoneState, DOMAIN_STATE)
+@Model(task.class.WonState, task.class.DoneState)
 export class TWonState extends TDoneState implements WonState {}
 
-@Model(task.class.LostState, task.class.DoneState, DOMAIN_STATE)
+@Model(task.class.LostState, task.class.DoneState)
 export class TLostState extends TDoneState implements LostState {}
 
 /**
@@ -186,10 +186,10 @@ export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplat
   declare rank: string
 }
 
-@Model(task.class.WonStateTemplate, task.class.DoneStateTemplate, DOMAIN_KANBAN)
+@Model(task.class.WonStateTemplate, task.class.DoneStateTemplate)
 export class TWonStateTemplate extends TDoneStateTemplate implements WonStateTemplate {}
 
-@Model(task.class.LostStateTemplate, task.class.DoneStateTemplate, DOMAIN_KANBAN)
+@Model(task.class.LostStateTemplate, task.class.DoneStateTemplate)
 export class TLostStateTemplate extends TDoneStateTemplate implements LostStateTemplate {}
 
 @Model(task.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)

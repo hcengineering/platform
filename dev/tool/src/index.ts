@@ -240,11 +240,11 @@ program
   })
 
 program
-  .command('rebuild-elastic')
+  .command('rebuild-elastic <workspace>')
   .description('rebuild elastic index')
-  .option('-w, --workspace <workspace>', 'target workspace')
-  .action(async (w, cmd) => {
-    await rebuildElastic(mongodbUri, w.workspace, minio, elasticUrl)
+  .action(async (workspace, cmd) => {
+    await rebuildElastic(mongodbUri, workspace, minio, elasticUrl)
+    console.log('rebuild end')
   })
 
 program.parse(process.argv)

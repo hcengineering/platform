@@ -1,4 +1,4 @@
-import { Client, Doc, DocumentQuery, Domain, FindOptions, IncOptions, PushOptions } from '@anticrm/core'
+import { Client, Doc, DocumentQuery, Domain, FindOptions, IncOptions, ObjQueryType, PushOptions } from '@anticrm/core'
 
 /**
  * @public
@@ -18,16 +18,28 @@ export interface MigrationResult {
 
 /**
  * @public
+ */
+export type MigrationDocumentQuery<T extends Doc> = {
+  [P in keyof T]?: ObjQueryType<T[P]> | null
+} & {
+  $search?: string
+  // support nested queries e.g. 'user.friends.name'
+  // this will mark all unrecognized properties as any (including nested queries)
+  [key: string]: any
+}
+
+/**
+ * @public
  * Client to perform model upgrades
  */
 export interface MigrationClient {
   // Raw collection operations
 
   // Raw FIND, allow to find documents inside domain.
-  find: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: Omit<FindOptions<T>, 'lookup'>) => Promise<T[]>
+  find: <T extends Doc>(domain: Domain, query: MigrationDocumentQuery<T>, options?: Omit<FindOptions<T>, 'lookup'>) => Promise<T[]>
 
   // Allow to raw update documents inside domain.
-  update: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: MigrateUpdate<T>) => Promise<MigrationResult>
+  update: <T extends Doc>(domain: Domain, query: MigrationDocumentQuery<T>, operations: MigrateUpdate<T>) => Promise<MigrationResult>
 
   // Move documents per domain
   move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
