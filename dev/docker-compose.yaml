@@ -1,3 +1,4 @@
+version: "3"
 services:
   mongodb:
     image: mongo
@@ -8,7 +9,7 @@ services:
     volumes:
       - db:/data/db
     ports:
-      - 27017:27017
+      - 127.0.0.1:27017:27017
     restart: unless-stopped
   minio:
     image: 'minio/minio'
@@ -25,11 +26,12 @@ services:
     volumes:
       - elastic:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - 127.0.0.1:9200:9200
     environment:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
     healthcheck:
       interval: 20s
       retries: 10
@@ -66,7 +68,7 @@ services:
       - mongodb
       - elastic
     ports:
-      - 3333:3333
+      - 127.0.0.1:3333:3333
     environment:
       - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://mongodb:27017
