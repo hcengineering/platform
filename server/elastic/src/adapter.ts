@@ -55,7 +55,8 @@ class ElasticAdapter implements FullTextAdapter {
                 'attachment.content'
               ]
             }
-          }
+          },
+          size: 200
         }
       })
       const hits = result.body.hits.hits as any[]
