@@ -27,7 +27,7 @@
 </script>
 
 {#if viewlet}
-  <div class="container">
+  <div class="spacecontent-container">
     <Component is={viewlet.$lookup?.descriptor?.component} props={ {
       _class,
       space,
@@ -40,28 +40,7 @@
 {/if}
 
 <style lang="scss">
-  .toolbar {
-    margin: 1.25rem 1.75rem 1.75rem 2.5rem;
-
-    .btn {
-      width: 2.5rem;
-      height: 2.5rem;
-      background-color: transparent;
-      border-radius: .5rem;
-      cursor: pointer;
-
-      color: var(--theme-content-trans-color);
-      &:hover { color: var(--theme-caption-color); }
-      &.selected {
-        color: var(--theme-content-accent-color);
-        background-color: var(--theme-button-bg-enabled);
-        cursor: default;
-        &:hover { color: var(--theme-caption-color); }
-      }
-    }
-  }
-
-  .container {
+  .spacecontent-container {
     display: flex;
     flex-direction: column;
     min-height: 0;

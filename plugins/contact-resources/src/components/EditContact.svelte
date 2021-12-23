@@ -127,17 +127,3 @@
     {/each}
   </Panel>
 {/if}
-
-<style lang="scss">
-  .name {
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
-  }
-  .channels {
-    margin-top: 0.75rem;
-    span {
-      margin-left: 0.5rem;
-    }
-  }
-</style>
