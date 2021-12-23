@@ -68,11 +68,12 @@ export interface LabelAndProps {
 }
 
 export interface ListItem {
+  id: string
   item: any | undefined
   label: string
 }
 
-export interface DumbDropdownItem {
+export interface DropdownTextItem {
   id: string
   label: IntlString | string
 }

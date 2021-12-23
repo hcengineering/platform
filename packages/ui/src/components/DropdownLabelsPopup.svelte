@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
@@ -19,12 +20,14 @@
   import Label from './Label.svelte'
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
-  import type { ListItem } from '../types'
+  import IconBlueCheck from './icons/BlueCheck.svelte'
+  import type { DropdownTextItem } from '../types'
 
   export let title: IntlString
-  export let caption: IntlString
-  export let items: ListItem[]
-  export let header: boolean = true
+  export let caption: IntlString | undefined = undefined
+  export let items: DropdownTextItem[]
+  export let selected: DropdownTextItem['id'] | undefined = undefined
+  export let header: boolean = false
 
   let search: string = ''
 
@@ -32,21 +35,21 @@
 </script>
 
 <div class="popup">
-  <div class="title"><Label label={title} /></div>
   {#if header}
+    {#if title}<div class="title"><Label label={title} /></div>{/if}
     <div class="flex-col header">
       <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-      <div class="caption"><Label label={caption} /></div>
+      {#if caption}<div class="caption"><Label label={caption} /></div>{/if}
     </div>
   {/if}
   <div class="scroll">
     <div class="flex-col box">
       {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="flex-row-center menu-item" on:click={() => { dispatch('close', item) }}>
-          <div class="flex-center img">
-            <img src={item.item} alt={item.label} />
-          </div>
+        <button class="flex-between menu-item" on:click={() => { dispatch('close', item.id) }}>
           <div class="flex-grow caption-color">{item.label}</div>
+          {#if item.id === selected}
+            <div class="check"><IconBlueCheck size={'small'} /></div>
+          {/if}
         </button>
       {/each}
     </div>
@@ -57,6 +60,7 @@
   .popup {
     display: flex;
     flex-direction: column;
+    min-width: 15rem;
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
@@ -96,23 +100,20 @@
     padding: .5rem;
     border-radius: .5rem;
 
-    .img {
-      margin-right: .75rem;
-      width: 2.25rem;
-      height: 2.25rem;
+    &:hover {
       color: var(--theme-caption-color);
-      border-radius: .5rem;
-      overflow: hidden;
-
-      img {
-        max-width: fit-content;
-      }
+      background-color: var(--theme-button-bg-hovered);
     }
-
-    &:hover { background-color: var(--theme-button-bg-hovered); }
     &:focus {
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      color: var(--theme-content-accent-color);
+      background-color: var(--theme-button-bg-pressed);
       z-index: 1;
     }
+  }
+
+  .check {
+    margin-left: 1rem;
+    width: 1rem;
+    height: 1rem;
   }
 </style>

@@ -23,8 +23,7 @@
   import type { Person } from '@anticrm/contact'
   import { createQuery } from '../utils'
   import presentation from '..'
-  import { ActionIcon } from '@anticrm/ui'
-  import BlueCheck from './icons/BlueCheck.svelte'
+  import { ActionIcon, IconBlueCheck } from '@anticrm/ui'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
@@ -57,7 +56,7 @@
             <UserInfo size={'medium'} value={person} />
           </div>
           {#if allowDeselect && person._id === selected}
-            <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={BlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
+            <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={IconBlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
           {/if}
         </button>
       {/each}
@@ -72,11 +71,11 @@
     padding: 1rem;
     max-height: 100%;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
   }
 
   .header {
@@ -108,15 +107,16 @@
   .menu-item {
     justify-content: start;
     padding: .375rem;
+    color: var(--theme-content-color);
     border-radius: .5rem;
 
     &:hover {
-      background-color: var(--theme-button-bg-pressed);
-      border: 1px solid var(--theme-bg-accent-color);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-bg-hovered);
     }
     &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      color: var(--theme-content-accent-color);
+      background-color: var(--theme-button-bg-pressed);
       z-index: 1;
     }
   }

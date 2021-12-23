@@ -15,8 +15,8 @@
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { DumbDropdown } from '@anticrm/ui'
-  import type { DumbDropdownItem } from '@anticrm/ui/src/types'
+  import { DropdownLabels } from '@anticrm/ui'
+  import type { DropdownTextItem } from '@anticrm/ui/src/types'
   import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
   import task from '@anticrm/task'
 
@@ -27,11 +27,11 @@
   const templatesQ = createQuery()
   $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: folders } }, (result) => { templates = result })
 
-  let items: DumbDropdownItem[] = []
+  let items: DropdownTextItem[] = []
   $: items = templates.map(x => ({ id: x._id, label: x.title }))
 
   let selectedItem: string | undefined
   $: template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
 </script>
 
-<DumbDropdown {items} bind:selected={selectedItem} title="Statuses" />
+<DropdownLabels {items} bind:selected={selectedItem} title="Statuses" />
