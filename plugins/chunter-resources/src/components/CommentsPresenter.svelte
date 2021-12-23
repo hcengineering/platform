@@ -23,7 +23,7 @@
   export let value: Doc & { comments?: number }
 </script>
 
-{#if value.comments && value.comments > 0}
+{#if value && value.comments && value.comments > 0}
   <Tooltip label={chunter.string.Comments} component={CommentPopup} props={{ objectId: value._id }}>
     <div class="sm-tool-icon">
       <span class="icon"><IconThread size="small"/></span>&nbsp;{value.comments}

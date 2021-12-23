@@ -260,7 +260,7 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
   const { sourceFields, telegram, linkedin, github } = parseSocials(c)
 
   const data: Data<Candidate> = {
-    name: names.slice(1).join(' ') + ', ' + names[0],
+    name: names.slice(1).join(' ') + ',' + names[0],
     city: get(c, _.city) ?? '',
     title: [
       get(c, _.vacancyKind),
