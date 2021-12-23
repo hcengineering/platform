@@ -31,6 +31,7 @@
   export let _class: Ref<Class<Item>>
   export let space: Ref<SpaceWithStates>
   export let open: AnyComponent
+  export let search: string
   export let options: FindOptions<Item> | undefined
   export let config: string[]
 
@@ -55,19 +56,51 @@
 
   const doneStatesQ = createQuery()
   $: if (kanban !== undefined) {
-    doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => {
-      wonState = result.find((x) => x._class === task.class.WonState)
-      lostState = result.find((x) => x._class === task.class.LostState)
-    })
+    doneStatesQ.query(
+      task.class.DoneState,
+      { space: kanban.space, ...search !== '' ? {$search: search} : {} },
+      (result) => {
+        wonState = result.find((x) => x._class === task.class.WonState)
+        lostState = result.find((x) => x._class === task.class.LostState)
+      })
   }
 
-  const query = createQuery()
-  $: query.query(_class, { space, doneState: null }, result => { objects = result }, {
-    ...options,
-    sort: {
-      rank: SortingOrder.Ascending
+  const objsQ = createQuery()
+  $: objsQ.query(
+    _class,
+    {
+      space,
+      doneState: null,
+      ...search !== '' ? {$search: search} : {}
     },
-  })
+    result => { objects = result },
+    {
+      ...options,
+      sort: {
+        rank: SortingOrder.Ascending
+      },
+    }
+  )
+
+  const filteredObjsQ = createQuery()
+
+  // Undefined means no filtering
+  let target: Set<Ref<Doc>> | undefined
+  $: if (search === '') {
+    filteredObjsQ.unsubscribe()
+    target = undefined
+  } else {
+    filteredObjsQ.query(
+      _class,
+      {
+        space,
+        doneState: null,
+        ...search !== '' ? {$search: search} : {}
+      },
+      result => { target = new Set(result.map(x => x._id)) },
+      options
+    )
+  }
 
   function dragover (ev: MouseEvent, object: Item) {
     if (dragCard !== object) {
@@ -162,7 +195,7 @@
             }}>
             <!-- <KanbanCardEmpty label={'Create new application'} /> -->
             {#each objects as object, j (object)}
-              {#if object.state === state._id}
+              {#if object.state === state._id && (target === undefined || target.has(object._id))}
                 <div
                   class="step-tb75"
                   on:dragover|preventDefault={(ev) => {
