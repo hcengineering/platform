@@ -68,7 +68,6 @@ export interface LabelAndProps {
 }
 
 export interface ListItem {
-  id: string
   item: any | undefined
   label: string
 }
