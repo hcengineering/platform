@@ -72,7 +72,7 @@
 
   .scroll {
     overflow-y: scroll;
-    // .box { padding-right: 1px; }
+    .box { padding-right: 1px; }
   }
 
   .menu-item {

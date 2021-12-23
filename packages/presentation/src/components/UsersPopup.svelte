@@ -43,8 +43,8 @@
 </script>
 
 <div class="popup">
-  <div class="header">
-    <div class="title"><Label label={title} /></div>
+  <div class="title"><Label label={title} /></div>
+  <div class="flex-col header">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="caption"><Label label={caption} /></div>
   </div>
@@ -68,34 +68,32 @@
   .popup {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    max-height: 100%;
-    color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
-    user-select: none;
   }
 
+  .title {
+    margin: 1rem 1rem .25rem;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+  }
   .header {
+    margin: .25rem 1rem 0;
     text-align: left;
-    .title {
-      margin-bottom: 1rem;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-    }
     .caption {
-      margin: 1rem 0 .625rem .375rem;
+      margin-top: .5rem;
       font-size: .75rem;
       font-weight: 600;
       text-transform: uppercase;
-      color: var(--theme-content-dark-color);
+      color: var(--theme-content-trans-color);
     }
   }
 
   .scroll {
     flex-grow: 1;
+    padding: .5rem;
     overflow-x: hidden;
     overflow-y: auto;
     .box {
