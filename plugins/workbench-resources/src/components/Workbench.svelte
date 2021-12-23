@@ -26,7 +26,6 @@
   import workbench from '../plugin'
 
   import Navigator from './Navigator.svelte'
-  import SpaceHeader from './SpaceHeader.svelte'
   import SpaceView from './SpaceView.svelte'
   
   import { AnyComponent, Component, location, Popup, showPopup, TooltipInstance, closeTooltip, ActionIcon, IconEdit, AnySvelteComponent } from '@anticrm/ui'
@@ -141,10 +140,7 @@
       {:else if specialComponent}
         <Component is={specialComponent} />
       {:else}
-        <SpaceHeader space={currentSpace} {createItemDialog} />
-        {#if currentView && currentSpace}
-          <SpaceView space={currentSpace} _class={currentView.class} options={currentView.options} />
-        {/if}
+        <SpaceView {currentSpace} {currentView} {createItemDialog}/>
       {/if}
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->

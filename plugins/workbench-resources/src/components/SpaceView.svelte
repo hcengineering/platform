@@ -1,6 +1,5 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,106 +14,30 @@
 -->
 
 <script lang="ts">
+  import type { Ref, Space, WithLookup } from '@anticrm/core'
+  import type { AnyComponent } from '@anticrm/ui'
+  import type { Viewlet } from '@anticrm/view'
+  import type { ViewConfiguration } from '@anticrm/workbench'
 
-import type { Ref, Class ,Doc, FindOptions, Space, WithLookup, Obj, Client } from '@anticrm/core'
-import type { Viewlet } from '@anticrm/view'
+  import SpaceContent from './SpaceContent.svelte'
+  import SpaceHeader from './SpaceHeader.svelte'
 
-import { getClient } from '@anticrm/presentation'
+  export let currentSpace: Ref<Space> | undefined
+  export let currentView: ViewConfiguration | undefined
+  export let createItemDialog: AnyComponent | undefined
 
-import { Icon, Component, EditWithIcon, IconSearch, Tooltip } from '@anticrm/ui'
+  let search: string = ''
+  let viewlet: WithLookup<Viewlet> | undefined = undefined
 
-import view from '@anticrm/view'
-import core from '@anticrm/core'
 
-export let _class: Ref<Class<Doc>>
-export let space: Ref<Space>
+  function resetSearch (_space: Ref<Space> | undefined): void {
+    search = ''
+  }
 
-const client = getClient()
-
-type ViewletConfig = WithLookup<Viewlet>
-
-async function getViewlets(client: Client, _class: Ref<Class<Obj>>): Promise<ViewletConfig[]> {
-  return await client.findAll(view.class.Viewlet, { attachTo: _class }, { lookup: { 
-    descriptor: core.class.Class
-  }})
-}
-
-let selected = 0
-
-function onSpace(space: Ref<Space>) {
-  selected = 0
-}
-
-$: onSpace(space)
-
-let search = ''
-
-function onSearch(ev: Event) {
-  search = (ev.target as HTMLInputElement).value
-}
-
+  $: resetSearch(currentSpace)
 </script>
 
-{#await getViewlets(client, _class)}
- ...
-{:then viewlets}
-
-  {#if viewlets.length > 0}
-    <div class="flex-between toolbar">
-      <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
-
-      {#if viewlets.length > 1}
-        <div class="flex">
-          {#each viewlets as viewlet, i}
-            <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-              <div class="flex-center btn" class:selected={selected === i} on:click={()=>{ selected = i }}>
-                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
-              </div>
-            </Tooltip>
-          {/each}
-        </div>
-      {/if}      
-    </div>
-  {/if}
-
-  <div class="container">
-    <Component is={viewlets[selected].$lookup?.descriptor?.component} props={ {
-      _class,
-      space,
-      open: viewlets[selected].open,
-      options: viewlets[selected].options, 
-      config: viewlets[selected].config,
-      search
-    } } />
-  </div>
-
-{/await}
-
-<style lang="scss">
-  .toolbar {
-    margin: 1.25rem 1.75rem 1.75rem 2.5rem;
-
-    .btn {
-      width: 2.5rem;
-      height: 2.5rem;
-      background-color: transparent;
-      border-radius: .5rem;
-      cursor: pointer;
-
-      color: var(--theme-content-trans-color);
-      &:hover { color: var(--theme-caption-color); }
-      &.selected {
-        color: var(--theme-content-accent-color);
-        background-color: var(--theme-button-bg-enabled);
-        cursor: default;
-        &:hover { color: var(--theme-caption-color); }
-      }
-    }
-  }
-  .container {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-  }
-</style>
+<SpaceHeader spaceId={currentSpace} _class={currentView?.class} {createItemDialog} bind:search={search} bind:viewlet={viewlet} />
+{#if currentView && currentSpace}
+  <SpaceContent space={currentSpace} _class={currentView.class} {search} {viewlet} />
+{/if}
