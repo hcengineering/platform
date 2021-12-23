@@ -72,7 +72,7 @@ export interface ListItem {
   label: string
 }
 
-export interface DumbDropdownItem {
+export interface DropdownTextItem {
   id: string
   label: IntlString | string
 }

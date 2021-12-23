@@ -23,8 +23,7 @@
   import type { Person } from '@anticrm/contact'
   import { createQuery } from '../utils'
   import presentation from '..'
-  import { ActionIcon } from '@anticrm/ui'
-  import BlueCheck from './icons/BlueCheck.svelte'
+  import { ActionIcon, IconBlueCheck } from '@anticrm/ui'
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
@@ -44,8 +43,8 @@
 </script>
 
 <div class="popup">
-  <div class="header">
-    <div class="title"><Label label={title} /></div>
+  <div class="title"><Label label={title} /></div>
+  <div class="flex-col header">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
     <div class="caption"><Label label={caption} /></div>
   </div>
@@ -57,7 +56,7 @@
             <UserInfo size={'medium'} value={person} />
           </div>
           {#if allowDeselect && person._id === selected}
-            <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={BlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
+            <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={IconBlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
           {/if}
         </button>
       {/each}
@@ -69,34 +68,32 @@
   .popup {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    max-height: 100%;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
-    user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
   }
 
+  .title {
+    margin: 1rem 1rem .25rem;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+  }
   .header {
+    margin: .25rem 1rem 0;
     text-align: left;
-    .title {
-      margin-bottom: 1rem;
-      font-weight: 500;
-      color: var(--theme-caption-color);
-    }
     .caption {
-      margin: 1rem 0 .625rem .375rem;
+      margin-top: .5rem;
       font-size: .75rem;
       font-weight: 600;
       text-transform: uppercase;
-      color: var(--theme-content-dark-color);
+      color: var(--theme-content-trans-color);
     }
   }
 
   .scroll {
     flex-grow: 1;
+    padding: .5rem;
     overflow-x: hidden;
     overflow-y: auto;
     .box {
@@ -108,15 +105,16 @@
   .menu-item {
     justify-content: start;
     padding: .375rem;
+    color: var(--theme-content-color);
     border-radius: .5rem;
 
     &:hover {
-      background-color: var(--theme-button-bg-pressed);
-      border: 1px solid var(--theme-bg-accent-color);
+      color: var(--theme-caption-color);
+      background-color: var(--theme-button-bg-hovered);
     }
     &:focus {
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      color: var(--theme-content-accent-color);
+      background-color: var(--theme-button-bg-pressed);
       z-index: 1;
     }
   }
