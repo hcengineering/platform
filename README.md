@@ -42,7 +42,7 @@ By default docker volumes `dev_db` `dev_elastic` `dev_files` will be created for
 Before we could start we need to create workspace/account and associate it with workspace.
 
 ```bash
-cd ./dev/tools
+cd ./dev/tool
 rushx run-local create-workspace ws1 -o DevWorkspace # Create workspace
 rushx run-local create-account user1 -p 1234 -f John -l Appleseed # Create account
 rushx run-local assign-workspace user1 ws1 # Assign worksapce to user

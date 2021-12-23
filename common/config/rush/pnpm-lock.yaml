@@ -112,6 +112,7 @@ specifiers:
   '@types/koa-bodyparser': ^4.3.3
   '@types/koa-router': ^7.4.4
   '@types/koa__cors': ^3.0.3
+  '@types/mime-types': ~2.1.1
   '@types/minio': ^7.0.10
   '@types/pdfkit': ~0.12.3
   '@types/toposort': ^2.0.3
@@ -284,6 +285,7 @@ dependencies:
   '@types/koa-bodyparser': 4.3.4
   '@types/koa-router': 7.4.4
   '@types/koa__cors': 3.1.0
+  '@types/mime-types': 2.1.1
   '@types/minio': 7.0.11
   '@types/pdfkit': 0.12.3
   '@types/toposort': 2.0.3
@@ -11928,7 +11930,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-tpa5gk8H/quPYXkpBhp5jS0bp/E+Jk7mTGhfE54q4RTr5LOYGTCg2HKmxZWqRV1N3g1Jk7nKAZHWMxMSGHCuKw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-KbCYAGG7rz+Ov6f0yICsx0yzzufqd0RcVJ6XVLzYxLTurJiTeYNYSthU045vLXkRURpz4gEICQ0RHv9dvckMMA==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -11941,6 +11943,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      fast-equals: 2.0.4
       prettier: 2.5.1
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
@@ -12527,7 +12530,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-kxAczrVzjVh47GTnScTkjjXIpSAkovYmCIxJSznbPqT4XOdtQ0F8eadl3h2mhqjKzgE7VoFOdTB5JJ3oy4+TUg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-qHMgirlUUHe5dhM4Ebp1jCkPR759Wec5zhDTLNt4y0eKhQIVeshkraGGp0mGdUmvIDN+e+CbJMCXDXY35r0BqQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:

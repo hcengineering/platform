@@ -37,6 +37,7 @@ import core, {
 } from '@anticrm/core'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { getMetadata } from '@anticrm/platform'
+import { deepEqual } from 'fast-equals'
 
 import login from '@anticrm/login'
 
@@ -81,6 +82,11 @@ export function setClient (_client: Client): void {
 export class LiveQuery {
   unsubscribe = () => {}
 
+  private lastClass: Ref<Class<Doc>> | undefined = undefined
+  private lastQuery: DocumentQuery<Doc> | undefined = undefined
+  private lastCallback: ((result: any[]) => void) | undefined = undefined
+  private lastOptions: FindOptions<Doc> | undefined = undefined
+
   constructor () {
     onDestroy(() => {
       console.log('onDestroy query')
@@ -94,16 +100,37 @@ export class LiveQuery {
     callback: (result: T[]) => void,
     options?: FindOptions<T>
   ): void {
-    this.unsubscribe()
-    const unsub = liveQuery.query(_class, query, callback, options)
-    this.unsubscribe = () => {
-      unsub()
-      this.unsubscribe = () => {}
+    if (!this.equal(_class, query, callback, options))
+    {
+      this.unsubscribe()
+      this.lastClass = _class
+      this.lastQuery = query
+      this.lastCallback = callback
+      this.lastOptions = options
+      const unsub = liveQuery.query(_class, query, callback, options)
+      this.unsubscribe = () => {
+        unsub()
+        this.unsubscribe = () => {}
+      }
     }
+  }
+
+  private equal<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: T[]) => void,
+    options?: FindOptions<T>
+  ): boolean {
+    if (_class !== this.lastClass) return false
+    if (!deepEqual(callback.toString(), this.lastCallback?.toString())) return false
+    if (!deepEqual(query, this.lastQuery)) return false
+    if (!deepEqual(options, this.lastOptions)) return false
+    return true
   }
 }
 
 export function createQuery (): LiveQuery {
+  console.error('created new query')
   return new LiveQuery()
 }
 

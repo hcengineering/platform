@@ -32,6 +32,7 @@
   export let createItemDialog: AnyComponent | undefined
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
+  export let viewlets: WithLookup<Viewlet>[] = []
 
   const client = getClient()
   const query = createQuery()
@@ -42,23 +43,6 @@
   function onSearch(ev: Event) {
     search = (ev.target as HTMLInputElement).value
   }
-
-  let viewlets: WithLookup<Viewlet>[] = []
-  async function getViewlets(attachTo: Ref<Class<Doc>>): Promise<void> {
-    viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
-      descriptor: core.class.Class
-    }})
-  }
-
-  $: if (_class) {
-    getViewlets(_class)
-  }
-
-  function resetSelectedViewlet (_space: Ref<Space> | undefined) {
-    selectedViewlet = 0
-  }
-
-  $: resetSelectedViewlet(spaceId)
 
   function showCreateDialog(ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)

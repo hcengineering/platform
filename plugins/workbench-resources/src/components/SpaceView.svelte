@@ -14,9 +14,10 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, WithLookup } from '@anticrm/core'
+  import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
-  import type { Viewlet } from '@anticrm/view'
+  import view, { Viewlet } from '@anticrm/view'
   import type { ViewConfiguration } from '@anticrm/workbench'
 
   import SpaceContent from './SpaceContent.svelte'
@@ -28,7 +29,25 @@
 
   let search: string = ''
   let viewlet: WithLookup<Viewlet> | undefined = undefined
+  let space: Ref<Space> | undefined = undefined
+  let _class: Ref<Class<Doc>> | undefined = undefined
 
+  const client = getClient()
+
+  let viewlets: WithLookup<Viewlet>[] = []
+
+  async function update(attachTo: Ref<Class<Doc>> | undefined, currentSpace: Ref<Space> | undefined): Promise<void> {
+    if (attachTo) {
+      viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
+        descriptor: core.class.Class
+      }})
+      _class = attachTo
+    }
+    viewlet = viewlets[0]
+    space = currentSpace
+  }
+
+  $: update(currentView?.class, currentSpace)
 
   function resetSearch (_space: Ref<Space> | undefined): void {
     search = ''
@@ -37,7 +56,7 @@
   $: resetSearch(currentSpace)
 </script>
 
-<SpaceHeader spaceId={currentSpace} _class={currentView?.class} {createItemDialog} bind:search={search} bind:viewlet={viewlet} />
-{#if currentView && currentSpace}
-  <SpaceContent space={currentSpace} _class={currentView.class} {search} {viewlet} />
+<SpaceHeader spaceId={space} {_class} {viewlets} {createItemDialog} bind:search={search} bind:viewlet={viewlet} />
+{#if _class && space}
+  <SpaceContent {space} {_class} {search} {viewlet} />
 {/if}
