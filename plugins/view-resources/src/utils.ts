@@ -36,7 +36,7 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
     }
   }
   const presenter = await getResource(presenterMixin.presenter)
-  const key = typeof preserveKey === 'string' ? preserveKey : ''
+  const key = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey = clazz.sortingKey ?
    (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) 
    : key
@@ -64,7 +64,7 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   if (presenterMixin.presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
-  const resultKey = typeof preserveKey === 'string' ? preserveKey : ''
+  const resultKey = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey = attribute.type._class === core.class.ArrOf ? resultKey + '.length' : resultKey
   const presenter = await getResource(presenterMixin.presenter)
   return {
