@@ -83,6 +83,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     const query = q.query
     for (const key in query) {
+      if (key === '$search') continue
       if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
       const value = (query as any)[key]
       const result = findProperty([doc], key, value)
