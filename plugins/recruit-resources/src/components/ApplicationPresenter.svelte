@@ -30,6 +30,8 @@
   }
 </script>
 
-<div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><IconFile size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
-</div>
+{#if value && shortLabel}
+  <div class="sm-tool-icon" on:click={show}>
+    <span class="icon"><IconFile size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
+  </div>
+{/if}

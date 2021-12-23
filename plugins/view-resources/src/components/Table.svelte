@@ -43,7 +43,7 @@
     (result) => {
       objects = result
     },
-    { sort: { [sortKey]: sortOrder }, ...options, limit: 500 }
+    { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
   )
 
   function getValue (doc: Doc, key: string): any {

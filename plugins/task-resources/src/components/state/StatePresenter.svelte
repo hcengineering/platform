@@ -21,9 +21,11 @@
 
 </script>
 
-<div class="overflow-label state-container" style="background-color: {value.color}">
-  {value.title}
-</div>
+{#if value}
+  <div class="overflow-label state-container" style="background-color: {value.color}">
+    {value.title}
+  </div>
+{/if}
 
 <style lang="scss">
   .state-container {
