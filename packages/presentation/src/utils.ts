@@ -79,7 +79,7 @@ export function setClient (_client: Client): void {
 }
 
 export class LiveQuery {
-  private unsubscribe = () => {}
+  unsubscribe = () => {}
 
   constructor () {
     onDestroy(() => {
@@ -95,7 +95,11 @@ export class LiveQuery {
     options?: FindOptions<T>
   ): void {
     this.unsubscribe()
-    this.unsubscribe = liveQuery.query(_class, query, callback, options)
+    const unsub = liveQuery.query(_class, query, callback, options)
+    this.unsubscribe = () => {
+      unsub()
+      this.unsubscribe = () => {}
+    }
   }
 }
 

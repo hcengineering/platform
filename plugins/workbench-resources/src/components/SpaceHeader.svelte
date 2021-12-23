@@ -14,42 +14,78 @@
 -->
 
 <script lang="ts">
+  import core, { Class, Doc, WithLookup } from '@anticrm/core'
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, ActionIcon, Button, IconMoreH, IconAdd } from '@anticrm/ui'
-  import type { AnyComponent } from '@anticrm/ui'
-  import Header from './Header.svelte'
-  import Star from './icons/Star.svelte'
-
   import { getClient, createQuery } from '@anticrm/presentation'
+  import { Icon, Button, EditWithIcon, IconSearch, Tooltip } from '@anticrm/ui'
+  import type { AnyComponent } from '@anticrm/ui'
   import { showPopup } from '@anticrm/ui'
+  import view, { Viewlet } from '@anticrm/view'
+
   import { classIcon } from '../utils'
-  import core from '@anticrm/core'
   import workbench from '../plugin'
 
-  export let space: Ref<Space> | undefined
+  import Header from './Header.svelte'
+
+  export let spaceId: Ref<Space> | undefined
+  export let _class: Ref<Class<Doc>> | undefined
   export let createItemDialog: AnyComponent | undefined
-  export let divider: boolean = false
+  export let search: string
+  export let viewlet: WithLookup<Viewlet> | undefined
 
   const client = getClient()
   const query = createQuery()
-  let data: Space | undefined
+  let space: Space | undefined
 
-  $: query.query(core.class.Space, { _id: space }, result => { data = result[0] })
+  $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
+
+  function onSearch(ev: Event) {
+    search = (ev.target as HTMLInputElement).value
+  }
+
+  let viewlets: WithLookup<Viewlet>[] = []
+  async function getViewlets(attachTo: Ref<Class<Doc>>): Promise<void> {
+    viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
+      descriptor: core.class.Class
+    }})
+  }
+
+  $: if (_class) {
+    getViewlets(_class)
+  }
+
+  function resetSelectedViewlet (_space: Ref<Space> | undefined) {
+    selectedViewlet = 0
+  }
+
+  $: resetSelectedViewlet(spaceId)
 
   function showCreateDialog(ev: Event) {
-    showPopup(createItemDialog as AnyComponent, { space }, ev.target as HTMLElement)
+    showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
   }
+
+  let selectedViewlet = 0
+  $: viewlet = viewlets[selectedViewlet]
 </script>
 
-<div class="spaceheader-container" class:bottom-divider={divider}>
-  {#if data}
-    <Header icon={classIcon(client, data._class)} label={data.name} description={data.description} />
+<div class="spaceheader-container">
+  {#if space}
+    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
+    {#if viewlets.length > 1}
+      <div class="flex">
+        {#each viewlets as viewlet, i}
+          <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
+            <div class="flex-center btn" class:selected={selectedViewlet === i} on:click={()=>{ selectedViewlet = i }}>
+              <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
+            </div>
+          </Tooltip>
+        {/each}
+      </div>
+    {/if}      
+    <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
     {#if createItemDialog}
       <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
-    <!-- <ActionIcon label={'Favorite'} icon={Star} size={'small'}/>
-    <ActionIcon label={'Create'} icon={IconAdd} size={'small'}/>
-    <ActionIcon label={'More...'} icon={IconMoreH} size={'small'}/> -->
   {/if}
 </div>
 
@@ -65,4 +101,21 @@
     height: 4rem;
     min-height: 4rem;
   }
+
+  .btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      background-color: transparent;
+      border-radius: .5rem;
+      cursor: pointer;
+
+      color: var(--theme-content-trans-color);
+      &:hover { color: var(--theme-caption-color); }
+      &.selected {
+        color: var(--theme-content-accent-color);
+        background-color: var(--theme-button-bg-enabled);
+        cursor: default;
+        &:hover { color: var(--theme-caption-color); }
+      }
+    }
 </style>
