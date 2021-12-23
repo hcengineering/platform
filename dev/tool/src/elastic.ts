@@ -34,6 +34,7 @@ import core, {
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
+import { Attachment } from '@anticrm/attachment'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
@@ -91,29 +92,94 @@ async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
   await client.close()
 }
 
+export class ElasticTool {
+  mongoClient: MongoClient
+  elastic!: FullTextAdapter & {close: () => Promise<void>}
+  storage!: ServerStorage
+  db!: Db
+  constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
+    addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
+    addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
+    this.mongoClient = new MongoClient(mongoUrl)
+  }
+
+  async connect (): Promise<() => Promise<void>> {
+    await this.mongoClient.connect()
+
+    this.db = this.mongoClient.db(this.dbName)
+    this.elastic = await createElasticAdapter(this.elasticUrl, this.dbName)
+    this.storage = await createStorage(this.mongoUrl, this.elasticUrl, this.dbName)
+
+    return async () => {
+      await this.mongoClient.close()
+      await this.elastic.close()
+    }
+  }
+
+  async indexAttachment (
+    name: string
+  ): Promise<void> {
+    const doc: Attachment | null = await this.db.collection<Attachment>(DOMAIN_ATTACHMENT).findOne({ file: name })
+    if (doc == null) return
+
+    const buffer = await this.readMinioObject(name)
+    await this.indexAttachmentDoc(doc, buffer)
+  }
+
+  async indexAttachmentDoc (doc: Attachment, buffer: Buffer): Promise<void> {
+    const id: Ref<Doc> = (generateId() + '/attachments/') as Ref<Doc>
+
+    const indexedDoc: IndexedDoc = {
+      id: id,
+      _class: doc._class,
+      space: doc.space,
+      modifiedOn: doc.modifiedOn,
+      modifiedBy: 'core:account:System' as Ref<Account>,
+      attachedTo: doc.attachedTo,
+      data: buffer.toString('base64')
+    }
+
+    await this.elastic.index(indexedDoc)
+  }
+
+  private async readMinioObject (name: string): Promise<Buffer> {
+    const data = await this.minio.getObject(this.dbName, name)
+    const chunks: Buffer[] = []
+    await new Promise<void>((resolve) => {
+      data.on('readable', () => {
+        let chunk
+        while ((chunk = data.read()) !== null) {
+          const b = chunk as Buffer
+          chunks.push(b)
+        }
+      })
+
+      data.on('end', () => {
+        resolve()
+      })
+    })
+    return Buffer.concat(chunks)
+  }
+}
+
 async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, elasticUrl: string): Promise<void> {
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-  addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
-  const mongoClient = new MongoClient(mongoUrl)
+  const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
+  const done = await tool.connect()
   try {
-    await mongoClient.connect()
-    const db = mongoClient.db(dbName)
-    const elastic = await createElasticAdapter(elasticUrl, dbName)
-    const storage = await createStorage(mongoUrl, elasticUrl, dbName)
-    const txes = (await db.collection<Tx>(DOMAIN_TX).find().sort({ _id: 1 }).toArray())
+    const txes = (await tool.db.collection<Tx>(DOMAIN_TX).find().sort({ _id: 1 }).toArray())
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
     const metricsCtx = new MeasureMetricsContext('elastic', {})
     for (const tx of data) {
-      await storage.tx(metricsCtx, tx)
+      await tool.storage.tx(metricsCtx, tx)
     }
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)
       for (const d of minioObjects) {
-        await indexAttachment(elastic, minio, db, dbName, d.name)
+        await tool.indexAttachment(d.name)
       }
     }
   } finally {
-    await mongoClient.close()
+    await done()
   }
 }
 
@@ -140,49 +206,6 @@ async function createStorage (mongoUrl: string, elasticUrl: string, workspace: s
     workspace
   }
   return await createServerStorage(conf)
-}
-
-async function indexAttachment (
-  elastic: FullTextAdapter,
-  minio: Client,
-  db: Db,
-  dbName: string,
-  name: string
-): Promise<void> {
-  const doc = await db.collection(DOMAIN_ATTACHMENT).findOne({
-    file: name
-  })
-  if (doc == null) return
-
-  const data = await minio.getObject(dbName, name)
-  const chunks: Buffer[] = []
-  await new Promise<void>((resolve) => {
-    data.on('readable', () => {
-      let chunk
-      while ((chunk = data.read()) !== null) {
-        const b = chunk as Buffer
-        chunks.push(b)
-      }
-    })
-
-    data.on('end', () => {
-      resolve()
-    })
-  })
-
-  const id: Ref<Doc> = (generateId() + '/attachments/') as Ref<Doc>
-
-  const indexedDoc: IndexedDoc = {
-    id: id,
-    _class: doc._class,
-    space: doc.space,
-    modifiedOn: doc.modifiedOn,
-    modifiedBy: 'core:account:System' as Ref<Account>,
-    attachedTo: doc.attachedTo,
-    data: Buffer.concat(chunks).toString('base64')
-  }
-
-  await elastic.index(indexedDoc)
 }
 
 async function createMongoReadOnlyAdapter (

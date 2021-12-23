@@ -31,6 +31,7 @@ import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import { rebuildElastic } from './elastic'
+import { importXml } from './importer'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
 
@@ -245,6 +246,13 @@ program
   .action(async (workspace, cmd) => {
     await rebuildElastic(mongodbUri, workspace, minio, elasticUrl)
     console.log('rebuild end')
+  })
+
+program
+  .command('import-xml <workspace> <fileName>')
+  .description('dump workspace transactions and minio resources')
+  .action(async (workspace, fileName, cmd) => {
+    return await importXml(transactorUrl, workspace, minio, fileName, mongodbUri, elasticUrl)
   })
 
 program.parse(process.argv)

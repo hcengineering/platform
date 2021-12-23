@@ -116,6 +116,7 @@ specifiers:
   '@types/pdfkit': ~0.12.3
   '@types/toposort': ^2.0.3
   '@types/uuid': ^8.3.1
+  '@types/xml2js': ~0.4.9
   '@typescript-eslint/eslint-plugin': ^5.4.0
   autoprefixer: ^10.2.6
   commander: ^8.1.0
@@ -144,6 +145,7 @@ specifiers:
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
   lexorank: ~1.0.4
+  mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.19
   node-html-parser: ^4.1.3
@@ -168,6 +170,7 @@ specifiers:
   webpack-bundle-analyzer: ^4.4.1
   webpack-cli: ^4.6.0
   webpack-dev-server: ^3.11.2
+  xml2js: ~0.4.23
 
 dependencies:
   '@elastic/elasticsearch': 7.16.0
@@ -285,6 +288,7 @@ dependencies:
   '@types/pdfkit': 0.12.3
   '@types/toposort': 2.0.3
   '@types/uuid': 8.3.3
+  '@types/xml2js': 0.4.9
   '@typescript-eslint/eslint-plugin': 5.7.0_eslint@7.32.0+typescript@4.5.4
   autoprefixer: 10.4.0_postcss@8.4.5
   commander: 8.3.0
@@ -313,6 +317,7 @@ dependencies:
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
   lexorank: 1.0.4
+  mime-types: 2.1.34
   mini-css-extract-plugin: 2.4.5_webpack@5.65.0
   minio: 7.0.25
   node-html-parser: 4.1.5
@@ -337,6 +342,7 @@ dependencies:
   webpack-bundle-analyzer: 4.5.0
   webpack-cli: 4.9.1_1cfd1380a4e9b8401fb780accef05e9c
   webpack-dev-server: 3.11.3_webpack-cli@4.9.1+webpack@5.65.0
+  xml2js: 0.4.23
 
 packages:
 
@@ -1713,6 +1719,10 @@ packages:
       '@types/koa': 2.13.4
     dev: false
 
+  /@types/mime-types/2.1.1:
+    resolution: {integrity: sha512-vXOTGVSLR2jMw440moWTC7H19iUyLtP3Z1YTj7cSsubOICinjMxFeb/V57v9QdyyPGbbWolUFSSmSiRSn94tFw==}
+    dev: false
+
   /@types/mime/1.3.2:
     resolution: {integrity: sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==}
     dev: false
@@ -1898,6 +1908,12 @@ packages:
 
   /@types/ws/8.2.2:
     resolution: {integrity: sha512-NOn5eIcgWLOo6qW8AcuLZ7G8PycXu0xTxxkS6Q18VWFxgPUSOwV0pBj2a/4viNZVu25i7RIB7GttdkAIUUXOOg==}
+    dependencies:
+      '@types/node': 17.0.0
+    dev: false
+
+  /@types/xml2js/0.4.9:
+    resolution: {integrity: sha512-CHiCKIihl1pychwR2RNX5mAYmJDACgFVCMT5OArMaO3erzwXVcBqPcusr+Vl8yeeXukxZqtF8mZioqX+mpjjdw==}
     dependencies:
       '@types/node': 17.0.0
     dev: false
@@ -11019,7 +11035,7 @@ packages:
     dev: false
 
   file:projects/dev-client-resources.tgz:
-    resolution: {integrity: sha512-d1gACtHmA2R8CbItLx5oJYfVQV7FvM4tQthnwsDeoIM9OUIlXaRVFhd/KlJf1MkqLIsOA4O+Gjvhih/+EtediA==, tarball: file:projects/dev-client-resources.tgz}
+    resolution: {integrity: sha512-hcwOdV5TgwA6yTNeZDtMwAaGEOYFO5VzqWTXk+sK+SPSiEN2yy6rb2Do1cfgL0wvSXLH/F2VT+nr1WAlI909lQ==, tarball: file:projects/dev-client-resources.tgz}
     name: '@rush-temp/dev-client-resources'
     version: 0.0.0
     dependencies:
@@ -12511,16 +12527,18 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-FQTXToKTNRIcen67zjbh/ZeibEPSskFtKhFZgTtUgB0TXhzJ0V+ZRcpnsXK+nND2DBBRYhtylQJmqWsoASRtFg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-kxAczrVzjVh47GTnScTkjjXIpSAkovYmCIxJSznbPqT4XOdtQ0F8eadl3h2mhqjKzgE7VoFOdTB5JJ3oy4+TUg==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
       '@elastic/elasticsearch': 7.16.0
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
+      '@types/mime-types': 2.1.1
       '@types/minio': 7.0.11
       '@types/node': 16.11.14
       '@types/ws': 8.2.2
+      '@types/xml2js': 0.4.9
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
       '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
       commander: 8.3.0
@@ -12533,12 +12551,14 @@ packages:
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       fast-equals: 2.0.4
       jwt-simple: 0.5.6
+      mime-types: 2.1.34
       minio: 7.0.25
       mongodb: 4.2.2
       prettier: 2.5.1
       ts-node: 10.4.0_5d12c2add188ff0e728b4ade3dacd39b
       typescript: 4.5.4
       ws: 8.3.0
+      xml2js: 0.4.23
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
