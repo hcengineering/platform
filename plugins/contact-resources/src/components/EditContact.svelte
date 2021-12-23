@@ -28,7 +28,7 @@
   export let _id: Ref<Contact>
   let object: Contact
   let rightSection: AnyComponent | undefined
-  let fullSize: boolean = false
+  let fullSize: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

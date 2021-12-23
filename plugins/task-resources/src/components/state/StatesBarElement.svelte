@@ -20,7 +20,7 @@
   export let color: string
 </script>
 
-<svg width=".5rem" height="2.25rem" viewBox="0 0 8 36" class:selected xmlns="http://www.w3.org/2000/svg">
+<svg class="svg-statesbar-element" viewBox="0 0 8 36" class:selected xmlns="http://www.w3.org/2000/svg">
   {#if side === 'left' && kind === 'arrow'}
     <path
       class="bg"
@@ -53,6 +53,10 @@
 </svg>
 
 <style lang="scss">
+  .svg-statesbar-element {
+    width: .5rem;
+    height: 2.25rem;
+  }
   .bg {
     fill: var(--theme-button-bg-enabled);
   }
