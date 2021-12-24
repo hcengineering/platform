@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Ref, Doc, Class, Obj, Account, Space } from '@anticrm/core'
+import type { Ref, Doc, Class, Account, Space } from '@anticrm/core'
 import { createElasticAdapter } from '../adapter'
 import type { IndexedDoc } from '@anticrm/server-core'
 
@@ -23,14 +23,14 @@ describe('client', () => {
     const adapter = await createElasticAdapter('http://localhost:9200/', 'ws1')
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
-      _class: 'class1' as Ref<Class<Obj>>,
+      _class: 'class1' as Ref<Class<Doc>>,
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
       space: 'space1' as Ref<Space>,
       content0: 'hey there!'
     }
     await adapter.index(doc)
-    const hits = await adapter.search('')
+    const hits = await adapter.search('class1' as Ref<Class<Doc>>, {}, 1)
     console.log(hits)
   })
 

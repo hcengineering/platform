@@ -117,16 +117,15 @@ export class FullTextIndex implements WithFind {
     console.log('search', query)
     const { _id, $search, ...mainQuery } = query
     if ($search === undefined) return []
-    const docs = await this.adapter.search($search)
+    const docs = await this.adapter.search(_class, query, options?.limit)
     console.log(docs)
-    const ids: Ref<Doc>[] = []
+    const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>(docs.map(p => p.id))
     for (const doc of docs) {
-      ids.push(doc.id)
       if (doc.attachedTo !== undefined) {
-        ids.push(doc.attachedTo)
+        ids.add(doc.attachedTo)
       }
     }
-    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: ids as any }, ...mainQuery }, options) // TODO: remove `as any`
+    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: Array.from(ids) as any }, ...mainQuery }, options) // TODO: remove `as any`
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>): AnyAttribute[] | undefined {
@@ -203,6 +202,10 @@ export class FullTextIndex implements WithFind {
       }
       i++
     }
+    if (tx.operations.space !== undefined) {
+      update.space = tx.operations.space
+      shouldUpdate = true
+    }
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
       await this.updateAttachedDocs(ctx, tx, update)
@@ -229,7 +232,9 @@ export class FullTextIndex implements WithFind {
         const docUpdate: any = {}
         for (const key in update) {
           const index = Number.parseInt(key.replace('content', ''))
-          docUpdate[`content${index + shift}`] = update[key]
+          if (!isNaN(index)) {
+            docUpdate[`content${index + shift}`] = update[key]
+          }
         }
         for (const attached of allAttached) {
           await this.adapter.update(attached._id, docUpdate)
