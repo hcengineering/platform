@@ -65,8 +65,8 @@
       return
     }
 
+    const space = (await client.findAll(core.class.Space, { _id: currentFolder }))[0]
     currentSpace = currentFolder
-    const space = (await client.findAll(core.class.Space, { _id: currentSpace }))[0]
     if (space) {
       const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
       const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)

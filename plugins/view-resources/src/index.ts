@@ -55,12 +55,8 @@ async function Move (object: Doc): Promise<void> {
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    Delete: {
-      apply: Delete
-    },
-    Move: {
-      apply: Move
-    }
+    Delete: Delete,
+    Move: Move
   },
   component: {
     StringEditor,

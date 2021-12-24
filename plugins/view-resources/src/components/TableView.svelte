@@ -26,12 +26,12 @@
   export let config: string[]
   export let search: string = ''
 
-  $: query = search === '' ? { space } : { $search: search, space }
+  $: resultQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
 </script>
 
 <div class="tableview-container">
   <ScrollBox vertical stretch noShift>
-    <Table {_class} {config} {options} {query} {baseMenuClass} enableChecking />
+    <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} enableChecking />
   </ScrollBox>
 </div>
 
