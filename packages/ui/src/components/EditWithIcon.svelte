@@ -17,9 +17,7 @@
   import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
-  import Tooltip from './Tooltip.svelte'
   import IconClose from './icons/Close.svelte'
-  import ui from '../plugin'
 
   export let icon: Asset | AnySvelteComponent
   export let width: string | undefined = undefined
@@ -34,9 +32,7 @@
   <input bind:this={textHTML} type="text" bind:value {placeholder} on:change/>
   {#if value}
     <div class="ml-2 btn" on:click={() => { textHTML.value = ''; textHTML.dispatchEvent(new Event('change')) }}>
-      <Tooltip label={ui.string.Clear}>
-        <div class="scale-75"><Icon icon={IconClose} size={'small'} /></div>
-      </Tooltip>
+      <Icon icon={IconClose} size={'x-small'} />
     </div>
   {/if}
 </div>

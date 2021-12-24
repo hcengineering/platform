@@ -40,7 +40,7 @@
 
         if ($tooltip.component) {
 
-          tooltipHTML.style.top = tooltipHTML.style.bottom = tooltipHTML.style.height = ''
+          tooltipHTML.style.top = tooltipHTML.style.bottom = tooltipHTML.style.left = tooltipHTML.style.right = tooltipHTML.style.height = ''
           if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
@@ -60,13 +60,10 @@
             dir = 'bottom'
           }
 
-          if (rect.width / 2 + rect.left + clWidth / 2 > doc.width - 8)
-            tooltipHTML.style.right = '.5rem'
-          else if (rect.width / 2 + rect.left - clWidth / 2 < 8)
-            tooltipHTML.style.left = '.5rem'
-          else if ((rect.width / 2 + rect.left + clWidth / 2 < doc.width) && (rect.width / 2 + rect.left - clWidth / 2 > 0))
-            tooltipHTML.style.left = rect.width / 2 + rect.left - clWidth / 2 + 'px'
-          else tooltipHTML.style.left = tooltipHTML.style.right = '.5rem'
+          const tempLeft = rect.width / 2 + rect.left - clWidth / 2
+          if (tempLeft + clWidth > doc.width - 8) tooltipHTML.style.right = '.5rem'
+          else if (tempLeft < 8) tooltipHTML.style.left = '.5rem'
+          else tooltipHTML.style.left = `${tempLeft}px`
 
           if (nubHTML) {
             nubHTML.style.top = rect.top + 'px'

@@ -24,7 +24,7 @@
 
   export let title: string
   export let icon: Asset | AnySvelteComponent
-  export let fullSize: boolean = false
+  export let fullSize: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
 
@@ -62,7 +62,7 @@
         <div class="fs-title">{title}</div>
         <div class="small-text content-dark-color">Candidate pool name</div>
       </div>
-      <ActionIcon icon={IconMoreH} size={'small'} />
+      <ActionIcon icon={IconMoreH} size={'medium'} />
     </div>
     {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
 
