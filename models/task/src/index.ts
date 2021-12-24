@@ -20,7 +20,7 @@ import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Implements, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Implements, Mixin, Model, Prop, Hidden, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -212,7 +212,8 @@ export class TSequence extends TDoc implements Sequence {
 
 @Implements(task.interface.DocWithRank)
 export class TDocWithRank extends TDoc {
-  @Prop(TypeString(), 'Rank' as IntlString, undefined, true)
+  @Prop(TypeString(), 'Rank' as IntlString)
+  @Hidden()
   rank!: string
 }
 
