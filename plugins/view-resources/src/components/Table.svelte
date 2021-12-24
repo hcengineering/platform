@@ -37,14 +37,18 @@
   let objects: Doc[]
 
   const q = createQuery()
-  $: q.query(
-    _class,
-    query,
-    (result) => {
-      objects = result
-    },
-    { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
-  )
+
+  async function update(_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, sortKey: string, sortOrder: SortingOrder, options: FindOptions<Doc> | undefined) {
+    q.query(
+      _class,
+      query,
+      (result) => {
+        objects = result
+      },
+      { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
+    )
+  }
+  $: update(_class, query, sortKey, sortOrder, options)
 
   function getValue (doc: Doc, key: string): any {
     if (key.length === 0) {

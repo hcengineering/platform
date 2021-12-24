@@ -40,10 +40,6 @@
 
   $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
 
-  function onSearch(ev: Event) {
-    search = (ev.target as HTMLInputElement).value
-  }
-
   function showCreateDialog(ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
   }
@@ -66,7 +62,7 @@
         {/each}
       </div>
     {/if}      
-    <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
+    <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} />
     {#if createItemDialog}
       <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}

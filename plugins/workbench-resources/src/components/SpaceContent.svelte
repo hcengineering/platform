@@ -19,7 +19,6 @@
   import type { Viewlet } from '@anticrm/view'
   import { Component } from '@anticrm/ui'
 
-
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
   export let search: string
@@ -27,16 +26,18 @@
 </script>
 
 {#if viewlet}
-  <div class="container">
-    <Component is={viewlet.$lookup?.descriptor?.component} props={ {
-      _class,
-      space,
-      open: viewlet.open,
-      options: viewlet.options, 
-      config: viewlet.config,
-      search
-    } } />
-  </div>
+  {#key space}
+    <div class="container">
+      <Component is={viewlet.$lookup?.descriptor?.component} props={ {
+        _class,
+        space,
+        open: viewlet.open,
+        options: viewlet.options, 
+        config: viewlet.config,
+        search
+      } } />
+    </div>
+  {/key}
 {/if}
 
 <style lang="scss">

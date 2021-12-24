@@ -12612,7 +12612,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-oT79PCOUvwaL6QgjuwTNVJJqyE82WDmBx37jF5/c6SpSrYNF14+hN41rrPReKQyhhxkyrBts73IePyHxIn653Q==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-Ec9uQXBdFop5UPSMzA6UQaryHWmVTWVsDnWOzCH7BYtq7Zvw+763oJMFChaDsoGgeE2znn5zgam4sUn/1alqxQ==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -12625,6 +12625,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      fast-equals: 2.0.4
       prettier: 2.5.1
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
