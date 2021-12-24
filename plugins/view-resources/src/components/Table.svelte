@@ -38,7 +38,7 @@
 
   const q = createQuery()
 
-  async function update(_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, sortKey: string, sortOrder: SortingOrder, options: FindOptions<Doc> | undefined) {
+  async function update(_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, sortKey: string, sortOrder: SortingOrder, options?: FindOptions<Doc>) {
     q.query(
       _class,
       query,

@@ -36,7 +36,7 @@
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  async function update(attachTo: Ref<Class<Doc>> | undefined, currentSpace: Ref<Space> | undefined): Promise<void> {
+  async function update(attachTo?: Ref<Class<Doc>>, currentSpace?: Ref<Space>): Promise<void> {
     if (attachTo) {
       viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
         descriptor: core.class.Class
