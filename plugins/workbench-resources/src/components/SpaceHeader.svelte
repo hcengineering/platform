@@ -32,33 +32,13 @@
   export let createItemDialog: AnyComponent | undefined
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
+  export let viewlets: WithLookup<Viewlet>[] = []
 
   const client = getClient()
   const query = createQuery()
   let space: Space | undefined
 
   $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
-
-  function onSearch(ev: Event) {
-    search = (ev.target as HTMLInputElement).value
-  }
-
-  let viewlets: WithLookup<Viewlet>[] = []
-  async function getViewlets(attachTo: Ref<Class<Doc>>): Promise<void> {
-    viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
-      descriptor: core.class.Class
-    }})
-  }
-
-  $: if (_class) {
-    getViewlets(_class)
-  }
-
-  function resetSelectedViewlet (_space: Ref<Space> | undefined) {
-    selectedViewlet = 0
-  }
-
-  $: resetSelectedViewlet(spaceId)
 
   function showCreateDialog(ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
@@ -82,7 +62,7 @@
         {/each}
       </div>
     {/if}      
-    <EditWithIcon icon={IconSearch} placeholder={'Search'} on:change={onSearch}/>
+    <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} />
     {#if createItemDialog}
       <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
