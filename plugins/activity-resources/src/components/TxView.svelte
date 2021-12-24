@@ -113,14 +113,19 @@
     })
 
   $: if (tx.updateTx !== undefined) {
+    const _class = tx.updateTx.objectClass
     const ops = {
       client,
-      _class: tx.updateTx.objectClass,
+      _class,
       keys: Object.keys(tx.updateTx.operations).filter((id) => !id.startsWith('$')),
       ignoreMissing: true
     }
+    const hiddenAttrs = new Set([...client.getHierarchy().getAllAttributes(_class).entries()]
+      .filter(([, attr]) => attr.hidden === true)
+      .map(([k]) => k))
+
     buildModel(ops).then((m) => {
-      model = m
+      model = m.filter((x) => !hiddenAttrs.has(x.key))
     })
   }
 

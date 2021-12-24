@@ -179,7 +179,7 @@ class ActivityImpl implements Activity {
     return !(collectionCUD && updateCUD) || ntx.objectId === object._id
   }
 
-  private readonly getUpdateTx = (tx: TxCUD<Doc>): [TxCollectionCUD<Doc, any>, TxUpdateDoc<Doc>] | undefined => {
+  private readonly getUpdateTx = (tx: TxCUD<Doc>): TxUpdateDoc<Doc> | undefined => {
     if (tx._class !== core.class.TxCollectionCUD) {
       return undefined
     }
@@ -190,41 +190,26 @@ class ActivityImpl implements Activity {
       return undefined
     }
 
-    return [colTx, colTx.tx as TxUpdateDoc<Doc>]
+    return colTx.tx as TxUpdateDoc<Doc>
   }
 
   filterTxCUD (allTx: Array<TxCUD<Doc>>, hierarchy: Hierarchy): Array<TxCUD<Doc>> {
-    const targetTxes = allTx.filter((tx) => hierarchy.isDerived(tx._class, core.class.TxCUD))
-
-    return targetTxes
-      .map((tx) => {
-        const updateTx = this.getUpdateTx(tx)
-
-        if (updateTx === undefined) {
-          return tx
-        }
-
-        const [colTx, utx] = updateTx
-        const newOps = Object.entries(utx.operations)
-          .filter(([key]) => !this.hiddenAttributes.has(key))
-          .reduce((res, [k, v]) => ({ ...res, [k]: v }), {})
-
-        return {
-          ...colTx,
-          tx: {
-            ...utx,
-            operations: newOps
-          }
-        }
-      })
+    return allTx
+      .filter((tx) => hierarchy.isDerived(tx._class, core.class.TxCUD))
       .filter((tx) => {
-        const updateTx = this.getUpdateTx(tx)
+        const utx = this.getUpdateTx(tx)
 
-        if (updateTx === undefined) {
+        if (utx === undefined) {
           return true
         }
 
-        return Object.keys(updateTx[1].operations).length > 0
+        const ops = Object.keys(utx.operations)
+
+        if (ops.length > 1) {
+          return true
+        }
+
+        return !this.hiddenAttributes.has(ops[0])
       })
   }
 
