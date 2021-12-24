@@ -212,7 +212,7 @@ export class TSequence extends TDoc implements Sequence {
 
 @Implements(task.interface.DocWithRank)
 export class TDocWithRank extends TDoc {
-  @Prop(TypeString(), 'Rank' as IntlString)
+  @Prop(TypeString(), 'Rank' as IntlString, undefined, true)
   rank!: string
 }
 

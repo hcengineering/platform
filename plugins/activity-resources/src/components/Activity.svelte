@@ -30,8 +30,9 @@
   let txes: DisplayTx[] = []
 
   const client = getClient()
+  const attrs = client.getHierarchy().getAllAttributes(object._class)
 
-  const activityQuery = newActivity(client)
+  const activityQuery = newActivity(client, attrs)
 
   $: activityQuery.update(
     object,

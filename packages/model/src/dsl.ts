@@ -71,7 +71,7 @@ function getTxes (target: any): ClassTxes {
  * @param icon -
  * @returns
  */
-export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset) {
+export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset, hidden?: boolean) {
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
     const tx: NoIDs<TxCreateDoc<Attribute<PropertyType>>> = {
@@ -87,9 +87,11 @@ export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset)
         type,
         label,
         icon,
+        hidden,
         attributeOf: txes._id // undefined, need to fix later
       }
     }
+
     txes.txes.push(tx)
   }
 }

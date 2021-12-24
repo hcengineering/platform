@@ -59,6 +59,7 @@ export type PropertyType = any
 export interface UXObject extends Obj {
   label: IntlString
   icon?: Asset
+  hidden?: boolean
 }
 
 /**
