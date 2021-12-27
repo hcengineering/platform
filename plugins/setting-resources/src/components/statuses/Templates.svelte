@@ -15,13 +15,12 @@
 -->
 
 <script lang="ts">
-  import core, { generateId, genRanks } from '@anticrm/core'
   import type { Ref } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import task, { KanbanTemplate, KanbanTemplateSpace, LostStateTemplate, WonStateTemplate } from '@anticrm/task'
-  import { ContextMenu } from '@anticrm/view-resources'
   import setting from '@anticrm/setting'
+  import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
+  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
 
   export let folder: KanbanTemplateSpace | undefined
   export let template: KanbanTemplate | undefined
@@ -44,7 +43,7 @@
   $: template = selectedId !== undefined ? templateMap.get(selectedId) : undefined
 
   const client = getClient()
-  async function createTemplate() {
+  async function createTemplate () {
     if (folder === undefined) {
       return
     }
