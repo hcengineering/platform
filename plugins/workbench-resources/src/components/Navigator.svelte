@@ -16,7 +16,7 @@
 <script lang="ts">
   import core from '@anticrm/core'
   import type { Space } from '@anticrm/core'
-  import type { NavigatorModel } from '@anticrm/workbench'
+  import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { createQuery } from '@anticrm/presentation'
   import view from '@anticrm/view'
@@ -47,11 +47,14 @@
     loc.path.length = 3
     navigate(loc)
   }
+  function getSpecials (specials: SpecialNavModel[], state: 'top' | 'bottom'): SpecialNavModel[] {
+    return specials.filter(p => (p.position ?? 'top') === state)
+  }
 </script>
 
 {#if model}
   {#if model.specials}
-    {#each model.specials as special}
+    {#each getSpecials(model.specials, 'top') as special}
       <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
     {/each}
   {/if}
@@ -66,6 +69,11 @@
   {#each model.spaces as m (m.label)}
     <SpacesNav model={m}/>
   {/each}
+  {#if model.specials}
+    {#each getSpecials(model.specials, 'bottom') as special}
+      <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
+    {/each}
+  {/if}
 {/if}
 
 <style lang="scss">

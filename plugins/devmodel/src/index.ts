@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Asset, Plugin, Resource } from '@anticrm/platform'
+import { ClientHook } from '@anticrm/client'
+import type { Asset, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { ClientHook } from '@anticrm/client'
 
 /**
  * @public
@@ -35,5 +35,8 @@ export default plugin(devModelId, {
   },
   hook: {
     Hook: '' as Resource<ClientHook>
+  },
+  metadata: {
+    DevModel: '' as Metadata<any>
   }
 })

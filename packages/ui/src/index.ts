@@ -111,8 +111,8 @@ export function showPopup (component: AnySvelteComponent | AnyComponent, props: 
       popupstore.update(popups => {
         popups.push({ is: resolved, props, element, onClose })
         return popups
-      })    
-    })
+      })
+    }).catch(err => console.log(err))
   } else {
     popupstore.update(popups => {
       popups.push({ is: component, props, element, onClose })
@@ -146,9 +146,9 @@ export function closeTooltip (): void {
 }
 
 export const ticker = readable(Date.now(), set => {
-	const interval = setInterval(() => {
-		set(Date.now())
-	}, 10000)
+  const interval = setInterval(() => {
+    set(Date.now())
+  }, 10000)
 })
 
 addStringsLoader(uiId, async (lang: string) => {

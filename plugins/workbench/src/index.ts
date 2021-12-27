@@ -57,6 +57,7 @@ export interface SpecialNavModel {
   label: IntlString
   icon: Asset
   component: AnyComponent
+  position?: 'top'|'bottom' // undefined == 'top
 }
 
 /**

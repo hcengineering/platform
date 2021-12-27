@@ -99,16 +99,22 @@ export abstract class MemDb extends TxProcessor {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     let result: Doc[]
+    const baseClass = this.hierarchy.getBaseClass(_class)
     if (
       Object.prototype.hasOwnProperty.call(query, '_id') &&
       (typeof query._id === 'string' || query._id?.$in !== undefined || query._id === undefined || query._id === null)
     ) {
-      result = this.getByIdQuery(query, _class)
+      result = this.getByIdQuery(query, baseClass)
     } else {
-      result = this.getObjectsByClass(_class)
+      result = this.getObjectsByClass(baseClass)
     }
 
     result = matchQuery(result, query)
+
+    if (baseClass !== _class) {
+      // We need to filter instances without mixin was set
+      result = result.filter(r => (r as any)[_class] !== undefined)
+    }
 
     if (options?.lookup !== undefined) result = this.lookup(result as T[], options.lookup)
 
@@ -206,7 +212,7 @@ export class ModelDb extends MemDb implements Storage {
   // TODO: process ancessor mixins
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const obj = this.getObject(tx.objectId) as any
-    obj[tx.mixin] = tx.attributes
+    TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
     return {}
   }
 }

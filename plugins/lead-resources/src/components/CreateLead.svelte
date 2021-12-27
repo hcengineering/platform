@@ -19,7 +19,7 @@
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import type { Lead } from '@anticrm/lead'
+  import type { Customer, Lead } from '@anticrm/lead'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
@@ -73,10 +73,19 @@
       number: (incResult as any).object.sequence,
       title: title,
       customer: customer!,
-      rank: calcRank(lastOne, undefined)
+      rank: calcRank(lastOne, undefined),
+      assignee: null
     }
 
-    await client.addCollection(lead.class.Lead, _space, customer!, contact.class.Contact, 'leads', value, leadId)
+    const customerInstance = await client.findOne(contact.class.Contact, { _id: customer! })
+    if (customerInstance === undefined) {
+      throw new Error('contact not found')
+    }
+    if (!client.getHierarchy().hasMixin(customerInstance, lead.mixin.Customer)) {
+      await client.createMixin<Contact, Customer>(customerInstance._id, customerInstance._class, customerInstance.space, lead.mixin.Customer, {})
+    }
+
+    await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
     dispatch('close')
   }
 </script>

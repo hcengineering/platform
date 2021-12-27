@@ -59,8 +59,9 @@ export class FullTextIndex implements WithFind {
     return {}
   }
 
-  protected txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
+  protected async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+    console.log('FullTextIndex.txMixin: Method not implemented')
+    return {}
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {

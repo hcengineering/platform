@@ -58,6 +58,10 @@ export class Hierarchy {
     return new Proxy(doc, this.getMixinProxyHandler(mixin)) as M
   }
 
+  hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
+    return typeof (doc as any)[mixin] === 'object'
+  }
+
   getAncestors (_class: Ref<Classifier>): Ref<Classifier>[] {
     const result = this.ancestors.get(_class)
     if (result === undefined) {
@@ -113,7 +117,7 @@ export class Hierarchy {
   }
 
   private txCreateDoc (tx: TxCreateDoc<Doc>): void {
-    if (tx.objectClass === core.class.Class || tx.objectClass === core.class.Interface) {
+    if (tx.objectClass === core.class.Class || tx.objectClass === core.class.Interface || tx.objectClass === core.class.Mixin) {
       const _id = tx.objectId as Ref<Classifier>
       this.classifiers.set(_id, TxProcessor.createDoc2Doc(tx as TxCreateDoc<Classifier>))
       this.addAncestors(_id)
@@ -127,7 +131,7 @@ export class Hierarchy {
   private txMixin (tx: TxMixin<Doc, Doc>): void {
     if (tx.objectClass === core.class.Class) {
       const obj = this.getClass(tx.objectId as Ref<Class<Obj>>) as any
-      obj[tx.mixin] = tx.attributes
+      TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
     }
   }
 
@@ -142,6 +146,19 @@ export class Hierarchy {
       cl = this.getClass(cl).extends
     }
     return false
+  }
+
+  /**
+   * Return first non interface/mixin parent
+   */
+  getBaseClass<T extends Doc>(_class: Ref<Mixin<T>>): Ref<Class<T>> {
+    let cl: Ref<Class<T>> | undefined = _class
+    while (cl !== undefined) {
+      const clz = this.getClass(cl)
+      if (this.isClass(clz)) return cl
+      cl = clz.extends
+    }
+    return core.class.Doc
   }
 
   /**
@@ -220,7 +237,7 @@ export class Hierarchy {
   private ancestorsOf (classifier: Ref<Classifier>): Ref<Classifier>[] {
     const attrs = this.classifiers.get(classifier)
     const result: Ref<Classifier>[] = []
-    if (this.isClass(attrs)) {
+    if (this.isClass(attrs) || this.isMixin(attrs)) {
       const cls = attrs as Class<Doc>
       if (cls.extends !== undefined) {
         result.push(cls.extends)
@@ -237,6 +254,10 @@ export class Hierarchy {
     return attrs?.kind === ClassifierKind.CLASS
   }
 
+  private isMixin (attrs?: Classifier): boolean {
+    return attrs?.kind === ClassifierKind.MIXIN
+  }
+
   private isInterface (attrs?: Classifier): boolean {
     return attrs?.kind === ClassifierKind.INTERFACE
   }
@@ -251,9 +272,12 @@ export class Hierarchy {
     attributes.set(attribute.name, attribute)
   }
 
-  getAllAttributes (clazz: Ref<Classifier>): Map<string, AnyAttribute> {
+  getAllAttributes (clazz: Ref<Classifier>, to?: Ref<Classifier>): Map<string, AnyAttribute> {
     const result = new Map<string, AnyAttribute>()
-    const ancestors = this.getAncestors(clazz)
+    let ancestors = this.getAncestors(clazz)
+    if (to !== undefined) {
+      ancestors = ancestors.filter(c => this.isDerived(c, to) && c !== to)
+    }
 
     for (const cls of ancestors) {
       const attributes = this.attributes.get(cls)

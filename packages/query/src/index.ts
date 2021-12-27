@@ -157,8 +157,29 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
+  protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+    for (const q of this.queries) {
+      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
+        // handle add since Txes are immutable
+        await this.handleDocAdd(q, tx)
+        continue
+      }
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      let updatedDoc = q.result.find((p) => p._id === tx.objectId)
+      if (updatedDoc !== undefined) {
+        // Create or apply mixin value
+        updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
+        await this.callback(updatedDoc, q)
+      } else {
+        if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
+          // Mixin potentially added to object we doesn't have in out results
+          await this.refresh(q)
+        }
+      }
+    }
+    return {}
   }
 
   protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {

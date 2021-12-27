@@ -17,10 +17,13 @@
 import { Resources } from '@anticrm/platform'
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
+import Customers from './components/Customers.svelte'
 import EditLead from './components/EditLead.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import LeadPresenter from './components/LeadPresenter.svelte'
+import LeadsPresenter from './components/LeadsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import Leads from './components/Leads.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -29,6 +32,9 @@ export default async (): Promise<Resources> => ({
     EditLead,
     KanbanCard,
     LeadPresenter,
-    TemplatesIcon
+    TemplatesIcon,
+    Customers,
+    LeadsPresenter,
+    Leads
   }
 })

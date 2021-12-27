@@ -12,6 +12,7 @@
     "LeadName": "Lead name",
     "More": "More...",
     "Customer": "Customer",
-    "SelectCustomer": "Select customer"
+    "Customers": "Customers",
+    "Leads": "Leads"
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { IntlString, Resources } from '@anticrm/platform'
+import { getMetadata, IntlString, Resources } from '@anticrm/platform'
 import ModelView from './components/ModelView.svelte'
 import QueryView from './components/QueryView.svelte'
 import core, { Class, Client, Doc, DocumentQuery, FindOptions, Ref, FindResult, Hierarchy, ModelDb, Tx, TxResult, WithLookup, Metrics } from '@anticrm/core'
@@ -43,7 +43,7 @@ class ModelClient implements Client {
   constructor (readonly client: Client) {
     client.notify = (tx) => {
       this.notify?.(tx)
-      console.info('devmodel# notify=>', tx, this.client.getModel())
+      console.info('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       notifications.push(tx)
       if (notifications.length > 500) {
         notifications.shift()
@@ -63,7 +63,7 @@ class ModelClient implements Client {
 
   async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
     const result = await this.client.findOne(_class, query, options)
-    console.info('devmodel# findOne=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel())
+    console.info('devmodel# findOne=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
     queries.push({ _class, query, options, result: result !== undefined ? [result] : [], findOne: true })
     if (queries.length > 100) {
       queries.shift()
@@ -73,7 +73,7 @@ class ModelClient implements Client {
 
   async findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     const result = await this.client.findAll(_class, query, options)
-    console.info('devmodel# findAll=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel())
+    console.info('devmodel# findAll=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
     queries.push({ _class, query, options, result, findOne: false })
     if (queries.length > 100) {
       queries.shift()
@@ -83,7 +83,7 @@ class ModelClient implements Client {
 
   async tx (tx: Tx): Promise<TxResult> {
     const result = await this.client.tx(tx)
-    console.info('devmodel# tx=>', tx, result)
+    console.info('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
     transactions.push({ tx, result })
     if (transactions.length > 100) {
       transactions.shift()

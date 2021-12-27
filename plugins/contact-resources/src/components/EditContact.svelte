@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, Ref } from '@anticrm/core'
+  import { AnyAttribute, Class, ClassifierKind, Doc, Mixin, Ref } from '@anticrm/core'
   import { Component, AnyComponent } from '@anticrm/ui'
   import { AttributesBar, getClient, createQuery, getAttributePresenterClass } from '@anticrm/presentation'
   import { Panel } from '@anticrm/panel'
@@ -41,36 +41,51 @@
     })
 
   const dispatch = createEventDispatcher()
+  type AttrKey = { key:string, attr: AnyAttribute }
 
-  let keys: string[] = []
-  let collectionKeys: string[] = []
+  let keys: AttrKey[] = []
+  let collectionKeys: AttrKey[] = []
 
-  function getFiltredKeys (ignoreKeys: string[]): string[] {
+  let mixins: Ref<Mixin<Doc>>[] = []
+
+  function getFiltredKeys (ignoreKeys: string[]): AttrKey[] {
     let keys = [...hierarchy.getAllAttributes(object._class).entries()]
       .filter(([, value]) => value.hidden !== true)
-      .map(([key]) => key)
-    keys = keys.filter((k) => !docKeys.has(k))
-    keys = keys.filter((k) => !ignoreKeys.includes(k))
+      .map(([key, attr]) => ({ key, attr }))
+
+    // We need to add mixin keys
+    for (const m of mixins) {
+      keys.push(
+        ...[...hierarchy.getAllAttributes(m, contact.class.Contact).entries()]
+          .filter(([, value]) => value.hidden !== true)
+          .map(([key, attr]) => ({ key, attr }))
+      )
+    }
+
+    keys = keys.filter((k) => !docKeys.has(k.key))
+    keys = keys.filter((k) => !ignoreKeys.includes(k.key))
     return keys
   }
 
   function getKeys (ignoreKeys: string[]): void {
+    const h = client.getHierarchy()
+    mixins = h.getDescendants(contact.class.Contact).filter(m => h.getClass(m).kind === ClassifierKind.MIXIN && h.hasMixin(object, m)) as Ref<Mixin<Doc>>[]
+  
     const filtredKeys = getFiltredKeys(ignoreKeys)
     keys = collectionsFilter(filtredKeys, false)
     collectionKeys = collectionsFilter(filtredKeys, true)
   }
 
-  function collectionsFilter (keys: string[], get: boolean): string[] {
-    const result: string[] = []
+  function collectionsFilter (keys: AttrKey[], get: boolean): AttrKey[] {
+    const result: AttrKey[] = []
     for (const key of keys) {
       if (isCollectionAttr(key) === get) result.push(key)
     }
     return result
   }
 
-  function isCollectionAttr (key: string): boolean {
-    const attribute = hierarchy.getAttribute(object._class, key)
-    return hierarchy.isDerived(attribute.type._class, core.class.Collection)
+  function isCollectionAttr (key: AttrKey): boolean {
+    return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
   }
 
   async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent> {
@@ -80,9 +95,8 @@
     return editorMixin.editor
   }
 
-  async function getCollectionEditor (key: string): Promise<AnyComponent> {
-    const attribute = hierarchy.getAttribute(object._class, key)
-    const attrClass = getAttributePresenterClass(attribute)
+  async function getCollectionEditor (key: AttrKey): Promise<AnyComponent> {
+    const attrClass = getAttributePresenterClass(key.attr)
     const clazz = client.getHierarchy().getClass(attrClass)
     const editorMixin = client.getHierarchy().as(clazz, view.mixin.AttributeEditor)
     return editorMixin.editor
@@ -104,7 +118,7 @@
   >
     <div slot="subtitle">
       {#if keys}
-        <AttributesBar {object} {keys} />
+        <AttributesBar {object} keys={keys.map(k => k.key)} />
       {/if}
     </div>
     {#await getEditor(object._class) then is}

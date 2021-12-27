@@ -31,6 +31,7 @@
     "@anticrm/client": "~0.6.1",
     "@anticrm/dev-storage": "~0.6.6",
     "@anticrm/server-core": "~0.6.1",
-    "@anticrm/model-all": "~0.6.0"
+    "@anticrm/model-all": "~0.6.0",
+    "@anticrm/devmodel": "~0.6.0"
   }
 }

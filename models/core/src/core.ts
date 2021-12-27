@@ -30,7 +30,8 @@ import type {
   Type,
   Collection,
   RefTo,
-  ArrOf
+  ArrOf,
+  Interface
 } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
@@ -80,6 +81,13 @@ export class TClass extends TDoc implements Class<Obj> {
 
 @Model(core.class.Mixin, core.class.Class)
 export class TMixin extends TClass implements Mixin<Doc> {}
+
+@Model(core.class.Interface, core.class.Class)
+export class TInterface extends TDoc implements Interface<Doc> {
+  kind!: ClassifierKind
+  label!: IntlString
+  extends?: Ref<Interface<Doc>>[]
+}
 
 @Model(core.class.Attribute, core.class.Doc)
 export class TAttribute extends TDoc implements AnyAttribute {

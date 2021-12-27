@@ -19,8 +19,12 @@ import contact, { contactId } from '@anticrm/contact'
 import type { Channel } from '@anticrm/contact'
 import type { AnyComponent } from '@anticrm/ui'
 import {} from '@anticrm/core'
+import { Application } from '@anticrm/workbench'
 
 export const ids = mergeIds(contactId, contact, {
+  app: {
+    Contacts: '' as Ref<Application>
+  },
   component: {
     PersonPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,

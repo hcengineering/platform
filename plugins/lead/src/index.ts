@@ -16,6 +16,7 @@
 
 import type { Contact } from '@anticrm/contact'
 import type { Class, Ref } from '@anticrm/core'
+import { Mixin } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -27,10 +28,21 @@ export interface Funnel extends SpaceWithStates {}
 
 /**
  * @public
+ *
+ * @Mixin
+ */
+
+export interface Customer extends Contact {
+  leads?: number
+}
+
+/**
+ * @public
  */
 export interface Lead extends Task {
+  attachedTo: Ref<Customer>
+
   title: string
-  customer: Ref<Contact>
 
   comments?: number
   attachments?: number
@@ -45,6 +57,9 @@ const lead = plugin(leadId, {
   class: {
     Lead: '' as Ref<Class<Lead>>,
     Funnel: '' as Ref<Class<Funnel>>
+  },
+  mixin: {
+    Customer: '' as Ref<Mixin<Customer>>
   },
   icon: {
     Funnel: '' as Asset,

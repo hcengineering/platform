@@ -67,10 +67,16 @@ class ClientImpl implements Client {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
-    if (domain === DOMAIN_MODEL) {
-      return await this.model.findAll(_class, query, options)
+    const result = (domain === DOMAIN_MODEL)
+      ? await this.model.findAll(_class, query, options)
+      : await this.conn.findAll(_class, query, options)
+
+    // In case of mixin we need to create mixin proxies.
+    const baseClass = this.hierarchy.getBaseClass(_class)
+    if (baseClass !== _class) {
+      return result.map(v => this.hierarchy.as(v, _class))
     }
-    return await this.conn.findAll(_class, query, options)
+    return result
   }
 
   async findOne<T extends Doc>(
@@ -86,8 +92,11 @@ class ClientImpl implements Client {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
     }
+
+    // We need to handle it on server, before performing local live query updates.
+    const result = await this.conn.tx(tx)
     this.notify?.(tx)
-    return await this.conn.tx(tx)
+    return result
   }
 
   async updateFromRemote (tx: Tx): Promise<void> {
