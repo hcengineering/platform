@@ -62,7 +62,6 @@
     background-color: rgba(222, 222, 240, .06);
     border-radius: .75rem;
     user-select: none;
-    backdrop-filter: blur(10px);
 
     &.draggable { cursor: grab; }
   }
