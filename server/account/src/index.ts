@@ -215,6 +215,15 @@ export async function listWorkspaces (db: Db): Promise<Workspace[]> {
 /**
  * @public
  */
+export async function listAccounts (db: Db): Promise<Account[]> {
+  return await db.collection<Account>(ACCOUNT_COLLECTION)
+    .find({})
+    .toArray()
+}
+
+/**
+ * @public
+ */
 export async function createWorkspace (db: Db, workspace: string, organisation: string): Promise<string> {
   if ((await getWorkspace(db, workspace)) !== null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))

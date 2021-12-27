@@ -22,7 +22,8 @@ import {
   dropAccount,
   dropWorkspace,
   getAccount,
-  listWorkspaces
+  listWorkspaces,
+  listAccounts
 } from '@anticrm/account'
 import contact, { combineName } from '@anticrm/contact'
 import core, { TxOperations } from '@anticrm/core'
@@ -184,6 +185,16 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       const workspacesJSON = JSON.stringify(await listWorkspaces(db), null, 2)
       console.info(workspacesJSON)
+    })
+  })
+
+program
+  .command('show-accounts')
+  .description('Show accounts')
+  .action(async () => {
+    return await withDatabase(mongodbUri, async (db) => {
+      const accountsJSON = JSON.stringify(await listAccounts(db), null, 2)
+      console.info(accountsJSON)
     })
   })
 
