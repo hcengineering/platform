@@ -64,6 +64,29 @@ function getTxes (target: any): ClassTxes {
   return txes
 }
 
+const attributes: Map<any, Map<string, Record<string, any>>> = new Map()
+function setAttr (target: any, prop: string, key: string, value: any): void {
+  const props = attributes.get(target) ?? new Map<string, Record<string, any>>()
+  const attrs = props.get(prop) ?? {}
+  attrs[key] = value
+
+  props.set(prop, attrs)
+  attributes.set(target, props)
+}
+
+function clearAttrs (target: any, prop: string): void {
+  const props = attributes.get(target)
+  props?.delete(prop)
+
+  if (props !== undefined && props.size === 0) {
+    attributes.delete(target)
+  }
+}
+
+function getAttrs (target: any, prop: string): Record<string, any> {
+  return attributes.get(target)?.get(prop) ?? {}
+}
+
 /**
  * @public
  * @param type -
@@ -87,10 +110,23 @@ export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset)
         type,
         label,
         icon,
-        attributeOf: txes._id // undefined, need to fix later
+        attributeOf: txes._id, // undefined, need to fix later
+        ...getAttrs(target, propertyKey)
       }
     }
+
+    clearAttrs(target, propertyKey)
+
     txes.txes.push(tx)
+  }
+}
+
+/**
+ * @public
+ */
+export function Hidden () {
+  return function (target: any, propertyKey: string): void {
+    setAttr(target, propertyKey, 'hidden', true)
   }
 }
 

@@ -1,4 +1,5 @@
 import core, {
+  AnyAttribute,
   AttachedDoc,
   Class,
   Client,
@@ -77,10 +78,14 @@ export interface Activity {
 class ActivityImpl implements Activity {
   private readonly txQuery1: LiveQuery
   private readonly txQuery2: LiveQuery
+  private readonly hiddenAttributes: Set<string>
 
   private txes1: Array<TxCUD<Doc>> = []
   private txes2: Array<TxCUD<Doc>> = []
-  constructor (readonly client: Client) {
+  constructor (readonly client: Client, attributes: Map<string, AnyAttribute>) {
+    this.hiddenAttributes = new Set([...attributes.entries()]
+      .filter(([, value]) => value.hidden === true)
+      .map(([key]) => key))
     this.txQuery1 = createQuery()
     this.txQuery2 = createQuery()
   }
@@ -174,8 +179,38 @@ class ActivityImpl implements Activity {
     return !(collectionCUD && updateCUD) || ntx.objectId === object._id
   }
 
+  private readonly getUpdateTx = (tx: TxCUD<Doc>): TxUpdateDoc<Doc> | undefined => {
+    if (tx._class !== core.class.TxCollectionCUD) {
+      return undefined
+    }
+
+    const colTx = tx as TxCollectionCUD<Doc, any>
+
+    if (colTx.tx._class !== core.class.TxUpdateDoc) {
+      return undefined
+    }
+
+    return colTx.tx as TxUpdateDoc<Doc>
+  }
+
   filterTxCUD (allTx: Array<TxCUD<Doc>>, hierarchy: Hierarchy): Array<TxCUD<Doc>> {
-    return allTx.filter((tx) => hierarchy.isDerived(tx._class, core.class.TxCUD))
+    return allTx
+      .filter((tx) => hierarchy.isDerived(tx._class, core.class.TxCUD))
+      .filter((tx) => {
+        const utx = this.getUpdateTx(tx)
+
+        if (utx === undefined) {
+          return true
+        }
+
+        const ops = Object.keys(utx.operations)
+
+        if (ops.length > 1) {
+          return true
+        }
+
+        return !this.hiddenAttributes.has(ops[0])
+      })
   }
 
   createDisplayTx (
@@ -284,6 +319,6 @@ function getCollectionTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): TxCUD<Doc> {
  * Construct an new activity, to listend for displayed transactions in UI.
  * @param client
  */
-export function newActivity (client: Client): Activity {
-  return new ActivityImpl(client)
+export function newActivity (client: Client, attributes: Map<string, AnyAttribute>): Activity {
+  return new ActivityImpl(client, attributes)
 }

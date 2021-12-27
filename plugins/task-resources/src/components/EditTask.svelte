@@ -43,7 +43,9 @@
   const dispatch = createEventDispatcher()
 
   function getFiltredKeys (ignoreKeys: string[]): string[] {
-    let keys = Array.from(hierarchy.getAllAttributes(object._class).keys())
+    let keys = [...hierarchy.getAllAttributes(object._class).entries()]
+      .filter(([, value]) => value.hidden !== true)
+      .map(([key]) => key)
     keys = keys.filter((k) => !docKeys.has(k))
     keys = keys.filter((k) => !ignoreKeys.includes(k))
     return keys
