@@ -22,7 +22,7 @@
   export let candidate: Candidate
 </script>
 
-<div class="flex-col card-container">
+<div class="flex-col h-full card-container">
   <div class="label">CANDIDATE</div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
