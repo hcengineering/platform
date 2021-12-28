@@ -20,7 +20,7 @@
   export let vacancy: Vacancy
 </script>
 
-<div class="flex-col card-container">
+<div class="flex-col h-full card-container">
   <div class="label">VACANCY</div>
   <div class="flex-center logo">
     <Company size={'large'} />

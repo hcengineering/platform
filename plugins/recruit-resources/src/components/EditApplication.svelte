@@ -19,6 +19,7 @@
   import type { Candidate, Applicant, Vacancy } from '@anticrm/recruit'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
+  import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
   import recruit from '../plugin'
 
@@ -48,6 +49,7 @@
 {#if object !== undefined && candidate !== undefined}
   <div class="grid-cards">
     <CandidateCard {candidate} />
+    <ExpandRightDouble />
     <VacancyCard {vacancy} />
   </div>
 {/if}
@@ -55,7 +57,8 @@
 <style lang="scss">
   .grid-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 4rem 1fr;
     column-gap: 1.5rem;
+    align-items: center;
   }
 </style>
