@@ -1,5 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,20 +14,21 @@
 // limitations under the License.
 //
 
-import Setting from './components/Setting.svelte'
-import Integrations from './components/Integrations.svelte'
-import ManageStatuses from './components/statuses/ManageStatuses.svelte'
-import Support from './components/Support.svelte'
-import Privacy from './components/Privacy.svelte'
-import Terms from './components/Terms.svelte'
+import { Ref } from '@anticrm/core'
+import { IntlString, mergeIds } from '@anticrm/platform'
+import { gmailId } from '@anticrm/gmail'
+import gmail from '@anticrm/gmail-resources/src/plugin'
+import type { AnyComponent } from '@anticrm/ui'
+import type { TxViewlet } from '@anticrm/activity'
 
-export default async () => ({
-  component: {
-    Setting,
-    Integrations,
-    Support,
-    Privacy,
-    Terms,
-    ManageStatuses
+export default mergeIds(gmailId, gmail, {
+  string: {
+    SharedMessages: '' as IntlString
+  },
+  ids: {
+    TxSharedCreate: '' as Ref<TxViewlet>
+  },
+  activity: {
+    TxSharedCreate: '' as AnyComponent
   }
 })

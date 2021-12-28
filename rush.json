@@ -891,5 +891,25 @@
       "projectFolder": "dev/generator",
       "shouldPublish": false
     },
+    {
+      "packageName": "@anticrm/model-gmail",
+      "projectFolder": "models/gmail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/gmail",
+      "projectFolder": "plugins/gmail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/gmail-assets",
+      "projectFolder": "plugins/gmail-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/gmail-resources",
+      "projectFolder": "plugins/gmail-resources",
+      "shouldPublish": true
+    },
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/model-all",
+  "name": "@anticrm/model-gmail",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -8,7 +8,6 @@
     "build": "heft build",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
-    "genmodel": "ts-node src/__genmodel.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
@@ -19,8 +18,6 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^7.32.0",
-    "@types/node": "^16.4.13",
-    "ts-node": "^10.1.0",
     "@types/heft-jest": "^1.0.2",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -28,24 +25,15 @@
     "@rushstack/heft": "^0.41.1"
   },
   "dependencies": {
+    "@anticrm/activity": "~0.6.0",
     "@anticrm/model": "~0.6.0",
+    "@anticrm/core": "~0.6.0",
+    "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0",
-    "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/model-contact": "~0.6.1",
-    "@anticrm/model-task": "~0.6.0",
-    "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/model-recruit": "~0.6.0",
-    "@anticrm/model-lead": "~0.6.0",
-    "@anticrm/model-setting": "~0.6.0",
-    "@anticrm/model-telegram": "~0.6.0",
-    "@anticrm/model-demo": "~0.6.0",
-    "@anticrm/model-server-core": "~0.6.0",
-    "@anticrm/model-server-chunter": "~0.6.0",
-    "@anticrm/model-server-recruit": "~0.6.0",
-    "@anticrm/model-activity": "~0.6.0",
-    "@anticrm/model-attachment": "~0.6.0",
-    "@anticrm/model-gmail": "~0.6.0",
-    "@anticrm/core": "~0.6.13"
+    "@anticrm/gmail": "~0.6.0",
+    "@anticrm/gmail-resources": "~0.6.0",
+    "@anticrm/setting": "~0.6.0",
+    "@anticrm/ui": "~0.6.0"
   }
 }

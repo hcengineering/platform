@@ -14,9 +14,8 @@
 -->
 
 <script lang="ts">
-  import { Button, CircleButton, IconClose } from '@anticrm/ui'
+  import { Button, CircleButton, IconClose, IconArrowLeft } from '@anticrm/ui'
   import Avatar from './Avatar.svelte'
-  import ArrowLeft from './icons/ArrowLeft.svelte'
   import ExpandUp from './icons/ExpandUp.svelte'
   import ExpandDown from './icons/ExpandDown.svelte'
 
@@ -35,7 +34,7 @@
 
   <div class="flex-between header">
     <div class="flex-center arrow-back">
-      <div class="icon"><ArrowLeft size={'small'} /></div>
+      <div class="icon"><IconArrowLeft size={'small'} /></div>
     </div>
     <div class="flex-row-center flex-grow">
       <Avatar size={'medium'} />
