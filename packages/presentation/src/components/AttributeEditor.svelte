@@ -15,14 +15,16 @@
 -->
 
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
+  import type { AttachedDoc, Class, Doc, Ref } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributePresenterClass, getClient } from '../utils'
 
   export let _class: Ref<Class<Doc>>
-  export let key: string
+  export let key: KeyedAttribute | string
   export let object: any
   export let maxWidth: string
   export let focus: boolean = false
@@ -30,7 +32,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: attribute = hierarchy.getAttribute(_class, key)
+  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attributeKey = typeof key === 'string' ? key : key.key
   $: typeClassId = (attribute !== undefined) ? getAttributePresenterClass(attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
@@ -43,7 +46,7 @@
 
   function onChange (value: any) {
     const doc = object as Doc
-    client.updateDoc(_class, doc.space, doc._id, { [key]: value })
+    updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
   }
 </script>
 
@@ -51,7 +54,7 @@
   {#await editor}
     ...
   {:then instance}
-    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} bind:value={object[key]} {onChange} {focus}/>
+    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, key)} {onChange} {focus}/>
   {/await}
 {/if}
 

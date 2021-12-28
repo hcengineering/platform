@@ -19,6 +19,9 @@ import core from './component'
 import type { Tx, TxCreateDoc, TxMixin } from './tx'
 import { TxProcessor } from './tx'
 
+const PROXY_TARGET_KEY = '$___proxy_target'
+const PROXY_MIXIN_CLASS_KEY = '$__mixin'
+
 /**
  * @public
  */
@@ -35,6 +38,13 @@ export class Hierarchy {
     const ancestorProxy = ancestor.kind === ClassifierKind.MIXIN ? this.getMixinProxyHandler(ancestor._id) : null
     return {
       get (target: any, property: string, receiver: any): any {
+        if (property === PROXY_TARGET_KEY) {
+          return target
+        }
+        // We need to override _class property, to return proper mixin class.
+        if (property === PROXY_MIXIN_CLASS_KEY) {
+          return mixin
+        }
         const value = target[mixin]?.[property]
         if (value === undefined) {
           return ancestorProxy !== null ? ancestorProxy.get?.(target, property, receiver) : target[property]
@@ -58,8 +68,26 @@ export class Hierarchy {
     return new Proxy(doc, this.getMixinProxyHandler(mixin)) as M
   }
 
+  static toDoc<D extends Doc>(doc: D): D {
+    const targetDoc = (doc as any)[PROXY_TARGET_KEY]
+    if (targetDoc !== undefined) {
+      return targetDoc as D
+    }
+    return doc
+  }
+
+  static mixinClass<D extends Doc, M extends D>(doc: D): Ref<Mixin<M>>|undefined {
+    return (doc as any)[PROXY_MIXIN_CLASS_KEY]
+  }
+
   hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
-    return typeof (doc as any)[mixin] === 'object'
+    const d = Hierarchy.toDoc(doc)
+    return typeof (d as any)[mixin] === 'object'
+  }
+
+  isMixin (_class: Ref<Class<Doc>>): boolean {
+    const data = this.classifiers.get(_class)
+    return data !== undefined && this.isInterface(data)
   }
 
   getAncestors (_class: Ref<Classifier>): Ref<Classifier>[] {
@@ -237,7 +265,7 @@ export class Hierarchy {
   private ancestorsOf (classifier: Ref<Classifier>): Ref<Classifier>[] {
     const attrs = this.classifiers.get(classifier)
     const result: Ref<Classifier>[] = []
-    if (this.isClass(attrs) || this.isMixin(attrs)) {
+    if (this.isClass(attrs) || this._isMixin(attrs)) {
       const cls = attrs as Class<Doc>
       if (cls.extends !== undefined) {
         result.push(cls.extends)
@@ -254,7 +282,7 @@ export class Hierarchy {
     return attrs?.kind === ClassifierKind.CLASS
   }
 
-  private isMixin (attrs?: Classifier): boolean {
+  private _isMixin (attrs?: Classifier): boolean {
     return attrs?.kind === ClassifierKind.MIXIN
   }
 

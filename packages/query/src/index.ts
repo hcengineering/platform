@@ -14,35 +14,33 @@
 //
 
 import core, {
-  Ref,
+  AttachedDoc,
   Class,
-  Doc,
-  Tx,
-  DocumentQuery,
-  TxCreateDoc,
-  TxRemoveDoc,
   Client,
+  Doc,
+  DocumentQuery,
   FindOptions,
-  TxUpdateDoc,
-  _getOperator,
-  TxProcessor,
-  resultSort,
-  SortingQuery,
+  findProperty,
   FindResult,
   Hierarchy,
-  Refs,
-  WithLookup,
   LookupData,
-  TxMixin,
-  TxPutBag,
   ModelDb,
+  Ref,
+  Refs,
+  resultSort,
+  SortingQuery,
+  Tx,
   TxBulkWrite,
-  TxResult,
   TxCollectionCUD,
-  AttachedDoc,
-  findProperty
+  TxCreateDoc,
+  TxMixin,
+  TxProcessor,
+  TxPutBag,
+  TxRemoveDoc,
+  TxResult,
+  TxUpdateDoc,
+  WithLookup
 } from '@anticrm/core'
-
 import clone from 'just-clone'
 
 interface Query {
@@ -79,7 +77,11 @@ export class LiveQuery extends TxProcessor implements Client {
 
   private match (q: Query, doc: Doc): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
-      return false
+      // Check if it is not a mixin and not match class
+      const mixinClass = Hierarchy.mixinClass(doc)
+      if (mixinClass === undefined || !this.getHierarchy().isDerived(mixinClass, q._class)) {
+        return false
+      }
     }
     const query = q.query
     for (const key in query) {
@@ -348,15 +350,12 @@ export class LiveQuery extends TxProcessor implements Client {
     return await super.tx(tx)
   }
 
-  // why this is separate from txUpdateDoc?
   private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
+    TxProcessor.updateDoc2Doc(updatedDoc, tx)
+
     const ops = tx.operations as any
     for (const key in ops) {
-      if (key.startsWith('$')) {
-        const operator = _getOperator(key)
-        operator(updatedDoc, ops[key])
-      } else {
-        ;(updatedDoc as any)[key] = ops[key]
+      if (!key.startsWith('$')) {
         if (q.options !== undefined) {
           const lookup = (q.options.lookup as any)?.[key]
           if (lookup !== undefined) {
@@ -365,8 +364,6 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       }
     }
-    updatedDoc.modifiedBy = tx.modifiedBy
-    updatedDoc.modifiedOn = tx.modifiedOn
   }
 
   private sort (q: Query, tx: TxUpdateDoc<Doc>): void {

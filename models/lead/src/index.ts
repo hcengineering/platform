@@ -58,6 +58,9 @@ export class TLead extends TTask implements Lead {
 export class TCustomer extends TPerson implements Customer {
   @Prop(Collection(lead.class.Lead), 'Leads' as IntlString)
   leads?: number
+
+  @Prop(TypeString(), 'Description' as IntlString)
+  description!: string
 }
 
 export function createModel (builder: Builder): void {
@@ -119,18 +122,18 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        customer: contact.class.Contact,
+        attachedTo: contact.class.Contact,
         state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
-      '$lookup.customer',
+      '$lookup.attachedTo',
       '$lookup.state',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.customer.channels'
+      '$lookup.attachedTo.channels'
     ]
   })
 

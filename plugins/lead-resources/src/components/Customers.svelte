@@ -39,7 +39,12 @@
   <div class="panel-component">
     <Table 
       _class={lead.mixin.Customer}
-      config={['', { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads }, 'modifiedOn']}
+      config={[
+        '',
+        { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
+        'modifiedOn',
+        'channels'
+        ]}
       options={ {} }
       query={ resultQuery }
       enableChecking

@@ -19,6 +19,7 @@ import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxRes
 import core from './component'
 import { generateId } from './utils'
 import { _getOperator } from './operator'
+import { Hierarchy } from './hierarchy'
 
 /**
  * @public
@@ -232,7 +233,8 @@ export abstract class TxProcessor implements WithTx {
     } as T
   }
 
-  static updateDoc2Doc<T extends Doc>(doc: T, tx: TxUpdateDoc<T>): T {
+  static updateDoc2Doc<T extends Doc>(rawDoc: T, tx: TxUpdateDoc<T>): T {
+    const doc = Hierarchy.toDoc(rawDoc)
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -244,11 +246,12 @@ export abstract class TxProcessor implements WithTx {
     }
     doc.modifiedBy = tx.modifiedBy
     doc.modifiedOn = tx.modifiedOn
-    return doc
+    return rawDoc
   }
 
-  static updateMixin4Doc<D extends Doc, M extends D>(doc: D, mixinClass: Ref<Class<M>>, operations: MixinUpdate<D, M>): D {
+  static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, mixinClass: Ref<Class<M>>, operations: MixinUpdate<D, M>): D {
     const ops = operations as any
+    const doc = Hierarchy.toDoc(rawDoc)
     const mixin = (doc as any)[mixinClass] ?? {}
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -259,7 +262,7 @@ export abstract class TxProcessor implements WithTx {
       }
     }
     (doc as any)[mixinClass] = mixin
-    return doc
+    return rawDoc
   }
 
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>

@@ -34,6 +34,8 @@ export interface Funnel extends SpaceWithStates {}
 
 export interface Customer extends Contact {
   leads?: number
+
+  description: string
 }
 
 /**

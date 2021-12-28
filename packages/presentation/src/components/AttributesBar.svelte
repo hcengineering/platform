@@ -16,10 +16,11 @@
 
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
+  import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
   export let object: Doc
-  export let keys: string[]
+  export let keys: (string|KeyedAttribute)[]
 </script>
 
 <div class="flex-row-center small-text">
