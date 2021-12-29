@@ -22,10 +22,7 @@ export async function updateAttribute (client: Client & TxOperations, object: Do
   }
 }
 
-export function getAttribute (client: Client, object: any, key: string | KeyedAttribute): any {
-  if (typeof key === 'string') {
-    return object[key]
-  }
+export function getAttribute (client: Client, object: any, key: KeyedAttribute): any {
   // Check if attr is mixin and return it's value
   if (client.getHierarchy().isMixin(key.attr.attributeOf)) {
     return (object[key.attr.attributeOf] ?? {})[key.key]

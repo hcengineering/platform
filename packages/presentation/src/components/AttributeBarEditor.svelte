@@ -66,17 +66,17 @@
             {#if showHeader}
               <Label label={attribute.label} />
             {/if}
-            <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, key)} {onChange} {focus}/></div>
+            <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/></div>
           </div>
         {/if}
       </div>
     {:else if showHeader}
       <div class="flex-col">
         <Label label={attribute.label} />
-        <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, key)} {onChange} {focus}/></div>
+        <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/></div>
       </div>
     {:else}
-      <svelte:component this={instance} {maxWidth} value={getAttribute(client, object, key)} {onChange} {focus}/>
+      <svelte:component this={instance} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/>
     {/if}
 
   {/await}

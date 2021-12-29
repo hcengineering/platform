@@ -54,7 +54,7 @@
   {#await editor}
     ...
   {:then instance}
-    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, key)} {onChange} {focus}/>
+    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/>
   {/await}
 {/if}
 
