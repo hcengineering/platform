@@ -15,8 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, Doc } from '@anticrm/core'
-  import core from '@anticrm/core'
+  import type { Doc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'

@@ -41,7 +41,7 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@anticrm/core'
-import clone from 'just-clone'
+import justClone from 'just-clone'
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -245,10 +245,23 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
+  /**
+   * Clone document with respect to mixin inner document cloning.
+   */
+  private clone<T extends Doc>(results: T[]): T[] {
+    const result: T[] = []
+    const h = this.getHierarchy()
+    for (const doc of results) {
+      const m = Hierarchy.mixinClass(doc)
+      result.push(m !== undefined ? h.as(Hierarchy.toDoc(doc), m) : justClone(doc))
+    }
+    return result
+  }
+
   private async refresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
     q.result = res
-    q.callback(clone(res))
+    q.callback(this.clone(res))
   }
 
   // Check if query is partially matched.
@@ -304,10 +317,10 @@ export class LiveQuery extends TxProcessor implements Client {
 
       if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
         if (q.result.pop()?._id !== doc._id) {
-          q.callback(clone(q.result))
+          q.callback(this.clone(q.result))
         }
       } else {
-        q.callback(clone(q.result))
+        q.callback(this.clone(q.result))
       }
     }
   }
@@ -338,7 +351,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     if (index > -1) {
       q.result.splice(index, 1)
-      q.callback(clone(q.result))
+      q.callback(this.clone(q.result))
     }
   }
 
@@ -398,7 +411,7 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       if (q.result.pop()?._id !== updatedDoc._id) q.callback(q.result)
     } else {
-      q.callback(clone(q.result))
+      q.callback(this.clone(q.result))
     }
   }
 }

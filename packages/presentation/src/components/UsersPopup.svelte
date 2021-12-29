@@ -45,7 +45,7 @@
 <div class="popup">
   <div class="title"><Label label={title} /></div>
   <div class="flex-col header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
+    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} focus />
     <div class="caption"><Label label={caption} /></div>
   </div>
   <div class="scroll">

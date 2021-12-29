@@ -21,22 +21,25 @@
   import VacancyCard from './VacancyCard.svelte'
 
   import recruit from '../plugin'
+  import { Ref } from '@anticrm/core'
 
   export let object: Applicant
   let candidate: Candidate
   let vacancy: Vacancy
 
   const candidateQuery = createQuery()
-  $: if (object !== undefined)
-    {candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo }, (result) => {
-    candidate = result[0]
-  })}
+  $: if (object !== undefined) {
+    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
+      candidate = result[0]
+    })
+  }
 
   const vacancyQuery = createQuery()
-  $: if (object !== undefined)
-    {vacancyQuery.query(recruit.class.Vacancy, { _id: object.space }, (result) => {
-    vacancy = result[0]
-  })}
+  $: if (object !== undefined) {
+    vacancyQuery.query(recruit.class.Vacancy, { _id: object.space }, (result) => {
+      vacancy = result[0]
+    })
+  }
 
   const dispatch = createEventDispatcher()
 
