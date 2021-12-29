@@ -28,6 +28,7 @@
   "dependencies": {
     "mongodb": "^4.1.1",
     "@anticrm/platform": "~0.6.5",
+    "@anticrm/login": "~0.6.1",
     "jwt-simple": "~0.5.6"
   }
 }

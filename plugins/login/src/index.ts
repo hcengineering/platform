@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset, Metadata } from '@anticrm/platform'
+import type { Plugin, Asset, Metadata, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -47,5 +47,12 @@ export default plugin(loginId, {
   },
   component: {
     LoginApp: '' as AnyComponent
+  },
+  status: {
+    AccountNotFound: '' as StatusCode<{account: string}>,
+    WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
+    InvalidPassword: '' as StatusCode<{account: string}>,
+    AccountAlreadyExists: '' as StatusCode<{account: string}>,
+    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>
   }
 })

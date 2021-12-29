@@ -11899,7 +11899,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-1KP9YR2TMC9Zksf2G15aecCY4pIDpGaddPQ2BGtfkE2P/4XG6gYl2Mnf8GRr1c3r2IWJozLYw39MhpkXI9zCHQ==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-LqJ4mBkjSWhBA9OiiMUgLeoUF9IniLh1xr/G3iXRHSm8Li6OssMSTZ733CAoWVNPchAMn5xBibLV5Mi6syer9w==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -11924,13 +11924,16 @@ packages:
       koa-router: 10.1.1
       mongodb: 4.2.2
       prettier: 2.5.1
+      ts-node: 10.4.0_5d12c2add188ff0e728b4ade3dacd39b
       typescript: 4.5.4
     transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
       - supports-color
     dev: false
 
   file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-KbCYAGG7rz+Ov6f0yICsx0yzzufqd0RcVJ6XVLzYxLTurJiTeYNYSthU045vLXkRURpz4gEICQ0RHv9dvckMMA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-tpa5gk8H/quPYXkpBhp5jS0bp/E+Jk7mTGhfE54q4RTr5LOYGTCg2HKmxZWqRV1N3g1Jk7nKAZHWMxMSGHCuKw==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -12612,7 +12615,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-Ec9uQXBdFop5UPSMzA6UQaryHWmVTWVsDnWOzCH7BYtq7Zvw+763oJMFChaDsoGgeE2znn5zgam4sUn/1alqxQ==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-oT79PCOUvwaL6QgjuwTNVJJqyE82WDmBx37jF5/c6SpSrYNF14+hN41rrPReKQyhhxkyrBts73IePyHxIn653Q==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0

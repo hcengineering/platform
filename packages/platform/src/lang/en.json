@@ -2,6 +2,10 @@
   "status": {
     "LoadingPlugin": "Loading plugin '<b>'{plugin}'</b>'...",
     "UnknownError": "Unknown error: {message}",
-    "InvalidId": "Invalid Id: {id}"
+    "InvalidId": "Invalid Id: {id}",
+    "BadRequest": "Bad request",
+    "Forbidden": "Forbidden",
+    "Unauthorized": "Unauthorized",
+    "UnknownMethod": "Unknown method: {method}"
   }
 }
