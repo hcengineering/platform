@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import { EditWithIcon, Icon, IconSearch, Label } from '@anticrm/ui'
+  import { EditWithIcon, Icon, IconSearch, Label, ScrollBox } from '@anticrm/ui'
 
   import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
@@ -37,18 +37,21 @@
 
 <div class="container">
   <div class="panel-component">
-    <Table 
+    <ScrollBox vertical stretch noShift>
+
+      <Table 
       _class={lead.mixin.Customer}
       config={[
         '',
         { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
         'modifiedOn',
         'channels'
-        ]}
+      ]}
       options={ {} }
       query={ resultQuery }
       enableChecking
-    />
+      />
+    </ScrollBox>
   </div>
 </div>
 <style lang="scss">

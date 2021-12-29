@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels, Avatar } from '@anticrm/presentation'
@@ -58,9 +58,9 @@
     integrations = new Set(res.map((p) => p.type))
   })
 
-  onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
-  })
+  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
+  onMount(sendOpen)
+  afterUpdate(sendOpen)
 </script>
 
 {#if object !== undefined}

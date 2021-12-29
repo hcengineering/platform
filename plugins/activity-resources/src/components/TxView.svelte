@@ -146,7 +146,6 @@
 
   async function getValue (m: AttributeModel, utx: any): Promise<any> {
     const val = (utx as any)[m.key]
-    console.log(m._class, m.key, val, typeof val)
 
     if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
       // We have an reference, we need to find a real object to pass for presenter

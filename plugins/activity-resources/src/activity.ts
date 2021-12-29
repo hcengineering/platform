@@ -161,7 +161,6 @@ class ActivityImpl implements Activity {
         this.updateRemovedState(result, results)
       }
     }
-    console.log('DISPLAY TX', results)
     return Array.from(results)
   }
 

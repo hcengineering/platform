@@ -72,7 +72,6 @@
       doneState: null,
       number: (incResult as any).object.sequence,
       title: title,
-      customer: customer!,
       rank: calcRank(lastOne, undefined),
       assignee: null
     }
@@ -112,6 +111,6 @@
       maxWidth={'16rem'}
       focus
     />
-    <UserBox _class={contact.class.Contact} title="Customer" caption="Select customer" bind:value={customer} />
+    <UserBox _class={contact.class.Contact} title={lead.string.Customer} caption={lead.string.SelectCustomer} bind:value={customer} />
   </Grid>
 </Card>

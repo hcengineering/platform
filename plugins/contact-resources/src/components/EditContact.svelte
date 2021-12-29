@@ -25,13 +25,15 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label, Icon } from '@anticrm/ui'
+  import { ActionIcon, AnyComponent, Component, Label } from '@anticrm/ui'
+  
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
 
   export let _id: Ref<Contact>
   let object: Contact
+  let objectClass: Class<Doc>
   let rightSection: AnyComponent | undefined
   let fullSize: boolean = true
 
@@ -45,18 +47,28 @@
       object = result[0]
     })
 
-  const dispatch = createEventDispatcher()
+  $: if (object) objectClass = client.getHierarchy().getClass(object._class)
+
+  let selectedClass: Ref<Class<Doc>> | undefined
+  let prevSelected = selectedClass
 
   let keys: KeyedAttribute[] = []
   let collectionKeys: KeyedAttribute[] = []
 
-  let mixinsRef: Ref<Mixin<Doc>>[] = []
-  let mixins: {
-    mixin: Ref<Mixin<Doc>>
-    keys: KeyedAttribute[]
-    collectionKeys: KeyedAttribute[]
-    _class: Mixin<Doc>
-  }[] = []
+  let mixins: Mixin<Doc>[] = []
+
+  let selectedMixin: Mixin<Doc> | undefined
+  
+  $: if (object && prevSelected !== object._class) {
+    prevSelected = object._class
+    selectedClass = objectClass._id
+    selectedMixin = undefined
+    const h = client.getHierarchy()
+    mixins = h.getDescendants(contact.class.Contact)
+      .filter((m) => h.getClass(m).kind === ClassifierKind.MIXIN && h.hasMixin(object, m)).map(m => h.getClass(m) as Mixin<Doc>)
+  }
+
+  const dispatch = createEventDispatcher()
 
   function filterKeys (keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
     keys = keys.filter((k) => !docKeys.has(k.key))
@@ -64,8 +76,8 @@
     return keys
   }
 
-  function getFiltredKeys (ignoreKeys: string[]): KeyedAttribute[] {
-    const keys = [...hierarchy.getAllAttributes(object._class).entries()]
+  function getFiltredKeys (objectClass: Ref<Class<Doc>>, ignoreKeys: string[]): KeyedAttribute[] {
+    const keys = [...hierarchy.getAllAttributes(objectClass).entries()]
       .filter(([, value]) => value.hidden !== true)
       .map(([key, attr]) => ({ key, attr }))
 
@@ -73,30 +85,9 @@
   }
 
   function updateKeys (ignoreKeys: string[]): void {
-    const h = client.getHierarchy()
-
-    const filtredKeys = getFiltredKeys(ignoreKeys)
+    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys)
     keys = collectionsFilter(filtredKeys, false)
     collectionKeys = collectionsFilter(filtredKeys, true)
-
-    // We need to add mixin keys
-    mixinsRef = h
-      .getDescendants(contact.class.Contact)
-      .filter((m) => h.getClass(m).kind === ClassifierKind.MIXIN && h.hasMixin(object, m)) as Ref<Mixin<Doc>>[]
-    mixins = mixinsRef.map((m) => {
-      const mKeys = filterKeys(
-        [...hierarchy.getAllAttributes(m, contact.class.Contact).entries()]
-          .filter(([, value]) => value.hidden !== true)
-          .map(([key, attr]) => ({ key, attr })),
-        ignoreKeys
-      )
-      return {
-        mixin: m,
-        keys: collectionsFilter(mKeys, false),
-        collectionKeys: collectionsFilter(mKeys, true),
-        _class: client.getHierarchy().getClass(m)
-      }
-    })
   }
 
   function collectionsFilter (keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
@@ -118,6 +109,14 @@
     return editorMixin.editor
   }
 
+  async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<AnyComponent> {
+    const editor = _class !== undefined ? await getEditor(_class) : undefined
+    if (editor !== undefined) {
+      return editor
+    }
+    return getEditor(defaultClass)
+  }
+
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
     const attrClass = getAttributePresenterClass(key.attr)
     const clazz = client.getHierarchy().getClass(attrClass)
@@ -125,7 +124,7 @@
     return editorMixin.editor
   }
 
-  $: icon = object && (hierarchy.getClass(object._class).icon as Asset)
+  $: icon = (objectClass?.icon ?? contact.class.Person) as Asset
 </script>
 
 {#if object !== undefined}
@@ -139,23 +138,43 @@
       dispatch('close')
     }}
   >
-    <div slot="subtitle">
-      {#if keys}
-        <AttributesBar {object} {keys} />
-      {/if}
+    <div slot="subtitle" class="flex flex-reverse flex-grow">
+      <div class='flex'>
+        {#if mixins.length > 0}
+          <div class='mixin-selector' class:selected={selectedClass === objectClass._id}>
+            <ActionIcon icon={objectClass.icon} size={'medium'} label={objectClass.label} action={() => {
+              selectedClass = objectClass._id
+              selectedMixin = undefined
+            }} />
+          </div>
+          {#each mixins as mixin}
+            <div class='mixin-selector' class:selected={selectedClass === mixin._id}>
+              <ActionIcon icon={mixin.icon} size={'medium'} label={mixin.label} action={() => {
+                selectedClass = mixin._id
+                selectedMixin = mixin
+              }} />
+            </div>
+          {/each}
+        {/if}
+      </div>
+      <div class="flex-grow">
+        {#if keys}
+          <AttributesBar {object} {keys} />
+        {/if}
+      </div>
     </div>
-    {#await getEditor(object._class) then is}
-      <Component
-        {is}
-        props={{ object }}
-        on:open={(ev) => {
-          updateKeys(ev.detail.ignoreKeys)
-        }}
-        on:click={(ev) => {
-          fullSize = true
-          rightSection = ev.detail.presenter
-        }}
-      />
+    {#await getEditorOrDefault(selectedClass, object._class) then is}
+        <Component
+          {is}
+          props={{ object }}
+          on:open={(ev) => {
+            updateKeys(ev.detail.ignoreKeys)
+          }}
+          on:click={(ev) => {
+            fullSize = true
+            rightSection = ev.detail.presenter
+          }}
+        />
     {/await}
     {#each collectionKeys as collection}
       <div class="mt-14">
@@ -165,29 +184,28 @@
       </div>
     {/each}
 
-    {#each mixins as mixin}
-      <div class='mixin-container'>
-        <div class='header'>
-          <div class='icon'>
-          </div>
+    <!-- {#each mixins as mixin}
+      <div class="mixin-container">
+        <div class="header">
+          <div class="icon" />
           <Label label={mixin._class.label} />
         </div>
-        <div class='attributes'>
+        <div class="attributes">
           {#if mixin.keys.length > 0}
-          <AttributesBar {object} keys={mixin.keys} />
+            <AttributesBar {object} keys={mixin.keys} />
           {/if}
         </div>
-        <div class='collections'>
+        <div class="collections">
           {#each mixin.collectionKeys as collection}
             <div class="mt-14">
               {#await getCollectionEditor(collection) then is}
-              <Component {is} props={{ objectId: object._id, _class: object._class, space: object.space }} />
+                <Component {is} props={{ objectId: object._id, _class: object._class, space: object.space }} />
               {/await}
             </div>
           {/each}
         </div>
       </div>
-    {/each}
+    {/each} -->
   </Panel>
 {/if}
 
@@ -207,8 +225,8 @@
         height: 10px;
         /* Dark / Green 01 */
 
-        background: #77C07B;
-        border: 2px solid #18181E;
+        background: #77c07b;
+        border: 2px solid #18181e;
         border-radius: 50px;
         margin-right: 1rem;
       }
@@ -218,6 +236,15 @@
     }
     .collections {
       margin: 1rem;
+    }
+
+  }
+  .mixin-selector {
+    opacity: 0.6;
+    margin: 0.25rem;
+
+    &.selected { 
+      opacity: 1 !important;
     }
   }
 </style>
