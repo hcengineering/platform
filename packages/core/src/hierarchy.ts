@@ -87,7 +87,7 @@ export class Hierarchy {
 
   isMixin (_class: Ref<Class<Doc>>): boolean {
     const data = this.classifiers.get(_class)
-    return data !== undefined && this.isInterface(data)
+    return data !== undefined && this._isMixin(data)
   }
 
   getAncestors (_class: Ref<Classifier>): Ref<Classifier>[] {
