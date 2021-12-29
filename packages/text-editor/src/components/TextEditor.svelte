@@ -51,9 +51,21 @@ export function clear (): void {
   editor.commands.clearContent(false)
 }
 
-const HandleEnter = Extension.create({
+const Handle = Extension.create({
   addKeyboardShortcuts() {
     return {
+      'Shift-Enter': () => {
+        const res = this.editor.commands.splitListItem('listItem')
+        if (!res) {
+          this.editor.commands.first(({ commands }) => [
+            () => commands.newlineInCode(),
+            () => commands.createParagraphNear(),
+            () => commands.liftEmptyBlock(),
+            () => commands.splitBlock(),
+          ])
+        }
+        return true
+      },
       'Enter': () => {
         submit()
         return true
@@ -67,10 +79,10 @@ onMount(() => {
     element,
     content: content,
     extensions: [
-      HandleEnter,
       StarterKit,
       Highlight,
       Link,
+      Handle, // order important
       // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
       Placeholder.configure({placeholder: placeholder}),
       Mention.configure({

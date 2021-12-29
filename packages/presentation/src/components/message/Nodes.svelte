@@ -35,6 +35,8 @@
         <blockquote><svelte:self nodes={node.childNodes}/></blockquote>
       {:else if node.nodeName === 'CODE'}
         <code><svelte:self nodes={node.childNodes}/></code>
+      {:else if node.nodeName === 'PRE'}
+        <pre><svelte:self nodes={node.childNodes}/></pre>
       {:else if node.nodeName === 'BR'}
         <br/>
       {:else if node.nodeName === 'HR'}
@@ -45,6 +47,12 @@
         <h2><svelte:self nodes={node.childNodes}/></h2>
       {:else if node.nodeName === 'H3'}
         <h3><svelte:self nodes={node.childNodes}/></h3>
+      {:else if node.nodeName === 'H4'}
+        <h4><svelte:self nodes={node.childNodes}/></h4>
+      {:else if node.nodeName === 'H5'}
+        <h5><svelte:self nodes={node.childNodes}/></h5>
+      {:else if node.nodeName === 'H6'}
+        <h6><svelte:self nodes={node.childNodes}/></h6>
       {:else if node.nodeName === 'UL'}
         <ul><svelte:self nodes={node.childNodes}/></ul>
       {:else if node.nodeName === 'OL'}
