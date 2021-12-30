@@ -66,24 +66,26 @@
 </script>
 
 {#if object !== undefined}
-  <div class="flex-row-center">
+  <div class="flex-row-streach flex-grow">
     <div class="mr-8">
       <Avatar avatar={object.avatar} size={'x-large'} />
     </div>
     <div class="flex-grow flex-col">
-      <div class="name">
-        <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
-      </div>
-      <div class="name">
-        <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
-      </div>
-      <div class="title">
-        <AttributeEditor maxWidth="20rem" _class={recruit.mixin.Candidate} {object} key="title" />
+      <div class="flex-grow flex-col">
+        <div class="name">
+          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+        </div>
+        <div class="name">
+          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+        </div>
+        <div class="title">
+          <AttributeEditor maxWidth="20rem" _class={recruit.mixin.Candidate} {object} key="title" />
+        </div>
       </div>
 
       <div class="separator" />
 
-      <div class="flex-between">
+      <div class="flex-between channels">
         <div class="flex-row-center">
           {#if !object.channels || object.channels.length === 0}
             <CircleButton
@@ -131,6 +133,12 @@
   .title {
     margin-top: 0.25rem;
     font-size: 0.75rem;
+  }
+  .channels {
+    margin-top: 0.75rem;
+    span {
+      margin-left: 0.5rem;
+    }
   }
   .separator {
     margin: 1rem 0;
