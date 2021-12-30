@@ -39,12 +39,11 @@ export async function createDeps (client: Client): Promise<void> {
     account.employee
   )
 
-  await tx.createDoc(
-    recruit.class.Candidate,
+  const u1 = await tx.createDoc(
+    contact.class.Person,
     recruit.space.CandidatesPublic,
     {
       name: 'P.,Andrey',
-      title: 'Chief Architect',
       city: 'Monte Carlo',
       channels: [
         {
@@ -55,12 +54,15 @@ export async function createDeps (client: Client): Promise<void> {
     }
   )
 
-  await tx.createDoc(
-    recruit.class.Candidate,
+  await tx.createMixin(u1, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
+    title: 'Chief Architect'
+  })
+
+  const u2 = await tx.createDoc(
+    contact.class.Person,
     recruit.space.CandidatesPublic,
     {
       name: 'M.,Marina',
-      title: 'Chief Designer',
       city: 'Los Angeles',
       channels: [
         {
@@ -70,13 +72,15 @@ export async function createDeps (client: Client): Promise<void> {
       ]
     }
   )
+  await tx.createMixin(u2, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
+    title: 'Chief Designer'
+  })
 
-  await tx.createDoc(
-    recruit.class.Candidate,
+  const u3 = await tx.createDoc(
+    contact.class.Person,
     recruit.space.CandidatesPublic,
     {
       name: 'P.,Alex',
-      title: 'Frontend Engineer',
       city: 'Krasnodar, Russia',
       channels: [
         {
@@ -86,4 +90,7 @@ export async function createDeps (client: Client): Promise<void> {
       ]
     }
   )
+  await tx.createMixin(u3, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
+    title: 'Frontend Engineer'
+  })
 }

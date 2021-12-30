@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels, AttributeEditor, Avatar } from '@anticrm/presentation'
@@ -37,18 +37,18 @@
   function saveChannels (result: any) {
     if (result !== undefined) {
       object.channels = result
-      client.updateDoc(recruit.class.Candidate, object.space, object._id, { channels: result })
+      client.updateDoc(object._class, object.space, object._id, { channels: result })
     }
   }
 
   function firstNameChange () {
-    client.updateDoc(recruit.class.Candidate, object.space, object._id, {
+    client.updateDoc(object._class, object.space, object._id, {
       name: combineName(firstName, getLastName(object.name))
     })
   }
 
   function lastNameChange () {
-    client.updateDoc(recruit.class.Candidate, object.space, object._id, {
+    client.updateDoc(object._class, object.space, object._id, {
       name: combineName(getFirstName(object.name), lastName)
     })
   }
@@ -60,9 +60,9 @@
     integrations = new Set(res.map((p) => p.type))
   })
 
-  onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'title'] })
-  })
+  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'title'] })
+  onMount(sendOpen)
+  afterUpdate(sendOpen)
 </script>
 
 {#if object !== undefined}
@@ -78,7 +78,7 @@
         <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
       </div>
       <div class="title">
-        <AttributeEditor maxWidth="20rem" _class={recruit.class.Candidate} {object} key="title" />
+        <AttributeEditor maxWidth="20rem" _class={recruit.mixin.Candidate} {object} key="title" />
       </div>
 
       <div class="separator" />

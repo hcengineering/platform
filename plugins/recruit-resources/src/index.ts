@@ -16,8 +16,6 @@
 import type { Client, Doc } from '@anticrm/core'
 
 import CreateVacancy from './components/CreateVacancy.svelte'
-import CreateCandidates from './components/CreateCandidates.svelte'
-import CreateCandidate from './components/CreateCandidate.svelte'
 import CreateApplication from './components/CreateApplication.svelte'
 import EditCandidate from './components/EditCandidate.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
@@ -27,6 +25,7 @@ import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Applications from './components/Applications.svelte'
 import EditApplication from './components/EditApplication.svelte'
+import Candidates from './components/Candidates.svelte'
 
 import { showPopup } from '@anticrm/ui'
 import { OK, Resources, Severity, Status } from '@anticrm/platform'
@@ -63,8 +62,6 @@ export default async (): Promise<Resources> => ({
   },
   component: {
     CreateVacancy,
-    CreateCandidates,
-    CreateCandidate,
     CreateApplication,
     EditCandidate,
     EditApplication,
@@ -73,6 +70,7 @@ export default async (): Promise<Resources> => ({
     ApplicationsPresenter,
     EditVacancy,
     TemplatesIcon,
-    Applications
+    Applications,
+    Candidates
   }
 })

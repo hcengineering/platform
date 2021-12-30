@@ -15,20 +15,26 @@
 -->
 
 <script lang="ts">
+  import { getClient } from '@anticrm/presentation'
+
   import { EditWithIcon, Icon, IconSearch, Label, ScrollBox } from '@anticrm/ui'
 
   import { Table } from '@anticrm/view-resources'
-  import lead from '../plugin'
+  import recruit from '../plugin'
+  import view, { Viewlet } from '@anticrm/view'
 
   let search = ''
   $: resultQuery = search === '' ? { } : { $search: search }
+
+  const client = getClient()
+  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: recruit.mixin.Candidate, descriptor: view.viewlet.Table })
 </script>
 
-<div class="customers-header-container">
+<div class="candidates-header-container">
   <div class="header-container">
     <div class="flex-row-center">
-      <span class="icon"><Icon icon={lead.icon.Lead} size={'small'}/></span>
-      <span class="label"><Label label={lead.string.Customers}/></span>
+      <span class="icon"><Icon icon={recruit.icon.Calendar} size={'small'}/></span>
+      <span class="label"><Label label={recruit.string.Candidates}/></span>
     </div>
   </div>
   
@@ -38,20 +44,18 @@
 <div class="container">
   <div class="panel-component">
     <ScrollBox vertical stretch noShift>
-
-      <Table 
-      _class={lead.mixin.Customer}
-      config={[
-        '',
-        { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
-        'modifiedOn',
-        'channels'
-      ]}
-      options={ {} }
-      query={ resultQuery }
-      enableChecking
-      />
-    </ScrollBox>
+      {#await tableDescriptor then descr}
+        {#if descr}
+          <Table 
+            _class={recruit.mixin.Candidate}
+            config={descr.config}
+            options={descr.options}
+            query={ resultQuery }
+            enableChecking
+          />
+        {/if}
+      {/await}
+  </ScrollBox>
   </div>
 </div>
 <style lang="scss">
@@ -71,7 +75,7 @@
       overflow: hidden;
     }
   }
-  .customers-header-container {
+  .candidates-header-container {
     display: grid;
     grid-template-columns: auto;
     grid-auto-flow: column;

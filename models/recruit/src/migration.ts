@@ -13,7 +13,10 @@
 // limitations under the License.
 //
 
+import { Class, Doc, Ref } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import recruit from '@anticrm/recruit'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function logInfo (msg: string, result: MigrationResult): void {
@@ -22,6 +25,25 @@ function logInfo (msg: string, result: MigrationResult): void {
   }
 }
 export const recruitOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    // Move all candidates to mixins.
+    await client.update(DOMAIN_CONTACT, {
+      _class: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      $rename: {
+        title: `${recruit.mixin.Candidate}.title`,
+        applications: `${recruit.mixin.Candidate}.applications`,
+        remote: `${recruit.mixin.Candidate}.remote`,
+        source: `${recruit.mixin.Candidate}.source`,
+        onsite: `${recruit.mixin.Candidate}.onsite`
+      }
+    })
+
+    await client.update(DOMAIN_CONTACT, {
+      _class: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      _class: contact.class.Person
+    })
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

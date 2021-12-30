@@ -156,7 +156,7 @@ export async function importXml (
               lastModified: stats.mtime.getTime()
             }, {
               attachedTo: candId,
-              attachedClass: recruit.class.Candidate,
+              attachedClass: recruit.mixin.Candidate,
               collection: 'attachments'
             })
 
@@ -227,7 +227,7 @@ async function createApplicant (vacancyId: Ref<Vacancy>, candidateId: Ref<Candid
   }
 
   // Update or create candidate
-  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, { attachedTo: candidateId, attachedClass: recruit.class.Candidate, collection: 'applications' })
+  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, { attachedTo: candidateId, attachedClass: recruit.mixin.Candidate, collection: 'applications' })
 }
 
 async function createUpdateVacancy (client: TxOperations, statuses: any): Promise<{states: Map<string, Ref<State>>, vacancyId: Ref<Vacancy>}> {
@@ -296,14 +296,14 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
   if (github !== undefined) {
     data.channels.push({ provider: contact.channelProvider.GitHub, value: github })
   }
-  await findOrUpdate(client, recruit.space.CandidatesPublic, recruit.class.Candidate, candId, data)
+  await findOrUpdate(client, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candId, data)
 
   const commentId = (candId + '.description.comment') as Ref<Comment>
 
   if (commentData.length > 0) {
     await findOrUpdateAttached(client, recruit.space.CandidatesPublic, chunter.class.Comment, commentId, {
       message: commentData.join('\n<br/>')
-    }, { attachedTo: candId, attachedClass: recruit.class.Candidate, collection: 'comments' })
+    }, { attachedTo: candId, attachedClass: recruit.mixin.Candidate, collection: 'comments' })
   }
 }
 

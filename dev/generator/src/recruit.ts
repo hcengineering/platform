@@ -160,7 +160,7 @@ async function genApplicant (
   // Update or create candidate
   await findOrUpdateAttached(ctx, client, vacancyId, recruit.class.Applicant, applicantId, applicant, {
     attachedTo: candidateId,
-    attachedClass: recruit.class.Candidate,
+    attachedClass: recruit.mixin.Candidate,
     collection: 'applications'
   })
 
@@ -237,7 +237,7 @@ async function genCandidate (
 
   // Update or create candidate
   await ctx.with('find-update', {}, () =>
-    findOrUpdate(ctx, client, recruit.space.CandidatesPublic, recruit.class.Candidate, candidateId, candidate)
+    findOrUpdate(ctx, client, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateId, candidate)
   )
 
   await ctx.with('add-comment', {}, () =>
@@ -246,7 +246,7 @@ async function genCandidate (
       client,
       recruit.space.CandidatesPublic,
       candidateId,
-      recruit.class.Candidate,
+      recruit.mixin.Candidate,
       'comments'
     )
   )
@@ -260,7 +260,7 @@ async function genCandidate (
         dbName,
         recruit.space.CandidatesPublic,
         candidateId,
-        recruit.class.Candidate,
+        recruit.mixin.Candidate,
         'attachments'
       )
     )
