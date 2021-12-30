@@ -98,6 +98,7 @@
     .header {
       flex-shrink: 0;
       padding: 0 2rem 0 2.5rem;
+      min-height: 0;
       height: 4rem;
       color: var(--theme-content-accent-color);
       border-bottom: 1px solid var(--theme-zone-bg);
@@ -107,6 +108,7 @@
       flex-shrink: 0;
       padding: 0 2rem;
       height: 3.5rem;
+      min-height: 0;
       border-bottom: 1px solid var(--theme-zone-bg);
     }
   }
@@ -128,6 +130,8 @@
 
   .leftSection, .rightSection {
     flex-basis: 50%;
+    width: 50%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
   }

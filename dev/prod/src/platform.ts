@@ -28,6 +28,7 @@ import { telegramId } from '@anticrm/telegram'
 import { attachmentId } from '@anticrm/attachment'
 import { leadId } from '@anticrm/lead'
 import { clientId } from '@anticrm/client'
+import { gmailId } from '@anticrm/gmail'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -40,6 +41,7 @@ import '@anticrm/activity-assets'
 import '@anticrm/setting-assets'
 import '@anticrm/telegram-assets'
 import '@anticrm/lead-assets'
+import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
 
 import { setMetadata } from '@anticrm/platform'
@@ -52,6 +54,7 @@ export function configurePlatform() {
     })    
   })    
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
@@ -67,4 +70,5 @@ export function configurePlatform() {
   addLocation(leadId, () => import(/* webpackChunkName: "lead" */ '@anticrm/lead-resources'))
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
+  addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@anticrm/gmail-resources'))
 }

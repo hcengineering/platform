@@ -119,7 +119,6 @@
 </script>
 
 <div class="card">
-  <div class="card-bg" />
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={'Connect Telegram account'} /></div>
     <div
@@ -159,7 +158,10 @@
     width: 20rem;
     min-width: 20rem;
     max-width: 20rem;
-    border-radius: 1.25rem;
+    background-color: var(--theme-tooltip-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
 
     .header {
       flex-shrink: 0;
@@ -190,7 +192,7 @@
         flex-direction: row-reverse;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 0.1rem;
+        padding: 1rem 0rem;
 
         .link {
           color: var(--theme-content-dark-color);
@@ -202,19 +204,6 @@
           }
         }
       }
-    }
-
-    .card-bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--theme-card-bg);
-      border-radius: 1.25rem;
-      backdrop-filter: blur(15px);
-      box-shadow: var(--theme-card-shadow);
-      z-index: -1;
     }
   }
 </style>

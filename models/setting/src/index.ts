@@ -90,12 +90,4 @@ export function createModel (builder: Builder): void {
       spaces: []
     }
   }, setting.ids.SettingApp)
-
-  builder.createDoc(setting.class.IntegrationType, core.space.Model, {
-    label: 'Email',
-    description: 'Use email integration' as IntlString,
-    icon: setting.component.IconGmail,
-    createComponent: setting.component.ConnectEmail,
-    onDisconnect: setting.handler.EmailDisconnectHandler
-  })
 }

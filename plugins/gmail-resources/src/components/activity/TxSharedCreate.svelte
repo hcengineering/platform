@@ -1,5 +1,6 @@
-//
+<!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,22 +12,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import type { TxCreateDoc } from '@anticrm/core'
+  import { TxProcessor } from '@anticrm/core'
+  import { SharedMessages } from '@anticrm/gmail'
+  import SharedMessagesView from '../SharedMessages.svelte'
 
-import Setting from './components/Setting.svelte'
-import Integrations from './components/Integrations.svelte'
-import ManageStatuses from './components/statuses/ManageStatuses.svelte'
-import Support from './components/Support.svelte'
-import Privacy from './components/Privacy.svelte'
-import Terms from './components/Terms.svelte'
+  export let tx: TxCreateDoc<SharedMessages>
+</script>
 
-export default async () => ({
-  component: {
-    Setting,
-    Integrations,
-    Support,
-    Privacy,
-    Terms,
-    ManageStatuses
-  }
-})
+<SharedMessagesView value={TxProcessor.createDoc2Doc(tx)} />

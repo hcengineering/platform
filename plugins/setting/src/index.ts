@@ -61,12 +61,7 @@ export default plugin(settingId, {
     ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
-    Terms: '' as AnyComponent,
-    ConnectEmail: '' as AnyComponent,
-    IconGmail: '' as AnyComponent
-  },
-  handler: {
-    EmailDisconnectHandler: '' as Handler
+    Terms: '' as AnyComponent
   },
   string: {
     Setting: '' as IntlString,

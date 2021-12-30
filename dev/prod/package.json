@@ -85,6 +85,9 @@
     "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/lead": "~0.6.0",
     "@anticrm/lead-assets": "~0.6.0",
-    "@anticrm/lead-resources": "~0.6.0"
+    "@anticrm/lead-resources": "~0.6.0",
+    "@anticrm/gmail": "~0.6.0",
+    "@anticrm/gmail-assets": "~0.6.0",
+    "@anticrm/gmail-resources": "~0.6.0"
   }
 }

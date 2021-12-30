@@ -1,0 +1,20 @@
+{
+  "string": {
+    "SharedMessages": "shared emails",
+    "To": "To:",
+    "From": "From:",
+    "Copy": "Copy",
+    "MessagesSelected": "messages selected",
+    "PublishSelected": "Publish selected",
+    "YouAnd": "You and",
+    "CreateMessage": "Create message",
+    "ShareMessages": "Share messages",
+    "Connect": "Connect",
+    "RedirectGoogle": "You will be redirect to google auth page",
+    "ConnectGmai": "Connect Gmail account",
+    "Reply": "Reply",
+    "Subject": "Subject",
+    "Send": "Send",
+    "NewMessageTo": "New message to"
+  }
+}
