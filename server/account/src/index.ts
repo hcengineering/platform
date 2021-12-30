@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import platform, { getMetadata, Metadata, Plugin, Request, Response, PlatformError, plugin, Severity, Status, unknownError } from '@anticrm/platform'
-import loginPlugin from '@anticrm/login'
+import platform, { getMetadata, Metadata, Plugin, Request, Response, PlatformError, plugin, Severity, Status, StatusCode } from '@anticrm/platform'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
@@ -40,6 +39,13 @@ const accountPlugin = plugin(accountId, {
   metadata: {
     Endpoint: '' as Metadata<string>,
     Secret: '' as Metadata<string>
+  },
+  status: {
+    AccountNotFound: '' as StatusCode<{account: string}>,
+    WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
+    InvalidPassword: '' as StatusCode<{account: string}>,
+    AccountAlreadyExists: '' as StatusCode<{account: string}>,
+    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>
   }
 })
 
@@ -124,10 +130,10 @@ function toAccountInfo (account: Account): AccountInfo {
 async function getAccountInfo (db: Db, email: string, password: string): Promise<AccountInfo> {
   const account = await getAccount(db, email)
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.AccountNotFound, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   if (!verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.InvalidPassword, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.InvalidPassword, { account: email }))
   }
   return toAccountInfo(account)
 }
@@ -175,7 +181,7 @@ export async function createAccount (db: Db, email: string, password: string, fi
 
   const account = await getAccount(db, email)
   if (account !== null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.AccountAlreadyExists, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
   }
 
   const insert = await db.collection(ACCOUNT_COLLECTION).insertOne({
@@ -219,7 +225,7 @@ export async function listAccounts (db: Db): Promise<Account[]> {
  */
 export async function createWorkspace (db: Db, workspace: string, organisation: string): Promise<string> {
   if ((await getWorkspace(db, workspace)) !== null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.WorkspaceAlreadyExists, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))
   }
   return await db
     .collection(WORKSPACE_COLLECTION)
@@ -233,12 +239,12 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
 async function getWorkspaceAndAccount (db: Db, email: string, workspace: string): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
   const wsPromise = await getWorkspace(db, workspace)
   if (wsPromise === null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.WorkspaceNotFound, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   const workspaceId = wsPromise._id
   const account = await getAccount(db, email)
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.AccountNotFound, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   const accountId = account._id
   return { accountId, workspaceId }
@@ -275,7 +281,7 @@ export async function removeWorkspace (db: Db, email: string, workspace: string)
 export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
   const ws = await getWorkspace(db, workspace)
   if (ws === null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.WorkspaceNotFound, { workspace }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
   await db.collection<Account>(ACCOUNT_COLLECTION).updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
@@ -287,7 +293,7 @@ export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
 export async function dropAccount (db: Db, email: string): Promise<void> {
   const account = await getAccount(db, email)
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, loginPlugin.status.AccountNotFound, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
@@ -297,7 +303,7 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
   return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
     return await f(db, ...request.params)
       .then((result) => ({ id: request.id, result }))
-      .catch((err) => ({ error: unknownError(err) }))
+      .catch((err) => ({ error: err instanceof PlatformError ? new Status(Severity.ERROR, platform.status.Forbidden, {}) : new Status(Severity.ERROR, platform.status.Forbidden, {}) }))
   }
 }
 

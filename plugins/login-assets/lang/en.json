@@ -3,12 +3,5 @@
     "LogIn": "Login",
     "SignUp": "Sign Up",
     "DoNotHaveAnAccount": "Do not have an account?"
-  },
-  "status": {
-    "AccountNotFound": "Account {account} not found",
-    "WorkspaceNotFound": "Workspace {workspace} not found",
-    "InvalidPassword": "Invalid password",
-    "AccountAlreadyExists": "Account {account} already exists",
-    "WorkspaceAlreadyExists": "Workspace {workspace} already exists"
   }
 }
