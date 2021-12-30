@@ -150,6 +150,7 @@
       <Button
         label={gmail.string.Connect}
         primary
+        size={'small'}
         on:click={(e) => {
           showPopup(Connect, {}, e.target)
         }}
