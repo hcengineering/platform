@@ -6,6 +6,7 @@
     "BadRequest": "Bad request",
     "Forbidden": "Forbidden",
     "Unauthorized": "Unauthorized",
-    "UnknownMethod": "Unknown method: {method}"
+    "UnknownMethod": "Unknown method: {method}",
+    "InternalServerError": "Internal server error"
   }
 }

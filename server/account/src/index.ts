@@ -303,7 +303,7 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
   return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
     return await f(db, ...request.params)
       .then((result) => ({ id: request.id, result }))
-      .catch((err) => ({ error: err instanceof PlatformError ? new Status(Severity.ERROR, platform.status.Forbidden, {}) : new Status(Severity.ERROR, platform.status.Forbidden, {}) }))
+      .catch((err) => ({ error: err instanceof PlatformError ? new Status(Severity.ERROR, platform.status.Forbidden, {}) : new Status(Severity.ERROR, platform.status.InternalServerError, {}) }))
   }
 }
 
