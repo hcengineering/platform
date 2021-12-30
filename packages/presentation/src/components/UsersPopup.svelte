@@ -38,14 +38,14 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { name: { $like: '%' + search + '%' } }, result => { objects = result })
+  $: query.query(_class, { name: { $like: '%' + search + '%' } }, result => { objects = result }, { limit: 200 })
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
 <div class="popup">
   <div class="title"><Label label={title} /></div>
   <div class="flex-col header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
+    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} focus />
     <div class="caption"><Label label={caption} /></div>
   </div>
   <div class="scroll">
@@ -72,6 +72,7 @@
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+    max-height: 70%;
   }
 
   .title {

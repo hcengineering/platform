@@ -19,8 +19,8 @@ import type {
   Data,
   Doc,
   DocumentUpdate,
-  ExtendedAttributes,
   Mixin,
+  MixinUpdate,
   PropertyType,
   Ref,
   Space,
@@ -73,7 +73,7 @@ export class TTxPutBag<T extends PropertyType> extends TTxCUD<Doc> implements Tx
 @Model(core.class.TxMixin, core.class.TxCUD)
 export class TTxMixin<D extends Doc, M extends D> extends TTxCUD<D> implements TxMixin<D, M> {
   mixin!: Ref<Mixin<M>>
-  attributes!: ExtendedAttributes<D, M>
+  attributes!: MixinUpdate<D, M>
 }
 
 @Model(core.class.TxUpdateDoc, core.class.TxCUD)

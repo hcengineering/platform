@@ -55,6 +55,7 @@ export function TypeChannel (): Type<Channel> {
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
+@UX('Contact' as IntlString, contact.icon.Person, undefined, 'name')
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), 'Name' as IntlString)
   @Index(IndexKind.FullText)
@@ -147,7 +148,7 @@ export function createModel (builder: Builder): void {
         }
       ]
     }
-  })
+  }, contact.app.Contacts)
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Person,

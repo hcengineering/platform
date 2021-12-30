@@ -45,15 +45,6 @@ describe('memdb', () => {
     expect(result.length).toBe(txes.filter((tx) => tx._class === core.class.TxCreateDoc).length)
   })
 
-  it('should query model', async () => {
-    const { model } = await createModel()
-
-    const result = await model.findAll(core.class.Class, {})
-    expect(result.length).toBeGreaterThan(5)
-    const result2 = await model.findAll('class:workbench.Application' as Ref<Class<Doc>>, { _id: undefined })
-    expect(result2).toHaveLength(0)
-  })
-
   it('should create space', async () => {
     const { model } = await createModel()
 
@@ -85,11 +76,17 @@ describe('memdb', () => {
     expect(result2.length).toBe(0)
   })
 
+  it('should fail query wrong class', async () => {
+    const { model } = await createModel()
+
+    await expect(model.findAll('class:workbench.Application' as Ref<Class<Doc>>, { _id: undefined })).rejects.toThrow()
+  })
+
   it('should create mixin', async () => {
     const { model } = await createModel()
     const ops = new TxOperations(model, core.account.System)
 
-    await ops.createMixin(core.class.Obj, core.class.Class, test.mixin.TestMixin, { arr: ['hello'] })
+    await ops.createMixin<Doc, TestMixin>(core.class.Obj, core.class.Class, core.space.Model, test.mixin.TestMixin, { arr: ['hello'] })
     const objClass = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
     expect(objClass['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello']))
 

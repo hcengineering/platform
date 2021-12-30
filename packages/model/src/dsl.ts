@@ -14,10 +14,7 @@
 //
 
 import core, {
-  ArrOf as TypeArrOf,
-  Account,
-  AttachedDoc, Collection as TypeCollection, RefTo,
-  Attribute, Class, Classifier, ClassifierKind, Data, Doc, Domain, ExtendedAttributes, generateId, IndexKind, Interface, Mixin as IMixin, Obj, PropertyType, Ref, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
+  Account, ArrOf as TypeArrOf, AttachedDoc, Attribute, Class, Classifier, ClassifierKind, Collection as TypeCollection, Data, Doc, Domain, generateId, IndexKind, Interface, Mixin as IMixin, MixinUpdate, Obj, PropertyType, Ref, RefTo, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
@@ -225,8 +222,13 @@ const txFactory = new TxFactory(core.account.System)
 
 function _generateTx (tx: ClassTxes): Tx[] {
   const objectId = tx._id
+  const _cl = {
+    [ClassifierKind.CLASS]: core.class.Class,
+    [ClassifierKind.INTERFACE]: core.class.Interface,
+    [ClassifierKind.MIXIN]: core.class.Mixin
+  }
   const createTx = txFactory.createTxCreateDoc<Doc>(
-    core.class.Class,
+    _cl[tx.kind],
     core.space.Model,
     {
       ...(tx.domain !== undefined ? { domain: tx.domain } : {}),
@@ -307,9 +309,9 @@ export class Builder {
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
     mixin: Ref<IMixin<M>>,
-    attributes: ExtendedAttributes<D, M>
+    attributes: MixinUpdate<D, M>
   ): void {
-    this.txes.push(txFactory.createTxMixin(objectId, objectClass, mixin, attributes))
+    this.txes.push(txFactory.createTxMixin(objectId, objectClass, core.space.Model, mixin, attributes))
   }
 
   getTxes (): Tx[] {

@@ -12,6 +12,7 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxUpdateDoc
 } from '@anticrm/core'
@@ -52,10 +53,14 @@ export interface DisplayTx {
   // Type check for updateTx
   updateTx?: TxUpdateDoc<Doc>
 
+  // Type check for updateTx
+  mixinTx?: TxMixin<Doc, Doc>
+
   // Document in case it is required.
   doc?: Doc
 
   updated: boolean
+  mixin: boolean
   removed: boolean
 }
 
@@ -113,7 +118,7 @@ class ActivityImpl implements Activity {
         ? { 'tx.objectId': object._id as Ref<AttachedDoc> }
         : {
             objectId: object._id,
-            _class: { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
+            _class: { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin] }
           },
       (result) => {
         this.txes1 = result
@@ -148,15 +153,14 @@ class ActivityImpl implements Activity {
     let results: DisplayTx[] = []
 
     for (const tx of txCUD) {
-      const { collectionCUD, updateCUD, result, tx: ntx } = this.createDisplayTx(tx, parents)
+      const { collectionCUD, updateCUD, mixinCUD, result, tx: ntx } = this.createDisplayTx(tx, parents)
       // We do not need collection object updates, in main list of displayed transactions.
-      if (this.isDisplayTxRequired(collectionCUD, updateCUD, ntx, object)) {
+      if (this.isDisplayTxRequired(collectionCUD, updateCUD || mixinCUD, ntx, object)) {
         // Combine previous update transaction for same field and if same operation and time treshold is ok
         results = this.integrateTxWithResults(results, result)
         this.updateRemovedState(result, results)
       }
     }
-    console.log('DISPLAY TX', results)
     return Array.from(results)
   }
 
@@ -175,8 +179,8 @@ class ActivityImpl implements Activity {
     return a.modifiedOn - b.modifiedOn
   }
 
-  isDisplayTxRequired (collectionCUD: boolean, updateCUD: boolean, ntx: TxCUD<Doc>, object: Doc): boolean {
-    return !(collectionCUD && updateCUD) || ntx.objectId === object._id
+  isDisplayTxRequired (collectionCUD: boolean, cudOp: boolean, ntx: TxCUD<Doc>, object: Doc): boolean {
+    return !(collectionCUD && cudOp) || ntx.objectId === object._id
   }
 
   private readonly getUpdateTx = (tx: TxCUD<Doc>): TxUpdateDoc<Doc> | undefined => {
@@ -216,9 +220,10 @@ class ActivityImpl implements Activity {
   createDisplayTx (
     tx: TxCUD<Doc>,
     parents: Map<Ref<Doc>, DisplayTx>
-  ): { collectionCUD: boolean, updateCUD: boolean, result: DisplayTx, tx: TxCUD<Doc> } {
+  ): { collectionCUD: boolean, updateCUD: boolean, mixinCUD: boolean, result: DisplayTx, tx: TxCUD<Doc> } {
     let collectionCUD = false
     let updateCUD = false
+    let mixinCUD = false
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
@@ -234,9 +239,10 @@ class ActivityImpl implements Activity {
 
     // If we have updates also apply them all.
     updateCUD = this.checkUpdateState(result, firstTx)
+    mixinCUD = this.checkMixinState(result, firstTx)
 
     this.checkRemoveState(hierarchy, tx, firstTx, result)
-    return { collectionCUD, updateCUD, result, tx }
+    return { collectionCUD, updateCUD, mixinCUD, result, tx }
   }
 
   private checkRemoveState (hierarchy: Hierarchy, tx: TxCUD<Doc>, firstTx: DisplayTx, result: DisplayTx): void {
@@ -256,6 +262,17 @@ class ActivityImpl implements Activity {
     return false
   }
 
+  checkMixinState (result: DisplayTx, firstTx: DisplayTx): boolean {
+    if (this.client.getHierarchy().isDerived(result.tx._class, core.class.TxMixin) && result.doc !== undefined) {
+      const mix = result.tx as TxMixin<Doc, Doc>
+      firstTx.doc = TxProcessor.updateMixin4Doc(result.doc, mix.mixin, mix.attributes)
+      firstTx.mixin = true
+      result.mixin = true
+      return true
+    }
+    return false
+  }
+
   newDisplayTx (tx: TxCUD<Doc>): DisplayTx {
     const hierarchy = this.client.getHierarchy()
     const createTx = hierarchy.isDerived(tx._class, core.class.TxCreateDoc) ? (tx as TxCreateDoc<Doc>) : undefined
@@ -266,20 +283,24 @@ class ActivityImpl implements Activity {
       updateTx: hierarchy.isDerived(tx._class, core.class.TxUpdateDoc) ? (tx as TxUpdateDoc<Doc>) : undefined,
       updated: false,
       removed: false,
+      mixin: false,
+      mixinTx: hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Doc, Doc>) : undefined,
       doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
     }
   }
 
   integrateTxWithResults (results: DisplayTx[], result: DisplayTx): DisplayTx[] {
-    const curUpdate = result.tx as unknown as TxUpdateDoc<Doc>
+    const curUpdate: any = (result.tx._class === core.class.TxUpdateDoc)
+      ? (result.tx as unknown as TxUpdateDoc<Doc>).operations
+      : (result.tx as unknown as TxMixin<Doc, Doc>).attributes
 
     const newResult = results.filter((prevTx) => {
-      if (this.isSameKindTx(prevTx, result)) {
-        const prevUpdate = prevTx.tx as unknown as TxUpdateDoc<Doc>
+      if (this.isSameKindTx(prevTx, result, result.tx._class)) {
+        const prevUpdate: any = (prevTx.tx._class === core.class.TxUpdateDoc)
+          ? (prevTx.tx as unknown as TxUpdateDoc<Doc>).operations
+          : (prevTx.tx as unknown as TxMixin<Doc, Doc>).attributes
         if (
-          result.tx.modifiedOn - prevUpdate.modifiedOn < combineThreshold &&
-          isEqualOps(prevUpdate.operations, curUpdate.operations)
-        ) {
+          result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate) ) {
           // we have same keys,
           // Remember previous transactions
           result.txes.push(...prevTx.txes, prevTx.tx)
@@ -293,11 +314,11 @@ class ActivityImpl implements Activity {
     return newResult
   }
 
-  isSameKindTx (prevTx: DisplayTx, result: DisplayTx): boolean {
+  isSameKindTx (prevTx: DisplayTx, result: DisplayTx, _class: Ref<Class<Doc>>): boolean {
     return (
       prevTx.tx.objectId === result.tx.objectId && // Same document id
       prevTx.tx._class === result.tx._class && // Same transaction class
-      result.tx._class === core.class.TxUpdateDoc &&
+      result.tx._class === _class &&
       prevTx.tx.modifiedBy === result.tx.modifiedBy // Same user
     )
   }

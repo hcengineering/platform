@@ -16,6 +16,7 @@
 import { IntlString, mergeIds } from '@anticrm/platform'
 
 import lead, { leadId } from '@anticrm/lead'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(leadId, lead, {
   string: {
@@ -28,6 +29,13 @@ export default mergeIds(leadId, lead, {
     SelectFunnel: '' as IntlString,
     CreateLead: '' as IntlString,
     Customer: '' as IntlString,
-    SelectCustomer: '' as IntlString
+    SelectCustomer: '' as IntlString,
+    Customers: '' as IntlString,
+    Leads: '' as IntlString,
+    NoLeadsForDocument: '' as IntlString
+  },
+  component: {
+    CreateCustomer: '' as AnyComponent,
+    LeadsPresenter: '' as AnyComponent
   }
 })

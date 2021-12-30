@@ -23,8 +23,16 @@
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: string = 'placeholder'
+  export let focus: boolean = false
 
   let textHTML: HTMLInputElement
+
+  $: if (textHTML !== undefined) {
+    if (focus) {
+      textHTML.focus()
+      focus = false
+    }
+  }
 </script>
 
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>

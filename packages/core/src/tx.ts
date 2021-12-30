@@ -19,6 +19,7 @@ import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxRes
 import core from './component'
 import { generateId } from './utils'
 import { _getOperator } from './operator'
+import { Hierarchy } from './hierarchy'
 
 /**
  * @public
@@ -72,20 +73,21 @@ export interface TxBulkWrite extends Tx {
 /**
  * @public
  */
-export type ExtendedAttributes<D extends Doc, M extends D> = Omit<M, keyof D>
+export type MixinUpdate<D extends Doc, M extends D> = Partial<Omit<M, keyof D>> & PushOptions<Omit<M, keyof D>> & IncOptions<Omit<M, keyof D>>
 
 /**
+ * Define Create/Update for mixin attributes.
  * @public
  */
 export interface TxMixin<D extends Doc, M extends D> extends TxCUD<D> {
   mixin: Ref<Mixin<M>>
-  attributes: ExtendedAttributes<D, M>
+  attributes: MixinUpdate<D, M>
 }
 
 /**
  * @public
  */
-export type ArrayAsElement<T extends Doc> = {
+export type ArrayAsElement<T> = {
   [P in keyof T]: T[P] extends Arr<infer X> ? X : never
 }
 
@@ -108,21 +110,21 @@ export interface MoveDescriptor<X extends PropertyType> {
 /**
  * @public
  */
-export type ArrayAsElementPosition<T extends Doc> = {
+export type ArrayAsElementPosition<T extends object> = {
   [P in keyof T]: T[P] extends Arr<infer X> ? X | Position<X> : never
 }
 
 /**
  * @public
  */
-export type ArrayMoveDescriptor<T extends Doc> = {
+export type ArrayMoveDescriptor<T extends object> = {
   [P in keyof T]: T[P] extends Arr<infer X> ? MoveDescriptor<X> : never
 }
 
 /**
  * @public
  */
-export type NumberProperties<T extends Doc> = {
+export type NumberProperties<T extends object> = {
   [P in keyof T]: T[P] extends number | undefined ? T[P] : never
 }
 
@@ -134,7 +136,7 @@ export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
 /**
  * @public
  */
-export interface PushOptions<T extends Doc> {
+export interface PushOptions<T extends object> {
   $push?: Partial<OmitNever<ArrayAsElementPosition<T>>>
   $pull?: Partial<OmitNever<ArrayAsElement<T>>>
   $move?: Partial<OmitNever<ArrayMoveDescriptor<T>>>
@@ -153,7 +155,7 @@ export interface PushMixinOptions<D extends Doc> {
 /**
  * @public
  */
-export interface IncOptions<T extends Doc> {
+export interface IncOptions<T extends object> {
   $inc?: Partial<OmitNever<NumberProperties<T>>>
 }
 
@@ -231,7 +233,8 @@ export abstract class TxProcessor implements WithTx {
     } as T
   }
 
-  static updateDoc2Doc<T extends Doc>(doc: T, tx: TxUpdateDoc<T>): T {
+  static updateDoc2Doc<T extends Doc>(rawDoc: T, tx: TxUpdateDoc<T>): T {
+    const doc = Hierarchy.toDoc(rawDoc)
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -243,7 +246,23 @@ export abstract class TxProcessor implements WithTx {
     }
     doc.modifiedBy = tx.modifiedBy
     doc.modifiedOn = tx.modifiedOn
-    return doc
+    return rawDoc
+  }
+
+  static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, mixinClass: Ref<Class<M>>, operations: MixinUpdate<D, M>): D {
+    const ops = operations as any
+    const doc = Hierarchy.toDoc(rawDoc)
+    const mixin = (doc as any)[mixinClass] ?? {}
+    for (const key in ops) {
+      if (key.startsWith('$')) {
+        const operator = _getOperator(key)
+        operator(mixin, ops[key])
+      } else {
+        mixin[key] = ops[key]
+      }
+    }
+    (doc as any)[mixinClass] = mixin
+    return rawDoc
   }
 
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
@@ -405,10 +424,22 @@ export class TxOperations implements Storage {
   createMixin<D extends Doc, M extends D>(
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: ExtendedAttributes<D, M>
+    attributes: MixinUpdate<D, M>
   ): Promise<TxResult> {
-    const tx = this.txFactory.createTxMixin(objectId, objectClass, mixin, attributes)
+    const tx = this.txFactory.createTxMixin(objectId, objectClass, objectSpace, mixin, attributes)
+    return this.storage.tx(tx)
+  }
+
+  updateMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinUpdate<D, M>
+  ): Promise<TxResult> {
+    const tx = this.txFactory.createTxMixin(objectId, objectClass, objectSpace, mixin, attributes)
     return this.storage.tx(tx)
   }
 }
@@ -515,7 +546,7 @@ export class TxFactory {
     }
   }
 
-  createTxMixin<D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, mixin: Ref<Mixin<M>>, attributes: ExtendedAttributes<D, M>): TxMixin<D, M> {
+  createTxMixin<D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, objectSpace: Ref<Space>, mixin: Ref<Mixin<M>>, attributes: MixinUpdate<D, M>): TxMixin<D, M> {
     return {
       _id: generateId(),
       _class: core.class.TxMixin,
@@ -524,9 +555,9 @@ export class TxFactory {
       modifiedOn: Date.now(),
       objectId,
       objectClass,
-      objectSpace: core.space.Model,
+      objectSpace,
       mixin,
-      attributes
+      attributes: attributes
     }
   }
 

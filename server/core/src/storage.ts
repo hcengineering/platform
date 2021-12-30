@@ -145,11 +145,19 @@ class TServerStorage implements ServerStorage {
         attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
         if (attachedTo !== undefined) {
           const txFactory = new TxFactory(tx.modifiedBy)
-          return [
-            txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
+          const baseClass = this.hierarchy.getBaseClass(_class)
+          if (baseClass !== _class) {
+            // Mixin opeeration is required.
+            return [txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, {
               $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-            })
-          ]
+            })]
+          } else {
+            return [
+              txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
+                $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+              })
+            ]
+          }
         }
       }
     }

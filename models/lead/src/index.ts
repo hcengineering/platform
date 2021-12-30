@@ -15,19 +15,19 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Contact, Employee } from '@anticrm/contact'
+import type { Employee } from '@anticrm/contact'
 import type { Doc, FindOptions, Ref } from '@anticrm/core'
-import type { Funnel, Lead } from '@anticrm/lead'
-import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import type { Customer, Funnel, Lead } from '@anticrm/lead'
+import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
-import contact from '@anticrm/model-contact'
+import contact, { TPerson } from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type {} from '@anticrm/view'
+import type { } from '@anticrm/view'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -37,11 +37,11 @@ export class TFunnel extends TSpaceWithStates implements Funnel {}
 @Model(lead.class.Lead, task.class.Task)
 @UX('Lead' as IntlString, lead.icon.Lead, undefined, 'title')
 export class TLead extends TTask implements Lead {
+  @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
+  declare attachedTo: Ref<Customer>
+
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
-
-  @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
-  customer!: Ref<Contact>
 
   @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
@@ -53,8 +53,18 @@ export class TLead extends TTask implements Lead {
   declare assignee: Ref<Employee> | null
 }
 
+@Mixin(lead.mixin.Customer, contact.class.Contact)
+@UX('Customer' as IntlString, contact.icon.Person) // <-- Use general customer icons here.
+export class TCustomer extends TPerson implements Customer {
+  @Prop(Collection(lead.class.Lead), 'Leads' as IntlString)
+  leads?: number
+
+  @Prop(TypeString(), 'Description' as IntlString)
+  description!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TFunnel, TLead)
+  builder.createModel(TFunnel, TLead, TCustomer)
 
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -71,6 +81,15 @@ export function createModel (builder: Builder): void {
       icon: lead.icon.LeadApplication,
       hidden: false,
       navigatorModel: {
+        specials: [
+          {
+            id: 'customers',
+            label: lead.string.Customers,
+            icon: contact.icon.Person, // <-- Put contact general icon here.
+            component: lead.component.Customers,
+            position: 'bottom'
+          }
+        ],
         spaces: [
           {
             label: lead.string.Funnels,
@@ -103,18 +122,18 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        customer: contact.class.Contact,
+        attachedTo: contact.class.Contact,
         state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
-      '$lookup.customer',
+      '$lookup.attachedTo',
       '$lookup.state',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.customer.channels'
+      '$lookup.attachedTo.channels'
     ]
   })
 
@@ -144,6 +163,10 @@ export function createModel (builder: Builder): void {
     presenter: lead.component.LeadPresenter
   })
 
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributeEditor, {
+    editor: lead.component.Leads
+  })
+
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
@@ -159,6 +182,6 @@ export function createModel (builder: Builder): void {
   )
 }
 
-export { default } from './plugin'
-export { leadOperation } from './migration'
 export { createDeps } from './creation'
+export { leadOperation } from './migration'
+export { default } from './plugin'

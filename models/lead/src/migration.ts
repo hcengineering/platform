@@ -42,7 +42,7 @@ export const leadOperation: MigrateOperation = {
       await client.update<TxCreateDoc<Lead>>(DOMAIN_TX, { _id: tx._id }, {
         attributes: {
           ...tx.attributes,
-          attachedTo: tx.attributes.customer,
+          attachedTo: (tx.attributes as any).customer,
           attachedToClass: contact.class.Contact
         }
       })
@@ -57,7 +57,7 @@ export const leadOperation: MigrateOperation = {
     for (const lead of leads) {
       if (lead.attachedTo === undefined) {
         await ops.updateDoc(lead._class, lead.space, lead._id, {
-          attachedTo: lead.customer,
+          attachedTo: (lead as any).customer,
           attachedToClass: contact.class.Contact
         })
       }

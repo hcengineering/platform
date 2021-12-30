@@ -14,36 +14,34 @@
 //
 
 import core, {
-  Ref,
+  AttachedDoc,
   Class,
-  Doc,
-  Tx,
-  DocumentQuery,
-  TxCreateDoc,
-  TxRemoveDoc,
   Client,
+  Doc,
+  DocumentQuery,
   FindOptions,
-  TxUpdateDoc,
-  _getOperator,
-  TxProcessor,
-  resultSort,
-  SortingQuery,
+  findProperty,
   FindResult,
   Hierarchy,
-  Refs,
-  WithLookup,
   LookupData,
-  TxMixin,
-  TxPutBag,
   ModelDb,
+  Ref,
+  Refs,
+  resultSort,
+  SortingQuery,
+  Tx,
   TxBulkWrite,
-  TxResult,
   TxCollectionCUD,
-  AttachedDoc,
-  findProperty
+  TxCreateDoc,
+  TxMixin,
+  TxProcessor,
+  TxPutBag,
+  TxRemoveDoc,
+  TxResult,
+  TxUpdateDoc,
+  WithLookup
 } from '@anticrm/core'
-
-import clone from 'just-clone'
+import justClone from 'just-clone'
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -79,7 +77,11 @@ export class LiveQuery extends TxProcessor implements Client {
 
   private match (q: Query, doc: Doc): boolean {
     if (!this.getHierarchy().isDerived(doc._class, q._class)) {
-      return false
+      // Check if it is not a mixin and not match class
+      const mixinClass = Hierarchy.mixinClass(doc)
+      if (mixinClass === undefined || !this.getHierarchy().isDerived(mixinClass, q._class)) {
+        return false
+      }
     }
     const query = q.query
     for (const key in query) {
@@ -157,8 +159,29 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
+  protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+    for (const q of this.queries) {
+      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
+        // handle add since Txes are immutable
+        await this.handleDocAdd(q, tx)
+        continue
+      }
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      let updatedDoc = q.result.find((p) => p._id === tx.objectId)
+      if (updatedDoc !== undefined) {
+        // Create or apply mixin value
+        updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
+        await this.callback(updatedDoc, q)
+      } else {
+        if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
+          // Mixin potentially added to object we doesn't have in out results
+          await this.refresh(q)
+        }
+      }
+    }
+    return {}
   }
 
   protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
@@ -222,10 +245,23 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
+  /**
+   * Clone document with respect to mixin inner document cloning.
+   */
+  private clone<T extends Doc>(results: T[]): T[] {
+    const result: T[] = []
+    const h = this.getHierarchy()
+    for (const doc of results) {
+      const m = Hierarchy.mixinClass(doc)
+      result.push(m !== undefined ? h.as(Hierarchy.toDoc(doc), m) : justClone(doc))
+    }
+    return result
+  }
+
   private async refresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
     q.result = res
-    q.callback(clone(res))
+    q.callback(this.clone(res))
   }
 
   // Check if query is partially matched.
@@ -281,10 +317,10 @@ export class LiveQuery extends TxProcessor implements Client {
 
       if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
         if (q.result.pop()?._id !== doc._id) {
-          q.callback(clone(q.result))
+          q.callback(this.clone(q.result))
         }
       } else {
-        q.callback(clone(q.result))
+        q.callback(this.clone(q.result))
       }
     }
   }
@@ -315,7 +351,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     if (index > -1) {
       q.result.splice(index, 1)
-      q.callback(clone(q.result))
+      q.callback(this.clone(q.result))
     }
   }
 
@@ -327,15 +363,12 @@ export class LiveQuery extends TxProcessor implements Client {
     return await super.tx(tx)
   }
 
-  // why this is separate from txUpdateDoc?
   private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
+    TxProcessor.updateDoc2Doc(updatedDoc, tx)
+
     const ops = tx.operations as any
     for (const key in ops) {
-      if (key.startsWith('$')) {
-        const operator = _getOperator(key)
-        operator(updatedDoc, ops[key])
-      } else {
-        ;(updatedDoc as any)[key] = ops[key]
+      if (!key.startsWith('$')) {
         if (q.options !== undefined) {
           const lookup = (q.options.lookup as any)?.[key]
           if (lookup !== undefined) {
@@ -344,8 +377,6 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       }
     }
-    updatedDoc.modifiedBy = tx.modifiedBy
-    updatedDoc.modifiedOn = tx.modifiedOn
   }
 
   private sort (q: Query, tx: TxUpdateDoc<Doc>): void {
@@ -380,7 +411,7 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       if (q.result.pop()?._id !== updatedDoc._id) q.callback(q.result)
     } else {
-      q.callback(clone(q.result))
+      q.callback(this.clone(q.result))
     }
   }
 }

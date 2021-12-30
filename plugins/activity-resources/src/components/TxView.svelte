@@ -127,11 +127,25 @@
     buildModel(ops).then((m) => {
       model = m.filter((x) => !hiddenAttrs.has(x.key))
     })
+  } else if (tx.mixinTx !== undefined) {
+    const _class = tx.mixinTx.mixin
+    const ops = {
+      client,
+      _class,
+      keys: Object.keys(tx.mixinTx.attributes).filter((id) => !id.startsWith('$')),
+      ignoreMissing: true
+    }
+    const hiddenAttrs = new Set([...client.getHierarchy().getAllAttributes(_class).entries()]
+      .filter(([, attr]) => attr.hidden === true)
+      .map(([k]) => k))
+
+    buildModel(ops).then((m) => {
+      model = m.filter((x) => !hiddenAttrs.has(x.key))
+    })
   }
 
-  async function getValue (m: AttributeModel, utx: TxUpdateDoc<Doc>): Promise<any> {
-    const val = (utx.operations as any)[m.key]
-    console.log(m._class, m.key, val, typeof val)
+  async function getValue (m: AttributeModel, utx: any): Promise<any> {
+    const val = (utx as any)[m.key]
 
     if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
       // We have an reference, we need to find a real object to pass for presenter
@@ -171,7 +185,6 @@
     props = { ...props, edit }
   }
 </script>
-
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
   <div class="flex-between msgactivity-container">
 
@@ -215,14 +228,25 @@
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m}
-            {#await getValue(m, tx.updateTx) then value}
-                {#if value === null}
-                  <span>unset <Label label={m.label} /></span>
-                {:else}
-                  <span>changed <Label label={m.label} /> to</span>                
-                  <div class="strong"><svelte:component this={m.presenter} {value} /></div>
-                {/if}
-              {/await}
+              {#await getValue(m, tx.updateTx.operations) then value}
+                  {#if value === null}
+                    <span>unset <Label label={m.label} /></span>
+                  {:else}
+                    <span>changed <Label label={m.label} /> to</span>                
+                    <div class="strong"><svelte:component this={m.presenter} {value} /></div>
+                  {/if}
+                {/await}
+            {/each}
+          {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
+            {#each model as m}
+              {#await getValue(m, tx.mixinTx.attributes) then value}
+                  {#if value === null}
+                    <span>unset <Label label={m.label} /></span>
+                  {:else}
+                    <span>changed <Label label={m.label} /> to</span>                
+                    <div class="strong"><svelte:component this={m.presenter} {value} /></div>
+                  {/if}
+                {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             <div>

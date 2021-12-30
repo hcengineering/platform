@@ -20,7 +20,7 @@
   // import Icon from './Icon.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
-import ErrorPresenter from './ErrorPresenter.svelte';
+  import ErrorPresenter from './ErrorPresenter.svelte'
 
   export let is: AnyComponent
   export let props = {}

@@ -17,7 +17,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions,
-  FindResult, Hierarchy, isOperator, ModelDb, Ref, SortingOrder, Tx,
+  FindResult, Hierarchy, isOperator, Mixin, ModelDb, Ref, SortingOrder, Tx,
   TxCreateDoc,
   TxMixin, TxProcessor, TxPutBag,
   TxRemoveDoc,
@@ -56,11 +56,17 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
       translated[key] = value
     }
-    const classes = this.hierarchy.getDescendants(clazz)
+    const baseClass = this.hierarchy.getBaseClass(clazz)
+    const classes = this.hierarchy.getDescendants(baseClass)
 
     // Only replace if not specified
     if (translated._class?.$in === undefined) {
       translated._class = { $in: classes }
+    }
+
+    if (baseClass !== clazz) {
+      // Add an mixin to be exists flag
+      translated[clazz] = { $exists: true }
     }
     // return Object.assign({}, query, { _class: { $in: classes } })
     return translated
@@ -168,8 +174,91 @@ class MongoAdapter extends MongoAdapterBase {
     return {}
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
+  protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+    const domain = this.hierarchy.getDomain(tx.objectClass)
+
+    if (isOperator(tx.attributes)) {
+      const operator = Object.keys(tx.attributes)[0]
+      if (operator === '$move') {
+        const keyval = (tx.attributes as any).$move
+        const arr = tx.mixin + '.' + Object.keys(keyval)[0]
+        const desc = keyval[arr]
+        const ops = [
+          {
+            updateOne: {
+              filter: { _id: tx.objectId },
+              update: {
+                $pull: {
+                  [arr]: desc.$value
+                }
+              }
+            }
+          },
+          {
+            updateOne: {
+              filter: { _id: tx.objectId },
+              update: {
+                $set: {
+                  modifiedBy: tx.modifiedBy,
+                  modifiedOn: tx.modifiedOn
+                },
+                $push: {
+                  [arr]: {
+                    $each: [desc.$value],
+                    $position: desc.$position
+                  }
+                }
+              }
+            }
+          }
+        ]
+        return await this.db.collection(domain).bulkWrite(ops as any)
+      } else {
+        return await this.db.collection(domain).updateOne(
+          { _id: tx.objectId },
+          {
+            ...this.translateMixinAttrs(tx.mixin, tx.attributes),
+            $set: {
+              modifiedBy: tx.modifiedBy,
+              modifiedOn: tx.modifiedOn
+            }
+          }
+        )
+      }
+    } else {
+      return await this.db
+        .collection(domain)
+        .updateOne(
+          { _id: tx.objectId },
+          {
+            $set: {
+              ...this.translateMixinAttrs(tx.mixin, tx.attributes),
+              modifiedBy: tx.modifiedBy,
+              modifiedOn: tx.modifiedOn
+            }
+          }
+        )
+    }
+  }
+
+  private translateMixinAttrs (mixin: Ref<Mixin<Doc>>, attributes: Record<string, any>): Record<string, any> {
+    const attrs: Record<string, any> = {}
+    let count = 0
+    for (const [k, v] of Object.entries(attributes)) {
+      if (k.startsWith('$')) {
+        attrs[k] = this.translateMixinAttrs(mixin, v)
+      } else {
+        attrs[mixin + '.' + k] = v
+      }
+      count++
+    }
+
+    if (count === 0) {
+      // We need at least one attribute, to be inside for first time,
+      // for mongo to create embedded object, if we don't want to get object first.
+      attrs[mixin + '.' + '__mixin'] = 'true'
+    }
+    return attrs
   }
 
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {

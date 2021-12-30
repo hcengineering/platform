@@ -27,6 +27,8 @@
   }
 </script>
 
-<div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></span>{value.title}
-</div>
+{#if value}
+  <div class="sm-tool-icon" on:click={show}>
+    <span class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></span>{value.title}
+  </div>
+{/if}

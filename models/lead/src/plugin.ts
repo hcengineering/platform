@@ -38,7 +38,9 @@ export default mergeIds(leadId, lead, {
     EditLead: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     LeadPresenter: '' as AnyComponent,
-    TemplatesIcon: '' as AnyComponent
+    TemplatesIcon: '' as AnyComponent,
+    Customers: '' as AnyComponent,
+    Leads: '' as AnyComponent
   },
   space: {
     DefaultFunnel: '' as Ref<Space>
