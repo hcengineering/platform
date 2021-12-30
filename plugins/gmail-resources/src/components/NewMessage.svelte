@@ -123,14 +123,12 @@
       border-radius: .5rem;
 
       :global(.ProseMirror) {
-        // PLEASE FIX IT
         min-height: 0;
         max-height: 100%;
         height: 100%;
       }
 
       :global(a) {
-        // PLEASE FIX IT
         font: inherit;
         font-weight: 500;
         text-decoration: initial;

@@ -31,7 +31,6 @@
     border-radius: .5rem;
 
     :global(a) {
-      // PLEASE FIX IT
       font: inherit;
       font-weight: 500;
       text-decoration: initial;
