@@ -20,18 +20,15 @@
   $: if (editor) editor.innerHTML = content
 </script>
 
-<div class="flex-col h-full">
-  <div bind:this={editor} class="input h-full" />
-</div>
+<div bind:this={editor} class="input clear-mins" />
 
 <style lang="scss">
   .input {
+    overflow: auto;
     padding: 1rem;
-    border-radius: 0.5rem;
     background-color: #fff;
-    overflow-x: auto;
     color: #1f212b;
-    height: 85%; // PLEASE FIX IT
+    border-radius: .5rem;
 
     :global(a) {
       // PLEASE FIX IT

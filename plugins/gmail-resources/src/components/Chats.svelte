@@ -693,7 +693,7 @@
     padding: 0 6rem 0 2.5rem;
     height: 4rem;
     color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-card-divider);
+    border-bottom: 1px solid var(--theme-zone-bg);
 
     .icon {
       margin-right: 1rem;

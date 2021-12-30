@@ -40,18 +40,18 @@
   {#if message.copy?.length}
     <Label label={gmail.string.Copy} />: {message.copy.join(', ')}
   {/if}
-  <div class="mt-5">
+  <div class="flex-col clear-mins mt-5">
     <FullMessageContent content={message.content} />
   </div>
 </div>
 
 <style lang="scss">
   .popup {
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
     padding: 1rem;
     max-height: 500px;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    background-color: var(--theme-button-bg-focused);
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
   }
 </style>

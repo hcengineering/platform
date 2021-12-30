@@ -250,6 +250,10 @@ p:last-child { margin-block-end: 0; }
 .w-full { width: 100%;  }
 .min-w-0 { min-width: 0; }
 .min-h-0 { min-height: 0; }
+.clear-mins {
+  min-width: 0;
+  min-height: 0;
+}
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
@@ -386,10 +390,11 @@ a.no-line {
 .background-highlight-red { background-color: var(--highlight-red); }
 .background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
 .background-menu-divider { background-color: var(--theme-menu-divider); }
-.background-primary-button-enabled { background-color: var(--primary-button-enabled); }
+.background-primary-color { background-color: var(--primary-button-enabled); }
 
 .content-color { color: var(--theme-content-color); }
 .content-trans-color { color: var(--theme-content-trans-color); }
+.content-accent-color { color: var(--theme-content-accent-color); }
 .content-dark-color { color: var(--theme-content-dark-color); }
 .caption-color { color: var(--theme-caption-color); }
 

@@ -33,20 +33,18 @@
   $: user = currentMessage.incoming ? currentMessage.receiver : currentMessage.sender
 </script>
 
-<div class="flex-between header">
+<div class="flex-between clear-mins header">
   <div
     class="flex-center icon"
     on:click={() => {
       dispatch('close')
     }}
   >
-    <div class="scale-75">
-      <IconArrowLeft size="large" />
-    </div>
+    <IconArrowLeft size="medium" />
   </div>
-  <div class="flex-grow flex-col">
-    <div class="fs-title">{currentMessage.subject}</div>
-    <div class="small-text content-dark-color">
+  <div class="flex-grow flex-col mr-4 min-w-0">
+    <div class="fs-title overflow-label">{currentMessage.subject}</div>
+    <div class="small-text content-dark-color overflow-label">
       <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
       {title}
     </div>
@@ -62,15 +60,13 @@
     />
   </div>
 </div>
-<div class="h-full right-content">
-  <div>
-    <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
-    {user}
-  </div>
+<div class="flex-col clear-mins right-content">
+  <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
+  {user}
   {#if currentMessage.copy?.length}
     <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
   {/if}
-  <div class="mt-9">
+  <div class="flex-col clear-mins mt-9">
     <FullMessageContent content={currentMessage.content} />
   </div>
 </div>
@@ -81,9 +77,10 @@
     padding: 0 6rem 0 2.5rem;
     height: 4rem;
     color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-card-divider);
+    border-bottom: 1px solid var(--theme-zone-bg);
 
     .icon {
+      flex-shrink: 0;
       margin-right: 1rem;
       width: 2.25rem;
       height: 2.25rem;
@@ -95,6 +92,6 @@
 
   .right-content {
     flex-grow: 1;
-    padding: 2rem;
+    padding: 1.5rem 2.5rem;
   }
 </style>

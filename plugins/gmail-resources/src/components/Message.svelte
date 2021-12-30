@@ -28,57 +28,41 @@
 </script>
 
 <div
-  class="flex-between cursor-pointer"
-  class:selectable
+  class="flex-row-center clear-mins message-conatiner"
   on:click|preventDefault={() => {
     dispatch('select', message)
   }}
 >
-  <div class="flex-grow mr-6 flex" class:ml-6={!selectable}>
-    {#if selectable}
-      <div class="mr-4 ml-1"><CheckBox circle primary bind:checked={selected} /></div>
-    {/if}
-    <div class="flex-col message" class:selected>
-      <div class="flex-between mb-2">
-        <div class="mr-4">{formatName(message.sender)}</div>
-        <div class="time">{getTime(message.modifiedOn)}</div>
-      </div>
-      <div class="flex content mb-1 fs-title">
-        {message.subject}
-      </div>
-      <div class="flex content">
-        {message.textContent}
-      </div>
+  {#if selectable}
+    <div class="mr-4"><CheckBox circle primary bind:checked={selected} /></div>
+  {/if}
+  <div class="flex-col message" class:selected>
+    <div class="flex-between small-text mb-4">
+      <div class="content-trans-color overflow-label mr-4">From: <span class="content-accent-color">{formatName(message.sender)}</span></div>
+      <div class="content-trans-color">{getTime(message.modifiedOn)}</div>
+    </div>
+    <div class="fs-title overflow-label mb-1">
+      {message.subject}
+    </div>
+    <div class="overflow-label">
+      {message.textContent}
     </div>
   </div>
 </div>
 
 <style lang="scss">
-  .message {
-    padding: 0.75rem;
-    width: 100%;
-    max-width: 100%;
-    background-color: var(--theme-incoming-msg);
-    border-radius: 0.75rem;
-    white-space: nowrap;
-
-    .content {
-      display: inline-block;
-      white-space: nowrap;
-      overflow-x: hidden;
-      text-overflow: ellipsis;
-      width: 300px; // PLEASE FIX IT)
-    }
-
-    .time {
-      margin-left: auto;
-    }
+  .message-conatiner {
+    margin: 0 1.5rem;
+    cursor: pointer;
   }
 
-  .selectable {
-    margin: 0 0.25rem 0 0;
-    .selected {
-      background-color: var(--primary-button-enabled);
-    }
+  .message {
+    padding: 1rem;
+    min-width: 0;
+    background-color: var(--theme-incoming-msg);
+    border-radius: .75rem;
+    white-space: nowrap;
+
+    &.selected { background-color: var(--primary-button-enabled); }
   }
 </style>

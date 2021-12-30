@@ -59,39 +59,35 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex-between header">
+<div class="flex-between clear-mins header">
   <div
     class="flex-center icon"
     on:click={() => {
       dispatch('close')
     }}
   >
-    <div class="scale-75">
-      <IconArrowLeft size="large" />
-    </div>
+    <IconArrowLeft size="medium" />
   </div>
   <div class="flex-grow flex-col">
     <div class="fs-title">Gmail</div>
-    <div class="small-text content-dark-color">
+    <div class="small-text content-dark-color overflow-label">
       <Label label={gmail.string.NewMessageTo} />
-      {formatName(object.name)} ({contact})
+      <span class="content-accent-color">{formatName(object.name)} ({contact})</span>
     </div>
   </div>
   <div class="mr-3">
     <Button label={gmail.string.Send} size={'small'} primary on:click={sendMsg} />
   </div>
 </div>
-<div class="h-full right-content">
-  <div class="flex-col h-full">
-    <div>
-      <EditBox label={gmail.string.Subject} bind:value={obj.subject} placeholder={'Message subject'} />
-    </div>
-    <div>
-      <EditBox label={gmail.string.Copy} bind:value={copy} placeholder={'Copy to'} />
-    </div>
-    <div class="input mt-9">
-      <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />
-    </div>
+<div class="flex-col clear-mins right-content">
+  <div class="mb-2">
+    <EditBox label={gmail.string.Subject} bind:value={obj.subject} placeholder={'Message subject'} />
+  </div>
+  <div class="mb-4">
+    <EditBox label={gmail.string.Copy} bind:value={copy} placeholder={'Copy to'} />
+  </div>
+  <div class="input clear-mins">
+    <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />
   </div>
 </div>
 
@@ -101,9 +97,10 @@
     padding: 0 6rem 0 2.5rem;
     height: 4rem;
     color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-card-divider);
+    border-bottom: 1px solid var(--theme-zone-bg);
 
     .icon {
+      flex-shrink: 0;
       margin-right: 1rem;
       width: 2.25rem;
       height: 2.25rem;
@@ -115,18 +112,19 @@
 
   .right-content {
     flex-grow: 1;
-    padding: 2rem;
+    padding: 1.5rem 2.5rem;
 
     .input {
+      overflow: auto;
       padding: 1rem;
-      border-radius: 0.5rem;
       background-color: #fff;
-      overflow-x: auto;
       color: #1f212b;
-      height: 80%; // PLEASE FIX IT
+      height: 100%;
+      border-radius: .5rem;
 
       :global(.ProseMirror) {
         // PLEASE FIX IT
+        min-height: 0;
         max-height: 100%;
         height: 100%;
       }
