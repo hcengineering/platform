@@ -16,7 +16,7 @@
 
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
-import contact, { ChannelProvider } from '@anticrm/contact'
+import contact, { ChannelProvider, Person } from '@anticrm/contact'
 import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
@@ -156,7 +156,7 @@ export async function importXml (
               lastModified: stats.mtime.getTime()
             }, {
               attachedTo: candId,
-              attachedClass: recruit.mixin.Candidate,
+              attachedClass: contact.class.Person,
               collection: 'attachments'
             })
 
@@ -227,7 +227,7 @@ async function createApplicant (vacancyId: Ref<Vacancy>, candidateId: Ref<Candid
   }
 
   // Update or create candidate
-  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, { attachedTo: candidateId, attachedClass: recruit.mixin.Candidate, collection: 'applications' })
+  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, { attachedTo: candidateId, attachedClass: contact.class.Person, collection: 'applications' })
 }
 
 async function createUpdateVacancy (client: TxOperations, statuses: any): Promise<{states: Map<string, Ref<State>>, vacancyId: Ref<Vacancy>}> {
@@ -259,9 +259,13 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
 
   const { sourceFields, telegram, linkedin, github } = parseSocials(c)
 
-  const data: Data<Candidate> = {
+  const data: Data<Person> = {
     name: names.slice(1).join(' ') + ',' + names[0],
     city: get(c, _.city) ?? '',
+    channels: []
+  }
+
+  const candidateData: MixinData<Person, Candidate> = {
     title: [
       get(c, _.vacancyKind),
       get(c, _.area)
@@ -270,8 +274,7 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
       get(c, _.socialContacted),
       get(c, _.socialChannel),
       sourceFields.filter(onlyUniq).join(', ')
-    ].filter(p => p !== undefined && p.trim().length > 0).filter(onlyUniq).join('/'),
-    channels: []
+    ].filter(p => p !== undefined && p.trim().length > 0).filter(onlyUniq).join('/')
   }
 
   pushChannel(c, data, _.email, contact.channelProvider.Email)
@@ -296,7 +299,8 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
   if (github !== undefined) {
     data.channels.push({ provider: contact.channelProvider.GitHub, value: github })
   }
-  await findOrUpdate(client, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candId, data)
+  await findOrUpdate(client, recruit.space.CandidatesPublic, contact.class.Person, candId, data)
+  await client.updateMixin(candId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateData)
 
   const commentId = (candId + '.description.comment') as Ref<Comment>
 

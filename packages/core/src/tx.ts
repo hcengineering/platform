@@ -73,6 +73,11 @@ export interface TxBulkWrite extends Tx {
 /**
  * @public
  */
+export type MixinData<D extends Doc, M extends D> = Omit<M, keyof D> & PushOptions<Omit<M, keyof D>> & IncOptions<Omit<M, keyof D>>
+
+/**
+ * @public
+ */
 export type MixinUpdate<D extends Doc, M extends D> = Partial<Omit<M, keyof D>> & PushOptions<Omit<M, keyof D>> & IncOptions<Omit<M, keyof D>>
 
 /**
@@ -426,7 +431,7 @@ export class TxOperations implements Storage {
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinUpdate<D, M>
+    attributes: MixinData<D, M>
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxMixin(objectId, objectClass, objectSpace, mixin, attributes)
     return this.storage.tx(tx)
