@@ -74,16 +74,17 @@
   }
 </script>
 
+<div class="overlay" on:click={() => { dispatch('close') }}/>
 <div class="flex-col floatdialog-container">
   <div class="flex-between header">
     <div class="flex-grow flex-col">
       <div class="flex-row-center">
-        <div class="icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
-        <span class="overflow-label title">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
+        <div class="mr-2"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
+        <span class="fs-title overflow-label">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
       </div>
-      <div class="overflow-label subtitle">{spaceInstance?.name}</div>
+      <div class="small-text content-dark-color overflow-label">{spaceInstance?.name}</div>
     </div>
-    <div class="tool" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
+    <div class="ml-4 content-accent-color cursor-pointer" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
   </div>
   <div class="flex-grow flex-col content">
     {#if kanban !== undefined}
@@ -94,39 +95,32 @@
 
 <style lang="scss">
   .floatdialog-container {
-    margin: 2rem 1rem 1.25rem 0;
-    height: calc(100% - 3.25rem);
-    background: var(--theme-dialog-bg-spec);
+    position: fixed;
+    top: 32px;
+    bottom: 1.25rem;
+    right: 1rem;
+    height: calc(100% - 32px - 1.25rem);
+    background-color: var(--theme-bg-color);
     border-radius: 1.25rem;
-    box-shadow: var(--theme-dialog-shadow);
-    backdrop-filter: blur(15px);
 
     .header {
       padding: 0 2rem 0 2.5rem;
       height: 4.5rem;
       min-height: 4.5rem;
-
-      .icon {
-        margin-right: .5rem;
-        opacity: .6;
-      }
-      .title {
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-      }
-      .subtitle {
-        font-size: .75rem;
-        color: var(--theme-content-dark-color);
-      }
-      .tool {
-        margin-left: 2.5rem;
-        cursor: pointer;
-      }
     }
     .content {
       overflow: auto;
       margin: 1rem 2.5rem 1rem 2.5rem;
     }
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: .5;
   }
 </style>
