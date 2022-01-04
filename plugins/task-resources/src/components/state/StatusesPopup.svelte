@@ -25,8 +25,8 @@
 
 <div class="flex-col popup">
   <div class="flex-row-center red-color menu-item" on:click={() => { dispatch('close'); onDelete() }}>
-    <div class="icon">
-      <Delete size={'medium'} />
+    <div class="mr-3">
+      <Delete size={'small'} />
     </div>
     <div class="flex-grow"><Label label={task.string.Delete} /></div>
   </div>
@@ -49,11 +49,6 @@
     border-radius: .5rem;
     cursor: pointer;
 
-    .icon {
-      margin-right: .75rem;
-      transform-origin: center center;
-      transform: scale(.75);
-    }
     &:hover { background-color: var(--theme-button-bg-hovered); }
   }
 </style>

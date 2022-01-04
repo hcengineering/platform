@@ -43,9 +43,6 @@
     cursor: pointer;
 
     .icon {
-      // transform-origin: center center;
-      // transform: scale(.75);
-      // color: var(--theme-content-trans-color);
       &.invisible { opacity: 0; }
     }
     &:hover .icon {

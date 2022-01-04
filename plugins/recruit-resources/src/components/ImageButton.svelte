@@ -24,13 +24,7 @@
 </script>
 
 <div class="flex-row-center container">
-  <div class="icon">
-    {#if typeof (icon) === 'string'}
-      <Icon {icon} size='small'/>
-    {:else}
-      <svelte:component this={icon} size='small' />
-    {/if}
-  </div>
+  <Icon {icon} size='small'/>
   <span><Label {label} /></span>
 </div>
 
@@ -43,11 +37,6 @@
     border-radius: .5rem;
     backdrop-filter: blur(3px);
     cursor: pointer;
-
-    .icon {
-      transform-origin: center center;
-      transform: scale(.75);
-    }
 
     span {
       margin-left: 0.376rem;

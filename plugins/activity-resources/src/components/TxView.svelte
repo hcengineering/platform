@@ -189,13 +189,11 @@
   <div class="flex-between msgactivity-container">
 
     <div class="flex-center icon">
-      <div class="scale-75">
-        {#if viewlet}
-          <Icon icon={viewlet.icon} size="medium" />
-        {:else}
-          <Icon icon={activity.icon.Activity} size="medium" />
-        {/if}
-      </div>
+      {#if viewlet}
+        <Icon icon={viewlet.icon} size="small" />
+      {:else}
+        <Icon icon={activity.icon.Activity} size="small" />
+      {/if}
     </div>
 
     <div class="flex-grow flex-col">

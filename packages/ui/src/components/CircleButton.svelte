@@ -27,7 +27,7 @@
 
 <div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click on:mousemove>
   <div class="content">
-    <Icon {icon} size={'small'} />
+    <Icon {icon} size={'full'} />
   </div>
 </div>
 
@@ -38,12 +38,7 @@
     border-radius: 50%;
     cursor: pointer;
 
-    .content {
-      transform-origin: center center;
-      transform: scale(.75);
-      pointer-events: none;
-    }
-
+    .content { pointer-events: none; }
     &.selected { background-color: var(--theme-circle-select); }
     &.transparent { background-color: var(--theme-circle-trans); }
     &.primary {
@@ -57,20 +52,33 @@
   .icon-small {
     width: 1.5rem;
     height: 1.5rem;
-    .content { transform: scale(.6); }
+    .content {
+      width: .625rem;
+      height: .625rem;
+    }
   }
   .icon-medium {
     width: 1.75rem;
     height: 1.75rem;
+    .content {
+      width: .75rem;
+      height: .75rem;
+    }
   }
   .icon-large {
     width: 2rem;
     height: 2rem;
-    .content { transform: scale(.9); }
+    .content {
+      width: .875rem;
+      height: .875rem;
+    }
   }
   .icon-x-large {
     width: 2.25rem;
     height: 2.25rem;
-    .content { transform: none; }
+    .content {
+      width: 1rem;
+      height: 1rem;
+    }
   }
 </style>

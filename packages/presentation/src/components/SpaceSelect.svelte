@@ -59,7 +59,7 @@
 >
   <div class="overflow-label label"><Label {label} /></div>
   <div class="flex-row-center space">
-    <span class="scale-75 mr-1"><IconFolder size={'small'} /></span>
+    <span class="mr-1"><IconFolder size={'small'} /></span>
     <span class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
       {#if selected}
         {selected.name}

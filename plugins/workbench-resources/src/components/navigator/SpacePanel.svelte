@@ -110,8 +110,6 @@
 
       .tool {
         margin-left: .75rem;
-        transform-origin: center center;
-        transform: scale(.75);
         color: var(--theme-content-accent-color);
         cursor: pointer;
         &:hover { color: var(--theme-caption-color); }
