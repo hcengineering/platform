@@ -12004,7 +12004,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-1KP9YR2TMC9Zksf2G15aecCY4pIDpGaddPQ2BGtfkE2P/4XG6gYl2Mnf8GRr1c3r2IWJozLYw39MhpkXI9zCHQ==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-LqJ4mBkjSWhBA9OiiMUgLeoUF9IniLh1xr/G3iXRHSm8Li6OssMSTZ733CAoWVNPchAMn5xBibLV5Mi6syer9w==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -12029,8 +12029,11 @@ packages:
       koa-router: 10.1.1
       mongodb: 4.2.2
       prettier: 2.5.1
+      ts-node: 10.4.0_5d12c2add188ff0e728b4ade3dacd39b
       typescript: 4.5.4
     transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
       - supports-color
     dev: false
 

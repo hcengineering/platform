@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { getMetadata, Metadata, Plugin, Request, Response, StatusCode, PlatformError, plugin, Severity, Status, unknownStatus } from '@anticrm/platform'
+import platform, { getMetadata, Metadata, Plugin, Request, Response, PlatformError, plugin, Severity, Status, StatusCode } from '@anticrm/platform'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
@@ -45,8 +45,7 @@ const accountPlugin = plugin(accountId, {
     WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
     InvalidPassword: '' as StatusCode<{account: string}>,
     AccountAlreadyExists: '' as StatusCode<{account: string}>,
-    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>,
-    Forbidden: '' as StatusCode
+    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>
   }
 })
 
@@ -170,7 +169,7 @@ export async function login (db: Db, email: string, password: string, workspace:
     }
   }
 
-  throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.Forbidden, {}))
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
 }
 
 /**
@@ -304,7 +303,7 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
   return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
     return await f(db, ...request.params)
       .then((result) => ({ id: request.id, result }))
-      .catch((err) => ({ error: unknownStatus(err) }))
+      .catch((err) => ({ error: err instanceof PlatformError ? new Status(Severity.ERROR, platform.status.Forbidden, {}) : new Status(Severity.ERROR, platform.status.InternalServerError, {}) }))
   }
 }
 

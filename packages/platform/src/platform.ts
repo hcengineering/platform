@@ -138,6 +138,7 @@ export default plugin(platformId, {
     BadRequest: '' as StatusCode,
     Forbidden: '' as StatusCode,
     Unauthorized: '' as StatusCode,
-    UnknownMethod: '' as StatusCode<{ method: string }>
+    UnknownMethod: '' as StatusCode<{ method: string }>,
+    InternalServerError: '' as StatusCode
   }
 })
