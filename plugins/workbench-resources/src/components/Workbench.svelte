@@ -95,6 +95,10 @@
   $: query.query(workbench.class.Application, { hidden: false }, result => { apps = result })
 
   let visibileNav: boolean = true
+  const toggleNav = async () => {
+    visibileNav = !visibileNav
+    closeTooltip()
+  }
 </script>
 
 {#if client}
@@ -107,21 +111,19 @@
     </clipPath>
   </svg>
   <div class="container">
-    <div class="panel-app">
+    <div class="panel-app" on:click={toggleNav}>
       <div class="flex-col">
         <ActivityStatus status="active"/>
         <AppItem
           icon={TopMenu}
           label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-          action={async () => {
-            visibileNav = !visibileNav
-            closeTooltip()
-          }}
+          selected={!visibileNav}
+          action={toggleNav}
         />
       </div>
       <Applications {apps} active={currentApp}/>
       <div class="flex-center" style="min-height: 6.25rem;">
-        <div class="cursor-pointer" on:click={(el) => { showPopup(AccountPopup, { }, 'account') }}>
+        <div class="cursor-pointer" on:click|stopPropagation={(el) => { showPopup(AccountPopup, { }, 'account') }}>
           <Avatar size={'medium'} />
         </div>
       </div>
