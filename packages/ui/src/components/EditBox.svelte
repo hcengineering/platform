@@ -64,12 +64,8 @@
   {#if label}<div class="label"><Label label={label}/></div>{/if}
   <div class="flex-row-center">
     {#if icon}
-      <div class="icon">
-        {#if typeof (icon) === 'string'}
-          <Icon {icon} size={'small'}/>
-        {:else}
-          <svelte:component this={icon} size={'small'} />
-        {/if}
+      <div class="content-trans-color mr-1">
+        <Icon {icon} size={'small'}/>
       </div>
     {/if}
     <div class="wrap">
@@ -118,13 +114,6 @@
     color: var(--theme-content-accent-color);
     pointer-events: none;
     user-select: none;
-  }
-
-  .icon {
-    margin-right: .25rem;
-    transform-origin: center center;
-    transform: scale(.75);
-    color: var(--theme-content-trans-color);
   }
 
   input {

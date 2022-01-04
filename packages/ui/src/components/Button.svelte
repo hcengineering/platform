@@ -31,7 +31,7 @@
 
 <button class="button {size}" class:transparent class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if icon && !loading}
-    <div class="scale-75 icon">
+    <div class="icon">
       <Icon {icon} size={'small'}/>
     </div>
   {/if}

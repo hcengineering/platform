@@ -32,11 +32,7 @@
 <span class="container" class:disabled on:click>
   {#if icon}
     <span class="icon">
-      {#if typeof (icon) === 'string'}
-        <Icon {icon} size={'small'}/>
-      {:else}
-        <svelte:component this={icon} size={'small'} />
-      {/if}
+      <Icon {icon} size={'small'}/>
     </span>
   {/if}
   {#if disabled}
@@ -55,8 +51,6 @@
 
     .icon {
       margin-right: .25rem;
-      transform-origin: center center;
-      transform: scale(.75);
       color: var(--theme-content-color);
     }
     &:hover .icon { color: var(--theme-caption-color); }

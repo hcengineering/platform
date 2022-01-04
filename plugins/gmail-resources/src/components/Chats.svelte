@@ -121,7 +121,7 @@
       </div>
     </div>
   {:else if enabled}
-    <div class="flex-center icon"><div class="scale-75"><Icon icon={contact.icon.Email} size="small" /></div></div>
+    <div class="flex-center icon"><Icon icon={contact.icon.Email} size="small" /></div>
     <div class="flex-grow flex-col">
       <div class="fs-title">Gmail</div>
       <div class="small-text content-dark-color"><Label label={gmail.string.YouAnd} /> {formatName(object.name)}</div>
