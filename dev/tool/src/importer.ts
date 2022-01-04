@@ -17,7 +17,7 @@
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
 import contact, { ChannelProvider, Person } from '@anticrm/contact'
-import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult } from '@anticrm/core'
+import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult, MixinData } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
 import task, { calcRank, DoneState, genRanks, Kanban, State } from '@anticrm/task'
