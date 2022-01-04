@@ -139,12 +139,18 @@
   }
 
   let mainEditor: HTMLElement
+  let prevEditor: HTMLElement
   let maxHeight = 0
   const observer = new ResizeObserver(() => {
     const curHeight = mainEditor.clientHeight
     maxHeight = Math.max(maxHeight, curHeight)
   })
-  $: if (mainEditor !== undefined) {
+
+  $: if (mainEditor != null) {
+    if (prevEditor != null) {
+      observer.unobserve(prevEditor)
+    }
+    prevEditor = mainEditor
     observer.observe(mainEditor)
   }
 
