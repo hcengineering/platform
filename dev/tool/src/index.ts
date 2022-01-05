@@ -218,7 +218,7 @@ program
   .command('restore-workspace <workspace> <dirName>')
   .description('restore workspace transactions and minio resources from previous dump.')
   .action(async (workspace, dirName, cmd) => {
-    return await restoreWorkspace(mongodbUri, workspace, dirName, minio, elasticUrl)
+    return await restoreWorkspace(mongodbUri, workspace, dirName, minio, elasticUrl, transactorUrl)
   })
 
 program
