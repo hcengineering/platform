@@ -308,7 +308,12 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.options?.lookup !== undefined) {
         await this.lookup(doc, q.options.lookup)
       }
-
+      // We could already have document inside results, if query is created during processing of document create transaction and not yet handled on client.
+      const pos = q.result.findIndex((p) => p._id === doc._id)
+      if (pos >= 0) {
+        // No need to update, document already in results.
+        return
+      }
       q.result.push(doc)
 
       if (q.options?.sort !== undefined) {
