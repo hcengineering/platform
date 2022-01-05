@@ -19,7 +19,10 @@ import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeCli
 import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
 import recruit, { Candidate } from '@anticrm/recruit'
 
-function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'>): MixinData<Person, Candidate> {
+function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'> | undefined): MixinData<Person, Candidate> {
+  if (c === undefined) {
+    return {}
+  }
   const result: MixinData<Person, Candidate> = {
     onsite: c.onsite,
     title: c.title,
@@ -27,7 +30,7 @@ function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'>
     source: c.source
   }
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  Object.keys(result).forEach(key => (result as any)[key] === undefined && delete (result as any)[key])
+  Object.keys(result).forEach(key => (result as any)[key] == null && delete (result as any)[key])
   return result
 }
 
@@ -91,14 +94,20 @@ export const recruitOperation: MigrateOperation = {
     await migrateUpdateCandidateToPersonAndMixin(client)
 
     await migrateTxCollectionCandidateToPerson(client)
+
+    await client.update(DOMAIN_TX, {
+      _class: core.class.TxRemoveDoc,
+      objectClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      objectClass: contact.class.Person
+    })
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }
 async function migrateUpdateCandidateToPersonAndMixin (client: MigrationClient): Promise<void> {
   const updateCandidates = await client.find(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
-    objectClass: 'recruit:class:Candidate' as Ref<Class<Doc>>,
-    [`operations.${recruit.mixin.Candidate}`]: { $exists: true }
+    objectClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
   }) as TxUpdateDoc<Candidate>[]
   console.log('Processing update candidate operations:', updateCandidates.length)
   for (const c of updateCandidates) {
