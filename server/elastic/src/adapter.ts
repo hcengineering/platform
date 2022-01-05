@@ -95,44 +95,32 @@ class ElasticAdapter implements FullTextAdapter {
 
   async index (doc: IndexedDoc): Promise<TxResult> {
     if (doc.data === undefined) {
-      try {
-        await this.client.index({
-          index: this.db,
-          id: doc.id,
-          type: '_doc',
-          body: doc
-        })
-      } catch (err: any) {
-        console.error('elastic-exception', err)
-      }
+      await this.client.index({
+        index: this.db,
+        id: doc.id,
+        type: '_doc',
+        body: doc
+      })
     } else {
-      try {
-        await this.client.index({
-          index: this.db,
-          id: doc.id,
-          type: '_doc',
-          pipeline: 'attachment',
-          body: doc
-        })
-      } catch (err: any) {
-        console.error('elastic-exception', err)
-      }
+      await this.client.index({
+        index: this.db,
+        id: doc.id,
+        type: '_doc',
+        pipeline: 'attachment',
+        body: doc
+      })
     }
     return {}
   }
 
   async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
-    try {
-      await this.client.update({
-        index: this.db,
-        id,
-        body: {
-          doc: update
-        }
-      })
-    } catch (err: any) {
-      console.error('elastic-exception', err)
-    }
+    await this.client.update({
+      index: this.db,
+      id,
+      body: {
+        doc: update
+      }
+    })
 
     return {}
   }

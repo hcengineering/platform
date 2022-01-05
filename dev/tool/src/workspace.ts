@@ -205,14 +205,13 @@ export async function restoreWorkspace (
   dbName: string,
   fileName: string,
   minio: Client,
-  elasticUrl: string
+  elasticUrl: string,
+  transactorUrl: string
 ): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
     const db = client.db(dbName)
-
-    console.log('dumping transactions...')
 
     const workspaceInfo = JSON.parse((await readFile(fileName + '.workspace.json')).toString()) as WorkspaceInfo
 
@@ -220,6 +219,7 @@ export async function restoreWorkspace (
 
     const cols = await db.collections()
     for (const c of cols) {
+      console.log('dropping existing table', c.collectionName)
       await db.dropCollection(c.collectionName)
     }
     // Restore collections.
@@ -228,11 +228,11 @@ export async function restoreWorkspace (
       await collection.deleteMany({})
       const data = JSON.parse((await readFile(fileName + c.name + '.json')).toString()) as Document[]
       if (data.length > 0) {
+        console.log('restore existing collection', c.name, data.length)
         await collection.insertMany(data)
       }
     }
 
-    console.log('Restore minio objects')
     if (await minio.bucketExists(dbName)) {
       const objectNames = (await listMinioObjects(minio, dbName)).map((i) => i.name)
       await minio.removeObjects(dbName, objectNames)
@@ -241,10 +241,13 @@ export async function restoreWorkspace (
     await minio.makeBucket(dbName, 'k8s')
 
     const minioDbLocation = fileName + '.minio'
+    console.log('Restore minio objects', workspaceInfo.minioData.length)
     for (const d of workspaceInfo.minioData) {
       const data = await readFile(join(minioDbLocation, d.name))
       await minio.putObject(dbName, d.name, data, d.size, d.metaData)
     }
+
+    await upgradeWorkspace(mongoUrl, dbName, transactorUrl, minio)
 
     await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
   } finally {

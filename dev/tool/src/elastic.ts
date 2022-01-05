@@ -63,6 +63,7 @@ export async function rebuildElastic (
 }
 
 async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
+  console.log('drop existing elastic docment')
   const client = new ElasticClient({
     node: elasticUrl
   })
@@ -166,18 +167,30 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
   const done = await tool.connect()
   try {
-    const txes = (await tool.db.collection<Tx>(DOMAIN_TX).find().sort({ _id: 1 }).toArray())
+    const txes = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
     const metricsCtx = new MeasureMetricsContext('elastic', {})
-    for (const tx of data) {
-      await tool.storage.tx(metricsCtx, tx)
-    }
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)
+      console.log('reply elastic documents', minioObjects.length)
       for (const d of minioObjects) {
         await tool.indexAttachment(d.name)
       }
     }
+    console.log('replay elastic transactions', data.length)
+    let pos = 0
+    for (const tx of data) {
+      pos++
+      if (pos % 10000 === 0) {
+        console.log('replay elastic transactions', pos, data.length)
+      }
+      try {
+        await tool.storage.tx(metricsCtx, tx)
+      } catch (err: any) {
+        console.error('failed to replay tx', tx, err.message)
+      }
+    }
+    console.log('replay elastic transactions done')
   } finally {
     await done()
   }

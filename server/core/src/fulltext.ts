@@ -119,7 +119,6 @@ export class FullTextIndex implements WithFind {
     const { _id, $search, ...mainQuery } = query
     if ($search === undefined) return []
     const docs = await this.adapter.search(_class, query, options?.limit)
-    console.log(docs)
     const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>(docs.map(p => p.id))
     for (const doc of docs) {
       if (doc.attachedTo !== undefined) {
@@ -238,7 +237,16 @@ export class FullTextIndex implements WithFind {
           }
         }
         for (const attached of allAttached) {
-          await this.adapter.update(attached._id, docUpdate)
+          try {
+            await this.adapter.update(attached._id, docUpdate)
+          } catch (err: any) {
+            if (((err.message as string) ?? '').includes('document_missing_exception:')) {
+              console.error('missing document in elastic for', tx.objectId, 'attached', attached._id, 'collection', attached.collection)
+              // We have no document for attached object, so ignore for now. it is probable rebuild of elastic DB.
+              continue
+            }
+            throw err
+          }
         }
       }
     }
