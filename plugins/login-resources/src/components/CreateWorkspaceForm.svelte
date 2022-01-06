@@ -49,10 +49,6 @@
       }
     }
   }
-
-  showPopup(InviteLink, {}, undefined, () => {
-    navigate({ path: [workbench.component.WorkbenchApp] })
-  })
 </script>
 
 <Form
