@@ -78,6 +78,10 @@ class NullFullTextAdapter implements FullTextAdapter {
   async search (query: any): Promise<IndexedDoc[]> {
     return []
   }
+
+  async remove (id: Ref<Doc>): Promise<void> {
+
+  }
 }
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {

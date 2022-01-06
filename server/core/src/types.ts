@@ -45,17 +45,8 @@ export interface IndexedDoc {
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>
-  content0?: string
-  content1?: string
-  content2?: string
-  content3?: string
-  content4?: string
-  content5?: string
-  content6?: string
-  content7?: string
-  content8?: string
-  content9?: string
-  data?: string
+
+  [key: string]: any
 }
 
 /**
@@ -64,6 +55,7 @@ export interface IndexedDoc {
 export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
+  remove: (id: Ref<Doc>) => Promise<void>
   search: (_class: Ref<Class<Doc>>, search: DocumentQuery<Doc>, size: number | undefined) => Promise<IndexedDoc[]>
 }
 
