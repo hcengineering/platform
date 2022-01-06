@@ -26,5 +26,5 @@ import LoginApp from './components/LoginApp.svelte'
 export default async () => ({
   component: {
     LoginApp
-  },
+  }
 })

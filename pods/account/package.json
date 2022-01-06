@@ -12,10 +12,12 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/account .",
     "docker:push": "docker push anticrm/account",
+    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws:/localhost:3333 ts-node src/index.ts",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
     "@types/node": "^16.4.10",
@@ -32,6 +34,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
+    "ts-node": "^10.2.1",
     "@rushstack/heft": "^0.41.1",
     "typescript": "^4.3.5"
   },

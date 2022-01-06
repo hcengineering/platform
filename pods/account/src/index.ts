@@ -17,6 +17,7 @@
 import accountPlugin, { ACCOUNT_DB, methods } from '@anticrm/account'
 import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@anticrm/platform'
 import cors from '@koa/cors'
+import { IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
@@ -41,9 +42,21 @@ let client: MongoClient
 const app = new Koa()
 const router = new Router()
 
+const extractToken = (header: IncomingHttpHeaders): string | undefined => {
+  try {
+    return header.authorization?.slice(7) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
 router.post('rpc', '/', async (ctx) => {
+  const token = extractToken(ctx.request.headers)
+
   const request = ctx.request.body
-  const method = (methods as { [key: string]: (db: Db, request: Request<any>) => Response<any> })[request.method]
+  const method = (methods as { [key: string]: (db: Db, request: Request<any>, token?: string) => Response<any> })[
+    request.method
+  ]
   if (method === undefined) {
     const response: Response<void> = {
       id: request.id,
@@ -57,7 +70,7 @@ router.post('rpc', '/', async (ctx) => {
     client = await MongoClient.connect(dbUri)
   }
   const db = client.db(ACCOUNT_DB)
-  const result = await method(db, request)
+  const result = await method(db, request, token)
   console.log(result)
   ctx.body = result
 })

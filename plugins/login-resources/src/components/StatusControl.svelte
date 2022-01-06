@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Status } from '@anticrm/platform'
   import { Severity } from '@anticrm/platform'
@@ -23,17 +22,17 @@
 </script>
 
 {#if status.severity !== Severity.OK}
-<div class="flex-row-center container" class:error={status.severity === Severity.ERROR}>
-  <StatusControl {status} />
-</div>
+  <div class="flex-row-center container" class:error={status.severity === Severity.ERROR}>
+    <StatusControl {status} />
+  </div>
 {/if}
 
 <style lang="scss">
   .container {
-    padding: .75rem 1rem;
+    padding: 0.75rem 1rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
 
   .error {

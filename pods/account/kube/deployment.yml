@@ -24,3 +24,20 @@ spec:
                 secretKeyRef:
                   name: mongodb
                   key: url
+            - name: TRANSACTOR_URL
+              value: ws://transactor/
+            - name: MINIO_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: minio
+                  key: endpoint
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio
+                  key: accessKey
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio
+                  key: secretKey

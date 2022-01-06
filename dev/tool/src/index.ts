@@ -25,16 +25,13 @@ import {
   listWorkspaces,
   listAccounts
 } from '@anticrm/account'
-import contact, { combineName } from '@anticrm/contact'
-import core, { TxOperations } from '@anticrm/core'
 import { program } from 'commander'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
-import { connect } from './connect'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, dumpWorkspace, initWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
+import { diffWorkspace, dumpWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
 
 const mongodbUri = process.env.MONGO_URL
 if (mongodbUri === undefined) {
@@ -109,35 +106,8 @@ program
   .description('assign workspace')
   .action(async (email: string, workspace: string, cmd) => {
     return await withDatabase(mongodbUri, async (db, client) => {
-      console.log(`retrieveing account from ${email}...`)
-      const account = await getAccount(db, email)
-      if (account === null) {
-        throw new Error('account not found')
-      }
-
       console.log(`assigning user ${email} to ${workspace}...`)
       await assignWorkspace(db, email, workspace)
-
-      console.log('connecting to transactor...')
-      const connection = await connect(transactorUrl, workspace)
-      const ops = new TxOperations(connection, core.account.System)
-
-      const name = combineName(account.first, account.last)
-
-      console.log('create user in target workspace...')
-      const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
-        name,
-        city: 'Mountain View',
-        channels: []
-      })
-
-      console.log('create account in target workspace...')
-      await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
-        email,
-        employee,
-        name
-      })
-      await connection.close()
     })
   })
 
@@ -158,7 +128,6 @@ program
   .action(async (workspace, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
       await createWorkspace(db, workspace, cmd.organization)
-      await initWorkspace(mongodbUri, workspace, transactorUrl, minio)
     })
   })
 

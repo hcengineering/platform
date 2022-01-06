@@ -14,63 +14,58 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Status, Severity } from '@anticrm/platform'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { Status, Severity } from '@anticrm/platform'
 
   import Form from './Form.svelte'
-  import { doLogin } from '../utils'
-
+  import { createWorkspace } from '../utils'
+  import { getCurrentLocation, navigate, setMetadataLocalStorage, showPopup } from '@anticrm/ui'
   import login from '../plugin'
+  import workbench from '@anticrm/workbench'
+  import InviteLink from './InviteLink.svelte'
 
-  const fields = [
-    { id: 'email', name: 'username', i18n: login.string.Email },
-    {
-      id: 'current-password',
-      name: 'password',
-      i18n: login.string.Password,
-      password: true
-    }
-  ]
+  const fields = [{ name: 'workspace', i18n: login.string.Workspace, rule: /^\S+$/ }]
 
   const object = {
-    username: '',
-    password: ''
+    workspace: ''
   }
 
-  let status = OK
+  let status = new Status(Severity.OK, 0, '')
 
   const action = {
-    i18n: login.string.LogIn,
+    i18n: login.string.CreateWorkspace,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await doLogin(object.username, object.password)
+      const [loginStatus, result] = await createWorkspace(object.workspace)
       status = loginStatus
 
       if (result !== undefined) {
         setMetadataLocalStorage(login.metadata.LoginToken, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        const loc = getCurrentLocation()
-        loc.path[1] = 'selectWorkspace'
-        loc.path.length = 2
-        navigate(loc)
+        showPopup(InviteLink, {}, undefined, () => {
+          navigate({ path: [workbench.component.WorkbenchApp] })
+        })
       }
     }
   }
+
+  showPopup(InviteLink, {}, undefined, () => {
+    navigate({ path: [workbench.component.WorkbenchApp] })
+  })
 </script>
 
 <Form
-  caption={login.string.LogIn}
+  caption={login.string.CreateWorkspace}
   {status}
   {fields}
   {object}
   {action}
-  bottomCaption={login.string.DoNotHaveAnAccount}
-  bottomActionLabel={login.string.SignUp}
+  bottomCaption={login.string.HaveWorkspace}
+  bottomActionLabel={login.string.SelectWorkspace}
   bottomActionFunc={() => {
     const loc = getCurrentLocation()
-    loc.path[1] = 'signup'
+    loc.path[1] = 'selectWorkspace'
     loc.path.length = 2
     navigate(loc)
   }}

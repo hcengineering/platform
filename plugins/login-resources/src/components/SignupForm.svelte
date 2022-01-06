@@ -1,68 +1,78 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
-// 
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { getContext, createEventDispatcher } from 'svelte'
   import { Status, Severity } from '@anticrm/platform'
 
   import Form from './Form.svelte'
-  import { doLogin } from '../utils'
-
-  const dispatch = createEventDispatcher()
+  import { signUp } from '../utils'
+  import login from '../plugin'
+  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 
   const fields = [
-    { name: 'first', i18n: 'First name', short: true },
-    { name: 'last', i18n: 'Last name', short: true },
-    { name: 'username', i18n: 'Email' },
-    { name: 'workspace', i18n: 'Workspace' },
-    { name: 'password', i18n: 'Password', password: true },
-    { name: 'password2', i18n: 'Repeat password', password: true },
+    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
+    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
+    { id: 'email', name: 'username', i18n: login.string.Email },
+    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
+    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 
   const object = {
     first: '',
     last: '',
-    workspace: '',
     username: '',
     password: '',
-    password2: '',
+    password2: ''
   }
 
   let status = new Status(Severity.OK, 0, '')
 
-  const action = { 
-    i18n: 'Sign Up',
-    func: async () => { 
-      status = new Status(Severity.INFO, 0, 'Соединяюсь с сервером...')
+  const action = {
+    i18n: login.string.SignUp,
+    func: async () => {
+      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await doLogin(object.username, object.password, object.workspace)
+      const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
 
-      return new Promise<void>((resolve, reject) => {
-        setTimeout(() => { 
-          status = loginStatus
-          resolve() 
-        }, 1000)
-      })
+      status = loginStatus
+
+      if (result !== undefined) {
+        setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+        const loc = getCurrentLocation()
+        loc.path[1] = 'selectWorkspace'
+        loc.path.length = 2
+        navigate(loc)
+      }
     }
   }
-
-
 </script>
 
-<Form caption="Sign Up" {status} {fields} {object} {action}
-  bottomCaption="Already have an account?"
-  bottomActionLabel="Log In"
-  bottomActionFunc={() => { dispatch('switch', 'login') }}
+<Form
+  caption={login.string.SignUp}
+  {status}
+  {fields}
+  {object}
+  {action}
+  bottomCaption={login.string.HaveAccount}
+  bottomActionLabel={login.string.LogIn}
+  bottomActionFunc={() => {
+    const loc = getCurrentLocation()
+    loc.path[1] = 'login'
+    loc.path.length = 2
+    navigate(loc)
+  }}
 />

@@ -16,7 +16,7 @@
 
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import builder, { migrateOperations, createDeps } from '@anticrm/model-all'
+import builder, { migrateOperations } from '@anticrm/model-all'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
 import { Client } from 'minio'
@@ -33,53 +33,13 @@ const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 /**
  * @public
  */
-export async function initWorkspace (
-  mongoUrl: string,
-  dbName: string,
-  transactorUrl: string,
-  minio: Client
-): Promise<void> {
-  if (txes.some(tx => tx.objectSpace !== core.space.Model)) {
-    throw Error('Model txes must target only core.space.Model')
-  }
-
-  const client = new MongoClient(mongoUrl)
-  try {
-    await client.connect()
-    const db = client.db(dbName)
-
-    console.log('dropping database...')
-    await db.dropDatabase()
-
-    console.log('creating model...')
-    const model = txes
-    const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    console.log(`${result.insertedCount} model transactions inserted.`)
-
-    console.log('creating data...')
-    const connection = await connect(transactorUrl, dbName)
-    await createDeps(connection)
-    await connection.close()
-
-    console.log('create minio bucket')
-    if (!(await minio.bucketExists(dbName))) {
-      await minio.makeBucket(dbName, 'k8s')
-    }
-  } finally {
-    await client.close()
-  }
-}
-
-/**
- * @public
- */
 export async function upgradeWorkspace (
   mongoUrl: string,
   dbName: string,
   transactorUrl: string,
   minio: Client
 ): Promise<void> {
-  if (txes.some(tx => tx.objectSpace !== core.space.Model)) {
+  if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
 

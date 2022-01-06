@@ -23,11 +23,18 @@
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/minio": "^7.0.10"
   },
   "dependencies": {
     "mongodb": "^4.1.1",
     "@anticrm/platform": "~0.6.5",
+    "@anticrm/model-all": "~0.6.0",
+    "minio": "^7.0.19",
+    "@anticrm/core": "~0.6.14",
+    "@anticrm/contact": "~0.6.2",
+    "@anticrm/client-resources": "~0.6.4",
+    "@anticrm/client": "~0.6.1",
     "jwt-simple": "~0.5.6"
   }
 }
