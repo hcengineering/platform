@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, Ref, Space } from '@anticrm/core'
+import type { Client, Doc, Ref } from '@anticrm/core'
 import type { IntlString, Resource, Status } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
+import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
-import { KanbanTemplate } from '@anticrm/task'
 
 export default mergeIds(recruitId, recruit, {
   app: {
@@ -53,9 +53,6 @@ export default mergeIds(recruitId, recruit, {
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
     Candidates: '' as AnyComponent
-  },
-  space: {
-    CandidatesPublic: '' as Ref<Space>
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>

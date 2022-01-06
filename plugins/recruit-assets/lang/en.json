@@ -18,7 +18,8 @@
     "Candidate": "Candidate",
     "AssignRecruiter": "Assigned recruiter",
     "UnAssignRecruiter": "Unassigned recruiter",
-    "Recruiters": "Recruiters"
+    "Recruiters": "Recruiters",
+    "Create": "Create"
   },
   "status": {
     "CandidateRequired": "Please select candidate"

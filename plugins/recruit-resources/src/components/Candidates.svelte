@@ -17,17 +17,22 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
 
-  import { EditWithIcon, Icon, IconSearch, Label, ScrollBox } from '@anticrm/ui'
+  import { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
 
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import view, { Viewlet } from '@anticrm/view'
+  import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
   $: resultQuery = search === '' ? { } : { $search: search }
 
   const client = getClient()
   const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: recruit.mixin.Candidate, descriptor: view.viewlet.Table })
+
+  function showCreateDialog (ev: Event) {
+    showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
+  }
 </script>
 
 <div class="candidates-header-container">
@@ -39,6 +44,7 @@
   </div>
   
   <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} on:change={() => { resultQuery = {} } } />
+  <Button label={recruit.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
 </div>
 
 <div class="container">
