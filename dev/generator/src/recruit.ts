@@ -1,10 +1,10 @@
-import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+import contact, { Employee, EmployeeAccount, Person } from '@anticrm/contact'
 import core, {
   AttachedData,
   Data,
   generateId,
   MeasureContext,
-  MeasureMetricsContext, metricsToString, Ref,
+  MeasureMetricsContext, metricsToString, MixinUpdate, Ref,
   TxOperations
 } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
@@ -160,7 +160,7 @@ async function genApplicant (
   // Update or create candidate
   await findOrUpdateAttached(ctx, client, vacancyId, recruit.class.Applicant, applicantId, applicant, {
     attachedTo: candidateId,
-    attachedClass: recruit.class.Candidate,
+    attachedClass: recruit.mixin.Candidate,
     collection: 'applications'
   })
 
@@ -222,23 +222,28 @@ async function genCandidate (
       minio.putObject(dbName, imgId, jpegImageData.data, jpegImageData.data.length, { 'Content-Type': 'image/jpeg' })
     )
   }
-  const candidate: Data<Candidate> = {
+  const candidate: Data<Person> = {
     name: fName + ',' + lName,
     city: faker.address.city(),
-    title: faker.name.title(),
     channels: [{ provider: contact.channelProvider.Email, value: faker.internet.email(fName, lName) }],
+    avatar: imgId
+  }
+
+  const candidateMixin: MixinUpdate<Person, Candidate> = {
+    title: faker.name.title(),
     onsite: faker.datatype.boolean(),
     remote: faker.datatype.boolean(),
-    avatar: imgId,
     source: faker.lorem.lines(1)
   }
+
   const candidateId = (options.random ? `candidate-${generateId()}-${i}` : `candidate-genid-${i}`) as Ref<Candidate>
   candidates.push(candidateId)
 
   // Update or create candidate
-  await ctx.with('find-update', {}, () =>
-    findOrUpdate(ctx, client, recruit.space.CandidatesPublic, recruit.class.Candidate, candidateId, candidate)
-  )
+  await ctx.with('find-update', {}, async () => {
+    await findOrUpdate(ctx, client, recruit.space.CandidatesPublic, contact.class.Person, candidateId, candidate)
+    await client.updateMixin(candidateId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateMixin)
+  })
 
   await ctx.with('add-comment', {}, () =>
     addComments(
@@ -246,7 +251,7 @@ async function genCandidate (
       client,
       recruit.space.CandidatesPublic,
       candidateId,
-      recruit.class.Candidate,
+      contact.class.Person,
       'comments'
     )
   )
@@ -260,7 +265,7 @@ async function genCandidate (
         dbName,
         recruit.space.CandidatesPublic,
         candidateId,
-        recruit.class.Candidate,
+        contact.class.Person,
         'attachments'
       )
     )

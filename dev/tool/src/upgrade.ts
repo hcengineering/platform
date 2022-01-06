@@ -3,7 +3,7 @@ import {
   DocumentQuery,
   Domain,
   FindOptions,
-  isOperator, SortingOrder
+  isOperator, Ref, SortingOrder
 } from '@anticrm/core'
 import { MigrationClient, MigrateUpdate, MigrationResult } from '@anticrm/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
@@ -86,5 +86,13 @@ export class MigrateClientImpl implements MigrationClient {
     }
     await this.db.collection(sourceDomain).deleteMany(q)
     return result
+  }
+
+  async create <T extends Doc>(domain: Domain, doc: T): Promise<void> {
+    await this.db.collection(domain).insertOne(doc as Document)
+  }
+
+  async delete <T extends Doc>(domain: Domain, _id: Ref<T>): Promise<void> {
+    await this.db.collection(domain).deleteOne({ _id })
   }
 }

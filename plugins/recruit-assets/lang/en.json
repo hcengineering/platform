@@ -7,14 +7,19 @@
     "VacancyName": "Vacancy Title *",
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
-    "CreateCandidate": "Create Candidate",
     "MakePrivate": "Make Private",
     "Vacancy": "Vacancy",
-    "CreateCandidates": "Create pool",
     "CandidatesName": "Pool name *",
     "MakePrivateDescription": "Only members can see it",
     "CreateAnApplication": "Create an application",
-    "NoApplicationsForCandidate": "There are no applications for this candidate."
+    "NoApplicationsForCandidate": "There are no applications for this candidate.",
+    "CreateApplication": "Create Application",
+    "SelectVacancy": "Select vacancy",
+    "Candidate": "Candidate",
+    "AssignRecruiter": "Assigned recruiter",
+    "UnAssignRecruiter": "Unassigned recruiter",
+    "Recruiters": "Recruiters",
+    "Create": "Create"
   },
   "status": {
     "CandidateRequired": "Please select candidate"

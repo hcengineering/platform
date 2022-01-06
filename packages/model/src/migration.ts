@@ -1,4 +1,4 @@
-import { Client, Doc, DocumentQuery, Domain, FindOptions, IncOptions, ObjQueryType, PushOptions } from '@anticrm/core'
+import { Client, Doc, DocumentQuery, Domain, FindOptions, IncOptions, ObjQueryType, PushOptions, Ref } from '@anticrm/core'
 
 /**
  * @public
@@ -43,6 +43,9 @@ export interface MigrationClient {
 
   // Move documents per domain
   move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
+
+  create: <T extends Doc>(domain: Domain, doc: T) => Promise<void>
+  delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
 }
 
 /**

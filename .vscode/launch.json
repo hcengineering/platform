@@ -51,7 +51,7 @@
       "name": "Debug tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "restore-workspace", "ws1", "../../temp/ws1/"],
+      "args": ["src/index.ts", "upgrade-workspace", "ws1"],
       "env": {
         "MINIO_ACCESS_KEY":"minioadmin",
         "MINIO_SECRET_KEY":"minioadmin",

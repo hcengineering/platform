@@ -54,7 +54,7 @@ export class TLead extends TTask implements Lead {
 }
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)
-@UX('Customer' as IntlString, contact.icon.Person) // <-- Use general customer icons here.
+@UX('Customer' as IntlString, lead.icon.LeadApplication)
 export class TCustomer extends TPerson implements Customer {
   @Prop(Collection(lead.class.Lead), 'Leads' as IntlString)
   leads?: number

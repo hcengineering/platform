@@ -14,27 +14,20 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Data } from '@anticrm/core'
-  import { generateId } from '@anticrm/core'
-  import { setPlatformStatus, unknownError, Severity } from '@anticrm/platform'
-  import type { Status } from '@anticrm/platform'
-
-  import { getClient, Card, Channels, PDFViewer, Avatar } from '@anticrm/presentation'
-  import { uploadFile } from '../utils'
-
-  import recruit from '../plugin'
-  import chunter from '@anticrm/chunter'
-  import type { Candidate } from '@anticrm/recruit'
   import attachment from '@anticrm/attachment'
-  import type { Attachment } from '@anticrm/attachment'
-
-  import { EditBox, Link, showPopup, Component, CircleButton, IconFile as FileIcon, IconAdd, Spinner, Label, Status as StatusComponent } from '@anticrm/ui'
-  import FileUpload from './icons/FileUpload.svelte'
+  import contact, { combineName, Person } from '@anticrm/contact'
+  import type { Data, MixinData, Ref, Space } from '@anticrm/core'
+  import { generateId } from '@anticrm/core'
+  import { setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { Avatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
+  import type { Candidate } from '@anticrm/recruit'
+  import { CircleButton, EditBox, IconAdd, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import recruit from '../plugin'
+  import { uploadFile } from '../utils'
   import Edit from './icons/Edit.svelte'
+  import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
-
-  import contact, { combineName } from '@anticrm/contact'
 
   export let space: Ref<Space>
 
@@ -43,13 +36,13 @@
   let firstName = ''
   let lastName = ''
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return firstName === '' && lastName === '' && resume.uuid === undefined
   }
 
   const object: Candidate = {} as Candidate
 
-  let resume = {} as {
+  const resume = {} as {
     name: string
     uuid: string
     size: number
@@ -61,21 +54,25 @@
   const client = getClient()
   const candidateId = generateId()
 
-  async function createCandidate() {
-    const candidate: Data<Candidate> = {
+  async function createCandidate () {
+    const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
-      title: object.title,
       city: object.city,
-      channels: object.channels,
+      channels: object.channels
+    }
+    const candidateData: MixinData<Person, Candidate> = {
+      title: object.title,
       onsite: object.onsite,
       remote: object.remote
     }
 
-    const id = await client.createDoc(recruit.class.Candidate, _space, candidate, candidateId)
+    const id = await client.createDoc(contact.class.Person, _space, candidate, candidateId)
+    await client.createMixin(id as Ref<Person>, contact.class.Person, _space, recruit.mixin.Candidate, candidateData)
+
     console.log('resume name', resume.name)
 
     if (resume.uuid !== undefined) {
-      client.addCollection(attachment.class.Attachment, space, id, recruit.class.Candidate, 'attachments', {
+      client.addCollection(attachment.class.Attachment, space, id, contact.class.Person, 'attachments', {
         name: resume.name,
         file: resume.uuid,
         size: resume.size,
@@ -91,7 +88,7 @@
   let loading = false
   let dragover = false
 
-  async function createAttachment(file: File) {
+  async function createAttachment (file: File) {
     loading = true
     try {
       resume.uuid = await uploadFile(space, file, candidateId)
@@ -108,13 +105,13 @@
     }
   }
 
-  function drop(event: DragEvent) {
+  function drop (event: DragEvent) {
     dragover = false
     const droppedFile = event.dataTransfer?.files[0]
     if (droppedFile !== undefined) { createAttachment(droppedFile) }
-  }  
+  }
 
-  function fileSelected() {
+  function fileSelected () {
     console.log(inputFile.files)
     const file = inputFile.files?.[0]
     if (file !== undefined) { createAttachment(file) }

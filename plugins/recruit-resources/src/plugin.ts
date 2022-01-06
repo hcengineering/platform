@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Ref, Space } from '@anticrm/core'
 import type { IntlString, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
@@ -29,13 +30,23 @@ export default mergeIds(recruitId, recruit, {
     VacancyDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    CreateCandidates: '' as IntlString,
     CandidatesName: '' as IntlString,
     CandidatesDescription: '' as IntlString,
-    CreateCandidate: '' as IntlString,
     CreateAnApplication: '' as IntlString,
     NoApplicationsForCandidate: '' as IntlString,
     FirstName: '' as IntlString,
-    LastName: '' as IntlString
+    LastName: '' as IntlString,
+    Candidates: '' as IntlString,
+    CreateApplication: '' as IntlString,
+    Vacancy: '' as IntlString,
+    SelectVacancy: '' as IntlString,
+    Candidate: '' as IntlString,
+    AssignRecruiter: '' as IntlString,
+    Recruiters: '' as IntlString,
+    UnAssignRecruiter: '' as IntlString,
+    Create: '' as IntlString
+  },
+  space: {
+    CandidatesPublic: '' as Ref<Space>
   }
 })
