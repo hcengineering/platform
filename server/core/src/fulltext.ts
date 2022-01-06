@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Doc, Obj, Ref, TxCreateDoc, TxResult, TxUpdateDoc } from '@anticrm/core'
 import core, {
+  AttachedDoc, Class, ClassifierKind, Doc, Obj, Ref, TxCreateDoc, TxResult, TxUpdateDoc,
   AnyAttribute,
   Collection,
   DocumentQuery,
@@ -56,12 +56,28 @@ export class FullTextIndex implements WithFind {
 
   protected async txRemoveDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     // console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
+    await this.adapter.remove(tx.objectId)
     return {}
   }
 
   protected async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    console.log('FullTextIndex.txMixin: Method not implemented')
-    return {}
+    const attributes = this.getFullTextAttributes(tx.mixin)
+    let result = {}
+    if (attributes === undefined) return result
+    const ops: any = tx.attributes
+    const update: any = {}
+    let shouldUpdate = false
+    for (const attr of attributes) {
+      if (ops[attr.name] !== undefined) {
+        update[(tx.mixin as string) + '.' + attr.name] = ops[attr.name]
+        shouldUpdate = true
+      }
+    }
+    if (shouldUpdate) {
+      result = await this.adapter.update(tx.objectId, update)
+      await this.updateAttachedDocs(ctx, tx, update)
+    }
+    return result
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
@@ -152,7 +168,7 @@ export class FullTextIndex implements WithFind {
   protected async txCreateDoc (ctx: MeasureContext, tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     const doc = TxProcessor.createDoc2Doc(tx)
-    let parentContent: any[] = []
+    let parentContent: Record<string, string> = {}
     if (this.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const attachedDoc = doc as AttachedDoc
       const parentDoc = (
@@ -163,9 +179,10 @@ export class FullTextIndex implements WithFind {
         parentContent = this.getContent(parentAttributes, parentDoc)
       }
     }
-    if (attributes === undefined && parentContent.length === 0) return {}
+    if (attributes === undefined && Object.keys(parentContent).length === 0) return {}
+
     let content = this.getContent(attributes, doc)
-    content = content.concat(parentContent)
+    content = { ...parentContent, ...content }
     const indexedDoc: IndexedDoc = {
       id: doc._id,
       _class: doc._class,
@@ -173,16 +190,7 @@ export class FullTextIndex implements WithFind {
       modifiedOn: doc.modifiedOn,
       space: doc.space,
       attachedTo: (doc as AttachedDoc).attachedTo,
-      content0: content[0],
-      content1: content[1],
-      content2: content[2],
-      content3: content[3],
-      content4: content[4],
-      content5: content[5],
-      content6: content[6],
-      content7: content[7],
-      content8: content[8],
-      content9: content[9]
+      ...content
     }
     return await this.adapter.index(indexedDoc)
   }
@@ -193,14 +201,12 @@ export class FullTextIndex implements WithFind {
     if (attributes === undefined) return result
     const ops: any = tx.operations
     const update: any = {}
-    let i = 0
     let shouldUpdate = false
     for (const attr of attributes) {
       if (ops[attr.name] !== undefined) {
-        update[`content${i}`] = ops[attr.name]
+        update[attr.name] = ops[attr.name]
         shouldUpdate = true
       }
-      i++
     }
     if (tx.operations.space !== undefined) {
       update.space = tx.operations.space
@@ -213,28 +219,37 @@ export class FullTextIndex implements WithFind {
     return result
   }
 
-  private getContent (attributes: AnyAttribute[] | undefined, doc: Doc): any[] {
-    if (attributes === undefined) return []
-    return attributes.map((attr) => (doc as any)[attr.name]?.toString() ?? '')
+  private getContent (attributes: AnyAttribute[] | undefined, doc: Doc): Record<string, string> {
+    const attrs: Record<string, string> = {}
+
+    for (const attr of attributes ?? []) {
+      attrs[attr.name] = (doc as any)[attr.name]?.toString() ?? ''
+    }
+    return attrs
   }
 
-  private async updateAttachedDocs (ctx: MeasureContext, tx: TxUpdateDoc<Doc>, update: any): Promise<void> {
+  private async updateAttachedDocs (ctx: MeasureContext, tx: {objectId: Ref<Doc>, objectClass: Ref<Class<Doc>>}, update: any): Promise<void> {
     const doc = (await this.dbStorage.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
     if (doc === undefined) return
     const attributes = this.hierarchy.getAllAttributes(doc._class)
+
+    // Find all mixin atttibutes for document.
+    this.hierarchy.getDescendants(doc._class)
+      .filter((m) => this.hierarchy.getClass(m).kind === ClassifierKind.MIXIN && this.hierarchy.hasMixin(doc, m))
+      .forEach((m) => {
+        for (const [k, v] of this.hierarchy.getAllAttributes(m, doc._class)) {
+          attributes.set(k, v)
+        }
+      })
+
     for (const attribute of attributes.values()) {
       if (this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
         const collection = attribute.type as Collection<AttachedDoc>
         const allAttached = await this.dbStorage.findAll(ctx, collection.of, { attachedTo: tx.objectId })
         if (allAttached.length === 0) continue
-        const attributes = this.getFullTextAttributes(tx.objectClass)
-        const shift = attributes?.length ?? 0
         const docUpdate: any = {}
         for (const key in update) {
-          const index = Number.parseInt(key.replace('content', ''))
-          if (!isNaN(index)) {
-            docUpdate[`content${index + shift}`] = update[key]
-          }
+          docUpdate[key] = update[key]
         }
         for (const attached of allAttached) {
           try {

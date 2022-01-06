@@ -35,20 +35,7 @@ class ElasticAdapter implements FullTextAdapter {
         must: [
           {
             multi_match: {
-              query: search,
-              fields: [
-                'content0',
-                'content1',
-                'content2',
-                'content3',
-                'content4',
-                'content5',
-                'content6',
-                'content7',
-                'content8',
-                'content9',
-                'attachment.content'
-              ]
+              query: search
             }
           }
         ],
@@ -123,6 +110,13 @@ class ElasticAdapter implements FullTextAdapter {
     })
 
     return {}
+  }
+
+  async remove (id: Ref<Doc>): Promise<void> {
+    await this.client.delete({
+      index: this.db,
+      id
+    })
   }
 }
 
