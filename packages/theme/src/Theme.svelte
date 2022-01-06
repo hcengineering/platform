@@ -18,8 +18,10 @@
 
   const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
   const getCurrnetFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
+  const getCurrnetLanguage = (): string => localStorage.getItem('lang') ?? 'en'
   const currentTheme = getCurrentTheme()
   const currentFontSize = getCurrnetFontSize()
+  const currentLanguage = getCurrnetLanguage()
 
   const setRootColors = (theme: string) => {
     document.documentElement.setAttribute('class', `${theme} ${getCurrnetFontSize()}`)
@@ -40,6 +42,12 @@
     setFontSize: (fontsize: string) => {
       setRootFontSize(fontsize)
       localStorage.setItem('fontsize', fontsize)
+    }
+  })
+  setContext('lang', {
+    currentLanguage: currentLanguage,
+    setLanguage: (lang: string) => {
+      localStorage.setItem('lang', lang)
     }
   })
 

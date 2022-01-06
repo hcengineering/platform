@@ -15,6 +15,7 @@
   import WiFi from './icons/WiFi.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
+  import LangSelector from './LangSelector.svelte'
   
   let application: AnyComponent | undefined
 
@@ -41,6 +42,9 @@
         <div class="flex-row-reverse">
           <div class="clock">
             <Clock />
+          </div>
+          <div class="widget">
+            <LangSelector />
           </div>
           <div class="widget">
             <ThemeSelector />
