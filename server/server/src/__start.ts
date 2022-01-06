@@ -33,10 +33,15 @@ if (elasticUrl === undefined) {
 const shutdown = start(url, elasticUrl, 3333)
 
 const close = (): void => {
-  console.error(new Error().stack)
+  console.trace('Exiting from server')
   console.log('Shutdown request accepted')
   shutdown()
   process.exit(0)
 }
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 process.on('SIGINT', close)
 process.on('SIGTERM', close)
