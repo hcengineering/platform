@@ -30,7 +30,7 @@
 
   const candidateQuery = createQuery()
   $: if (object !== undefined) {
-    candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
+    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
       candidate = result[0]
     })
   }
