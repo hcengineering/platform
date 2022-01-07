@@ -28,7 +28,7 @@
     <div class="flex-row-center menu-item" on:click={() => { 
       dispatch('close', lang.id)
     }}>
-      <svg class="svg-medium">
+      <svg class="svg-small">
         <use href="#{lang.id}-flag" />
       </svg>
       <div class="ml-3"><Label label={lang.label} /></div>
