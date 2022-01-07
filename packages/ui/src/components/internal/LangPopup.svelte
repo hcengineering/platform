@@ -16,7 +16,6 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'  
   import { createEventDispatcher } from 'svelte'
-  import { AnySvelteComponent } from '../../types'
   import Label from '../Label.svelte'
   
   export let langs: any
@@ -29,9 +28,9 @@
     <div class="flex-row-center menu-item" on:click={() => { 
       dispatch('close', lang.id)
     }}>
-      {#if lang.icon}
-        <svelte:component this={lang.icon} size={'medium'} />
-      {/if}
+      <svg class="svg-small">
+        <use href="#{lang.id}-flag" />
+      </svg>
       <div class="ml-3"><Label label={lang.label} /></div>
     </div>
   {/each}
