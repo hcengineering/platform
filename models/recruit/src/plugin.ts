@@ -44,7 +44,6 @@ export default mergeIds(recruitId, recruit, {
   component: {
     CreateVacancy: '' as AnyComponent,
     CreateApplication: '' as AnyComponent,
-    EditCandidate: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
@@ -52,7 +51,8 @@ export default mergeIds(recruitId, recruit, {
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
-    Candidates: '' as AnyComponent
+    Candidates: '' as AnyComponent,
+    CreateCandidate: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>

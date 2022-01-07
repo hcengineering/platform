@@ -14,20 +14,16 @@
 -->
 
 <script lang="ts">
-  import type { Doc, Class, Ref } from '@anticrm/core'
-  import type { Asset, IntlString, Resource } from '@anticrm/platform'
+  import type { Class, Doc, Ref } from '@anticrm/core'
+  import type { Asset, Resource } from '@anticrm/platform'
   import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Menu } from '@anticrm/ui'
+  import { Action, Menu } from '@anticrm/ui'
   import { getActions } from '../utils'
 
   export let object: Doc
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let actions: {
-    label: IntlString
-    icon: Asset
-    action: () => void
-  }[] = []
+  export let actions: Action[] = []
 
   const client = getClient()
   
@@ -39,8 +35,8 @@
   getActions(client, object, baseMenuClass).then(result => {
     actions = result.map(a => ({
       label: a.label,
-      icon: a.icon,
-      action: () => { invokeAction(a.action) }
+      icon: a.icon as Asset,
+      action: async () => { invokeAction(a.action) }
     }))
   })
 

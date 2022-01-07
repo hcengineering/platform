@@ -122,6 +122,16 @@ export interface BuildModelOptions {
 }
 
 /**
+ * Define document create popup widget
+ *
+ * @public
+ *
+ */
+export interface ObjectFactory extends Class<Obj> {
+  component: AnyComponent
+}
+
+/**
  * @public
  */
 const view = plugin(viewId, {
@@ -129,7 +139,8 @@ const view = plugin(viewId, {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
-    ObjectValidator: '' as Ref<Mixin<ObjectValidator>>
+    ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
+    ObjectFactory: '' as Ref<Mixin<ObjectFactory>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,

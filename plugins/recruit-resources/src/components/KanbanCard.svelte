@@ -15,11 +15,9 @@
 
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
-  import { showPopup, Label, ActionIcon, IconMoreH } from '@anticrm/ui'
+  import { showPopup, ActionIcon, IconMoreH } from '@anticrm/ui'
   import type { WithLookup } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
-
-  import EditCandidate from './EditCandidate.svelte'
 
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
@@ -30,7 +28,7 @@
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
-  function showCandidate() {
+  function showCandidate () {
     showPopup(EditContact, { _id: object.attachedTo }, 'full')
   }
 </script>

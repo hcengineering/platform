@@ -19,7 +19,7 @@ import { Builder, Mixin, Model } from '@anticrm/model'
 import core, { TClass, TDoc } from '@anticrm/model-core'
 import type { Asset, IntlString, Resource, Status } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionTarget, AttributeEditor, AttributePresenter, ObjectEditor, ObjectValidator, Viewlet, ViewletDescriptor } from '@anticrm/view'
+import type { Action, ActionTarget, AttributeEditor, AttributePresenter, ObjectEditor, ObjectFactory, ObjectValidator, Viewlet, ViewletDescriptor } from '@anticrm/view'
 import view from './plugin'
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
@@ -40,6 +40,11 @@ export class TObjectEditor extends TClass implements ObjectEditor {
 @Mixin(view.mixin.ObjectValidator, core.class.Class)
 export class TObjectValidator extends TClass implements ObjectValidator {
   validator!: Resource<(<T extends Doc>(doc: T, client: Client) => Promise<Status<{}>>)>
+}
+
+@Mixin(view.mixin.ObjectFactory, core.class.Class)
+export class TObjectFactory extends TClass implements ObjectFactory {
+  component!: AnyComponent
 }
 
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
@@ -70,7 +75,7 @@ export class TActionTarget extends TDoc implements ActionTarget {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttributeEditor, TAttributePresenter, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TObjectValidator)
+  builder.createModel(TAttributeEditor, TAttributePresenter, TObjectEditor, TViewletDescriptor, TViewlet, TAction, TActionTarget, TObjectValidator, TObjectFactory)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.StringEditor

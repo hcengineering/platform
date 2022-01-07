@@ -100,6 +100,10 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.Applications
   })
 
+  builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
+    component: recruit.component.CreateCandidate
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -233,10 +237,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
-  })
-
-  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditor, {
-    editor: recruit.component.EditCandidate
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditor, {

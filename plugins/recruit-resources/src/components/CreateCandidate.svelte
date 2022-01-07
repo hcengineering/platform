@@ -16,7 +16,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import contact, { combineName, Person } from '@anticrm/contact'
-  import type { Data, MixinData, Ref, Space } from '@anticrm/core'
+  import type { Data, MixinData, Ref } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { Avatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
@@ -28,10 +28,6 @@
   import Edit from './icons/Edit.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
-
-  export let space: Ref<Space>
-
-  let _space = space
 
   let firstName = ''
   let lastName = ''
@@ -66,13 +62,13 @@
       remote: object.remote
     }
 
-    const id = await client.createDoc(contact.class.Person, _space, candidate, candidateId)
-    await client.createMixin(id as Ref<Person>, contact.class.Person, _space, recruit.mixin.Candidate, candidateData)
+    const id = await client.createDoc(contact.class.Person, contact.space.Contacts, candidate, candidateId)
+    await client.createMixin(id as Ref<Person>, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, candidateData)
 
     console.log('resume name', resume.name)
 
     if (resume.uuid !== undefined) {
-      client.addCollection(attachment.class.Attachment, space, id, contact.class.Person, 'attachments', {
+      client.addCollection(attachment.class.Attachment, contact.space.Contacts, id, contact.class.Person, 'attachments', {
         name: resume.name,
         file: resume.uuid,
         size: resume.size,
@@ -123,10 +119,7 @@
 <Card label={'Create Candidate'} 
       okAction={createCandidate}
       canSave={firstName.length > 0 && lastName.length > 0}
-      spaceClass={recruit.class.Candidates}
-      spaceLabel={'Talent Pool'}
-      spacePlaceholder={'Select pool'}
-      bind:space={_space}
+      space={contact.space.Contacts}
       on:close={() => { dispatch('close') }}>
 
   <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->

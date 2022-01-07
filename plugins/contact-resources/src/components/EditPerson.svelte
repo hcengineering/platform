@@ -17,11 +17,12 @@
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, IconActivity } from '@anticrm/ui'
-  import { getClient, createQuery, Channels, Avatar } from '@anticrm/presentation'
+  import { getClient, createQuery, Channels, Avatar, AttributeEditor } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { combineName, getFirstName, getLastName, Person } from '@anticrm/contact'
+  import Edit from './icons/Edit.svelte'
 
   export let object: Person
 
@@ -58,7 +59,7 @@
     integrations = new Set(res.map((p) => p.type))
   })
 
-  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
+  const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
   afterUpdate(sendOpen)
 </script>
@@ -75,6 +76,9 @@
         </div>
         <div class="name">
           <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+        </div>
+        <div class="location">
+          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" />
         </div>
       </div>
 
@@ -97,7 +101,7 @@
             <Channels value={object.channels} size={'small'} {integrations} on:click />
             <div class="ml-1">
               <CircleButton
-                icon={IconEdit}
+                icon={Edit}
                 size={'small'}
                 selected
                 on:click={(ev) =>
@@ -131,6 +135,10 @@
     span {
       margin-left: 0.5rem;
     }
+  }
+  .location {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
   }
 
   .separator {

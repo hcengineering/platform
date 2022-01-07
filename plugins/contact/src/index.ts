@@ -54,19 +54,21 @@ export interface Contact extends Doc {
   attachments?: number
   comments?: number
   channels: Channel[]
-}
-
-/**
- * @public
- */
-export interface Person extends Contact {
   city: string
 }
 
 /**
  * @public
  */
-export interface Organization extends Contact {}
+export interface Person extends Contact {
+}
+
+/**
+ * @public
+ */
+export interface Organization extends Contact {
+
+}
 
 /**
  * @public
@@ -155,6 +157,7 @@ export default plugin(contactId, {
     Company: '' as Asset
   },
   space: {
-    Employee: '' as Ref<Space>
+    Employee: '' as Ref<Space>,
+    Contacts: '' as Ref<Space>
   }
 })

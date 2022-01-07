@@ -32,6 +32,7 @@ export default mergeIds(contactId, contact, {
     AddSocialLinks: '' as IntlString,
     Name: '' as IntlString,
     MakePrivate: '' as IntlString,
-    MakePrivateDescription: '' as IntlString
+    MakePrivateDescription: '' as IntlString,
+    Create: '' as IntlString
   }
 })

@@ -157,7 +157,7 @@ export class Hierarchy {
   }
 
   private txMixin (tx: TxMixin<Doc, Doc>): void {
-    if (tx.objectClass === core.class.Class) {
+    if (this.isDerived(tx.objectClass, core.class.Class)) {
       const obj = this.getClass(tx.objectId as Ref<Class<Obj>>) as any
       TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
     }
@@ -304,7 +304,14 @@ export class Hierarchy {
     const result = new Map<string, AnyAttribute>()
     let ancestors = this.getAncestors(clazz)
     if (to !== undefined) {
-      ancestors = ancestors.filter(c => this.isDerived(c, to) && c !== to)
+      const toAncestors = this.getAncestors(to)
+      for (const uto of toAncestors) {
+        if (ancestors.includes(uto)) {
+          to = uto
+          break
+        }
+      }
+      ancestors = ancestors.filter(c => this.isDerived(c, to as Ref<Class<Doc>>) && c !== to)
     }
 
     for (const cls of ancestors) {
