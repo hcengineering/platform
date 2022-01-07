@@ -18,13 +18,12 @@
   import { showPopup } from '../..'
   import LangPopup from './LangPopup.svelte'
 
-  import enFlag from './flags/english.svelte'
-  import ruFlag from './flags/russia.svelte'
+  import Flags from './icons/Flags.svelte'
 
   const { currentLanguage, setLanguage } = getContext('lang')
   const langs
-          = [{ id: 'en', label: 'English', icon: enFlag },
-             { id: 'ru', label: 'Russian', icon: ruFlag }]
+          = [{ id: 'en', label: 'English' },
+             { id: 'ru', label: 'Russian' }]
 
   $: selected = langs.find(item => item.id === currentLanguage)
   let trigger: HTMLElement
@@ -39,8 +38,11 @@
   }
 </script>
 
+<Flags />
 {#if selected}
   <div bind:this={trigger} class="flex-center cursor-pointer" on:click={selectLanguage}>
-    <svelte:component this={selected.icon} size={'medium'} />
+    <svg class="svg-medium">
+      <use href="#{selected.id}-flag" />
+    </svg>
   </div>
 {/if}
