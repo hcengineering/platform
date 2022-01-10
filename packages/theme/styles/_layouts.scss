@@ -263,10 +263,9 @@ p:last-child { margin-block-end: 0; }
 
 /* --------- */
 .svg-x-small {
-  width: 0.857em;
-  height: 0.857em;
+  width: .857em;
+  height: .857em;
 }
-
 .svg-small {
   width: 1.143em;
   height: 1.143em;
@@ -279,7 +278,11 @@ p:last-child { margin-block-end: 0; }
   width: 1.715em;
   height: 1.715em;
 }
-.svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
+.svg-full {
+  width: inherit;
+  height: inherit;
+}
+.svg-x-small, .svg-small, .svg-medium, .svg-large { flex-shrink: 0; }
 
 .svg-mask {
   position: absolute;
