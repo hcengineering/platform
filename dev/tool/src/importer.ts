@@ -16,7 +16,7 @@
 
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
-import contact, { ChannelProvider, Person } from '@anticrm/contact'
+import contact, { ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
 import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult, MixinData } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
@@ -100,7 +100,7 @@ export async function importXml (
     console.log('Found candidates:', candidates.length)
 
     // const attributes = new Set<string>()
-    const client = new TxOperations(connection, core.account.System)
+    const client = new TxOperations(connection, 'core:account:xml-importer' as Ref<EmployeeAccount>)
 
     const statuses = candidates.map((c: any) => get(c, _.status)).filter((c: any) => c !== undefined)
       .filter(onlyUniq)
