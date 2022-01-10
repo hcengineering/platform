@@ -21,6 +21,7 @@
   import attachment from '@anticrm/attachment'
 
   export let objectId: Ref<Doc>
+  export let attachments: number
 
 </script>
 
@@ -29,4 +30,5 @@
   config={['', 'lastModified']}
   options={ {} }
   query={ { attachedTo: objectId } }
+  loadingProps={{ length: attachments }}
 />

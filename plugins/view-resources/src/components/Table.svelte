@@ -17,9 +17,9 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { CheckBox, IconDown, IconUp, Label, Loading, showPopup } from '@anticrm/ui'
+  import { CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
-  import { buildModel } from '../utils'
+  import { buildModel, LoadingProps } from '../utils'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
 
@@ -28,7 +28,10 @@
   export let enableChecking: boolean = false
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let config: (BuildModelKey|string)[]
+  export let config: (BuildModelKey | string)[]
+
+  // If defined, will show a number of dummy items before real data will appear.
+  export let loadingProps: LoadingProps | undefined = undefined
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
@@ -38,7 +41,13 @@
 
   const q = createQuery()
 
-  async function update(_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, sortKey: string, sortOrder: SortingOrder, options?: FindOptions<Doc>) {
+  async function update (
+    _class: Ref<Class<Doc>>,
+    query: DocumentQuery<Doc>,
+    sortKey: string,
+    sortOrder: SortingOrder,
+    options?: FindOptions<Doc>
+  ) {
     q.query(
       _class,
       query,
@@ -96,6 +105,13 @@
       checked.delete(id)
     }
     checked = checked
+  }
+
+  function getLoadingLength (props: LoadingProps, options?: FindOptions<Doc>): number {
+    if (options?.limit !== undefined && options?.limit > 0) {
+      return Math.min(options?.limit, props.length)
+    }
+    return props.length
   }
 </script>
 
@@ -158,24 +174,46 @@
                     </div>
                   </td>
                 {/if}
-                <td
-                  ><div class="firstCell">
+                <td>
+                  <div class="firstCell">
                     <svelte:component
                       this={attribute.presenter}
                       value={getValue(object, attribute.key)}
-                      {...attribute.props}
-                    />
+                      {...attribute.props}/>
                     <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
-                  </div></td
-                >
+                  </div>
+                </td>
               {:else}
-                <td
-                  ><svelte:component
+                <td>
+                  <svelte:component
                     this={attribute.presenter}
                     value={getValue(object, attribute.key)}
                     {...attribute.props}
-                  /></td
-                >
+                  />
+                </td>
+              {/if}
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    {:else if loadingProps !== undefined}
+      <tbody>
+        {#each Array(getLoadingLength(loadingProps, options)) as i, row}
+          <tr class="tr-body" class:fixed={row === selectRow}>
+            {#each model as attribute, cell}
+              {#if !cell}
+                {#if enableChecking}
+                  <td>
+                    <div class="checkCell">
+                      <CheckBox
+                        checked={false}                        
+                      />
+                    </div>
+                  </td>
+                {/if}
+                <td>
+                  <Spinner size="small" />
+                </td>              
               {/if}
             {/each}
           </tr>

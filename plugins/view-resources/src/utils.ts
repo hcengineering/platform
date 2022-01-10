@@ -23,6 +23,13 @@ import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 import { ErrorPresenter } from '@anticrm/ui'
 
 /**
+ * Define some properties to be used to show component until data is properly loaded.
+ */
+export interface LoadingProps {
+  length: number
+}
+
+/**
  * @public
  */
 export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>>, preserveKey: BuildModelKey): Promise<AttributeModel> {
@@ -37,9 +44,9 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
-  const sortingKey = clazz.sortingKey ?
-   (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) 
-   : key
+  const sortingKey = clazz.sortingKey !== undefined
+    ? (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey)
+    : key
   return {
     key: preserveKey.key,
     _class,

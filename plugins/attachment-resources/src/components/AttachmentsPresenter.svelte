@@ -24,7 +24,7 @@
 </script>
 
 {#if value && value.attachments && value.attachments > 0}
-  <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ objectId: value._id }}>
+  <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ objectId: value._id, attachments: value.attachments }}>
     <div class="sm-tool-icon">
       <span class="icon"><IconAttachment size="small"/></span>&nbsp;{value.attachments}
     </div>

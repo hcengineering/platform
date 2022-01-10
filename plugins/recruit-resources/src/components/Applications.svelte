@@ -14,26 +14,20 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, Doc, Class } from '@anticrm/core'
+  import type { Class, Doc, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
-  import type { Applicant } from '@anticrm/recruit'
-  import { createQuery } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
+  import task from '@anticrm/task'
+  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Table } from '@anticrm/view-resources'
+  import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import FileDuo from './icons/FileDuo.svelte'
-  import { Table } from '@anticrm/view-resources'
-
-  import task from '@anticrm/task'
-  import recruit from '../plugin'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
 
-  let applications: Applicant[] = []
-
-  const query = createQuery()
-  $: query.query(recruit.class.Applicant, { attachedTo: objectId }, result => { applications = result })
+  export let applications: number
 
   const createApp = (ev: MouseEvent): void =>
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
@@ -44,7 +38,7 @@
     <div class="title">Applications</div>
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
-  {#if applications.length > 0}
+  {#if applications > 0}
     <Table 
       _class={recruit.class.Applicant}
       config={['', '$lookup.space.name', '$lookup.state']}
@@ -57,6 +51,7 @@
         }
       }
       query={ { attachedTo: objectId } }
+      loadingProps={ { length: applications } }
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">

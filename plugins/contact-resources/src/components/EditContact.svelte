@@ -157,6 +157,13 @@
   onDestroy(() => {
     observer.disconnect()
   })
+
+  function getCollectionCounter (object: Doc, key: KeyedAttribute): number {
+    if (client.getHierarchy().isMixin(key.attr.attributeOf)) {
+      return (client.getHierarchy().as(object, key.attr.attributeOf) as any)[key.key]
+    }
+    return (object as any)[key.key] ?? 0
+  }
 </script>
 
 {#if object !== undefined}
@@ -209,7 +216,7 @@
     {#each collectionKeys as collection}
       <div class="mt-14">
         {#await getCollectionEditor(collection) then is}
-          <Component {is} props={{ objectId: object._id, _class: object._class, space: object.space }} />
+          <Component {is} props={{ objectId: object._id, _class: object._class, space: object.space, [collection.key]: getCollectionCounter(object, collection) }} />
         {/await}
       </div>
     {/each}
