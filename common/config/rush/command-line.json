@@ -258,6 +258,12 @@
       "description": "Enable Heft lite building option, will skip some phases.",
       "associatedCommands": ["build", "rebuild"]
     },
+    {
+      "parameterKind": "flag",      
+      "longName": "--clean",
+      "description": "Enable Heft clean building option",
+      "associatedCommands": ["build", "rebuild"]
+    },
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.

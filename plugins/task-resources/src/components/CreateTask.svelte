@@ -94,8 +94,6 @@
   }
 </script>
 
-<!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
-
 <Card
   label={task.string.CreateTask}
   okAction={createTask}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Employee } from '@anticrm/contact'
+  import type { Contact, Employee, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
@@ -41,7 +41,7 @@
     assignee: assignee,
     rank: '',
     attachedTo: candidate,
-    attachedToClass: recruit.class.Candidate,
+    attachedToClass: recruit.mixin.Candidate,
     _class: recruit.class.Applicant,
     space: space,
     _id: generateId(),
@@ -82,11 +82,20 @@
       },
       true
     )
+
+    const candidateInstance = await client.findOne(contact.class.Person, { _id: doc.attachedTo as Ref<Person> })
+    if (candidateInstance === undefined) {
+      throw new Error('contact not found')
+    }
+    if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
+      await client.createMixin<Contact, Candidate>(candidateInstance._id, candidateInstance._class, candidateInstance.space, recruit.mixin.Candidate, {})
+    }
+
     await client.addCollection(
       recruit.class.Applicant,
       doc.space,
       doc.attachedTo,
-      recruit.class.Candidate,
+      candidateInstance._class,
       'applications',
       {
         state: state._id,
@@ -121,12 +130,12 @@
 </script>
 
 <Card
-  label={'Create Application'}
+  label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
   spaceClass={recruit.class.Vacancy}
-  spaceLabel={'Vacancy'}
-  spacePlaceholder={'Select vacancy'}
+  spaceLabel={recruit.string.Vacancy}
+  spacePlaceholder={recruit.string.SelectVacancy}
   bind:space={doc.space}
   on:close={() => {
     dispatch('close')
@@ -135,15 +144,15 @@
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
-      <UserBox _class={recruit.class.Candidate} title="Candidate" caption="Candidates" bind:value={doc.attachedTo} />
+      <UserBox _class={contact.class.Person} title={recruit.string.Candidate} caption={recruit.string.Candidates} bind:value={doc.attachedTo} />
     {/if}
     <UserBox
       _class={contact.class.Employee}
-      title="Assigned recruiter"
-      caption="Recruiters"
+      title={recruit.string.AssignRecruiter}
+      caption={recruit.string.Recruiters}
       bind:value={doc.assignee}
       allowDeselect
-      titleDeselect={'Unassign recruiter'}
+      titleDeselect={recruit.string.UnAssignRecruiter}
     />
   </Grid>
 </Card>

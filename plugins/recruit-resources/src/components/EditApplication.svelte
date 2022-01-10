@@ -30,7 +30,7 @@
 
   const candidateQuery = createQuery()
   $: if (object !== undefined) {
-    candidateQuery.query(recruit.class.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
+    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo as Ref<Candidate> }, (result) => {
       candidate = result[0]
     })
   }
@@ -50,18 +50,17 @@
 </script>
 
 {#if object !== undefined && candidate !== undefined}
-  <div class="grid-cards">
-    <CandidateCard {candidate} />
-    <ExpandRightDouble />
-    <VacancyCard {vacancy} />
+  <div class="flex-between">
+    <div class="card"><CandidateCard {candidate} /></div>
+    <div class="arrows"><ExpandRightDouble /></div>
+    <div class="card"><VacancyCard {vacancy} /></div>
   </div>
 {/if}
 
 <style lang="scss">
-  .grid-cards {
-    display: grid;
-    grid-template-columns: 1fr 4rem 1fr;
-    column-gap: 1.5rem;
-    align-items: center;
+  .card {
+    align-self: stretch;
+    width: calc(50% - 3.5rem);
   }
+  .arrows { width: 4rem; }
 </style>

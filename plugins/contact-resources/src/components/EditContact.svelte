@@ -25,10 +25,9 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { ActionIcon, AnyComponent, Component, Label } from '@anticrm/ui'
-  
+  import { AnyComponent, Component, getPlatformColorForText, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import contact from '../plugin'
 
   export let _id: Ref<Contact>
@@ -58,14 +57,16 @@
   let mixins: Mixin<Doc>[] = []
 
   let selectedMixin: Mixin<Doc> | undefined
-  
+
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
     selectedClass = objectClass._id
     selectedMixin = undefined
     const h = client.getHierarchy()
-    mixins = h.getDescendants(contact.class.Contact)
-      .filter((m) => h.getClass(m).kind === ClassifierKind.MIXIN && h.hasMixin(object, m)).map(m => h.getClass(m) as Mixin<Doc>)
+    mixins = h
+      .getDescendants(contact.class.Contact)
+      .filter((m) => h.getClass(m).kind === ClassifierKind.MIXIN && h.hasMixin(object, m))
+      .map((m) => h.getClass(m) as Mixin<Doc>)
   }
 
   const dispatch = createEventDispatcher()
@@ -109,7 +110,10 @@
     return editorMixin.editor
   }
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<AnyComponent> {
+  async function getEditorOrDefault (
+    _class: Ref<Class<Doc>> | undefined,
+    defaultClass: Ref<Class<Doc>>
+  ): Promise<AnyComponent> {
     const editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor !== undefined) {
       return editor
@@ -125,6 +129,34 @@
   }
 
   $: icon = (objectClass?.icon ?? contact.class.Person) as Asset
+
+  function getStyle (id: Ref<Class<Doc>>, selected: boolean): string {
+    const color = getPlatformColorForText(id as string)
+    return `
+      background: ${color + (selected ? 'ff' : '33')};
+      border: 1px solid ${color + (selected ? '0f' : '66')};
+    `
+  }
+
+  let mainEditor: HTMLElement
+  let prevEditor: HTMLElement
+  let maxHeight = 0
+  const observer = new ResizeObserver(() => {
+    const curHeight = mainEditor.clientHeight
+    maxHeight = Math.max(maxHeight, curHeight)
+  })
+
+  $: if (mainEditor != null) {
+    if (prevEditor != null) {
+      observer.unobserve(prevEditor)
+    }
+    prevEditor = mainEditor
+    observer.observe(mainEditor)
+  }
+
+  onDestroy(() => {
+    observer.disconnect()
+  })
 </script>
 
 {#if object !== undefined}
@@ -138,32 +170,13 @@
       dispatch('close')
     }}
   >
-    <div slot="subtitle" class="flex flex-reverse flex-grow">
-      <div class='flex'>
-        {#if mixins.length > 0}
-          <div class='mixin-selector' class:selected={selectedClass === objectClass._id}>
-            <ActionIcon icon={objectClass.icon} size={'medium'} label={objectClass.label} action={() => {
-              selectedClass = objectClass._id
-              selectedMixin = undefined
-            }} />
-          </div>
-          {#each mixins as mixin}
-            <div class='mixin-selector' class:selected={selectedClass === mixin._id}>
-              <ActionIcon icon={mixin.icon} size={'medium'} label={mixin.label} action={() => {
-                selectedClass = mixin._id
-                selectedMixin = mixin
-              }} />
-            </div>
-          {/each}
-        {/if}
-      </div>
-      <div class="flex-grow">
-        {#if keys}
-          <AttributesBar {object} {keys} />
-        {/if}
-      </div>
+    <div slot="subtitle">
+      {#if keys}
+        <AttributesBar {object} {keys} />
+      {/if}
     </div>
-    {#await getEditorOrDefault(selectedClass, object._class) then is}
+    <div class='main-editor' bind:this={mainEditor} style={`min-height: ${maxHeight}px;`}>
+      {#await getEditorOrDefault(selectedClass, object._class) then is}
         <Component
           {is}
           props={{ object }}
@@ -175,7 +188,24 @@
             rightSection = ev.detail.presenter
           }}
         />
-    {/await}
+      {/await}
+    </div>
+    {#if mixins.length > 0}
+      <div class="mixin-container">
+        <div class="mixin-selector" 
+          style={getStyle(objectClass._id, selectedClass === objectClass._id)} 
+          on:click={() => { selectedClass = objectClass._id; selectedMixin = undefined }}>
+          <Label label={objectClass.label} />
+        </div>
+        {#each mixins as mixin}
+          <div class="mixin-selector" 
+          style={getStyle(mixin._id, selectedClass === mixin._id)} 
+          on:click={() => { selectedClass = mixin._id; selectedMixin = mixin }}>
+            <Label label={mixin.label} />
+          </div>
+        {/each}
+      </div>
+    {/if}
     {#each collectionKeys as collection}
       <div class="mt-14">
         {#await getCollectionEditor(collection) then is}
@@ -183,68 +213,42 @@
         {/await}
       </div>
     {/each}
-
-    <!-- {#each mixins as mixin}
-      <div class="mixin-container">
-        <div class="header">
-          <div class="icon" />
-          <Label label={mixin._class.label} />
-        </div>
-        <div class="attributes">
-          {#if mixin.keys.length > 0}
-            <AttributesBar {object} keys={mixin.keys} />
-          {/if}
-        </div>
-        <div class="collections">
-          {#each mixin.collectionKeys as collection}
-            <div class="mt-14">
-              {#await getCollectionEditor(collection) then is}
-                <Component {is} props={{ objectId: object._id, _class: object._class, space: object.space }} />
-              {/await}
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/each} -->
   </Panel>
 {/if}
 
 <style lang="scss">
+
+  .main-editor {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
   .mixin-container {
     margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--theme-zone-bg);
-    .header {
-      display: flex;
-      font-weight: 500;
-      font-size: 16px;
-      line-height: 150%;
-      align-items: center;
-      .icon {
-        width: 10px;
-        height: 10px;
-        /* Dark / Green 01 */
+    display: flex;
+    .mixin-selector {
+      margin-left: 8px;
+      cursor: pointer;
+      height: 24px;
+      min-width: 84px;
+      
+      border-radius: 8px;
 
-        background: #77c07b;
-        border: 2px solid #18181e;
-        border-radius: 50px;
-        margin-right: 1rem;
-      }
+      font-weight: 500;
+      font-size: 10px;
+
+      text-transform: uppercase;
+      color: #FFFFFF;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .attributes {
       margin: 1rem;
     }
     .collections {
       margin: 1rem;
-    }
-
-  }
-  .mixin-selector {
-    opacity: 0.6;
-    margin: 0.25rem;
-
-    &.selected { 
-      opacity: 1 !important;
     }
   }
 </style>

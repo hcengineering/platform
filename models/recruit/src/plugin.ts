@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, Ref, Space } from '@anticrm/core'
+import type { Client, Doc, Ref } from '@anticrm/core'
 import type { IntlString, Resource, Status } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
+import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
-import { KanbanTemplate } from '@anticrm/task'
 
 export default mergeIds(recruitId, recruit, {
   app: {
@@ -36,17 +36,13 @@ export default mergeIds(recruitId, recruit, {
   string: {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
-    CandidatePools: '' as IntlString,
-    Candidates: '' as IntlString,
-    Vacancy: '' as IntlString
+    CandidatePools: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   },
   component: {
     CreateVacancy: '' as AnyComponent,
-    CreateCandidates: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent,
     CreateApplication: '' as AnyComponent,
     EditCandidate: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
@@ -55,10 +51,8 @@ export default mergeIds(recruitId, recruit, {
     EditVacancy: '' as AnyComponent,
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
-    Applications: '' as AnyComponent
-  },
-  space: {
-    CandidatesPublic: '' as Ref<Space>
+    Applications: '' as AnyComponent,
+    Candidates: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>

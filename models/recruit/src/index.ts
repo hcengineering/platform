@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import { Doc, FindOptions, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
@@ -50,8 +50,8 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 @UX(recruit.string.CandidatePools, recruit.icon.RecruitApplication)
 export class TCandidates extends TSpace implements Candidates {}
 
-@Model(recruit.class.Candidate, contact.class.Person)
-@UX('Candidate' as IntlString, contact.icon.Person)
+@Mixin(recruit.mixin.Candidate, contact.class.Person)
+@UX('Candidate' as IntlString, recruit.icon.RecruitApplication)
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
   title?: string
@@ -73,7 +73,7 @@ export class TCandidate extends TPerson implements Candidate {
 @UX('Application' as IntlString, recruit.icon.Application, 'APP' as IntlString, 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.class.Candidate), 'Candidate' as IntlString)
+  @Prop(TypeRef(recruit.mixin.Candidate), 'Candidate' as IntlString)
   declare attachedTo: Ref<Candidate>
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
@@ -96,13 +96,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(recruit.class.Candidates, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: recruit.class.Candidate,
-      createItemDialog: recruit.component.CreateCandidate
-    }
-  })
-
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeEditor, {
     editor: recruit.component.Applications
   })
@@ -122,12 +115,15 @@ export function createModel (builder: Builder): void {
             addSpaceLabel: recruit.string.CreateVacancy,
             createComponent: recruit.component.CreateVacancy,
             component: recruit.component.EditVacancy
-          },
+          }
+        ],
+        specials: [
           {
+            id: 'candidates',
+            component: recruit.component.Candidates,
+            icon: contact.icon.Person,
             label: recruit.string.Candidates,
-            spaceClass: recruit.class.Candidates,
-            addSpaceLabel: recruit.string.CreateCandidates,
-            createComponent: recruit.component.CreateCandidates
+            position: 'bottom'
           }
         ]
       }
@@ -148,7 +144,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Candidate,
+    attachTo: recruit.mixin.Candidate,
     descriptor: view.viewlet.Table,
     open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -176,7 +172,7 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        attachedTo: recruit.class.Candidate,
+        attachedTo: recruit.mixin.Candidate,
         state: task.class.State,
         assignee: contact.class.Employee,
         doneState: task.class.DoneState
@@ -202,7 +198,7 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        attachedTo: recruit.class.Candidate,
+        attachedTo: recruit.mixin.Candidate,
         state: task.class.State
       }
     } as FindOptions<Doc>, // TODO: fix
@@ -216,7 +212,7 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        attachedTo: recruit.class.Candidate,
+        attachedTo: recruit.mixin.Candidate,
         state: task.class.State,
         assignee: contact.class.Employee,
         doneState: task.class.DoneState
@@ -239,7 +235,7 @@ export function createModel (builder: Builder): void {
     card: recruit.component.KanbanCard
   })
 
-  builder.mixin(recruit.class.Candidate, core.class.Class, view.mixin.ObjectEditor, {
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditCandidate
   })
 
@@ -267,12 +263,12 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Candidate,
+    target: recruit.mixin.Candidate,
     action: recruit.action.CreateApplication
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Candidate,
+    target: recruit.mixin.Candidate,
     action: task.action.CreateTask
   })
 

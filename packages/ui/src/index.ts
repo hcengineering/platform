@@ -185,3 +185,4 @@ addStringsLoader(uiId, async (lang: string) => {
 })
 
 export { default } from './plugin'
+export * from './colors'

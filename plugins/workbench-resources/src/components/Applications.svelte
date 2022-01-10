@@ -34,6 +34,6 @@
 
 <div class="flex-col">
   {#each apps as app}
-    <AppItem selected={app._id === active} icon={app.icon} label={app.label} notify action={async () => {navigateApp(app._id)}}/>
+    <AppItem selected={app._id === active} icon={app.icon} label={app.label} action={async () => {navigateApp(app._id)}}/>
   {/each}
 </div>
