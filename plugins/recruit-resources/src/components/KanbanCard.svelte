@@ -19,8 +19,6 @@
   import type { WithLookup } from '@anticrm/core'
   import type { Applicant } from '@anticrm/recruit'
 
-  import EditCandidate from './EditCandidate.svelte'
-
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'

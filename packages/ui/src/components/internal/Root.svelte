@@ -43,16 +43,16 @@
           <div class="clock">
             <Clock />
           </div>
-          <div class="widget">
+          <div class="flex-center widget cursor-pointer">
             <LangSelector />
           </div>
-          <div class="widget">
+          <div class="flex-center widget cursor-pointer mr-3">
             <ThemeSelector />
           </div>
-          <div class="widget">
+          <div class="flex-center widget cursor-pointer mr-3">
             <FontSizeSelector />
           </div>
-          <div class="widget">
+          <div class="flex-center widget mr-3">
             <WiFi size={'small'}/>
           </div>
         </div>
@@ -95,12 +95,10 @@
         user-select: none;
       }
       .widget {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        opacity: .6;
+        width: 16px;
+        height: 16px;
+        font-size: 14px;
+        color: var(--theme-content-color);
       }
     }
 

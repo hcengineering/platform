@@ -34,33 +34,9 @@
 </script>
 
 {#if isAsset(icon)}
-  <svg class={size} {fill}>
+  <svg class="svg-{size}" {fill}>
     <use href={url} />
   </svg>
 {:else}
   <svelte:component this={icon} {size} {fill} {filled} />
 {/if}
-
-<style lang="scss">
-  .x-small {
-    width: .857em;
-    height: .857em;
-  }
-
-  .small {
-    width: 1.143em;
-    height: 1.143em;
-  }
-  .medium {
-    width: 1.429em;
-    height: 1.429em;
-  }
-  .large {
-    width: 1.715em;
-    height: 1.715em;
-  }
-  .full {
-    width: inherit;
-    height: inherit;
-  }
-</style>

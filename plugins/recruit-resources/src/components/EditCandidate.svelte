@@ -19,7 +19,6 @@
   import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels, AttributeEditor, Avatar } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import Edit from './icons/Edit.svelte'
   import recruit from '../plugin'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
@@ -102,8 +101,9 @@
             <Channels value={object.channels} {integrations} size={'small'} on:click />
             <div class="ml-1">
               <CircleButton
-                icon={Edit}
+                icon={contact.icon.Edit}
                 size={'small'}
+                selected
                 on:click={(ev) =>
                   showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
                     saveChannels(result)

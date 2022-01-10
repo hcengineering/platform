@@ -151,6 +151,7 @@ export default plugin(contactId, {
     WhatsApp: '' as Asset,
     Youtube: '' as Asset,
     GitHub: '' as Asset,
+    Edit: '' as Asset,
     Person: '' as Asset,
     Company: '' as Asset
   },

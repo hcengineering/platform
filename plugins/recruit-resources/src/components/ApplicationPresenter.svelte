@@ -15,9 +15,10 @@
 -->
 <script lang="ts">
   import type { Applicant } from '@anticrm/recruit'
-  import { closeTooltip, IconFile, showPopup } from '@anticrm/ui'
+  import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import { EditTask } from '@anticrm/task-resources'
+  import recruit from '@anticrm/recruit'
 
   export let value: Applicant
 
@@ -32,6 +33,6 @@
 
 {#if value && shortLabel}
   <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><IconFile size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
+    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
   </div>
 {/if}
