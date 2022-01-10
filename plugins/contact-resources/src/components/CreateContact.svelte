@@ -15,7 +15,6 @@
 
   client.getHierarchy().getDescendants(contact.class.Contact).forEach((v) => {
     const cl = hierarchy.getClass(v)
-    console.log('DSC', cl)
     if (hierarchy.hasMixin(cl, view.mixin.ObjectFactory)) {
       const f = hierarchy.as(cl, view.mixin.ObjectFactory)
       actions.push({
