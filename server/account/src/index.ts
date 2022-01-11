@@ -424,7 +424,7 @@ export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
   await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
   await db
     .collection<Account>(ACCOUNT_COLLECTION)
-    .updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
+    .updateMany({ _id: { $in: ws.accounts ?? [] } }, { $pull: { workspaces: ws._id } })
 }
 
 /**
