@@ -108,6 +108,8 @@ export interface AttributeModel {
   // Extra properties for component
   props?: Record<string, any>
   sortingKey: string
+  // Extra icon if applicable
+  icon?: Asset
 }
 
 /**

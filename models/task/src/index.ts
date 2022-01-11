@@ -54,7 +54,7 @@ export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX('State' as IntlString, undefined, undefined, 'rank')
+@UX('State' as IntlString, task.icon.TaskState, undefined, 'rank')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
@@ -65,7 +65,7 @@ export class TState extends TDoc implements State {
 }
 
 @Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX('Done' as IntlString, undefined, undefined, 'title')
+@UX('Done' as IntlString, task.icon.TaskState, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string

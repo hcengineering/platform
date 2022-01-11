@@ -212,7 +212,8 @@ const task = plugin(taskId, {
     Kanban: '' as Asset,
     TodoCheck: '' as Asset,
     TodoUnCheck: '' as Asset,
-    ManageStatuses: '' as Asset
+    ManageStatuses: '' as Asset,
+    TaskState: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.
