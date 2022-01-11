@@ -74,8 +74,11 @@ export async function initWorkspace (transactorUrl: string, dbName: string): Pro
 
     console.log('creating data...')
     const connection = await connect(transactorUrl, dbName)
-    await createDeps(connection)
-    await connection.close()
+    try {
+      await createDeps(connection)
+    } finally {
+      await connection.close()
+    }
 
     console.log('create minio bucket')
     if (!(await minio.bucketExists(dbName))) {
