@@ -26,10 +26,6 @@
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
 
-  export let space: Ref<Space>
-
-  let _space = space
-
   export function canClose (): boolean {
     return object.name === ''
   }
@@ -42,7 +38,7 @@
   const client = getClient()
 
   async function createOrganization () {
-    await client.createDoc(contact.class.Organization, _space, object)
+    await client.createDoc(contact.class.Organization, contact.space.Contacts, object)
 
     dispatch('close')
   }
@@ -52,10 +48,7 @@
   label={'Create organization'}
   okAction={createOrganization}
   canSave={object.name.length > 0}
-  spaceClass={contact.class.Organizations}
-  spaceLabel={contact.string.OrganizationsFolder}
-  spacePlaceholder={contact.string.SelectFolder}
-  bind:space={_space}
+  space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

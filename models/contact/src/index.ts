@@ -71,13 +71,14 @@ export class TContact extends TDoc implements Contact {
 
   @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
   comments?: number
+
+  @Prop(TypeString(), 'Location' as IntlString)
+  city!: string
 }
 
 @Model(contact.class.Person, contact.class.Contact)
 @UX('Person' as IntlString, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {
-  @Prop(TypeString(), 'City' as IntlString)
-  city!: string
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
@@ -85,6 +86,7 @@ export class TPerson extends TContact implements Person {
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
+@UX('Employee' as IntlString, contact.icon.Person)
 export class TEmployee extends TPerson implements Employee {}
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
@@ -114,44 +116,23 @@ export function createModel (builder: Builder): void {
     TEmployeeAccount
   )
 
-  builder.mixin(contact.class.Persons, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: contact.class.Person,
-      createItemDialog: contact.component.CreatePerson
-    }
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
+    component: contact.component.CreatePerson
   })
 
-  builder.mixin(contact.class.Organizations, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: contact.class.Organization,
-      createItemDialog: contact.component.CreateOrganization
-    }
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectFactory, {
+    component: contact.component.CreateOrganization
   })
 
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: contact.string.Contacts,
     icon: contact.icon.Person,
     hidden: false,
-    navigatorModel: {
-      spaces: [
-        {
-          label: contact.string.Persons,
-          spaceClass: contact.class.Persons,
-          addSpaceLabel: contact.string.CreatePersons,
-          createComponent: contact.component.CreatePersons
-        },
-        {
-          label: contact.string.Organizations,
-          spaceClass: contact.class.Organizations,
-          addSpaceLabel: contact.string.CreateOrganizations,
-          createComponent: contact.component.CreateOrganizations
-        }
-      ]
-    }
+    component: contact.component.Contacts
   }, contact.app.Contacts)
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: contact.class.Person,
+    attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
     open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -161,17 +142,9 @@ export function createModel (builder: Builder): void {
       'city',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
+      { presenter: contact.component.RolePresenter, label: 'Role' },
       'channels'
     ]
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: contact.class.Organization,
-    descriptor: view.viewlet.Table,
-    open: contact.component.EditContact,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {},
-    config: ['', { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' }, 'modifiedOn', 'channels']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {

@@ -25,10 +25,6 @@
   import { combineName, Person } from '@anticrm/contact'
   import contact from '../plugin'
 
-  export let space: Ref<Space>
-
-  let _space = space
-
   let firstName = ''
   let lastName = ''
 
@@ -48,7 +44,7 @@
       channels: object.channels
     }
 
-    await client.createDoc(contact.class.Person, _space, person)
+    await client.createDoc(contact.class.Person, contact.space.Contacts, person)
 
     dispatch('close')
   }
@@ -58,10 +54,7 @@
   label={contact.string.CreatePerson}
   okAction={createPerson}
   canSave={firstName.length > 0 && lastName.length > 0}
-  spaceClass={contact.class.Persons}
-  spaceLabel={contact.string.PersonsFolder}
-  spacePlaceholder={contact.string.SelectFolder}
-  bind:space={_space}
+  bind:space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

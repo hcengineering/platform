@@ -37,6 +37,7 @@ import { toIntl } from '..'
       <tr>
         <th>ID</th>
         <th>Class</th>
+        <th>ObjectID</th>
         <th>Body</th>
       </tr>
     </thead>
@@ -44,6 +45,7 @@ import { toIntl } from '..'
     {#each txes as tx}
       <tr class='tr-body'>
         <td>{tx.index}</td>
+        <td>{tx._class}</td>
         <td>{tx.objectId}</td>
         <td>{tx.objectClass}</td>
         <td>

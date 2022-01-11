@@ -26,7 +26,9 @@ import EditOrganization from './components/EditOrganization.svelte'
 import CreatePersons from './components/CreatePersons.svelte'
 import CreateOrganizations from './components/CreateOrganizations.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
+import Contacts from './components/Contacts.svelte'
 import { Resources } from '@anticrm/platform'
+import RolePresenter from './components/RolePresenter.svelte'
 
 export { ContactPresenter, EditContact }
 
@@ -42,6 +44,8 @@ export default async (): Promise<Resources> => ({
     EditOrganization,
     CreatePersons,
     CreateOrganizations,
-    SocialEditor
+    SocialEditor,
+    Contacts,
+    RolePresenter
   }
 })

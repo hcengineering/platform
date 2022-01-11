@@ -14,27 +14,22 @@
 -->
 
 <script lang="ts">
-  import type { Asset,IntlString } from '@anticrm/platform'  
   import { createEventDispatcher } from 'svelte'
-  import { AnySvelteComponent } from '../types'
+  import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   
-  export let actions: {
-    label: IntlString
-    icon?: Asset | AnySvelteComponent
-    action: (ctx?: any) => void | Promise<void>
-  }[] = []
+  export let actions: Action[] = []
   export let ctx: any = undefined
 
-  const dispatch = createEventDispatcher()  
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="flex-col popup">
   {#each actions as action}
-    <div class="flex-row-center menu-item" on:click={() => { 
+    <div class="flex-row-center menu-item" on:click={() => {
       dispatch('close')
-      action.action(ctx) 
+      action.action(ctx)
     }}>
       {#if action.icon}
         <Icon icon={action.icon} size={'small'} />

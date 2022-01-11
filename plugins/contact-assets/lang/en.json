@@ -13,6 +13,7 @@
     "PersonsFolder": "Persons folder",
     "AddSocialLinks": "Add social links",
     "MakePrivate": "Make private",
-    "MakePrivateDescription": "Only members can see it"
+    "MakePrivateDescription": "Only members can see it",
+    "Create": "Contact"
   }
 }

@@ -25,10 +25,11 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, getPlatformColorForText, Label } from '@anticrm/ui'
+  import { AnyComponent, Component, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import contact from '../plugin'
+  import { getMixinStyle } from '../utils'
 
   export let _id: Ref<Contact>
   let object: Contact
@@ -77,8 +78,8 @@
     return keys
   }
 
-  function getFiltredKeys (objectClass: Ref<Class<Doc>>, ignoreKeys: string[]): KeyedAttribute[] {
-    const keys = [...hierarchy.getAllAttributes(objectClass).entries()]
+  function getFiltredKeys (objectClass: Ref<Class<Doc>>, ignoreKeys: string[], to?: Ref<Class<Doc>>): KeyedAttribute[] {
+    const keys = [...hierarchy.getAllAttributes(objectClass, to).entries()]
       .filter(([, value]) => value.hidden !== true)
       .map(([key, attr]) => ({ key, attr }))
 
@@ -86,7 +87,7 @@
   }
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys)
+    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys, selectedClass !== objectClass._id ? objectClass._id : undefined)
     keys = collectionsFilter(filtredKeys, false)
     collectionKeys = collectionsFilter(filtredKeys, true)
   }
@@ -129,14 +130,6 @@
   }
 
   $: icon = (objectClass?.icon ?? contact.class.Person) as Asset
-
-  function getStyle (id: Ref<Class<Doc>>, selected: boolean): string {
-    const color = getPlatformColorForText(id as string)
-    return `
-      background: ${color + (selected ? 'ff' : '33')};
-      border: 1px solid ${color + (selected ? '0f' : '66')};
-    `
-  }
 
   let mainEditor: HTMLElement
   let prevEditor: HTMLElement
@@ -193,13 +186,13 @@
     {#if mixins.length > 0}
       <div class="mixin-container">
         <div class="mixin-selector" 
-          style={getStyle(objectClass._id, selectedClass === objectClass._id)} 
+          style={getMixinStyle(objectClass._id, selectedClass === objectClass._id)} 
           on:click={() => { selectedClass = objectClass._id; selectedMixin = undefined }}>
           <Label label={objectClass.label} />
         </div>
         {#each mixins as mixin}
           <div class="mixin-selector" 
-          style={getStyle(mixin._id, selectedClass === mixin._id)} 
+          style={getMixinStyle(mixin._id, selectedClass === mixin._id)} 
           on:click={() => { selectedClass = mixin._id; selectedMixin = mixin }}>
             <Label label={mixin.label} />
           </div>
