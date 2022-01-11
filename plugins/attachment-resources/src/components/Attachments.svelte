@@ -14,26 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '../plugin'
-  import type { Attachment } from '@anticrm/attachment'
-  import type { Class, Doc, Ref, Space } from '@anticrm/core'
+  import { Class, Doc, Ref, Space } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd, Label, Spinner } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
+  import attachment from '../plugin'
   import { uploadFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
-
-  let attachments: Attachment[] = []
-
-  const query = createQuery()
-  $: query.query(attachment.class.Attachment, { attachedTo: objectId }, (result) => {
-    attachments = result
-  })
+  
+  export let attachments: number
 
   let inputFile: HTMLInputElement
   let loading = 0
@@ -108,7 +102,7 @@
     />
   </div>
 
-  {#if attachments.length === 0 && !loading}
+  {#if (attachments === 0) && !loading}
     <div
       class="flex-col-center mt-5 zone-container"
       class:solid={dragover}
@@ -137,6 +131,7 @@
       config={['', 'lastModified']}
       options={{}}
       query={{ attachedTo: objectId }}
+      loadingProps={ { length: attachments } }
     />
   {/if}
 </div>

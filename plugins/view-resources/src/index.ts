@@ -30,7 +30,7 @@ import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
-export { buildModel, getActions, getObjectPresenter } from './utils'
+export { buildModel, getActions, getObjectPresenter, LoadingProps } from './utils'
 export { Table, TableView }
 
 function Delete (object: Doc): void {

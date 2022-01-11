@@ -38,4 +38,5 @@
     }
   }
   query={ { attachedTo: value._id } }
+  loadingProps={{ length: value.applications ?? 0 }}
 />

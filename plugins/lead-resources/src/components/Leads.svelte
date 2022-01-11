@@ -15,8 +15,7 @@
 
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
-  import type { Customer, Lead } from '@anticrm/lead'
-  import { createQuery } from '@anticrm/presentation'
+  import type { Customer } from '@anticrm/lead'
   import task from '@anticrm/task'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
@@ -24,11 +23,8 @@
   import CreateLead from './CreateLead.svelte'
 
   export let objectId: Ref<Customer>
-
-  let leads: Lead[] = []
-
-  const query = createQuery()
-  $: query.query(lead.class.Lead, { attachedTo: objectId }, result => { leads = result })
+  export let leads: number | undefined = undefined
+  $: loadingProps = leads !== undefined ? { length: leads } : undefined
 
   const createLead = (ev: MouseEvent): void =>
     showPopup(CreateLead, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
@@ -39,7 +35,7 @@
     <div class="title">Leads</div>
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createLead} />
   </div>
-  {#if leads.length > 0}
+  {#if leads !== undefined && leads > 0}
     <Table 
       _class={lead.class.Lead}
       config={['', '$lookup.state']}
@@ -51,6 +47,7 @@
         }
       }
       query={ { attachedTo: objectId } }
+      {loadingProps}
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
