@@ -38,7 +38,7 @@
   async function createAttachment (file: File) {
     loading++
     try {
-      const uuid = await uploadFile(space, file, objectId)
+      const uuid = await uploadFile(file, space, objectId)
       console.log('uploaded file uuid', uuid)
       client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', {
         name: file.name,

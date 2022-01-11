@@ -692,6 +692,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/image-cropper",
+      "projectFolder": "plugins/image-cropper",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/image-cropper-resources",
+      "projectFolder": "plugins/image-cropper-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/dev-server-chunter-resources",
       "projectFolder": "dev/server-chunter-resources",
       "shouldPublish": true

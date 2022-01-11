@@ -18,13 +18,12 @@
   import contact, { combineName, Person } from '@anticrm/contact'
   import type { Data, MixinData, Ref } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { Avatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
+  import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { EditableAvatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { CircleButton, EditBox, IconAdd, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import { uploadFile } from '../utils'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
 
@@ -50,10 +49,15 @@
   const candidateId = generateId()
 
   async function createCandidate () {
+    const uploadFile = await getResource(attachment.helper.UploadFile)
+    const avatarUUID = avatar !== undefined 
+      ? await uploadFile(avatar)
+      : undefined
     const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
-      channels: object.channels
+      channels: object.channels,
+      avatar: avatarUUID
     }
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
@@ -86,7 +90,9 @@
   async function createAttachment (file: File) {
     loading = true
     try {
-      resume.uuid = await uploadFile(space, file, candidateId)
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+
+      resume.uuid = await uploadFile(file, space, candidateId)
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type
@@ -111,6 +117,15 @@
     const file = inputFile.files?.[0]
     if (file !== undefined) { createAttachment(file) }
   }
+
+  let avatar: File | undefined
+
+  function onAvatarDone (e: any) {
+    const { file } = e.detail
+
+    avatar = file
+  }
+
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -124,7 +139,7 @@
   <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
   <div class="flex-row-center">
     <div class="mr-4">
-      <Avatar avatar={object.avatar} size={'large'} />
+      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone}/>
     </div>
     <div class="flex-col">
       <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>

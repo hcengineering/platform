@@ -114,6 +114,15 @@ export function getFileUrl (file: string): string {
   return url
 }
 
+export async function getBlobURL (blob: Blob): Promise<string> {
+  return await new Promise((resolve) => {
+    const reader = new FileReader()
+
+    reader.addEventListener('load', () => resolve(reader.result as string), false)
+    reader.readAsDataURL(blob)
+  })
+}
+
 /**
  * @public
  */

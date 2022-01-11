@@ -34,6 +34,8 @@ specifiers:
   '@rush-temp/gmail': file:./projects/gmail.tgz
   '@rush-temp/gmail-assets': file:./projects/gmail-assets.tgz
   '@rush-temp/gmail-resources': file:./projects/gmail-resources.tgz
+  '@rush-temp/image-cropper': file:./projects/image-cropper.tgz
+  '@rush-temp/image-cropper-resources': file:./projects/image-cropper-resources.tgz
   '@rush-temp/lead': file:./projects/lead.tgz
   '@rush-temp/lead-assets': file:./projects/lead-assets.tgz
   '@rush-temp/lead-resources': file:./projects/lead-resources.tgz
@@ -127,6 +129,7 @@ specifiers:
   commander: ^8.1.0
   compression-webpack-plugin: ~9.0.0
   cors: ^2.8.5
+  cropperjs: ~1.5.12
   cross-env: ^7.0.3
   css-loader: ^5.2.1
   deep-equal: ^2.0.5
@@ -163,6 +166,7 @@ specifiers:
   sass: ^1.37.5
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
+  smartcrop: ~2.0.5
   style-loader: ^3.2.1
   svelte-check: ^2.2.10
   svelte-preprocess: ^4.7.4
@@ -211,6 +215,8 @@ dependencies:
   '@rush-temp/gmail': file:projects/gmail.tgz
   '@rush-temp/gmail-assets': file:projects/gmail-assets.tgz
   '@rush-temp/gmail-resources': file:projects/gmail-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/image-cropper': file:projects/image-cropper.tgz
+  '@rush-temp/image-cropper-resources': file:projects/image-cropper-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/lead': file:projects/lead.tgz
   '@rush-temp/lead-assets': file:projects/lead-assets.tgz
   '@rush-temp/lead-resources': file:projects/lead-resources.tgz_096c09b0b673a57c275d9767a12070b1
@@ -304,6 +310,7 @@ dependencies:
   commander: 8.3.0
   compression-webpack-plugin: 9.0.1_webpack@5.65.0
   cors: 2.8.5
+  cropperjs: 1.5.12
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.65.0
   deep-equal: 2.0.5
@@ -340,6 +347,7 @@ dependencies:
   sass: 1.45.0
   sass-loader: 12.4.0_sass@1.45.0+webpack@5.65.0
   simplytyped: 3.3.0_typescript@4.5.4
+  smartcrop: 2.0.5
   style-loader: 3.3.1_webpack@5.65.0
   svelte-check: 2.2.11_ac194b5590200ebf8338e0f86ec190f4
   svelte-preprocess: 4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f
@@ -3528,6 +3536,10 @@ packages:
 
   /create-require/1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+    dev: false
+
+  /cropperjs/1.5.12:
+    resolution: {integrity: sha512-re7UdjE5UnwdrovyhNzZ6gathI4Rs3KGCBSc8HCIjUo5hO42CtzyblmWLj6QWVw7huHyDMfpKxhiO2II77nhDw==}
     dev: false
 
   /cross-env/7.0.3:
@@ -8877,6 +8889,10 @@ packages:
       is-fullwidth-code-point: 3.0.0
     dev: false
 
+  /smartcrop/2.0.5:
+    resolution: {integrity: sha512-aXoHTM8XlC51g96kgZkYxZ2mx09/ibOrIVLiUNOFozV/MHmFSgEr1/5CKVBoFD5vd+re2wSy0xra21CyjRITzA==}
+    dev: false
+
   /snapdragon-node/2.1.1:
     resolution: {integrity: sha512-O27l4xaMYt/RSQ5TR3vpWCAB5Kb/czIcqUFOM/C4fYcLnbZUc1PkjTAMjof2pBWaSTwOUd6qUHcFGVGj7aIwnw==}
     engines: {node: '>=0.10.0'}
@@ -10926,7 +10942,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-5c2Hkvtnj+3t/r1Z+RFQuoxDwYm6ndTPCxFns6PK3SqCs/KfWREism8tiswJXrB2FNSQkb2CE7yvsftKZFcbPQ==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-5m/Rr4eGcqsTpvxL8nYdwl7Vn74QrZXdcgIDGbOJaRWh8uXuQBsDIUgE4wCrL49sgOJQEq/dUIfJVA9ndBOd5A==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -11346,6 +11362,63 @@ packages:
   file:projects/gmail.tgz:
     resolution: {integrity: sha512-56FU7r/ypcn+MoC5NDXlSBgUcpB6Qr533YRbaAysYKoojaRu2/AkTIrldSXuS5cJCWjKqDBG2t251e+rsHm/fQ==, tarball: file:projects/gmail.tgz}
     name: '@rush-temp/gmail'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/image-cropper-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-ljTYKZOYl34hx76ETCFNAcExK+MP6WSS09tbRRixWxD7SYc7NmBeMntGyZTy3qNu4/jAwNaDAIH52kXQg9ktXQ==, tarball: file:projects/image-cropper-resources.tgz}
+    id: file:projects/image-cropper-resources.tgz
+    name: '@rush-temp/image-cropper-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      cropperjs: 1.5.12
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
+      sass: 1.45.0
+      smartcrop: 2.0.5
+      svelte: 3.44.3
+      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/image-cropper.tgz:
+    resolution: {integrity: sha512-7Fj5//tMmR0uKUwcnFrk1KHmI+N+CLNmOiNPApLUtdK7q6clzFT8LMTDZapnbh93NdTCVXa+DxVLwzNGaeqsQA==, tarball: file:projects/image-cropper.tgz}
+    name: '@rush-temp/image-cropper'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -12045,7 +12118,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-tpa5gk8H/quPYXkpBhp5jS0bp/E+Jk7mTGhfE54q4RTr5LOYGTCg2HKmxZWqRV1N3g1Jk7nKAZHWMxMSGHCuKw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-QhfoHLyegkl3JsleXaZkSWsVQgikJM9jdqkla2mRW3kHyQAYWPBITUnVVWu1qBADViJupNZdYmYEcm7oeMF5og==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -12081,7 +12154,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-XgKxpfDD6oNTIijCj64CrOXM6sYgZhDuDoy5wWIrr/4Y5QFn7TWpOnSjIgmIXMtLUCGk4L55CAZBK+okRGX25Q==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-7OeW4OKQlYw/FrF1rSmbwacpTXSVzNnIPCb/mIP/Q4Kc+uxroItvCRRYUqVH/V9u8W7nyTE7CjDM+KrADL/BAg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

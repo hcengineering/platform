@@ -18,14 +18,19 @@ import type { Doc, Ref, Space } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 
-export async function uploadFile (space: Ref<Space>, file: File, attachedTo: Ref<Doc>): Promise<string> {
+export async function uploadFile (file: File, space?: Ref<Space>, attachedTo?: Ref<Doc>): Promise<string> {
   console.log(file)
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   const data = new FormData()
   data.append('file', file)
 
-  const url = `${uploadUrl as string}?space=${space}&name=${encodeURIComponent(file.name)}&attachedTo=${attachedTo}`
+  const params = [['space', space], ['attachedTo', attachedTo]]
+    .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
+    .map(([name, value]) => `${name}=${value}`)
+    .join('&')
+
+  const url = `${uploadUrl as string}?name=${encodeURIComponent(file.name)}&${params}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
