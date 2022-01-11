@@ -35,7 +35,10 @@ if (dbUri === undefined) {
   process.exit(1)
 }
 
-setMetadata(accountPlugin.metadata.Endpoint, transactorUri)
+const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
+
+setMetadata(accountPlugin.metadata.Endpoint, endpointUri)
+setMetadata(accountPlugin.metadata.Transactor, transactorUri)
 
 let client: MongoClient
 

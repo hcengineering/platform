@@ -53,6 +53,7 @@ export const accountId = 'account' as Plugin
 const accountPlugin = plugin(accountId, {
   metadata: {
     Endpoint: '' as Metadata<string>,
+    Transactor: '' as Metadata<string>,
     Secret: '' as Metadata<string>
   },
   status: {
@@ -70,6 +71,10 @@ const getSecret = (): string => {
 
 const getEndpoint = (): string => {
   return getMetadata(accountPlugin.metadata.Endpoint) ?? 'wss://transactor.hc.engineering/'
+}
+
+const getTransactor = (): string => {
+  return getMetadata(accountPlugin.metadata.Transactor) ?? 'wss://transactor.hc.engineering/'
 }
 
 /**
@@ -297,7 +302,7 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
       organisation
     })
     .then((e) => e.insertedId.toHexString())
-  await initWorkspace(getEndpoint(), workspace)
+  await initWorkspace(getTransactor(), workspace)
   return result
 }
 
@@ -378,7 +383,7 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 }
 
 async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getEndpoint(), workspace, account.email)
+  const connection = await connect(getTransactor(), workspace, account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
