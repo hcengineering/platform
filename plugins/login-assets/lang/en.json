@@ -1,7 +1,27 @@
 {
+  "status": {
+    "RequiredField": "Required field {field}",
+    "FieldsDoNotMatch": "{field} don't match {field2}",
+    "ConnectingToServer": "Connecting to server....",
+    "IncorrectValue": "Incorrect value {field}"
+  },
   "string": {
     "LogIn": "Login",
     "SignUp": "Sign Up",
-    "DoNotHaveAnAccount": "Do not have an account?"
+    "CreateWorkspace": "Create workspace",
+    "HaveWorkspace": "Already have a workspace?",
+    "LastName": "Last name",
+    "FirstName": "First name",
+    "Join": "Join",
+    "Email": "Email",
+    "Password": "Password",
+    "Workspace": "Workspace",
+    "DoNotHaveAnAccount": "Do not have an account?",
+    "PasswordRepeat": "Repeat password",
+    "HaveAccount": "Already have an account?",
+    "SelectWorkspace": "Select workspace",
+    "Copy": "Copy",
+    "Close": "Close",
+    "InviteDescription": "Share this link to invite other users"
   }
 }

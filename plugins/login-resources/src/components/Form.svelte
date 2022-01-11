@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -22,11 +23,13 @@
   import login from '../plugin'
 
   interface Field {
+    id?: string
     name: string
     i18n: IntlString
     password?: boolean
     optional?: boolean
     short?: boolean
+    rule?: RegExp
   }
 
   interface Action {
@@ -50,6 +53,25 @@
       if (!f.optional && (!v || v === '')) {
         status = new Status(Severity.INFO, login.status.RequiredField, { field: await translate(field.i18n, {}) })
         return
+      }
+      if (f.id !== undefined) {
+        const sameFields = fields.filter((f) => f.id === field.id)
+        for (const field of sameFields) {
+          const v = object[field.name]
+          if (v !== object[f.name]) {
+            status = new Status(Severity.INFO, login.status.FieldsDoNotMatch, {
+              field: await translate(field.i18n, {}),
+              field2: await translate(f.i18n, {})
+            })
+            return
+          }
+        }
+      }
+      if (f.rule !== undefined) {
+        if (!f.rule.test(v)) {
+          status = new Status(Severity.INFO, login.status.IncorrectValue, { field: await translate(field.i18n, {}) })
+          return
+        }
       }
     }
     status = OK
@@ -84,6 +106,7 @@
       <div class={field.short ? 'form-col' : 'form-row'}>
         <StylishEdit
           label={field.i18n}
+          name={field.id}
           password={field.password}
           bind:value={object[field.name]}
           on:keyup={validate}
@@ -107,12 +130,6 @@
         }}
       />
     </div>
-
-    <!-- <div class="form-col"><EditBox label="First Name" bind:value={fname}/></div>
-    <div class="form-col"><EditBox label="Last Name" bind:value={lname}/></div>
-    <div class="form-row"><EditBox label="E-mail"/></div>
-    <div class="form-row"><EditBox label="Password" password/></div>
-    <div class="form-row"><EditBox label="Repeat password" password/></div> -->
   </div>
   <div class="grow-separator" />
   <div class="footer">
@@ -121,11 +138,6 @@
   </div>
 </form>
 
-<!-- <div class="actions">
-    {#each actions as action, i}
-      <button class="button" class:separator={i !== 0} on:click|preventDefault={action.func}> {action.i18n} </button>
-    {/each}
-  </div> -->
 <style lang="scss">
   .container {
     display: flex;

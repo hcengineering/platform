@@ -23,7 +23,7 @@ import Root from './components/internal/Root.svelte'
 
 export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment } from './types'
 // export { applicationShortcutKey } from './utils'
-export { getCurrentLocation, navigate, location } from './location'
+export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 
 export { default as EditBox } from './components/EditBox.svelte'
 export { default as Label } from './components/Label.svelte'
@@ -106,16 +106,23 @@ interface CompAndProps {
 
 export const popupstore = writable<CompAndProps[]>([])
 
-export function showPopup (component: AnySvelteComponent | AnyComponent, props: any, element?: PopupAlignment, onClose?: (result: any) => void): void {
+export function showPopup (
+  component: AnySvelteComponent | AnyComponent,
+  props: any,
+  element?: PopupAlignment,
+  onClose?: (result: any) => void
+): void {
   if (typeof component === 'string') {
-    getResource(component).then(resolved => {
-      popupstore.update(popups => {
-        popups.push({ is: resolved, props, element, onClose })
-        return popups
+    getResource(component)
+      .then((resolved) => {
+        popupstore.update((popups) => {
+          popups.push({ is: resolved, props, element, onClose })
+          return popups
+        })
       })
-    }).catch(err => console.log(err))
+      .catch((err) => console.log(err))
   } else {
-    popupstore.update(popups => {
+    popupstore.update((popups) => {
       popups.push({ is: component, props, element, onClose })
       return popups
     })
@@ -123,7 +130,7 @@ export function showPopup (component: AnySvelteComponent | AnyComponent, props: 
 }
 
 export function closePopup (): void {
-  popupstore.update(popups => {
+  popupstore.update((popups) => {
     popups.pop()
     return popups
   })
@@ -138,16 +145,37 @@ export const tooltipstore = writable<LabelAndProps>({
   anchor: undefined
 })
 
-export function showTooltip (label: IntlString | undefined, element: HTMLElement, direction?: TooltipAligment, component?: AnySvelteComponent | AnyComponent, props?: any, anchor?: HTMLElement): void {
-  tooltipstore.set({ label: label, element: element, direction: direction, component: component, props: props, anchor: anchor })
+export function showTooltip (
+  label: IntlString | undefined,
+  element: HTMLElement,
+  direction?: TooltipAligment,
+  component?: AnySvelteComponent | AnyComponent,
+  props?: any,
+  anchor?: HTMLElement
+): void {
+  tooltipstore.set({
+    label: label,
+    element: element,
+    direction: direction,
+    component: component,
+    props: props,
+    anchor: anchor
+  })
 }
 
 export function closeTooltip (): void {
-  tooltipstore.set({ label: undefined, element: undefined, direction: undefined, component: undefined, props: undefined, anchor: undefined })
+  tooltipstore.set({
+    label: undefined,
+    element: undefined,
+    direction: undefined,
+    component: undefined,
+    props: undefined,
+    anchor: undefined
+  })
 }
 
-export const ticker = readable(Date.now(), set => {
-  const interval = setInterval(() => {
+export const ticker = readable(Date.now(), (set) => {
+  setInterval(() => {
     set(Date.now())
   }, 10000)
 })

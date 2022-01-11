@@ -14,10 +14,25 @@
 // limitations under the License.
 //
 
-import platform, { getMetadata, Metadata, Plugin, Request, Response, PlatformError, plugin, Severity, Status, StatusCode } from '@anticrm/platform'
+import platform, {
+  getMetadata,
+  Metadata,
+  Plugin,
+  Request,
+  Response,
+  PlatformError,
+  plugin,
+  Severity,
+  Status,
+  StatusCode
+} from '@anticrm/platform'
 import { pbkdf2Sync, randomBytes } from 'crypto'
-import { encode } from 'jwt-simple'
+import { decode, encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
+import core, { TxOperations } from '@anticrm/core'
+import contact, { combineName } from '@anticrm/contact'
+import { connect } from './connect'
+import { initWorkspace } from './tool'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -41,11 +56,11 @@ const accountPlugin = plugin(accountId, {
     Secret: '' as Metadata<string>
   },
   status: {
-    AccountNotFound: '' as StatusCode<{account: string}>,
-    WorkspaceNotFound: '' as StatusCode<{workspace: string}>,
-    InvalidPassword: '' as StatusCode<{account: string}>,
-    AccountAlreadyExists: '' as StatusCode<{account: string}>,
-    WorkspaceAlreadyExists: '' as StatusCode<{workspace: string}>
+    AccountNotFound: '' as StatusCode<{ account: string }>,
+    WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
+    InvalidPassword: '' as StatusCode<{ account: string }>,
+    AccountAlreadyExists: '' as StatusCode<{ account: string }>,
+    WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>
   }
 })
 
@@ -150,8 +165,25 @@ function generateToken (email: string, workspace: string): string {
  * @param workspace -
  * @returns
  */
-export async function login (db: Db, email: string, password: string, workspace: string): Promise<LoginInfo> {
-  const accountInfo = await getAccountInfo(db, email, password)
+export async function login (db: Db, email: string, password: string): Promise<LoginInfo> {
+  await getAccountInfo(db, email, password)
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    token: generateToken(email, '')
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export async function selectWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
+  const { email } = decode(token, getSecret())
+  const accountInfo = await getAccount(db, email)
+  if (accountInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
   const workspaceInfo = await getWorkspace(db, workspace)
 
   if (workspaceInfo !== null) {
@@ -175,7 +207,43 @@ export async function login (db: Db, email: string, password: string, workspace:
 /**
  * @public
  */
-export async function createAccount (db: Db, email: string, password: string, first: string, last: string): Promise<AccountInfo> {
+export async function join (db: Db, email: string, password: string, workspaceHash: string): Promise<LoginInfo> {
+  const workspace = decode(workspaceHash, getSecret())
+  const token = (await login(db, email, password)).token
+  await assignWorkspace(db, email, workspace)
+
+  return await selectWorkspace(db, token, workspace)
+}
+
+/**
+ * @public
+ */
+export async function signUpJoin (
+  db: Db,
+  email: string,
+  password: string,
+  first: string,
+  last: string,
+  workspaceHash: string
+): Promise<LoginInfo> {
+  await createAccount(db, email, password, first, last)
+  const workspace = decode(workspaceHash, getSecret())
+  await assignWorkspace(db, email, workspace)
+
+  const token = (await login(db, email, password)).token
+  return await selectWorkspace(db, token, workspace)
+}
+
+/**
+ * @public
+ */
+export async function createAccount (
+  db: Db,
+  email: string,
+  password: string,
+  first: string,
+  last: string
+): Promise<LoginInfo> {
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
@@ -184,7 +252,7 @@ export async function createAccount (db: Db, email: string, password: string, fi
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountAlreadyExists, { account: email }))
   }
 
-  const insert = await db.collection(ACCOUNT_COLLECTION).insertOne({
+  await db.collection(ACCOUNT_COLLECTION).insertOne({
     email,
     hash,
     salt,
@@ -193,31 +261,26 @@ export async function createAccount (db: Db, email: string, password: string, fi
     workspaces: []
   })
 
-  return {
-    _id: insert.insertedId,
-    first,
-    last,
+  const result = {
+    endpoint: getEndpoint(),
     email,
-    workspaces: []
+    token: generateToken(email, '')
   }
+  return result
 }
 
 /**
  * @public
  */
 export async function listWorkspaces (db: Db): Promise<Workspace[]> {
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION)
-    .find({})
-    .toArray()
+  return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray()
 }
 
 /**
  * @public
  */
 export async function listAccounts (db: Db): Promise<Account[]> {
-  return await db.collection<Account>(ACCOUNT_COLLECTION)
-    .find({})
-    .toArray()
+  return await db.collection<Account>(ACCOUNT_COLLECTION).find({}).toArray()
 }
 
 /**
@@ -227,16 +290,64 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
   if ((await getWorkspace(db, workspace)) !== null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))
   }
-  return await db
+  const result = await db
     .collection(WORKSPACE_COLLECTION)
     .insertOne({
       workspace,
       organisation
     })
     .then((e) => e.insertedId.toHexString())
+  await initWorkspace(getEndpoint(), workspace)
+  return result
 }
 
-async function getWorkspaceAndAccount (db: Db, email: string, workspace: string): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
+/**
+ * @public
+ */
+export async function createUserWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
+  const { email } = decode(token, getSecret())
+  await createWorkspace(db, workspace, '')
+  await assignWorkspace(db, email, workspace)
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    token: generateToken(email, workspace)
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export async function getWorkspaceHash (db: Db, token: string): Promise<string> {
+  const { workspace } = decode(token, getSecret())
+  const wsPromise = await getWorkspace(db, workspace)
+  if (wsPromise === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
+  }
+  return encode(workspace, getSecret())
+}
+
+/**
+ * @public
+ */
+export async function getUserWorkspaces (db: Db, token: string): Promise<Workspace[]> {
+  const { email } = decode(token, getSecret())
+  const account = await getAccount(db, email)
+  if (account === null) return []
+  return await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .find({
+      _id: { $in: account.workspaces }
+    })
+    .toArray()
+}
+
+async function getWorkspaceAndAccount (
+  db: Db,
+  email: string,
+  workspace: string
+): Promise<{ accountId: ObjectId, workspaceId: ObjectId }> {
   const wsPromise = await getWorkspace(db, workspace)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
@@ -260,6 +371,30 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 
   // Add workspace to account
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $push: { workspaces: workspaceId } })
+
+  const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
+
+  if (account !== null) await createEmployeeAccount(account, workspace)
+}
+
+async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
+  const connection = await connect(getEndpoint(), workspace, account.email)
+  const ops = new TxOperations(connection, core.account.System)
+
+  const name = combineName(account.first, account.last)
+
+  const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+    name,
+    city: '',
+    channels: []
+  })
+
+  await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+    email: account.email,
+    employee,
+    name
+  })
+  await connection.close()
 }
 
 /**
@@ -284,7 +419,9 @@ export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
-  await db.collection<Account>(ACCOUNT_COLLECTION).updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
+  await db
+    .collection<Account>(ACCOUNT_COLLECTION)
+    .updateMany({ _id: { $in: ws.accounts } }, { $pull: { workspaces: ws._id } })
 }
 
 /**
@@ -296,14 +433,22 @@ export async function dropAccount (db: Db, email: string): Promise<void> {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
   await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
+  await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
 }
 
 function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
-  return async function (db: Db, request: Request<any[]>): Promise<Response<any>> {
+  return async function (db: Db, request: Request<any[]>, token?: string): Promise<Response<any>> {
+    if (token !== undefined) request.params.unshift(token)
     return await f(db, ...request.params)
       .then((result) => ({ id: request.id, result }))
-      .catch((err) => ({ error: err instanceof PlatformError ? new Status(Severity.ERROR, platform.status.Forbidden, {}) : new Status(Severity.ERROR, platform.status.InternalServerError, {}) }))
+      .catch((err) => ({
+        error:
+          err instanceof PlatformError
+            ? new Status(Severity.ERROR, platform.status.Forbidden, {})
+            : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+      }))
   }
 }
 
@@ -312,9 +457,14 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
  */
 export const methods = {
   login: wrap(login),
+  join: wrap(join),
+  signUpJoin: wrap(signUpJoin),
+  selectWorkspace: wrap(selectWorkspace),
+  getUserWorkspaces: wrap(getUserWorkspaces),
+  getWorkspaceHash: wrap(getWorkspaceHash),
   getAccountInfo: wrap(getAccountInfo),
   createAccount: wrap(createAccount),
-  createWorkspace: wrap(createWorkspace),
+  createWorkspace: wrap(createUserWorkspace),
   assignWorkspace: wrap(assignWorkspace),
   removeWorkspace: wrap(removeWorkspace),
   listWorkspaces: wrap(listWorkspaces)

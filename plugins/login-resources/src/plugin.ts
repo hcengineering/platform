@@ -16,21 +16,33 @@
 
 import type { StatusCode, IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
 
 import login, { loginId } from '@anticrm/login'
 
 export default mergeIds(loginId, login, {
   status: {
     RequiredField: '' as StatusCode<{ field: string }>,
-    ConnectingToServer: '' as StatusCode
+    FieldsDoNotMatch: '' as StatusCode<{ field: string, field2: string }>,
+    ConnectingToServer: '' as StatusCode,
+    IncorrectValue: '' as StatusCode<{ field: string }>
   },
   string: {
+    CreateWorkspace: '' as IntlString,
+    HaveWorkspace: '' as IntlString,
+    LastName: '' as IntlString,
+    FirstName: '' as IntlString,
+    HaveAccount: '' as IntlString,
+    Join: '' as IntlString,
     Email: '' as IntlString,
     Password: '' as IntlString,
+    PasswordRepeat: '' as IntlString,
     Workspace: '' as IntlString,
     LogIn: '' as IntlString,
     SignUp: '' as IntlString,
-    DoNotHaveAnAccount: '' as IntlString
+    SelectWorkspace: '' as IntlString,
+    DoNotHaveAnAccount: '' as IntlString,
+    Copy: '' as IntlString,
+    Close: '' as IntlString,
+    InviteDescription: '' as IntlString
   }
 })

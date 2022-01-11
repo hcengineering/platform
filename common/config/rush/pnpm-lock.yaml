@@ -10653,12 +10653,13 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-HlxJJR7cADZNKLQaAHv0ecnw44cK/zfmS3fcQZrt91+BJnytc9MwLOjpetYtS6ktCXKOTdKp2DtYZubFDDl2zw==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-g8Jj5vatEBYxczIayNpyhAJypuGS17w8t4htZB0ljRlctQ9IQ69fMKfuVYDb8OTKMZuhuadDthRAqqsJevuxvA==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
+      '@types/minio': 7.0.11
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
       '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
       eslint: 7.32.0
@@ -10667,6 +10668,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       jwt-simple: 0.5.6
+      minio: 7.0.25
       mongodb: 4.2.2
       prettier: 2.5.1
       typescript: 4.5.4
@@ -11045,7 +11047,7 @@ packages:
     dev: false
 
   file:projects/dev-client-resources.tgz:
-    resolution: {integrity: sha512-hcwOdV5TgwA6yTNeZDtMwAaGEOYFO5VzqWTXk+sK+SPSiEN2yy6rb2Do1cfgL0wvSXLH/F2VT+nr1WAlI909lQ==, tarball: file:projects/dev-client-resources.tgz}
+    resolution: {integrity: sha512-1SUKqC2CJ2uWW0XbQeYN8DVtc2/6w0abs3IXzQ763VWWdkTVecBg6MjoD42LgH4HyrSL/u1J4AV8/o98Tbuslw==, tarball: file:projects/dev-client-resources.tgz}
     name: '@rush-temp/dev-client-resources'
     version: 0.0.0
     dependencies:
@@ -11364,7 +11366,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-Bko+x/XDsWFrhZ4EfXCZ8GwS56DMgWA5t2tYGyPF7nlzIPY97oJWPZGc2z1T7olyx0bye+Od9Vk7qmZI3KuBkQ==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-W842udh6/87OvajsjespWfSRZhSUJZPkGDSHCaMjtSePN5T4nL2EkNGR66mIi1RW88oAoyd3VPx8MSZmUWnCGQ==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -11425,7 +11427,7 @@ packages:
     dev: false
 
   file:projects/login-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-MnzXjBUZFvM2+oyagvYkpisissgM0dTtcCgFApyoRq2lzlpXdrbybP9ujMBYliqJ7i4r6rk4Wk8HrRo/wfYfyg==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-85HwyicQhgSqbvQ/Lb+/qMxRZmCxC71u7HaZMVcw92Fa3Mu3wEH0kB0JHyPjvMA/mgrs6uvJmPh5bJwQHhkB0Q==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
@@ -11568,7 +11570,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-ffJA0hXhTeEjKGbCFKTgYk9ch8JsAnZKmDOtyTSzE+tmIklA0Q1gWQGwqttPSgrGVQuy2UXkYXv1m7cnhBICxg==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-GD5NmMEaz2KD79NdbNlQTbmuc98hxeV0cwV8xgRtCZnbeNrDw4h71yUik4vGNLsgha8ezy2oefrdi5aET1wbig==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -12004,7 +12006,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-LqJ4mBkjSWhBA9OiiMUgLeoUF9IniLh1xr/G3iXRHSm8Li6OssMSTZ733CAoWVNPchAMn5xBibLV5Mi6syer9w==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-OULVsjJpuo9JVOV9Ru1HO3GYCxRIOHlYqJvdtEezTG6HcorbC6i3+cQat8fbdGV2LQ8Lpup55Q5k40t1OrEAIA==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -12018,6 +12020,7 @@ packages:
       '@types/node': 16.11.14
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
       '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      cross-env: 7.0.3
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a

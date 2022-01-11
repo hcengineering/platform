@@ -1,42 +1,64 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
-// 
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import { fetchMetadataLocalStorage, location, Popup } from '@anticrm/ui'
+
   import LoginForm from './LoginForm.svelte'
   import SignupForm from './SignupForm.svelte'
+  import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
+  import SelectWorkspace from './SelectWorkspace.svelte'
+  import Join from './Join.svelte'
+  import { onDestroy } from 'svelte'
+  import login from '../plugin'
 
-  let page = 'login'
+  export let page: string = 'login'
+
+  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
+
+  onDestroy(
+    location.subscribe(async (loc) => {
+      page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
+    })
+  )
 </script>
 
 <div class="container">
   <div class="panel">
     {#if page === 'login'}
-      <LoginForm on:switch={(event) => page = event.detail}/>
+      <LoginForm />
     {:else if page === 'signup'}
-      <SignupForm on:switch={(event) => page = event.detail}/>
+      <SignupForm />
+    {:else if page === 'createWorkspace'}
+      <CreateWorkspaceForm />
+    {:else if page === 'selectWorkspace'}
+      <SelectWorkspace />
+    {:else if page === 'join'}
+      <Join />
     {/if}
   </div>
   <div class="intro">
     <div class="content">
-      <div class="logo"> </div>
+      <div class="logo" />
     </div>
     <div class="slogan">
       <p>A unique place to manage all of your work</p>
       <p>Welcome to the Platform</p>
     </div>
   </div>
+  <Popup />
 </div>
 
 <style lang="scss">
@@ -71,21 +93,21 @@
           position: relative;
           &:after {
             position: absolute;
-            content: "";
-            background: center url("../../img/logo.svg");
+            content: '';
+            background: center url('../../img/logo.svg');
             transform: translate(-50%, -50%);
             width: 63px;
             height: 79px;
           }
           &:before {
             position: absolute;
-            content: "";
+            content: '';
             transform: translate(-50%, -50%);
             width: 16rem;
             height: 16rem;
             border: 1.8px solid var(--theme-caption-color);
             border-radius: 50%;
-            opacity: .08;
+            opacity: 0.08;
           }
         }
       }
@@ -94,10 +116,10 @@
         p {
           margin: 0;
           font-weight: 400;
-          font-size: .8rem;
+          font-size: 0.8rem;
           text-align: center;
           color: var(--theme-caption-color);
-          opacity: .8;
+          opacity: 0.8;
         }
       }
     }

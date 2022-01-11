@@ -22,6 +22,7 @@
   export let error: string | undefined = undefined
   export let password: boolean | undefined = undefined
   export let id: string | undefined = undefined
+  export let name: string | undefined = undefined
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
@@ -30,6 +31,7 @@
       type="password"
       class:nolabel={!label}
       {id}
+      {name}
       bind:value
       on:blur
       on:change
@@ -42,6 +44,7 @@
       type="text"
       class:nolabel={!label}
       {id}
+      {name}
       bind:value
       on:blur
       on:change
