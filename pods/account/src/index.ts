@@ -30,7 +30,7 @@ if (dbUri === undefined) {
 }
 
 const transactorUri = process.env.TRANSACTOR_URL
-if (dbUri === undefined) {
+if (transactorUri === undefined) {
   console.log('Please provide transactor url')
   process.exit(1)
 }

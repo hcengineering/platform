@@ -70,11 +70,20 @@ const getSecret = (): string => {
 }
 
 const getEndpoint = (): string => {
-  return getMetadata(accountPlugin.metadata.Endpoint) ?? 'wss://transactor.hc.engineering/'
+  const endpoint = getMetadata(accountPlugin.metadata.Endpoint)
+  if (endpoint === undefined) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+  return endpoint
+
 }
 
 const getTransactor = (): string => {
-  return getMetadata(accountPlugin.metadata.Transactor) ?? 'wss://transactor.hc.engineering/'
+  const transactor = getMetadata(accountPlugin.metadata.Transactor)
+  if (transactor === undefined) {
+    throw new Error('Please provide transactor url')
+  }
+  return transactor
 }
 
 /**
