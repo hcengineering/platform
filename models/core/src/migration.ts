@@ -25,12 +25,12 @@ import core from './component'
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const ops = new TxOperations(client, core.account.System)
     const targetSpaces = (await client.findAll(core.class.Space, {}))
       .filter((space) => space.archived == null)
 
+    // Modify spaces by their's creators
     await Promise.all(targetSpaces.map(
-      (space) => ops.updateDoc(space._class, space.space, space._id, { archived: false })
+      (space) => new TxOperations(client, space.modifiedBy).updateDoc(space._class, space.space, space._id, { archived: false })
     )).catch((e) => console.error(e))
   }
 }
