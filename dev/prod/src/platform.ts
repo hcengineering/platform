@@ -46,13 +46,13 @@ import '@anticrm/workbench-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
-  await fetch('/config.json').then(config => {
-    config.json().then(value => {
+  await fetch('/config.json').then(async (config) => {
+    await config.json().then(value => {
       console.log('loading configuration', value)
       setMetadata(login.metadata.AccountsUrl, value.ACCOUNTS_URL)
       setMetadata(login.metadata.UploadUrl,  value.UPLOAD_URL)  
-    })    
-  })    
+    })
+  })
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
