@@ -28,6 +28,9 @@ export interface Application extends Doc {
   icon: Asset
   hidden: boolean
   navigatorModel?: NavigatorModel
+
+  // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
+  component?: AnyComponent
 }
 
 /**

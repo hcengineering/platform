@@ -14,22 +14,20 @@
 //
 
 import type { Client, Doc } from '@anticrm/core'
-
-import CreateVacancy from './components/CreateVacancy.svelte'
-import CreateApplication from './components/CreateApplication.svelte'
-import EditCandidate from './components/EditCandidate.svelte'
-import KanbanCard from './components/KanbanCard.svelte'
-import EditVacancy from './components/EditVacancy.svelte'
-import ApplicationPresenter from './components/ApplicationPresenter.svelte'
-import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
-import TemplatesIcon from './components/TemplatesIcon.svelte'
-import Applications from './components/Applications.svelte'
-import EditApplication from './components/EditApplication.svelte'
-import Candidates from './components/Candidates.svelte'
-
-import { showPopup } from '@anticrm/ui'
 import { OK, Resources, Severity, Status } from '@anticrm/platform'
 import { Applicant } from '@anticrm/recruit'
+import { showPopup } from '@anticrm/ui'
+import ApplicationPresenter from './components/ApplicationPresenter.svelte'
+import Applications from './components/Applications.svelte'
+import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
+import Candidates from './components/Candidates.svelte'
+import CreateApplication from './components/CreateApplication.svelte'
+import CreateCandidate from './components/CreateCandidate.svelte'
+import CreateVacancy from './components/CreateVacancy.svelte'
+import EditApplication from './components/EditApplication.svelte'
+import EditVacancy from './components/EditVacancy.svelte'
+import KanbanCard from './components/KanbanCard.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
 import recruit from './plugin'
 
 async function createApplication (object: Doc): Promise<void> {
@@ -63,7 +61,6 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateVacancy,
     CreateApplication,
-    EditCandidate,
     EditApplication,
     KanbanCard,
     ApplicationPresenter,
@@ -71,6 +68,7 @@ export default async (): Promise<Resources> => ({
     EditVacancy,
     TemplatesIcon,
     Applications,
-    Candidates
+    Candidates,
+    CreateCandidate
   }
 })

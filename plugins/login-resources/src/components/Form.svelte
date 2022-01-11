@@ -81,10 +81,17 @@
   let inAction = false
 
   function performAction (action: Action) {
+    for (const field of fields) {
+      trim(field.name)
+    }
     inAction = true
     action.func().finally(() => {
       inAction = false
     })
+  }
+
+  function trim (field: string): void {
+    object[field] = (object[field] as string).trim()
   }
 </script>
 
@@ -104,6 +111,9 @@
           bind:value={object[field.name]}
           on:keyup={validate}
           on:focus={validate}
+          on:blur={() => {
+            trim(field.name)
+          }}
         />
       </div>
     {/each}
