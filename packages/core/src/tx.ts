@@ -14,12 +14,12 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Data, Doc, Domain, Ref, Account, Space, Arr, Mixin, PropertyType, AttachedDoc, AttachedData } from './classes'
-import type { DocumentQuery, FindOptions, FindResult, Storage, WithLookup, TxResult } from './storage'
+import type { Account, Arr, AttachedData, AttachedDoc, Class, Data, Doc, Domain, Mixin, PropertyType, Ref, Space } from './classes'
 import core from './component'
-import { generateId } from './utils'
 import { _getOperator } from './operator'
-import { Hierarchy } from './hierarchy'
+import { _toDoc } from './proxy'
+import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
+import { generateId } from './utils'
 
 /**
  * @public
@@ -239,7 +239,7 @@ export abstract class TxProcessor implements WithTx {
   }
 
   static updateDoc2Doc<T extends Doc>(rawDoc: T, tx: TxUpdateDoc<T>): T {
-    const doc = Hierarchy.toDoc(rawDoc)
+    const doc = _toDoc(rawDoc)
     const ops = tx.operations as any
     for (const key in ops) {
       if (key.startsWith('$')) {
@@ -256,7 +256,7 @@ export abstract class TxProcessor implements WithTx {
 
   static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, mixinClass: Ref<Class<M>>, operations: MixinUpdate<D, M>): D {
     const ops = operations as any
-    const doc = Hierarchy.toDoc(rawDoc)
+    const doc = _toDoc(rawDoc)
     const mixin = (doc as any)[mixinClass] ?? {}
     for (const key in ops) {
       if (key.startsWith('$')) {

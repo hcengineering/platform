@@ -16,11 +16,9 @@
 import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
 import core from './component'
+import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
 import type { Tx, TxCreateDoc, TxMixin } from './tx'
 import { TxProcessor } from './tx'
-
-const PROXY_TARGET_KEY = '$___proxy_target'
-const PROXY_MIXIN_CLASS_KEY = '$__mixin'
 
 /**
  * @public
@@ -36,22 +34,7 @@ export class Hierarchy {
     const value = this.getClass(mixin)
     const ancestor = this.getClass(value.extends as Ref<Class<Obj>>)
     const ancestorProxy = ancestor.kind === ClassifierKind.MIXIN ? this.getMixinProxyHandler(ancestor._id) : null
-    return {
-      get (target: any, property: string, receiver: any): any {
-        if (property === PROXY_TARGET_KEY) {
-          return target
-        }
-        // We need to override _class property, to return proper mixin class.
-        if (property === PROXY_MIXIN_CLASS_KEY) {
-          return mixin
-        }
-        const value = target[mixin]?.[property]
-        if (value === undefined) {
-          return ancestorProxy !== null ? ancestorProxy.get?.(target, property, receiver) : target[property]
-        }
-        return value
-      }
-    }
+    return _createMixinProxy(value, ancestorProxy)
   }
 
   private getMixinProxyHandler (mixin: Ref<Mixin<Doc>>): ProxyHandler<Doc> {
@@ -69,15 +52,11 @@ export class Hierarchy {
   }
 
   static toDoc<D extends Doc>(doc: D): D {
-    const targetDoc = (doc as any)[PROXY_TARGET_KEY]
-    if (targetDoc !== undefined) {
-      return targetDoc as D
-    }
-    return doc
+    return _toDoc(doc)
   }
 
   static mixinClass<D extends Doc, M extends D>(doc: D): Ref<Mixin<M>>|undefined {
-    return (doc as any)[PROXY_MIXIN_CLASS_KEY]
+    return _mixinClass(doc)
   }
 
   hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
