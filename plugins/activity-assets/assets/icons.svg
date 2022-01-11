@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="activity" viewBox="0 0 20 20" width='20' height='20' fill="none">
+  <symbol id="activity" viewBox="0 0 20 20" width='16' height='16' fill="none">
     <path d="M6.03772 12.3181L8.532 9.07628L11.3772 11.3112L13.818 8.16095" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill='none'/>
     <ellipse cx="16.6632" cy="3.50027" rx="1.60183" ry="1.60183" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M12.4372 2.6001H6.38078C3.87125 2.6001 2.31519 4.37737 2.31519 6.8869V13.6222C2.31519 16.1318 3.84074 17.9014 6.38078 17.9014H13.5509C16.0604 17.9014 17.6165 16.1318 17.6165 13.6222V7.75647" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>

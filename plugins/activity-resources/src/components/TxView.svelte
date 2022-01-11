@@ -18,34 +18,26 @@
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import core, { Class, Doc, Ref, TxCUD, TxUpdateDoc } from '@anticrm/core'
-  import { getResource, IntlString } from '@anticrm/platform'
+  import { Doc, Ref } from '@anticrm/core'
+  import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import {
-    AnyComponent,
-    AnySvelteComponent,
     Component,
     Icon,
     IconEdit,
     IconMoreH,
     Label,
-    Menu,
-    showPopup,
-    TimeSince,
-    ShowMore
+    Menu, ShowMore, showPopup,
+    TimeSince
   } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
-  import { buildModel, getActions, getObjectPresenter } from '@anticrm/view-resources'
-  import { activityKey, ActivityKey, DisplayTx } from '../activity'
+  import { getActions } from '@anticrm/view-resources'
+  import { ActivityKey, DisplayTx } from '../activity'
+  import { getValue, TxDisplayViewlet, updateViewlet } from './utils'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
 
-  type TxDisplayViewlet =
-    | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove'> & {
-        component?: AnyComponent | AnySvelteComponent
-      })
-    | undefined
 
   let ptx: DisplayTx | undefined
 
@@ -53,6 +45,7 @@
   let props: any
   let employee: EmployeeAccount | undefined
   let model: AttributeModel[] = []
+  let modelIcon: Asset | undefined = undefined
 
   let edit = false
 
@@ -66,43 +59,12 @@
 
   const client = getClient()
 
-  async function createPseudoViewlet (dtx: DisplayTx, label: string): Promise<TxDisplayViewlet> {
-    const doc = dtx.doc
-    if (doc === undefined) {
-      return
-    }
-    const docClass: Class<Doc> = client.getModel().getObject(doc._class)
-
-    const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
-    if (presenter !== undefined) {
-      return {
-        display: 'inline',
-        icon: docClass.icon ?? activity.icon.Activity,
-        label: (`${label} ` + docClass.label) as IntlString,
-        component: presenter.presenter
-      }
-    }
-  }
-
-  async function updateViewlet (dtx: DisplayTx): Promise<{ viewlet: TxDisplayViewlet; id: Ref<TxCUD<Doc>> }> {
-    const key = activityKey(dtx.tx.objectClass, dtx.tx._class)
-    let viewlet: TxDisplayViewlet = viewlets.get(key)
-
-    props = { tx: dtx.tx, value: dtx.doc, edit }
-
-    if (viewlet === undefined && dtx.tx._class === core.class.TxCreateDoc) {
-      // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
-      viewlet = await createPseudoViewlet(dtx, 'created')
-    }
-    if (viewlet === undefined && dtx.tx._class === core.class.TxRemoveDoc) {
-      viewlet = await createPseudoViewlet(dtx, 'deleted')
-    }
-    return { viewlet, id: dtx.tx._id }
-  }
-
-  $: updateViewlet(tx).then((result) => {
+  $: updateViewlet(client, viewlets, tx).then((result) => {
     if (result.id === tx.tx._id) {
       viewlet = result.viewlet
+      model = result.model
+      modelIcon = result.modelIcon
+      props = { ...result.props, edit }
     }
   })
 
@@ -112,47 +74,7 @@
       employee = account
     })
 
-  $: if (tx.updateTx !== undefined) {
-    const _class = tx.updateTx.objectClass
-    const ops = {
-      client,
-      _class,
-      keys: Object.keys(tx.updateTx.operations).filter((id) => !id.startsWith('$')),
-      ignoreMissing: true
-    }
-    const hiddenAttrs = new Set([...client.getHierarchy().getAllAttributes(_class).entries()]
-      .filter(([, attr]) => attr.hidden === true)
-      .map(([k]) => k))
 
-    buildModel(ops).then((m) => {
-      model = m.filter((x) => !hiddenAttrs.has(x.key))
-    })
-  } else if (tx.mixinTx !== undefined) {
-    const _class = tx.mixinTx.mixin
-    const ops = {
-      client,
-      _class,
-      keys: Object.keys(tx.mixinTx.attributes).filter((id) => !id.startsWith('$')),
-      ignoreMissing: true
-    }
-    const hiddenAttrs = new Set([...client.getHierarchy().getAllAttributes(_class).entries()]
-      .filter(([, attr]) => attr.hidden === true)
-      .map(([k]) => k))
-
-    buildModel(ops).then((m) => {
-      model = m.filter((x) => !hiddenAttrs.has(x.key))
-    })
-  }
-
-  async function getValue (m: AttributeModel, utx: any): Promise<any> {
-    const val = (utx as any)[m.key]
-
-    if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
-      // We have an reference, we need to find a real object to pass for presenter
-      return await client.findOne(m._class, { _id: val as Ref<Doc> })
-    }
-    return val
-  }
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
     showPopup(
@@ -192,7 +114,11 @@
       {#if viewlet}
         <Icon icon={viewlet.icon} size="small" />
       {:else}
-        <Icon icon={activity.icon.Activity} size="small" />
+        {#if viewlet === undefined && model.length > 0}
+          <Icon icon={modelIcon !== undefined ? modelIcon : IconEdit} size="small" />
+        {:else}
+          <Icon icon={activity.icon.Activity} size="small" />
+        {/if}
       {/if}
     </div>
 
@@ -226,7 +152,7 @@
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m}
-              {#await getValue(m, tx.updateTx.operations) then value}
+              {#await getValue(client, m, tx.updateTx.operations) then value}
                   {#if value === null}
                     <span>unset <Label label={m.label} /></span>
                   {:else}
@@ -237,7 +163,7 @@
             {/each}
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
-              {#await getValue(m, tx.mixinTx.attributes) then value}
+              {#await getValue(client, m, tx.mixinTx.attributes) then value}
                   {#if value === null}
                     <span>unset <Label label={m.label} /></span>
                   {:else}
@@ -247,13 +173,11 @@
                 {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-            <div>
-              {#if typeof viewlet.component === 'string'}
-                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-              {:else}
-                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
-              {/if}
-            </div>
+            {#if typeof viewlet.component === 'string'}
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+            {:else}
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+            {/if}
           {/if}
         </div>
         <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>    

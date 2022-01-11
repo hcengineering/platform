@@ -22,7 +22,8 @@ loadMetadata(task.icon, {
   Kanban: `${icons}#kanban`,
   TodoCheck: `${icons}#todo-check`,
   TodoUnCheck: `${icons}#todo-uncheck`,
-  ManageStatuses: `${icons}#manage-statuses`
+  ManageStatuses: `${icons}#manage-statuses`,
+  TaskState: `${icons}#task-state`
 })
 
 addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))

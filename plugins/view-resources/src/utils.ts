@@ -72,7 +72,8 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
     sortingKey,
     _class: attrClass,
     label: preserveKey.label ?? attribute.label,
-    presenter
+    presenter,
+    icon: presenterMixin.icon
   }
 }
 
@@ -134,7 +135,6 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
       return errorPresenter
     }
   })
-  console.log(model)
   return (await Promise.all(model)).filter(a => a !== undefined) as AttributeModel[]
 }
 
