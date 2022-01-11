@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { StylishEdit, Label, Button } from '@anticrm/ui'
   import StatusControl from './StatusControl.svelte'
@@ -49,7 +48,7 @@
       const v = object[field.name]
       const f = field
       if (!f.optional && (!v || v === '')) {
-        status = new Status(Severity.INFO, login.status.RequiredField, {field: await translate(field.i18n, {})})
+        status = new Status(Severity.INFO, login.status.RequiredField, { field: await translate(field.i18n, {}) })
         return
       }
     }
@@ -59,31 +58,54 @@
 
   let inAction = false
 
-  function performAction(action: Action) {
+  function performAction (action: Action) {
+    for (const field of fields) {
+      trim(field.name)
+    }
     inAction = true
-    action.func().finally(() => {inAction = false})
+    action.func().finally(() => {
+      inAction = false
+    })
   }
 
+  function trim (field: string): void {
+    object[field] = (object[field] as string).trim()
+  }
 </script>
 
 <form class="container">
-  <div class="grow-separator"/>
-  <div class="title"><Label label={caption}/></div>
+  <div class="grow-separator" />
+  <div class="title"><Label label={caption} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
   <div class="form">
-
     {#each fields as field (field.name)}
-    <div class={field.short ? 'form-col' : 'form-row'}>
-      <StylishEdit label={field.i18n} password={field.password} bind:value={object[field.name]} on:keyup={validate} on:focus={validate} />
-    </div>
+      <div class={field.short ? 'form-col' : 'form-row'}>
+        <StylishEdit
+          label={field.i18n}
+          password={field.password}
+          bind:value={object[field.name]}
+          on:keyup={validate}
+          on:focus={validate}
+          on:blur={() => {
+            trim(field.name)
+          }}
+        />
+      </div>
     {/each}
 
     <div class="form-row send">
-      <Button label={action.i18n} primary width="100%" loading={inAction} 
-        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR} 
-        on:click={() => {performAction(action)}}/>
+      <Button
+        label={action.i18n}
+        primary
+        width="100%"
+        loading={inAction}
+        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
+        on:click={() => {
+          performAction(action)
+        }}
+      />
     </div>
 
     <!-- <div class="form-col"><EditBox label="First Name" bind:value={fname}/></div>
@@ -91,21 +113,19 @@
     <div class="form-row"><EditBox label="E-mail"/></div>
     <div class="form-row"><EditBox label="Password" password/></div>
     <div class="form-row"><EditBox label="Repeat password" password/></div> -->
-
   </div>
-  <div class="grow-separator"/>
+  <div class="grow-separator" />
   <div class="footer">
-    <span><Label label={bottomCaption}/></span>
-    <a href="." on:click|preventDefault={bottomActionFunc}><Label label={bottomActionLabel}/></a>
+    <span><Label label={bottomCaption} /></span>
+    <a href="." on:click|preventDefault={bottomActionFunc}><Label label={bottomActionLabel} /></a>
   </div>
 </form>
 
-  <!-- <div class="actions">
+<!-- <div class="actions">
     {#each actions as action, i}
       <button class="button" class:separator={i !== 0} on:click|preventDefault={action.func}> {action.i18n} </button>
     {/each}
   </div> -->
-
 <style lang="scss">
   .container {
     display: flex;
@@ -125,11 +145,11 @@
       max-height: 7.5rem;
       padding-top: 1.25rem;
     }
-    
+
     .form {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      column-gap: .75rem;
+      column-gap: 0.75rem;
       row-gap: 1.5rem;
 
       .form-row {
@@ -145,18 +165,19 @@
     }
     .footer {
       margin-top: 3.5rem;
-      font-size: .8rem;
+      font-size: 0.8rem;
       color: var(--theme-caption-color);
       span {
-        opacity: .3;
+        opacity: 0.3;
       }
       a {
         text-decoration: none;
         color: var(--theme-caption-color);
-        opacity: .8;
-        &:hover { opacity: 1; }
+        opacity: 0.8;
+        &:hover {
+          opacity: 1;
+        }
       }
     }
   }
-
 </style>
