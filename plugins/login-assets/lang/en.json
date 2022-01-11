@@ -22,6 +22,9 @@
     "SelectWorkspace": "Select workspace",
     "Copy": "Copy",
     "Close": "Close",
-    "InviteDescription": "Share this link to invite other users"
+    "InviteDescription": "Share this link to invite other users",
+    "WantAnotherWorkspace": "Want to create another workspace?",
+    "ChangeAccount": "Change account",
+    "NotSeeingWorkspace": "Not seeing your workspace?"
   }
 }

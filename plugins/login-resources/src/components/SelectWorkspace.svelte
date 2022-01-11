@@ -45,6 +45,13 @@
     loc.path.length = 2
     navigate(loc)
   }
+
+  function changeAccount (): void {
+    const loc = getCurrentLocation()
+    loc.path[1] = 'login'
+    loc.path.length = 2
+    navigate(loc)
+  }
 </script>
 
 <form class="container">
@@ -72,8 +79,14 @@
     <div class="grow-separator" />
     {#if workspaces.length}
       <div class="footer">
-        <span><Label label={login.string.CreateWorkspace} /></span>
-        <a href="." on:click|preventDefault={createWorkspace}><Label label={login.string.CreateWorkspace} /></a>
+        <div>
+          <span><Label label={login.string.WantAnotherWorkspace} /></span>
+          <a href="." on:click|preventDefault={createWorkspace}><Label label={login.string.CreateWorkspace} /></a>
+        </div>
+        <div>
+          <span><Label label={login.string.NotSeeingWorkspace} /></span>
+          <a href="." on:click|preventDefault={changeAccount}><Label label={login.string.ChangeAccount} /></a>
+        </div>
       </div>
     {/if}
   {/await}

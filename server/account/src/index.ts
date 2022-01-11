@@ -379,22 +379,25 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 
 async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
   const connection = await connect(getEndpoint(), workspace, account.email)
-  const ops = new TxOperations(connection, core.account.System)
+  try {
+    const ops = new TxOperations(connection, core.account.System)
 
-  const name = combineName(account.first, account.last)
+    const name = combineName(account.first, account.last)
 
-  const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
-    name,
-    city: '',
-    channels: []
-  })
+    const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+      name,
+      city: '',
+      channels: []
+    })
 
-  await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
-    email: account.email,
-    employee,
-    name
-  })
-  await connection.close()
+    await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+      email: account.email,
+      employee,
+      name
+    })
+  } finally {
+    await connection.close()
+  }
 }
 
 /**

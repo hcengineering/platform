@@ -18,13 +18,14 @@ import { createApp } from '@anticrm/ui'
 import { configurePlatform } from './platform'
 import { configurePlatformDev, configurePlatformDevServer } from './platform-dev'
 
-configurePlatform()
+configurePlatform().then(() => {
+  if (process.env.CLIENT_TYPE === 'dev') {
+    configurePlatformDev()
+  } 
+  if (process.env.CLIENT_TYPE === 'dev-server') {
+    configurePlatformDevServer()
+  }
+  
+  createApp(document.body)
+})
 
-if (process.env.CLIENT_TYPE === 'dev') {
-  configurePlatformDev()
-} 
-if (process.env.CLIENT_TYPE === 'dev-server') {
-  configurePlatformDevServer()
-}
-
-createApp(document.body)

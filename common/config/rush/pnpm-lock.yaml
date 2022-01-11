@@ -10653,13 +10653,14 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-g8Jj5vatEBYxczIayNpyhAJypuGS17w8t4htZB0ljRlctQ9IQ69fMKfuVYDb8OTKMZuhuadDthRAqqsJevuxvA==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-/BBGpjzh87DsWYJmHFtYyTBH2FerxHMoGT3xQ4A5IHVtKmx2gTP5mdaY09h+vaNp+a4iTs5rqa7h+Y7l/5uX2w==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
       '@types/minio': 7.0.11
+      '@types/ws': 8.2.2
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
       '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
       eslint: 7.32.0
@@ -10672,8 +10673,11 @@ packages:
       mongodb: 4.2.2
       prettier: 2.5.1
       typescript: 4.5.4
+      ws: 8.3.0
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/activity-assets.tgz:
@@ -10922,7 +10926,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-4SUPVPcAFE83qvwymkwI7i+z0ioEgAmM+H08vsjXRkEeD0vOlRLD3tEBX+0W49mL93EZG0TUEPP8zPcl7wiiAg==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-5c2Hkvtnj+3t/r1Z+RFQuoxDwYm6ndTPCxFns6PK3SqCs/KfWREism8tiswJXrB2FNSQkb2CE7yvsftKZFcbPQ==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0

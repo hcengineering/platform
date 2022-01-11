@@ -42,6 +42,8 @@ services:
     image: anticrm/account
     links:
       - mongodb
+      - minio
+      - transactor
     ports:
       - 3000:3000
     environment:

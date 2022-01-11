@@ -45,8 +45,8 @@ import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
 
 import { setMetadata } from '@anticrm/platform'
-export function configurePlatform() {  
-  fetch('/config.json').then(config => {
+export async function configurePlatform() {  
+  await fetch('/config.json').then(config => {
     config.json().then(value => {
       console.log('loading configuration', value)
       setMetadata(login.metadata.AccountsUrl, value.ACCOUNTS_URL)
