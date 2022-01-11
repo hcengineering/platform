@@ -75,7 +75,6 @@ const getEndpoint = (): string => {
     throw new Error('Please provide transactor endpoint url')
   }
   return endpoint
-
 }
 
 const getTransactor = (): string => {
