@@ -159,6 +159,19 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     throw new Error('accounts url not specified')
   }
 
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [{
+        _id: '' as any,
+        workspace: 'DEV WORKSPACE',
+        organisation: '',
+        accounts: []
+      }]
+    }
+  }
+
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
   if (token === null) {
     const loc = getCurrentLocation()
@@ -195,6 +208,15 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Logi
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  const email = getMetadata(login.metadata.LoginEmail) ?? ''
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token: overrideToken, endpoint, email }]
+    }
   }
 
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
