@@ -14,11 +14,11 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Account, Arr, AttachedData, AttachedDoc, Class, Data, Doc, Domain, Mixin, PropertyType, Ref, Space } from './classes'
+import type { Account, Arr, AttachedDoc, Class, Data, Doc, Domain, Mixin, PropertyType, Ref, Space } from './classes'
 import core from './component'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
-import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
+import type { TxResult } from './storage'
 import { generateId } from './utils'
 
 /**
@@ -299,153 +299,6 @@ export abstract class TxProcessor implements WithTx {
       await this.tx(tx)
     }
     return {}
-  }
-}
-
-/**
- * @public
- */
-export class TxOperations implements Storage {
-  readonly txFactory: TxFactory
-
-  constructor (private readonly storage: Storage, user: Ref<Account>) {
-    this.txFactory = new TxFactory(user)
-  }
-
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
-    return this.storage.findAll(_class, query, options)
-  }
-
-  async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
-    return (await this.findAll(_class, query, options))[0]
-  }
-
-  tx (tx: Tx): Promise<TxResult> {
-    return this.storage.tx(tx)
-  }
-
-  async createDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    attributes: Data<T>,
-    id?: Ref<T>
-  ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id)
-    await this.storage.tx(tx)
-    return tx.objectId
-  }
-
-  async addCollection<T extends Doc, P extends AttachedDoc>(
-    _class: Ref<Class<P>>,
-    space: Ref<Space>,
-    attachedTo: Ref<T>,
-    attachedToClass: Ref<Class<T>>,
-    collection: string,
-    attributes: AttachedData<P>,
-    id?: Ref<P>
-  ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxCollectionCUD<T, P>(
-      attachedToClass,
-      attachedTo,
-      space,
-      collection,
-      this.txFactory.createTxCreateDoc<P>(_class, space, attributes as unknown as Data<P>, id)
-    )
-    await this.storage.tx(tx)
-    return tx.objectId
-  }
-
-  async updateCollection<T extends Doc, P extends AttachedDoc>(
-    _class: Ref<Class<P>>,
-    space: Ref<Space>,
-    objectId: Ref<P>,
-    attachedTo: Ref<T>,
-    attachedToClass: Ref<Class<T>>,
-    collection: string,
-    operations: DocumentUpdate<P>
-  ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxCollectionCUD(
-      attachedToClass,
-      attachedTo,
-      space,
-      collection,
-      this.txFactory.createTxUpdateDoc(_class, space, objectId, operations)
-    )
-    await this.storage.tx(tx)
-    return tx.objectId
-  }
-
-  async removeCollection<T extends Doc, P extends AttachedDoc>(
-    _class: Ref<Class<P>>,
-    space: Ref<Space>,
-    objectId: Ref<P>,
-    attachedTo: Ref<T>,
-    attachedToClass: Ref<Class<T>>,
-    collection: string
-  ): Promise<Ref<T>> {
-    const tx = this.txFactory.createTxCollectionCUD(
-      attachedToClass,
-      attachedTo,
-      space,
-      collection,
-      this.txFactory.createTxRemoveDoc(_class, space, objectId)
-    )
-    await this.storage.tx(tx)
-    return tx.objectId
-  }
-
-  putBag <P extends PropertyType>(
-    _class: Ref<Class<Doc>>,
-    space: Ref<Space>,
-    objectId: Ref<Doc>,
-    bag: string,
-    key: string,
-    value: P
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxPutBag(_class, space, objectId, bag, key, value)
-    return this.storage.tx(tx)
-  }
-
-  updateDoc <T extends Doc>(
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>,
-    operations: DocumentUpdate<T>,
-    retrieve?: boolean
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve)
-    return this.storage.tx(tx)
-  }
-
-  removeDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
-    return this.storage.tx(tx)
-  }
-
-  createMixin<D extends Doc, M extends D>(
-    objectId: Ref<D>,
-    objectClass: Ref<Class<D>>,
-    objectSpace: Ref<Space>,
-    mixin: Ref<Mixin<M>>,
-    attributes: MixinData<D, M>
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxMixin(objectId, objectClass, objectSpace, mixin, attributes)
-    return this.storage.tx(tx)
-  }
-
-  updateMixin<D extends Doc, M extends D>(
-    objectId: Ref<D>,
-    objectClass: Ref<Class<D>>,
-    objectSpace: Ref<Space>,
-    mixin: Ref<Mixin<M>>,
-    attributes: MixinUpdate<D, M>
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxMixin(objectId, objectClass, objectSpace, mixin, attributes)
-    return this.storage.tx(tx)
   }
 }
 

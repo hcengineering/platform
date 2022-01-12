@@ -15,6 +15,7 @@
 export * from './classes'
 export * from './tx'
 export * from './storage'
+export * from './operations'
 export * from './utils'
 export * from './hierarchy'
 export * from './memdb'

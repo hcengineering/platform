@@ -52,17 +52,7 @@ async function editStatuses (object: SpaceWithStates): Promise<void> {
 }
 
 async function toggleDone (value: boolean, object: TodoItem): Promise<void> {
-  await getClient().updateCollection(
-    object._class,
-    object.space,
-    object._id,
-    object.attachedTo,
-    object.attachedToClass,
-    object.collection,
-    {
-      done: value
-    }
-  )
+  await getClient().update(object, { done: value })
 }
 
 async function ArchiveSpace (object: SpaceWithStates): Promise<void> {
@@ -78,9 +68,7 @@ async function ArchiveSpace (object: SpaceWithStates): Promise<void> {
         const client = getClient()
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        client.updateDoc(object._class, object.space, object._id, {
-          archived: true
-        })
+        client.update(object, { archived: true })
       }
     }
   )
@@ -99,9 +87,7 @@ async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
         const client = getClient()
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        client.updateDoc(object._class, object.space, object._id, {
-          archived: false
-        })
+        client.update(object, { archived: false })
       }
     }
   )

@@ -175,7 +175,7 @@ export async function getActions (client: Client, doc: Doc, derived: Ref<Class<D
   return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, doc, targets, derived) } })
 }
 
-export async function deleteObject (client: Client & TxOperations, object: Doc): Promise<void> {
+export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
   const hierarchy = client.getHierarchy()
   const attributes = hierarchy.getAllAttributes(object._class)
   for (const [name, attribute] of attributes) {
