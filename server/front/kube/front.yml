@@ -25,7 +25,9 @@ spec:
           - name: UPLOAD_URL
             value: /files
           - name: TRANSACTOR_URL
-            value: ws://transactor/
+            value: wss://transactor.hc.engineering/
+          - name: GMAIL_URL
+            value: gmail.hc.engineering
           - name: ELASTIC_URL
             valueFrom:
               secretKeyRef:

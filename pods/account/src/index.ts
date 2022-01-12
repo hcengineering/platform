@@ -30,12 +30,15 @@ if (dbUri === undefined) {
 }
 
 const transactorUri = process.env.TRANSACTOR_URL
-if (dbUri === undefined) {
+if (transactorUri === undefined) {
   console.log('Please provide transactor url')
   process.exit(1)
 }
 
-setMetadata(accountPlugin.metadata.Endpoint, transactorUri)
+const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
+
+setMetadata(accountPlugin.metadata.Endpoint, endpointUri)
+setMetadata(accountPlugin.metadata.Transactor, transactorUri)
 
 let client: MongoClient
 
