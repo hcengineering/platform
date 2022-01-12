@@ -27,7 +27,7 @@
 
 <Tooltip {label}>
   <button class="app" class:selected={selected} on:click|stopPropagation={action}>
-    <div class="icon-container" class:noty={notify}>
+    <div class="flex-center icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>
     {#if notify}<div class="marker"/>{/if}
@@ -47,9 +47,6 @@
     outline: none;
 
     .icon-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       width: 3.25rem;
       height: 3.25rem;
       color: var(--theme-content-trans-color);

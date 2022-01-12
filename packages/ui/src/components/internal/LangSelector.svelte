@@ -41,7 +41,7 @@
 <Flags />
 {#if selected}
   <div bind:this={trigger} class="flex-center cursor-pointer" on:click={selectLanguage}>
-    <svg class="svg-medium">
+    <svg class="svg-small">
       <use href="#{selected.id}-flag" />
     </svg>
   </div>

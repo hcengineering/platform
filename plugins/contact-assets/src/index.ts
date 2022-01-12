@@ -30,6 +30,7 @@ loadMetadata(contact.icon, {
   WhatsApp: `${icons}#whatsapp`,
   Youtube: `${icons}#youtube`,
   GitHub: `${icons}#github`,
+  Edit: `${icons}#edit`,
   Person: `${icons}#person`,
   Company: `${icons}#company`
 })
