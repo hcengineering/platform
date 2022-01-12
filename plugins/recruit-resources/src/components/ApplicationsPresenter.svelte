@@ -18,7 +18,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import { Icon, Tooltip } from '@anticrm/ui'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
-  import recruit from '@anticrm/recruit'
+  import recruit from '../plugin'
 
   export let value: Candidate
 </script>
