@@ -19,7 +19,11 @@
     "AssignRecruiter": "Assigned recruiter",
     "UnAssignRecruiter": "Unassigned recruiter",
     "Recruiters": "Recruiters",
-    "Create": "Create"
+    "Create": "Create",
+    "Applications": "Applications",
+    "ThisVacancyIsPrivate": "This vacancy is private",
+    "Description": "Description",
+    "Company": "Company"
   },
   "status": {
     "CandidateRequired": "Please select candidate"

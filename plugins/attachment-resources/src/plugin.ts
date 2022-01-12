@@ -21,6 +21,7 @@ import attachment, { attachmentId } from '@anticrm/attachment'
 export default mergeIds(attachmentId, attachment, {
   string: {
     NoAttachments: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString
+    UploadDropFilesHere: '' as IntlString,
+    Attachments: '' as IntlString
   }
 })

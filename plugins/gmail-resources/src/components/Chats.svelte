@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Message, SharedMessage } from '@anticrm/gmail'
@@ -20,7 +21,7 @@
   import { Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { ActionIcon, IconShare, Button, ScrollBox, showPopup, Icon, Label } from '@anticrm/ui'
-  import { Account, Class, getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
@@ -107,7 +108,7 @@
       <span>{selected.size} <Label label={gmail.string.MessagesSelected} /></span>
       <div class="flex">
         <div>
-          <Button label={'Cancel'} size={'small'} on:click={clear} />
+          <Button label={gmail.string.Cancel} size={'small'} on:click={clear} />
         </div>
         <div class="ml-3">
           <Button

@@ -81,10 +81,10 @@
 </div>
 <div class="flex-col clear-mins right-content">
   <div class="mb-2">
-    <EditBox label={gmail.string.Subject} bind:value={obj.subject} placeholder={'Message subject'} />
+    <EditBox label={gmail.string.Subject} bind:value={obj.subject} placeholder={'Message subject'} maxWidth={'min-content'} />
   </div>
   <div class="mb-4">
-    <EditBox label={gmail.string.Copy} bind:value={copy} placeholder={'Copy to'} />
+    <EditBox label={gmail.string.Copy} bind:value={copy} placeholder={'Copy to'} maxWidth={'min-content'} />
   </div>
   <div class="input clear-mins">
     <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />

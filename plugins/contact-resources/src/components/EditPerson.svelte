@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, showPopup, IconEdit, IconAdd, Label, IconActivity } from '@anticrm/ui'
+  import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels, Avatar, AttributeEditor } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
@@ -72,10 +72,10 @@
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} label={undefined} />
         </div>
         <div class="name">
-          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} label={undefined} />
         </div>
         <div class="location">
           <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" />

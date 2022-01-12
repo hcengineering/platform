@@ -19,13 +19,14 @@
   import type { Candidate } from '@anticrm/recruit'
   import { IconFile, Tooltip } from '@anticrm/ui'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
+  import recruit from '../plugin'
 
   export let value: Candidate
 
 </script>
 
 {#if value.applications && value.applications > 0}
-  <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value }}>
+  <Tooltip label={recruit.string.Applications} component={ApplicationsPopup} props={{ value }}>
     <div class="sm-tool-icon">
       <span class="icon"><IconFile size={'small'} /></span>&nbsp;{value.applications}
     </div>

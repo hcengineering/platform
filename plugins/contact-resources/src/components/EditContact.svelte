@@ -217,7 +217,6 @@
 {/if}
 
 <style lang="scss">
-
   .main-editor {
     display: flex;
     justify-content: center;
@@ -227,15 +226,15 @@
     margin-top: 2rem;
     display: flex;
     .mixin-selector {
-      margin-left: 8px;
+      margin-left: .5rem;
       cursor: pointer;
-      height: 24px;
-      min-width: 84px;
+      height: 1.5rem;
+      min-width: 5.25rem;
       
-      border-radius: 8px;
+      border-radius: .5rem;
 
       font-weight: 500;
-      font-size: 10px;
+      font-size: .625rem;
 
       text-transform: uppercase;
       color: #FFFFFF;
@@ -243,12 +242,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .attributes {
-      margin: 1rem;
-    }
-    .collections {
-      margin: 1rem;
     }
   }
 </style>

@@ -30,7 +30,7 @@
 </script>
 
 {#if isPerson(value)}
-  <PersonPresenter {value} } />
+  <PersonPresenter {value} />
 {:else}
   <OrganizationPresenter {value} />
 {/if}

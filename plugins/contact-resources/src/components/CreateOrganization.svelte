@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space } from '@anticrm/core'
 
   import { getClient, Card, Channels } from '@anticrm/presentation'
 
@@ -45,7 +44,7 @@
 </script>
 
 <Card
-  label={'Create organization'}
+  label={contact.string.CreateOrganization}
   okAction={createOrganization}
   canSave={object.name.length > 0}
   space={contact.space.Contacts}
@@ -58,7 +57,7 @@
       <Company size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="Apple" maxWidth="10rem" bind:value={object.name} /></div>
+      <div class="fs-title"><EditBox placeholder="Apple" maxWidth="11rem" bind:value={object.name} label={undefined} /></div>
     </div>
   </div>
 

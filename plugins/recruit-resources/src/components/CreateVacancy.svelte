@@ -64,7 +64,7 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth={'16rem'} focus/>
-    <Dropdown icon={Company} label={'Company *'} placeholder={'Company'} />
+    <Dropdown icon={Company} label={recruit.string.Company} placeholder={'Company'} />
     <KanbanTemplateSelector folders={[recruit.space.VacancyTemplates]} bind:template={templateId}/>
   </Grid>
 </SpaceCreateCard>

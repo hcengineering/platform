@@ -19,7 +19,7 @@
   import { formatName } from '@anticrm/contact'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
   import { TimeSince, ShowMore } from '@anticrm/ui'
-  import { getTime, getUser } from '../utils'
+  import { getUser } from '../utils'
 
   export let value: Comment
 
