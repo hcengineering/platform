@@ -27,7 +27,7 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   
-  export let attachments: number
+  export let attachments: number | undefined = undefined
 
   let inputFile: HTMLInputElement
   let loading = 0

@@ -24,7 +24,7 @@
 </script>
 
 {#if value.applications && value.applications > 0}
-  <Tooltip label={'Applications'} component={ApplicationsPopup} props={{ value }}>
+  <Tooltip label={recruit.string.Applications} component={ApplicationsPopup} props={{ value }}>
     <div class="sm-tool-icon">
       <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value.applications}
     </div>

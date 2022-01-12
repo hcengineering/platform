@@ -14,14 +14,15 @@
 -->
 
 <script lang="ts">
+  import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
 
   export let value: boolean | undefined
 
-  function getLabel(value: boolean | undefined) {
-    if (value === true) return 'Yes'
-    if (value === false) return 'No'
-    return 'N/A'
+  function getLabel(value: boolean | undefined): IntlString {
+    if (value === true) return 'Yes' as IntlString
+    if (value === false) return 'No' as IntlString
+    return 'N/A' as IntlString
   }
 </script>
 

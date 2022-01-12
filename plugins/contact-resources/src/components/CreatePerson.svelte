@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Space, Data } from '@anticrm/core'
+  import type { Data } from '@anticrm/core'
 
   import { getClient, Card, Channels, Avatar } from '@anticrm/presentation'
 
@@ -64,9 +64,9 @@
       <Avatar avatar={object.avatar} size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName} /></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city} /></div>
+      <div class="fs-title"><EditBox placeholder="John" maxWidth="12rem" bind:value={firstName} label={undefined} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="12rem" bind:value={lastName} label={undefined} /></div>
+      <div class="small-text"><EditBox placeholder="Location" maxWidth="12rem" bind:value={object.city} label={undefined} /></div>
     </div>
   </div>
 

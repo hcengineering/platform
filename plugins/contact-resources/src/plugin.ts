@@ -24,6 +24,7 @@ export default mergeIds(contactId, contact, {
     Contacts: '' as IntlString,
     CreatePerson: '' as IntlString,
     CreatePersons: '' as IntlString,
+    CreateOrganization: '' as IntlString,
     CreateOrganizations: '' as IntlString,
     Organizations: '' as IntlString,
     SelectFolder: '' as IntlString,

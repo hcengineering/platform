@@ -91,21 +91,15 @@
         margin-right: .5rem;
         opacity: .6;
       }
-      .label, .description {
+      .label {
         flex-grow: 1;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         max-width: 35rem;
-      }
-      .label {
         font-weight: 500;
         font-size: 1rem;
         color: var(--theme-caption-color);
-      }
-      .description {
-        font-size: .75rem;
-        color: var(--theme-content-trans-color);
       }
     }
   }

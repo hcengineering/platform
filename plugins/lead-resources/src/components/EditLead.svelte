@@ -48,8 +48,8 @@
     />
     <UserBox
       _class={contact.class.Contact}
-      title="Customer"
-      caption="Select customer"
+      title={lead.string.Customer}
+      caption={lead.string.SelectCustomer}
       bind:value={object.customer}
       on:change={() => {
         change('customer', object.customer)

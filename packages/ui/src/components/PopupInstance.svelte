@@ -48,7 +48,8 @@
         show = false
         modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
         if (typeof element !== 'string') {
-          const rect = element.getBoundingClientRect()
+          let el: HTMLElement = element as HTMLElement
+          const rect = el.getBoundingClientRect()
           const rectPopup = modalHTML.getBoundingClientRect()
           // Vertical
           if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight)

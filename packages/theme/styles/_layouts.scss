@@ -90,6 +90,8 @@ table {
 p:first-child { margin-block-start: 0; } // First and last padding
 p:last-child { margin-block-end: 0; }
 
+// .popup .tr-body:hover { background-color: transparent !important; } // Remove highlights table rows in popups
+
 /* Flex */
 .flex { display: flex; }
 .inline-flex { display: inline-flex; }
@@ -183,6 +185,10 @@ p:last-child { margin-block-end: 0; }
   .icon {
     margin-right: .25rem;
     color: var(--theme-content-dark-color);
+    &.small-size {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
   }
   &:hover .icon { color: var(--theme-caption-color); }
 }

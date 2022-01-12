@@ -29,9 +29,9 @@
 
   export let icon: Asset | AnySvelteComponent = Add
   export let label: IntlString
-  export let placeholder: IntlString
+  export let placeholder: string
   export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: google, label: 'Google' }]
-  export let selected: ListItem | undefined
+  export let selected: ListItem | undefined = undefined
   export let show: boolean = false
 
   let btn: HTMLElement
@@ -73,7 +73,7 @@
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
     <div class="caption-color" class:empty={selected ? false : true}>
-      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
+      {#if selected}{selected.label}{:else}{placeholder}{/if}
     </div>
   </div>
 </div>

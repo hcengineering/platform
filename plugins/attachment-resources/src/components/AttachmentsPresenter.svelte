@@ -18,13 +18,14 @@
   import type { Doc } from '@anticrm/core'
   import { Tooltip, IconAttachment } from '@anticrm/ui'
   import AttachmentPopup from './AttachmentPopup.svelte'
+  import attachment from '../plugin'
 
   export let value: Doc & { attachments?: number }
 
 </script>
 
 {#if value && value.attachments && value.attachments > 0}
-  <Tooltip label={'Attachments (' + value.attachments + ')'} component={AttachmentPopup} props={{ objectId: value._id, attachments: value.attachments }}>
+  <Tooltip label={attachment.string.Attachments} component={AttachmentPopup} props={{ objectId: value._id, attachments: value.attachments }}>
     <div class="sm-tool-icon">
       <span class="icon"><IconAttachment size="small"/></span>&nbsp;{value.attachments}
     </div>

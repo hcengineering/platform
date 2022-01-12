@@ -44,7 +44,11 @@ export default mergeIds(recruitId, recruit, {
     AssignRecruiter: '' as IntlString,
     Recruiters: '' as IntlString,
     UnAssignRecruiter: '' as IntlString,
-    Create: '' as IntlString
+    Create: '' as IntlString,
+    Applications: '' as IntlString,
+    ThisVacancyIsPrivate: '' as IntlString,
+    Description: '' as IntlString,
+    Company: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

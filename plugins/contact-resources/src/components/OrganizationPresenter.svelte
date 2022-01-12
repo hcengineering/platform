@@ -26,29 +26,8 @@
   }
 </script>
 
-<div class="flex-row-center user-container" on:click={onClick}>
-  <div class="icon"><Company size={'medium'} /></div>
-  <div class="overflow-label user">{value.name}</div>
-</div>
-
-<style lang="scss">
-  .user-container {
-    cursor: pointer;
-
-    .icon {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-
-    .user {
-      margin-left: 0.5rem;
-      font-weight: 500;
-      text-align: left;
-      color: var(--theme-content-accent-color);
-    }
-    &:hover .user {
-      text-decoration: underline;
-      color: var(--theme-caption-color);
-    }
-  }
-</style>
+{#if value}
+  <div class="sm-tool-icon" on:click={onClick}>
+    <span class="icon small-size flex-center"><Company size={'small'} /></span>&nbsp;{value.name}
+  </div>
+{/if}

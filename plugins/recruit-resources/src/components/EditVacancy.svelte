@@ -80,7 +80,7 @@
         {#if selected === 0}
           <Grid column={1} rowGap={1.5}>
             <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={() => {onChange('name', object.name)}}/>
-            <EditBox label='Description' bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => {onChange('description', object.description)}}/>
+            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => {onChange('description', object.description)}}/>
           </Grid>
           <div class="mt-10">
             <span class="title">Description</span>
@@ -92,7 +92,7 @@
             <Attachments objectId={object._id} _class={object._class} space={object.space} />
           </div>
         {:else if selected === 1}
-          <ToggleWithLabel label={'This vacancy is private'} description={recruit.string.MakePrivateDescription}/>
+          <ToggleWithLabel label={recruit.string.ThisVacancyIsPrivate} description={recruit.string.MakePrivateDescription}/>
         {:else if selected === 2}
           <Component is={activity.component.Activity} props={{object, transparent: true}} />
         {/if}
