@@ -16,12 +16,22 @@
 <script lang="ts">
   import Avatar from './icons/Avatar.svelte'
 
-  import { getFileUrl } from '../utils'
+  import { getBlobURL, getFileUrl } from '../utils'
 
   export let avatar: string | undefined = undefined
+  export let direct: Blob | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
-  $: url = avatar ? getFileUrl(avatar) : undefined
+  let url: string | undefined
+  $: if (direct !== undefined) {
+    getBlobURL(direct).then((blobURL) => {
+      url = blobURL
+    })
+  } else if (avatar !== undefined) {
+    url = getFileUrl(avatar)
+  } else {
+    url = undefined
+  }
 </script>
 
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url}>

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { Ref, Class, AttachedDoc } from '@anticrm/core'
-import { plugin } from '@anticrm/platform'
+import type { Ref, Class, AttachedDoc, Space, Doc } from '@anticrm/core'
+import { plugin, Resource } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -44,5 +44,8 @@ export default plugin(attachmentId, {
   },
   class: {
     Attachment: '' as Ref<Class<Attachment>>
+  },
+  helper: {
+    UploadFile: '' as Resource<(file: File, space?: Ref<Space>, attachedTo?: Ref<Doc>) => Promise<string>>
   }
 })

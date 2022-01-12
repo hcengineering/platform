@@ -88,6 +88,8 @@
     "@anticrm/lead-resources": "~0.6.0",
     "@anticrm/gmail": "~0.6.0",
     "@anticrm/gmail-assets": "~0.6.0",
-    "@anticrm/gmail-resources": "~0.6.0"
+    "@anticrm/gmail-resources": "~0.6.0",
+    "@anticrm/image-cropper": "~0.6.0",
+    "@anticrm/image-cropper-resources": "~0.6.0"
   }
 }

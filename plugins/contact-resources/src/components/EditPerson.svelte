@@ -16,8 +16,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getClient, createQuery, Channels, Avatar, AttributeEditor } from '@anticrm/presentation'
   import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
+  import { getClient, createQuery, Channels, EditableAvatar, AttributeEditor } from '@anticrm/presentation'
+  import { getResource } from '@anticrm/platform'
+  import attachment from '@anticrm/attachment'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
@@ -61,12 +63,22 @@
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
   afterUpdate(sendOpen)
+
+  async function onAvatarDone (e: any) {
+    const uploadFile = await getResource(attachment.helper.UploadFile)
+    const { file: avatar } = e.detail
+
+    const uuid = await uploadFile(avatar)
+    await client.updateDoc(object._class, object.space, object._id, {
+      avatar: uuid
+    })
+  }
 </script>
 
 {#if object !== undefined}
   <div class="flex-row-streach flex-grow">
     <div class="mr-8">
-      <Avatar avatar={object.avatar} size={'x-large'} />
+      <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">

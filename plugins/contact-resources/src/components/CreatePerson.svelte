@@ -16,9 +16,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Data } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform';
 
-  import { getClient, Card, Channels, Avatar } from '@anticrm/presentation'
+  import { getClient, Card, Channels, EditableAvatar } from '@anticrm/presentation'
 
+  import attachment from '@anticrm/attachment'
   import { EditBox, showPopup, CircleButton, IconEdit, IconAdd, Label } from '@anticrm/ui'
   import SocialEditor from './SocialEditor.svelte'
 
@@ -37,10 +39,25 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
+  let avatar: File | undefined
+
+  function onAvatarDone (e: any) {
+    const { file } = e.detail
+
+    avatar = file
+  }
+
   async function createPerson () {
+    const uploadFile = await getResource(attachment.helper.UploadFile)
+    const avatarUUID = avatar !== undefined 
+      ? await uploadFile(avatar)
+      : undefined
+
+    console.warn('avatar', avatar, avatarUUID)
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
+      avatar: avatarUUID,
       channels: object.channels
     }
 
@@ -61,7 +78,7 @@
 >
   <div class="flex-row-center">
     <div class="mr-4">
-      <Avatar avatar={object.avatar} size={'large'} />
+      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
       <div class="fs-title"><EditBox placeholder="John" maxWidth="12rem" bind:value={firstName} label={undefined} /></div>

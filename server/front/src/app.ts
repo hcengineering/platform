@@ -159,9 +159,9 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       const uuid = await minioUpload(config.minio, payload.workspace, file)
       console.log('uploaded uuid', uuid)
 
-      const name = req.query.name as string
-      const space = req.query.space as Ref<Space>
-      const attachedTo = req.query.attachedTo as Ref<Doc>
+      const name = req.query.name as string | undefined
+      const space = req.query.space as Ref<Space> | undefined
+      const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
       // const name = req.query.name as string
 
       // await createAttachment(
@@ -175,19 +175,21 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       //   fileId
       // )
 
-      const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+      if (name !== undefined && space !== undefined && attachedTo !== undefined) {
+        const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
-      const indexedDoc: IndexedDoc = {
-        id: generateId() + '/attachments/' + name as Ref<Doc>,
-        _class: attachment.class.Attachment,
-        space,
-        modifiedOn: Date.now(),
-        modifiedBy: 'core:account:System' as Ref<Account>,
-        attachedTo,
-        data: file.data.toString('base64')
+        const indexedDoc: IndexedDoc = {
+          id: generateId() + '/attachments/' + name as Ref<Doc>,
+          _class: attachment.class.Attachment,
+          space,
+          modifiedOn: Date.now(),
+          modifiedBy: 'core:account:System' as Ref<Account>,
+          attachedTo,
+          data: file.data.toString('base64')
+        }
+
+        await elastic.index(indexedDoc)
       }
-
-      await elastic.index(indexedDoc)
 
       res.status(200).send(uuid)
     } catch (error) {
