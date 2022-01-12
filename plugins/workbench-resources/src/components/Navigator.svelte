@@ -17,7 +17,7 @@
   import core from '@anticrm/core'
   import type { Space } from '@anticrm/core'
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
+  import { getCurrentLocation, navigate, CircleButton } from '@anticrm/ui'
   import { createQuery } from '@anticrm/presentation'
   import view from '@anticrm/view'
 
@@ -26,6 +26,8 @@
   import SpacesNav from './navigator/SpacesNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
+
+  import Mention from './icons/Mention.svelte'
 
   export let model: NavigatorModel | undefined
   

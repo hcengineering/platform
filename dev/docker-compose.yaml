@@ -48,7 +48,8 @@ services:
       - 3000:3000
     environment:
       - MONGO_URL=mongodb://mongodb:27017
-      - TRANSACTOR_URL=ws://localhost:3333
+      - TRANSACTOR_URL=ws://transactor:3333
+      - ENDPOINT_URL=ws://localhost:3333
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin

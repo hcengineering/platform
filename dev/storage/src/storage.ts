@@ -43,6 +43,8 @@ class InMemoryTxAdapter implements TxAdapter {
   async getModel (): Promise<Tx[]> {
     return builder.getTxes()
   }
+
+  async close (): Promise<void> {}
 }
 
 class InMemoryAdapter implements DbAdapter {
@@ -65,6 +67,8 @@ class InMemoryAdapter implements DbAdapter {
       await this.modeldb.tx(tx)
     }
   }
+
+  async close (): Promise<void> {}
 }
 
 /**

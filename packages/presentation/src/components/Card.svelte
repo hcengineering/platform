@@ -20,8 +20,6 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Class, Space } from '@anticrm/core'
 
-  // import Close from './internal/icons/Close.svelte'
-  // import ScrollBox from './ScrollBox.svelte'
   import { Button, Label } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
   import presentation from '..'

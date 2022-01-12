@@ -25,7 +25,6 @@
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { uploadFile } from '../utils'
-  import Edit from './icons/Edit.svelte'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
 
@@ -142,7 +141,7 @@
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">
-        <CircleButton icon={Edit} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
+        <CircleButton icon={contact.icon.Edit} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
       </div>
     {/if}
   </div>

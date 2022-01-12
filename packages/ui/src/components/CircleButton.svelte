@@ -53,32 +53,32 @@
     width: 1.5rem;
     height: 1.5rem;
     .content {
-      width: .625rem;
-      height: .625rem;
+      width: .75rem;
+      height: .75rem;
     }
   }
   .icon-medium {
     width: 1.75rem;
     height: 1.75rem;
     .content {
-      width: .75rem;
-      height: .75rem;
+      width: .875rem;
+      height: .875rem;
     }
   }
   .icon-large {
     width: 2rem;
     height: 2rem;
     .content {
-      width: .875rem;
-      height: .875rem;
+      width: 1rem;
+      height: 1rem;
     }
   }
   .icon-x-large {
     width: 2.25rem;
     height: 2.25rem;
     .content {
-      width: 1rem;
-      height: 1rem;
+      width: 1.25rem;
+      height: 1.25rem;
     }
   }
 </style>

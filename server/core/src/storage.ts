@@ -49,6 +49,7 @@ export interface DbAdapter extends Storage {
    * Method called after hierarchy is ready to use.
    */
   init: (model: Tx[]) => Promise<void>
+  close: () => Promise<void>
 }
 
 /**
@@ -94,10 +95,18 @@ class TServerStorage implements ServerStorage {
     private readonly adapters: Map<string, DbAdapter>,
     private readonly hierarchy: Hierarchy,
     private readonly triggers: Triggers,
-    fulltextAdapter: FullTextAdapter,
-    private readonly modelDb: ModelDb
+    private readonly fulltextAdapter: FullTextAdapter,
+    private readonly modelDb: ModelDb,
+    options?: ServerStorageOptions
   ) {
-    this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this)
+    this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this, options?.skipUpdateAttached ?? false)
+  }
+
+  async close (): Promise<void> {
+    for (const o of this.adapters.values()) {
+      await o.close()
+    }
+    await this.fulltextAdapter.close()
   }
 
   private getAdapter (domain: Domain): DbAdapter {
@@ -235,7 +244,14 @@ function txClass (tx: Tx): string {
 /**
  * @public
  */
-export async function createServerStorage (conf: DbConfiguration): Promise<ServerStorage> {
+export interface ServerStorageOptions {
+  // If defined, will skip update of attached documents on document update.
+  skipUpdateAttached?: boolean
+}
+/**
+ * @public
+ */
+export async function createServerStorage (conf: DbConfiguration, options?: ServerStorageOptions): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
   const triggers = new Triggers()
   const adapters = new Map<string, DbAdapter>()
@@ -268,5 +284,5 @@ export async function createServerStorage (conf: DbConfiguration): Promise<Serve
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
 
-  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, modelDb)
+  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, modelDb, options)
 }

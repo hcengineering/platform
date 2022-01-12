@@ -21,6 +21,7 @@
 
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
+  import contact from '@anticrm/contact'
   import view, { Viewlet } from '@anticrm/view'
   import CreateCandidate from './CreateCandidate.svelte'
 
@@ -38,7 +39,7 @@
 <div class="candidates-header-container">
   <div class="header-container">
     <div class="flex-row-center">
-      <span class="icon"><Icon icon={recruit.icon.Calendar} size={'small'}/></span>
+      <span class="icon"><Icon icon={contact.icon.Person} size={'small'}/></span>
       <span class="label"><Label label={recruit.string.Candidates}/></span>
     </div>
   </div>

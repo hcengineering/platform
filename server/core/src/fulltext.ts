@@ -46,7 +46,8 @@ export class FullTextIndex implements WithFind {
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly adapter: FullTextAdapter,
-    private readonly dbStorage: WithFind
+    private readonly dbStorage: WithFind,
+    private readonly skipUpdateAttached: boolean
   ) {}
 
   protected async txPutBag (ctx: MeasureContext, tx: TxPutBag<any>): Promise<TxResult> {
@@ -75,7 +76,9 @@ export class FullTextIndex implements WithFind {
     }
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
-      await this.updateAttachedDocs(ctx, tx, update)
+      if (!this.skipUpdateAttached) {
+        await this.updateAttachedDocs(ctx, tx, update)
+      }
     }
     return result
   }
@@ -214,7 +217,9 @@ export class FullTextIndex implements WithFind {
     }
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
-      await this.updateAttachedDocs(ctx, tx, update)
+      if (!this.skipUpdateAttached) {
+        await this.updateAttachedDocs(ctx, tx, update)
+      }
     }
     return result
   }

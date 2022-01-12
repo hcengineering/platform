@@ -16,13 +16,12 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import { getClient, createQuery, Channels, Avatar, AttributeEditor } from '@anticrm/presentation'
+  import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { combineName, getFirstName, getLastName, Person } from '@anticrm/contact'
-  import Edit from './icons/Edit.svelte'
 
   export let object: Person
 
@@ -101,7 +100,7 @@
             <Channels value={object.channels} size={'small'} {integrations} on:click />
             <div class="ml-1">
               <CircleButton
-                icon={Edit}
+                icon={contact.icon.Edit}
                 size={'small'}
                 selected
                 on:click={(ev) =>

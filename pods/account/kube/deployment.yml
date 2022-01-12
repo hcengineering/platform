@@ -25,7 +25,7 @@ spec:
                   name: mongodb
                   key: url
             - name: TRANSACTOR_URL
-              value: ws://transactor/
+              value: wss://transactor.hc.engineering/
             - name: MINIO_ENDPOINT
               valueFrom:
                 secretKeyRef:

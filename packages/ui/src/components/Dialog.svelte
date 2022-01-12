@@ -19,7 +19,7 @@
 
   import { createEventDispatcher } from 'svelte'
 
-  import Close from './internal/icons/Close.svelte'
+  import Close from './icons/Close.svelte'
   import ScrollBox from './ScrollBox.svelte'
   import Button from './Button.svelte'
   import Label from './Label.svelte'
