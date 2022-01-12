@@ -73,7 +73,7 @@
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
     <div class="caption-color" class:empty={selected ? false : true}>
-      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
+      {#if selected}{selected.label}{:else}{placeholder}{/if}
     </div>
   </div>
 </div>
