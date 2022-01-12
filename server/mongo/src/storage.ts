@@ -25,7 +25,7 @@ import core, {
   TxUpdateDoc
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-import { Collection, Db, Document, Filter, Sort } from 'mongodb'
+import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
 import { getMongoClient } from './utils'
 
 function translateDoc (doc: Doc): Document {
@@ -33,11 +33,15 @@ function translateDoc (doc: Doc): Document {
 }
 
 abstract class MongoAdapterBase extends TxProcessor {
-  constructor (protected readonly db: Db, protected readonly hierarchy: Hierarchy, protected readonly modelDb: ModelDb) {
+  constructor (protected readonly db: Db, protected readonly hierarchy: Hierarchy, protected readonly modelDb: ModelDb, protected readonly client: MongoClient) {
     super()
   }
 
   async init (): Promise<void> {}
+
+  async close (): Promise<void> {
+    await this.client.close()
+  }
 
   private translateQuery<T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
@@ -410,7 +414,7 @@ export async function createMongoAdapter (
 ): Promise<DbAdapter> {
   const client = await getMongoClient(url)
   const db = client.db(dbName)
-  return new MongoAdapter(db, hierarchy, modelDb)
+  return new MongoAdapter(db, hierarchy, modelDb, client)
 }
 
 /**
@@ -424,5 +428,5 @@ export async function createMongoTxAdapter (
 ): Promise<TxAdapter> {
   const client = await getMongoClient(url)
   const db = client.db(dbName)
-  return new MongoTxAdapter(db, hierarchy, modelDb)
+  return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

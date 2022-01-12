@@ -15,7 +15,7 @@
 
 import { MongoClient, MongoClientOptions } from 'mongodb'
 
-const connections = new Map<string, Promise<MongoClient>>()
+let connections: MongoClient[] = []
 
 // Register mongo close on process exit.
 process.on('exit', () => {
@@ -29,18 +29,14 @@ export async function shutdown (): Promise<void> {
   for (const c of connections.values()) {
     await (await c).close()
   }
-  connections.clear()
+  connections = []
 }
 /**
  * Initialize a workspace connection to DB
  * @public
  */
 export async function getMongoClient (uri: string, options?: MongoClientOptions): Promise<MongoClient> {
-  let client = connections.get(uri)
-  if (client === undefined) {
-    client = MongoClient.connect(uri, { ...options })
-    await client
-    connections.set(uri, client)
-  }
-  return await client
+  const client = await MongoClient.connect(uri, { ...options })
+  connections.push(client)
+  return client
 }

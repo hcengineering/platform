@@ -30,6 +30,7 @@ class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> { return [] }
   async tx (tx: Tx): Promise<TxResult> { return {} }
+  async close (): Promise<void> {}
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
