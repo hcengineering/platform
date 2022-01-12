@@ -82,6 +82,8 @@ class NullFullTextAdapter implements FullTextAdapter {
   async remove (id: Ref<Doc>): Promise<void> {
 
   }
+
+  async close (): Promise<void> {}
 }
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {

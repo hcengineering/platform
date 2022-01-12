@@ -30,4 +30,5 @@ export interface ServerStorage {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
+  close: () => Promise<void>
 }

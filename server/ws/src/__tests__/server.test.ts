@@ -33,7 +33,8 @@ describe('server', () => {
       query: DocumentQuery<T>,
       options?: FindOptions<T>
     ): Promise<FindResult<T>> => ([]),
-    tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []])
+    tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []]),
+    close: async () => {}
   }), 3333)
 
   function connect (): WebSocket {

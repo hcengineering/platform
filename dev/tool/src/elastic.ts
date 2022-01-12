@@ -14,16 +14,20 @@
 // limitations under the License.
 //
 
+import { Attachment } from '@anticrm/attachment'
 import core, {
   Account,
+  AttachedDoc,
   Class,
   Doc, DocumentQuery,
   DOMAIN_TX, FindOptions, FindResult,
   generateId,
-  Hierarchy, MeasureMetricsContext, ModelDb,
+  Hierarchy, MeasureMetricsContext, metricsToString, ModelDb,
+  newMetrics,
   Ref,
   ServerStorage,
   Tx,
+  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -34,7 +38,6 @@ import core, {
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
-import { Attachment } from '@anticrm/attachment'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverChunterId } from '@anticrm/server-chunter'
@@ -114,6 +117,7 @@ export class ElasticTool {
     return async () => {
       await this.mongoClient.close()
       await this.elastic.close()
+      await this.storage.close()
     }
   }
 
@@ -169,28 +173,94 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   try {
     const txes = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
     const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
-    const metricsCtx = new MeasureMetricsContext('elastic', {})
+    const m = newMetrics()
+    const metricsCtx = new MeasureMetricsContext('elastic', {}, m)
+    console.log('replay elastic transactions', data.length)
+    let pos = 0
+    let p = Date.now()
+
+    const isCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCreateDoc
+    const isMixinTx = (tx: Tx): boolean => tx._class === core.class.TxMixin || (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin)
+    const isCollectionCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
+
+    const tdata = data.filter(tx => isCreateTx(tx) || isMixinTx(tx) || isCollectionCreateTx(tx))
+    for (const tx of tdata) {
+      pos++
+      if (pos % 5000 === 0) {
+        console.log('replay elastic transactions', pos, tdata.length, Date.now() - p)
+        p = Date.now()
+      }
+      if (isCreateTx(tx)) {
+        const createTx = tx as TxCreateDoc<Doc>
+        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
+        if (docSnapshot !== undefined) {
+          // If there is no doc, then it is removed, not need to do something with elastic.
+          const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
+          try {
+            const newTx: TxCreateDoc<Doc> = {
+              ...createTx,
+              attributes: docData,
+              modifiedBy,
+              modifiedOn,
+              objectSpace: space // <- it could be moved, let's take actual one.
+            }
+            await tool.storage.tx(metricsCtx, newTx)
+          } catch (err: any) {
+            console.error('failed to replay tx', tx, err.message)
+          }
+        }
+      }
+
+      // We need process mixins.
+      if (isMixinTx(tx)) {
+        await tool.storage.tx(metricsCtx, tx)
+      }
+
+      // We need process collection creations.
+      if (isCollectionCreateTx(tx)) {
+        const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+        const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
+        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
+        if (docSnapshot !== undefined) {
+          // If there is no doc, then it is removed, not need to do something with elastic.
+          const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
+          try {
+            const newTx: TxCreateDoc<AttachedDoc> = {
+              ...createTx,
+              attributes: data,
+              modifiedBy,
+              modifiedOn,
+              objectSpace: space // <- it could be moved, let's take actual one.
+            }
+            collTx.tx = newTx
+            collTx.modifiedBy = modifiedBy
+            collTx.modifiedOn = modifiedOn
+            collTx.objectSpace = space
+            await tool.storage.tx(metricsCtx, collTx)
+          } catch (err: any) {
+            console.error('failed to replay tx', tx, err.message)
+          }
+        }
+      }
+    }
+    let apos = 0
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)
       console.log('reply elastic documents', minioObjects.length)
       for (const d of minioObjects) {
-        await tool.indexAttachment(d.name)
-      }
-    }
-    console.log('replay elastic transactions', data.length)
-    let pos = 0
-    for (const tx of data) {
-      pos++
-      if (pos % 10000 === 0) {
-        console.log('replay elastic transactions', pos, data.length)
-      }
-      try {
-        await tool.storage.tx(metricsCtx, tx)
-      } catch (err: any) {
-        console.error('failed to replay tx', tx, err.message)
+        apos++
+        try {
+          await tool.indexAttachment(d.name)
+        } catch (err: any) {
+          console.error(err)
+        }
+        if (apos % 100 === 0) {
+          console.log('replay minio documents', apos, minioObjects.length)
+        }
       }
     }
     console.log('replay elastic transactions done')
+    console.log(metricsToString(m))
   } finally {
     await done()
   }
@@ -218,7 +288,7 @@ async function createStorage (mongoUrl: string, elasticUrl: string, workspace: s
     },
     workspace
   }
-  return await createServerStorage(conf)
+  return await createServerStorage(conf, { skipUpdateAttached: true })
 }
 
 async function createMongoReadOnlyAdapter (
@@ -280,6 +350,10 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
 
   override tx (tx: Tx): Promise<TxResult> {
     return new Promise((resolve) => resolve({}))
+  }
+
+  async close (): Promise<void> {
+    await this.adapter.close()
   }
 }
 
