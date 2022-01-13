@@ -17,7 +17,7 @@
 import { Space } from '../classes'
 import { createClient } from '../client'
 import core from '../component'
-import { TxOperations } from '../tx'
+import { TxOperations } from '../operations'
 import { connect } from './connection'
 
 describe('client', () => {

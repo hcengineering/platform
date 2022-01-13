@@ -15,15 +15,14 @@
 -->
 <script lang="ts">
   import contact, { Contact } from '@anticrm/contact'
-  import { AttachedData, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { generateId } from '@anticrm/core'
+  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
+  import type { Customer, Lead } from '@anticrm/lead'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import type { Customer, Lead } from '@anticrm/lead'
+  import task, { calcRank } from '@anticrm/task'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import task, { calcRank } from '@anticrm/task'
 
   export let space: Ref<Space>
 
@@ -57,15 +56,7 @@
       { state: state._id },
       { sort: { rank: SortingOrder.Descending } }
     )
-    const incResult = await client.updateDoc(
-      task.class.Sequence,
-      task.space.Sequence,
-      sequence._id,
-      {
-        $inc: { sequence: 1 }
-      },
-      true
-    )
+    const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<Lead> = {
       state: state._id,
@@ -84,7 +75,7 @@
       await client.createMixin<Contact, Customer>(customerInstance._id, customerInstance._class, customerInstance.space, lead.mixin.Customer, {})
     }
 
-    await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
+    await client.add(customerInstance, lead.class.Lead, value, leadId)
     dispatch('close')
   }
 </script>

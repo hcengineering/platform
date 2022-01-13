@@ -19,12 +19,11 @@
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate } from '@anticrm/recruit'
-  import { calcRank, SpaceWithStates, State } from '@anticrm/task'
-  import task from '@anticrm/task'
+  import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import { Grid, Status as StatusControl } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import view from '@anticrm/view'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
@@ -73,15 +72,7 @@
       { state: state._id },
       { sort: { rank: SortingOrder.Descending } }
     )
-    const incResult = await client.updateDoc(
-      task.class.Sequence,
-      task.space.Sequence,
-      sequence._id,
-      {
-        $inc: { sequence: 1 }
-      },
-      true
-    )
+    const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const candidateInstance = await client.findOne(contact.class.Person, { _id: doc.attachedTo as Ref<Person> })
     if (candidateInstance === undefined) {
@@ -91,12 +82,8 @@
       await client.createMixin<Contact, Candidate>(candidateInstance._id, candidateInstance._class, candidateInstance.space, recruit.mixin.Candidate, {})
     }
 
-    await client.addCollection(
+    await client.add(candidateInstance,
       recruit.class.Applicant,
-      doc.space,
-      doc.attachedTo,
-      candidateInstance._class,
-      'applications',
       {
         state: state._id,
         doneState: null,

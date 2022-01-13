@@ -13,22 +13,44 @@
 // limitations under the License.
 //
 
-import type { Class, Obj, Ref, Doc } from '../classes'
+import { Client } from '..'
+import type { Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import { SortingOrder } from '../storage'
-import { TxOperations } from '../tx'
+import { TxOperations } from '../operations'
+import { DocumentQuery, FindOptions, SortingOrder, WithLookup } from '../storage'
+import { Tx } from '../tx'
 import { genMinModel, test, TestMixin } from './minmodel'
 
 const txes = genMinModel()
 
-async function createModel (): Promise<{ model: ModelDb, hierarchy: Hierarchy, txDb: TxDb }> {
+class ClientModel extends ModelDb implements Client {
+  notify?: ((tx: Tx) => void) | undefined
+
+  getHierarchy (): Hierarchy {
+    return this.hierarchy
+  }
+
+  getModel (): ModelDb {
+    return this
+  }
+
+  async findOne<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
+    return (await this.findAll(_class, query, options)).shift()
+  }
+
+  async close (): Promise<void> {
+
+  }
+}
+
+async function createModel (): Promise<{ model: ClientModel, hierarchy: Hierarchy, txDb: TxDb }> {
   const hierarchy = new Hierarchy()
   for (const tx of txes) {
     hierarchy.tx(tx)
   }
-  const model = new ModelDb(hierarchy)
+  const model = new ClientModel(hierarchy)
   for (const tx of txes) {
     await model.tx(tx)
   }
@@ -172,7 +194,7 @@ describe('memdb', () => {
   it('should push to array', async () => {
     const hierarchy = new Hierarchy()
     for (const tx of txes) hierarchy.tx(tx)
-    const model = new TxOperations(new ModelDb(hierarchy), core.account.System)
+    const model = new TxOperations(new ClientModel(hierarchy), core.account.System)
     for (const tx of txes) await model.tx(tx)
     const space = await model.createDoc(core.class.Space, core.space.Model, {
       name: 'name',
@@ -190,7 +212,7 @@ describe('memdb', () => {
   it('limit and sorting', async () => {
     const hierarchy = new Hierarchy()
     for (const tx of txes) hierarchy.tx(tx)
-    const model = new TxOperations(new ModelDb(hierarchy), core.account.System)
+    const model = new TxOperations(new ClientModel(hierarchy), core.account.System)
     for (const tx of txes) await model.tx(tx)
 
     const without = await model.findAll(core.class.Space, {})

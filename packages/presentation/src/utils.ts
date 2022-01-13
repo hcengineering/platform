@@ -14,59 +14,30 @@
 // limitations under the License.
 //
 
+import core, {
+  AnyAttribute, ArrOf, AttachedDoc, Class, Client, Collection, Doc, DocumentQuery,
+  FindOptions, getCurrentAccount, Ref, RefTo, Tx, TxOperations, TxResult
+} from '@anticrm/core'
+import login from '@anticrm/login'
+import { getMetadata } from '@anticrm/platform'
+import { LiveQuery as LQ } from '@anticrm/query'
 import { onDestroy } from 'svelte'
 
-import core, {
-  Doc,
-  Ref,
-  Class,
-  DocumentQuery,
-  FindOptions,
-  Client,
-  Hierarchy,
-  Tx,
-  getCurrentAccount,
-  ModelDb,
-  TxResult,
-  TxOperations,
-  AnyAttribute,
-  RefTo,
-  Collection,
-  AttachedDoc,
-  ArrOf
-} from '@anticrm/core'
-import { LiveQuery as LQ } from '@anticrm/query'
-import { getMetadata } from '@anticrm/platform'
-
-import login from '@anticrm/login'
-
 let liveQuery: LQ
-let client: Client & TxOperations
+let client: TxOperations
 
 class UIClient extends TxOperations implements Client {
-  constructor (private readonly client: Client, private readonly liveQuery: LQ) {
+  constructor (client: Client, private readonly liveQuery: LQ) {
     super(client, getCurrentAccount()._id)
   }
 
-  getHierarchy (): Hierarchy {
-    return this.client.getHierarchy()
-  }
-
-  getModel (): ModelDb {
-    return this.client.getModel()
-  }
-
-  async tx (tx: Tx): Promise<TxResult> {
+  override async tx (tx: Tx): Promise<TxResult> {
     // return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
     return await super.tx(tx)
   }
-
-  async close (): Promise<void> {
-    await client.close()
-  }
 }
 
-export function getClient (): Client & TxOperations {
+export function getClient (): TxOperations {
   return client
 }
 

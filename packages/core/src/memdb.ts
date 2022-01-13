@@ -27,13 +27,11 @@ import { TxProcessor } from './tx'
  * @public
  */
 export abstract class MemDb extends TxProcessor {
-  protected readonly hierarchy: Hierarchy
   private readonly objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
 
-  constructor (hierarchy: Hierarchy) {
+  constructor (protected readonly hierarchy: Hierarchy) {
     super()
-    this.hierarchy = hierarchy
   }
 
   private getObjectsByClass (_class: Ref<Class<Doc>>): Doc[] {

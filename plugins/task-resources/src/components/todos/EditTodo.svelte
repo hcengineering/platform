@@ -56,15 +56,7 @@
       return
     }
   
-    await client.updateCollection(
-      item._class,
-      item.space,
-      item._id,
-      item.attachedTo,
-      item.attachedToClass,
-      item.collection,
-      ops
-    )
+    await client.update(item, ops)
   }
 </script>
 

@@ -14,7 +14,7 @@ export type TxDisplayViewlet =
   | undefined
 
 async function createPseudoViewlet (
-  client: Client & TxOperations,
+  client: TxOperations,
   dtx: DisplayTx,
   label: string
 ): Promise<TxDisplayViewlet> {
@@ -36,7 +36,7 @@ async function createPseudoViewlet (
 }
 
 export async function updateViewlet (
-  client: Client & TxOperations,
+  client: TxOperations,
   viewlets: Map<ActivityKey, TxViewlet>,
   dtx: DisplayTx
 ): Promise<{
@@ -71,7 +71,7 @@ export async function updateViewlet (
 async function checkInlineViewlets (
   dtx: DisplayTx,
   viewlet: TxDisplayViewlet,
-  client: Client & TxOperations,
+  client: TxOperations,
   model: AttributeModel[]
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
   if (dtx.tx._class === core.class.TxCreateDoc) {
@@ -89,7 +89,7 @@ async function checkInlineViewlets (
 
 async function createUpdateModel (
   dtx: DisplayTx,
-  client: Client & TxOperations,
+  client: TxOperations,
   model: AttributeModel[]
 ): Promise<AttributeModel[]> {
   if (dtx.updateTx !== undefined) {
@@ -116,7 +116,7 @@ async function createUpdateModel (
   return model
 }
 
-function getHiddenAttrs (client: Client & TxOperations, _class: Ref<Class<Doc>>): Set<string> {
+function getHiddenAttrs (client: TxOperations, _class: Ref<Class<Doc>>): Set<string> {
   return new Set(
     [...client.getHierarchy().getAllAttributes(_class).entries()]
       .filter(([, attr]) => attr.hidden === true)
@@ -124,7 +124,7 @@ function getHiddenAttrs (client: Client & TxOperations, _class: Ref<Class<Doc>>)
   )
 }
 
-export async function getValue (client: Client & TxOperations, m: AttributeModel, utx: any): Promise<any> {
+export async function getValue (client: TxOperations, m: AttributeModel, utx: any): Promise<any> {
   const val = utx[m.key]
 
   if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
