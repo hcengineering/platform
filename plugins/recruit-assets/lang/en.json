@@ -26,6 +26,7 @@
     "Company": "Company"
   },
   "status": {
-    "CandidateRequired": "Please select candidate"
+    "CandidateRequired": "Please select candidate",
+    "VacancyRequired": "Please select vacancy"
   }
 }
