@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import {
+import accountPlugin, {
   ACCOUNT_DB,
   assignWorkspace,
   createAccount,
@@ -25,6 +25,7 @@ import {
   listWorkspaces,
   listAccounts
 } from '@anticrm/account'
+import { setMetadata } from '@anticrm/platform'
 import { program } from 'commander'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -69,6 +70,9 @@ if (elasticUrl === undefined) {
   process.exit(1)
 }
 
+setMetadata(accountPlugin.metadata.Endpoint, transactorUrl)
+setMetadata(accountPlugin.metadata.Transactor, transactorUrl)
+
 const minio = new Client({
   endPoint: minioEndpoint,
   port: 9000,
@@ -93,7 +97,7 @@ program
   .description('create user and corresponding account in master database')
   .requiredOption('-p, --password <password>', 'user password')
   .requiredOption('-f, --first <first>', 'first name')
-  .requiredOption('-l, --last <last>', 'first name')
+  .requiredOption('-l, --last <last>', 'last name')
   .action(async (email: string, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
       console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
