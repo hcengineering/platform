@@ -17,7 +17,7 @@ import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
-import { uploadFile } from './utils'
+import { uploadFile, deleteFile } from './utils'
 
 export { Attachments, AttachmentsPresenter }
 
@@ -31,6 +31,7 @@ export default async () => ({
     TxAttachmentCreate
   },
   helper: {
-    UploadFile: uploadFile
+    UploadFile: uploadFile,
+    DeleteFile: deleteFile
   }
 })
