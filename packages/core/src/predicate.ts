@@ -15,7 +15,7 @@
 //
 
 import type { Doc } from './classes'
-import { getNestedValue } from './query'
+import { getObjectValue } from './objvalue'
 
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
@@ -25,7 +25,7 @@ type ExecPredicate = (value: any) => boolean
 function execPredicate (docs: Doc[], propertyKey: string, pred: ExecPredicate): Doc[] {
   const result: Doc[] = []
   for (const doc of docs) {
-    const value = getNestedValue(propertyKey, doc)
+    const value = getObjectValue(propertyKey, doc)
     if (pred(value)) {
       result.push(doc)
     }
@@ -44,26 +44,13 @@ const predicates: Record<string, PredicateFactory> = {
   $like: (query: string, propertyKey: string): Predicate => {
     const searchString = query.split('%').join('.*')
     const regex = RegExp(`^${searchString}$`, 'i')
-    return (docs: Doc[]): Doc[] => {
-      const result: Doc[] = []
-      for (const doc of docs) {
-        const value = (doc as any)[propertyKey] as string
-        if (regex.test(value)) result.push(doc)
-      }
-      return result
-    }
+
+    return (docs) => execPredicate(docs, propertyKey, (value) => regex.test(value))
   },
 
   $regex: (o: { $regex: string, $options: string }, propertyKey: string): Predicate => {
     const re = new RegExp(o.$regex, o.$options)
-    return (docs: Doc[]): Doc[] => {
-      const result: Doc[] = []
-      for (const doc of docs) {
-        const value = (doc as any)[propertyKey] as string
-        if (value.match(re) !== null) result.push(doc)
-      }
-      return result
-    }
+    return (docs) => execPredicate(docs, propertyKey, (value) => value.match(re) !== null)
   }
 }
 

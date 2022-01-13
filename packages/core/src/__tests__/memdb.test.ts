@@ -189,6 +189,11 @@ describe('memdb', () => {
       space: { $like: '%Mod%' }
     })
     expect(all).toHaveLength(expectedLength)
+
+    const regex = await model.findAll(core.class.Doc, {
+      space: { $regex: '.*Mod.*' }
+    })
+    expect(regex).toHaveLength(expectedLength)
   })
 
   it('should push to array', async () => {
