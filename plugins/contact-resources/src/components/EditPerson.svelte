@@ -66,8 +66,12 @@
 
   async function onAvatarDone (e: any) {
     const uploadFile = await getResource(attachment.helper.UploadFile)
+    const deleteFile = await getResource(attachment.helper.DeleteFile)
     const { file: avatar } = e.detail
 
+    if (object.avatar != null) {
+      await deleteFile(object.avatar)
+    }
     const uuid = await uploadFile(avatar)
     await client.updateDoc(object._class, object.space, object._id, {
       avatar: uuid
