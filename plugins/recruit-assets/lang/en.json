@@ -16,6 +16,7 @@
     "CreateApplication": "Create Application",
     "SelectVacancy": "Select vacancy",
     "Candidate": "Candidate",
+    "CreateCandidate": "Create Candidate",
     "AssignRecruiter": "Assigned recruiter",
     "UnAssignRecruiter": "Unassigned recruiter",
     "Recruiters": "Recruiters",
@@ -23,7 +24,13 @@
     "Applications": "Applications",
     "ThisVacancyIsPrivate": "This vacancy is private",
     "Description": "Description",
-    "Company": "Company"
+    "Company": "Company",
+    "Save": "Save",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "WorkLocationPreferences": "Work location preferences",
+    "Onsite": "Onsite",
+    "Remote": "Remote"
   },
   "status": {
     "CandidateRequired": "Please select candidate"

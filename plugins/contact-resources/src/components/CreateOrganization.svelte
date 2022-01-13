@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { getClient, Card, Channels } from '@anticrm/presentation'
+  import presentation, { getClient, Card, Channels } from '@anticrm/presentation'
 
   import { EditBox, showPopup, CircleButton, IconEdit, IconAdd, Label } from '@anticrm/ui'
   import SocialEditor from './SocialEditor.svelte'
@@ -57,7 +57,7 @@
       <Company size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="Apple" maxWidth="11rem" bind:value={object.name} label={undefined} /></div>
+      <div class="fs-title"><EditBox placeholder="Apple" maxWidth="11rem" bind:value={object.name} /></div>
     </div>
   </div>
 
@@ -72,7 +72,7 @@
             object.channels = result
           })}
       />
-      <span><Label label={contact.string.AddSocialLinks} /></span>
+      <span><Label label={presentation.string.AddSocialLinks} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">

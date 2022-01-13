@@ -54,7 +54,9 @@
     <div class="flex-row-center header">
       <div class="flex-grow">
         <div class="flex">
-          <Icon icon={clazz.icon} size={'medium'} />
+          <div class="svg-medium flex-no-shrink">
+            {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+          </div>
           <div class="flex-grow fs-title ml-2">
             {object.name}
           </div>
@@ -113,10 +115,8 @@
     display: flex;
     flex-direction: column;
     height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-dialog-bg-spec);
+    background: var(--theme-bg-color);
     border-radius: 1.25rem;
-    box-shadow: var(--theme-dialog-shadow);
-    backdrop-filter: blur(15px);
 
     .header {
       flex-shrink: 0;
@@ -190,8 +190,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--theme-menu-color);
-    opacity: .6;
+    background-color: #000;
+    opacity: .5;
   }
 
   .title {

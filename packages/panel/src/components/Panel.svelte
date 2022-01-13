@@ -92,8 +92,6 @@
     height: calc(100% - 32px - 1.25rem);
     background: var(--theme-bg-color);
     border-radius: 1.25rem;
-    box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
-    backdrop-filter: blur(15px);
 
     .header {
       flex-shrink: 0;
@@ -170,7 +168,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--theme-menu-color);
-    opacity: .7;
+    background: #000;
+    opacity: .5;
   }
 </style>
