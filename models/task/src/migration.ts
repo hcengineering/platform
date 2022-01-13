@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Doc, Domain, DOMAIN_TX, Ref, TxCollectionCUD, TxCreateDoc, TxCUD, TxOperations } from '@anticrm/core'
+import { AttachedDoc, Class, Doc, Domain, DOMAIN_TX, Ref, TxCollectionCUD, TxCreateDoc, TxCUD, TxOperations, TxResult } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrateUpdate,
@@ -22,7 +22,7 @@ import {
   MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { Issue } from '@anticrm/task'
+import type { State, StateTemplate, Issue } from '@anticrm/task'
 import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
@@ -133,5 +133,37 @@ export const taskOperation: MigrateOperation = {
         })
       }
     }
+
+    const tx = new TxOperations(client, core.account.System)
+
+    // To not depend on ui package let's use inlined ones one time
+    const colors = new Map([
+      '#A5D179',
+      '#77C07B',
+      '#60B96E',
+      '#45AEA3',
+      '#46CBDE',
+      '#47BDF6',
+      '#5AADF6',
+      '#73A6CD',
+      '#B977CB',
+      '#7C6FCD',
+      '#6F7BC5',
+      '#F28469'
+    ].map((color, idx) => [color, idx]))
+    const getIndex = (color: string): number => colors.get(color) ?? 0
+
+    const updateStates = async (states: (State[] | StateTemplate[])): Promise<TxResult[]> =>
+      await Promise.all(
+        states
+          .filter((state) => typeof state.color === 'string')
+          .map(async (state) => await tx.update(state, { color: getIndex(state.color as never as string) }))
+      )
+
+    const states = await client.findAll(task.class.State, {})
+    await updateStates(states)
+
+    const templateStates = await client.findAll(task.class.StateTemplate, {})
+    await updateStates(templateStates)
   }
 }

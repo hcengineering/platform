@@ -18,7 +18,7 @@
   import { Ref } from '@anticrm/core'
   import { AttributeEditor, getClient } from '@anticrm/presentation'
   import type { DoneState, State } from '@anticrm/task'
-  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import ColorsPopup from './ColorsPopup.svelte'
   import Circles from './Circles.svelte'
@@ -60,7 +60,7 @@
     })
   }
 
-  const onColorChange = (state: State) => async (color: string | undefined): Promise<void> => {
+  const onColorChange = (state: State) => async (color: number | undefined): Promise<void> => {
     if (color === undefined) {
       return
     }
@@ -97,7 +97,7 @@
           }}
         >
           <div class="bar"><Circles /></div>
-          <div class="color" style="background-color: {state.color}"
+          <div class="color" style="background-color: {getPlatformColor(state.color)}"
             on:click={() => {
               showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
             }}

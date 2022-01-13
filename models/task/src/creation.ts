@@ -37,11 +37,11 @@ export async function createDeps (client: Client): Promise<void> {
 
 const defaultKanban = {
   states: [
-    { color: '#7C6FCD', title: 'Open' },
-    { color: '#6F7BC5', title: 'In Progress' },
-    { color: '#77C07B', title: 'Under review' },
-    { color: '#A5D179', title: 'Done' },
-    { color: '#F28469', title: 'Invalid' }
+    { color: 9, title: 'Open' },
+    { color: 10, title: 'In Progress' },
+    { color: 1, title: 'Under review' },
+    { color: 0, title: 'Done' },
+    { color: 11, title: 'Invalid' }
   ],
   doneStates: [
     { isWon: true, title: 'Won' },

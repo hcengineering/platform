@@ -86,7 +86,7 @@
       'statesC',
       {
         title: 'New State',
-        color: '#7C6FCD',
+        color: 9,
         rank: calcRank(lastOne, undefined)
       }
     )

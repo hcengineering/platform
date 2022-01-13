@@ -388,7 +388,7 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
       sid,
       {
         title: st,
-        color: colors[(pos++) % colors.length],
+        color: (pos++) % colors.length,
         rank
       }
     )

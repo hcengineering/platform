@@ -1,5 +1,5 @@
 
-const blackColors: string[] = [
+const blackColors = Object.freeze([
   '#A5D179',
   '#77C07B',
   '#60B96E',
@@ -12,7 +12,7 @@ const blackColors: string[] = [
   '#7C6FCD',
   '#6F7BC5',
   '#F28469'
-]
+])
 
 /**
  * @public
@@ -31,8 +31,8 @@ export function getPlatformColorForText (text: string): string {
 /**
  * @public
  */
-export function getPlatformColorCount (): number {
-  return blackColors.length
+export function getPlatformColors (): readonly string[] {
+  return blackColors
 }
 
 function hashCode (str: string): number {
