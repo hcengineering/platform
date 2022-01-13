@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, Doc, Class } from '@anticrm/core'
+  // import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import { getClient, MessageBox } from '@anticrm/presentation'
   import { Label, Icon, showPopup } from '@anticrm/ui'
   import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
@@ -26,9 +26,9 @@
   import Folders from './Folders.svelte'
   import Templates from './Templates.svelte'
 
-  export let objectId: Ref<Doc>
-  export let space: Ref<Space>
-  export let _class: Ref<Class<Doc>>
+  // export let objectId: Ref<Doc>
+  // export let space: Ref<Space>
+  // export let _class: Ref<Class<Doc>>
 
   let folder: KanbanTemplateSpace | undefined
   let template: KanbanTemplate | undefined
