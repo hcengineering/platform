@@ -50,14 +50,14 @@
 
   async function createCandidate () {
     const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarUUID = avatar !== undefined 
-      ? await uploadFile(avatar)
-      : undefined
+    const avatarProp = avatar !== undefined 
+      ? { avatar: await uploadFile(avatar) }
+      : {}
     const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
       channels: object.channels,
-      avatar: avatarUUID
+      ...avatarProp
     }
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
