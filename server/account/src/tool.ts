@@ -76,6 +76,8 @@ export async function initWorkspace (transactorUrl: string, dbName: string): Pro
     const connection = await connect(transactorUrl, dbName)
     try {
       await createDeps(connection)
+    } catch (e) {
+      console.log(e)
     } finally {
       await connection.close()
     }
