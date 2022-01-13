@@ -9,13 +9,14 @@ services:
     volumes:
       - db:/data/db
     ports:
-      - 27017:27017
+      - 127.0.0.1:27017:27017
     restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
     ports:
-      - 9000:9000
+      - 127.0.0.1:9000:9000
+      - 127.0.0.1:9001:9001
     volumes:
       - files:/data
   elastic:
@@ -26,7 +27,7 @@ services:
     volumes:
       - elastic:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - 127.0.0.1:9200:9200
     environment:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
@@ -45,7 +46,7 @@ services:
       - minio
       - transactor
     ports:
-      - 3000:3000
+      - 127.0.0.1:3000:3000
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - TRANSACTOR_URL=ws://transactor:3333
@@ -61,7 +62,7 @@ services:
       - elastic
       - transactor
     ports:
-      - 8081:8080
+      - 127.0.0.1:8081:8080
     environment:
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files
@@ -69,18 +70,22 @@ services:
       - ELASTIC_URL=http://elastic:9200
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin  
+      - MINIO_SECRET_KEY=minioadmin
   transactor:
     image: anticrm/transactor
     links:
       - mongodb
       - elastic
+      - minio
     ports:
-      - 3333:3333
+      - 127.0.0.1:3333:3333
     environment:
       - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://mongodb:27017
       - METRICS_CONSOLE=true
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin  
       # - APM_SERVER_URL=http://apm-server:8200
   # apm-server:
   #   image: docker.elastic.co/apm/apm-server:7.14.2

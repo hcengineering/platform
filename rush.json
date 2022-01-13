@@ -710,7 +710,22 @@
       "packageName": "@anticrm/dev-account",
       "projectFolder": "dev/account",
       "shouldPublish": true
-    },    
+    },
+    {    
+      "packageName": "@anticrm/server-attachment",
+      "projectFolder": "server/attachment",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-attachment",
+      "projectFolder": "models/server-attachment",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-attachment-resources",
+      "projectFolder": "server/attachment-resources",
+      "shouldPublish": true
+    },
     {
       "packageName": "@anticrm/mongo",
       "projectFolder": "server/mongo",

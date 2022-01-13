@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "start": "ts-node src/__start.ts",
+    "start": "MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",
     "build": "heft build",
     "lint:fix": "eslint --fix src",
     "bundle": "esbuild src/__start.ts --bundle --platform=node > bundle.js",
@@ -31,15 +31,19 @@
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/minio": "~7.0.11"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-core": "~0.6.1",
     "@anticrm/server-ws": "~0.6.11",
+    "@anticrm/server-attachment": "~0.6.0",
+    "@anticrm/server-attachment-resources": "~0.6.0",
     "@anticrm/mongo": "~0.6.1",
     "@anticrm/elastic": "~0.6.0",
-    "elastic-apm-node": "~3.26.0"
+    "elastic-apm-node": "~3.26.0",
+    "minio": "~7.0.26"
   }
 }

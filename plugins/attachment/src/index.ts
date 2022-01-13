@@ -53,7 +53,7 @@ export default plugin(attachmentId, {
     Photo: '' as Ref<Class<Photo>>
   },
   helper: {
-    UploadFile: '' as Resource<(file: File, space?: Ref<Space>, attachedTo?: Ref<Doc>) => Promise<string>>,
+    UploadFile: '' as Resource<(file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }) => Promise<string>>,
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
   }
 })

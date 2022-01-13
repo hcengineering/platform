@@ -47,10 +47,12 @@ import {
   IndexedDoc,
   TxAdapter
 } from '@anticrm/server-core'
+import { serverAttachmentId } from '@anticrm/server-attachment'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { listMinioObjects } from './minio'
+import { addLocation } from '@anticrm/platform'
 
 export async function rebuildElastic (
   mongoUrl: string,
@@ -99,6 +101,7 @@ export class ElasticTool {
   storage!: ServerStorage
   db!: Db
   constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
+    addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 

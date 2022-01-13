@@ -29,8 +29,32 @@ if (elasticUrl === undefined) {
   process.exit(1)
 }
 
+const minioEndpoint = process.env.MINIO_ENDPOINT
+if (minioEndpoint === undefined) {
+  console.error('MINIO_ENDPOINT is required')
+  process.exit(1)
+}
+
+const minioAccessKey = process.env.MINIO_ACCESS_KEY
+if (minioAccessKey === undefined) {
+  console.error('MINIO_ACCESS_KEY is required')
+  process.exit(1)
+}
+
+const minioSecretKey = process.env.MINIO_SECRET_KEY
+if (minioSecretKey === undefined) {
+  console.error('MINIO_SECRET_KEY is required')
+  process.exit(1)
+}
+
+const minioConf = {
+  endPoint: minioEndpoint,
+  accessKey: minioAccessKey,
+  secretKey: minioSecretKey
+}
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-const shutdown = start(url, elasticUrl, 3333)
+const shutdown = start(url, elasticUrl, minioConf, 3333)
 
 const close = (): void => {
   console.trace('Exiting from server')

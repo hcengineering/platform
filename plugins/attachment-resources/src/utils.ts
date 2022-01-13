@@ -18,19 +18,25 @@ import type { Doc, Ref, Space } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 
-export async function uploadFile (file: File, space?: Ref<Space>, attachedTo?: Ref<Doc>): Promise<string> {
-  console.log(file)
+export async function uploadFile (file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }): Promise<string> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
+
+  if (uploadUrl === undefined) {
+    throw Error('UploadURL is not defined')
+  }
 
   const data = new FormData()
   data.append('file', file)
 
-  const params = [['space', space], ['attachedTo', attachedTo]]
-    .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
-    .map(([name, value]) => `${name}=${value}`)
-    .join('&')
+  const params = opts !== undefined
+    ? [['space', opts.space], ['attachedTo', opts.attachedTo]]
+        .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
+        .map(([name, value]) => `${name}=${value}`)
+        .join('&')
+    : ''
+  const suffix = params === '' ? params : `?${params}`
 
-  const url = `${uploadUrl as string}?name=${encodeURIComponent(file.name)}&${params}`
+  const url = `${uploadUrl}${suffix}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
@@ -38,12 +44,12 @@ export async function uploadFile (file: File, space?: Ref<Space>, attachedTo?: R
     },
     body: data
   })
+
   if (resp.status !== 200) {
-    throw new Error("Can't upload file.")
+    throw Error(`Failed to upload file: ${resp.statusText}`)
   }
-  const uuid = await resp.text()
-  console.log(uuid)
-  return uuid
+
+  return await resp.text()
 }
 
 export async function deleteFile (id: string): Promise<void> {

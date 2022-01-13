@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,5 +14,14 @@
 // limitations under the License.
 //
 
-export { start } from './server'
-export type { MinioConfig } from './server'
+import { Builder } from '@anticrm/model'
+
+import serverCore from '@anticrm/server-core'
+import core from '@anticrm/core'
+import serverAttachment from '@anticrm/server-attachment'
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverAttachment.trigger.OnAttachmentDelete
+  })
+}

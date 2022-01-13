@@ -14,5 +14,20 @@
 // limitations under the License.
 //
 
-export { start } from './server'
-export type { MinioConfig } from './server'
+import type { Resource, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import type { TriggerFunc } from '@anticrm/server-core'
+
+/**
+ * @public
+ */
+export const serverAttachmentId = 'server-attachment' as Plugin
+
+/**
+ * @public
+ */
+export default plugin(serverAttachmentId, {
+  trigger: {
+    OnAttachmentDelete: '' as Resource<TriggerFunc>
+  }
+})
