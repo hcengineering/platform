@@ -16,7 +16,10 @@
 import { Person } from '@anticrm/contact'
 import core, { AttachedDoc, Class, Doc, DOMAIN_TX, MixinData, Ref, TxCollectionCUD, TxCreateDoc, TxMixin, TxUpdateDoc } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
+import { DOMAIN_COMMENT } from '@anticrm/model-chunter'
 import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import { DOMAIN_TASK } from '@anticrm/model-task'
 import recruit, { Candidate } from '@anticrm/recruit'
 
 function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'> | undefined): MixinData<Person, Candidate> {
@@ -59,6 +62,30 @@ export const recruitOperation: MigrateOperation = {
       _class: 'recruit:class:Candidate' as Ref<Class<Doc>>
     }, {
       _class: contact.class.Person
+    })
+
+    await client.update(DOMAIN_TASK, {
+      attachedToClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      attachedToClass: recruit.mixin.Candidate
+    })
+
+    await client.update(DOMAIN_ATTACHMENT, {
+      attachedToClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      attachedToClass: recruit.mixin.Candidate
+    })
+
+    await client.update(DOMAIN_ATTACHMENT, {
+      attachedToClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      attachedToClass: recruit.mixin.Candidate
+    })
+
+    await client.update(DOMAIN_COMMENT, {
+      attachedToClass: 'recruit:class:Candidate' as Ref<Class<Doc>>
+    }, {
+      attachedToClass: recruit.mixin.Candidate
     })
 
     // Migrate Create operations.
