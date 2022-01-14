@@ -27,7 +27,7 @@ export type Handler = Resource<() => Promise<void>>
  * @public
  */
 export interface IntegrationType extends Doc {
-  label: string | IntlString
+  label: IntlString
   description: IntlString
   icon: AnyComponent
   createComponent: AnyComponent
@@ -72,7 +72,10 @@ export default plugin(settingId, {
     Terms: '' as IntlString,
     Folders: '' as IntlString,
     Templates: '' as IntlString,
-    Delete: '' as IntlString
+    Delete: '' as IntlString,
+    Disconnect: '' as IntlString,
+    Add: '' as IntlString,
+    LearnMore: '' as IntlString
   },
   icon: {
     Setting: '' as Asset,

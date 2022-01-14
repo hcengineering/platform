@@ -153,6 +153,15 @@
       }
     })
   }
+
+  async function onConnectClose (res: any): Promise<void> {
+    if (res?.value) {
+      await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
+        type: telegram.integrationType.Telegram,
+        value: res.value
+      })
+    }
+  }
 </script>
 
 <div class="flex-between header">
@@ -200,7 +209,7 @@
         label={'Connect'}
         primary
         on:click={(e) => {
-          showPopup(Connect, {}, e.target)
+          showPopup(Connect, {}, e.target, onConnectClose)
         }}
       />
     </div>

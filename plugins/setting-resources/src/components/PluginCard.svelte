@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { Button, Component, Label, Link } from '@anticrm/ui'
   import { getResource } from '@anticrm/platform'
@@ -56,10 +57,10 @@
   <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod temp</div>
   <div class="footer">
     {#if integration}
-      <Button label={'Disconnect'} on:click={disconnect} />
+      <Button label={setting.string.Disconnect} on:click={disconnect} />
     {:else}
       <Button
-        label={'Add'}
+        label={setting.string.Add}
         primary
         on:click={(e) => {
           showPopup(integrationType.createComponent, {}, e.target, close)

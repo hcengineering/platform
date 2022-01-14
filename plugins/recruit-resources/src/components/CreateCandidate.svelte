@@ -19,7 +19,7 @@
   import type { Data, MixinData, Ref } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { EditableAvatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
+  import presentation, { EditableAvatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { CircleButton, EditBox, IconAdd, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -50,14 +50,14 @@
 
   async function createCandidate () {
     const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarUUID = avatar !== undefined 
-      ? await uploadFile(avatar)
-      : undefined
+    const avatarProp = avatar !== undefined 
+      ? { avatar: await uploadFile(avatar) }
+      : {}
     const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
       channels: object.channels,
-      avatar: avatarUUID
+      ...avatarProp
     }
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
@@ -92,7 +92,7 @@
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
 
-      resume.uuid = await uploadFile(file, space, candidateId)
+      resume.uuid = await uploadFile(file, contact.space.Contacts, candidateId)
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type
@@ -130,7 +130,7 @@
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
 
-<Card label={'Create Candidate'} 
+<Card label={recruit.string.CreateCandidate} 
       okAction={createCandidate}
       canSave={firstName.length > 0 && lastName.length > 0}
       space={contact.space.Contacts}
@@ -152,7 +152,7 @@
   <div class="flex-row-center channels">
     {#if !object.channels || object.channels.length === 0}
       <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
-      <span><Label label={'Add social links'} /></span>
+      <span><Label label={presentation.string.AddSocialLinks} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">
@@ -179,9 +179,9 @@
 
   <div class="separator" />
   <div class="flex-col locations">
-    <span><Label label={'Work location preferences'} /></span>
-    <div class="row"><Label label={'Onsite'} /><YesNo bind:value={object.onsite} /></div>
-    <div class="row"><Label label={'Remote'} /><YesNo bind:value={object.remote} /></div>
+    <span><Label label={recruit.string.WorkLocationPreferences} /></span>
+    <div class="row"><Label label={recruit.string.Onsite} /><YesNo bind:value={object.onsite} /></div>
+    <div class="row"><Label label={recruit.string.Remote} /><YesNo bind:value={object.remote} /></div>
   </div>
 </Card>
 

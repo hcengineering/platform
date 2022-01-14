@@ -18,6 +18,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import { Label, Button, Grid, IconClose } from '@anticrm/ui'
+  import recruit from '../plugin'
 
   import Avatar from '../../img/avatar.png'
 
@@ -40,12 +41,12 @@
 
   <div class="abs-lb-content actions">
     <Grid columnGap={.5}>
-      <Button label={'Edit'} />
-      <Button label={'Delete'} />
+      <Button label={recruit.string.Edit} />
+      <Button label={recruit.string.Delete} />
     </Grid>
   </div>
   <div class="abs-rb-content">
-    <Button label={'Save'} />
+    <Button label={recruit.string.Save} />
   </div>
 </div>
 

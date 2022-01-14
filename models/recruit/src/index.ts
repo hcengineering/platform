@@ -263,7 +263,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.mixin.Candidate,
+    target: contact.class.Person,
     action: recruit.action.CreateApplication
   })
 

@@ -16,7 +16,7 @@
 
 import client, { ClientSocket } from '@anticrm/client'
 import type { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxHander, TxResult } from '@anticrm/core'
-import { getMetadata, readResponse, ReqId, serialize } from '@anticrm/platform'
+import { getMetadata, PlatformError, readResponse, ReqId, serialize } from '@anticrm/platform'
 
 class DeferredPromise {
   readonly promise: Promise<any>
@@ -61,7 +61,7 @@ class Connection implements ClientConnection {
         if (promise === undefined) { throw new Error(`unknown response id: ${resp.id}`) }
         this.requests.delete(resp.id)
         if (resp.error !== undefined) {
-          promise.reject(resp.error)
+          promise.reject(new PlatformError(resp.error))
         } else {
           promise.resolve(resp.result)
         }

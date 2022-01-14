@@ -74,7 +74,7 @@
 
     await client.createDoc(task.class.State, kanban.space, {
       title: 'New State',
-      color: '#7C6FCD',
+      color: 9,
       rank: calcRank(lastOne, undefined)
     })
   }

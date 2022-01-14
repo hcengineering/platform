@@ -45,3 +45,19 @@ export async function uploadFile (file: File, space?: Ref<Space>, attachedTo?: R
   console.log(uuid)
   return uuid
 }
+
+export async function deleteFile (id: string): Promise<void> {
+  const uploadUrl = getMetadata(login.metadata.UploadUrl)
+
+  const url = `${uploadUrl as string}?file=${id}`
+  const resp = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) as string)
+    }
+  })
+
+  if (resp.status !== 200) {
+    throw new Error('Failed to delete file')
+  }
+}

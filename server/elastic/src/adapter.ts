@@ -17,8 +17,7 @@
 import type { Class, Doc, DocumentQuery, Ref, TxResult } from '@anticrm/core'
 import type { FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 
-import { Client } from '@elastic/elasticsearch'
-
+import { Client, errors as esErr } from '@elastic/elasticsearch'
 class ElasticAdapter implements FullTextAdapter {
   constructor (private readonly client: Client, private readonly db: string) {}
 
@@ -113,10 +112,18 @@ class ElasticAdapter implements FullTextAdapter {
   }
 
   async remove (id: Ref<Doc>): Promise<void> {
-    await this.client.delete({
-      index: this.db,
-      id
-    })
+    try {
+      await this.client.delete({
+        index: this.db,
+        id
+      })
+    } catch (e: any) {
+      if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
+        return
+      }
+
+      throw e
+    }
   }
 }
 

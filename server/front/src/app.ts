@@ -198,6 +198,28 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
     }
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization
+      if (authHeader === undefined) {
+        res.status(403).send()
+        return
+      }
+
+      const token = authHeader.split(' ')[1]
+      const payload = decode(token ?? '', 'secret', false) as Token
+      const uuid = req.query.file as string
+
+      await config.minio.removeObject(payload.workspace, uuid)
+
+      res.status(200).send()
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
+    }
+  })
+
   app.get('/import', (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
