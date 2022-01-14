@@ -49,16 +49,15 @@
 
   async function createPerson () {
     const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarUUID = avatar !== undefined 
-      ? await uploadFile(avatar)
-      : undefined
+    const avatarProp = avatar !== undefined 
+      ? { avatar: await uploadFile(avatar) }
+      : {}
 
-    console.warn('avatar', avatar, avatarUUID)
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
-      avatar: avatarUUID,
-      channels: object.channels
+      channels: object.channels,
+      ...avatarProp
     }
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person)
