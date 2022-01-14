@@ -46,7 +46,7 @@ export interface DocWithRank extends Doc {
  */
 export interface State extends DocWithRank {
   title: string
-  color: string
+  color: number
 }
 
 /**

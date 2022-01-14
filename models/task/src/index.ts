@@ -59,7 +59,7 @@ export class TState extends TDoc implements State {
   @Prop(TypeString(), 'Title' as IntlString)
   title!: string
 
-  color!: string
+  color!: number
 
   declare rank: string
 }
@@ -173,7 +173,7 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   title!: string
 
   @Prop(TypeString(), 'Color' as IntlString)
-  color!: string
+  color!: number
 
   declare rank: string
 }

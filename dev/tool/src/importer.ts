@@ -372,8 +372,6 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
   const states: Map<string, Ref<State>> = new Map()
   const stateRanks = genRanks(stateNames.length)
 
-  const colors: string[] = ['#A5D179', '#77C07B', '#60B96E', '#45AEA3', '#46CBDE', '#47BDF6',
-    '#5AADF6', '#73A6CD', '#B977CB', '#7C6FCD', '#6F7BC5', '#F28469']
   let pos = 0
   for (const st of stateNames) {
     const rank = stateRanks.next().value
@@ -388,7 +386,7 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
       sid,
       {
         title: st,
-        color: colors[(pos++) % colors.length],
+        color: pos++,
         rank
       }
     )

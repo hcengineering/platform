@@ -21,7 +21,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { DoneState, LostState, WonState, DocWithRank, calcRank } from '@anticrm/task'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import { AnySvelteComponent, getPlatformColor } from '@anticrm/ui'
   import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
   import KanbanPanel from './KanbanPanel.svelte'
   // import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
@@ -182,7 +182,7 @@
     <ScrollBox>
       <div class="kanban-content">
         {#each states as state (state)}
-          <KanbanPanel label={state.title} color={state.color} counter={4}
+          <KanbanPanel label={state.title} color={getPlatformColor(state.color)} counter={4}
             on:dragover={(event) => {
               event.preventDefault()
               if (dragCard.state !== state._id) {

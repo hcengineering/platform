@@ -5,11 +5,11 @@ import { findOrUpdate } from './utils'
 
 export async function createUpdateSpaceKanban (ctx: MeasureContext, spaceId: Ref<SpaceWithStates>, client: TxOperations): Promise<Ref<State>[]> {
   const rawStates = [
-    { color: '#7C6FCD', name: 'Initial' },
-    { color: '#6F7BC5', name: 'Intermidiate' },
-    { color: '#77C07B', name: 'OverIntermidiate' },
-    { color: '#A5D179', name: 'Done' },
-    { color: '#F28469', name: 'Invalid' }
+    { color: 9, name: 'Initial' },
+    { color: 10, name: 'Intermidiate' },
+    { color: 1, name: 'OverIntermidiate' },
+    { color: 0, name: 'Done' },
+    { color: 11, name: 'Invalid' }
   ]
   const states: Array<Ref<State>> = []
   const stateRanks = genRanks(rawStates.length)
