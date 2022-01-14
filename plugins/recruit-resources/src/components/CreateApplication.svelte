@@ -82,8 +82,9 @@
       await client.createMixin<Contact, Candidate>(candidateInstance._id, candidateInstance._class, candidateInstance.space, recruit.mixin.Candidate, {})
     }
 
-    await client.add(candidateInstance,
+    await client.addCollection(
       recruit.class.Applicant,
+      space, candidateInstance._id, recruit.mixin.Candidate, 'applications',
       {
         state: state._id,
         doneState: null,

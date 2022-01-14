@@ -1,9 +1,9 @@
-import { Collection, DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb } from '.'
+import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb } from '.'
 import type { Account, AttachedData, AttachedDoc, Class, Data, Doc, Mixin, PropertyType, Ref, Space } from './classes'
 import { Client } from './client'
+import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
 import { Tx, TxFactory } from './tx'
-import core from './component'
 
 /**
  * @public
@@ -182,15 +182,5 @@ export class TxOperations implements Omit<Client, 'notify'> {
       return this.removeCollection(doc._class, doc.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
     }
     return this.removeDoc(doc._class, doc.space, doc._id)
-  }
-
-  add<T extends Doc, P extends AttachedDoc>(parent: T, _class: Ref<Class<P>>, obj: AttachedData<P>, objId?: Ref<P>): Promise<TxResult> {
-    const h = this.client.getHierarchy()
-    const attrs = Array.from(h.getAllAttributes(parent._class).values())
-    const collections = attrs.filter(a => h.isDerived(a.type._class, core.class.Collection) && h.isDerived(_class, (a.type as Collection<AttachedDoc>).of))
-    if (collections.length !== 1) {
-      throw new Error('Please use addCollection method, collection could not be detected.')
-    }
-    return this.addCollection<T, P>(_class, parent.space, parent._id, parent._class, collections[0].name, obj, objId)
   }
 }

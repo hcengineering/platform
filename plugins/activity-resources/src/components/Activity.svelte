@@ -43,7 +43,7 @@
   )
 
   function onMessage (event: CustomEvent) {
-    client.add(object, chunter.class.Comment, { message: event.detail })
+    client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', { message: event.detail })
   }
 
   let viewlets: Map<ActivityKey, TxViewlet>
