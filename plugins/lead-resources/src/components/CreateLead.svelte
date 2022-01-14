@@ -75,7 +75,7 @@
       await client.createMixin<Contact, Customer>(customerInstance._id, customerInstance._class, customerInstance.space, lead.mixin.Customer, {})
     }
 
-    await client.add(customerInstance, lead.class.Lead, value, leadId)
+    await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
     dispatch('close')
   }
 </script>
