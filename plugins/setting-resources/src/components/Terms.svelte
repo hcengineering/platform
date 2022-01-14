@@ -14,22 +14,8 @@
 -->
 
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core';
-  import { createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
-  import type { Integration, IntegrationType } from '@anticrm/setting'
-  import PluginCard from './PluginCard.svelte'
   import { Icon, Label } from '@anticrm/ui'
-
-  // const accountId = getCurrentAccount()._id
-  // const typeQuery = createQuery()
-  // const integrationQuery = createQuery()
-
-  // let integrations: Integration[] = []
-  // let integrationTypes: IntegrationType[] = []
-
-  // typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  // integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
 </script>
 
 <div class="flex-col h-full">

@@ -34,7 +34,7 @@ export class TIntegration extends TDoc implements Integration {
 
 @Model(setting.class.IntegrationType, core.class.Doc, DOMAIN_MODEL)
 export class TIntegrationType extends TDoc implements IntegrationType {
-  label!: string | IntlString
+  label!: IntlString
   description!: IntlString
   icon!: AnyComponent
   createComponent!: AnyComponent

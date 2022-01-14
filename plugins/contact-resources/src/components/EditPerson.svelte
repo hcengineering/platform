@@ -17,7 +17,7 @@
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
-  import { getClient, createQuery, Channels, EditableAvatar, AttributeEditor } from '@anticrm/presentation'
+  import presentation, { getClient, createQuery, Channels, EditableAvatar, AttributeEditor } from '@anticrm/presentation'
   import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
   import setting from '@anticrm/setting'
@@ -83,10 +83,10 @@
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} label={undefined} />
+          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
         </div>
         <div class="name">
-          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} label={undefined} />
+          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
         </div>
         <div class="location">
           <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" />
@@ -107,7 +107,7 @@
                   saveChannels(result)
                 })}
             />
-            <span><Label label={contact.string.AddSocialLinks} /></span>
+            <span><Label label={presentation.string.AddSocialLinks} /></span>
           {:else}
             <Channels value={object.channels} size={'small'} {integrations} on:click />
             <div class="ml-1">

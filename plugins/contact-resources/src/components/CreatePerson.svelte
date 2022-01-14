@@ -18,7 +18,7 @@
   import type { Data } from '@anticrm/core'
   import { getResource } from '@anticrm/platform';
 
-  import { getClient, Card, Channels, EditableAvatar } from '@anticrm/presentation'
+  import presentation, { getClient, Card, Channels, EditableAvatar } from '@anticrm/presentation'
 
   import attachment from '@anticrm/attachment'
   import { EditBox, showPopup, CircleButton, IconEdit, IconAdd, Label } from '@anticrm/ui'
@@ -80,9 +80,9 @@
       <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="12rem" bind:value={firstName} label={undefined} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="12rem" bind:value={lastName} label={undefined} /></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="12rem" bind:value={object.city} label={undefined} /></div>
+      <div class="fs-title"><EditBox placeholder="John" maxWidth="12rem" bind:value={firstName} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="12rem" bind:value={lastName} /></div>
+      <div class="small-text"><EditBox placeholder="Location" maxWidth="12rem" bind:value={object.city} /></div>
     </div>
   </div>
 
@@ -97,7 +97,7 @@
             object.channels = result
           })}
       />
-      <span><Label label={contact.string.AddSocialLinks} /></span>
+      <span><Label label={presentation.string.AddSocialLinks} /></span>
     {:else}
       <Channels value={object.channels} size={'small'} />
       <div class="ml-1">

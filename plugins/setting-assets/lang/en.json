@@ -9,6 +9,10 @@
 
     "Folders": "Folders",
     "Templates": "Templates",
-    "Delete": "Delete"
+    "Delete": "Delete",
+
+    "Disconnect": "Disconnect",
+    "Add": "Add",
+    "LearnMore": "Learn more"
   }
 }

@@ -20,7 +20,7 @@
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
 
-  export let label: IntlString | undefined
+  export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let maxWidth: string | undefined
   export let value: string | undefined

@@ -17,7 +17,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
-  import { getClient, createQuery, Channels } from '@anticrm/presentation'
+  import presentation, { getClient, createQuery, Channels } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
@@ -60,7 +60,7 @@
     </div>
     <div class="flex-grow flex-col">
       <div class="name">
-        <EditBox placeholder="John" maxWidth="20rem" bind:value={object.name} on:change={nameChange} label={undefined} />
+        <EditBox placeholder="John" maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
       </div>
       <div class="flex-between channels">
         <div class="flex-row-center">
@@ -74,7 +74,7 @@
                   saveChannels(result)
                 })}
             />
-            <span><Label label={contact.string.AddSocialLinks} /></span>
+            <span><Label label={presentation.string.AddSocialLinks} /></span>
           {:else}
             <Channels value={object.channels} size={'small'} {integrations} on:click />
             <div class="ml-1">

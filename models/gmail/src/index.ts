@@ -86,7 +86,7 @@ export function createModel (builder: Builder): void {
     setting.class.IntegrationType,
     core.space.Model,
     {
-      label: 'Gmail',
+      label: 'Gmail' as IntlString,
       description: 'Use gmail integration' as IntlString,
       icon: gmail.component.IconGmail,
       createComponent: gmail.component.Connect,

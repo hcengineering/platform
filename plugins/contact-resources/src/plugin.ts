@@ -30,7 +30,6 @@ export default mergeIds(contactId, contact, {
     SelectFolder: '' as IntlString,
     OrganizationsFolder: '' as IntlString,
     PersonsFolder: '' as IntlString,
-    AddSocialLinks: '' as IntlString,
     Name: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,

@@ -71,7 +71,7 @@ export function createModel (builder: Builder): void {
     setting.class.IntegrationType,
     core.space.Model,
     {
-      label: 'Telegram',
+      label: 'Telegram' as IntlString,
       description: 'Use telegram integration' as IntlString,
       icon: telegram.component.IconTelegram,
       createComponent: telegram.component.Connect,
