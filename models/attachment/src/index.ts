@@ -51,7 +51,6 @@ export class TAttachment extends TAttachedDoc implements Attachment {
 export class TPhoto extends TAttachment implements Photo {}
 
 export function createModel (builder: Builder): void {
-  console.log('START BUILD ATTACHMENT')
   builder.createModel(TAttachment, TPhoto)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
