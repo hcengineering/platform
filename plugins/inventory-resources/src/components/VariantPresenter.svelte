@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
@@ -12,18 +12,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Variant } from '@anticrm/inventory'
 
-import { mergeIds } from '@anticrm/platform'
-import type { IntlString } from '@anticrm/platform'
+  export let value: Variant
+</script>
 
-import attachment, { attachmentId } from '@anticrm/attachment'
-
-export default mergeIds(attachmentId, attachment, {
-  string: {
-    NoAttachments: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString,
-    Attachments: '' as IntlString,
-    Photos: '' as IntlString
-  }
-})
+{#if value}
+  <div class="sm-tool-icon">
+    {value.name}
+  </div>
+{/if}

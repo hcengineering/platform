@@ -1,0 +1,23 @@
+{
+  "status": {
+    "CategoryRequired": "Category required",
+    "NameRequired": "Name required"
+  },
+  "string": {
+    "Categories": "Categories",
+    "Category": "Category",
+    "CreateCategoryShort": "+ Category",
+    "CreateCategory": "Create category",
+    "CreateSubcategory": "Create subcategory",
+    "Inventory": "Inventory",
+    "CreateProductShort": "+ Product",
+    "CreateProduct": "Create product",
+    "Products": "Products",
+    "Product": "Product",
+    "Variant": "Variant",
+    "SKU": "SKU",
+    "Variants": "Variants",
+    "NoVariantsForProduct": "There are no variants for this product.",
+    "CreateVariant": "Create variant"
+  }
+}
