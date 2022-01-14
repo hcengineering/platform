@@ -921,5 +921,25 @@
       "projectFolder": "plugins/gmail-resources",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/model-inventory",
+      "projectFolder": "models/inventory",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/inventory",
+      "projectFolder": "plugins/inventory",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/inventory-assets",
+      "projectFolder": "plugins/inventory-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/inventory-resources",
+      "projectFolder": "plugins/inventory-resources",
+      "shouldPublish": true
+    }
   ]
 }

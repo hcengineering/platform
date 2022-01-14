@@ -30,6 +30,7 @@ import { leadId } from '@anticrm/lead'
 import { clientId } from '@anticrm/client'
 import { gmailId } from '@anticrm/gmail'
 import { imageCropperId } from '@anticrm/image-cropper'
+import { inventoryId } from '@anticrm/inventory'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -44,6 +45,7 @@ import '@anticrm/telegram-assets'
 import '@anticrm/lead-assets'
 import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
+import '@anticrm/inventory-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
@@ -73,4 +75,5 @@ export async function configurePlatform() {
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
   addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@anticrm/gmail-resources'))
   addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
+  addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
 }

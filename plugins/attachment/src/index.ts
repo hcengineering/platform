@@ -33,17 +33,24 @@ export interface Attachment extends AttachedDoc {
 /**
  * @public
  */
+export interface Photo extends Attachment {}
+
+/**
+ * @public
+ */
 export const attachmentId = 'attachment' as Plugin
 
 export default plugin(attachmentId, {
   component: {
-    Attachments: '' as AnyComponent
+    Attachments: '' as AnyComponent,
+    Photos: '' as AnyComponent
   },
   icon: {
     Attachment: '' as Asset
   },
   class: {
-    Attachment: '' as Ref<Class<Attachment>>
+    Attachment: '' as Ref<Class<Attachment>>,
+    Photo: '' as Ref<Class<Photo>>
   },
   helper: {
     UploadFile: '' as Resource<(file: File, space?: Ref<Space>, attachedTo?: Ref<Doc>) => Promise<string>>

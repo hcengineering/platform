@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import activity from '@anticrm/activity'
   import type { Doc } from '@anticrm/core'
@@ -23,6 +22,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let title: string
+  export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let fullSize: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
@@ -31,50 +31,70 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
+<div
+  class="overlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="dialog-container" class:fullSize>
-
-{#if fullSize}
-  <div class="leftSection">
-    <div class="flex-between header">
-      <Icon {icon} size={'large'} />
-      <div class="flex-grow ml-4 flex-col">
-        <div class="fs-title">{title}</div>
-        <div class="small-text content-dark-color">Candidate pool name</div>
+  {#if fullSize}
+    <div class="leftSection">
+      <div class="flex-between header">
+        <Icon {icon} size={'large'} />
+        <div class="flex-grow ml-4 flex-col">
+          <div class="fs-title">{title}</div>
+          {#if subtitle}
+            <div class="small-text content-dark-color">{subtitle}</div>
+          {/if}
+        </div>
+        <ActionIcon icon={IconMoreH} size={'medium'} />
       </div>
-      <ActionIcon icon={IconMoreH} size={'medium'} />
+      {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
+      <div class="flex-col scroll-container">
+        <div class="flex-col content">
+          <slot />
+        </div>
+      </div>
     </div>
-    {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
-    <div class="flex-col scroll-container">
-      <div class="flex-col content">
+    <div class="rightSection">
+      <Component is={rightSection ?? activity.component.Activity} props={{ object, fullSize }} />
+    </div>
+  {:else}
+    <div class="unionSection">
+      <div class="flex-row-center header">
+        <Icon {icon} size={'large'} />
+        <div class="flex-grow ml-4 flex-col">
+          <div class="fs-title">{title}</div>
+          <div class="small-text content-dark-color">Candidate pool name</div>
+        </div>
+        <ActionIcon icon={IconMoreH} size={'medium'} />
+      </div>
+      {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
+
+      <Component is={activity.component.Activity} props={{ object, fullSize }}>
         <slot />
-      </div>
+      </Component>
     </div>
-  </div>
-  <div class="rightSection">
-    <Component is={rightSection ?? activity.component.Activity} props={{object, fullSize}}/>
-  </div>
-{:else}
-  <div class="unionSection">
-    <div class="flex-row-center header">
-      <Icon {icon} size={'large'} />
-      <div class="flex-grow ml-4 flex-col">
-        <div class="fs-title">{title}</div>
-        <div class="small-text content-dark-color">Candidate pool name</div>
-      </div>
-      <ActionIcon icon={IconMoreH} size={'medium'} />
-    </div>
-    {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
-
-    <Component is={activity.component.Activity} props={{object, fullSize}}>
-      <slot />
-    </Component>
-  </div>
-{/if}
+  {/if}
 
   <div class="tools">
-    <div class="tool" on:click={() => { fullSize = !fullSize }}><div class="icon"><IconExpand size={'small'} /></div></div>
-    <div class="tool" on:click={() => { dispatch('close') }}><div class="icon"><IconClose size={'small'} /></div></div>
+    <div
+      class="tool"
+      on:click={() => {
+        fullSize = !fullSize
+      }}
+    >
+      <div class="icon"><IconExpand size={'small'} /></div>
+    </div>
+    <div
+      class="tool"
+      on:click={() => {
+        dispatch('close')
+      }}
+    >
+      <div class="icon"><IconClose size={'small'} /></div>
+    </div>
   </div>
 </div>
 
@@ -92,7 +112,7 @@
     height: calc(100% - 32px - 1.25rem);
     background: var(--theme-bg-color);
     border-radius: 1.25rem;
-    box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
+    box-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(15px);
 
     .header {
@@ -118,9 +138,11 @@
 
     display: flex;
     flex-direction: column;
-    height: max-content;   
-    
-    .header { padding: 0 6rem 0 2.5rem; }
+    height: max-content;
+
+    .header {
+      padding: 0 6rem 0 2.5rem;
+    }
   }
 
   .fullSize {
@@ -128,7 +150,8 @@
     left: 1rem;
   }
 
-  .leftSection, .rightSection {
+  .leftSection,
+  .rightSection {
     flex-basis: 50%;
     width: 50%;
     min-height: 0;
@@ -142,7 +165,7 @@
       margin: 2.5rem 2rem 1.5rem;
       .content {
         flex-shrink: 0;
-        margin: .5rem .5rem 0;
+        margin: 0.5rem 0.5rem 0;
       }
     }
   }
@@ -160,7 +183,9 @@
       margin-left: 1rem;
       color: var(--theme-content-accent-color);
       cursor: pointer;
-      &:hover { color: var(--theme-caption-color); }
+      &:hover {
+        color: var(--theme-caption-color);
+      }
     }
   }
 
@@ -171,6 +196,6 @@
     width: 100%;
     height: 100%;
     background: var(--theme-menu-color);
-    opacity: .7;
+    opacity: 0.7;
   }
 </style>

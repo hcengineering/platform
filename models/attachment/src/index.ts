@@ -17,7 +17,7 @@ import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, Prop, UX, TypeString, TypeTimestamp } from '@anticrm/model'
 import type { Domain } from '@anticrm/core'
 import core, { TAttachedDoc } from '@anticrm/model-core'
-import type { Attachment } from '@anticrm/attachment'
+import type { Attachment, Photo } from '@anticrm/attachment'
 import activity from '@anticrm/activity'
 
 import view from '@anticrm/model-view'
@@ -46,8 +46,13 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   lastModified!: number
 }
 
+@Model(attachment.class.Photo, attachment.class.Attachment)
+@UX('Photo' as IntlString)
+export class TPhoto extends TAttachment implements Photo {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttachment)
+  console.log('START BUILD ATTACHMENT')
+  builder.createModel(TAttachment, TPhoto)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: attachment.component.AttachmentPresenter
@@ -55,6 +60,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributeEditor, {
     editor: attachment.component.Attachments
+  })
+
+  builder.mixin(attachment.class.Photo, core.class.Class, view.mixin.AttributeEditor, {
+    editor: attachment.component.Photos
   })
 
   builder.createDoc(

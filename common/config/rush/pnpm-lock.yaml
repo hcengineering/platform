@@ -36,6 +36,9 @@ specifiers:
   '@rush-temp/gmail-resources': file:./projects/gmail-resources.tgz
   '@rush-temp/image-cropper': file:./projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:./projects/image-cropper-resources.tgz
+  '@rush-temp/inventory': file:./projects/inventory.tgz
+  '@rush-temp/inventory-assets': file:./projects/inventory-assets.tgz
+  '@rush-temp/inventory-resources': file:./projects/inventory-resources.tgz
   '@rush-temp/lead': file:./projects/lead.tgz
   '@rush-temp/lead-assets': file:./projects/lead-assets.tgz
   '@rush-temp/lead-resources': file:./projects/lead-resources.tgz
@@ -51,6 +54,7 @@ specifiers:
   '@rush-temp/model-core': file:./projects/model-core.tgz
   '@rush-temp/model-demo': file:./projects/model-demo.tgz
   '@rush-temp/model-gmail': file:./projects/model-gmail.tgz
+  '@rush-temp/model-inventory': file:./projects/model-inventory.tgz
   '@rush-temp/model-lead': file:./projects/model-lead.tgz
   '@rush-temp/model-recruit': file:./projects/model-recruit.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
@@ -217,6 +221,9 @@ dependencies:
   '@rush-temp/gmail-resources': file:projects/gmail-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/image-cropper': file:projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:projects/image-cropper-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/inventory': file:projects/inventory.tgz
+  '@rush-temp/inventory-assets': file:projects/inventory-assets.tgz
+  '@rush-temp/inventory-resources': file:projects/inventory-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/lead': file:projects/lead.tgz
   '@rush-temp/lead-assets': file:projects/lead-assets.tgz
   '@rush-temp/lead-resources': file:projects/lead-resources.tgz_096c09b0b673a57c275d9767a12070b1
@@ -232,6 +239,7 @@ dependencies:
   '@rush-temp/model-core': file:projects/model-core.tgz_typescript@4.5.4
   '@rush-temp/model-demo': file:projects/model-demo.tgz_typescript@4.5.4
   '@rush-temp/model-gmail': file:projects/model-gmail.tgz_typescript@4.5.4
+  '@rush-temp/model-inventory': file:projects/model-inventory.tgz_typescript@4.5.4
   '@rush-temp/model-lead': file:projects/model-lead.tgz_typescript@4.5.4
   '@rush-temp/model-recruit': file:projects/model-recruit.tgz_typescript@4.5.4
   '@rush-temp/model-rig': file:projects/model-rig.tgz_37f79b97d0d86442e45d380c86f520c5
@@ -11436,6 +11444,82 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/inventory-assets.tgz:
+    resolution: {integrity: sha512-z58zb5383o9j4S1y3tBAYdcGXdI9IORHbh5w+z/lI2PnS41B+HK1JsIrlrep+XG/w+xyAWn3OHlw77VJMQEDNw==, tarball: file:projects/inventory-assets.tgz}
+    name: '@rush-temp/inventory-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/inventory-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-PiKSp7YMOeYnOnyDukPG1Qno6QmImWvc3qBJUY5ZKXiQyZWA9JpWqJm3WfoaprfoLVKCiSvqkA2r2XrqfIjJcQ==, tarball: file:projects/inventory-resources.tgz}
+    id: file:projects/inventory-resources.tgz
+    name: '@rush-temp/inventory-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
+      sass: 1.45.0
+      svelte: 3.44.3
+      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/inventory.tgz:
+    resolution: {integrity: sha512-gd3ZCKg7WVdifG6BWuXJhwBNgjdyaFyTaWdlH9e+gFI2a9M9HYeIVmYBWDC2X6QP6//G2yv6sykXytwVaMgqKw==, tarball: file:projects/inventory.tgz}
+    name: '@rush-temp/inventory'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   file:projects/lead-assets.tgz:
     resolution: {integrity: sha512-cRYB8PutP6HmaJjoEMLIEyMQEhKAQaCu0w2NJMF5TUW9vokia/22TXsHo1+xEGI1rx2epywbGXet/fL40tdbDw==, tarball: file:projects/lead-assets.tgz}
     name: '@rush-temp/lead-assets'
@@ -11580,7 +11664,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-oKPQz2zoE53ROTtb76Vp43+PatfI+CKrdq0sUleUVaKPfWw74BKTXmqSAkZU1PVnr/DaKY/Gnl9Eo9JrXOUiig==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-QqT4D4AgEQSvRi5epmizX6ipSCnOlaklFy5ne2rUIVJ1MU0cLgOfIXdCjkl47VTsT98JLOWSjv7y5X82bRGnHw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -11713,6 +11797,27 @@ packages:
     resolution: {integrity: sha512-c7TM2OxH/Xp/6Il6K2obdrOpl0CVmj7z1FTu94EVLYY6ZNICX184K4kegYm39FrigozEFQLORjaZCV9vRnbx1g==, tarball: file:projects/model-gmail.tgz}
     id: file:projects/model-gmail.tgz
     name: '@rush-temp/model-gmail'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-inventory.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-P+V2OydmT65gpPhJm85tPkIn5uLRKQmu2sMHg/1oRJLXKCeQz1wAgb5ZzlzmgbilrrfchcwYtJHyPANNcnBrdg==, tarball: file:projects/model-inventory.tgz}
+    id: file:projects/model-inventory.tgz
+    name: '@rush-temp/model-inventory'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -12154,7 +12259,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-7OeW4OKQlYw/FrF1rSmbwacpTXSVzNnIPCb/mIP/Q4Kc+uxroItvCRRYUqVH/V9u8W7nyTE7CjDM+KrADL/BAg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-aYcYW/uvTMNxOOsjG9io+pTV+pyk0a2CIsoJsF8tFnywgIBJb2X39Yj33nmjRvPpYdsaF4ujn0IdbK4IfM0kZw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

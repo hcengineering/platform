@@ -27,6 +27,7 @@ import { createModel as telegramModel } from '@anticrm/model-telegram'
 import { createModel as attachmentModel } from '@anticrm/model-attachment'
 import { createModel as leadModel } from '@anticrm/model-lead'
 import { createModel as gmailModel } from '@anticrm/model-gmail'
+import { createModel as inventoryModel } from '@anticrm/model-inventory'
 
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
@@ -50,6 +51,7 @@ settingModel(builder)
 telegramModel(builder)
 leadModel(builder)
 gmailModel(builder)
+inventoryModel(builder)
 
 serverCoreModel(builder)
 serverChunterModel(builder)
