@@ -15,9 +15,10 @@
 -->
 
 <script lang="ts">
-  import Person from './Person.svelte'
+import { Component } from '@anticrm/ui'
+import view from '@anticrm/view'
 
-  export let nodes: NodeListOf<any>
+export let nodes: NodeListOf<any>
 </script>
 
 {#if nodes}
@@ -62,7 +63,7 @@
       {:else if node.nodeName === 'A'}
         <a href={node.getAttribute('href')}><svelte:self nodes={node.childNodes}/></a>
       {:else if node.nodeName === 'SPAN'}
-        <Person objectId={node.getAttribute('data-id')} title={node.getAttribute('data-label')} />
+        <Component is={view.component.ObjectPresenter} props={{ objectId: node.getAttribute('data-id'), title: node.getAttribute('data-label'), _class: node.getAttribute('data-objectclass') }} />
       {:else}
         Unknown { node.nodeName }
       {/if}

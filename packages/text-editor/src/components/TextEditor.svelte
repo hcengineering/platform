@@ -21,9 +21,10 @@ import { Editor, Extension } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
-import Typography from '@tiptap/extension-typography'
+// import Typography from '@tiptap/extension-typography'
 import Placeholder from '@tiptap/extension-placeholder'
-import Mention from '@tiptap/extension-mention'
+// import Mention from '@tiptap/extension-mention'
+import { Completion } from '../Completion'
 
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './SvelteRenderer'
@@ -52,7 +53,7 @@ export function clear (): void {
 }
 
 const Handle = Extension.create({
-  addKeyboardShortcuts() {
+  addKeyboardShortcuts () {
     return {
       'Shift-Enter': () => {
         const res = this.editor.commands.splitListItem('listItem')
@@ -61,17 +62,17 @@ const Handle = Extension.create({
             () => commands.newlineInCode(),
             () => commands.createParagraphNear(),
             () => commands.liftEmptyBlock(),
-            () => commands.splitBlock(),
+            () => commands.splitBlock()
           ])
         }
         return true
       },
-      'Enter': () => {
+      Enter: () => {
         submit()
         return true
       }
     }
-  },
+  }
 })
 
 onMount(() => {
@@ -84,36 +85,36 @@ onMount(() => {
       Link,
       Handle, // order important
       // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
-      Placeholder.configure({placeholder: placeholder}),
-      Mention.configure({
+      Placeholder.configure({ placeholder: placeholder }),
+      Completion.configure({
         HTMLAttributes: {
-          class: 'mention',
+          class: 'reference'
         },
         suggestion: {
-          items: async query => {
-            const persons = await client.findAll(contact.class.Person, {})
-            return persons.filter(person => person.name.includes(query))
+          items: async (query: { query: string }) => {
+            const persons = await client.findAll(contact.class.Person, { name: { $like: `%${query.query}%` } }, { limit: 200 })
+            return persons.filter(person => person.name.includes(query.query))
           },
           render: () => {
             let component: any
 
             return {
-              onStart: props => {
-                component = new SvelteRenderer(MentionList, props)
+              onStart: (props:any) => {
+                component = new SvelteRenderer(MentionList, { ...props, close: () => { component.destroy() } })
               },
-              onUpdate(props) {
+              onUpdate (props:any) {
                 component.updateProps(props)
               },
-              onKeyDown(props) {
+              onKeyDown (props:any) {
                 return component.onKeyDown(props)
               },
-              onExit() {
+              onExit () {
                 component.destroy()
-              },
+              }
             }
-          },
-        },
-      }),
+          }
+        }
+      })
     ],
     onTransaction: () => {
       // force re-render so `editor.isActive` works as expected

@@ -12,6 +12,7 @@
     "Channel": "Channel",
     "EditUpdate": "Save...",
     "EditCancel": "Cancel",
-    "Comments" : "Comments"
+    "Comments" : "Comments",
+    "MentionedIn": "mentioned this "
   }
 }

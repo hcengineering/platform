@@ -38,10 +38,6 @@
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-core": "~0.6.1",
     "@anticrm/server-ws": "~0.6.11",
-    "@anticrm/server-chunter": "~0.6.1",
-    "@anticrm/server-chunter-resources": "~0.6.0",
-    "@anticrm/server-recruit": "~0.6.0",
-    "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/mongo": "~0.6.1",
     "@anticrm/elastic": "~0.6.0",
     "elastic-apm-node": "~3.26.0"

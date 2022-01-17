@@ -39,8 +39,6 @@ import core, {
 import { createElasticAdapter } from '@anticrm/elastic'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
-import { addLocation } from '@anticrm/platform'
-import { serverChunterId } from '@anticrm/server-chunter'
 import {
   createServerStorage,
   DbAdapter,
@@ -49,7 +47,6 @@ import {
   IndexedDoc,
   TxAdapter
 } from '@anticrm/server-core'
-import { serverRecruitId } from '@anticrm/server-recruit'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -102,8 +99,6 @@ export class ElasticTool {
   storage!: ServerStorage
   db!: Db
   constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
-    addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-    addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 
@@ -171,8 +166,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
   const done = await tool.connect()
   try {
-    const txes = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
-    const data = txes.filter((tx) => tx.objectSpace !== core.space.Model)
+    const data = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
     const m = newMetrics()
     const metricsCtx = new MeasureMetricsContext('elastic', {}, m)
     console.log('replay elastic transactions', data.length)

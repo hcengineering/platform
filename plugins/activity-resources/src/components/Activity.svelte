@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
-  import chunter from '@anticrm/chunter'
+  import { CommentInput } from '@anticrm/chunter-resources'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { ReferenceInput } from '@anticrm/text-editor'
@@ -41,10 +41,6 @@
     },
     SortingOrder.Descending
   )
-
-  function onMessage (event: CustomEvent) {
-    client.addCollection(chunter.class.Comment, object.space, object._id, object._class, 'comments', { message: event.detail })
-  }
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
@@ -72,7 +68,9 @@
       {/if}
     </ScrollBox>
   </div>
-  <div class="ref-input" class:transparent><ReferenceInput on:message={onMessage} /></div>
+  <div class="ref-input" class:transparent>
+    <CommentInput bind:object/>
+  </div>
 {:else}
   <div class="unionSection">
     <ScrollBox vertical stretch noShift>
@@ -93,7 +91,9 @@
         {/if}
       </div>
     </ScrollBox>
-    <div class="ref-input"><ReferenceInput on:message={onMessage} /></div>
+    <div class="ref-input">
+      <CommentInput bind:object/>
+    </div>
   </div>
 {/if}
 

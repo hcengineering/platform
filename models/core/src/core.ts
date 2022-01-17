@@ -89,7 +89,7 @@ export class TInterface extends TDoc implements Interface<Doc> {
   extends?: Ref<Interface<Doc>>[]
 }
 
-@Model(core.class.Attribute, core.class.Doc)
+@Model(core.class.Attribute, core.class.Doc, DOMAIN_MODEL)
 export class TAttribute extends TDoc implements AnyAttribute {
   attributeOf!: Ref<Class<Obj>>
   name!: string

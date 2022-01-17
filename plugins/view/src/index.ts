@@ -160,6 +160,9 @@ const view = plugin(viewId, {
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
   },
+  component: {
+    ObjectPresenter: '' as AnyComponent
+  },
   icon: {
     Table: '' as Asset,
     Delete: '' as Asset,

@@ -15,15 +15,11 @@
 //
 
 import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx, TxResult } from '@anticrm/core'
-import { start as startJsonRpc } from '@anticrm/server-ws'
-import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { createElasticAdapter } from '@anticrm/elastic'
+import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
+import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
 import { createServerStorage } from '@anticrm/server-core'
-import type { DbConfiguration, DbAdapter } from '@anticrm/server-core'
-
-import { addLocation } from '@anticrm/platform'
-import { serverChunterId } from '@anticrm/server-chunter'
-import { serverRecruitId } from '@anticrm/server-recruit'
+import { start as startJsonRpc } from '@anticrm/server-ws'
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
@@ -41,9 +37,6 @@ async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string,
  * @public
  */
 export function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): () => void {
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-  addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
-
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {
       domains: {

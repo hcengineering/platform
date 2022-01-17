@@ -30,6 +30,7 @@ import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
 import EditDoc from './components/EditDoc.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
+import ObjectPresenter from './components/ObjectPresenter.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter, LoadingProps } from './utils'
@@ -69,6 +70,7 @@ export default async (): Promise<Resources> => ({
     TimestampPresenter,
     DateEditor,
     DatePresenter,
-    RolePresenter
+    RolePresenter,
+    ObjectPresenter
   }
 })

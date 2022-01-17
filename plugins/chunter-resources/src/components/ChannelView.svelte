@@ -20,15 +20,19 @@
 
   import Channel from './Channel.svelte'
   import { ReferenceInput } from '@anticrm/text-editor'
+  import { createBacklinks } from '../backlinks'
 
   export let space: Ref<Space>
 
   const client = getClient()
 
-  function onMessage(event: CustomEvent) {
-    client.createDoc(chunter.class.Message, space, {
+  async function onMessage (event: CustomEvent) {
+    const msgRef = await client.createDoc(chunter.class.Message, space, {
       content: event.detail
     })
+  
+    // Create an backlink to document
+    await createBacklinks(client, space, chunter.class.Channel, msgRef, event.detail)
   }
 </script>
 

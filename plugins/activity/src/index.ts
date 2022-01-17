@@ -28,6 +28,10 @@ export interface TxViewlet extends Doc {
   txClass: Ref<Class<Tx>>
   // Component to display on.
   component?: AnyComponent
+
+  // If defined, will be added to label displayed
+  labelComponent?: AnyComponent
+
   // Filter
   match?: DocumentQuery<Tx>
 
