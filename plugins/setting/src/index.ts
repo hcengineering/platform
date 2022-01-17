@@ -56,6 +56,8 @@ export default plugin(settingId, {
     IntegrationType: '' as Ref<Class<IntegrationType>>
   },
   component: {
+    Profile: '' as AnyComponent,
+    Password: '' as AnyComponent,
     Setting: '' as AnyComponent,
     Integrations: '' as AnyComponent,
     ManageStatuses: '' as AnyComponent,
@@ -75,9 +77,15 @@ export default plugin(settingId, {
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
     Add: '' as IntlString,
-    LearnMore: '' as IntlString
+    LearnMore: '' as IntlString,
+    EditProfile: '' as IntlString,
+    ChangePassword: '' as IntlString,
+    CurrentPassword: '' as IntlString,
+    NewPassword: '' as IntlString
   },
   icon: {
+    EditProfile: '' as Asset,
+    Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,
     Support: '' as Asset,

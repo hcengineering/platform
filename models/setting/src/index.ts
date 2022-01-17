@@ -44,50 +44,67 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 export function createModel (builder: Builder): void {
   builder.createModel(TIntegration, TIntegrationType)
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: setting.string.Setting,
-    icon: setting.icon.Setting,
-    hidden: true,
-    navigatorModel: {
-      specials: [
-        {
-          id: 'setting',
-          label: setting.string.Setting,
-          icon: setting.icon.Setting,
-          component: setting.component.Setting
-        },
-        {
-          id: 'integrations',
-          label: setting.string.Integrations,
-          icon: setting.icon.Integrations,
-          component: setting.component.Integrations
-        },
-        {
-          id: 'statuses',
-          label: setting.string.ManageStatuses,
-          icon: task.icon.ManageStatuses,
-          component: setting.component.ManageStatuses
-        },
-        {
-          id: 'support',
-          label: setting.string.Support,
-          icon: setting.icon.Support,
-          component: setting.component.Support
-        },
-        {
-          id: 'privacy',
-          label: setting.string.Privacy,
-          icon: setting.icon.Privacy,
-          component: setting.component.Privacy
-        },
-        {
-          id: 'terms',
-          label: setting.string.Terms,
-          icon: setting.icon.Terms,
-          component: setting.component.Terms
-        }
-      ],
-      spaces: []
-    }
-  }, setting.ids.SettingApp)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: setting.string.Setting,
+      icon: setting.icon.Setting,
+      hidden: true,
+      navigatorModel: {
+        specials: [
+          {
+            id: 'profile',
+            label: setting.string.EditProfile,
+            icon: setting.icon.EditProfile,
+            component: setting.component.Profile
+          },
+          {
+            id: 'password',
+            label: setting.string.ChangePassword,
+            icon: setting.icon.Password,
+            component: setting.component.Password
+          },
+          {
+            id: 'setting',
+            label: setting.string.Setting,
+            icon: setting.icon.Setting,
+            component: setting.component.Setting
+          },
+          {
+            id: 'integrations',
+            label: setting.string.Integrations,
+            icon: setting.icon.Integrations,
+            component: setting.component.Integrations
+          },
+          {
+            id: 'statuses',
+            label: setting.string.ManageStatuses,
+            icon: task.icon.ManageStatuses,
+            component: setting.component.ManageStatuses
+          },
+          {
+            id: 'support',
+            label: setting.string.Support,
+            icon: setting.icon.Support,
+            component: setting.component.Support
+          },
+          {
+            id: 'privacy',
+            label: setting.string.Privacy,
+            icon: setting.icon.Privacy,
+            component: setting.component.Privacy
+          },
+          {
+            id: 'terms',
+            label: setting.string.Terms,
+            icon: setting.icon.Terms,
+            component: setting.component.Terms
+          }
+        ],
+        spaces: []
+      }
+    },
+    setting.ids.SettingApp
+  )
 }

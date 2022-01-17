@@ -6,11 +6,13 @@
     "Support": "Support",
     "Privacy": "Privacy",
     "Terms": "Terms",
-
+    "EditProfile": "Edit profile",
     "Folders": "Folders",
     "Templates": "Templates",
     "Delete": "Delete",
-
+    "ChangePassword": "Change password",
+    "CurrentPassword": "Current password",
+    "NewPassword": "New password",
     "Disconnect": "Disconnect",
     "Add": "Add",
     "LearnMore": "Learn more"

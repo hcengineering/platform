@@ -416,6 +416,70 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
 /**
  * @public
  */
+export async function changePassword (db: Db, token: string, oldPassword: string, password: string): Promise<void> {
+  const { email } = decode(token, getSecret())
+  const account = await getAccountInfo(db, email, oldPassword)
+
+  const salt = randomBytes(32)
+  const hash = hashWithSalt(password, salt)
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+}
+
+/**
+ * @public
+ */
+export async function changeName (db: Db, token: string, first: string, last: string): Promise<void> {
+  const { email } = decode(token, getSecret())
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+
+  await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { first, last } })
+  account.first = first
+  account.last = last
+
+  const workspaces = await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .find({ _id: { $in: account.workspaces } })
+    .toArray()
+
+  const promises: Promise<void>[] = []
+  for (const ws of workspaces) {
+    promises.push(updateEmployeeAccount(account, ws.workspace))
+  }
+  await Promise.all(promises)
+}
+
+async function updateEmployeeAccount (account: Account, workspace: string): Promise<void> {
+  const connection = await connect(getTransactor(), workspace, account.email)
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+
+    const name = combineName(account.first, account.last)
+
+    const employeeAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
+    if (employeeAccount === undefined) return
+
+    await ops.update(employeeAccount, {
+      name
+    })
+
+    const employee = await ops.findOne(contact.class.Employee, { _id: employeeAccount.employee })
+    if (employee === undefined) return
+
+    await ops.update(employee, {
+      name
+    })
+  } finally {
+    await connection.close()
+  }
+}
+
+/**
+ * @public
+ */
 export async function removeWorkspace (db: Db, email: string, workspace: string): Promise<void> {
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
 
@@ -483,7 +547,9 @@ export const methods = {
   createWorkspace: wrap(createUserWorkspace),
   assignWorkspace: wrap(assignWorkspace),
   removeWorkspace: wrap(removeWorkspace),
-  listWorkspaces: wrap(listWorkspaces)
+  listWorkspaces: wrap(listWorkspaces),
+  changeName: wrap(changeName),
+  changePassword: wrap(changePassword)
   // updateAccount: wrap(updateAccount)
 }
 

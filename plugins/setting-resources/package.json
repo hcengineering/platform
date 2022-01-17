@@ -35,10 +35,13 @@
     "@anticrm/core": "~0.6.11",
     "svelte": "^3.37.0",
     "@anticrm/setting": "~0.6.0",
+    "@anticrm/contact": "~0.6.2",
+    "@anticrm/attachment": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
+    "@anticrm/login-resources": "~0.6.2",
     "@anticrm/task": "~0.6.0",
     "@anticrm/task-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.1"
