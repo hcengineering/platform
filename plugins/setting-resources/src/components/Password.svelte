@@ -20,21 +20,21 @@
   let oldPassword: string = ''
   let password: string = ''
   let password2: string = ''
-  let label = 'Save'
+  let label = setting.string.Save
   let saved = false
 
   $: disabled =
     password.length === 0 || oldPassword.length === 0 || oldPassword === password || password !== password2 || saved
 
   async function save (): Promise<void> {
-    label = 'Progress...'
+    label = setting.string.Saving
     saved = true
     try {
       await changePassword(oldPassword, password)
-      label = 'Saved'
+      label = setting.string.Saved
     } catch (e) {
       console.log(e)
-      label = 'Save'
+      label = setting.string.Save
       saved = false
     }
   }

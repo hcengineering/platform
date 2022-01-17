@@ -14,6 +14,9 @@
     "CurrentPassword": "Current password",
     "NewPassword": "New password",
     "Disconnect": "Disconnect",
+    "Save": "Save",
+    "Saving": "Saving...",
+    "Saved": "Saved",
     "Add": "Add",
     "LearnMore": "Learn more"
   }
