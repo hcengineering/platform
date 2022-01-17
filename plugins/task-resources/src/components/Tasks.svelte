@@ -53,7 +53,7 @@
   {#if tasks.length > 0}
     <Table 
       _class={task.class.Issue}
-      config={['', '$lookup.space.name', '$lookup.state']} 
+      config={['', '$lookup.space.name', '$lookup.state']}
       {options}
       query={ { attachedTo: objectId } }
     />
