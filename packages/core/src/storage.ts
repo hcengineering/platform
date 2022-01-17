@@ -48,7 +48,14 @@ export type DocumentQuery<T extends Doc> = {
 /**
  * @public
  */
-export type Refs<T extends Doc> = Partial<Pick<T, KeysByType<T, Ref<Doc>>>>
+export type ToClassRef<T extends object> = {
+  [P in keyof T]?: T[P] extends Ref<infer X> ? Ref<Class<X>> : never
+}
+
+/**
+ * @public
+ */
+export type Refs<T extends Doc> = ToClassRef<Pick<T, KeysByType<T, Ref<Doc>>>>
 
 /**
  * @public
