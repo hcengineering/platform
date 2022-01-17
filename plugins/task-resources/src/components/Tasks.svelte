@@ -37,7 +37,6 @@
   const createApp = (ev: MouseEvent): void =>
     showPopup(CreateTask, { parent: { _id: objectId, _class, space } }, ev.target as HTMLElement, () => {})
 
-  const config = ['', '$lookup.space.name', '$lookup.state']
   const options: FindOptions<Issue> = {
     lookup: {
       state: task.class.State,
@@ -54,7 +53,7 @@
   {#if tasks.length > 0}
     <Table 
       _class={task.class.Issue}
-      {config}
+      config={['', '$lookup.space.name', '$lookup.state']} 
       {options}
       query={ { attachedTo: objectId } }
     />
