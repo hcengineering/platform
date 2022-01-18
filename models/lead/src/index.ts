@@ -27,7 +27,7 @@ import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
-import type { } from '@anticrm/view'
+import type {} from '@anticrm/view'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -118,7 +118,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -140,7 +139,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
     descriptor: task.viewlet.Kanban,
-    open: contact.component.EditContact,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

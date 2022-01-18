@@ -87,10 +87,13 @@ export function createModel (builder: Builder): void {
     editor: inventory.component.Variants
   })
 
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ObjectEditor, {
+    editor: inventory.component.EditProduct
+  })
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,
-    open: inventory.component.EditProduct,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

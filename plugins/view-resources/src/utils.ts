@@ -14,13 +14,25 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Class, Client, Collection, Doc, FindOptions, FindResult, Obj, Ref, TxOperations, matchQuery } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Class,
+  Client,
+  Collection,
+  Doc,
+  FindOptions,
+  FindResult,
+  Obj,
+  Ref,
+  TxOperations,
+  matchQuery
+} from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass } from '@anticrm/presentation'
 import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
-import { ErrorPresenter } from '@anticrm/ui'
+import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
 
 /**
  * Define some properties to be used to show component until data is properly loaded.
@@ -32,7 +44,11 @@ export interface LoadingProps {
 /**
  * @public
  */
-export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>>, preserveKey: BuildModelKey): Promise<AttributeModel> {
+export async function getObjectPresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  preserveKey: BuildModelKey
+): Promise<AttributeModel> {
   const clazz = client.getHierarchy().getClass(_class)
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
   if (presenterMixin.presenter === undefined) {
@@ -44,9 +60,8 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
-  const sortingKey = clazz.sortingKey !== undefined
-    ? (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey)
-    : key
+  const sortingKey =
+    clazz.sortingKey !== undefined ? (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) : key
   return {
     key: preserveKey.key,
     _class,
@@ -56,7 +71,12 @@ export async function getObjectPresenter (client: Client, _class: Ref<Class<Obj>
   }
 }
 
-async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, key: string, preserveKey: BuildModelKey): Promise<AttributeModel> {
+async function getAttributePresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: string,
+  preserveKey: BuildModelKey
+): Promise<AttributeModel> {
   const attribute = client.getHierarchy().getAttribute(_class, key)
   let attrClass = getAttributePresenterClass(attribute)
   const clazz = client.getHierarchy().getClass(attrClass)
@@ -84,7 +104,13 @@ async function getAttributePresenter (client: Client, _class: Ref<Class<Obj>>, k
   }
 }
 
-async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: BuildModelKey, preserveKey: BuildModelKey, options?: FindOptions<Doc>): Promise<AttributeModel> {
+async function getPresenter (
+  client: Client,
+  _class: Ref<Class<Obj>>,
+  key: BuildModelKey,
+  preserveKey: BuildModelKey,
+  options?: FindOptions<Doc>
+): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
     return {
@@ -122,30 +148,37 @@ async function getPresenter (client: Client, _class: Ref<Class<Obj>>, key: Build
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
   console.log('building table model for', options)
   // eslint-disable-next-line array-callback-return
-  const model = options.keys.map(key => typeof key === 'string' ? { key: key } : key).map(async key => {
-    try {
-      return await getPresenter(options.client, options._class, key, key, options.options)
-    } catch (err: any) {
-      if ((options.ignoreMissing ?? false)) {
-        return undefined
+  const model = options.keys
+    .map((key) => (typeof key === 'string' ? { key: key } : key))
+    .map(async (key) => {
+      try {
+        return await getPresenter(options.client, options._class, key, key, options.options)
+      } catch (err: any) {
+        if (options.ignoreMissing ?? false) {
+          return undefined
+        }
+        const stringKey = key.label ?? key.key
+        console.error('Failed to find presenter for', key, err)
+        const errorPresenter: AttributeModel = {
+          key: '',
+          sortingKey: '',
+          presenter: ErrorPresenter,
+          label: stringKey as IntlString,
+          _class: core.class.TypeString,
+          props: { error: err }
+        }
+        return errorPresenter
       }
-      const stringKey = key.label ?? key.key
-      console.error('Failed to find presenter for', key, err)
-      const errorPresenter: AttributeModel = {
-        key: '',
-        sortingKey: '',
-        presenter: ErrorPresenter,
-        label: stringKey as IntlString,
-        _class: core.class.TypeString,
-        props: { error: err }
-      }
-      return errorPresenter
-    }
-  })
-  return (await Promise.all(model)).filter(a => a !== undefined) as AttributeModel[]
+    })
+  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
 }
 
-function filterActions (client: Client, doc: Doc, targets: ActionTarget[], derived: Ref<Class<Doc>> = core.class.Doc): Array<Ref<Action>> {
+function filterActions (
+  client: Client,
+  doc: Doc,
+  targets: ActionTarget[],
+  derived: Ref<Class<Doc>> = core.class.Doc
+): Array<Ref<Action>> {
   const result: Array<Ref<Action>> = []
   const hierarchy = client.getHierarchy()
   for (const target of targets) {
@@ -170,7 +203,11 @@ function filterActions (client: Client, doc: Doc, targets: ActionTarget[], deriv
  * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
  * we won't recieve Doc contribution but recieve Space ones.
  */
-export async function getActions (client: Client, doc: Doc, derived: Ref<Class<Doc>> = core.class.Doc): Promise<FindResult<Action>> {
+export async function getActions (
+  client: Client,
+  doc: Doc,
+  derived: Ref<Class<Doc>> = core.class.Doc
+): Promise<FindResult<Action>> {
   const targets = await client.findAll(view.class.ActionTarget, {})
   return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, doc, targets, derived) } })
 }
@@ -183,14 +220,24 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
       const collection = attribute.type as Collection<AttachedDoc>
       const allAttached = await client.findAll(collection.of, { attachedTo: object._id })
       for (const attached of allAttached) {
-        deleteObject(client, attached).catch(err => console.log('failed to delete', name, err))
+        deleteObject(client, attached).catch((err) => console.log('failed to delete', name, err))
       }
     }
   }
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
-    client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
+    client
+      .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
+      .catch((err) => console.error(err))
   } else {
-    client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
+    client.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
   }
+}
+
+export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
+  const color = getPlatformColorForText(id as string)
+  return `
+    background: ${color + (selected ? 'ff' : '33')};
+    border: 1px solid ${color + (selected ? '0f' : '66')};
+  `
 }

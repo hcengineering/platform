@@ -14,16 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact } from '@anticrm/contact'
-  import { ClassifierKind, Doc, Mixin } from '@anticrm/core'
+  import { Class, ClassifierKind, Doc, Mixin, Ref } from '@anticrm/core'
   import {
     getClient
   } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
-  import contact from '../plugin'
   import { getMixinStyle } from '../utils'
 
-  export let value: Contact
+  export let value: Doc
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -31,8 +29,20 @@
   let mixins: Mixin<Doc>[] = []
 
   $: if (value !== undefined) {
+    const baseDomain = hierarchy.getDomain(value._class)
+    const ancestors = hierarchy.getAncestors(value._class)
+    let parentClass: Ref<Class<Doc>> = value._class
+    for (const ancestor of ancestors) {
+      try {
+        const domain = hierarchy.getClass(ancestor).domain
+        if (domain === baseDomain) {
+          parentClass = ancestor
+        }
+      } catch {}
+    }
+
     mixins = hierarchy
-      .getDescendants(contact.class.Contact)
+      .getDescendants(parentClass)
       .filter((m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(value, m))
       .map((m) => hierarchy.getClass(m) as Mixin<Doc>)
   }

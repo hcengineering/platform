@@ -20,9 +20,8 @@
   import type { WithLookup } from '@anticrm/core'
   import type { Lead } from '@anticrm/lead'
   import { ActionIcon, IconMoreH, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ContextMenu, EditDoc } from '@anticrm/view-resources'
   import lead from '../plugin'
-  import { EditTask } from '@anticrm/task-resources'
 
   export let object: WithLookup<Lead>
   export let draggable: boolean
@@ -32,7 +31,7 @@
   }
 
   function showLead () {
-    showPopup(EditTask, { _id: object._id }, 'full')
+    showPopup(EditDoc, { _id: object._id, _class: object._class }, 'full')
   }
 </script>
 

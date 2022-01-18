@@ -28,10 +28,12 @@ import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
+import EditDoc from './components/EditDoc.svelte'
+import RolePresenter from './components/RolePresenter.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView }
+export { Table, TableView, EditDoc }
 
 function Delete (object: Doc): void {
   showPopup(
@@ -66,6 +68,7 @@ export default async (): Promise<Resources> => ({
     TableView,
     TimestampPresenter,
     DateEditor,
-    DatePresenter
+    DatePresenter,
+    RolePresenter
   }
 })
