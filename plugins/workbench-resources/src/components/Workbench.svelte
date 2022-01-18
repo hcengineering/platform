@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Client, Ref, Space } from '@anticrm/core'
+  import { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
@@ -38,6 +38,7 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
 
   export let client: Client
 
@@ -107,6 +108,21 @@
     visibileNav = !visibileNav
     closeTooltip()
   }
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
+  const accountQ = createQuery()
+  const employeeQ = createQuery()
+  $: accountQ.query(contact.class.EmployeeAccount, {
+    _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+  }, (res) => {
+    account = res[0]
+  }, { limit: 1 })
+
+  $: account && employeeQ.query(contact.class.Employee, {
+    _id: account.employee
+  }, (res) => {
+    employee = res[0]
+  }, { limit: 1 })
 </script>
 
 {#if client}
@@ -139,7 +155,9 @@
             showPopup(AccountPopup, {}, 'account')
           }}
         >
-          <Avatar size={'medium'} />
+          {#if employee}
+            <Avatar avatar={employee.avatar} size={'medium'} />
+          {/if}
         </div>
       </div>
     </div>

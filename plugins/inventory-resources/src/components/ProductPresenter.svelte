@@ -16,14 +16,14 @@
 <script lang="ts">
   import { Product } from '@anticrm/inventory'
   import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
-  import EditProduct from './EditProduct.svelte'
   import inventory from '../plugin'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Product
 
   function show () {
     closeTooltip()
-    showPopup(EditProduct, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

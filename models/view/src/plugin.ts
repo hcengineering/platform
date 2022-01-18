@@ -36,6 +36,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
-    TableView: '' as AnyComponent
+    TableView: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent
   }
 })

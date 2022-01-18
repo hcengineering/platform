@@ -17,7 +17,7 @@
   import type { Applicant } from '@anticrm/recruit'
   import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
-  import { EditTask } from '@anticrm/task-resources'
+  import { EditDoc } from '@anticrm/view-resources'
   import recruit from '@anticrm/recruit'
 
   export let value: Applicant
@@ -27,7 +27,7 @@
 
   function show () {
     closeTooltip()
-    showPopup(EditTask, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

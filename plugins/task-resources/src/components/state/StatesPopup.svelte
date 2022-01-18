@@ -17,6 +17,7 @@
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
+  import { getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getPlatformColor } from '@anticrm/ui'
 

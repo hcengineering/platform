@@ -50,9 +50,9 @@
       _class={contact.class.Contact}
       title={lead.string.Customer}
       caption={lead.string.SelectCustomer}
-      bind:value={object.customer}
+      bind:value={object.attachedTo}
       on:change={() => {
-        change('customer', object.customer)
+        change('attachedTo', object.attachedTo)
       }}
     />
   </Grid>

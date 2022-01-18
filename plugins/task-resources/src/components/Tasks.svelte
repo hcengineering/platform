@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, Doc, Class } from '@anticrm/core'
+  import type { Ref, Space, Doc, Class, FindOptions } from '@anticrm/core'
   import type { Issue } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
@@ -36,6 +36,13 @@
 
   const createApp = (ev: MouseEvent): void =>
     showPopup(CreateTask, { parent: { _id: objectId, _class, space } }, ev.target as HTMLElement, () => {})
+
+  const options: FindOptions<Issue> = {
+    lookup: {
+      state: task.class.State,
+      space: core.class.Space
+    }
+  }
 </script>
 
 <div class="applications-container">
@@ -47,14 +54,7 @@
     <Table 
       _class={task.class.Issue}
       config={['', '$lookup.space.name', '$lookup.state']}
-      options={
-        {
-          lookup: {
-            state: task.class.State,
-            space: core.class.Space
-          }
-        }
-      }
+      {options}
       query={ { attachedTo: objectId } }
     />
   {:else}

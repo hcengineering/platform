@@ -17,13 +17,13 @@
   import type { Lead } from '@anticrm/lead'
   import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import lead from '../plugin'
-  import { EditTask } from '@anticrm/task-resources'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Lead
 
   function show () {
     closeTooltip()
-    showPopup(EditTask, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

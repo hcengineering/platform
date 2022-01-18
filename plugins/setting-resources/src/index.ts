@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+import { Resources } from '@anticrm/platform'
+import Profile from './components/Profile.svelte'
+import Password from './components/Password.svelte'
 import Setting from './components/Setting.svelte'
 import Integrations from './components/Integrations.svelte'
 import ManageStatuses from './components/statuses/ManageStatuses.svelte'
@@ -20,8 +23,10 @@ import Support from './components/Support.svelte'
 import Privacy from './components/Privacy.svelte'
 import Terms from './components/Terms.svelte'
 
-export default async () => ({
+export default async (): Promise<Resources> => ({
   component: {
+    Profile,
+    Password,
     Setting,
     Integrations,
     Support,

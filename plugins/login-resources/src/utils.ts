@@ -114,7 +114,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
   }
 
   const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = getMetadata(login.metadata.LoginEmail) ?? ''
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
@@ -163,12 +163,14 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [{
-        _id: '' as any,
-        workspace: 'DEV WORKSPACE',
-        organisation: '',
-        accounts: []
-      }]
+      return [
+        {
+          _id: '' as any,
+          workspace: 'DEV WORKSPACE',
+          organisation: '',
+          accounts: []
+        }
+      ]
     }
   }
 
@@ -211,7 +213,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Logi
   }
 
   const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = getMetadata(login.metadata.LoginEmail) ?? ''
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
@@ -360,4 +362,66 @@ export async function signUpJoin (
   } catch (err) {
     return [unknownError(err), undefined]
   }
+}
+
+export async function changeName (first: string, last: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return
+    }
+  }
+  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+
+  const request: Request<[string, string]> = {
+    method: 'changeName',
+    params: [first, last]
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: serialize(request)
+  })
+}
+
+export async function changePassword (oldPassword: string, password: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return
+    }
+  }
+  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+
+  const request: Request<[string, string]> = {
+    method: 'changePassword',
+    params: [oldPassword, password]
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: serialize(request)
+  })
 }

@@ -13,13 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { State } from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
 
   export let value: State
-
 </script>
 
 {#if value}
@@ -30,15 +28,15 @@
 
 <style lang="scss">
   .state-container {
-    padding: .25rem .5rem;
+    padding: 0.25rem 0.5rem;
     width: 6.25rem;
     max-width: 6.25rem;
     text-transform: uppercase;
     text-align: center;
-    letter-spacing: .5px;
-    font-size: .625rem;
+    letter-spacing: 0.5px;
+    font-size: 0.625rem;
     color: #fff;
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
   }
 </style>
