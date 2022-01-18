@@ -31,7 +31,6 @@
       <Component is={viewlet.$lookup?.descriptor?.component} props={ {
         _class,
         space,
-        open: viewlet.open,
         options: viewlet.options, 
         config: viewlet.config,
         search

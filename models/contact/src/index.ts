@@ -138,7 +138,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditPerson,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
     config: [

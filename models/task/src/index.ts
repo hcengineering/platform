@@ -294,7 +294,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: view.viewlet.Table,
-    open: task.component.EditIssue,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -326,7 +325,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: task.viewlet.Kanban,
-    open: task.component.EditIssue,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

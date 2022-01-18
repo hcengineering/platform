@@ -94,7 +94,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,
-    open: inventory.component.EditProduct,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

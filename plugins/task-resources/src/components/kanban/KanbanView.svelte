@@ -30,7 +30,6 @@
 
   export let _class: Ref<Class<Item>>
   export let space: Ref<SpaceWithStates>
-  export let open: AnyComponent
   export let search: string
   export let options: FindOptions<Item> | undefined
   export let config: string[]

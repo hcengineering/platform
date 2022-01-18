@@ -72,7 +72,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: chunter.class.Message,
     descriptor: chunter.viewlet.Chat,
-    open: 'X' as AnyComponent,
     config: {}
   })
 
