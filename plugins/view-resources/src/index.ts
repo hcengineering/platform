@@ -44,9 +44,9 @@ function Delete (object: Doc): void {
       message: 'Do you want to delete this object?'
     },
     undefined,
-    (result) => {
-      if (result) {
-        deleteObject(getClient(), object)
+    (result?: boolean) => {
+      if (result === true) {
+        deleteObject(getClient(), object).catch(err => console.error(err))
       }
     }
   )

@@ -21,18 +21,16 @@ import core, {
   Collection,
   Doc,
   FindOptions,
-  FindResult,
-  Obj,
+  FindResult, Hierarchy, matchQuery, Obj,
   Ref,
-  TxOperations,
-  matchQuery
+  TxOperations
 } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass } from '@anticrm/presentation'
-import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
-import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
+import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
+import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 
 /**
  * Define some properties to be used to show component until data is properly loaded.
@@ -220,17 +218,28 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
       const collection = attribute.type as Collection<AttachedDoc>
       const allAttached = await client.findAll(collection.of, { attachedTo: object._id })
       for (const attached of allAttached) {
-        deleteObject(client, attached).catch((err) => console.log('failed to delete', name, err))
+        await deleteObject(client, attached).catch(err => console.log('failed to delete', name, err))
       }
     }
   }
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
-    client
-      .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
-      .catch((err) => console.error(err))
+    await client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
   } else {
-    client.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+    await client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
+  }
+
+  await deleteRelatedDocuments(hierarchy, object, client)
+}
+async function deleteRelatedDocuments (hierarchy: Hierarchy, object: Doc, client: TxOperations): Promise<void> {
+  const objectClass = hierarchy.getClass(object._class)
+  if (hierarchy.hasMixin(objectClass, view.mixin.ObjectDDParticipant)) {
+    const removeParticipand: ObjectDDParticipant = hierarchy.as(objectClass, view.mixin.ObjectDDParticipant)
+    const collector = await getResource(removeParticipand.collectDocs)
+    const docs = await collector(object, client)
+    for (const d of docs) {
+      await deleteObject(client, d)
+    }
   }
 }
 

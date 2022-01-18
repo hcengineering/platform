@@ -22,6 +22,7 @@ import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
+import { ObjectDDParticipant } from '@anticrm/view'
 import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
@@ -111,6 +112,10 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.CommentPresenter
   })
 
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, view.mixin.ObjectDDParticipant, {
+    collectDocs: chunter.action.CommentRemove
+  })
+
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: chunter.class.Comment,
     icon: chunter.icon.Chunter,
@@ -140,8 +145,17 @@ export function createModel (builder: Builder): void {
     labelComponent: chunter.activity.TxBacklinkReference,
     display: 'content',
     editable: false,
-    hideOnRemove: false
+    hideOnRemove: true
   }, chunter.ids.TxCommentCreate)
+
+  // We need to define this one, to hide default attached object removed case
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: chunter.class.Backlink,
+    icon: chunter.icon.Chunter,
+    txClass: core.class.TxRemoveDoc,
+    display: 'inline',
+    hideOnRemove: true
+  }, chunter.ids.TxBacklinkRemove)
 }
 
 export default chunter

@@ -14,16 +14,16 @@
 //
 
 import { Resources } from '@anticrm/platform'
-
-import CreateChannel from './components/CreateChannel.svelte'
-import ChannelView from './components/ChannelView.svelte'
-import CommentPresenter from './components/CommentPresenter.svelte'
-import CommentsPresenter from './components/CommentsPresenter.svelte'
-import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
+import { collectBacklinks } from './backlinks'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
-import CommentInput from './components/CommentInput.svelte'
+import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
+import ChannelView from './components/ChannelView.svelte'
+import CommentInput from './components/CommentInput.svelte'
+import CommentPresenter from './components/CommentPresenter.svelte'
+import CommentsPresenter from './components/CommentsPresenter.svelte'
+import CreateChannel from './components/CreateChannel.svelte'
 
 export { CommentsPresenter, CommentInput }
 
@@ -39,5 +39,8 @@ export default async (): Promise<Resources> => ({
     TxCommentCreate,
     TxBacklinkCreate,
     TxBacklinkReference
+  },
+  action: {
+    CommentRemove: collectBacklinks
   }
 })
