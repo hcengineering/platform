@@ -19,7 +19,6 @@ import type { Ref, Doc, Class, Domain } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import core, { TSpace, TDoc, TAttachedDoc } from '@anticrm/model-core'
 import type { Backlink, Channel, Message, Comment } from '@anticrm/chunter'
-import type { AnyComponent } from '@anticrm/ui'
 import activity from '@anticrm/activity'
 
 import workbench from '@anticrm/model-workbench'
