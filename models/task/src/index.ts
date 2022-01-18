@@ -20,7 +20,20 @@ import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Implements, Mixin, Model, Prop, Hidden, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import {
+  Builder,
+  Collection,
+  Implements,
+  Mixin,
+  Model,
+  Prop,
+  Hidden,
+  TypeBoolean,
+  TypeDate,
+  TypeRef,
+  TypeString,
+  UX
+} from '@anticrm/model'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -281,7 +294,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: view.viewlet.Table,
-    open: task.component.EditTask,
+    open: task.component.EditIssue,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -306,10 +319,14 @@ export function createModel (builder: Builder): void {
     editor: task.component.EditIssue
   })
 
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditorHeader, {
+    editor: task.component.TaskHeader
+  })
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: task.viewlet.Kanban,
-    open: task.component.EditTask,
+    open: task.component.EditIssue,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

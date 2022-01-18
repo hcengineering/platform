@@ -150,7 +150,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.mixin.Candidate,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditContact,
+    open: contact.component.EditPerson,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       // lookup: {
@@ -172,7 +172,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditContact,
+    open: recruit.component.EditApplication,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -198,7 +198,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.Kanban,
-    open: contact.component.EditContact,
+    open: recruit.component.EditApplication,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
@@ -212,7 +212,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.StatusTable,
-    open: contact.component.EditContact,
+    open: contact.component.EditPerson,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {

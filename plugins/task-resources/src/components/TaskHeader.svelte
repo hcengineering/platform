@@ -16,12 +16,12 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import core, { Class, Doc, Ref, RefTo } from '@anticrm/core'
-  import { AttributeBarEditor, AttributesBar, getClient, UserBox } from '@anticrm/presentation'
+  import { AttributeBarEditor, AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
   import { Task } from '@anticrm/task'
   import task from '../plugin'
 
   export let object: Task
-  export let keys: string[]
+  export let keys: KeyedAttribute[]
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -48,7 +48,7 @@
     return contact.class.Employee
   }
 
-  $: filtredKeys = keys.filter((p) => p !== 'state' && p !== 'assignee' && p !== 'doneState') // todo
+  $: filtredKeys = keys.filter((p) => p.key !== 'state' && p.key !== 'assignee' && p.key !== 'doneState') // todo
 </script>
 
 <div class="flex-between header">

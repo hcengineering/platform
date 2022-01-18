@@ -16,9 +16,9 @@
 <script lang="ts">
   import type { Issue } from '@anticrm/task'
   import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
-  import EditTask from './EditTask.svelte'
   import { getClient } from '@anticrm/presentation'
   import task from '../plugin'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Issue
 
@@ -27,7 +27,7 @@
 
   function show () {
     closeTooltip()
-    showPopup(EditTask, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

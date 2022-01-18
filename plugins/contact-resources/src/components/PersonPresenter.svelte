@@ -17,12 +17,12 @@
   import { formatName, Person } from '@anticrm/contact'
   import { Avatar } from '@anticrm/presentation'
   import { showPopup } from '@anticrm/ui'
-  import EditContact from './EditContact.svelte'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Person
 
   async function onClick () {
-    showPopup(EditContact, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

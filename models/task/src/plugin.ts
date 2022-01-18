@@ -46,7 +46,6 @@ export default mergeIds(taskId, task, {
     ProjectView: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
     CreateTask: '' as AnyComponent,
-    EditTask: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     TaskPresenter: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
@@ -57,7 +56,8 @@ export default mergeIds(taskId, task, {
     KanbanView: '' as AnyComponent,
     Todos: '' as AnyComponent,
     TodoItemPresenter: '' as AnyComponent,
-    StatusTableView: '' as AnyComponent
+    StatusTableView: '' as AnyComponent,
+    TaskHeader: '' as AnyComponent
   },
   string: {
     Task: '' as IntlString,

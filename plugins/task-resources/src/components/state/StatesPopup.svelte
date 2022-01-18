@@ -17,6 +17,7 @@
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
+  import { getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
@@ -45,7 +46,7 @@
         dispatch('close', state)
       }}
     >
-      <div class="color" style="background-color: {state.color}" />
+      <div class="color" style="background-color: {getPlatformColor(state.color)}" />
       {state.title}
     </div>
   {/each}

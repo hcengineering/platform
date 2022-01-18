@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@anticrm/contact'
+  import { Organization } from '@anticrm/contact'
   import { showPopup } from '@anticrm/ui'
   import Company from './icons/Company.svelte'
-  import EditContact from './EditContact.svelte'
+  import { EditDoc } from '@anticrm/view-resources'
 
-  export let value: Person
+  export let value: Organization
 
   async function onClick () {
-    showPopup(EditContact, { _id: value._id }, 'full')
+    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
   }
 </script>
 

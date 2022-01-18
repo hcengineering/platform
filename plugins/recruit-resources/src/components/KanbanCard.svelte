@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Avatar } from '@anticrm/presentation'
   import { showPopup, ActionIcon, IconMoreH } from '@anticrm/ui'
@@ -23,13 +22,13 @@
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
-  import { EditContact } from '@anticrm/contact-resources'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
   function showCandidate () {
-    showPopup(EditContact, { _id: object.attachedTo }, 'full')
+    showPopup(EditDoc, { _id: object.attachedTo, _class: object.attachedToClass }, 'full')
   }
 </script>
 
@@ -37,7 +36,9 @@
   <div class="flex-between mb-3">
     <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
     <div class="flex-grow flex-col min-w-0 ml-2">
-      <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>{formatName(object.$lookup?.attachedTo?.name)}</div>
+      <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
+        {formatName(object.$lookup?.attachedTo?.name)}
+      </div>
       <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
     </div>
     <div class="tool"><ActionIcon label={undefined} icon={IconMoreH} size={'small'} /></div>
@@ -47,10 +48,10 @@
       <div class="sm-tool-icon step-lr75">
         <ApplicationPresenter value={object} />
       </div>
-      {#if object.attachments ?? 0 > 0}
+      {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
       {/if}
-      {#if object.comments ?? 0 > 0}
+      {#if (object.comments ?? 0) > 0}
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
@@ -63,11 +64,15 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, .06);
-    border-radius: .75rem;
+    background-color: rgba(222, 222, 240, 0.06);
+    border-radius: 0.75rem;
     user-select: none;
 
-    &.draggable { cursor: grab; }
+    &.draggable {
+      cursor: grab;
+    }
   }
-  .tool { align-self: start; }
+  .tool {
+    align-self: start;
+  }
 </style>

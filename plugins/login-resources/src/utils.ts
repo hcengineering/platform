@@ -114,7 +114,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
   }
 
   const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = getMetadata(login.metadata.LoginEmail) ?? ''
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
@@ -211,7 +211,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Logi
   }
 
   const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = getMetadata(login.metadata.LoginEmail) ?? ''
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {

@@ -43,6 +43,13 @@ export interface ObjectEditor extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectEditorHeader extends Class<Doc> {
+  editor: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ObjectValidator extends Class<Doc> {
   validator: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
 }
@@ -75,7 +82,7 @@ export interface Action extends Doc, UXObject {
 /**
  * @public
  */
-export interface ActionTarget<T extends Doc=Doc> extends Doc {
+export interface ActionTarget<T extends Doc = Doc> extends Doc {
   target: Ref<Class<T>>
   action: Ref<Action>
 
@@ -141,6 +148,7 @@ const view = plugin(viewId, {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
+    ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>
   },

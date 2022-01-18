@@ -78,8 +78,7 @@ export class TContact extends TDoc implements Contact {
 
 @Model(contact.class.Person, contact.class.Contact)
 @UX('Person' as IntlString, contact.icon.Person, undefined, 'name')
-export class TPerson extends TContact implements Person {
-}
+export class TPerson extends TContact implements Person {}
 
 @Model(contact.class.Organization, contact.class.Contact)
 @UX('Organization' as IntlString, contact.icon.Company, undefined, 'name')
@@ -124,17 +123,22 @@ export function createModel (builder: Builder): void {
     component: contact.component.CreateOrganization
   })
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: contact.string.Contacts,
-    icon: contact.icon.Person,
-    hidden: false,
-    component: contact.component.Contacts
-  }, contact.app.Contacts)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: contact.string.Contacts,
+      icon: contact.icon.Person,
+      hidden: false,
+      component: contact.component.Contacts
+    },
+    contact.app.Contacts
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
-    open: contact.component.EditContact,
+    open: contact.component.EditPerson,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {},
     config: [
