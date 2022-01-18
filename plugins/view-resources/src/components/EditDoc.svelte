@@ -27,7 +27,7 @@
   } from '@anticrm/presentation'
   import { AnyComponent, Component, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { getMixinStyle } from '../utils'
 
   export let _id: Ref<Doc>
@@ -154,26 +154,6 @@
 
   $: icon = object && getIcon(object._class)
 
-  let mainEditor: HTMLElement
-  let prevEditor: HTMLElement
-  let maxHeight = 0
-  const observer = new ResizeObserver(() => {
-    const curHeight = mainEditor.clientHeight
-    maxHeight = Math.max(maxHeight, curHeight)
-  })
-
-  $: if (mainEditor != null) {
-    if (prevEditor != null) {
-      observer.unobserve(prevEditor)
-    }
-    prevEditor = mainEditor
-    observer.observe(mainEditor)
-  }
-
-  onDestroy(() => {
-    observer.disconnect()
-  })
-
   function getCollectionCounter (object: Doc, key: KeyedAttribute): number {
     if (hierarchy.isMixin(key.attr.attributeOf)) {
       return (hierarchy.as(object, key.attr.attributeOf) as any)[key.key]
@@ -237,7 +217,7 @@
           {/if}
         {/await}
       </div>
-      <div class="main-editor" bind:this={mainEditor} style={`min-height: ${maxHeight}px;`}>
+      <div class="main-editor">
         {#await getEditorOrDefault(selectedClass, object._class) then is}
           <Component
             {is}
