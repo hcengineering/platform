@@ -16,9 +16,10 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
+  import task from '@anticrm/task'
   import { EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import task from '../plugin'
+  import plugin from '../plugin'
 
   export let object: Issue
 
@@ -45,19 +46,19 @@
 {#if object !== undefined}
   <Grid column={1} rowGap={1.5}>
     <EditBox
-      label={task.string.TaskName}
+      label={plugin.string.TaskName}
       bind:value={object.name}
       icon={task.icon.Task}
-      placeholder="The boring task"
+      placeholder={plugin.string.TaskNamePlaceholder}
       maxWidth="39rem"
       focus
       on:change={() => change('name', object.name)}
     />
     <EditBox
-      label={task.string.TaskDescription}
+      label={plugin.string.TaskDescription}
       bind:value={object.description}
       icon={task.icon.Task}
-      placeholder="Description"
+      placeholder={plugin.string.TaskDescriptionPlaceholder}
       maxWidth="39rem"
       on:change={() => change('description', object.description)}
     />

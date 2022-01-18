@@ -16,15 +16,17 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
+  import { translate } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
+  import plugin from '../plugin'
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let maxWidth: string | undefined
   export let value: string | undefined
-  export let placeholder: string = 'placeholder'
+  export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let password: boolean = false
   export let focus: boolean = false
 
@@ -33,13 +35,15 @@
   let text: HTMLElement
   let input: HTMLInputElement
   let style: string
+  let phTraslate: string = ''
 
   $: style = maxWidth ? `max-width: ${maxWidth};` : ''
+  $: translate(placeholder, {}).then(res => { phTraslate = res })
 
-  function computeSize (t: EventTarget | null) {
+  function computeSize (t: HTMLInputElement | EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
-    text.innerHTML = (value === '' ? placeholder : value).replaceAll(' ', '&nbsp;')
+    text.innerHTML = (value === '' ? phTraslate : value).replaceAll(' ', '&nbsp;')
     target.style.width = text.clientWidth + 'px'
     dispatch('input')
   }
@@ -55,8 +59,6 @@
   afterUpdate(() => {
     computeSize(input)
   })
-  
-
 </script>
 
 <div class="container" on:click={() => { input.focus() }}>
@@ -70,9 +72,9 @@
     {/if}
     <div class="wrap">
       {#if password}
-        <input bind:this={input} type="password" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+        <input bind:this={input} type="password" bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {:else}
-        <input bind:this={input} type="text" bind:value {placeholder} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+        <input bind:this={input} type="text" bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {/if}
     </div>
   </div>
@@ -119,6 +121,7 @@
   input {
     margin: 0;
     padding: 0;
+    min-width: 0;
     color: var(--theme-caption-color);
     border: none;
     border-radius: 2px;

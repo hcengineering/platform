@@ -19,7 +19,6 @@
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getPlatformColor } from '@anticrm/ui'
 
   export let space: Ref<SpaceWithStates>
   let states: State[] = []

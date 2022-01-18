@@ -13,24 +13,27 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
 import task, { taskId } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(taskId, task, {
   string: {
-    Todos: '' as IntlString,
-    TodoName: '' as IntlString,
+    CreateProject: '' as IntlString,
     ProjectName: '' as IntlString,
-    TaskDescription: '' as IntlString,
+    ProjectNamePlaceholder: '' as IntlString,
+    CreateTask: '' as IntlString,
     TaskAssignee: '' as IntlString,
+    TaskNamePlaceholder: '' as IntlString,
+    TaskDescription: '' as IntlString,
+    TaskDescriptionPlaceholder: '' as IntlString,
     States: '' as IntlString,
     DoneStates: '' as IntlString,
-    CreateTask: '' as IntlString,
+    TodoDescriptionPlaceholder: '' as IntlString,
+    Todos: '' as IntlString,
+    TodoName: '' as IntlString,
 
-    ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString,
-    CreateProject: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     TaskProject: '' as IntlString,

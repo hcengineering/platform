@@ -16,9 +16,10 @@
   import type { Class, Ref, Space } from '@anticrm/core'
   import { Card, getClient } from '@anticrm/presentation'
   import type { Task } from '@anticrm/task'
+  import task from '@anticrm/task'
   import { DatePicker, EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import task from '../../plugin'
+  import plugin from '../../plugin'
 
   export let objectId: Ref<Task>
   export let _class: Ref<Class<Task>>
@@ -54,23 +55,23 @@
 </script>
 
 <Card
-  label={task.string.TodoCreate}
+  label={plugin.string.TodoCreate}
   okAction={createTodo}
   canSave={name?.length > 0}
   bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}
-  okLabel={task.string.TodoSave}>
+  okLabel={plugin.string.TodoSave}>
     <Grid column={1} rowGap={1.75}>
       <EditBox
-      label={task.string.TodoDescription}
+      label={plugin.string.TodoDescription}
       bind:value={name}
       icon={task.icon.Task}
-      placeholder="todo..."
+      placeholder={plugin.string.TodoDescriptionPlaceholder}
       maxWidth="39rem"
       focus
     />
-    <DatePicker title={task.string.TodoDueDate} bind:selected={dueTo} />
+    <DatePicker title={plugin.string.TodoDueDate} bind:selected={dueTo} />
   </Grid>
 </Card>

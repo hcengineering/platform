@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'  
   import { createEventDispatcher } from 'svelte'
   import Label from '../Label.svelte'
   
