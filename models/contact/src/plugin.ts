@@ -36,8 +36,7 @@ export const ids = mergeIds(contactId, contact, {
     CreatePersons: '' as AnyComponent,
     CreateOrganizations: '' as AnyComponent,
     OrganizationPresenter: '' as AnyComponent,
-    Contacts: '' as AnyComponent,
-    RolePresenter: '' as AnyComponent
+    Contacts: '' as AnyComponent
   },
   string: {
     Organizations: '' as IntlString,

@@ -146,7 +146,7 @@ export function createModel (builder: Builder): void {
       'city',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
-      { presenter: contact.component.RolePresenter, label: 'Role' },
+      { presenter: view.component.RolePresenter, label: 'Role' },
       'channels'
     ]
   })
