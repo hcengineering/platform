@@ -139,7 +139,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
     descriptor: task.viewlet.Kanban,
-     lead.component.EditLead,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
