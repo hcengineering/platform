@@ -14,17 +14,36 @@
 -->
 
 <script lang="ts">
-  import { getCurrentLocation, Label, navigate } from '@anticrm/ui'
-  import { Avatar, getClient } from '@anticrm/presentation'
+  import { getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import workbench, { Application, SpecialNavModel } from '@anticrm/workbench'
   import setting from '@anticrm/setting'
-  import { Ref } from '@anticrm/core'
+  import login from '@anticrm/login'
+  import { getCurrentAccount, Ref } from '@anticrm/core'
+  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
 
   const client = getClient()
   async function getItems(): Promise<SpecialNavModel[] | undefined> {
     const app = await client.findOne(workbench.class.Application, { _id: setting.ids.SettingApp as Ref<Application> })
     return app?.navigatorModel?.specials
   }
+
+  let account: EmployeeAccount | undefined
+  let employee: Employee | undefined
+  const accountQ = createQuery()
+  const employeeQ = createQuery()
+  $: accountQ.query(contact.class.EmployeeAccount, {
+    _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+  }, (res) => {
+    account = res[0]
+  }, { limit: 1 })
+
+  $: account && employeeQ.query(contact.class.Employee, {
+    _id: account.employee
+  }, (res) => {
+    employee = res[0]
+  }, { limit: 1 })
+
 
   function selectSpecial (sp: SpecialNavModel): void {
     const loc = getCurrentLocation()
@@ -33,27 +52,48 @@
     loc.path.length = 3
     navigate(loc)
   }
+
+  function signOut (): void {
+    setMetadataLocalStorage(login.metadata.LoginToken, null)
+    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+    setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    navigate({ path: [login.component.LoginApp] })
+  }
+
+  function filterItems (items: SpecialNavModel[]): SpecialNavModel[] {
+    return items?.filter((p) => p.id !== 'profile' && p.id !== 'password')
+  }
+
+  function editProfile (items: SpecialNavModel[] | undefined): void {
+    const profile = items?.find((p) => p.id === 'profile')
+    if (profile === undefined) return
+    selectSpecial(profile)
+  }
 </script>
 
 <div class="account-popup">
   <div class="popup-bg" />
-  <div class="flex-row-center header">
-    <Avatar size={'medium'} />
-    <div class="ml-2 flex-col">
-      <div class="overflow-label fs-bold caption-color">User Name</div>
-      <div class="overflow-label small-text content-dark-color">rosamund.chen@gmail.com</div>
+  {#await getItems() then items}
+    <div class="flex-row-center header item" on:click={() => { editProfile(items) }}>
+        {#if employee}
+          <Avatar avatar={employee.avatar} size={'medium'} />
+        {/if}
+      <div class="ml-2 flex-col">
+          {#if account}
+            <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
+            <div class="overflow-label small-text content-dark-color">{account.email}</div>
+          {/if}
+      </div>
     </div>
-  </div>
-  <div class="content">
-    {#await getItems() then items}
+    <div class="content">
       {#if items}
-        {#each items as item }
+        {#each filterItems(items) as item }
           <div class="item" on:click={() => selectSpecial(item)}><Label label={item.label} /></div>
         {/each}
       {/if}
-    {/await}
-    <div class="item"><Label label={'Sign out'} /></div>
-  </div>
+      <div class="item" on:click={signOut}><Label label={'Sign out'} /></div>
+    </div>
+  {/await}
 </div>
 
 <style lang="scss">
@@ -68,7 +108,8 @@
 
     .header {
       flex-shrink: 0;
-      margin: .75rem 1rem;
+      margin: 0.5rem;
+      margin-bottom: 0.25rem;
     }
 
     .content {
@@ -76,17 +117,16 @@
       flex-grow: 1;
       margin: 0 .5rem 1rem;
       height: fit-content;
+    }
+    .item {
+      padding: .5rem;
+      color: var(--theme-content-accent-color);
+      border-radius: .5rem;
+      cursor: pointer;
 
-      .item {
-        padding: .5rem;
-        color: var(--theme-content-accent-color);
-        border-radius: .5rem;
-        cursor: pointer;
-
-        &:hover {
-          color: var(--theme-caption-color);
-          background-color: var(--theme-button-bg-focused);
-        }
+      &:hover {
+        color: var(--theme-caption-color);
+        background-color: var(--theme-button-bg-focused);
       }
     }
 

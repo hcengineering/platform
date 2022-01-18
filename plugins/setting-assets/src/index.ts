@@ -18,6 +18,8 @@ import setting, { settingId } from '@anticrm/setting'
 
 const icons = require('../assets/icons.svg')
 loadMetadata(setting.icon, {
+  EditProfile: `${icons}#edit`,
+  Password: `${icons}#password`,
   Setting: `${icons}#settings`,
   Integrations: `${icons}#integration`,
   Support: `${icons}#support`,
