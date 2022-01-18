@@ -15,6 +15,7 @@
 
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
+  import { createEventDispatcher } from 'svelte'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
   import IconClose from './icons/Close.svelte'
@@ -33,13 +34,14 @@
       focus = false
     }
   }
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2"><Icon {icon} size={'small'} /></div>
-  <input bind:this={textHTML} type="text" bind:value {placeholder} on:change/>
+  <input bind:this={textHTML} type="text" bind:value {placeholder} on:change on:input on:keydown/>
   {#if value}
-    <div class="ml-2 btn" on:click={() => { textHTML.value = ''; textHTML.dispatchEvent(new Event('change')) }}>
+    <div class="ml-2 btn" on:click={() => { value = ''; dispatch('change', '') }}>
       <Icon icon={IconClose} size={'x-small'} />
     </div>
   {/if}

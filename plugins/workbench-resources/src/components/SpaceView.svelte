@@ -36,11 +36,13 @@
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  async function update(attachTo?: Ref<Class<Doc>>, currentSpace?: Ref<Space>): Promise<void> {
+  async function update (attachTo?: Ref<Class<Doc>>, currentSpace?: Ref<Space>): Promise<void> {
     if (attachTo) {
-      viewlets = await client.findAll(view.class.Viewlet, { attachTo }, { lookup: { 
-        descriptor: core.class.Class
-      }})
+      viewlets = await client.findAll(view.class.Viewlet, { attachTo }, {
+        lookup: {
+          descriptor: core.class.Class
+        }
+      })
       _class = attachTo
     }
     viewlet = viewlets[0]
@@ -48,12 +50,6 @@
   }
 
   $: update(currentView?.class, currentSpace)
-
-  function resetSearch (_space: Ref<Space> | undefined): void {
-    search = ''
-  }
-
-  $: resetSearch(currentSpace)
 </script>
 
 <SpaceHeader spaceId={space} {_class} {viewlets} {createItemDialog} bind:search={search} bind:viewlet={viewlet} />

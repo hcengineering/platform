@@ -15,15 +15,20 @@
 -->
 
 <script lang="ts">
+  import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, EditWithIcon, Icon, IconAdd, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 
   let search = ''
-  $: resultQuery = search === '' ? { } : { $search: search }
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = (search === '') ? { } : { $search: search }
+  }
 
   const client = getClient()
   const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: contact.class.Contact, descriptor: view.viewlet.Table })
@@ -42,7 +47,9 @@
     </div>
   </div>
   
-  <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} on:change={() => { resultQuery = {} } } />
+  <SearchEdit bind:value={search} on:change={() => {
+    updateResultQuery(search)
+  }}/>
   <Button icon={IconAdd} label={contact.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
 </div>
 
