@@ -23,6 +23,7 @@
   import ColorsPopup from './ColorsPopup.svelte'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
+  import task from '../../plugin'
 
   export let states: State[] = []
   export let wonStates: DoneState[] = []
@@ -74,8 +75,8 @@
 </script>
 
 <div class="flex-col">
-  <div class="flex-no-shrink flex-between trans-title">
-    <Label label={'ACTIVE STATUSES'} />
+  <div class="flex-no-shrink flex-between trans-title uppercase">
+    <Label label={task.string.ActiveStates} />
     <div on:click={onAdd}><CircleButton icon={IconAdd} size={'medium'} /></div>
   </div>
   <div class="overflow-y-auto mt-3">
@@ -116,11 +117,11 @@
   </div>
 </div>
 <div class="flex-col mt-9">
-  <div class="flex-no-shrink trans-title">
-    <Label label={'DONE STATUS / WON'} />
+  <div class="flex-no-shrink trans-title uppercase">
+    <Label label={task.string.DoneStatesWon} />
   </div>
   <div class="overflow-y-auto mt-4">
-    {#each wonStates as state, i}
+    {#each wonStates as state}
       {#if state}
         <div class="states flex-row-center">
           <div class="bar"/>
@@ -132,11 +133,11 @@
   </div>
 </div>
 <div class="flex-col mt-9">
-  <div class="flex-no-shrink trans-title">
-    <Label label={'DONE STATUS / LOST'} />
+  <div class="flex-no-shrink trans-title uppercase">
+    <Label label={task.string.DoneStatesLost} />
   </div>
   <div class="overflow-y-auto mt-4">
-    {#each lostStates as state, i}
+    {#each lostStates as state}
       {#if state}
         <div class="states flex-row-center">
           <div class="bar"/>

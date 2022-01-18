@@ -1,5 +1,8 @@
 {
   "string": {
+    "MessageID": "MessageID",
+    "IntegrationLabel": "Gmail",
+    "IntegrationDescription": "Use gmail integration",
     "SharedMessages": "shared emails",
     "To": "To:",
     "From": "From:",

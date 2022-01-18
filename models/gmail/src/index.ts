@@ -32,7 +32,7 @@ function TypeSharedMessage (): Type<SharedMessage> {
 
 @Model(gmail.class.Message, core.class.Doc, DOMAIN_GMAIL)
 export class TMessage extends TDoc implements Message {
-  @Prop(TypeString(), 'MessageID' as IntlString)
+  @Prop(TypeString(), gmail.string.MessageID)
   messageId!: string
 
   @Prop(TypeString(), 'ReplyTo' as IntlString)
@@ -86,8 +86,8 @@ export function createModel (builder: Builder): void {
     setting.class.IntegrationType,
     core.space.Model,
     {
-      label: 'Gmail' as IntlString,
-      description: 'Use gmail integration' as IntlString,
+      label: gmail.string.IntegrationLabel,
+      description: gmail.string.IntegrationDescription,
       icon: gmail.component.IconGmail,
       createComponent: gmail.component.Connect,
       onDisconnect: gmail.handler.DisconnectHandler

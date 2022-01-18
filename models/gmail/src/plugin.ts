@@ -23,6 +23,9 @@ import type { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(gmailId, gmail, {
   string: {
+    MessageID: '' as IntlString,
+    IntegrationLabel: '' as IntlString,
+    IntegrationDescription: '' as IntlString,
     SharedMessages: '' as IntlString
   },
   ids: {

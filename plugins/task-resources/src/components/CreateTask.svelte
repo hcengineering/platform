@@ -118,8 +118,8 @@
     />
     <UserBox
       _class={contact.class.Employee}
-      title="Assignee *"
-      caption="Assign this task"
+      title={task.string.TaskAssignee}
+      caption={task.string.AssignThisTask}
       bind:value={assignee}
       allowDeselect
       titleDeselect={task.string.TaskUnAssign}

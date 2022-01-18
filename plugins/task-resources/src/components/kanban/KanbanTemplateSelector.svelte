@@ -19,6 +19,7 @@
   import type { DropdownTextItem } from '@anticrm/ui/src/types'
   import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
   import task from '@anticrm/task'
+  import plugin from '../../plugin'
 
   export let folders: Ref<KanbanTemplateSpace>[]
   export let template: Ref<KanbanTemplate> | undefined = undefined
@@ -34,4 +35,4 @@
   $: template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
 </script>
 
-<DropdownLabels {items} bind:selected={selectedItem} title="Statuses" />
+<DropdownLabels {items} bind:selected={selectedItem} title={plugin.string.States} />

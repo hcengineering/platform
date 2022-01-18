@@ -18,6 +18,7 @@
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { createEventDispatcher } from 'svelte'
+  import { getPlatformColor } from '@anticrm/ui'
 
   export let space: Ref<SpaceWithStates>
   let states: State[] = []
@@ -45,7 +46,7 @@
         dispatch('close', state)
       }}
     >
-      <div class="color" style="background-color: {state.color}" />
+      <div class="color" style="background-color: {getPlatformColor(state.color)}" />
       {state.title}
     </div>
   {/each}

@@ -51,7 +51,7 @@
       placeholder="The boring task"
       maxWidth="39rem"
       focus
-      on:change={(evt) => change('name', object.name)}
+      on:change={() => change('name', object.name)}
     />
     <EditBox
       label={task.string.TaskDescription}
@@ -59,7 +59,7 @@
       icon={task.icon.Task}
       placeholder="Description"
       maxWidth="39rem"
-      on:change={(evt) => change('description', object.description)}
+      on:change={() => change('description', object.description)}
     />
   </Grid>
 {/if}

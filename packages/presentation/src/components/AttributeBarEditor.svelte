@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
+  import { getResource, translate } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
   import view from '@anticrm/view'

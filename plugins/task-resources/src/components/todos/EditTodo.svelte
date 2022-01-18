@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import type { DocumentUpdate, Ref, Timestamp } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { Card, getClient } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import { DatePicker, EditBox, Grid } from '@anticrm/ui'

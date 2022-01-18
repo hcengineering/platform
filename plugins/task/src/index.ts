@@ -25,7 +25,7 @@ import {
   Timestamp,
   TxOperations
 } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
@@ -240,11 +240,11 @@ export async function createKanban (
     const ranks = [...genRanks(2)]
     await Promise.all([
       client.createDoc(task.class.WonState, attachedTo, {
-        title: 'Won',
+        title: 'Won' as IntlString,
         rank: ranks[0]
       }),
       client.createDoc(task.class.LostState, attachedTo, {
-        title: 'Lost',
+        title: 'Lost' as IntlString,
         rank: ranks[1]
       })
     ])

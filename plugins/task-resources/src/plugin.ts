@@ -19,25 +19,30 @@ import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(taskId, task, {
   string: {
+    Todos: '' as IntlString,
+    TodoName: '' as IntlString,
+    ProjectName: '' as IntlString,
+    TaskDescription: '' as IntlString,
+    TaskAssignee: '' as IntlString,
+    States: '' as IntlString,
+    DoneStates: '' as IntlString,
+    CreateTask: '' as IntlString,
+
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
     CreateProject: '' as IntlString,
-    ProjectName: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    CreateTask: '' as IntlString,
     TaskProject: '' as IntlString,
     SelectProject: '' as IntlString,
     TaskName: '' as IntlString,
-    TaskAssignee: '' as IntlString,
+    AssignThisTask: '' as IntlString,
     TaskUnAssign: '' as IntlString,
-    TaskDescription: '' as IntlString,
     More: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,
     NoTaskForObject: '' as IntlString,
     Delete: '' as IntlString,
     NoTodoItems: '' as IntlString,
-    TodoName: '' as IntlString,
     TodoState: '' as IntlString,
     DoneState: '' as IntlString,
     UndoneState: '' as IntlString,
@@ -45,7 +50,12 @@ export default mergeIds(taskId, task, {
     TodoDescription: '' as IntlString,
     TodoEdit: '' as IntlString,
     TodoSave: '' as IntlString,
-    TodoCreate: '' as IntlString
+    TodoCreate: '' as IntlString,
+    ActiveStates: '' as IntlString,
+    DoneStatesWon: '' as IntlString,
+    DoneStatesLost: '' as IntlString,
+    AllStates: '' as IntlString,
+    ChooseAColor: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

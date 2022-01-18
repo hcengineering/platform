@@ -18,6 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import { getPlatformColors } from '@anticrm/ui'
   import PopupDialog from './PopupDialog.svelte'
+  import task from '../../plugin'
 
   export let colors: readonly string[] = getPlatformColors()
   export let columns: number = 5
@@ -25,7 +26,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<PopupDialog label={'CHOOSE A COLOR'}>
+<PopupDialog label={task.string.ChooseAColor}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
     {#each colors as color, i}
       <div class="color" style="background-color: {color}" on:click={() => { dispatch('close', i) }} />

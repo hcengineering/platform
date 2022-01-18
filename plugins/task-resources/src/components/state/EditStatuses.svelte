@@ -80,7 +80,10 @@
     <div class="flex-grow flex-col">
       <div class="flex-row-center">
         <div class="mr-2"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
-        <span class="fs-title overflow-label">Manage application statuses within <Label label={spaceClassInstance?.label}/></span>
+        <span class="fs-title overflow-label">
+          Manage application statuses within 
+          {#if spaceClassInstance}<Label label={spaceClassInstance?.label}/>{:else}...{/if}
+        </span>
       </div>
       <div class="small-text content-dark-color overflow-label">{spaceInstance?.name}</div>
     </div>

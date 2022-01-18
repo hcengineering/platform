@@ -21,7 +21,8 @@
   import CreateTodo from './CreateTodo.svelte'
   import { Table } from '@anticrm/view-resources'
 
-  import task from '../../plugin'
+  import task from '@anticrm/task'
+  import plugin from '../../plugin'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -39,13 +40,13 @@
 
 <div class="applications-container">
   <div class="flex-row-center">
-    <div class="title">To Do's</div>
+    <div class="title"><Label label={plugin.string.Todos} /></div>
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
   {#if todos.length > 0}
     <Table 
       _class={task.class.TodoItem}
-      config={[{ key: '', label: task.string.TodoName }, 'dueTo', { key: 'done', presenter: task.component.TodoStatePresenter, label: task.string.TodoState }]}
+      config={[{ key: '', label: plugin.string.TodoName }, 'dueTo', { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }]}
       options={
         {
           // lookup: {
@@ -57,7 +58,7 @@
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
       <div class="small-text">
-        <a href={'#'} on:click={createApp}><Label label={task.string.NoTodoItems} /></a>
+        <a href={'#'} on:click={createApp}><Label label={plugin.string.NoTodoItems} /></a>
       </div>
     </div>
   {/if}

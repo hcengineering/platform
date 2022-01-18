@@ -23,6 +23,7 @@
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
+  import plugin from '../plugin'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -101,7 +102,7 @@
         updateQuery()
       }}
     >
-      <Label label={'All statuses'} />
+      <Label label={plugin.string.AllStates} />
     </div>
     <div
       class="button flex-center ml-3"
@@ -113,7 +114,7 @@
         updateQuery()
       }}
     >
-      <Label label={'Done statuses'} />
+      <Label label={plugin.string.DoneStates} />
     </div>
   </div>
   <div class="flex-row-center caption-color states">
