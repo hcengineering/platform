@@ -70,7 +70,7 @@ export const DOMAIN_KANBAN = 'kanban' as Domain
 @UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), task.string.TaskStateTitle)
-  title!: IntlString
+  title!: string
 
   color!: number
 
@@ -81,7 +81,7 @@ export class TState extends TDoc implements State {
 @UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), task.string.TaskStateTitle)
-  title!: IntlString
+  title!: string
 
   declare rank: string
 }

@@ -19,7 +19,6 @@ import { createKanban, genRanks } from '@anticrm/task'
 import type { DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/task'
 
 import task from './plugin'
-import { IntlString } from '@anticrm/platform'
 
 export async function createDeps (client: Client): Promise<void> {
   const tx = new TxOperations(client, core.account.System)
@@ -38,15 +37,15 @@ export async function createDeps (client: Client): Promise<void> {
 
 const defaultKanban = {
   states: [
-    { color: 9, title: 'Open' as IntlString },
-    { color: 10, title: 'In Progress' as IntlString },
-    { color: 1, title: 'Under review' as IntlString },
-    { color: 0, title: 'Done' as IntlString },
-    { color: 11, title: 'Invalid' as IntlString }
+    { color: 9, title: 'Open' },
+    { color: 10, title: 'In Progress' },
+    { color: 1, title: 'Under review' },
+    { color: 0, title: 'Done' },
+    { color: 11, title: 'Invalid' }
   ],
   doneStates: [
-    { isWon: true, title: 'Won' as IntlString },
-    { isWon: false, title: 'Lost' as IntlString }
+    { isWon: true, title: 'Won' },
+    { isWon: false, title: 'Lost' }
   ]
 }
 
@@ -112,7 +111,7 @@ const createDefaultKanbanTemplate = async (client: TxOperations): Promise<Ref<Ka
   await createKanbanTemplate(client, {
     kanbanId: task.template.DefaultProject,
     space: task.space.ProjectTemplates,
-    title: 'Default project' as IntlString,
+    title: 'Default project',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })
