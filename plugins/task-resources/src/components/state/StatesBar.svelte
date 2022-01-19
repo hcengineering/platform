@@ -17,6 +17,7 @@
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
+import { getPlatformColor } from '@anticrm/ui';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
 
@@ -86,10 +87,10 @@
         selectItem(ev, item)
       }}
     >
-      <StatesBarElement side={'left'} kind={i ? 'arrow' : 'round'} selected={item._id === state} color={item.color} />
+      <StatesBarElement side={'left'} kind={i ? 'arrow' : 'round'} selected={item._id === state} color={getPlatformColor(item.color)} />
       <div
         class="flex-row-center overflow-label label"
-        style={item._id === state ? `background-color: ${item.color};` : ''}
+        style={item._id === state ? `background-color: ${getPlatformColor(item.color)};` : ''}
       >
         {item.title}
       </div>
@@ -97,7 +98,7 @@
         side={'right'}
         kind={i < states.length - 1 ? 'arrow' : 'round'}
         selected={item._id === state}
-        color={item.color}
+        color={getPlatformColor(item.color)}
       />
     </div>
   {/each}
