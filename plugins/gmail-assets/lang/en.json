@@ -19,6 +19,8 @@
     "Subject": "Subject",
     "Send": "Send",
     "NewMessageTo": "New message to",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "SubjectPlaceholder": "Message subject",
+    "CopyPlaceholder": "Copy to"
   }
 }
