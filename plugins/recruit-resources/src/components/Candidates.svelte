@@ -15,18 +15,21 @@
 -->
 
 <script lang="ts">
+  import contact from '@anticrm/contact'
+  import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-
-  import { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
-
+  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
-  import contact from '@anticrm/contact'
-  import view, { Viewlet } from '@anticrm/view'
   import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
-  $: resultQuery = search === '' ? { } : { $search: search }
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = (search === '') ? { } : { $search: search }
+  }
 
   const client = getClient()
   const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: recruit.mixin.Candidate, descriptor: view.viewlet.Table })
@@ -34,6 +37,7 @@
   function showCreateDialog (ev: Event) {
     showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
   }
+
 </script>
 
 <div class="candidates-header-container">
@@ -44,7 +48,9 @@
     </div>
   </div>
   
-  <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} on:change={() => { resultQuery = {} } } />
+  <SearchEdit bind:value={search} on:change={() => {
+    updateResultQuery(search)
+  }}/>
   <Button label={recruit.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
 </div>
 

@@ -15,13 +15,17 @@
 -->
 
 <script lang="ts">
-  import { EditWithIcon, Icon, IconSearch, Label, ScrollBox } from '@anticrm/ui'
-
+  import { Doc, DocumentQuery } from '@anticrm/core'
+  import { Icon, Label, ScrollBox, SearchEdit } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
 
   let search = ''
-  $: resultQuery = search === '' ? { } : { $search: search }
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = (search === '') ? { } : { $search: search }
+  }
 </script>
 
 <div class="customers-header-container">
@@ -32,7 +36,9 @@
     </div>
   </div>
   
-  <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} on:change={() => { resultQuery = {} } } />
+  <SearchEdit bind:value={search} on:change={() => {
+    updateResultQuery(search)
+  }}/>
 </div>
 
 <div class="container">

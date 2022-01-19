@@ -14,13 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
-  import HierarchyView from './HierarchyView.svelte'
-  import CreateCategory from './CreateCategory.svelte'
+  import { Doc, DocumentQuery } from '@anticrm/core'
+  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
   import inventory from '../plugin'
+  import CreateCategory from './CreateCategory.svelte'
+  import HierarchyView from './HierarchyView.svelte'
 
   let search = ''
-  $: resultQuery = search === '' ? {} : { $search: search }
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = (search === '') ? { } : { $search: search }
+  }
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateCategory, { space: inventory.space.Category }, ev.target as HTMLElement)
@@ -35,14 +40,9 @@
     </div>
   </div>
 
-  <EditWithIcon
-    icon={IconSearch}
-    placeholder={'Search'}
-    bind:value={search}
-    on:change={() => {
-      resultQuery = {}
-    }}
-  />
+  <SearchEdit bind:value={search} on:change={() => {
+    updateResultQuery(search)
+  }}/>
   <Button
     label={inventory.string.CreateCategoryShort}
     primary={true}

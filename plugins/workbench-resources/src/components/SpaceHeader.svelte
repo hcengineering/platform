@@ -14,17 +14,15 @@
 -->
 
 <script lang="ts">
-  import core, { Class, Doc, WithLookup } from '@anticrm/core'
   import type { Ref, Space } from '@anticrm/core'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import { Icon, Button, EditWithIcon, IconSearch, Tooltip } from '@anticrm/ui'
+  import core, { Class, Doc, WithLookup } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
-  import { showPopup } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-
-  import { classIcon } from '../utils'
+  import { Button, Icon, SearchEdit, showPopup, Tooltip } from '@anticrm/ui'
+  import { Viewlet } from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
   import workbench from '../plugin'
-
+  import { classIcon } from '../utils'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
@@ -37,15 +35,24 @@
   const client = getClient()
   const query = createQuery()
   let space: Space | undefined
+  const dispatch = createEventDispatcher()
+
+  const prevSpaceId = spaceId
 
   $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
 
-  function showCreateDialog(ev: Event) {
+  function showCreateDialog (ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
   }
 
   let selectedViewlet = 0
   $: viewlet = viewlets[selectedViewlet]
+
+  $: if (prevSpaceId !== spaceId) {
+    search = ''
+    dispatch('search', '')
+  }
+
 </script>
 
 <div class="spaceheader-container">
@@ -55,14 +62,16 @@
       <div class="flex">
         {#each viewlets as viewlet, i}
           <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-            <div class="flex-center btn" class:selected={selectedViewlet === i} on:click={()=>{ selectedViewlet = i }}>
+            <div class="flex-center btn" class:selected={selectedViewlet === i} on:click={() => { selectedViewlet = i }}>
               <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
             </div>
           </Tooltip>
         {/each}
       </div>
     {/if}      
-    <EditWithIcon icon={IconSearch} placeholder={'Search'} bind:value={search} />
+    <SearchEdit bind:value={search} on:change={() => {
+      dispatch('search', search)
+    }}/>
     {#if createItemDialog}
       <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
