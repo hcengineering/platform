@@ -81,6 +81,7 @@
 
     .status-bar {
       min-height: $status-bar-height;
+      height: $status-bar-height;
       min-width: 1200px;
       font-size: 12px;
       line-height: 150%;
