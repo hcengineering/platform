@@ -18,7 +18,8 @@
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Doc, Ref } from '@anticrm/core'
+  import { AttachedDoc, Doc, Ref, TxCreateDoc } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import {
@@ -146,8 +147,11 @@
               </div>
             </div>
           {:else if viewlet && viewlet.label}
-            <div>
+            <div class='flex-center'>
               <Label label={viewlet.label} />
+              {#if viewlet.labelComponent}
+                <Component is={viewlet.labelComponent} {props} />
+              {/if}
             </div>
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}

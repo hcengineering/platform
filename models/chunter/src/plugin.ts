@@ -13,38 +13,44 @@
 // limitations under the License.
 //
 
+import type { TxViewlet } from '@anticrm/activity'
 import { Channel, chunterId } from '@anticrm/chunter'
 import chunter from '@anticrm/chunter-resources/src/plugin'
-import type { IntlString } from '@anticrm/platform'
+import type { Doc, Ref, TxOperations } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import type { Ref } from '@anticrm/core'
-import type { ViewletDescriptor } from '@anticrm/view'
 import type { AnyComponent } from '@anticrm/ui'
-import type { TxViewlet } from '@anticrm/activity'
-import { Application } from '@anticrm/workbench'
+import type { ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
     CommentsPresenter: '' as AnyComponent,
-    CommentPresenter: '' as AnyComponent
+    CommentPresenter: '' as AnyComponent,
+    ChannelPresenter: '' as AnyComponent
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,
-    LeftComment: '' as IntlString
+    LeftComment: '' as IntlString,
+    MentionedIn: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
   },
   ids: {
     TxCommentCreate: '' as Ref<TxViewlet>,
-    TxCommentRemove: '' as Ref<TxViewlet>
+    TxCommentRemove: '' as Ref<TxViewlet>,
+    TxBacklinkRemove: '' as Ref<TxViewlet>
   },
   activity: {
-    TxCommentCreate: '' as AnyComponent
+    TxCommentCreate: '' as AnyComponent,
+    TxBacklinkCreate: '' as AnyComponent,
+    TxBacklinkReference: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,
     Random: '' as Ref<Channel>
   },
-  app: { Chunter: '' as Ref<Application> }
+  action: {
+    CommentRemove: '' as Resource<(doc: Doc, client: TxOperations) => Promise<Doc[]>>
+  }
 })

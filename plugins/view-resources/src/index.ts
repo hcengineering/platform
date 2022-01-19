@@ -30,6 +30,7 @@ import { deleteObject } from './utils'
 import MoveView from './components/Move.svelte'
 import EditDoc from './components/EditDoc.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
+import ObjectPresenter from './components/ObjectPresenter.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter, LoadingProps } from './utils'
@@ -43,9 +44,9 @@ function Delete (object: Doc): void {
       message: 'Do you want to delete this object?'
     },
     undefined,
-    (result) => {
-      if (result) {
-        deleteObject(getClient(), object)
+    (result?: boolean) => {
+      if (result === true) {
+        deleteObject(getClient(), object).catch(err => console.error(err))
       }
     }
   )
@@ -69,6 +70,7 @@ export default async (): Promise<Resources> => ({
     TimestampPresenter,
     DateEditor,
     DatePresenter,
-    RolePresenter
+    RolePresenter,
+    ObjectPresenter
   }
 })

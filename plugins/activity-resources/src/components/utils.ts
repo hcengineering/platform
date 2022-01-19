@@ -1,6 +1,6 @@
 import type { TxViewlet } from '@anticrm/activity'
 import activity from '@anticrm/activity'
-import core, { Class, Client, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
+import core, { Class, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
 import { Asset, IntlString } from '@anticrm/platform'
 import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { AttributeModel } from '@anticrm/view'
@@ -8,7 +8,7 @@ import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
 import { ActivityKey, activityKey, DisplayTx } from '../activity'
 
 export type TxDisplayViewlet =
-  | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove'> & {
+  | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent'> & {
     component?: AnyComponent | AnySvelteComponent
   })
   | undefined

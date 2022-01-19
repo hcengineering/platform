@@ -14,15 +14,12 @@
 // limitations under the License.
 //
 
+import type { Doc, Ref, TxResult } from '@anticrm/core'
 import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
-import type { Ref, Doc, TxResult } from '@anticrm/core'
-import { start as startJsonRpc } from '@anticrm/server-ws'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import type { DbConfiguration } from '@anticrm/server-core'
-
-import { addLocation } from '@anticrm/platform'
-import { serverChunterId } from '@anticrm/server-chunter'
+import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import { start as startJsonRpc } from '@anticrm/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
@@ -52,8 +49,6 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
  * @public
  */
 export async function start (port: number, host?: string): Promise<void> {
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-
   startJsonRpc(new MeasureMetricsContext('server', {}), () => {
     const conf: DbConfiguration = {
       domains: {

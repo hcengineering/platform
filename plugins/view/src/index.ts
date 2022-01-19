@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
+import type { Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, TxOperations, UXObject } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
@@ -140,6 +140,15 @@ export interface ObjectFactory extends Class<Obj> {
 }
 
 /**
+ * Allow to contribute and find all derived objects for document.
+ * @public
+ */
+export interface ObjectDDParticipant extends Class<Obj> {
+  // Collect more items to be deleted if parent document is deleted.
+  collectDocs: Resource<(doc: Doc, client: TxOperations) => Promise<Doc[]>>
+}
+
+/**
  * @public
  */
 const view = plugin(viewId, {
@@ -149,7 +158,8 @@ const view = plugin(viewId, {
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
-    ObjectFactory: '' as Ref<Mixin<ObjectFactory>>
+    ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
+    ObjectDDParticipant: '' as Ref<ObjectDDParticipant>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
@@ -159,6 +169,9 @@ const view = plugin(viewId, {
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
+  },
+  component: {
+    ObjectPresenter: '' as AnyComponent
   },
   icon: {
     Table: '' as Asset,

@@ -30,8 +30,6 @@ import { createModel as gmailModel } from '@anticrm/model-gmail'
 import { createModel as inventoryModel } from '@anticrm/model-inventory'
 
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
-import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
-import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
 import { createModel as activityModel } from '@anticrm/model-activity'
 
 import { createDemo } from '@anticrm/model-demo'
@@ -54,8 +52,6 @@ gmailModel(builder)
 inventoryModel(builder)
 
 serverCoreModel(builder)
-serverChunterModel(builder)
-serverRecruitModel(builder)
 
 createDemo(builder)
 

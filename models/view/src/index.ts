@@ -24,6 +24,7 @@ import type {
   ActionTarget,
   AttributeEditor,
   AttributePresenter,
+  ObjectDDParticipant,
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
@@ -61,6 +62,10 @@ export class TObjectValidator extends TClass implements ObjectValidator {
 @Mixin(view.mixin.ObjectFactory, core.class.Class)
 export class TObjectFactory extends TClass implements ObjectFactory {
   component!: AnyComponent
+}
+@Mixin(view.mixin.ObjectDDParticipant, core.class.Class)
+export class TObjectDDParticipant extends TClass implements ObjectDDParticipant {
+  collectDocs!: Resource<(doc: Doc) => Promise<Doc[]>>
 }
 
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
@@ -101,7 +106,8 @@ export function createModel (builder: Builder): void {
     TActionTarget,
     TObjectValidator,
     TObjectFactory,
-    TObjectEditorHeader
+    TObjectEditorHeader,
+    TObjectDDParticipant
   )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {

@@ -702,50 +702,15 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/dev-server-chunter-resources",
-      "projectFolder": "dev/server-chunter-resources",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@anticrm/model-server-core",
       "projectFolder": "models/server-core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/server-chunter",
-      "projectFolder": "server/chunter",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/server-recruit",
-      "projectFolder": "server/recruit",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/model-server-chunter",
-      "projectFolder": "models/server-chunter",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/model-server-recruit",
-      "projectFolder": "models/server-recruit",
       "shouldPublish": true
     },
     {
       "packageName": "@anticrm/dev-account",
       "projectFolder": "dev/account",
       "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/server-chunter-resources",
-      "projectFolder": "server/chunter-resources",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/server-recruit-resources",
-      "projectFolder": "server/recruit-resources",
-      "shouldPublish": true
-    },
+    },    
     {
       "packageName": "@anticrm/mongo",
       "projectFolder": "server/mongo",

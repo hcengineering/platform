@@ -14,12 +14,13 @@
 -->
 
 <script lang="ts">
-  import type { Comment } from "@anticrm/chunter"
-  import type { TxCreateDoc } from "@anticrm/core"
+  import type { Comment } from '@anticrm/chunter'
+  import type { TxCreateDoc } from '@anticrm/core'
   import { getClient, MessageViewer } from '@anticrm/presentation'
-  import { ReferenceInput } from "@anticrm/text-editor"
-  import { Button } from "@anticrm/ui"
-  import { createEventDispatcher } from "svelte"
+  import { ReferenceInput } from '@anticrm/text-editor'
+  import { Button } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
 
   export let tx: TxCreateDoc<Comment>
@@ -29,12 +30,15 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let editing = false
+  const editing = false
 
-  function onMessage(event: CustomEvent) {
-    client.updateCollection(tx.objectClass, tx.objectSpace, tx.objectId, value.attachedTo, value.attachedToClass, value.collection, {
+  async function onMessage (event: CustomEvent) {
+    await client.updateCollection(tx.objectClass, tx.objectSpace, tx.objectId, value.attachedTo, value.attachedToClass, value.collection, {
       message: event.detail
     })
+    // We need to update backlinks before and after.
+    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, event.detail)
+  
     dispatch('close', false)
   }
   let refInput: ReferenceInput

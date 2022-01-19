@@ -40,8 +40,17 @@ export interface Comment extends AttachedDoc {
  * @public
  */
 export interface Backlink extends Comment {
+  // A target document
+  // attachedTo <- target document we point to
+  // A target document class
+  // attachedToClass
+
+  // Source document we have reference from, it should be parent document for Comment/Message.
   backlinkId: Ref<Doc>
+  // Source document class
   backlinkClass: Ref<Class<Doc>>
+  // Reference to comment documentId
+  attachedDocId?: Ref<Doc>
 }
 
 /**

@@ -23,11 +23,11 @@
 
   export let objectId: Ref<Doc>
 
-    let comments: Comment[] = []
-    const query = createQuery()
-    $: query.query(chunter.class.Comment, { attachedTo: objectId }, (res) => {
-      comments = res
-    }, { limit: 3, sort: { modifiedOn: SortingOrder.Descending }})
+  let comments: Comment[] = []
+  const query = createQuery()
+  $: query.query(chunter.class.Comment, { attachedTo: objectId }, (res) => {
+    comments = res
+  }, { limit: 3, sort: { modifiedOn: SortingOrder.Descending } })
 
 </script>
 

@@ -13,17 +13,16 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, Prop, UX, TypeString, Index } from '@anticrm/model'
-import type { Ref, Doc, Class, Domain } from '@anticrm/core'
-import { IndexKind } from '@anticrm/core'
-import core, { TSpace, TDoc, TAttachedDoc } from '@anticrm/model-core'
-import type { Backlink, Channel, Message, Comment } from '@anticrm/chunter'
 import activity from '@anticrm/activity'
-
-import workbench from '@anticrm/model-workbench'
-
+import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
+import type { Class, Doc, Domain, Ref } from '@anticrm/core'
+import { IndexKind } from '@anticrm/core'
+import { Builder, Index, Model, Prop, TypeString, UX } from '@anticrm/model'
+import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import type { IntlString } from '@anticrm/platform'
+import { ObjectDDParticipant } from '@anticrm/view'
 import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
@@ -49,6 +48,7 @@ export class TComment extends TAttachedDoc implements Comment {
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)
+@UX('Reference' as IntlString, chunter.icon.Chunter)
 export class TBacklink extends TComment implements Backlink {
   backlinkId!: Ref<Doc>
   backlinkClass!: Ref<Class<Doc>>
@@ -60,6 +60,10 @@ export function createModel (builder: Builder): void {
     view: {
       class: chunter.class.Message
     }
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.ChannelPresenter
   })
 
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
@@ -108,6 +112,10 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.CommentPresenter
   })
 
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, view.mixin.ObjectDDParticipant, {
+    collectDocs: chunter.action.CommentRemove
+  })
+
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {
     objectClass: chunter.class.Comment,
     icon: chunter.icon.Chunter,
@@ -127,6 +135,27 @@ export function createModel (builder: Builder): void {
     display: 'inline',
     hideOnRemove: true
   }, chunter.ids.TxCommentRemove)
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: chunter.class.Backlink,
+    icon: chunter.icon.Chunter,
+    txClass: core.class.TxCreateDoc,
+    component: chunter.activity.TxBacklinkCreate,
+    label: chunter.string.MentionedIn,
+    labelComponent: chunter.activity.TxBacklinkReference,
+    display: 'content',
+    editable: false,
+    hideOnRemove: true
+  }, chunter.ids.TxCommentCreate)
+
+  // We need to define this one, to hide default attached object removed case
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: chunter.class.Backlink,
+    icon: chunter.icon.Chunter,
+    txClass: core.class.TxRemoveDoc,
+    display: 'inline',
+    hideOnRemove: true
+  }, chunter.ids.TxBacklinkRemove)
 }
 
 export default chunter

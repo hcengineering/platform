@@ -118,6 +118,9 @@ export const taskOperation: MigrateOperation = {
         collection: doc[0].attributes.collection
       })
     }
+    await client.update(DOMAIN_KANBAN, { _class: task.class.Sequence, attachedTo: task.class.Task }, {
+      attachedTo: task.class.Issue
+    })
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     console.log('Task: Performing model upgrades')

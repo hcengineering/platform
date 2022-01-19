@@ -62,7 +62,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     collection: string,
     attributes: AttachedData<P>,
     id?: Ref<P>
-  ): Promise<Ref<T>> {
+  ): Promise<Ref<P>> {
     const tx = this.txFactory.createTxCollectionCUD<T, P>(
       attachedToClass,
       attachedTo,
@@ -71,7 +71,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       this.txFactory.createTxCreateDoc<P>(_class, space, attributes as unknown as Data<P>, id)
     )
     await this.client.tx(tx)
-    return tx.objectId
+    return tx.tx.objectId as unknown as Ref<P>
   }
 
   async updateCollection<T extends Doc, P extends AttachedDoc>(
