@@ -726,6 +726,21 @@
       "projectFolder": "server/attachment-resources",
       "shouldPublish": true
     },
+    {    
+      "packageName": "@anticrm/server-contact",
+      "projectFolder": "server/contact",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-contact",
+      "projectFolder": "models/server-contact",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-contact-resources",
+      "projectFolder": "server/contact-resources",
+      "shouldPublish": true
+    },
     {
       "packageName": "@anticrm/mongo",
       "projectFolder": "server/mongo",

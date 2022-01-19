@@ -48,6 +48,7 @@ import {
   TxAdapter
 } from '@anticrm/server-core'
 import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverContactId } from '@anticrm/server-contact'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -102,6 +103,7 @@ export class ElasticTool {
   db!: Db
   constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
     addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
+    addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 

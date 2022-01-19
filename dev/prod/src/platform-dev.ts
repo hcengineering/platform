@@ -18,6 +18,7 @@ import { addLocation } from '@anticrm/platform'
 import login from '@anticrm/login'
 import { clientId } from '@anticrm/client'
 import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverContactId } from '@anticrm/server-contact'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -31,6 +32,7 @@ export function configurePlatformDev() {
     addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
 
     addLocation(serverAttachmentId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-attachment-resources'))
+    addLocation(serverContactId, () => import(/* webpackChunkName: "server-contact" */ '@anticrm/server-contact-resources'))
 
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()

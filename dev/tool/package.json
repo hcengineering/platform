@@ -69,6 +69,8 @@
     "@anticrm/task": "~0.6.0",
     "@anticrm/chunter": "~0.6.1",
     "mime-types": "~2.1.34",
-    "@anticrm/attachment": "~0.6.1"
+    "@anticrm/attachment": "~0.6.1",
+    "@anticrm/server-contact": "~0.6.1",
+    "@anticrm/server-contact-resources": "~0.6.0"
   }
 }

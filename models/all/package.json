@@ -42,6 +42,7 @@
     "@anticrm/model-demo": "~0.6.0",
     "@anticrm/model-server-core": "~0.6.0",
     "@anticrm/model-server-attachment": "~0.6.0",
+    "@anticrm/model-server-contact": "~0.6.0",
     "@anticrm/model-activity": "~0.6.0",
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-gmail": "~0.6.0",

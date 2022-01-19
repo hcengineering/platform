@@ -31,6 +31,7 @@ import { createModel as inventoryModel } from '@anticrm/model-inventory'
 
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as serverAttachmentModel } from '@anticrm/model-server-attachment'
+import { createModel as serverContactModel } from '@anticrm/model-server-contact'
 import { createModel as activityModel } from '@anticrm/model-activity'
 
 import { createDemo } from '@anticrm/model-demo'
@@ -54,6 +55,7 @@ inventoryModel(builder)
 
 serverCoreModel(builder)
 serverAttachmentModel(builder)
+serverContactModel(builder)
 
 createDemo(builder)
 

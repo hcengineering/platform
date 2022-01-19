@@ -44,6 +44,8 @@
     "@anticrm/mongo": "~0.6.1",
     "@anticrm/elastic": "~0.6.0",
     "elastic-apm-node": "~3.26.0",
-    "minio": "~7.0.26"
+    "minio": "~7.0.26",
+    "@anticrm/server-contact": "~0.6.1",
+    "@anticrm/server-contact-resources": "~0.6.0"
   }
 }

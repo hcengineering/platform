@@ -24,6 +24,8 @@ import { start as startJsonRpc } from '@anticrm/server-ws'
 
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverContactId } from '@anticrm/server-contact'
+
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
@@ -51,6 +53,7 @@ export interface MinioConfig {
  */
 export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfig, port: number, host?: string): () => void {
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
+  addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
 
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {

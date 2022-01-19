@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@elastic/elasticsearch': ^7.14.0
   '@koa/cors': ^3.1.0
   '@microsoft/api-extractor': ^7.18.4
   '@rush-temp/account': file:./projects/account.tgz
@@ -57,6 +58,7 @@ specifiers:
   '@rush-temp/model-recruit': file:./projects/model-recruit.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
   '@rush-temp/model-server-attachment': file:./projects/model-server-attachment.tgz
+  '@rush-temp/model-server-contact': file:./projects/model-server-contact.tgz
   '@rush-temp/model-server-core': file:./projects/model-server-core.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
@@ -77,6 +79,8 @@ specifiers:
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-attachment': file:./projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:./projects/server-attachment-resources.tgz
+  '@rush-temp/server-contact': file:./projects/server-contact.tgz
+  '@rush-temp/server-contact-resources': file:./projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/setting': file:./projects/setting.tgz
@@ -181,6 +185,7 @@ specifiers:
   xml2js: ~0.4.23
 
 dependencies:
+  '@elastic/elasticsearch': 7.16.0
   '@koa/cors': 3.1.0
   '@microsoft/api-extractor': 7.19.2
   '@rush-temp/account': file:projects/account.tgz
@@ -237,6 +242,7 @@ dependencies:
   '@rush-temp/model-recruit': file:projects/model-recruit.tgz_typescript@4.5.4
   '@rush-temp/model-rig': file:projects/model-rig.tgz_37f79b97d0d86442e45d380c86f520c5
   '@rush-temp/model-server-attachment': file:projects/model-server-attachment.tgz_typescript@4.5.4
+  '@rush-temp/model-server-contact': file:projects/model-server-contact.tgz_typescript@4.5.4
   '@rush-temp/model-server-core': file:projects/model-server-core.tgz_typescript@4.5.4
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.5.4
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.5.4
@@ -257,6 +263,8 @@ dependencies:
   '@rush-temp/server': file:projects/server.tgz
   '@rush-temp/server-attachment': file:projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:projects/server-attachment-resources.tgz
+  '@rush-temp/server-contact': file:projects/server-contact.tgz
+  '@rush-temp/server-contact-resources': file:projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:projects/server-core.tgz
   '@rush-temp/server-ws': file:projects/server-ws.tgz
   '@rush-temp/setting': file:projects/setting.tgz
@@ -11879,6 +11887,27 @@ packages:
       - typescript
     dev: false
 
+  file:projects/model-server-contact.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-cS09KWx82ek8kc0tutF538kEZMRkOMLnY0sQSUScOPEYHb4cLR4M94PrIhsY8DiP6TJctkT0ddnvwXMApAwyGA==, tarball: file:projects/model-server-contact.tgz}
+    id: file:projects/model-server-contact.tgz
+    name: '@rush-temp/model-server-contact'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/model-server-core.tgz_typescript@4.5.4:
     resolution: {integrity: sha512-hagtid24XnydnAi0jSVnRJ20sGD3k+GpvqFaUO3/T5PgvwafBta6ZZ90b931ttxK4XWt6qdNaKLmUFBsxJ3mvg==, tarball: file:projects/model-server-core.tgz}
     id: file:projects/model-server-core.tgz
@@ -12200,7 +12229,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-gMZvKi80wsWO0YrAlajq1BSeIBsQz4amYaXepnpZvGwZqPLKQHH8unvkwokZQyON1wtlroo3S76aYvl95DoXMA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-WxsSu4KtdtPTf1EJkHs/CJFDHiU0AgfGMmyOm66DFGc0cWOiJlgoCcw9TuCNaQPCBQ/ldbNYbfpj01N4iZFYuA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -12331,7 +12360,7 @@ packages:
     dev: false
 
   file:projects/server-attachment-resources.tgz:
-    resolution: {integrity: sha512-CbSj/ijdeiwfQwM6/SeS07Poql3VCXCKa+bgoUfvascmbD48wJF0QCQ6t5M5D3u67Hwp8E68xS1/nCa0U0pOrQ==, tarball: file:projects/server-attachment-resources.tgz}
+    resolution: {integrity: sha512-V/H2gWfte5sRJYj91+6StCv/+q2vAp6iHQRBcwBjcFJwMyuFqAQMhaGsWvJtAgtIENRY/22/I8KWiwg8O74XCg==, tarball: file:projects/server-attachment-resources.tgz}
     name: '@rush-temp/server-attachment-resources'
     version: 0.0.0
     dependencies:
@@ -12357,6 +12386,47 @@ packages:
   file:projects/server-attachment.tgz:
     resolution: {integrity: sha512-4qdqR7uqC/Ny/CMNrrw9AN/5cvlkTcVZ9ifEA7PybcLQzib+GtOXn7uUE/HeaSDVIjfUU3bK8I15M6bftaGaUA==, tarball: file:projects/server-attachment.tgz}
     name: '@rush-temp/server-attachment'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-contact-resources.tgz:
+    resolution: {integrity: sha512-4yOcy58wmHdLoBsIlawD4KAe5I+q9NtlKXnZRvuyF0Gdb8UZcEvL2NjxHZNJkDmTGvvmmr2ihwYKJE+g4N//jg==, tarball: file:projects/server-contact-resources.tgz}
+    name: '@rush-temp/server-contact-resources'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-contact.tgz:
+    resolution: {integrity: sha512-W867u5lGNLWPLD35YvKz5uugJ2O0DYqLRnbUc3BSHi9Gqqs3SoKWZaIVspXQsaSbuReMnWJLPIRKfTxgr5sM/w==, tarball: file:projects/server-contact.tgz}
+    name: '@rush-temp/server-contact'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
