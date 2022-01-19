@@ -15,11 +15,10 @@
 <script lang="ts">
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import { formatName } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
-  import { ActionIcon, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
@@ -28,7 +27,7 @@
   export let draggable: boolean
 
   const showMenu = (ev?: Event): void => {
-    showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+    showPopup(ContextMenu, { object }, ev ? ev.target as HTMLElement : null)
   }
 </script>
 
@@ -48,8 +47,9 @@
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
-    {#if object.$lookup?.assignee}
-      <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
+    {#if object.$lookup}
+      <!-- object.$lookup?.assignee?.avatar -->
+      <Avatar avatar={undefined} size={'x-small'} />
     {/if}
 </div>
 </div>

@@ -17,9 +17,9 @@
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
   import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import task from '../plugin'
-  import { createKanban, KanbanTemplate } from '@anticrm/task'
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
   import KanbanTemplateSelector from './kanban/KanbanTemplateSelector.svelte'
+  import plugin from '../plugin'
 
   const dispatch = createEventDispatcher()
 
@@ -55,7 +55,7 @@
 </script>
 
 <SpaceCreateCard
-  label={task.string.CreateProject}
+  label={plugin.string.CreateProject}
   okAction={createProject}
   canSave={name.length > 0}
   on:close={() => {
@@ -63,8 +63,8 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={task.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={'Project name'} maxWidth={'16rem'} focus />
-    <ToggleWithLabel label={task.string.MakePrivate} description={task.string.MakePrivateDescription} />
+    <EditBox label={plugin.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={plugin.string.ProjectNamePlaceholder} maxWidth={'16rem'} focus />
+    <ToggleWithLabel label={plugin.string.MakePrivate} description={plugin.string.MakePrivateDescription} />
     <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId}/>
   </Grid>
 </SpaceCreateCard>

@@ -1,5 +1,6 @@
 {
   "string": {
+    "EditBoxPlaceholder": "placeholder",
     "Cancel": "Cancel",
     "Minutes": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
     "Hours": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",

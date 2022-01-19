@@ -14,10 +14,9 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { Label, ScrollBox, IconAdd } from '@anticrm/ui'
+  import { ScrollBox, IconAdd } from '@anticrm/ui'
 
-  export let label: IntlString
+  export let label: string
   export let color: string
   // export let counter: number
   export let addAction: () => void | undefined
@@ -28,7 +27,7 @@
     <div class="bar" style="background-color: {color}" />
     <div class="flex-between label">
       <div>
-        <Label {label} />
+        {label}
         <!-- <span>({counter})</span> -->
       </div>
       <div class="tool" on:click|preventDefault={addAction}>

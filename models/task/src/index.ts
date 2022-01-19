@@ -67,9 +67,9 @@ export const DOMAIN_TASK = 'task' as Domain
 export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX('State' as IntlString, task.icon.TaskState, undefined, 'rank')
+@UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
 export class TState extends TDoc implements State {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), task.string.TaskStateTitle)
   title!: string
 
   color!: number
@@ -78,9 +78,9 @@ export class TState extends TDoc implements State {
 }
 
 @Model(task.class.DoneState, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
-@UX('Done' as IntlString, task.icon.TaskState, undefined, 'title')
+@UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), task.string.TaskStateTitle)
   title!: string
 
   declare rank: string
@@ -99,34 +99,34 @@ export class TLostState extends TDoneState implements LostState {}
  */
 @Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
 export class TTask extends TAttachedDoc implements Task {
-  @Prop(TypeRef(task.class.State), 'State' as IntlString)
+  @Prop(TypeRef(task.class.State), task.string.TaskState)
   state!: Ref<State>
 
-  @Prop(TypeRef(task.class.DoneState), 'Done' as IntlString)
+  @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone)
   doneState!: Ref<DoneState> | null
 
-  @Prop(TypeString(), 'No.' as IntlString)
+  @Prop(TypeString(), task.string.TaskNumber)
   number!: number
 
-  // @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   assignee!: Ref<Employee> | null
 
   declare rank: string
 
-  @Prop(Collection(task.class.TodoItem), "Todo's" as IntlString)
+  @Prop(Collection(task.class.TodoItem), task.string.Todos)
   todoItems!: number
 }
 
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
-@UX('Todo' as IntlString)
+@UX(task.string.Todo)
 export class TTodoItem extends TAttachedDoc implements TodoItem {
-  @Prop(TypeString(), 'Name' as IntlString, task.icon.Task)
+  @Prop(TypeString(), task.string.TodoName, task.icon.Task)
   name!: string
 
-  @Prop(TypeBoolean(), 'Complete' as IntlString)
+  @Prop(TypeBoolean(), task.string.TaskDone)
   done!: boolean
 
-  @Prop(TypeDate(), 'Due date' as IntlString)
+  @Prop(TypeDate(), task.string.TaskDueTo)
   dueTo?: Timestamp
 }
 
@@ -134,32 +134,32 @@ export class TTodoItem extends TAttachedDoc implements TodoItem {
 export class TSpaceWithStates extends TSpace {}
 
 @Model(task.class.Project, task.class.SpaceWithStates)
-@UX('Project' as IntlString, task.icon.Task)
+@UX(task.string.ProjectName, task.icon.Task)
 export class TProject extends TSpaceWithStates implements Project {}
 
 @Model(task.class.Issue, task.class.Task, DOMAIN_TASK)
 @UX('Task' as IntlString, task.icon.Task, 'Task' as IntlString, 'number')
 export class TIssue extends TTask implements Issue {
   // We need to declare, to provide property with label
-  @Prop(TypeRef(core.class.Doc), 'Parent' as IntlString)
+  @Prop(TypeRef(core.class.Doc), task.string.TaskParent)
   declare attachedTo: Ref<Doc>
 
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), task.string.IssueName)
   name!: string
 
-  @Prop(TypeString(), 'Description' as IntlString)
+  @Prop(TypeString(), task.string.TaskDescription)
   description!: string
 
-  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
   comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), task.string.TaskAttachments)
   attachments!: number
 
-  @Prop(TypeString(), 'Labels' as IntlString)
+  @Prop(TypeString(), task.string.TaskLabels)
   labels!: string
 
-  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   declare assignee: Ref<Employee> | null
 }
 
@@ -182,10 +182,10 @@ export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace 
 
 @Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TStateTemplate extends TAttachedDoc implements StateTemplate {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), task.string.StateTemplateTitle)
   title!: string
 
-  @Prop(TypeString(), 'Color' as IntlString)
+  @Prop(TypeString(), task.string.StateTemplateColor)
   color!: number
 
   declare rank: string
@@ -193,7 +193,7 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
 
 @Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), task.string.StateTemplateTitle)
   title!: string
 
   declare rank: string
@@ -207,13 +207,13 @@ export class TLostStateTemplate extends TDoneStateTemplate implements LostStateT
 
 @Model(task.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)
 export class TKanbanTemplate extends TDoc implements KanbanTemplate {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), task.string.KanbanTemplateTitle)
   title!: string
 
-  @Prop(Collection(task.class.StateTemplate), 'States' as IntlString)
+  @Prop(Collection(task.class.StateTemplate), task.string.States)
   statesC!: number
 
-  @Prop(Collection(task.class.DoneStateTemplate), 'Done States' as IntlString)
+  @Prop(Collection(task.class.DoneStateTemplate), task.string.DoneStates)
   doneStatesC!: number
 }
 
@@ -225,7 +225,7 @@ export class TSequence extends TDoc implements Sequence {
 
 @Implements(task.interface.DocWithRank)
 export class TDocWithRank extends TDoc {
-  @Prop(TypeString(), 'Rank' as IntlString)
+  @Prop(TypeString(), task.string.Rank)
   @Hidden()
   rank!: string
 }
@@ -263,7 +263,7 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
-      label: 'Status' as IntlString,
+      label: task.string.States,
       icon: task.icon.ManageStatuses,
       component: task.component.StatusTableView
     },
@@ -375,7 +375,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Create task' as IntlString,
+      label: task.string.CreateTask,
       icon: task.icon.Task,
       action: task.actionImpl.CreateTask
     },
@@ -386,7 +386,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Edit Statuses' as IntlString,
+      label: task.string.EditStates,
       icon: view.icon.Statuses,
       action: task.actionImpl.EditStatuses
     },
@@ -397,7 +397,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Archive' as IntlString,
+      label: task.string.Archive,
       icon: view.icon.Archive,
       action: task.actionImpl.ArchiveSpace
     },
@@ -408,7 +408,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Unarchive' as IntlString,
+      label: task.string.Unarchive,
       icon: view.icon.Archive,
       action: task.actionImpl.UnarchiveSpace
     },
@@ -451,7 +451,7 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
-      label: 'Kanban' as IntlString,
+      label: task.string.Kanban,
       icon: task.icon.Kanban,
       component: task.component.KanbanView
     },
@@ -487,7 +487,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Mark as done' as IntlString,
+      label: task.string.MarkAsDone,
       icon: task.icon.TodoCheck,
       action: task.actionImpl.TodoItemMarkDone
     },
@@ -498,7 +498,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Mark as undone' as IntlString,
+      label: task.string.MarkAsUndone,
       icon: task.icon.TodoUnCheck,
       action: task.actionImpl.TodoItemMarkUnDone
     },

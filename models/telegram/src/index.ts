@@ -60,7 +60,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'Telegram' as IntlString,
       icon: contact.icon.Telegram,
-      placeholder: '@appleseed',
+      placeholder: '@appleseed' as IntlString,
       presenter: telegram.component.Chat,
       integrationType: telegram.integrationType.Telegram
     },

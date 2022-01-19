@@ -18,10 +18,10 @@
   import { generateId } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import { calcRank, Issue, State } from '@anticrm/task'
+  import task, { calcRank, Issue, State } from '@anticrm/task'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import task from '../plugin'
+  import plugin from '../plugin'
 
   export let space: Ref<Space>
   export let parent: Pick<Doc, '_id' | '_class'> | undefined
@@ -95,12 +95,12 @@
 </script>
 
 <Card
-  label={task.string.CreateTask}
+  label={plugin.string.CreateTask}
   okAction={createTask}
   canSave={object.name.length > 0 && _space != null}
   spaceClass={task.class.Project}
-  spaceLabel={task.string.ProjectName}
-  spacePlaceholder={task.string.SelectProject}
+  spaceLabel={plugin.string.ProjectName}
+  spacePlaceholder={plugin.string.SelectProject}
   bind:space={_space}
   on:close={() => {
     dispatch('close')
@@ -109,20 +109,20 @@
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.5}>
     <EditBox
-      label={task.string.TaskName}
+      label={plugin.string.TaskName}
       bind:value={object.name}
       icon={task.icon.Task}
-      placeholder="The boring task"
+      placeholder={plugin.string.TaskNamePlaceholder}
       maxWidth={'16rem'}
       focus
     />
     <UserBox
       _class={contact.class.Employee}
-      title="Assignee *"
-      caption="Assign this task"
+      title={plugin.string.TaskAssignee}
+      caption={plugin.string.AssignThisTask}
       bind:value={assignee}
       allowDeselect
-      titleDeselect={task.string.TaskUnAssign}
+      titleDeselect={plugin.string.TaskUnAssign}
     />
   </Grid>
 </Card>

@@ -17,7 +17,8 @@
 import type { Doc, Ref, Space } from '@anticrm/core'
 import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import task, { KanbanTemplate, taskId } from '@anticrm/task'
+import { KanbanTemplate, taskId } from '@anticrm/task'
+import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import { Application } from '@anticrm/workbench'
 import type { Action } from '@anticrm/view'
@@ -60,10 +61,31 @@ export default mergeIds(taskId, task, {
     TaskHeader: '' as AnyComponent
   },
   string: {
+    TaskState: '' as IntlString,
+    TaskStateTitle: '' as IntlString,
+    TaskStateDone: '' as IntlString,
+    TaskNumber: '' as IntlString,
+    Todo: '' as IntlString,
+    TaskDone: '' as IntlString,
+    TaskDueTo: '' as IntlString,
     Task: '' as IntlString,
+    TaskParent: '' as IntlString,
+    IssueName: '' as IntlString,
+    TaskComments: '' as IntlString,
+    TaskAttachments: '' as IntlString,
+    TaskLabels: '' as IntlString,
+    StateTemplateTitle: '' as IntlString,
+    StateTemplateColor: '' as IntlString,
+    KanbanTemplateTitle: '' as IntlString,
+    Rank: '' as IntlString,
+    EditStates: '' as IntlString,
+    Archive: '' as IntlString,
+    Unarchive: '' as IntlString,
+    MarkAsDone: '' as IntlString,
+    MarkAsUndone: '' as IntlString,
+    Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString,
-    CreateProject: '' as IntlString
+    Projects: '' as IntlString
   },
   space: {
     TasksPublic: '' as Ref<Space>

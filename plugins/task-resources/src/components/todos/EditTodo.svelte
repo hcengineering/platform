@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import type { DocumentUpdate, Ref, Timestamp } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { Card, getClient } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
+  import task from '@anticrm/task'
   import { DatePicker, EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import task from '../../plugin'
+  import plugin from '../../plugin'
 
   export let item: TodoItem
 
@@ -61,23 +61,23 @@
 </script>
 
 <Card
-  label={task.string.TodoEdit}
+  label={plugin.string.TodoEdit}
   okAction={editTodo}
   canSave={name.length > 0}
   space={item.space}
   on:close={() => {
     dispatch('close')
   }}
-  okLabel={task.string.TodoSave}>
+  okLabel={plugin.string.TodoSave}>
     <Grid column={1} rowGap={1.75}>
       <EditBox
-      label={task.string.TodoDescription}
+      label={plugin.string.TodoDescription}
       bind:value={name}
       icon={task.icon.Task}
-      placeholder="todo..."
+      placeholder={plugin.string.TodoDescriptionPlaceholder}
       maxWidth="39rem"
       focus
     />
-    <DatePicker title={task.string.TodoDueDate} bind:selected={dueTo} />
+    <DatePicker title={plugin.string.TodoDueDate} bind:selected={dueTo} />
   </Grid>
 </Card>

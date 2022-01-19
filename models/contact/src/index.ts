@@ -41,7 +41,7 @@ export const DOMAIN_CONTACT = 'contact' as Domain
 export class TChannelProvider extends TDoc implements ChannelProvider {
   label!: IntlString
   icon?: Asset
-  placeholder!: string
+  placeholder!: IntlString
 }
 
 @Model(contact.class.TypeChannel, core.class.Type)
@@ -172,7 +172,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'Phone' as IntlString,
       icon: contact.icon.Phone,
-      placeholder: '+1 555 333 7777'
+      placeholder: '+1 555 333 7777' as IntlString
     },
     contact.channelProvider.Phone
   )
@@ -183,7 +183,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'LinkedIn' as IntlString,
       icon: contact.icon.LinkedIn,
-      placeholder: 'https://linkedin.com/in/jappleseed'
+      placeholder: 'https://linkedin.com/in/jappleseed' as IntlString
     },
     contact.channelProvider.LinkedIn
   )
@@ -194,7 +194,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'Twitter' as IntlString,
       icon: contact.icon.Twitter,
-      placeholder: '@appleseed'
+      placeholder: '@appleseed' as IntlString
     },
     contact.channelProvider.Twitter
   )
@@ -205,7 +205,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'GitHub' as IntlString,
       icon: contact.icon.GitHub,
-      placeholder: '@appleseed'
+      placeholder: '@appleseed' as IntlString
     },
     contact.channelProvider.GitHub
   )

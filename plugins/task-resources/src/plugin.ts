@@ -13,31 +13,39 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
 import task, { taskId } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(taskId, task, {
   string: {
-    ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString,
     CreateProject: '' as IntlString,
     ProjectName: '' as IntlString,
+    ProjectNamePlaceholder: '' as IntlString,
+    CreateTask: '' as IntlString,
+    TaskAssignee: '' as IntlString,
+    TaskNamePlaceholder: '' as IntlString,
+    TaskDescription: '' as IntlString,
+    TaskDescriptionPlaceholder: '' as IntlString,
+    States: '' as IntlString,
+    DoneStates: '' as IntlString,
+    TodoDescriptionPlaceholder: '' as IntlString,
+    Todos: '' as IntlString,
+    TodoName: '' as IntlString,
+
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    CreateTask: '' as IntlString,
     TaskProject: '' as IntlString,
     SelectProject: '' as IntlString,
     TaskName: '' as IntlString,
-    TaskAssignee: '' as IntlString,
+    AssignThisTask: '' as IntlString,
     TaskUnAssign: '' as IntlString,
-    TaskDescription: '' as IntlString,
     More: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,
     NoTaskForObject: '' as IntlString,
     Delete: '' as IntlString,
     NoTodoItems: '' as IntlString,
-    TodoName: '' as IntlString,
     TodoState: '' as IntlString,
     DoneState: '' as IntlString,
     UndoneState: '' as IntlString,
@@ -45,7 +53,12 @@ export default mergeIds(taskId, task, {
     TodoDescription: '' as IntlString,
     TodoEdit: '' as IntlString,
     TodoSave: '' as IntlString,
-    TodoCreate: '' as IntlString
+    TodoCreate: '' as IntlString,
+    ActiveStates: '' as IntlString,
+    DoneStatesWon: '' as IntlString,
+    DoneStatesLost: '' as IntlString,
+    AllStates: '' as IntlString,
+    ChooseAColor: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

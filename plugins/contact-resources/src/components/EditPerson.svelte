@@ -87,10 +87,10 @@
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          <EditBox placeholder="John" maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+          <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
         </div>
         <div class="name">
-          <EditBox placeholder="Appleseed" maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+          <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
         </div>
         <div class="location">
           <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" />

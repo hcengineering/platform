@@ -80,9 +80,9 @@
       <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="12rem" bind:value={firstName} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="12rem" bind:value={lastName} /></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="12rem" bind:value={object.city} /></div>
+      <div class="fs-title"><EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="12rem" bind:value={lastName} /></div>
+      <div class="small-text"><EditBox placeholder={contact.string.PersonLocationPlaceholder} maxWidth="12rem" bind:value={object.city} /></div>
     </div>
   </div>
 

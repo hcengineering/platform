@@ -23,7 +23,7 @@
   import { IconArrowLeft, Label } from '@anticrm/ui'
   import { Contact, formatName } from '@anticrm/contact'
   import { TextEditor } from '@anticrm/text-editor'
-  import gmail from '../plugin'
+  import plugin from '../plugin'
 
   export let object: Contact
   export let contact: string
@@ -71,20 +71,30 @@
   <div class="flex-grow flex-col">
     <div class="fs-title">Gmail</div>
     <div class="small-text content-dark-color overflow-label">
-      <Label label={gmail.string.NewMessageTo} />
+      <Label label={plugin.string.NewMessageTo} />
       <span class="content-accent-color">{formatName(object.name)} ({contact})</span>
     </div>
   </div>
   <div class="mr-3">
-    <Button label={gmail.string.Send} size={'small'} primary on:click={sendMsg} />
+    <Button label={plugin.string.Send} size={'small'} primary on:click={sendMsg} />
   </div>
 </div>
 <div class="flex-col clear-mins right-content">
   <div class="mb-2">
-    <EditBox label={gmail.string.Subject} bind:value={obj.subject} placeholder={'Message subject'} maxWidth={'min-content'} />
+    <EditBox
+      label={plugin.string.Subject}
+      bind:value={obj.subject}
+      placeholder={plugin.string.SubjectPlaceholder}
+      maxWidth={'min-content'}
+    />
   </div>
   <div class="mb-4">
-    <EditBox label={gmail.string.Copy} bind:value={copy} placeholder={'Copy to'} maxWidth={'min-content'} />
+    <EditBox
+      label={plugin.string.Copy}
+      bind:value={copy}
+      placeholder={plugin.string.CopyPlaceholder}
+      maxWidth={'min-content'}
+    />
   </div>
   <div class="input clear-mins">
     <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />

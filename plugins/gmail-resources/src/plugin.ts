@@ -35,6 +35,8 @@ export default mergeIds(gmailId, gmail, {
     Subject: '' as IntlString,
     Send: '' as IntlString,
     NewMessageTo: '' as IntlString,
-    Cancel: '' as IntlString
+    Cancel: '' as IntlString,
+    SubjectPlaceholder: '' as IntlString,
+    CopyPlaceholder: '' as IntlString
   }
 })

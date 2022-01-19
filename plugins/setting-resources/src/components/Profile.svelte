@@ -24,6 +24,7 @@
   import setting from '@anticrm/setting'
   import { CircleButton, EditBox, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
+  import contactRes from '@anticrm/contact-resources/src/plugin'
   import { getCurrentAccount, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
@@ -101,7 +102,7 @@
         <div class="flex-col">
           <div class="name">
             <EditBox
-              placeholder="John"
+              placeholder={contactRes.string.PersonFirstNamePlaceholder}
               maxWidth="20rem"
               bind:value={firstName}
               on:change={() => {
@@ -111,7 +112,7 @@
           </div>
           <div class="name">
             <EditBox
-              placeholder="Appleseed"
+              placeholder={contactRes.string.PersonLastNamePlaceholder}
               maxWidth="20rem"
               bind:value={lastName}
               on:change={() => {

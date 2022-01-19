@@ -22,7 +22,7 @@
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { DoneState, LostState, WonState, DocWithRank, calcRank } from '@anticrm/task'
   import { AnySvelteComponent, getPlatformColor } from '@anticrm/ui'
-  import { AnyComponent, Loading, ScrollBox } from '@anticrm/ui'
+  import { Loading, ScrollBox } from '@anticrm/ui'
   import KanbanPanel from './KanbanPanel.svelte'
   // import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
@@ -30,9 +30,10 @@
 
   export let _class: Ref<Class<Item>>
   export let space: Ref<SpaceWithStates>
+  // export let open: AnyComponent
   export let search: string
   export let options: FindOptions<Item> | undefined
-  export let config: string[]
+  // export let config: string[]
 
   let kanban: Kanban
   let states: State[] = []
@@ -101,7 +102,7 @@
     )
   }
 
-  function dragover (ev: MouseEvent, object: Item) {
+  function dragover (object: Item) {
     if (dragCard !== object) {
       const dragover = objects.indexOf(object)
       objects = objects.filter(x => x !== dragCard)
@@ -181,7 +182,7 @@
     <ScrollBox>
       <div class="kanban-content">
         {#each states as state (state)}
-          <KanbanPanel label={state.title} color={getPlatformColor(state.color)} counter={4}
+          <KanbanPanel label={state.title} color={getPlatformColor(state.color)} addAction={() => {}}
             on:dragover={(event) => {
               event.preventDefault()
               if (dragCard.state !== state._id) {
@@ -197,8 +198,8 @@
               {#if object.state === state._id && (target === undefined || target.has(object._id))}
                 <div
                   class="step-tb75"
-                  on:dragover|preventDefault={(ev) => {
-                    dragover(ev, object)
+                  on:dragover|preventDefault={() => {
+                    dragover(object)
                     dragCardEndPosition = j
                   }}
                   on:drop|preventDefault={() => {

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
+import { IntlString, plugin } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Doc, Ref, Class, UXObject, Space, Account } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
@@ -32,7 +32,7 @@ export interface Persons extends Space {}
  * @public
  */
 export interface ChannelProvider extends Doc, UXObject {
-  placeholder: string
+  placeholder: IntlString
   presenter?: AnyComponent
   integrationType?: Ref<Doc>
 }
