@@ -75,7 +75,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'Gmail' as IntlString,
       icon: contact.icon.Email,
-      placeholder: 'john.appleseed@apple.com',
+      placeholder: 'john.appleseed@apple.com' as IntlString,
       presenter: gmail.component.Main,
       integrationType: gmail.integrationType.Gmail
     },

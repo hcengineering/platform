@@ -34,6 +34,7 @@ export default mergeIds(chunterId, chunter, {
     Channels: '' as IntlString,
     CreateChannel: '' as IntlString,
     ChannelName: '' as IntlString,
+    ChannelNamePlaceholder: '' as IntlString,
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString

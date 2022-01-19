@@ -6,6 +6,7 @@
     "Channels": "Channels",
     "CreateChannel": "New Channel",
     "ChannelName": "Name",
+    "ChannelNamePlaceholder": "Channel",
     "ChannelDescription": "Description",
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",

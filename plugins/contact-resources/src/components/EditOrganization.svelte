@@ -60,7 +60,7 @@
     </div>
     <div class="flex-grow flex-col">
       <div class="name">
-        <EditBox placeholder="John" maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
+        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
       </div>
       <div class="flex-between channels">
         <div class="flex-row-center">

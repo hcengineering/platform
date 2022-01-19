@@ -57,7 +57,9 @@
       <Company size={'large'} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="Apple" maxWidth="11rem" bind:value={object.name} /></div>
+      <div class="fs-title">
+        <EditBox placeholder={contact.string.OrganizationNamePlaceholder} maxWidth="11rem" bind:value={object.name} />
+      </div>
     </div>
   </div>
 
