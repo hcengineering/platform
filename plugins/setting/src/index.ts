@@ -84,7 +84,10 @@ export default plugin(settingId, {
     NewPassword: '' as IntlString,
     Save: '' as IntlString,
     Saving: '' as IntlString,
-    Saved: '' as IntlString
+    Saved: '' as IntlString,
+    EnterCurrentPassword: '' as IntlString,
+    EnterNewPassword: '' as IntlString,
+    RepeatNewPassword: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

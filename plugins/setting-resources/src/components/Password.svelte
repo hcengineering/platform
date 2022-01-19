@@ -51,7 +51,7 @@
         <div>
           <EditBox
             password
-            placeholder="Enter current password"
+            placeholder={setting.string.EnterCurrentPassword}
             label={setting.string.CurrentPassword}
             maxWidth="20rem"
             bind:value={oldPassword}
@@ -60,7 +60,7 @@
         <div class="mt-6">
           <EditBox
             password
-            placeholder="Enter new password"
+            placeholder={setting.string.EnterNewPassword}
             label={setting.string.NewPassword}
             maxWidth="20rem"
             bind:value={password}
@@ -69,7 +69,7 @@
         <div class="mt-6">
           <EditBox
             password
-            placeholder="Repeat new password"
+            placeholder={setting.string.RepeatNewPassword}
             label={setting.string.NewPassword}
             maxWidth="20rem"
             bind:value={password2}
