@@ -84,7 +84,7 @@
 
     await client.addCollection(
       recruit.class.Applicant,
-      space, candidateInstance._id, recruit.mixin.Candidate, 'applications',
+      doc.space, candidateInstance._id, recruit.mixin.Candidate, 'applications',
       {
         state: state._id,
         doneState: null,
