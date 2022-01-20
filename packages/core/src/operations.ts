@@ -35,8 +35,8 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.findAll(_class, query, options)
   }
 
-  async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
-    return (await this.findAll(_class, query, options))[0]
+  findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
+    return this.client.findOne(_class, query, options)
   }
 
   tx (tx: Tx): Promise<TxResult> {

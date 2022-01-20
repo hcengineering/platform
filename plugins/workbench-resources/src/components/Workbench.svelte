@@ -56,7 +56,7 @@
   onDestroy(
     location.subscribe(async (loc) => {
       currentApp = loc.path[1] as Ref<Application>
-      currentApplication = (await client.findAll(workbench.class.Application, { _id: currentApp }))[0]
+      currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
       navigatorModel = currentApplication?.navigatorModel
       const currentFolder = loc.path[2] as Ref<Space>
       ownSpecialComponent = getOwnSpecialComponent(currentFolder)
@@ -71,7 +71,7 @@
         return
       }
 
-      const space = (await client.findAll(core.class.Space, { _id: currentFolder }))[0]
+      const space = await client.findOne(core.class.Space, { _id: currentFolder })
       currentSpace = currentFolder
       if (space) {
         const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]

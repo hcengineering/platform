@@ -109,7 +109,7 @@ export class LiveQuery extends TxProcessor implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    return (await this.findAll(_class, query, options))[0]
+    return await this.client.findOne(_class, query, options)
   }
 
   query<T extends Doc>(
@@ -285,7 +285,7 @@ export class LiveQuery extends TxProcessor implements Client {
     for (const key in lookup) {
       const _class = (lookup as any)[key] as Ref<Class<Doc>>
       const _id = (doc as any)[key] as Ref<Doc>
-      ;(result as any)[key] = (await this.client.findAll(_class, { _id }))[0]
+      ;(result as any)[key] = await this.client.findOne(_class, { _id })
     }
     ;(doc as WithLookup<Doc>).$lookup = result
   }
