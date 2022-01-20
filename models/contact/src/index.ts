@@ -15,10 +15,10 @@
 
 import type { Domain, Type, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX, Index, Collection, ArrOf } from '@anticrm/model'
+import { Builder, Model, Prop, TypeString, UX, Index, Collection, TypeRef } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 import chunter from '@anticrm/model-chunter'
-import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
+import core, { TAccount, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
 import type {
   Contact,
   Person,
@@ -64,8 +64,8 @@ export class TContact extends TDoc implements Contact {
 
   avatar?: string
 
-  @Prop(ArrOf(TypeChannel()), 'Contact Info' as IntlString)
-  channels!: Channel[]
+  @Prop(Collection(contact.class.Channel), 'Contact Info' as IntlString)
+  channels?: number
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
@@ -75,6 +75,16 @@ export class TContact extends TDoc implements Contact {
 
   @Prop(TypeString(), 'Location' as IntlString)
   city!: string
+}
+
+@Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CONTACT)
+@UX('Channel' as IntlString, contact.icon.Person, undefined, 'name')
+export class TChannel extends TAttachedDoc implements Channel {
+  @Prop(TypeRef(contact.class.ChannelProvider), 'Channel provider' as IntlString)
+  provider!: Ref<ChannelProvider>
+
+  @Prop(TypeString(), 'Value' as IntlString)
+  value!: string
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -113,7 +123,8 @@ export function createModel (builder: Builder): void {
     TOrganization,
     TOrganizations,
     TEmployee,
-    TEmployeeAccount
+    TEmployeeAccount,
+    TChannel
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {

@@ -19,10 +19,11 @@
   import type { Data, MixinData, Ref } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
-  import presentation, { EditableAvatar, Card, Channels, getClient, PDFViewer } from '@anticrm/presentation'
+  import { EditableAvatar, Card, getClient, PDFViewer } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import { CircleButton, EditBox, IconAdd, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
+  import { EditBox, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import { ChannelsEditor } from '@anticrm/contact-resources'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
@@ -153,15 +154,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    {#if !object.channels || object.channels.length === 0}
-      <CircleButton icon={IconAdd} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
-      <span><Label label={presentation.string.AddSocialLinks} /></span>
-    {:else}
-      <Channels value={object.channels} size={'small'} />
-      <div class="ml-1">
-        <CircleButton icon={contact.icon.Edit} size={'small'} transparent on:click={(ev) => showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => { object.channels = result })} />
-      </div>
-    {/if}
+    <ChannelsEditor attachedTo={candidateId} attachedClass={contact.class.Person} />
   </div>
 
   <div class="flex-center resume" class:solid={dragover || resume.uuid} 
@@ -191,7 +184,6 @@
 <style lang="scss">
   .channels {
     margin-top: 1.25rem;
-    span { margin-left: .5rem; }
   }
 
   .locations {

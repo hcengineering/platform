@@ -31,8 +31,11 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
+import Contacts from './components/Contacts.svelte'
+import ChannelsEditor from './components/ChannelsEditor.svelte'
+import { Resources } from '@anticrm/platform'
 
-export { ContactPresenter }
+export { ChannelsEditor, ContactPresenter }
 
 async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
   return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({

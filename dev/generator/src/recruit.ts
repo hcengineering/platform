@@ -1,4 +1,4 @@
-import contact, { Employee, EmployeeAccount, Person } from '@anticrm/contact'
+import contact, { Channel, Employee, EmployeeAccount, Person } from '@anticrm/contact'
 import core, {
   AttachedData,
   Data,
@@ -225,7 +225,6 @@ async function genCandidate (
   const candidate: Data<Person> = {
     name: fName + ',' + lName,
     city: faker.address.city(),
-    channels: [{ provider: contact.channelProvider.Email, value: faker.internet.email(fName, lName) }],
     avatar: imgId
   }
 
@@ -238,10 +237,19 @@ async function genCandidate (
 
   const candidateId = (options.random ? `candidate-${generateId()}-${i}` : `candidate-genid-${i}`) as Ref<Candidate>
   candidates.push(candidateId)
+  const channelId = (options.random ? `channel-${generateId()}-${i}` : `channel-genid-${i}`) as Ref<Channel>
 
   // Update or create candidate
   await ctx.with('find-update', {}, async () => {
     await findOrUpdate(ctx, client, recruit.space.CandidatesPublic, contact.class.Person, candidateId, candidate)
+    await findOrUpdateAttached(ctx, client, recruit.space.CandidatesPublic, contact.class.Channel, channelId, {
+      provider: contact.channelProvider.Email,
+      value: faker.internet.email(fName, lName)
+    }, {
+      attachedTo: candidateId,
+      attachedClass: contact.class.Person,
+      collection: 'channels'
+    })
     await client.updateMixin(candidateId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateMixin)
   })
 

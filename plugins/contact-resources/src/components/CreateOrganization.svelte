@@ -16,18 +16,21 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import presentation, { getClient, Card, Channels } from '@anticrm/presentation'
+  import { getClient, Card } from '@anticrm/presentation'
 
-  import { EditBox, showPopup, CircleButton, IconEdit, IconAdd, Label } from '@anticrm/ui'
-  import SocialEditor from './SocialEditor.svelte'
+  import { EditBox } from '@anticrm/ui'
 
   import { Organization } from '@anticrm/contact'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
+  import { generateId } from '@anticrm/core'
+  import ChannelsEditor from './ChannelsEditor.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
   }
+
+  const id = generateId()
 
   const object: Organization = {
     name: ''
@@ -37,7 +40,7 @@
   const client = getClient()
 
   async function createOrganization () {
-    await client.createDoc(contact.class.Organization, contact.space.Contacts, object)
+    await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
 
     dispatch('close')
   }
@@ -64,31 +67,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    {#if !object.channels || object.channels.length === 0}
-      <CircleButton
-        icon={IconAdd}
-        size={'small'}
-        transparent
-        on:click={(ev) =>
-          showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
-            object.channels = result
-          })}
-      />
-      <span><Label label={presentation.string.AddSocialLinks} /></span>
-    {:else}
-      <Channels value={object.channels} size={'small'} />
-      <div class="ml-1">
-        <CircleButton
-          icon={IconEdit}
-          size={'small'}
-          transparent
-          on:click={(ev) =>
-            showPopup(SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
-              object.channels = result
-            })}
-        />
-      </div>
-    {/if}
+    <ChannelsEditor attachedTo={id} attachedClass={contact.class.Organization} />
   </div>
 </Card>
 
@@ -102,8 +81,5 @@
   }
   .channels {
     margin-top: 1.25rem;
-    span {
-      margin-left: 0.5rem;
-    }
   }
 </style>

@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, {
+  import {
     AttributeEditor,
-    Channels,
     createQuery,
     EditableAvatar,
     getClient
   } from '@anticrm/presentation'
 
   import setting from '@anticrm/setting'
-  import { CircleButton, EditBox, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { EditBox, Icon, Label } from '@anticrm/ui'
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
   import contactRes from '@anticrm/contact-resources/src/plugin'
   import { getCurrentAccount, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
   import { changeName } from '@anticrm/login-resources'
+  import { ChannelsEditor } from '@anticrm/contact-resources'
   const client = getClient()
 
   let account: EmployeeAccount | undefined
@@ -129,41 +129,7 @@
 
         <div class="flex-between channels">
           <div class="flex-row-center">
-            {#if !employee.channels || employee.channels.length === 0}
-              <CircleButton
-                icon={IconAdd}
-                size={'small'}
-                selected
-                on:click={(ev) =>
-                  showPopup(
-                    contact.component.SocialEditor,
-                    { values: employee?.channels ?? [] },
-                    ev.target,
-                    (result) => {
-                      saveChannels(result)
-                    }
-                  )}
-              />
-              <span><Label label={presentation.string.AddSocialLinks} /></span>
-            {:else}
-              <Channels value={employee.channels} size={'small'} />
-              <div class="ml-1">
-                <CircleButton
-                  icon={contact.icon.Edit}
-                  size={'small'}
-                  selected
-                  on:click={(ev) =>
-                    showPopup(
-                      contact.component.SocialEditor,
-                      { values: employee?.channels ?? [] },
-                      ev.target,
-                      (result) => {
-                        saveChannels(result)
-                      }
-                    )}
-                />
-              </div>
-            {/if}
+            <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} />
           </div>
         </div>
       </div>

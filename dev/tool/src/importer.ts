@@ -16,7 +16,7 @@
 
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
-import contact, { ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
+import contact, { Channel, ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
 import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult, MixinData } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
@@ -261,8 +261,7 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
 
   const data: Data<Person> = {
     name: names.slice(1).join(' ') + ',' + names[0],
-    city: get(c, _.city) ?? '',
-    channels: []
+    city: get(c, _.city) ?? ''
   }
 
   const candidateData: MixinData<Person, Candidate> = {
@@ -277,8 +276,10 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
     ].filter(p => p !== undefined && p.trim().length > 0).filter(onlyUniq).join('/')
   }
 
-  pushChannel(c, data, _.email, contact.channelProvider.Email)
-  pushChannel(c, data, _.phone, contact.channelProvider.Phone)
+  const channels: AttachedData<Channel>[] = []
+
+  pushChannel(c, channels, _.email, contact.channelProvider.Email)
+  pushChannel(c, channels, _.phone, contact.channelProvider.Phone)
 
   const commentData: string[] = []
 
@@ -291,17 +292,23 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
   addComment(commentData, c, _.comment)
 
   if (telegram !== undefined) {
-    data.channels.push({ provider: contact.channelProvider.Telegram, value: telegram })
+    channels.push({ provider: contact.channelProvider.Telegram, value: telegram })
   }
   if (linkedin !== undefined) {
-    data.channels.push({ provider: contact.channelProvider.LinkedIn, value: linkedin })
+    channels.push({ provider: contact.channelProvider.LinkedIn, value: linkedin })
   }
   if (github !== undefined) {
-    data.channels.push({ provider: contact.channelProvider.GitHub, value: github })
+    channels.push({ provider: contact.channelProvider.GitHub, value: github })
   }
   await findOrUpdate(client, recruit.space.CandidatesPublic, contact.class.Person, candId, data)
   await client.updateMixin(candId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateData)
 
+  for (let i = 0; i < channels.length; i++) {
+    const element = channels[i]
+    const channelId = (candId + '.channel.' + i.toString()) as Ref<Channel>
+    await findOrUpdateAttached(client, recruit.space.CandidatesPublic, contact.class.Channel, channelId,
+      element, { attachedTo: candId, attachedClass: recruit.mixin.Candidate, collection: 'channels' })
+  }
   const commentId = (candId + '.description.comment') as Ref<Comment>
 
   if (commentData.length > 0) {
@@ -349,10 +356,10 @@ function parseSocials (c: any): { sourceFields: string[], telegram: string | und
   return { sourceFields, telegram, linkedin, github }
 }
 
-function pushChannel (c: any, data: Data<Candidate>, key: string, provider: Ref<ChannelProvider>): void {
+function pushChannel (c: any, channels: AttachedData<Channel>[], key: string, provider: Ref<ChannelProvider>): void {
   const value = get(c, key)
   if (value !== undefined) {
-    data.channels.push({ provider, value })
+    channels.push({ provider, value })
   }
 }
 export async function findOrUpdate<T extends Doc> (client: TxOperations, space: Ref<Space>, _class: Ref<Class<T>>, objectId: Ref<T>, data: Data<T>): Promise<void> {
