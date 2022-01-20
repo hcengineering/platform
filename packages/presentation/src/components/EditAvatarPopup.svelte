@@ -17,6 +17,7 @@
   import { getResource } from '@anticrm/platform'
   import { Button } from '@anticrm/ui'
   import imageCropper from '@anticrm/image-cropper'
+  import plugin from '../plugin'
 
   export let file: File
 
@@ -38,7 +39,7 @@
       <Cropper bind:this={cropper} image={file} />
     </div>
     <div class="footer ml-6 mr-6 mt-4 mb-4">
-      <Button label={"Save"} primary on:click={onCrop} />
+      <Button label={plugin.string.Save} primary on:click={onCrop} />
     </div>
   {/await}
 </div>

@@ -15,8 +15,8 @@
 -->
 
 <script lang="ts">
-  import type { AttachedDoc, Class, Doc, Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
+  // import core from '@anticrm/core'
+  import type { Class, Doc, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import view from '@anticrm/view'

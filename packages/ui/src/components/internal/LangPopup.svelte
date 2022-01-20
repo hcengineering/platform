@@ -22,9 +22,10 @@
   const dispatch = createEventDispatcher()  
 </script>
 
-<div class="flex-col popup">
+<div class="antiPopup">
+  <div class="ap-space" />
   {#each langs as lang}
-    <div class="flex-row-center menu-item" on:click={() => { 
+    <div class="ap-menuItem ap-woScroll flex-row-center" on:click={() => { 
       dispatch('close', lang.id)
     }}>
       <svg class="svg-small">
@@ -33,29 +34,5 @@
       <div class="ml-3"><Label label={lang.label} /></div>
     </div>
   {/each}
+  <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .popup {
-    padding: .5rem;
-    height: 100%;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: .375rem 1rem .375rem .5rem;
-    color: var(--theme-content-color);
-    border-radius: .5rem;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--theme-button-bg-hovered);
-      color: var(--theme-caption-color);
-    }
-  }
-</style>

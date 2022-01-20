@@ -15,12 +15,11 @@
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
-  import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
+  import ui, { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import SpaceInfo from './SpaceInfo.svelte'
 
   import type { Ref, Class, Space } from '@anticrm/core'
   import { createQuery } from '../utils'
-  import presentation from '..'
 
   export let _class: Ref<Class<Space>>
 
@@ -33,62 +32,21 @@
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="popup">
-  <div class="flex-col">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-    <div class="label"><Label label={presentation.string.Suggested} /></div>
+<div class="antiPopup antiPopup-withHeader">
+  <div class="ap-space" />
+  <div class="ap-header">
+    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} focus />
+    <div class="ap-caption"><Label label={ui.string.Suggested} /></div>
   </div>
-  <div class="flex-grow scroll">
-    <div class="flex-col h-full box">
+  <div class="ap-space" />
+  <div class="ap-scroll">
+    <div class="ap-box">
       {#each objects as space}
-        <button class="menu-item" on:click={() => { dispatch('close', space) }}>
+        <button class="ap-menuItem" on:click={() => { dispatch('close', space) }}>
           <SpaceInfo size={'large'} value={space} />
         </button>
       {/each}
     </div>
   </div>
+  <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .popup {
-    display: flex;
-    flex-direction: column;
-    padding: .5rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
-    user-select: none;
-  }
-
-  .label {
-    margin: 1rem 0 .625rem .375rem;
-    font-size: .75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--theme-content-dark-color);
-  }
-
-  .scroll {
-    overflow-y: scroll;
-    .box { padding-right: 1px; }
-  }
-
-  .menu-item {
-    justify-content: start;
-    padding: .5rem;
-    color: var(--theme-content-color);
-    border-radius: .5rem;
-
-    &:hover {
-      color: var(--theme-caption-color);
-      background-color: var(--theme-button-bg-hovered);
-    }
-    &:focus {
-      color: var(--theme-content-accent-color);
-      background-color: var(--theme-button-bg-pressed);
-      z-index: 1;
-    }
-  }
-</style>

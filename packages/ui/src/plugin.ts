@@ -31,6 +31,8 @@ export default plugin(uiId, {
     Days: '' as IntlString,
     ShowMore: '' as IntlString,
     ShowLess: '' as IntlString,
-    Search: '' as IntlString
+    Search: '' as IntlString,
+    SearchDots: '' as IntlString,
+    Suggested: '' as IntlString
   }
 })
