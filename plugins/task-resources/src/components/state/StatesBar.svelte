@@ -20,7 +20,6 @@
   import { getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
-  import { getPlatformColor } from '@anticrm/ui'
 
   export let space: Ref<SpaceWithStates>
   export let state: Ref<State> | undefined = undefined
