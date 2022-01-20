@@ -33,8 +33,7 @@ export async function createDeps (client: Client): Promise<void> {
     contact.space.Employee,
     {
       name: 'Chen,Rosamund',
-      city: 'Mountain View',
-      channels: []
+      city: 'Mountain View'
     },
     account.employee
   )
@@ -44,15 +43,13 @@ export async function createDeps (client: Client): Promise<void> {
     recruit.space.CandidatesPublic,
     {
       name: 'P.,Andrey',
-      city: 'Monte Carlo',
-      channels: [
-        {
-          provider: contact.channelProvider.Email,
-          value: 'andrey@hc.engineering'
-        }
-      ]
+      city: 'Monte Carlo'
     }
   )
+  await tx.addCollection(contact.class.Channel, recruit.space.CandidatesPublic, u1, contact.class.Person, 'channels', {
+    provider: contact.channelProvider.Email,
+    value: 'andrey@hc.engineering'
+  })
 
   await tx.createMixin(u1, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
     title: 'Chief Architect'
@@ -63,15 +60,13 @@ export async function createDeps (client: Client): Promise<void> {
     recruit.space.CandidatesPublic,
     {
       name: 'M.,Marina',
-      city: 'Los Angeles',
-      channels: [
-        {
-          provider: contact.channelProvider.Email,
-          value: 'marina@hc.engineering'
-        }
-      ]
+      city: 'Los Angeles'
     }
   )
+  await tx.addCollection(contact.class.Channel, recruit.space.CandidatesPublic, u2, contact.class.Person, 'channels', {
+    provider: contact.channelProvider.Email,
+    value: 'marina@hc.engineering'
+  })
   await tx.createMixin(u2, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
     title: 'Chief Designer'
   })
@@ -81,15 +76,13 @@ export async function createDeps (client: Client): Promise<void> {
     recruit.space.CandidatesPublic,
     {
       name: 'P.,Alex',
-      city: 'Krasnodar, Russia',
-      channels: [
-        {
-          provider: contact.channelProvider.Email,
-          value: 'alex@hc.engineering'
-        }
-      ]
+      city: 'Krasnodar, Russia'
     }
   )
+  await tx.addCollection(contact.class.Channel, recruit.space.CandidatesPublic, u3, contact.class.Person, 'channels', {
+    provider: contact.channelProvider.Email,
+    value: 'alex@hc.engineering'
+  })
   await tx.createMixin(u3, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, {
     title: 'Frontend Engineer'
   })

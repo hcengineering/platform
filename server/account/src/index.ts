@@ -406,8 +406,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
     if (existingAccount === undefined) {
       const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name,
-        city: '',
-        channels: []
+        city: ''
       })
 
       await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
@@ -421,8 +420,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
         // Employee was deleted, let's restore it.
         const employeeId = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
           name,
-          city: '',
-          channels: []
+          city: ''
         })
         await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, { employee: employeeId })
       }
