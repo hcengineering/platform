@@ -47,6 +47,7 @@
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-gmail": "~0.6.0",
     "@anticrm/model-inventory": "~0.6.0",
+    "@anticrm/model-presentation": "~0.6.0",
     "@anticrm/core": "~0.6.13"
   }
 }

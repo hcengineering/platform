@@ -22,6 +22,7 @@ import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import { Application } from '@anticrm/workbench'
 import type { Action } from '@anticrm/view'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 
 export default mergeIds(taskId, task, {
   app: {
@@ -85,12 +86,17 @@ export default mergeIds(taskId, task, {
     MarkAsUndone: '' as IntlString,
     Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString
+    Projects: '' as IntlString,
+    SearchTask: '' as IntlString
   },
   space: {
     TasksPublic: '' as Ref<Space>
   },
   template: {
     DefaultProject: '' as Ref<KanbanTemplate>
+  },
+  completion: {
+    IssueQuery: '' as Resource<ObjectSearchFactory>,
+    IssueCategory: '' as Ref<ObjectSearchCategory>
   }
 })

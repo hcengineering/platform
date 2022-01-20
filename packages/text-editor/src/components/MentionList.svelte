@@ -14,18 +14,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@anticrm/contact'
-  import { UserInfo } from '@anticrm/presentation'
-import { createEventDispatcher } from 'svelte';
-
-  export let items: Person[]
-  export let query: string
+  import { getResource, translate } from '@anticrm/platform'
+  import { getClient, ObjectSearchCategory, ObjectSearchResult } from '@anticrm/presentation'
+  import { ActionIcon, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
+  import plugin from '../plugin'
+  
+  export let query: string = ''
+  export let items: ObjectSearchResult[]
   export let clientRect: () => ClientRect
   export let command: (props: any) => void
   export let close: () => void
+  export let categories: ObjectSearchCategory[]
+  export let category: ObjectSearchCategory
+  
+  export let onCategory: (cat: ObjectSearchCategory) => void
 
+  const client = getClient()
   let popup: HTMLDivElement
   let selected = 0
+
+  function dispatchItem (item: ObjectSearchResult): void {
+    command({ id: item.doc._id, label: item.title, objectclass: item.doc._class })
+  }
 
   export function onKeyDown (ev: KeyboardEvent) {
     if (ev.key === 'ArrowDown') {
@@ -36,19 +46,24 @@ import { createEventDispatcher } from 'svelte';
       if (selected > 0) selected--
       return true
     }
+    if (ev.key === 'Tab') {
+      const pos = categories.indexOf(category)
+      category = categories[(pos + 1) % categories.length]
+      return true
+    }
     if (ev.key === 'Enter') {
-      const person = items[selected]
-      if (person) {
-        command({ id: person._id, label: formatName(person.name), objectclass: person._class })
+      const item = items[selected]
+      if (item) {
+        dispatchItem(item)
         return true
       } else {
         return false
       }
     }
     // TODO: How to prevent Esc, it should hide popup instead of closing editor.
-    // if (ev.key === 'Esc') {
-    //   return true
-    // }
+    if (ev.key === 'Esc') {
+      return false
+    }
     return false
   }
 
@@ -56,15 +71,32 @@ import { createEventDispatcher } from 'svelte';
     console.log('done')
   }
 
+  function updateStyle (popup: HTMLDivElement): void {
+    const x = clientRect().left
+    const height = popup.getBoundingClientRect().height
+    const y = clientRect().top - height - 16
+    style = `left: ${x}px; top: ${y}px;`
+  }
+
   let style = 'visibility: hidden'
-  $: {
-    if (popup) {
-      const x = clientRect().left
-      const height = popup.getBoundingClientRect().height
-      const y = clientRect().top - height - 16
-      style = `left: ${x}px; top: ${y}px;`
+  $: if (popup) {
+    updateStyle(popup)
+  }
+
+  async function updateItems (category: ObjectSearchCategory, query: string): Promise<void> {
+    const f = await getResource(category.query)
+    items = await f(client, query)
+    if (selected > items.length) {
+      selected = 0
     }
   }
+  $: updateItems(category, query)
+
+  let placeholder = ''
+
+  $: translate(category.label, {}).then((v) => {
+    placeholder = v
+  })
 </script>
 
 <div
@@ -74,15 +106,29 @@ import { createEventDispatcher } from 'svelte';
   }}
 />
 <div>
-  <div bind:this={popup} class="completion" {style}>
-    <div class="caption">Contacts</div>
-    <div class="scroll">
+  <div bind:this={popup} class="completion" {style} on:keydown={onKeyDown}>
+    <div class='category-container'>
+      {#each categories as c}
+        <div class='category-selector' class:selected={category.label === c.label}>
+          <ActionIcon label={c.label} icon={c.icon} size={'medium'} action={() => {
+            category = c
+            onCategory(c)
+            updateItems(c, query)
+          } }/>
+        </div>
+      {/each}
+    </div>
+    <div class='mt-4 mb-4'>
+      <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={placeholder} />
+    </div>
+    <Label label={plugin.string.Suggested}/>
+    <div class="scroll mt-2">
       {#each items as item, i}
         <div
           class="item"
           class:selected={i === selected}
           on:click={() => {
-            command({ id: item._id, label: formatName(item.name), objectclass: item._class })
+            dispatchItem(item)
           }}
           on:focus={() => {
             selected = i
@@ -91,7 +137,7 @@ import { createEventDispatcher } from 'svelte';
             selected = i
           }}
         >
-          <UserInfo size={'medium'} value={item} />
+          <svelte:component this={item.component} value={item.doc} {...item.componentProps ?? {}} />
         </div>
       {/each}
     </div>
@@ -115,6 +161,8 @@ import { createEventDispatcher } from 'svelte';
   .completion {
     position: absolute;
     z-index: 2010;
+    min-width: 300px;
+    height: 332px;
     padding: 16px;
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-bg-accent-hover);
@@ -129,12 +177,22 @@ import { createEventDispatcher } from 'svelte';
       color: var(--theme-content-trans-color);
     }
     .scroll {
-      max-height: 200px;
+      max-height: calc(300px - 128px);
       display: grid;
       grid-auto-flow: row;
       gap: 12px;
-      height: calc(100% - 71px);
       overflow-y: auto;
+    }
+  }
+
+  .category-container {
+    display: flex;
+    .category-selector {
+      margin-right: 1rem;
+      opacity: 0.7;
+      &.selected {
+        opacity: 1;
+      }
     }
   }
 </style>

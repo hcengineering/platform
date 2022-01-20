@@ -537,6 +537,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/model-presentation",
+      "projectFolder": "models/presentation",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/client",
       "projectFolder": "plugins/client",
       "shouldPublish": true

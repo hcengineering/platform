@@ -14,7 +14,7 @@
 //
 
 import type { Client, Doc } from '@anticrm/core'
-import { OK, Resources, Severity, Status } from '@anticrm/platform'
+import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { Applicant } from '@anticrm/recruit'
 import { showPopup } from '@anticrm/ui'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
@@ -29,6 +29,9 @@ import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import recruit from './plugin'
+import { ObjectSearchResult } from '@anticrm/presentation'
+import task from '@anticrm/task'
+import ApplicationItem from './components/ApplicationItem.svelte'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
@@ -51,6 +54,40 @@ export async function applicantValidator (applicant: Applicant, client: Client):
   return OK
 }
 
+export async function queryApplication (client: Client, search: string): Promise<ObjectSearchResult[]> {
+  const _class = recruit.class.Applicant
+  const cl = client.getHierarchy().getClass(_class)
+  const shortLabel = (await translate(cl.shortLabel ?? '' as IntlString, {})).toUpperCase()
+
+  // Check number pattern
+
+  const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
+
+  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200 })).map(e => [e._id, e]))
+  const nids: number[] = []
+  if (sequence > 0) {
+    for (let n = 0; n < sequence; n++) {
+      const v = `${n}`
+      if (v.includes(search)) {
+        nids.push(n)
+      }
+    }
+    const numbered = await client.findAll<Applicant>(_class, { number: { $in: nids } }, { limit: 200 })
+    for (const d of numbered) {
+      if (!named.has(d._id)) {
+        named.set(d._id, d)
+      }
+    }
+  }
+
+  return Array.from(named.values()).map(e => ({
+    doc: e,
+    title: `${shortLabel}-${e.number}`,
+    icon: task.icon.Task,
+    component: ApplicationItem
+  }))
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateApplication: createApplication
@@ -70,5 +107,8 @@ export default async (): Promise<Resources> => ({
     Applications,
     Candidates,
     CreateCandidate
+  },
+  completion: {
+    ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)
   }
 })

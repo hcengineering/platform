@@ -1,6 +1,6 @@
 {
-  "name": "@anticrm/model-contact",
-  "version": "0.6.1",
+  "name": "@anticrm/model-presentation",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -25,17 +25,11 @@
     "@rushstack/heft": "^0.41.1"
   },
   "dependencies": {
-    "@anticrm/model-core": "~0.6.0",
-    "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/model-workbench": "~0.6.0",
-    "@anticrm/model-attachment": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0",
-    "@anticrm/model-presentation": "~0.6.0",
-    "@anticrm/model": "~0.6.0",
     "@anticrm/core": "~0.6.11",
-    "@anticrm/ui": "~0.6.0",
+    "@anticrm/model": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/contact": "~0.6.2",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/ui": "~0.6.0",
+    "@anticrm/presentation": "~0.6.0",
+    "@anticrm/model-core": "~0.6.0"
   }
 }

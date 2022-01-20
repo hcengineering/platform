@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { Ref, Class, Type } from '@anticrm/core'
 import contact, { contactId } from '@anticrm/contact'
 import type { Channel } from '@anticrm/contact'
 import type { AnyComponent } from '@anticrm/ui'
 import {} from '@anticrm/core'
 import { Application } from '@anticrm/workbench'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 
 export const ids = mergeIds(contactId, contact, {
   app: {
@@ -45,9 +46,20 @@ export const ids = mergeIds(contactId, contact, {
     Persons: '' as IntlString,
     Contacts: '' as IntlString,
     CreatePersons: '' as IntlString,
-    CreateOrganizations: '' as IntlString
+    CreateOrganizations: '' as IntlString,
+    SearchEmployee: '' as IntlString,
+    SearchPerson: '' as IntlString,
+    SearchOrganization: '' as IntlString
   },
   class: {
     TypeChannel: '' as Ref<Class<Type<Channel>>>
+  },
+  completion: {
+    PersonQuery: '' as Resource<ObjectSearchFactory>,
+    EmployeeQuery: '' as Resource<ObjectSearchFactory>,
+    OrganizationQuery: '' as Resource<ObjectSearchFactory>,
+    EmployeeCategory: '' as Ref<ObjectSearchCategory>,
+    PersonCategory: '' as Ref<ObjectSearchCategory>,
+    OrganizationCategory: '' as Ref<ObjectSearchCategory>
   }
 })

@@ -34,6 +34,7 @@ import workbench from '@anticrm/model-workbench'
 import view from '@anticrm/model-view'
 import attachment from '@anticrm/model-attachment'
 import { ids as contact } from './plugin'
+import presentation from '@anticrm/model-presentation'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
@@ -234,6 +235,24 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ContactPresenter
   })
+
+  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
+    icon: contact.icon.Person,
+    label: contact.string.SearchEmployee,
+    query: contact.completion.EmployeeQuery
+  }, contact.completion.EmployeeCategory)
+
+  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
+    icon: contact.icon.Person,
+    label: contact.string.SearchPerson,
+    query: contact.completion.PersonQuery
+  }, contact.completion.PersonCategory)
+
+  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
+    icon: contact.icon.Company,
+    label: contact.string.SearchOrganization,
+    query: contact.completion.OrganizationQuery
+  }, contact.completion.OrganizationCategory)
 }
 
 export { contact as default }

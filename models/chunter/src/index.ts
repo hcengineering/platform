@@ -143,7 +143,7 @@ export function createModel (builder: Builder): void {
     component: chunter.activity.TxBacklinkCreate,
     label: chunter.string.MentionedIn,
     labelComponent: chunter.activity.TxBacklinkReference,
-    display: 'content',
+    display: 'emphasized',
     editable: false,
     hideOnRemove: true
   }, chunter.ids.TxCommentCreate)
