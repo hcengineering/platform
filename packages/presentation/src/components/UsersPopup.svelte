@@ -16,7 +16,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
-  import { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
+  import ui, { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
@@ -27,7 +27,7 @@
 
   export let _class: Ref<Class<Person>>
   export let title: IntlString
-  export let caption: IntlString
+  export let caption: IntlString = ui.string.Suggested
   export let selected: Ref<Person> | undefined
 
   export let allowDeselect: boolean = false
@@ -42,16 +42,17 @@
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="popup">
-  <div class="title"><Label label={title} /></div>
-  <div class="flex-col header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} focus />
-    <div class="caption"><Label label={caption} /></div>
+<div class="antiPopup antiPopup-withHeader antiPopup-withTitle">
+  <div class="ap-title"><Label label={title} /></div>
+  <div class="ap-header">
+    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} focus />
+    <div class="ap-caption"><Label label={caption} /></div>
   </div>
-  <div class="scroll">
-    <div class="flex-col box">
+  <div class="ap-space" />
+  <div class="ap-scroll">
+    <div class="ap-box">
       {#each objects as person}
-        <button class="menu-item" on:click={() => { dispatch('close', person) }}>
+        <button class="ap-menuItem" on:click={() => { dispatch('close', person) }}>
           <div class='flex-grow'>
             <UserInfo size={'medium'} value={person} />
           </div>
@@ -62,61 +63,5 @@
       {/each}
     </div>
   </div>
+  <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .popup {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
-    max-height: 70%;
-  }
-
-  .title {
-    margin: 1rem 1rem .25rem;
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
-  .header {
-    margin: .25rem 1rem 0;
-    text-align: left;
-    .caption {
-      margin-top: .5rem;
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--theme-content-trans-color);
-    }
-  }
-
-  .scroll {
-    flex-grow: 1;
-    padding: .5rem;
-    overflow-x: hidden;
-    overflow-y: auto;
-    .box {
-      margin-right: 1px;
-      height: 100%;
-    }
-  }
-
-  .menu-item {
-    justify-content: start;
-    padding: .375rem;
-    color: var(--theme-content-color);
-    border-radius: .5rem;
-
-    &:hover {
-      color: var(--theme-caption-color);
-      background-color: var(--theme-button-bg-hovered);
-    }
-    &:focus {
-      color: var(--theme-content-accent-color);
-      background-color: var(--theme-button-bg-pressed);
-      z-index: 1;
-    }
-  }
-</style>

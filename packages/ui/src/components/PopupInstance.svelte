@@ -47,6 +47,7 @@
       if (element) {
         show = false
         modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
+        modalHTML.style.maxHeight = modalHTML.style.height = ''
         if (typeof element !== 'string') {
           let el: HTMLElement = element as HTMLElement
           const rect = el.getBoundingClientRect()
@@ -56,7 +57,10 @@
             modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
           else if (rectPopup.height + 28 < rect.top)
             modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
-          else modalHTML.style.top = modalHTML.style.bottom = '1rem'
+          else
+            modalHTML.style.top = modalHTML.style.bottom = '1rem'
+          //   modalHTML.style.maxHeight = 'calc(100vh - 2rem)'
+          // }
           // Horizontal
           if (rect.left + rectPopup.width + 16 > document.body.clientWidth)
             modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
@@ -105,6 +109,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    max-height: calc(100vh - 2rem);
     background-color: transparent;
   }
   .modal-overlay {

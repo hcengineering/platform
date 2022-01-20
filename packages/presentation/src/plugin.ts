@@ -27,9 +27,9 @@ export default plugin(presentationId, {
     Create: '' as IntlString,
     Cancel: '' as IntlString,
     Ok: '' as IntlString,
+    Save: '' as IntlString,
     Download: '' as IntlString,
     Delete: '' as IntlString,
-    Suggested: '' as IntlString,
     NotSelected: '' as IntlString,
     Deselect: '' as IntlString,
     AddSocialLinks: '' as IntlString

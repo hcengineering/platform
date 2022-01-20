@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-
   import { createEventDispatcher } from 'svelte'
-  import ui from '../plugin'
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
 
@@ -10,16 +7,10 @@
 
   $: _search = value
   const dispatch = createEventDispatcher()
-  let placeholder = ''
-
-  translate(ui.string.Search, {}).then((v) => {
-    placeholder = v
-  })
 </script>
 
 <EditWithIcon
   icon={IconSearch}
-  placeholder={placeholder}
   bind:value={_search}
   on:change={() => {
     if (_search === '') {

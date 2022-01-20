@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
@@ -23,43 +23,23 @@
   export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()
+  afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="flex-col popup">
-  {#each actions as action}
-    <div class="flex-row-center menu-item" on:click={() => {
-      dispatch('close')
-      action.action(ctx)
-    }}>
-      {#if action.icon}
-        <Icon icon={action.icon} size={'small'} />
-      {/if}
-      <div class="ml-3"><Label label={action.label} /></div>
-    </div>
-  {/each}
+<div class="antiPopup">
+  <div class="ap-space" />
+  <div class="ap-scroll"><div class="ap-box">
+    {#each actions as action}
+      <div class="ap-menuItem flex-row-center" on:click={() => {
+        dispatch('close')
+        action.action(ctx)
+      }}>
+        {#if action.icon}
+          <Icon icon={action.icon} size={'small'} />
+        {/if}
+        <div class="ml-3 pr-1"><Label label={action.label} /></div>
+      </div>
+    {/each}
+  </div></div>
+  <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .popup {
-    padding: .5rem;
-    height: 100%;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: .375rem 1rem .375rem .5rem;
-    color: var(--theme-content-color);
-    border-radius: .5rem;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--theme-button-bg-hovered);
-      color: var(--theme-caption-color);
-    }
-  }
-</style>

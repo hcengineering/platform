@@ -106,14 +106,13 @@
   .popup {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    max-height: 100%;
+    min-height: 0;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
     user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, .35));
   }
 
   .arrow {

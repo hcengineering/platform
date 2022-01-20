@@ -20,29 +20,38 @@
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
   import type { ListItem } from '../types'
+  import plugin from '../plugin'
 
-  export let title: IntlString
-  export let caption: IntlString
+  export let title: IntlString | undefined = undefined
+  export let caption: IntlString = plugin.string.Suggested
   export let items: ListItem[]
   export let header: boolean = true
 
   let search: string = ''
-
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="popup">
-  <div class="title"><Label label={title} /></div>
+<div
+  class="antiPopup"
+  class:antiPopup-withHeader={header}
+  class:antiPopup-withTitle={title}
+>
   {#if header}
-    <div class="flex-col header">
-      <EditWithIcon icon={IconSearch} bind:value={search} placeholder={'Search...'} />
-      <div class="caption"><Label label={caption} /></div>
+    {#if title}
+      <div class="ap-title"><Label label={title} /></div>
+    {:else}
+      <div class="ap-space" />
+    {/if}
+    <div class="ap-header">
+      <EditWithIcon icon={IconSearch} bind:value={search} placeholder={plugin.string.SearchDots} focus />
+      <div class="ap-caption"><Label label={caption} /></div>
     </div>
   {/if}
-  <div class="scroll">
-    <div class="flex-col box">
+  <div class="ap-space" />
+  <div class="ap-scroll">
+    <div class="ap-box">
       {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="flex-row-center menu-item" on:click={() => { dispatch('close', item) }}>
+        <button class="ap-menuItem" on:click={() => { dispatch('close', item) }}>
           <div class="flex-center img">
             <img src={item.item} alt={item.label} />
           </div>
@@ -51,68 +60,18 @@
       {/each}
     </div>
   </div>
+  <div class="ap-space" />
 </div>
 
 <style lang="scss">
-  .popup {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
-  }
-
-  .title {
-    margin: 1rem 1rem .25rem;
-    font-weight: 500;
+  .img {
+    margin-right: .75rem;
+    width: 2.25rem;
+    height: 2.25rem;
     color: var(--theme-caption-color);
-  }
-  .header {
-    margin: .25rem 1rem 0;
-    text-align: left;
-    .caption {
-      margin-top: .5rem;
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--theme-content-trans-color);
-    }
-  }
-
-  .scroll {
-    flex-grow: 1;
-    padding: .5rem;
-    overflow-x: hidden;
-    overflow-y: auto;
-    .box {
-      margin-right: 1px;
-      height: 100%;
-    }
-  }
-
-  .menu-item {
-    text-align: left;
-    padding: .5rem;
     border-radius: .5rem;
+    overflow: hidden;
 
-    .img {
-      margin-right: .75rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--theme-caption-color);
-      border-radius: .5rem;
-      overflow: hidden;
-
-      img {
-        max-width: fit-content;
-      }
-    }
-
-    &:hover { background-color: var(--theme-button-bg-hovered); }
-    &:focus {
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
-      z-index: 1;
-    }
+    img { max-width: fit-content; }
   }
 </style>
