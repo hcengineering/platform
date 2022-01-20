@@ -24,7 +24,8 @@ loadMetadata(setting.icon, {
   Integrations: `${icons}#integration`,
   Support: `${icons}#support`,
   Privacy: `${icons}#privacy`,
-  Terms: `${icons}#terms`
+  Terms: `${icons}#terms`,
+  Signout: `${icons}#signout`
 })
 
 addStringsLoader(settingId, async (lang: string) => await import(`../lang/${lang}.json`))

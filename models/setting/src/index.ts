@@ -17,8 +17,8 @@ import { Builder, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
 import core, { TDoc } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
-import type { Integration, IntegrationType, Handler } from '@anticrm/setting'
-import type { IntlString } from '@anticrm/platform'
+import type { Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
+import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
 
 import workbench from '@anticrm/model-workbench'
@@ -31,6 +31,13 @@ export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   value!: string
 }
+@Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
+export class TSettingsCategory extends TDoc implements SettingsCategory {
+  name!: string
+  label!: IntlString
+  icon!: Asset
+  component!: AnyComponent
+}
 
 @Model(setting.class.IntegrationType, core.class.Doc, DOMAIN_MODEL)
 export class TIntegrationType extends TDoc implements IntegrationType {
@@ -42,7 +49,65 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType)
+  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory)
+
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'profile',
+    label: setting.string.EditProfile,
+    icon: setting.icon.EditProfile,
+    component: setting.component.Profile,
+    order: 0
+  }, setting.ids.Profile)
+
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'password',
+    label: setting.string.ChangePassword,
+    icon: setting.icon.Password,
+    component: setting.component.Password,
+    order: 1000
+  }, setting.ids.Password)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'setting',
+    label: setting.string.Setting,
+    icon: setting.icon.Setting,
+    component: setting.component.Setting,
+    order: 2000
+  }, setting.ids.Setting)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'integrations',
+    label: setting.string.Integrations,
+    icon: setting.icon.Integrations,
+    component: setting.component.Integrations,
+    order: 3000
+  }, setting.ids.Integrations)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'statuses',
+    label: setting.string.ManageStatuses,
+    icon: task.icon.ManageStatuses,
+    component: setting.component.ManageStatuses,
+    order: 4000
+  }, setting.ids.ManageStatuses)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'support',
+    label: setting.string.Support,
+    icon: setting.icon.Support,
+    component: setting.component.Support,
+    order: 5000
+  }, setting.ids.Support)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'privacy',
+    label: setting.string.Privacy,
+    icon: setting.icon.Privacy,
+    component: setting.component.Privacy,
+    order: 6000
+  }, setting.ids.Privacy)
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'terms',
+    label: setting.string.Terms,
+    icon: setting.icon.Terms,
+    component: setting.component.Terms,
+    order: 10000
+  }, setting.ids.Terms)
 
   builder.createDoc(
     workbench.class.Application,
@@ -51,59 +116,7 @@ export function createModel (builder: Builder): void {
       label: setting.string.Setting,
       icon: setting.icon.Setting,
       hidden: true,
-      navigatorModel: {
-        specials: [
-          {
-            id: 'profile',
-            label: setting.string.EditProfile,
-            icon: setting.icon.EditProfile,
-            component: setting.component.Profile
-          },
-          {
-            id: 'password',
-            label: setting.string.ChangePassword,
-            icon: setting.icon.Password,
-            component: setting.component.Password
-          },
-          {
-            id: 'setting',
-            label: setting.string.Setting,
-            icon: setting.icon.Setting,
-            component: setting.component.Setting
-          },
-          {
-            id: 'integrations',
-            label: setting.string.Integrations,
-            icon: setting.icon.Integrations,
-            component: setting.component.Integrations
-          },
-          {
-            id: 'statuses',
-            label: setting.string.ManageStatuses,
-            icon: task.icon.ManageStatuses,
-            component: setting.component.ManageStatuses
-          },
-          {
-            id: 'support',
-            label: setting.string.Support,
-            icon: setting.icon.Support,
-            component: setting.component.Support
-          },
-          {
-            id: 'privacy',
-            label: setting.string.Privacy,
-            icon: setting.icon.Privacy,
-            component: setting.component.Privacy
-          },
-          {
-            id: 'terms',
-            label: setting.string.Terms,
-            icon: setting.icon.Terms,
-            component: setting.component.Terms
-          }
-        ],
-        spaces: []
-      }
+      component: setting.component.Settings
     },
     setting.ids.SettingApp
   )
