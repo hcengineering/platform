@@ -30,6 +30,21 @@ spec:
               secretKeyRef:
                 name: elastic
                 key: url
+          - name: MINIO_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: endpoint
+          - name: MINIO_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: accessKey
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: secretKey
 ---
 apiVersion: v1
 kind: Service

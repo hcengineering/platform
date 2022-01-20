@@ -61,12 +61,16 @@
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/mongo": "~0.6.0",
     "@anticrm/dev-storage": "~0.6.0",
+    "@anticrm/server-attachment": "~0.6.0",
+    "@anticrm/server-attachment-resources": "~0.6.0",
     "xml2js": "~0.4.23",
     "@anticrm/model-recruit": "~0.6.0",
     "@anticrm/recruit": "~0.6.2",
     "@anticrm/task": "~0.6.0",
     "@anticrm/chunter": "~0.6.1",
     "mime-types": "~2.1.34",
-    "@anticrm/attachment": "~0.6.1"
+    "@anticrm/attachment": "~0.6.1",
+    "@anticrm/server-contact": "~0.6.1",
+    "@anticrm/server-contact-resources": "~0.6.0"
   }
 }

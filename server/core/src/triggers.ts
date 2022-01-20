@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import type { Tx, Doc, TxCreateDoc, Ref, Account, Hierarchy, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
+import type { Tx, Doc, TxCreateDoc, Ref, Account, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
 import core, { TxFactory } from '@anticrm/core'
 
 import { getResource } from '@anticrm/platform'
-import type { Trigger, TriggerFunc, FindAll } from './types'
+import type { Trigger, TriggerFunc, TriggerControl } from './types'
 
 import serverCore from './plugin'
 
@@ -42,8 +42,8 @@ export class Triggers {
     }
   }
 
-  async apply (account: Ref<Account>, tx: Tx, findAll: FindAll<Doc>, hierarchy: Hierarchy): Promise<Tx[]> {
-    const derived = this.triggers.map(trigger => trigger(tx, new TxFactory(account), findAll, hierarchy))
+  async apply (account: Ref<Account>, tx: Tx, ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
+    const derived = this.triggers.map(trigger => trigger(tx, { ...ctrl, txFactory: new TxFactory(account) }))
     const result = await Promise.all(derived)
     return result.flatMap(x => x)
   }

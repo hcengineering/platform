@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import type { Client as MinioClient } from 'minio'
 import core, {
   AttachedDoc,
   Class,
@@ -84,6 +85,7 @@ export interface DbConfiguration {
     factory: FullTextAdapterFactory
     url: string
   }
+  storageFactory?: () => MinioClient
 }
 
 class TServerStorage implements ServerStorage {
@@ -96,7 +98,9 @@ class TServerStorage implements ServerStorage {
     private readonly hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
+    private readonly storageAdapter: MinioClient | undefined,
     private readonly modelDb: ModelDb,
+    private readonly workspace: string,
     options?: ServerStorageOptions
   ) {
     this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this, options?.skipUpdateAttached ?? false)
@@ -204,6 +208,13 @@ class TServerStorage implements ServerStorage {
         await this.modelDb.tx(tx)
       }
 
+      const fAll = (mctx: MeasureContext) => <T extends Doc>(
+        clazz: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ): Promise<FindResult<T>> => this.findAll(mctx, clazz, query, options)
+
+      const triggerFx = new Effects()
       let derived: Tx[] = []
       let result: TxResult = {}
       // store object
@@ -212,7 +223,20 @@ class TServerStorage implements ServerStorage {
       derived = [
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
         ...(await ctx.with('process-triggers', {}, (ctx) =>
-          this.triggers.apply(tx.modifiedBy, tx, this.findAll.bind(this, ctx), this.hierarchy)
+          this.triggers.apply(tx.modifiedBy, tx, {
+            fx: triggerFx.fx,
+            fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
+            storageFx: (f) => {
+              const adapter = this.storageAdapter
+              if (adapter === undefined) {
+                return
+              }
+
+              triggerFx.fx(() => f(adapter, this.workspace))
+            },
+            findAll: fAll(ctx),
+            hierarchy: this.hierarchy
+          })
         ))
       ]
 
@@ -226,8 +250,26 @@ class TServerStorage implements ServerStorage {
       for (const tx of derived) {
         await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
       }
+
+      for (const fx of triggerFx.effects) {
+        await fx()
+      }
+
       return [result, derived]
     })
+  }
+}
+
+type Effect = () => Promise<void>
+class Effects {
+  private readonly _effects: Effect[] = []
+
+  public fx = (f: Effect): void => {
+    this._effects.push(f)
+  }
+
+  get effects (): Effect[] {
+    return [...this._effects]
   }
 }
 
@@ -283,6 +325,7 @@ export async function createServerStorage (conf: DbConfiguration, options?: Serv
   }
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
+  const storageAdapter = conf.storageFactory?.()
 
-  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, modelDb, options)
+  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, storageAdapter, modelDb, conf.workspace, options)
 }

@@ -92,7 +92,10 @@
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
 
-      resume.uuid = await uploadFile(file, contact.space.Contacts, candidateId)
+      resume.uuid = await uploadFile(file, {
+        space: contact.space.Contacts,
+        attachedTo: candidateId
+      })
       resume.name = file.name
       resume.size = file.size
       resume.type = file.type

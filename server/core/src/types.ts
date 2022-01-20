@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,19 +14,30 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext } from '@anticrm/core'
+import type { Client as MinioClient } from 'minio'
+import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext } from '@anticrm/core'
 import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
 /**
  * @public
  */
-export type FindAll<T extends Doc> = (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+export interface TriggerControl {
+  txFactory: TxFactory
+  findAll: Storage['findAll']
+  hierarchy: Hierarchy
+
+  fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
+  // Since we don't have other storages let's consider adapter is MinioClient
+  // Later can be replaced with generic one with bucket encapsulated inside.
+  storageFx: (f: (adapter: MinioClient, bucket: string) => Promise<void>) => void
+  fx: (f: () => Promise<void>) => void
+}
 
 /**
  * @public
  */
-export type TriggerFunc = (tx: Tx, txFactory: TxFactory, findAll: FindAll<Doc>, hierarchy: Hierarchy) => Promise<Tx[]>
+export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
 
 /**
  * @public

@@ -14,12 +14,18 @@
 // limitations under the License.
 //
 
+import { Client as MinioClient } from 'minio'
 import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx, TxResult } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
 import { createServerStorage } from '@anticrm/server-core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
+
+import { addLocation } from '@anticrm/platform'
+import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverContactId } from '@anticrm/server-contact'
+
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
@@ -36,7 +42,19 @@ async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string,
 /**
  * @public
  */
-export function start (dbUrl: string, fullTextUrl: string, port: number, host?: string): () => void {
+export interface MinioConfig {
+  endPoint: string
+  accessKey: string
+  secretKey: string
+}
+
+/**
+ * @public
+ */
+export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfig, port: number, host?: string): () => void {
+  addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
+  addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
+
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {
       domains: {
@@ -62,6 +80,11 @@ export function start (dbUrl: string, fullTextUrl: string, port: number, host?: 
         factory: createElasticAdapter,
         url: fullTextUrl
       },
+      storageFactory: () => new MinioClient({
+        ...minioConf,
+        port: 9000,
+        useSSL: false
+      }),
       workspace
     }
     return createServerStorage(conf)

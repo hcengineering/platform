@@ -15,3 +15,4 @@
 //
 
 export { start } from './server'
+export type { MinioConfig } from './server'
