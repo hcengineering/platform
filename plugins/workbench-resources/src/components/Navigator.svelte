@@ -17,7 +17,7 @@
   import core from '@anticrm/core'
   import type { Space } from '@anticrm/core'
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
-  import { getCurrentLocation, navigate, CircleButton } from '@anticrm/ui'
+  import { getCurrentLocation, navigate, Scroller } from '@anticrm/ui'
   import { createQuery } from '@anticrm/presentation'
   import view from '@anticrm/view'
 
@@ -26,8 +26,6 @@
   import SpacesNav from './navigator/SpacesNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
-
-  import Mention from './icons/Mention.svelte'
 
   export let model: NavigatorModel | undefined
   
@@ -43,6 +41,21 @@
       (result) => { archivedSpaces = result })
   }
 
+  let showDivider: Boolean = false
+  let specTopCount: number
+  let specBottomCount: number
+  let spArchCount: number
+  let spModelCount: number
+  $: if (model) {
+    if (model.specials) {
+      specTopCount = getSpecials(model.specials, 'top').length
+      specBottomCount = getSpecials(model.specials, 'bottom').length
+    }
+    if (model.spaces) spModelCount = model.spaces.length
+    if (archivedSpaces) spArchCount = archivedSpaces.length
+    showDivider = ((specTopCount > 0 || spArchCount > 0) && (specBottomCount > 0 || spModelCount > 0)) ?? false
+  }
+
   function selectSpecial (id: string): void {
     const loc = getCurrentLocation()
     loc.path[2] = id
@@ -55,33 +68,26 @@
 </script>
 
 {#if model}
-  {#if model.specials}
-    {#each getSpecials(model.specials, 'top') as special}
-      <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
-    {/each}
-  {/if}
-  {#if archivedSpaces.length > 0}
-    <SpecialElement label={workbench.string.Archive} icon={view.icon.Archive} on:click={() => selectSpecial('archive')} />
-  {/if}
-  {#if model.spaces.length}
-    <div class="separator">
-      <TreeSeparator />
-    </div>
-  {/if}
-  {#each model.spaces as m (m.label)}
-    <SpacesNav model={m}/>
-  {/each}
-  {#if model.specials}
-    {#each getSpecials(model.specials, 'bottom') as special}
-      <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
-    {/each}
-  {/if}
-{/if}
+  <Scroller>
+    {#if model.specials}
+      {#each getSpecials(model.specials, 'top') as special}
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
+      {/each}
+    {/if}
+    {#if archivedSpaces.length > 0}
+      <SpecialElement label={workbench.string.Archive} icon={view.icon.Archive} on:click={() => selectSpecial('archive')} />
+    {/if}
 
-<style lang="scss">
-  .separator {
-    &:nth-child(2) {
-      display: none;
-    }
-  }
-</style>
+    {#if showDivider}<TreeSeparator />{/if}
+
+    {#each model.spaces as m (m.label)}
+      <SpacesNav model={m}/>
+    {/each}
+    {#if model.specials}
+      {#each getSpecials(model.specials, 'bottom') as special}
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
+      {/each}
+    {/if}
+    <div class="antiNav-space" />
+  </Scroller>
+{/if}
