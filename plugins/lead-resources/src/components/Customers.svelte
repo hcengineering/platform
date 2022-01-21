@@ -16,12 +16,17 @@
 
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import { Icon, Label, ScrollBox, SearchEdit } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
+  import view, { Viewlet } from '@anticrm/view'
   import lead from '../plugin'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
+
+  const client = getClient()
+  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: lead.mixin.Customer, descriptor: view.viewlet.Table })
 
   function updateResultQuery (search: string): void {
     resultQuery = (search === '') ? { } : { $search: search }
@@ -35,7 +40,7 @@
       <span class="label"><Label label={lead.string.Customers}/></span>
     </div>
   </div>
-  
+
   <SearchEdit bind:value={search} on:change={() => {
     updateResultQuery(search)
   }}/>
@@ -44,19 +49,17 @@
 <div class="container">
   <div class="panel-component">
     <ScrollBox vertical stretch noShift>
-
-      <Table 
-      _class={lead.mixin.Customer}
-      config={[
-        '',
-        { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
-        'modifiedOn',
-        'channels'
-      ]}
-      options={ {} }
-      query={ resultQuery }
-      enableChecking
-      />
+      {#await tableDescriptor then descr}
+        {#if descr}
+          <Table
+            _class={lead.mixin.Customer}
+            config={descr.config}
+            options={descr.options}
+            query={ resultQuery }
+            enableChecking
+          />
+        {/if}
+      {/await}
     </ScrollBox>
   </div>
 </div>

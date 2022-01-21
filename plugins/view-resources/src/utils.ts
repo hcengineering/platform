@@ -20,8 +20,12 @@ import core, {
   Client,
   Collection,
   Doc,
-  FindOptions,
-  FindResult, Hierarchy, matchQuery, Obj,
+  FindResult,
+  Hierarchy,
+  isReverseLookup,
+  Lookup,
+  matchQuery,
+  Obj,
   Ref,
   TxOperations
 } from '@anticrm/core'
@@ -107,7 +111,7 @@ async function getPresenter (
   _class: Ref<Class<Obj>>,
   key: BuildModelKey,
   preserveKey: BuildModelKey,
-  options?: FindOptions<Doc>
+  lookups?: Lookup<Doc>[]
 ): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
@@ -122,22 +126,11 @@ async function getPresenter (
   if (key.key.length === 0) {
     return await getObjectPresenter(client, _class, preserveKey)
   } else {
-    const split = key.key.split('.')
-    if (split[0] === '$lookup') {
-      const lookupClass = (options?.lookup as any)[split[1]] as Ref<Class<Obj>>
-      if (lookupClass === undefined) {
-        throw new Error('lookup class does not provided for ' + split[1])
+    if (key.key.startsWith('$lookup')) {
+      if (lookups === undefined) {
+        throw new Error('lookup class does not provided for ' + key)
       }
-      const lookupKey = { ...key, key: split[2] ?? '' }
-      const model = await getPresenter(client, lookupClass, lookupKey, preserveKey)
-      if (lookupKey.key === '') {
-        const attribute = client.getHierarchy().getAttribute(_class, split[1])
-        model.label = attribute.label
-      } else {
-        const attribute = client.getHierarchy().getAttribute(lookupClass, lookupKey.key)
-        model.label = attribute.label
-      }
-      return model
+      return await getLookupPresenter(client, key, preserveKey, lookups)
     }
     return await getAttributePresenter(client, _class, key.key, preserveKey)
   }
@@ -150,7 +143,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
     .map((key) => (typeof key === 'string' ? { key: key } : key))
     .map(async (key) => {
       try {
-        return await getPresenter(options.client, options._class, key, key, options.options)
+        return await getPresenter(options.client, options._class, key, key, options.options?.lookup)
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {
           return undefined
@@ -249,4 +242,73 @@ export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
     background: ${color + (selected ? 'ff' : '33')};
     border: 1px solid ${color + (selected ? '0f' : '66')};
   `
+}
+
+async function getLookupPresenter (client: Client, key: BuildModelKey, preserveKey: BuildModelKey, lookups: Lookup<any>[]): Promise<AttributeModel> {
+  const lookupClass = getLookupClass(key.key, lookups)
+  const lookupProperty = getLookupProperty(key.key)
+  const lookupKey = { ...key, key: lookupProperty }
+  const model = await getPresenter(client, lookupClass, lookupKey, preserveKey)
+  if (lookupKey.key === '') {
+    const clazz = client.getHierarchy().getClass(lookupClass)
+    model.label = clazz.label
+  } else {
+    const attribute = client.getHierarchy().getAttribute(lookupClass, lookupKey.key)
+    model.label = attribute.label
+  }
+  return model
+}
+
+function getLookupClass (key: string, lookups: Lookup<any>[]): Ref<Class<Doc>> {
+  const levels = key.split('$lookup.').filter((p) => p.length > 0).length
+  const _class = getLookup(key, lookups, levels)
+  if (_class === undefined) {
+    throw new Error('lookup class does not provided for ' + key)
+  }
+  return _class
+}
+
+function getLookupProperty (key: string): string {
+  const parts = key.split('$lookup')
+  const lastPart = parts[parts.length - 1]
+  const split = lastPart.split('.').filter((p) => p.length > 0)
+  split.shift()
+  const result = split.join('.')
+  return result
+}
+
+function getLookup (key: string, lookups: Lookup<any>[], level: number): Ref<Class<Doc>> | undefined {
+  if (level === 0) return
+  const parts = key.split('$lookup.').filter((p) => p.length > 0)
+  const currentKey = parts[0].split('.').filter((p) => p.length > 0)[0]
+  for (const lookup of lookups) {
+    if (level === 1) {
+      const result = getLookupValue(lookup, currentKey)
+      if (result !== undefined) return result
+    } else {
+      const nestedKey = parts.slice(1).join('$lookup.')
+      const result = getNestedLookup(lookup, level, nestedKey, currentKey)
+      if (result !== undefined) return result
+    }
+  }
+}
+
+function getLookupValue (lookup: Lookup<any>, currentKey: string): Ref<Class<Doc>> | undefined {
+  if (isReverseLookup(lookup)) {
+    if (lookup.as === currentKey) return lookup._id
+  } else {
+    const lookupKey = Object.getOwnPropertyNames(lookup)[0]
+    const value = (lookup as any)[lookupKey]
+    if (typeof value === 'string') {
+      if (currentKey === lookupKey) return value as Ref<Class<Doc>>
+    }
+  }
+}
+
+function getNestedLookup (lookup: Lookup<any>, level: number, nestedKey: string, currentKey: string): Ref<Class<Doc>> | undefined {
+  const lookupKey = Object.getOwnPropertyNames(lookup)[0]
+  if (lookupKey !== currentKey) return
+  const value = (lookup as any)[lookupKey]
+  if (typeof value === 'string') return
+  return getLookup(nestedKey, [value], --level)
 }

@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Lookup, Ref, Space, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection, Hidden, Implements,
@@ -276,14 +276,16 @@ export function createModel (builder: Builder): void {
     task.app.Tasks
   )
 
+  const issueTableLookup: Lookup<Issue>[] = [{
+    assignee: contact.class.Employee
+  }]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        assignee: contact.class.Employee
-      }
+      lookup: issueTableLookup
     } as FindOptions<Doc>,
     config: [
       '',
@@ -307,16 +309,17 @@ export function createModel (builder: Builder): void {
     editor: task.component.TaskHeader
   })
 
+  const issueKanbanLookup: Lookup<Issue>[] = [
+    { state: task.class.State },
+    { assignee: contact.class.Employee }
+  ]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: task.viewlet.Kanban,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        assignee: contact.class.Employee,
-        state: task.class.State
-        // attachedTo: core.class.Doc
-      }
+      lookup: issueKanbanLookup
     } as FindOptions<Doc>, // TODO: fix
     config: [
       // '$lookup.attachedTo',

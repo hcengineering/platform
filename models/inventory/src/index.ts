@@ -16,7 +16,7 @@
 
 // To help typescript locate view plugin properly
 import type { Category, Product, Variant } from '@anticrm/inventory'
-import { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import { Doc, Domain, FindOptions, Lookup, Ref } from '@anticrm/core'
 import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import type { IntlString } from '@anticrm/platform'
@@ -91,14 +91,16 @@ export function createModel (builder: Builder): void {
     editor: inventory.component.EditProduct
   })
 
+  const lookup: Lookup<Product>[] = [{
+    attachedTo: inventory.class.Category
+  }]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: inventory.class.Category
-      }
+      lookup
     } as FindOptions<Doc>,
     config: ['', '$lookup.attachedTo', 'modifiedOn']
   })
