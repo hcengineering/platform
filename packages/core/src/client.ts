@@ -84,7 +84,7 @@ class ClientImpl implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    return (await this.findAll(_class, query, options))[0]
+    return (await this.findAll(_class, query, { ...options, limit: 1 }))[0]
   }
 
   async tx (tx: Tx): Promise<TxResult> {
