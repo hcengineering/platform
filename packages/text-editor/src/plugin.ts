@@ -14,29 +14,15 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import type { IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { ObjectSearchCategory } from '.'
+import { IntlString, Plugin, plugin } from '@anticrm/platform'
 
 /**
  * @public
  */
-export const presentationId = 'presentation' as Plugin
+export const textEditorId = 'text-editor' as Plugin
 
-export default plugin(presentationId, {
-  class: {
-    ObjectSearchCategory: '' as Ref<Class<ObjectSearchCategory>>
-  },
+export default plugin(textEditorId, {
   string: {
-    Create: '' as IntlString,
-    Cancel: '' as IntlString,
-    Ok: '' as IntlString,
-    Save: '' as IntlString,
-    Download: '' as IntlString,
-    Delete: '' as IntlString,
-    NotSelected: '' as IntlString,
-    Deselect: '' as IntlString,
-    AddSocialLinks: '' as IntlString
+    Suggested: '' as IntlString
   }
 })

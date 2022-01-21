@@ -22,6 +22,7 @@ import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
+import { ObjectSearchFactory, ObjectSearchCategory } from '@anticrm/model-presentation'
 
 export default mergeIds(recruitId, recruit, {
   app: {
@@ -36,7 +37,8 @@ export default mergeIds(recruitId, recruit, {
   string: {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
-    CandidatePools: '' as IntlString
+    CandidatePools: '' as IntlString,
+    SearchApplication: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -56,5 +58,9 @@ export default mergeIds(recruitId, recruit, {
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>
+  },
+  completion: {
+    ApplicationQuery: '' as Resource<ObjectSearchFactory>,
+    ApplicationCategory: '' as Ref<ObjectSearchCategory>
   }
 })

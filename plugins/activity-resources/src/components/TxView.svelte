@@ -18,8 +18,7 @@
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import { AttachedDoc, Doc, Ref, TxCreateDoc } from '@anticrm/core'
-  import core from '@anticrm/core'
+  import { Doc, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import {

@@ -16,9 +16,10 @@
 
 import { addStringsLoader } from '@anticrm/platform'
 import { presentationId } from './plugin'
-
+export { presentationId }
 export * from './utils'
 export * from './attributes'
+export * from './types'
 
 export { default as UserBox } from './components/UserBox.svelte'
 export { default as UserInfo } from './components/UserInfo.svelte'

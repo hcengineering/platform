@@ -26,6 +26,7 @@ import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
+import presentation from '@anticrm/model-presentation'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -281,6 +282,12 @@ export function createModel (builder: Builder): void {
     },
     recruit.space.VacancyTemplates
   )
+
+  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
+    icon: recruit.icon.Application,
+    label: recruit.string.SearchApplication,
+    query: recruit.completion.ApplicationQuery
+  }, recruit.completion.ApplicationCategory)
 }
 
 export { default } from './plugin'

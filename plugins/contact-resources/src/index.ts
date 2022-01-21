@@ -14,21 +14,36 @@
 // limitations under the License.
 //
 
-import PersonPresenter from './components/PersonPresenter.svelte'
-import ContactPresenter from './components/ContactPresenter.svelte'
-import OrganizationPresenter from './components/OrganizationPresenter.svelte'
-import ChannelsPresenter from './components/ChannelsPresenter.svelte'
-import CreatePerson from './components/CreatePerson.svelte'
-import CreateOrganization from './components/CreateOrganization.svelte'
-import EditPerson from './components/EditPerson.svelte'
-import EditOrganization from './components/EditOrganization.svelte'
-import CreatePersons from './components/CreatePersons.svelte'
-import CreateOrganizations from './components/CreateOrganizations.svelte'
-import SocialEditor from './components/SocialEditor.svelte'
-import Contacts from './components/Contacts.svelte'
+import { Contact, formatName } from '@anticrm/contact'
+import { Class, Client, Ref } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
+import { Avatar, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
+import ChannelsPresenter from './components/ChannelsPresenter.svelte'
+import ContactPresenter from './components/ContactPresenter.svelte'
+import Contacts from './components/Contacts.svelte'
+import CreateOrganization from './components/CreateOrganization.svelte'
+import CreateOrganizations from './components/CreateOrganizations.svelte'
+import CreatePerson from './components/CreatePerson.svelte'
+import CreatePersons from './components/CreatePersons.svelte'
+import EditOrganization from './components/EditOrganization.svelte'
+import EditPerson from './components/EditPerson.svelte'
+import OrganizationPresenter from './components/OrganizationPresenter.svelte'
+import PersonPresenter from './components/PersonPresenter.svelte'
+import SocialEditor from './components/SocialEditor.svelte'
+import contact from './plugin'
 
 export { ContactPresenter }
+
+async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
+  return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({
+    doc: e,
+    title: formatName(e.name),
+    icon: Avatar,
+    iconProps: { size: 'x-small', avatar: e.avatar },
+    component: UserInfo,
+    componentProps: { size: 'x-small' }
+  }))
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -44,5 +59,10 @@ export default async (): Promise<Resources> => ({
     CreateOrganizations,
     SocialEditor,
     Contacts
+  },
+  completion: {
+    EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),
+    PersonQuery: async (client: Client, query: string) => await queryContact(contact.class.Person, client, query),
+    OrganizationQuery: async (client: Client, query: string) => await queryContact(contact.class.Organization, client, query)
   }
 })

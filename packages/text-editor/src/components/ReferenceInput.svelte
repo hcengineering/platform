@@ -12,26 +12,89 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
+  import { getResource } from '@anticrm/platform'
+  import presentation, { getClient, ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/presentation'
+  import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
-  import Send from './icons/Send.svelte'
+  import { Completion } from '../Completion'
   import Attach from './icons/Attach.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
+  import Send from './icons/Send.svelte'
   import TextStyle from './icons/TextStyle.svelte'
-
+  import MentionList from './MentionList.svelte'
+  import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
 
   const dispatch = createEventDispatcher()
-
   export let content: string = ''
   export let showSend = true
+  const client = getClient()
 
   let textEditor: TextEditor
+
+  export let categories: ObjectSearchCategory[] = []
+
+  client.findAll(presentation.class.ObjectSearchCategory, {}).then((r) => {
+    categories = r
+  })
+
+  
+  // Current selected category
+  let category: ObjectSearchCategory | undefined = categories[0]
+  
+  $: if (categories.length > 0 && category === undefined) {
+    category = categories[0]
+  }
 
   export function submit (): void {
     textEditor.submit()
   }
+
+  const editorExtensions: AnyExtension[] = [
+    Completion.configure({
+      HTMLAttributes: {
+        class: 'reference'
+      },
+      suggestion: {
+        items: async (query: { query: string }) => {
+          if (category !== undefined) {
+            const f = await getResource(category.query)
+            return (await f(client, query.query))
+          }
+          return []
+        },
+        render: () => {
+          let component: any
+
+          return {
+            onStart: (props:any) => {
+              component = new SvelteRenderer(MentionList, {
+                ...props,
+                close: () => { component.destroy() },
+                categories,
+                category,
+                onCategory: (cat: ObjectSearchCategory) => {
+                  category = cat
+                }
+              })
+            },
+            onUpdate (props:any) {
+              component.updateProps(props)
+            },
+            onKeyDown (props:any) {
+              return component.onKeyDown(props)
+            },
+            onExit () {
+              component.destroy()
+            }
+          }
+        }
+      }
+    })
+  ]
 </script>
 
 <div class="ref-container">
@@ -43,7 +106,7 @@
           content = ''
           textEditor.clear()
         }
-      }/>
+      } extensions={editorExtensions} />
     </div>
     {#if showSend}
       <button class="sendButton" on:click={submit}><div class="icon"><Send/></div></button>

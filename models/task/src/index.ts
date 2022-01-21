@@ -14,53 +14,38 @@
 //
 
 // To help typescript locate view plugin properly
-import type { ActionTarget } from '@anticrm/view'
-
-import attachment from '@anticrm/model-attachment'
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
 import {
   Builder,
-  Collection,
-  Implements,
+  Collection, Hidden, Implements,
   Mixin,
   Model,
-  Prop,
-  Hidden,
-  TypeBoolean,
+  Prop, TypeBoolean,
   TypeDate,
   TypeRef,
   TypeString,
   UX
 } from '@anticrm/model'
+import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
+import presentation from '@anticrm/model-presentation'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import type {
-  Kanban,
-  KanbanCard,
-  Project,
-  State,
-  Issue,
-  Sequence,
-  DoneState,
-  WonState,
-  LostState,
-  KanbanTemplateSpace,
-  StateTemplate,
-  DoneStateTemplate,
-  WonStateTemplate,
-  LostStateTemplate,
-  KanbanTemplate,
-  Task,
-  TodoItem
+  DoneState, DoneStateTemplate, Issue, Kanban,
+  KanbanCard, KanbanTemplate, KanbanTemplateSpace, LostState, LostStateTemplate, Project, Sequence, State, StateTemplate, Task,
+  TodoItem, WonState, WonStateTemplate
 } from '@anticrm/task'
-import task from './plugin'
 import { AnyComponent } from '@anticrm/ui'
+import type { ActionTarget } from '@anticrm/view'
+import task from './plugin'
 
+export { createDeps, createKanbanTemplate } from './creation'
+export { taskOperation } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
@@ -519,7 +504,10 @@ export function createModel (builder: Builder): void {
       done: true
     }
   })
-}
 
-export { taskOperation } from './migration'
-export { createDeps, createKanbanTemplate } from './creation'
+  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
+    icon: task.icon.Task,
+    label: task.string.SearchTask,
+    query: task.completion.IssueQuery
+  }, task.completion.IssueCategory)
+}

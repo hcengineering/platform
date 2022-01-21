@@ -14,9 +14,8 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
-
 import contact, { contactId } from '@anticrm/contact'
+import { IntlString, mergeIds } from '@anticrm/platform'
 
 export default mergeIds(contactId, contact, {
   string: {

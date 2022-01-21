@@ -15,122 +15,84 @@
 -->
 
 <script lang="ts">
+  import { AnyExtension, Editor, Extension } from '@tiptap/core'
+  import Highlight from '@tiptap/extension-highlight'
+  import Link from '@tiptap/extension-link'
+  // import Typography from '@tiptap/extension-typography'
+  import Placeholder from '@tiptap/extension-placeholder'
+  import StarterKit from '@tiptap/starter-kit'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
-import { onMount, onDestroy, createEventDispatcher } from 'svelte'
-import { Editor, Extension } from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import Highlight from '@tiptap/extension-highlight'
-import Link from '@tiptap/extension-link'
-// import Typography from '@tiptap/extension-typography'
-import Placeholder from '@tiptap/extension-placeholder'
-// import Mention from '@tiptap/extension-mention'
-import { Completion } from '../Completion'
+  export let content: string = ''
+  export let placeholder: string = 'Type something...'
+  export let extensions: AnyExtension[] = []
 
-import MentionList from './MentionList.svelte'
-import { SvelteRenderer } from './SvelteRenderer'
+  let element: HTMLElement
+  let editor: Editor
 
-import { getClient } from '@anticrm/presentation'
+  const dispatch = createEventDispatcher()
 
-import contact from '@anticrm/contact'
+  export function submit (): void {
+    content = editor.getHTML()
+    dispatch('content', content)
+  }
 
-export let content: string = ''
-export let placeholder: string = 'Type something...'
+  export function clear (): void {
+    content = ''
+    editor.commands.clearContent(false)
+  }
 
-let element: HTMLElement
-let editor: Editor
-
-const dispatch = createEventDispatcher()
-const client = getClient()
-
-export function submit (): void {
-  content = editor.getHTML()
-  dispatch('content', content)
-}
-
-export function clear (): void {
-  content = ''
-  editor.commands.clearContent(false)
-}
-
-const Handle = Extension.create({
-  addKeyboardShortcuts () {
-    return {
-      'Shift-Enter': () => {
-        const res = this.editor.commands.splitListItem('listItem')
-        if (!res) {
-          this.editor.commands.first(({ commands }) => [
-            () => commands.newlineInCode(),
-            () => commands.createParagraphNear(),
-            () => commands.liftEmptyBlock(),
-            () => commands.splitBlock()
-          ])
+  const Handle = Extension.create({
+    addKeyboardShortcuts () {
+      return {
+        'Shift-Enter': () => {
+          const res = this.editor.commands.splitListItem('listItem')
+          if (!res) {
+            this.editor.commands.first(({ commands }) => [
+              () => commands.newlineInCode(),
+              () => commands.createParagraphNear(),
+              () => commands.liftEmptyBlock(),
+              () => commands.splitBlock()
+            ])
+          }
+          return true
+        },
+        Enter: () => {
+          submit()
+          return true
         }
-        return true
-      },
-      Enter: () => {
-        submit()
-        return true
       }
     }
-  }
-})
+  })
 
-onMount(() => {
-  editor = new Editor({
-    element,
-    content: content,
-    extensions: [
-      StarterKit,
-      Highlight,
-      Link,
-      Handle, // order important
-      // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
-      Placeholder.configure({ placeholder: placeholder }),
-      Completion.configure({
-        HTMLAttributes: {
-          class: 'reference'
-        },
-        suggestion: {
-          items: async (query: { query: string }) => {
-            const persons = await client.findAll(contact.class.Person, { name: { $like: `%${query.query}%` } }, { limit: 200 })
-            return persons.filter(person => person.name.includes(query.query))
-          },
-          render: () => {
-            let component: any
+  onMount(() => {
+    editor = new Editor({
+      element,
+      content: content,
+      extensions: [
+        StarterKit,
+        Highlight,
+        Link,
+        Handle, // order important
+        // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
+        Placeholder.configure({ placeholder: placeholder }),
+        ...extensions
+      ],
+      onTransaction: () => {
+        // force re-render so `editor.isActive` works as expected
+        editor = editor
+      },
+      onBlur: () => {
+        dispatch('blur')
+      }
+    })
+  })
 
-            return {
-              onStart: (props:any) => {
-                component = new SvelteRenderer(MentionList, { ...props, close: () => { component.destroy() } })
-              },
-              onUpdate (props:any) {
-                component.updateProps(props)
-              },
-              onKeyDown (props:any) {
-                return component.onKeyDown(props)
-              },
-              onExit () {
-                component.destroy()
-              }
-            }
-          }
-        }
-      })
-    ],
-    onTransaction: () => {
-      // force re-render so `editor.isActive` works as expected
-      editor = editor
-    },
-    onBlur: () => {
-      dispatch('blur')
+  onDestroy(() => {
+    if (editor) {
+      editor.destroy()
     }
   })
-})
-
-onDestroy(() => {
-  if (editor) {
-    editor.destroy()
-  }
-})
 </script>
 
 <div style="width: 100%" bind:this={element}/>

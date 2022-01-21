@@ -30,7 +30,8 @@
     "Delete": "Delete",
     "WorkLocationPreferences": "Work location preferences",
     "Onsite": "Onsite",
-    "Remote": "Remote"
+    "Remote": "Remote",
+    "SearchApplication": "Search for application..."
   },
   "status": {
     "CandidateRequired": "Please select candidate",

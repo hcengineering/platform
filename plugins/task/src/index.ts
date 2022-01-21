@@ -101,8 +101,6 @@ export interface Project extends SpaceWithStates {}
  * @public
  */
 export interface Issue extends Task {
-  number: number // Sequence number
-
   name: string
   description: string
 

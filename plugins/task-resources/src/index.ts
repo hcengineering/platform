@@ -14,33 +14,31 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
-
-import CreateTask from './components/CreateTask.svelte'
-import CreateProject from './components/CreateProject.svelte'
-import TaskPresenter from './components/TaskPresenter.svelte'
-import KanbanCard from './components/KanbanCard.svelte'
-import TemplatesIcon from './components/TemplatesIcon.svelte'
-import EditIssue from './components/EditIssue.svelte'
-import { Doc } from '@anticrm/core'
+import { Class, Client, Doc, Ref } from '@anticrm/core'
+import { IntlString, Resources, translate } from '@anticrm/platform'
+import { getClient, MessageBox, ObjectSearchResult } from '@anticrm/presentation'
+import task, { SpaceWithStates, Task, TodoItem } from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
-import { getClient, MessageBox } from '@anticrm/presentation'
-
+import TaskItem from './components/TaskItem.svelte'
+import CreateProject from './components/CreateProject.svelte'
+import CreateTask from './components/CreateTask.svelte'
+import EditIssue from './components/EditIssue.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
-import StateEditor from './components/state/StateEditor.svelte'
-import StatePresenter from './components/state/StatePresenter.svelte'
+import KanbanCard from './components/KanbanCard.svelte'
 import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
-import { SpaceWithStates, TodoItem } from '@anticrm/task'
-import Todos from './components/todos/Todos.svelte'
-import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
-import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
+import StateEditor from './components/state/StateEditor.svelte'
+import StatePresenter from './components/state/StatePresenter.svelte'
 import StatusTableView from './components/StatusTableView.svelte'
 import TaskHeader from './components/TaskHeader.svelte'
+import TaskPresenter from './components/TaskPresenter.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
+import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
+import Todos from './components/todos/Todos.svelte'
+import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 
 export { default as KanbanTemplateEditor } from './components/kanban/KanbanTemplateEditor.svelte'
 export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
-
 export { default as Tasks } from './components/Tasks.svelte'
 
 async function createTask (object: Doc): Promise<void> {
@@ -93,6 +91,39 @@ async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
   )
 }
 
+export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
+  const cl = client.getHierarchy().getClass(_class)
+  const shortLabel = (await translate(cl.shortLabel ?? '' as IntlString, {})).toUpperCase()
+
+  // Check number pattern
+
+  const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
+
+  const named = new Map((await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => [e._id, e]))
+  const nids: number[] = []
+  if (sequence > 0) {
+    for (let n = 0; n < sequence; n++) {
+      const v = `${n}`
+      if (v.includes(search)) {
+        nids.push(n)
+      }
+    }
+    const numbered = await client.findAll<Task>(_class, { number: { $in: nids } }, { limit: 200 }) as D[]
+    for (const d of numbered) {
+      if (!named.has(d._id)) {
+        named.set(d._id, d)
+      }
+    }
+  }
+
+  return Array.from(named.values()).map(e => ({
+    doc: e,
+    title: `${shortLabel}-${e.number}`,
+    icon: task.icon.Task,
+    component: TaskItem
+  }))
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,
@@ -118,5 +149,8 @@ export default async (): Promise<Resources> => ({
     TodoItemMarkUnDone: async (obj: TodoItem) => await toggleDone(false, obj),
     ArchiveSpace,
     UnarchiveSpace
+  },
+  completion: {
+    IssueQuery: async (client: Client, query: string) => await queryTask(task.class.Issue, client, query)
   }
 })
