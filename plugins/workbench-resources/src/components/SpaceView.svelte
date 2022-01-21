@@ -39,9 +39,9 @@
   async function update (attachTo?: Ref<Class<Doc>>, currentSpace?: Ref<Space>): Promise<void> {
     if (attachTo) {
       viewlets = await client.findAll(view.class.Viewlet, { attachTo }, {
-        lookup: {
+        lookup: [{
           descriptor: core.class.Class
-        }
+        }]
       })
       _class = attachTo
     }

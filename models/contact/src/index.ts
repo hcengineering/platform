@@ -131,6 +131,10 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
+  const contactTableLookup: Lookup<Contact>[] = [
+    { _id: contact.class.Channel, as: 'channels' }
+  ]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,

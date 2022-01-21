@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Lookup, Ref, Space, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection, Hidden, Implements,
@@ -275,6 +275,10 @@ export function createModel (builder: Builder): void {
     task.app.Tasks
   )
 
+  const issueTableLookup: Lookup<Issue>[] = [{
+    assignee: contact.class.Employee
+  }]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: view.viewlet.Table,
@@ -303,6 +307,11 @@ export function createModel (builder: Builder): void {
   builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditorHeader, {
     editor: task.component.TaskHeader
   })
+
+  const issueKanbanLookup: Lookup<Issue>[] = [
+    { state: task.class.State },
+    { assignee: contact.class.Employee }
+  ]
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,

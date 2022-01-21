@@ -21,7 +21,8 @@ import core, {
   TxMixin, TxProcessor, TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'

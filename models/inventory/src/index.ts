@@ -90,6 +90,10 @@ export function createModel (builder: Builder): void {
     editor: inventory.component.EditProduct
   })
 
+  const lookup: Lookup<Product>[] = [{
+    attachedTo: inventory.class.Category
+  }]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,
