@@ -22,7 +22,7 @@
   // export let action: () => Promise<void> | void
 </script>
 
-<div class="flex-between navheader-container">
+<div class="flex-between navheader-container flex-no-shrink">
   <span class="fs-title overflow-label"><Label {label}></Label></span>
   <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->
 </div>

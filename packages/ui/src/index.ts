@@ -65,6 +65,7 @@ export { default as DropdownLabels } from './components/DropdownLabels.svelte'
 export { default as ShowMore } from './components/ShowMore.svelte'
 export { default as Menu } from './components/Menu.svelte'
 export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
+export { default as Scroller } from './components/Scroller.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconBack } from './components/icons/Back.svelte'

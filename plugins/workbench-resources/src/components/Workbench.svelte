@@ -162,7 +162,7 @@
       </div>
     </div>
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="panel-navigator">
+      <div class="panel-navigator antiNav">
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
         {/if}
@@ -207,6 +207,7 @@
       border-radius: 1.25rem;
     }
     .panel-navigator {
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       margin-right: 1rem;
