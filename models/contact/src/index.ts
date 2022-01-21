@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { Domain, Type, Ref } from '@anticrm/core'
+import type { Domain, Ref, Lookup } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
 import { Builder, Model, Prop, TypeString, UX, Index, Collection, TypeRef } from '@anticrm/model'
 import type { IntlString, Asset } from '@anticrm/platform'
 import chunter from '@anticrm/model-chunter'
-import core, { TAccount, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
+import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import type {
   Contact,
   Person,
@@ -45,16 +45,6 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
   placeholder!: IntlString
 }
 
-@Model(contact.class.TypeChannel, core.class.Type)
-export class TTypeChannels extends TType {}
-
-/**
- * @public
- */
-export function TypeChannel (): Type<Channel> {
-  return { _class: contact.class.TypeChannel, label: 'Channel' as IntlString }
-}
-
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 @UX('Contact' as IntlString, contact.icon.Person, undefined, 'name')
 export class TContact extends TDoc implements Contact {
@@ -78,7 +68,7 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CONTACT)
-@UX('Channel' as IntlString, contact.icon.Person, undefined, 'name')
+@UX('Channel' as IntlString, contact.icon.Person)
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), 'Channel provider' as IntlString)
   provider!: Ref<ChannelProvider>
@@ -116,7 +106,6 @@ export class TPersons extends TSpace implements Persons {}
 export function createModel (builder: Builder): void {
   builder.createModel(
     TChannelProvider,
-    TTypeChannels,
     TContact,
     TPerson,
     TPersons,
@@ -147,18 +136,24 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
+  const contactTableLookup: Lookup<Contact>[] = [
+    { _id: contact.class.Channel, as: 'channels' }
+  ]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {},
+    options: {
+      lookup: contactTableLookup
+    },
     config: [
       '',
       'city',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
       { presenter: view.component.RolePresenter, label: 'Role' },
-      'channels'
+      '$lookup.channels'
     ]
   })
 
@@ -174,7 +169,7 @@ export function createModel (builder: Builder): void {
     editor: contact.component.EditOrganization
   })
 
-  builder.mixin(contact.class.TypeChannel, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
   })
 

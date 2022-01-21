@@ -16,7 +16,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
-import type { Doc, FindOptions, Ref } from '@anticrm/core'
+import type { Doc, FindOptions, Lookup, Ref } from '@anticrm/core'
 import type { Customer, Funnel, Lead } from '@anticrm/lead'
 import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -116,14 +116,34 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: lead.mixin.Customer,
+    descriptor: view.viewlet.Table,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: [
+        { _id: contact.class.Channel, as: 'channels' }
+      ]
+    } as FindOptions<Doc>, // TODO: fix
+    config: [
+      '',
+      { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
+      'modifiedOn',
+      '$lookup.channels'
+    ]
+  })
+
+  const leadLookup: Lookup<Lead>[] = [
+    { attachedTo: contact.class.Contact },
+    { state: task.class.State },
+    { attachedTo: { _id: contact.class.Channel, as: 'channels' } }
+  ]
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: contact.class.Contact,
-        state: task.class.State
-      }
+      lookup: leadLookup
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -132,7 +152,7 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.attachedTo.channels'
+      '$lookup.attachedTo.$lookup.channels'
     ]
   })
 
@@ -141,10 +161,7 @@ export function createModel (builder: Builder): void {
     descriptor: task.viewlet.Kanban,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        customer: contact.class.Contact,
-        state: task.class.State
-      }
+      lookup: leadLookup
     } as FindOptions<Doc>, // TODO: fix
     config: ['$lookup.customer', '$lookup.state']
   })

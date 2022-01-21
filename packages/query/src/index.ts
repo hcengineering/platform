@@ -23,11 +23,15 @@ import core, {
   findProperty,
   FindResult,
   Hierarchy,
+  isReverseLookup,
+  Lookup,
   LookupData,
   ModelDb,
+  PickOne,
   Ref,
   Refs,
   resultSort,
+  ReverseLookup,
   SortingQuery,
   Tx,
   TxBulkWrite,
@@ -123,7 +127,7 @@ export class LiveQuery extends TxProcessor implements Client {
       _class,
       query,
       result,
-      options,
+      options: options as FindOptions<Doc>,
       callback: callback as (result: Doc[]) => void
     }
     this.queries.push(q)
@@ -280,12 +284,54 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async lookup (doc: Doc, lookup: Refs<Doc>): Promise<void> {
+  private async getLookupValue<T extends Doc> (doc: T, lookup: PickOne<Refs<T>>, result: LookupData<T>): Promise<void> {
+    const key = Object.getOwnPropertyNames(lookup)[0]
+    const value = (lookup as any)[key]
+    if (typeof value === 'string') {
+      const id = (doc as any)[key] as Ref<Doc>
+      if (id == null) return
+      Object.assign(result, {
+        [key]: await this.findOne(value as Ref<Class<Doc>>, { _id: id })
+      })
+    } else {
+      const parent = (result as any)[key]
+      if (Array.isArray(parent)) {
+        for (const elem of parent) {
+          const nestedResult = {}
+          await this.getLookup(elem, value, nestedResult)
+          Object.assign(elem, {
+            $lookup: nestedResult
+          })
+        }
+      } else {
+        const nestedResult = {}
+        await this.getLookup(parent, value, nestedResult)
+        Object.assign(parent, {
+          $lookup: nestedResult
+        })
+      }
+    }
+  }
+
+  private async getReverseLookupValue<T extends Doc> (doc: T, lookup: ReverseLookup, result: LookupData<T>): Promise<void> {
+    const objects = await this.findAll(lookup._id, { attachedTo: doc._id })
+    Object.assign(result, {
+      [lookup.as]: objects
+    })
+  }
+
+  private async getLookup<T extends Doc> (doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+    if (isReverseLookup(lookup)) {
+      await this.getReverseLookupValue(doc, lookup, result)
+    } else {
+      await this.getLookupValue(doc, lookup, result)
+    }
+  }
+
+  private async lookup (doc: Doc, lookups: Lookup<Doc>[]): Promise<void> {
     const result: LookupData<Doc> = {}
-    for (const key in lookup) {
-      const _class = (lookup as any)[key] as Ref<Class<Doc>>
-      const _id = (doc as any)[key] as Ref<Doc>
-      ;(result as any)[key] = await this.client.findOne(_class, { _id })
+    for (const lookup of lookups) {
+      await this.getLookup(doc, lookup, result)
     }
     ;(doc as WithLookup<Doc>).$lookup = result
   }
