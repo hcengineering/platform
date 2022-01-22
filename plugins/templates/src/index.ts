@@ -1,6 +1,5 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,24 +13,31 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
-import { RefInputActionItem } from './types'
+import type { Class, Doc, Ref, Space } from '@anticrm/core'
+import type { Plugin } from '@anticrm/platform'
+import { Asset, plugin } from '@anticrm/platform'
 
 /**
  * @public
  */
-export const textEditorId = 'text-editor' as Plugin
+export interface MessageTemplate extends Doc {
+  title: string
+  message: string
+}
 
-export default plugin(textEditorId, {
+/**
+ * @public
+ */
+export const templatesId = 'templates' as Plugin
+
+export default plugin(templatesId, {
   class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
+    MessageTemplate: '' as Ref<Class<MessageTemplate>>
   },
-  string: {
-    Suggested: '' as IntlString,
-    Attach: '' as IntlString,
-    TextStyle: '' as IntlString,
-    Emoji: '' as IntlString,
-    GIF: '' as IntlString
+  space: {
+    Templates: '' as Ref<Space>
+  },
+  icon: {
+    Templates: '' as Asset
   }
 })

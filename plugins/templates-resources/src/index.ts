@@ -14,24 +14,22 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
-import { RefInputActionItem } from './types'
+import { Resources } from '@anticrm/platform'
+import Templates from './components/Templates.svelte'
+import { TextEditorHandler } from '@anticrm/text-editor'
+import { showPopup } from '@anticrm/ui'
+import TemplatePopup from './components/TemplatePopup.svelte'
 
-/**
- * @public
- */
-export const textEditorId = 'text-editor' as Plugin
+function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
+  console.log('FSK')
+  showPopup(TemplatePopup, { editor }, element)
+}
 
-export default plugin(textEditorId, {
-  class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
+export default async (): Promise<Resources> => ({
+  component: {
+    Templates
   },
-  string: {
-    Suggested: '' as IntlString,
-    Attach: '' as IntlString,
-    TextStyle: '' as IntlString,
-    Emoji: '' as IntlString,
-    GIF: '' as IntlString
+  action: {
+    ShowTemplates
   }
 })

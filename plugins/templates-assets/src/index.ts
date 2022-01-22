@@ -14,24 +14,12 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
-import { RefInputActionItem } from './types'
+import { addStringsLoader, loadMetadata } from '@anticrm/platform'
+import templates, { templatesId } from '@anticrm/templates'
 
-/**
- * @public
- */
-export const textEditorId = 'text-editor' as Plugin
-
-export default plugin(textEditorId, {
-  class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
-  },
-  string: {
-    Suggested: '' as IntlString,
-    Attach: '' as IntlString,
-    TextStyle: '' as IntlString,
-    Emoji: '' as IntlString,
-    GIF: '' as IntlString
-  }
+const icons = require('../assets/icons.svg')
+loadMetadata(templates.icon, {
+  Templates: `${icons}#templates`
 })
+
+addStringsLoader(templatesId, async (lang: string) => await import(`../lang/${lang}.json`))

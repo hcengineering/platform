@@ -14,24 +14,10 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
-import { RefInputActionItem } from './types'
+import { mergeIds } from '@anticrm/platform'
+// Import plugin directly to prevent .svelte components to being exposed to type typescript.
+import textEditor, { textEditorId } from '@anticrm/text-editor/src/plugin'
 
-/**
- * @public
- */
-export const textEditorId = 'text-editor' as Plugin
+export default mergeIds(textEditorId, textEditor, {
 
-export default plugin(textEditorId, {
-  class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
-  },
-  string: {
-    Suggested: '' as IntlString,
-    Attach: '' as IntlString,
-    TextStyle: '' as IntlString,
-    Emoji: '' as IntlString,
-    GIF: '' as IntlString
-  }
 })

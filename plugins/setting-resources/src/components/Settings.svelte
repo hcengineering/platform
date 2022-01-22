@@ -9,15 +9,17 @@
   const client = getClient()
 
   let category: SettingsCategory | undefined
+  let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
   client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } }).then(s => {
     categories = s
+    category = findCategory(categoryId)
   })
 
   onDestroy(
     location.subscribe(async (loc) => {
-      const categoryId = loc.path[2]
+      categoryId = loc.path[2]
       category = findCategory(categoryId)
     })
   )

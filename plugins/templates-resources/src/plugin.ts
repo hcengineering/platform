@@ -14,24 +14,24 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
-import { RefInputActionItem } from './types'
+import { IntlString, mergeIds } from '@anticrm/platform'
+import { AnyComponent } from '@anticrm/ui'
+import templates, { templatesId } from '@anticrm/templates'
 
-/**
- * @public
- */
-export const textEditorId = 'text-editor' as Plugin
-
-export default plugin(textEditorId, {
-  class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
-  },
+export default mergeIds(templatesId, templates, {
   string: {
+    Cancel: '' as IntlString,
+    Templates: '' as IntlString,
+    TemplatesHeader: '' as IntlString,
+    CreateTemplate: '' as IntlString,
+    ViewTemplate: '' as IntlString,
+    EditTemplate: '' as IntlString,
+    SaveTemplate: '' as IntlString,
     Suggested: '' as IntlString,
-    Attach: '' as IntlString,
-    TextStyle: '' as IntlString,
-    Emoji: '' as IntlString,
-    GIF: '' as IntlString
+    SearchTemplate: '' as IntlString,
+    TemplatePlaceholder: '' as IntlString
+  },
+  component: {
+    Templates: '' as AnyComponent
   }
 })
