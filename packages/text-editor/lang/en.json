@@ -1,5 +1,6 @@
 {
   "string": {    
-    "Suggested": "SUGGESTED"
+    "Suggested": "SUGGESTED",
+    "NoItems": "No items"
   }
 }

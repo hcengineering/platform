@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource, translate } from '@anticrm/platform'
+  import { getResource } from '@anticrm/platform'
   import { getClient, ObjectSearchCategory, ObjectSearchResult } from '@anticrm/presentation'
   import { ActionIcon, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
   import plugin from '../plugin'
@@ -74,8 +74,8 @@
   function updateStyle (popup: HTMLDivElement): void {
     const x = clientRect().left
     const height = popup.getBoundingClientRect().height
-    const y = clientRect().top - height - 16
-    style = `left: ${x}px; top: ${y}px;`
+    const y = clientRect().bottom
+    style = `left: ${x}px; bottom: calc(100vh - ${y}px + 1.75rem); max-height: calc(${y}px - 2.5rem);`
   }
 
   let style = 'visibility: hidden'
@@ -91,41 +91,37 @@
     }
   }
   $: updateItems(category, query)
-
-  let placeholder = ''
-
-  $: translate(category.label, {}).then((v) => {
-    placeholder = v
-  })
 </script>
 
+<svelte:window on:resize={() => updateStyle(popup)} />
 <div
   class="overlay"
   on:click={() => {
     close()
   }}
 />
-<div>
-  <div bind:this={popup} class="completion" {style} on:keydown={onKeyDown}>
-    <div class='category-container'>
-      {#each categories as c}
-        <div class='category-selector' class:selected={category.label === c.label}>
-          <ActionIcon label={c.label} icon={c.icon} size={'medium'} action={() => {
-            category = c
-            onCategory(c)
-            updateItems(c, query)
-          } }/>
-        </div>
-      {/each}
-    </div>
-    <div class='mt-4 mb-4'>
-      <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={placeholder} />
-    </div>
-    <Label label={plugin.string.Suggested}/>
-    <div class="scroll mt-2">
+<div bind:this={popup} class="antiPopup antiPopup-withHeader antiPopup-withCategory completion" {style} on:keydown={onKeyDown}>
+  <div class="ap-category">
+    {#each categories as c}
+      <div class="ap-categoryItem" class:selected={category.label === c.label}>
+        <ActionIcon label={c.label} icon={c.icon} size={'medium'} action={() => {
+          category = c
+          onCategory(c)
+          updateItems(c, query)
+        } }/>
+      </div>
+    {/each}
+  </div>
+  <div class="ap-header">
+    <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={category.label} />
+    <div class="ap-caption"><Label label={plugin.string.Suggested} /></div>
+  </div>
+  <div class="ap-space" />
+  <div class="ap-scroll">
+    <div class="ap-box">
       {#each items as item, i}
         <div
-          class="item"
+          class="ap-menuItem"
           class:selected={i === selected}
           on:click={() => {
             dispatchItem(item)
@@ -140,8 +136,12 @@
           <svelte:component this={item.component} value={item.doc} {...item.componentProps ?? {}} />
         </div>
       {/each}
+      {#if !items.length}
+        <div class="ap-menuItem empty"><Label label={plugin.string.NoItems} /></div>
+      {/if}
     </div>
   </div>
+  <div class="ap-space" />
 </div>
 
 <style lang="scss">
@@ -151,48 +151,15 @@
     left: 0;
     bottom: 0;
     right: 0;
-    z-index: 2000;
-  }
-
-  .selected {
-    background-color: var(--theme-button-bg-focused);
+    z-index: 1999;
   }
 
   .completion {
     position: absolute;
-    z-index: 2010;
-    min-width: 300px;
-    height: 332px;
-    padding: 16px;
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 20px 0 rgba(0, 0, 0, 0.1);
-
-    .caption {
-      margin: 8px 0;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.5px;
-      color: var(--theme-content-trans-color);
-    }
-    .scroll {
-      max-height: calc(300px - 128px);
-      display: grid;
-      grid-auto-flow: row;
-      gap: 12px;
-      overflow-y: auto;
-    }
-  }
-
-  .category-container {
-    display: flex;
-    .category-selector {
-      margin-right: 1rem;
-      opacity: 0.7;
-      &.selected {
-        opacity: 1;
-      }
-    }
+    min-width: 20rem;
+    max-width: 30rem;
+    min-height: 0;
+    height: auto;
+    z-index: 2000;
   }
 </style>

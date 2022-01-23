@@ -23,6 +23,7 @@ export const textEditorId = 'text-editor' as Plugin
 
 export default plugin(textEditorId, {
   string: {
-    Suggested: '' as IntlString
+    Suggested: '' as IntlString,
+    NoItems: '' as IntlString
   }
 })
