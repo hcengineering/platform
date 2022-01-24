@@ -26,7 +26,7 @@
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
-  export let _class: Ref<Class<Doc>> | undefined
+  // export let _class: Ref<Class<Doc>> | undefined
   export let createItemDialog: AnyComponent | undefined
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
