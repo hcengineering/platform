@@ -258,5 +258,3 @@ export function createModel (builder: Builder): void {
 
 export { contactOperation } from './migration'
 export { contact as default }
-export { contactOperation } from './migration'
-
