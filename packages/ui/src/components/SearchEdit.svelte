@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte'
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
+  import plugin from '../plugin'
 
   export let value: string = ''
 
@@ -11,6 +12,7 @@
 
 <EditWithIcon
   icon={IconSearch}
+  placeholder={plugin.string.Search}
   bind:value={_search}
   on:change={() => {
     if (_search === '') {

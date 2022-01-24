@@ -66,11 +66,6 @@
       text-overflow: ellipsis;
     }
 
-    &:hover {
-      background-color: var(--theme-button-bg-enabled);
-      .tool {
-        visibility: visible;
-      }
-    }
+    &:hover { background-color: var(--theme-button-bg-enabled); }
   }
 </style>

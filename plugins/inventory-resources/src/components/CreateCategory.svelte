@@ -66,6 +66,12 @@
 >
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={inventory.string.Category} bind:value={name} placeholder="Category" maxWidth={'16rem'} focus />
+    <EditBox
+      label={inventory.string.Category}
+      bind:value={name}
+      placeholder={inventory.string.Category}
+      maxWidth={'16rem'}
+      focus
+    />
   </Grid>
 </Card>
