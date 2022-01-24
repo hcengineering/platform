@@ -14,22 +14,20 @@
 // limitations under the License.
 //
 
-import { resolve, join } from 'path'
-import https from 'https'
+import attachment from '@anticrm/attachment'
+import { Account, Doc, Ref, Space } from '@anticrm/core'
+import { createElasticAdapter } from '@anticrm/elastic'
+// import { TxFactory } from '@anticrm/core'
+import type { IndexedDoc, Token } from '@anticrm/server-core'
+import cors from 'cors'
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
-import cors from 'cors'
-import { v4 as uuid } from 'uuid'
+import https from 'https'
 import { decode } from 'jwt-simple'
-
-import { Space, Ref, Doc, Account } from '@anticrm/core'
-// import { TxFactory } from '@anticrm/core'
-import type { Token, IndexedDoc } from '@anticrm/server-core'
-import { createElasticAdapter } from '@anticrm/elastic'
-import attachment from '@anticrm/attachment'
 // import { createContributingClient } from '@anticrm/contrib'
-
 import { Client, ItemBucketMetadata } from 'minio'
+import { join, resolve } from 'path'
+import { v4 as uuid } from 'uuid'
 
 // import { createElasticAdapter } from '@anticrm/elastic'
 
@@ -79,7 +77,7 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
  * @public
  * @param port -
  */
-export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string }, port: number): void {
+export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string, modelVersion: string }, port: number): void {
   const app = express()
 
   app.use(cors())
@@ -92,7 +90,8 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
     res.json(
       {
         ACCOUNTS_URL: config.accountsUrl,
-        UPLOAD_URL: config.uploadUrl
+        UPLOAD_URL: config.uploadUrl,
+        MODEL_VERSION: config.modelVersion
       }
     )
   })

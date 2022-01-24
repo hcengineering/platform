@@ -14,25 +14,23 @@
 // limitations under the License.
 //
 
+import contact, { combineName } from '@anticrm/contact'
+import core, { TxOperations } from '@anticrm/core'
 import platform, {
   getMetadata,
-  Metadata,
+  PlatformError,
   Plugin,
+  plugin,
   Request,
   Response,
-  PlatformError,
-  plugin,
   Severity,
   Status,
   StatusCode
 } from '@anticrm/platform'
+import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { decode, encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
-import core, { TxOperations } from '@anticrm/core'
-import contact, { combineName } from '@anticrm/contact'
-import { connect } from './connect'
-import { initWorkspace } from './tool'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
@@ -51,11 +49,6 @@ export const accountId = 'account' as Plugin
  * @public
  */
 const accountPlugin = plugin(accountId, {
-  metadata: {
-    Endpoint: '' as Metadata<string>,
-    Transactor: '' as Metadata<string>,
-    Secret: '' as Metadata<string>
-  },
   status: {
     AccountNotFound: '' as StatusCode<{ account: string }>,
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
@@ -66,11 +59,11 @@ const accountPlugin = plugin(accountId, {
 })
 
 const getSecret = (): string => {
-  return getMetadata(accountPlugin.metadata.Secret) ?? 'secret'
+  return getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
 }
 
 const getEndpoint = (): string => {
-  const endpoint = getMetadata(accountPlugin.metadata.Endpoint)
+  const endpoint = getMetadata(toolPlugin.metadata.Endpoint)
   if (endpoint === undefined) {
     throw new Error('Please provide transactor endpoint url')
   }
@@ -78,7 +71,7 @@ const getEndpoint = (): string => {
 }
 
 const getTransactor = (): string => {
-  const transactor = getMetadata(accountPlugin.metadata.Transactor)
+  const transactor = getMetadata(toolPlugin.metadata.Transactor)
   if (transactor === undefined) {
     throw new Error('Please provide transactor url')
   }
@@ -307,11 +300,29 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
     .collection(WORKSPACE_COLLECTION)
     .insertOne({
       workspace,
-      organisation
+      organisation,
+      version
     })
     .then((e) => e.insertedId.toHexString())
-  await initWorkspace(getTransactor(), workspace)
+  await initModel(getTransactor(), workspace)
   return result
+}
+
+/**
+ * @public
+ */
+export async function upgradeWorkspace (db: Db, workspace: string): Promise<string> {
+  if ((await getWorkspace(db, workspace)) === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
+  }
+  await db.collection(WORKSPACE_COLLECTION).updateOne(
+    { workspace },
+    {
+      $set: { version }
+    }
+  )
+  await upgradeModel(getTransactor(), workspace)
+  return `${version.major}.${version.minor}.${version.patch}`
 }
 
 /**

@@ -221,3 +221,12 @@ export interface Space extends Doc {
 export interface Account extends Doc {
   email: string
 }
+
+/**
+ * @public
+ */
+export interface Version extends Doc {
+  major: number
+  minor: number
+  patch: number
+}

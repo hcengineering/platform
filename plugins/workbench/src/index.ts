@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { IntlString, Asset, Plugin } from '@anticrm/platform'
-import type { Ref, Class, Doc, Obj, Space, Mixin } from '@anticrm/core'
+import type { IntlString, Asset, Plugin, Metadata } from '@anticrm/platform'
+import type { Ref, Class, Doc, Obj, Space, Mixin, Data, Version } from '@anticrm/core'
 
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -92,5 +92,8 @@ export default plugin(workbenchId, {
   },
   component: {
     WorkbenchApp: '' as AnyComponent
+  },
+  metadata: {
+    RequiredVersion: '' as Metadata<Data<Version>>
   }
 })

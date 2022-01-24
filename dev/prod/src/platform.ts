@@ -14,9 +14,10 @@
 //
 
 import { addLocation } from '@anticrm/platform'
+import {Data, Version} from '@anticrm/core'
 
 import login, { loginId } from '@anticrm/login'
-import { workbenchId } from '@anticrm/workbench'
+import workbench, { workbenchId } from '@anticrm/workbench'
 import { viewId } from '@anticrm/view'
 import { taskId } from '@anticrm/task'
 import { contactId } from '@anticrm/contact'
@@ -51,13 +52,15 @@ import '@anticrm/templates-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
-  await fetch('/config.json').then(async (config) => {
-    await config.json().then(value => {
-      console.log('loading configuration', value)
-      setMetadata(login.metadata.AccountsUrl, value.ACCOUNTS_URL)
-      setMetadata(login.metadata.UploadUrl,  value.UPLOAD_URL)  
-    })
-  })
+  const config = await (await fetch('/config.json')).json()
+  console.log('loading configuration', config)
+  setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(login.metadata.UploadUrl,  config.UPLOAD_URL)       
+
+  if( config.MODEL_VERSION != null) {
+    console.log('Minimal Model version requirement', config.MODEL_VERSION)
+    setMetadata(workbench.metadata.RequiredVersion, config.MODEL_VERSION)
+  }
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)

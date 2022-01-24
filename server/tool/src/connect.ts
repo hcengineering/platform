@@ -19,18 +19,22 @@ import clientResources from '@anticrm/client-resources'
 import { Client } from '@anticrm/core'
 import { getMetadata, setMetadata } from '@anticrm/platform'
 import { encode } from 'jwt-simple'
-import accountPlugin from '.'
 
-// eslint-disable-next-line
-const WebSocket = require('ws')
+import toolPlugin from './plugin'
 
+/**
+ * @public
+ */
 export async function connect (transactorUrl: string, workspace: string, email?: string): Promise<Client> {
   const token = encode(
     { email: email ?? 'anticrm@hc.engineering', workspace },
-    getMetadata(accountPlugin.metadata.Secret) ?? 'secret'
+    getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
   )
 
   // We need to override default factory with 'ws' one.
+  // eslint-disable-next-line
+  const WebSocket = require('ws')
+
   setMetadata(client.metadata.ClientSocketFactory, (url) => new WebSocket(url))
   return await (await clientResources()).function.GetClient(token, transactorUrl)
 }

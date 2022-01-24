@@ -85,6 +85,7 @@ specifiers:
   '@rush-temp/server-contact': file:./projects/server-contact.tgz
   '@rush-temp/server-contact-resources': file:./projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
+  '@rush-temp/server-tool': file:./projects/server-tool.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/setting': file:./projects/setting.tgz
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
@@ -275,6 +276,7 @@ dependencies:
   '@rush-temp/server-contact': file:projects/server-contact.tgz
   '@rush-temp/server-contact-resources': file:projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:projects/server-core.tgz
+  '@rush-temp/server-tool': file:projects/server-tool.tgz
   '@rush-temp/server-ws': file:projects/server-ws.tgz
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz
@@ -10679,7 +10681,7 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-/BBGpjzh87DsWYJmHFtYyTBH2FerxHMoGT3xQ4A5IHVtKmx2gTP5mdaY09h+vaNp+a4iTs5rqa7h+Y7l/5uX2w==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-VNN6Dc2PvOzjbchYoCP7QnVKnUXcy3ByayOx6l8aSdjxxTKBw8XQKrTFgMfBeozvFKzKqf9v7Zz2k9sxzrHw7g==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
@@ -11646,7 +11648,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-5WhGhRWED9z51QVhlJWZJ321v4zkTY33gwVOdMVHidlhnmKJ2LPWfIN8Gs1K2I0Z2Gea3GfcgDbSrTYSGQd7bw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-KRaYm65Scg01RukljQmwVKLg143zgzLtjWBJQizBtdAU0X8XoHFnW6cOK1Pa3O15Et812fs3HhWWTUj32GJnoQ==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -12541,6 +12543,34 @@ packages:
       typescript: 4.5.4
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  file:projects/server-tool.tgz:
+    resolution: {integrity: sha512-jA31a+Q2vADtUml9IaD4IKCxzzqWKz74NIRkBVhY3VqQpiXup+g+Pa2Rf2f3J57yT8aQKCpf63YMysWR42iQjQ==, tarball: file:projects/server-tool.tgz}
+    name: '@rush-temp/server-tool'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/minio': 7.0.11
+      '@types/ws': 8.2.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      jwt-simple: 0.5.6
+      minio: 7.0.26
+      mongodb: 4.2.2
+      prettier: 2.5.1
+      typescript: 4.5.4
+      ws: 8.3.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/server-ws.tgz:
