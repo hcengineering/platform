@@ -14,18 +14,11 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, DOMAIN_TX, generateId, Ref, TxCreateDoc, TxCUD, TxOperations, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import { Channel, ChannelProvider, Contact } from '@anticrm/contact'
+import { Class, DOMAIN_TX, generateId, Ref, TxCreateDoc, TxCUD, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { Contact, Channel, ChannelProvider } from '@anticrm/contact'
 import contact, { DOMAIN_CONTACT } from './index'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function logInfo (msg: string, result: MigrationResult): void {
-  if (result.updated > 0) {
-    console.log(`Contact: Migrate ${msg} ${result.updated}`)
-  }
-}
 
 function createChannel (tx: TxCUD<Contact>, channel: any): Channel {
   const doc: Channel = {
@@ -101,7 +94,7 @@ async function processCreateTxes (client: MigrationClient, createTxes: TxCreateD
   return result
 }
 
-export async function processRemoveTxes (client: MigrationClient, txes: TxRemoveDoc<Contact>[], result: Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>): Promise<void> {
+export async function processRemoveTxes (client: MigrationClient, txes: TxRemoveDoc<Contact>[], result: Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>): Promise<Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>> {
   for (const tx of txes) {
     const current = result.get(tx.objectId)
     if (current != null) {
@@ -114,9 +107,10 @@ export async function processRemoveTxes (client: MigrationClient, txes: TxRemove
       }
     }
   }
+  return result
 }
 
-export async function migrateContactChannels (client: MigrationClient, classes: Ref<Class<Contact>>[]) {
+export async function migrateContactChannels (client: MigrationClient, classes: Ref<Class<Contact>>[]): Promise<void> {
   const objectIds: Ref<Contact>[] = []
   const contacts = await client.find<Contact>(DOMAIN_CONTACT, { _class: { $in: classes } })
   for (const doc of contacts) {
@@ -131,7 +125,7 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
     _class: core.class.TxCreateDoc,
     objectId: { $in: objectIds }
   })
-  const result = await processCreateTxes(client, createTxes)
+  const objectChannels = await processCreateTxes(client, createTxes)
 
   const updateTxes = await client.find<TxUpdateDoc<Contact>>(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
@@ -140,7 +134,7 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
   for (const tx of updateTxes) {
     if (tx.operations.channels === undefined) continue
     const { channels, ...operations } = tx.operations
-    const current = result.get(tx.objectId)
+    const current = objectChannels.get(tx.objectId)
     if (current !== undefined) {
       const providers = new Set<Ref<ChannelProvider>>(current.keys())
       for (const channel of (channels as any)) {
@@ -180,7 +174,7 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
         const doc = createChannel(tx, channel)
         const map = new Map<Ref<ChannelProvider>, Channel>()
         map.set(channel.provider, doc)
-        result.set(tx.objectId, map)
+        objectChannels.set(tx.objectId, map)
       }
     }
     if (Object.keys(operations).length > 0) {
@@ -197,7 +191,12 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
     objectId: { $in: objectIds }
   })
 
-  await processRemoveTxes(client, removeTxes, result)
+  const result = await processRemoveTxes(client, removeTxes, objectChannels)
+  for (const contact of result.values()) {
+    for (const channel of contact.values()) {
+      await client.create(DOMAIN_CONTACT, channel)
+    }
+  }
 }
 
 export const contactOperation: MigrateOperation = {
