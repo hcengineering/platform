@@ -940,6 +940,31 @@
       "packageName": "@anticrm/inventory-resources",
       "projectFolder": "plugins/inventory-resources",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/templates",
+      "projectFolder": "plugins/templates",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/templates-assets",
+      "projectFolder": "plugins/templates-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/templates-resources",
+      "projectFolder": "plugins/templates-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-templates",
+      "projectFolder": "models/templates",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-text-editor",
+      "projectFolder": "models/text-editor",
+      "shouldPublish": true
     }
   ]
 }

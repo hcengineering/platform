@@ -14,18 +14,16 @@
 -->
 
 <script lang="ts">
-  import { getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
-  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
-  import workbench, { Application, SpecialNavModel } from '@anticrm/workbench'
-  import setting from '@anticrm/setting'
-  import login from '@anticrm/login'
-  import { getCurrentAccount, Ref } from '@anticrm/core'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { getCurrentAccount, Ref } from '@anticrm/core'
+  import login from '@anticrm/login'
+  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
+  import setting, { SettingsCategory } from '@anticrm/setting'
+  import { closePopup, getCurrentLocation, Icon, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 
   const client = getClient()
-  async function getItems(): Promise<SpecialNavModel[] | undefined> {
-    const app = await client.findOne(workbench.class.Application, { _id: setting.ids.SettingApp as Ref<Application> })
-    return app?.navigatorModel?.specials
+  async function getItems (): Promise<SettingsCategory[]> {
+    return await client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } })
   }
 
   let account: EmployeeAccount | undefined
@@ -45,10 +43,11 @@
   }, { limit: 1 })
 
 
-  function selectSpecial (sp: SpecialNavModel): void {
+  function selectCategory (sp: SettingsCategory): void {
+    closePopup()
     const loc = getCurrentLocation()
     loc.path[1] = setting.ids.SettingApp
-    loc.path[2] = sp.id
+    loc.path[2] = sp.name
     loc.path.length = 3
     navigate(loc)
   }
@@ -60,14 +59,14 @@
     navigate({ path: [login.component.LoginApp] })
   }
 
-  function filterItems (items: SpecialNavModel[]): SpecialNavModel[] {
-    return items?.filter((p) => p.id !== 'profile' && p.id !== 'password')
+  function filterItems (items: SettingsCategory[]): SettingsCategory[] {
+    return items?.filter((p) => p.name !== 'profile' && p.name !== 'password')
   }
 
-  function editProfile (items: SpecialNavModel[] | undefined): void {
-    const profile = items?.find((p) => p.id === 'profile')
+  function editProfile (items: SettingsCategory[] | undefined): void {
+    const profile = items?.find((p) => p.name === 'profile')
     if (profile === undefined) return
-    selectSpecial(profile)
+    selectCategory(profile)
   }
 </script>
 
@@ -88,10 +87,15 @@
     <div class="content">
       {#if items}
         {#each filterItems(items) as item }
-          <div class="item" on:click={() => selectSpecial(item)}><Label label={item.label} /></div>
+          <div class="item flex-row-center" on:click={() => selectCategory(item)}>
+            <div class='mr-2'>
+              <Icon icon={item.icon} size={'x-small'}/>
+            </div>
+            <Label label={item.label} />
+          </div>
         {/each}
       {/if}
-      <div class="item" on:click={signOut}><Label label={'Sign out'} /></div>
+      <div class="item" on:click={signOut}><Label label={setting.string.Signout} /></div>
     </div>
   {/await}
 </div>

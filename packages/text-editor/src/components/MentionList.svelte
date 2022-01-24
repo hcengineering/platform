@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource, translate } from '@anticrm/platform'
+  import { getResource } from '@anticrm/platform'
   import { getClient, ObjectSearchCategory, ObjectSearchResult } from '@anticrm/presentation'
   import { ActionIcon, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
   import plugin from '../plugin'
@@ -91,12 +91,6 @@
     }
   }
   $: updateItems(category, query)
-
-  let placeholder = ''
-
-  $: translate(category.label, {}).then((v) => {
-    placeholder = v
-  })
 </script>
 
 <div
@@ -119,7 +113,7 @@
       {/each}
     </div>
     <div class='mt-4 mb-4'>
-      <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={placeholder} />
+      <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={category.label} />
     </div>
     <Label label={plugin.string.Suggested}/>
     <div class="scroll mt-2">

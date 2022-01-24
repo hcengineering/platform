@@ -22,9 +22,11 @@ import ManageStatuses from './components/statuses/ManageStatuses.svelte'
 import Support from './components/Support.svelte'
 import Privacy from './components/Privacy.svelte'
 import Terms from './components/Terms.svelte'
+import Settings from './components/Settings.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
+    Settings,
     Profile,
     Password,
     Setting,

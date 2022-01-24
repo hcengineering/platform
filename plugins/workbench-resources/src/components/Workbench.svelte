@@ -172,14 +172,14 @@
     <div class="panel-component">
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />
-      {/if}
-
-      {#if ownSpecialComponent}
-        <svelte:component this={ownSpecialComponent} model={navigatorModel} />
-      {:else if specialComponent}
-        <Component is={specialComponent} />
       {:else}
-        <SpaceView {currentSpace} {currentView} {createItemDialog} />
+        {#if ownSpecialComponent}
+          <svelte:component this={ownSpecialComponent} model={navigatorModel} />
+        {:else if specialComponent}
+          <Component is={specialComponent} />
+        {:else}
+          <SpaceView {currentSpace} {currentView} {createItemDialog} />
+        {/if}
       {/if}
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->

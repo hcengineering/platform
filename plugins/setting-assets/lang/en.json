@@ -21,6 +21,8 @@
     "LearnMore": "Learn more",
     "EnterCurrentPassword": "Enter current password",
     "EnterNewPassword": "Enter new password",
-    "RepeatNewPassword": "Repeat new password"
+    "RepeatNewPassword": "Repeat new password",
+    "Signout": "Sign out",
+    "Settings": "Settings"
   }
 }
