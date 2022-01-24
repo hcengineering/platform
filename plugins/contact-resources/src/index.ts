@@ -18,6 +18,7 @@ import { Contact, formatName } from '@anticrm/contact'
 import { Class, Client, Ref } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { Avatar, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
+import ChannelsEditor from './components/ChannelsEditor.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
 import ContactPresenter from './components/ContactPresenter.svelte'
 import Contacts from './components/Contacts.svelte'
@@ -31,9 +32,6 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
-import Contacts from './components/Contacts.svelte'
-import ChannelsEditor from './components/ChannelsEditor.svelte'
-import { Resources } from '@anticrm/platform'
 
 export { ChannelsEditor, ContactPresenter }
 
