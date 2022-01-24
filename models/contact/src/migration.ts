@@ -15,7 +15,7 @@
 //
 
 import { Channel, ChannelProvider, Contact } from '@anticrm/contact'
-import { Class, DOMAIN_TX, generateId, Ref, TxCreateDoc, TxCUD, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
+import { Class, DOMAIN_TX, generateId, Ref, SortingOrder, TxCreateDoc, TxCUD, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
@@ -72,10 +72,10 @@ async function removeTx (client: MigrationClient, tx: TxCUD<Contact>, doc: Chann
 async function processCreateTxes (client: MigrationClient, createTxes: TxCreateDoc<Contact>[]): Promise<Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>> {
   const result: Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>> = new Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>()
   for (const tx of createTxes) {
-    if (tx.attributes.channels === undefined) continue
+    if (tx.attributes.channels == null) continue
     const { channels, ...attributes } = tx.attributes
     const current = result.get(tx.objectId)
-    for (const channel of (channels as any)) {
+    for (const channel of (channels as any) ?? []) {
       const doc = createChannel(tx, channel)
       if (current !== undefined) {
         current.set(channel.provider, doc)
@@ -117,7 +117,6 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
     const obj = doc as any
     if (obj.channels != null && Array.isArray(obj.channels)) {
       objectIds.push(doc._id)
-      await client.update(DOMAIN_CONTACT, { _id: doc._id }, { channels: obj.channels.length })
     }
   }
 
@@ -130,14 +129,14 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
   const updateTxes = await client.find<TxUpdateDoc<Contact>>(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
     objectId: { $in: objectIds }
-  })
+  }, { sort: { modifiedOn: SortingOrder.Ascending } })
   for (const tx of updateTxes) {
     if (tx.operations.channels === undefined) continue
     const { channels, ...operations } = tx.operations
     const current = objectChannels.get(tx.objectId)
     if (current !== undefined) {
       const providers = new Set<Ref<ChannelProvider>>(current.keys())
-      for (const channel of (channels as any)) {
+      for (const channel of (channels as any) ?? []) {
         const doc = current.get(channel.provider)
         if (doc !== undefined) {
           providers.delete(doc.provider)
@@ -170,7 +169,7 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
         }
       }
     } else {
-      for (const channel of (channels as any)) {
+      for (const channel of (channels as any) ?? []) {
         const doc = createChannel(tx, channel)
         const map = new Map<Ref<ChannelProvider>, Channel>()
         map.set(channel.provider, doc)
@@ -196,6 +195,12 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
     for (const channel of contact.values()) {
       await client.create(DOMAIN_CONTACT, channel)
     }
+  }
+  for (const id of objectIds) {
+    const channels = result.get(id)?.size ?? 0
+    await client.update(DOMAIN_CONTACT, { _id: id }, {
+      channels: channels
+    })
   }
 }
 
