@@ -24,8 +24,8 @@
   import FileDuo from './icons/FileDuo.svelte'
 
   export let objectId: Ref<Doc>
-  export let space: Ref<Space>
-  export let _class: Ref<Class<Doc>>
+  // export let space: Ref<Space>
+  // export let _class: Ref<Class<Doc>>
 
   export let applications: number
 

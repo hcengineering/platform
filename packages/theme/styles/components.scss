@@ -52,12 +52,26 @@
     color: var(--theme-content-color);
     border-radius: .5rem;
     text-align: left;
+    cursor: pointer;
 
     &.ap-woScroll { margin: 0 .5rem; }
+    &.selected { background-color: var(--theme-button-bg-hovered); }
+    &.empty {
+      display: flex;
+      justify-content: center;
+      font-style: italic;
+      color: var(--theme-content-trans-color);
+      cursor: default;
+
+      &:hover {
+        color: var(--theme-content-trans-color);
+        background-color: transparent;
+      }
+    }
+
     &:hover {
       color: var(--theme-caption-color);
       background-color: var(--theme-button-bg-hovered);
-      cursor: pointer;
     }
     &:focus {
       color: var(--theme-content-accent-color);
@@ -95,6 +109,33 @@
       margin: 1rem 1rem .25rem;
       font-weight: 500;
       color: var(--theme-caption-color);
+    }
+    .ap-header {
+      margin: .25rem 1rem 0;
+      .ap-caption {
+        margin: .5rem 0 0 0;
+      }
+    }
+  }  
+
+  &-withCategory {
+    .ap-category {
+      flex-shrink: 0;
+      overflow-x: auto;
+      display: flex;
+      margin: 1rem 1rem .25rem;
+
+      .ap-categoryItem {
+        margin: .25rem;
+        color: var(--theme-content-trans-color);
+        cursor: pointer;
+
+        &.selected { color: var(--theme-caption-color); }
+        &:hover { color: var(--theme-content-accent-color); }
+      }
+
+      &::-webkit-scrollbar:horizontal { height: .125rem; }
+      &::-webkit-scrollbar-thumb { background-color: var(--theme-button-bg-hovered); }
     }
     .ap-header {
       margin: .25rem 1rem 0;

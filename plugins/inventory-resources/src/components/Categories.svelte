@@ -14,14 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@anticrm/core'
+  import { DocumentQuery } from '@anticrm/core'
   import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import type { Category } from '@anticrm/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
   import HierarchyView from './HierarchyView.svelte'
 
   let search = ''
-  let resultQuery: DocumentQuery<Doc> = {}
+  let resultQuery: DocumentQuery<Category> = {}
 
   function updateResultQuery (search: string): void {
     resultQuery = (search === '') ? { } : { $search: search }

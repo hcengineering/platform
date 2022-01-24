@@ -29,6 +29,7 @@ export default plugin(textEditorId, {
   },
   string: {
     Suggested: '' as IntlString,
+    NoItems: '' as IntlString,
     Attach: '' as IntlString,
     TextStyle: '' as IntlString,
     Emoji: '' as IntlString,

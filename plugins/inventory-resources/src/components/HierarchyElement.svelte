@@ -59,14 +59,14 @@
   $: style = `margin-left: ${level * 1.5}rem;`
 </script>
 
-{#each descendants.get(parent) ?? [] as object, row (object._id)}
+{#each descendants.get(parent) ?? [] as object (object._id)}
   <tr class="tr-body">
     {#each model as attribute, cell}
       {#if !cell}
         <td>
           <div class="firstCell" {style}>
             {#if descendants.has(object._id)}
-              <div class="expand" on:click={(ev) => click(object._id)}>
+              <div class="expand" on:click={() => click(object._id)}>
                 {#if expanded.has(object._id)}
                   <Expand size={'small'} />
                 {:else}

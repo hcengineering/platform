@@ -23,7 +23,7 @@
 
   export let variants: number
 
-  const create = (ev: MouseEvent): void => showPopup(CreateVariant, { product: objectId }, ev.target as HTMLElement)
+  const create = (ev: MouseEvent): void => { showPopup(CreateVariant, { product: objectId }, ev.target as HTMLElement) }
 </script>
 
 <div class="variants-container">

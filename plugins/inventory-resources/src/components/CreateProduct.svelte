@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, generateId, Ref } from '@anticrm/core'
+  import { Account, generateId, Ref, Doc } from '@anticrm/core'
   import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { DropdownLabels, EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -24,7 +24,7 @@
 
   const doc: Product = {
     name: '',
-    attachedTo: undefined,
+    attachedTo: '' as Ref<Doc>,
     attachedToClass: inventory.class.Category,
     _class: inventory.class.Product,
     space: inventory.space.Products,
@@ -71,14 +71,20 @@
 <Card
   label={inventory.string.CreateProduct}
   okAction={create}
-  canSave={doc.name.trim().length > 0 && doc.attachedTo !== undefined}
+  canSave={doc.name.trim().length > 0 && doc.attachedTo.length > 0}
   bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}
 >
   <Grid column={1} rowGap={1.75}>
-    <EditBox label={inventory.string.Product} bind:value={doc.name} placeholder="Product" maxWidth={'16rem'} focus />
+    <EditBox
+      label={inventory.string.Product}
+      bind:value={doc.name}
+      placeholder={inventory.string.Product}
+      maxWidth={'16rem'}
+      focus
+    />
     <DropdownLabels
       header
       items={categories}

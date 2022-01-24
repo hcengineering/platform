@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
+  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
   import { Table } from '@anticrm/view-resources'
@@ -45,7 +45,7 @@
 
   <EditWithIcon
     icon={IconSearch}
-    placeholder={'Search'}
+    placeholder={ui.string.Search}
     bind:value={search}
     on:change={() => {
       resultQuery = {}

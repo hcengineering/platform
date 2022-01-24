@@ -131,7 +131,7 @@
       config={['', 'lastModified']}
       options={{}}
       query={{ attachedTo: objectId }}
-      loadingProps={ { length: attachments } }
+      loadingProps={ { length: attachments ?? 0 } }
     />
   {/if}
 </div>
