@@ -14,7 +14,9 @@
 // limitations under the License.
 //
 
+import { Class, Ref } from '@anticrm/core'
 import { IntlString, Plugin, plugin } from '@anticrm/platform'
+import { RefInputActionItem } from './types'
 
 /**
  * @public
@@ -22,8 +24,15 @@ import { IntlString, Plugin, plugin } from '@anticrm/platform'
 export const textEditorId = 'text-editor' as Plugin
 
 export default plugin(textEditorId, {
+  class: {
+    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
+  },
   string: {
     Suggested: '' as IntlString,
     NoItems: '' as IntlString
+    Attach: '' as IntlString,
+    TextStyle: '' as IntlString,
+    Emoji: '' as IntlString,
+    GIF: '' as IntlString
   }
 })

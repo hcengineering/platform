@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import { AnyExtension, Editor, Extension } from '@tiptap/core'
+  import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import Highlight from '@tiptap/extension-highlight'
   import Link from '@tiptap/extension-link'
   // import Typography from '@tiptap/extension-typography'
@@ -26,6 +26,7 @@
   export let content: string = ''
   export let placeholder: string = 'Type something...'
   export let extensions: AnyExtension[] = []
+  export let supportSubmit = true
 
   let element: HTMLElement
   let editor: Editor
@@ -40,6 +41,9 @@
   export function clear (): void {
     content = ''
     editor.commands.clearContent(false)
+  }
+  export function insertText (text: string): void {
+    editor.commands.insertContent(text as HTMLContent)
   }
 
   const Handle = Extension.create({
@@ -73,7 +77,7 @@
         StarterKit,
         Highlight,
         Link,
-        Handle, // order important
+        ...(supportSubmit ? [Handle] : []), // order important
         // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
         Placeholder.configure({ placeholder: placeholder }),
         ...extensions
@@ -84,6 +88,10 @@
       },
       onBlur: () => {
         dispatch('blur')
+      },
+      onUpdate: () => {
+        content = editor.getHTML()
+        dispatch('value', content)
       }
     })
   })
@@ -95,7 +103,7 @@
   })
 </script>
 
-<div style="width: 100%" bind:this={element}/>
+<div style="width: 100%;" bind:this={element}/>
 
 <style lang="scss" global>
 
@@ -103,9 +111,9 @@
   overflow-y: auto;
   max-height: 5.5rem;
   outline: none;
-
-  p {
-    margin: 0;
+  line-height: 150%;
+  p:not(:last-child) {
+    margin-block-end: 1em;
   }
 
   > * + * {

@@ -16,8 +16,10 @@
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import { getClient, ObjectSearchCategory, ObjectSearchResult } from '@anticrm/presentation'
-  import { ActionIcon, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
+  import { ActionIcon, EditWithIcon, IconSearch, Label, showPopup } from '@anticrm/ui'
+  import { onDestroy, onMount } from 'svelte'
   import plugin from '../plugin'
+  import DummyPopup from './DummyPopup.svelte'
   
   export let query: string = ''
   export let items: ObjectSearchResult[]
@@ -32,6 +34,17 @@
   const client = getClient()
   let popup: HTMLDivElement
   let selected = 0
+  let popupClose: () => void
+
+  onMount(() => {
+    popupClose = showPopup(DummyPopup, {}, undefined, () => {
+      close()
+    })
+  })
+
+  onDestroy(() => {
+    popupClose()
+  })
 
   function dispatchItem (item: ObjectSearchResult): void {
     command({ id: item.doc._id, label: item.title, objectclass: item.doc._class })
@@ -60,15 +73,10 @@
         return false
       }
     }
-    // TODO: How to prevent Esc, it should hide popup instead of closing editor.
-    if (ev.key === 'Esc') {
-      return false
-    }
     return false
   }
 
   export function done () {
-    console.log('done')
   }
 
   function updateStyle (popup: HTMLDivElement): void {

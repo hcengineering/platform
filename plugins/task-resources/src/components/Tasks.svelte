@@ -34,8 +34,9 @@
   const query = createQuery()
   $: query.query(task.class.Issue, { attachedTo: objectId }, result => { tasks = result })
 
-  const createApp = (ev: MouseEvent): void =>
+  const createApp = (ev: MouseEvent): void => {
     showPopup(CreateTask, { parent: { _id: objectId, _class, space } }, ev.target as HTMLElement, () => {})
+  }
 
   const options: FindOptions<Issue> = {
     lookup: {

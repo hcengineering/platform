@@ -45,17 +45,40 @@ export interface Integration extends Doc {
 /**
  * @public
  */
+export interface SettingsCategory extends Doc {
+  name: string
+  label: IntlString
+  icon: Asset
+  component: AnyComponent
+
+  // If defined, will sort using order.
+  order?: number
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
   ids: {
-    SettingApp: '' as Ref<Doc>
+    SettingApp: '' as Ref<Doc>,
+    Profile: '' as Ref<Doc>,
+    Password: '' as Ref<Doc>,
+    Setting: '' as Ref<Doc>,
+    Integrations: '' as Ref<Doc>,
+    ManageStatuses: '' as Ref<Doc>,
+    Support: '' as Ref<Doc>,
+    Privacy: '' as Ref<Doc>,
+    Terms: '' as Ref<Doc>
   },
   class: {
+    SettingsCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>
   },
   component: {
+    Settings: '' as AnyComponent,
     Profile: '' as AnyComponent,
     Password: '' as AnyComponent,
     Setting: '' as AnyComponent,
@@ -66,6 +89,7 @@ export default plugin(settingId, {
     Terms: '' as AnyComponent
   },
   string: {
+    Settings: '' as IntlString,
     Setting: '' as IntlString,
     Integrations: '' as IntlString,
     ManageStatuses: '' as IntlString,
@@ -87,7 +111,8 @@ export default plugin(settingId, {
     Saved: '' as IntlString,
     EnterCurrentPassword: '' as IntlString,
     EnterNewPassword: '' as IntlString,
-    RepeatNewPassword: '' as IntlString
+    RepeatNewPassword: '' as IntlString,
+    Signout: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,
@@ -96,6 +121,7 @@ export default plugin(settingId, {
     Integrations: '' as Asset,
     Support: '' as Asset,
     Privacy: '' as Asset,
-    Terms: '' as Asset
+    Terms: '' as Asset,
+    Signout: '' as Asset
   }
 })

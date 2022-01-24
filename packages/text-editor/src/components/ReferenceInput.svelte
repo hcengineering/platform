@@ -14,11 +14,14 @@
 -->
 
 <script lang="ts">
-  import { getResource } from '@anticrm/platform'
-  import presentation, { getClient, ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/presentation'
+  import { Asset, getResource, IntlString } from '@anticrm/platform'
+  import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
+  import { AnySvelteComponent, Icon } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
+  import textEditorPlugin from '../plugin'
+  import { RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import Attach from './icons/Attach.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
@@ -40,7 +43,52 @@
   client.findAll(presentation.class.ObjectSearchCategory, {}).then((r) => {
     categories = r
   })
+  interface RefAction {
+    label: IntlString
+    icon: Asset | AnySvelteComponent
+    action: RefInputAction
+    order: number
+  }
+  const defActions: RefAction[] = [
+    {
+      label: textEditorPlugin.string.Attach,
+      icon: Attach,
+      action: () => {},
+      order: 1000
+    },
+    {
+      label: textEditorPlugin.string.TextStyle,
+      icon: TextStyle,
+      action: () => {},
+      order: 2000
+    },
+    {
+      label: textEditorPlugin.string.Emoji,
+      icon: Emoji,
+      action: () => {},
+      order: 3000
+    },
+    {
+      label: textEditorPlugin.string.GIF,
+      icon: GIF,
+      action: () => {},
+      order: 4000
+    }
+  ]
 
+  let actions: RefAction[] = []
+  client.findAll<RefInputActionItem>(textEditorPlugin.class.RefInputActionItem, {}).then(async (res) => {
+    const cont: RefAction[] = []
+    for (const r of res) {
+      cont.push({
+        label: r.label,
+        icon: r.icon,
+        order: r.order ?? 10000,
+        action: await getResource(r.action)
+      })
+    }
+    actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
+  })
   
   // Current selected category
   let category: ObjectSearchCategory | undefined = categories[0]
@@ -95,6 +143,16 @@
       }
     })
   ]
+
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor.insertText(text)
+    }
+  }
+  function handleAction (a: RefAction, evt?: Event): void {
+    console.log('handle event', a.label)
+    a.action(evt?.target as HTMLElement, editorHandler)
+  }
 </script>
 
 <div class="ref-container">
@@ -113,10 +171,11 @@
     {/if}
   </div>
   <div class="buttons">
-    <div class="tool"><Attach /></div>
-    <div class="tool"><TextStyle /></div>
-    <div class="tool"><Emoji /></div>
-    <div class="tool"><GIF /></div>
+    {#each actions as a}
+      <div class="tool" on:click={(evt) => handleAction(a, evt)}>
+        <Icon icon={a.icon}  size={'large'}/>
+      </div>
+    {/each}
   </div>
 </div>
 
