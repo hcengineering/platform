@@ -53,7 +53,6 @@
   }
 
   function signOut (): void {
-    closePopup()
     setMetadataLocalStorage(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
