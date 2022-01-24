@@ -200,7 +200,7 @@ dependencies:
   '@rush-temp/chunter-assets': file:projects/chunter-assets.tgz
   '@rush-temp/chunter-resources': file:projects/chunter-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/client': file:projects/client.tgz
-  '@rush-temp/client-resources': file:projects/client-resources.tgz
+  '@rush-temp/client-resources': file:projects/client-resources.tgz_ac194b5590200ebf8338e0f86ec190f4
   '@rush-temp/contact': file:projects/contact.tgz
   '@rush-temp/contact-assets': file:projects/contact-assets.tgz
   '@rush-temp/contact-resources': file:projects/contact-resources.tgz_096c09b0b673a57c275d9767a12070b1
@@ -9388,6 +9388,63 @@ packages:
       - sugarss
     dev: false
 
+  /svelte-check/2.3.0_4374c622c67ed7479ff0e44c29d09bce:
+    resolution: {integrity: sha512-SBKdJyUmxzPmJf/ZPqDSQOoa9JzOcgEpV7u3UaYcgVn7fA0veZ3FA5JgLU8KYtf84Gp6guBVcrC7XKLjJa5SXQ==}
+    hasBin: true
+    peerDependencies:
+      svelte: ^3.24.0
+    dependencies:
+      chokidar: 3.5.2
+      fast-glob: 3.2.7
+      import-fresh: 3.3.0
+      minimist: 1.2.5
+      picocolors: 1.0.0
+      sade: 1.7.4
+      source-map: 0.7.3
+      svelte: 3.44.3
+      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+    dev: false
+
+  /svelte-check/2.3.0_ac194b5590200ebf8338e0f86ec190f4:
+    resolution: {integrity: sha512-SBKdJyUmxzPmJf/ZPqDSQOoa9JzOcgEpV7u3UaYcgVn7fA0veZ3FA5JgLU8KYtf84Gp6guBVcrC7XKLjJa5SXQ==}
+    hasBin: true
+    peerDependencies:
+      svelte: ^3.24.0
+    dependencies:
+      chokidar: 3.5.2
+      fast-glob: 3.2.7
+      import-fresh: 3.3.0
+      minimist: 1.2.5
+      picocolors: 1.0.0
+      sade: 1.7.4
+      source-map: 0.7.3
+      svelte-preprocess: 4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
+    dev: false
+
   /svelte-dev-helper/1.1.9:
     resolution: {integrity: sha1-fRh9tcbNu9ZNdaMvkbiZi94yc8M=}
     dev: false
@@ -10797,7 +10854,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -10858,7 +10915,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -10895,8 +10952,9 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/client-resources.tgz:
-    resolution: {integrity: sha512-e47yiBH1dhkmjli6rn91Rq2XbDYF7+nHL71ll9NIn0LwZys7VxpLFO7eilXcF3NUObCLLtgPoh67aYcpeA64ug==, tarball: file:projects/client-resources.tgz}
+  file:projects/client-resources.tgz_ac194b5590200ebf8338e0f86ec190f4:
+    resolution: {integrity: sha512-0Aexa54EuAfPkz9aIldqI9KQyiORenx6EXyqob6quCA+elkNUJL8GSjn/t3c9ORtOjf7Qm0AJgoGw5XxJeNBrg==, tarball: file:projects/client-resources.tgz}
+    id: file:projects/client-resources.tgz
     name: '@rush-temp/client-resources'
     version: 0.0.0
     dependencies:
@@ -10910,9 +10968,21 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.5.1
+      svelte-check: 2.3.0_ac194b5590200ebf8338e0f86ec190f4
       typescript: 4.5.4
     transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - sass
+      - stylus
+      - sugarss
       - supports-color
+      - svelte
     dev: false
 
   file:projects/client.tgz:
@@ -10959,7 +11029,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -11149,7 +11219,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
     transitivePeerDependencies:
@@ -11322,7 +11392,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -11379,7 +11449,7 @@ packages:
       sass: 1.45.0
       smartcrop: 2.0.5
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -11455,7 +11525,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -11516,7 +11586,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -11577,7 +11647,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12118,7 +12188,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12234,7 +12304,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12345,7 +12415,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12570,7 +12640,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12631,7 +12701,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
     transitivePeerDependencies:
@@ -12708,7 +12778,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12775,7 +12845,7 @@ packages:
       prosemirror-state: 1.3.4
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12810,7 +12880,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12886,7 +12956,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12928,7 +12998,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
@@ -12989,7 +13059,7 @@ packages:
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
       svelte: 3.44.3
-      svelte-check: 2.2.11_4374c622c67ed7479ff0e44c29d09bce
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
       svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
