@@ -22,6 +22,7 @@ import { attachmentOperation } from '@anticrm/model-attachment'
 import { leadOperation } from '@anticrm/model-lead'
 import { recruitOperation } from '@anticrm/model-recruit'
 import { viewOperation } from '@anticrm/model-view'
+import { contactOpertation } from '@anticrm/model-contact'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -29,5 +30,6 @@ export const migrateOperations: MigrateOperation[] = [
   attachmentOperation,
   leadOperation,
   recruitOperation,
-  viewOperation
+  viewOperation,
+  contactOpertation
 ]
