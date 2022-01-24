@@ -21,7 +21,6 @@ import { showPopup } from '@anticrm/ui'
 import TemplatePopup from './components/TemplatePopup.svelte'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {
-  console.log('FSK')
   showPopup(TemplatePopup, { editor }, element)
 }
 
