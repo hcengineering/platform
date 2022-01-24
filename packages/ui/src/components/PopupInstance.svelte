@@ -17,29 +17,29 @@
 <script lang="ts">
   import { afterUpdate } from 'svelte'
   import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
-  import { closePopup } from '..'
 
   export let is: AnyComponent | AnySvelteComponent
   export let props: object
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
   export let zIndex: number
+  export let top: boolean
+  export let close: () => void
 
   let modalHTML: HTMLElement
   let componentInstance: any
   let show: boolean = false
 
-  function close(result: any) {
-    console.log('popup close result', result)
+  function _close (result: any) {
     if (onClose !== undefined) onClose(result)
-    closePopup()
+    close()
   }
 
-  function escapeClose() {
+  function escapeClose () {
     if (componentInstance && componentInstance.canClose) {
       if (!componentInstance.canClose()) return
     }
-    close(undefined)
+    _close(undefined)
   }
 
   const fitPopup = (): void => {
@@ -49,22 +49,24 @@
         modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
         modalHTML.style.maxHeight = modalHTML.style.height = ''
         if (typeof element !== 'string') {
-          let el: HTMLElement = element as HTMLElement
+          const el = element as HTMLElement
           const rect = el.getBoundingClientRect()
           const rectPopup = modalHTML.getBoundingClientRect()
           // Vertical
-          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight)
+          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
             modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-          else if (rectPopup.height + 28 < rect.top)
+          } else if (rectPopup.height + 28 < rect.top) {
             modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
-          else
+          } else {
             modalHTML.style.top = modalHTML.style.bottom = '1rem'
-          //   modalHTML.style.maxHeight = 'calc(100vh - 2rem)'
-          // }
+          }
+
           // Horizontal
-          if (rect.left + rectPopup.width + 16 > document.body.clientWidth)
+          if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
             modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-          else modalHTML.style.left = rect.left + 'px'
+          } else {
+            modalHTML.style.left = rect.left + 'px'
+          }
         } else if (element === 'right') {
           modalHTML.style.top = '0'
           modalHTML.style.bottom = '0'
@@ -92,14 +94,17 @@
   }
 
   function handleKeydown (ev: KeyboardEvent) {
-    if (ev.key === 'Escape' && is) escapeClose()
+    if (ev.key === 'Escape' && is && top) {
+      escapeClose()
+    }
   }
   afterUpdate(() => fitPopup())
 </script>
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
+
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => close(ev.detail) } />
+  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => _close(ev.detail) } />
 </div>
 <div class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 

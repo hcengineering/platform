@@ -15,18 +15,9 @@
 <script lang="ts">
   import { popupstore as modal } from '..'
   import PopupInstance from './PopupInstance.svelte'
-
-  // function handleKeydown (ev: KeyboardEvent) {
-  //   if (ev.key === 'Escape' && $modal.is) {
-  //     close()
-  //   }
-  // }
-
 </script>
 
-<!-- <svelte:window on:keydown={handleKeydown} /> -->
-
 {#each $modal as popup, i}
-  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} zIndex={(i+1) * 500}/>
+  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} zIndex={(i + 1) * 500} top={$modal.length - 1 === i} close={popup.close}/>
 {/each}
 
