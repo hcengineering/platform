@@ -2,7 +2,7 @@ import { DocumentQuery } from '.'
 import { Doc } from './classes'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
-import { Lookup, ReverseLookup, SortingQuery } from './storage'
+import { SortingQuery } from './storage'
 
 /**
  * @public
@@ -76,11 +76,4 @@ export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>)
     }
   }
   return result
-}
-
-/**
- * @public
- */
-export function isReverseLookup<T extends Doc> (lookup: Lookup<T>): lookup is ReverseLookup {
-  return (lookup as ReverseLookup)._id !== undefined
 }

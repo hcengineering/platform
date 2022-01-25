@@ -287,9 +287,9 @@ describe('mongo operations', () => {
     })
 
     const r2 = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {}, {
-      lookup: [{
+      lookup: {
         attachedTo: taskPlugin.class.Task
-      }]
+      }
     })
     expect(r2.length).toEqual(2)
     expect((r2[0].$lookup?.attachedTo as Task)?._id).toEqual(docId)
