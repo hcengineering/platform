@@ -175,11 +175,6 @@ export function createModel (builder: Builder): void {
     },
     view.action.Move
   )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: core.class.Doc,
-    action: view.action.Move
-  })
 }
 
 export default view

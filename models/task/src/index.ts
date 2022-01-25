@@ -510,4 +510,9 @@ export function createModel (builder: Builder): void {
     label: task.string.SearchTask,
     query: task.completion.IssueQuery
   }, task.completion.IssueCategory)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: task.class.Task,
+    action: view.action.Move
+  })
 }
