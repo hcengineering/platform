@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import type { Class, Doc, Ref, Space } from '@anticrm/core'
+  import type { Doc, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import task from '@anticrm/task'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
@@ -29,8 +29,9 @@
 
   export let applications: number
 
-  const createApp = (ev: MouseEvent): void =>
+  const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
+  }
 </script>
 
 <div class="applications-container">
