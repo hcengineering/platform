@@ -109,8 +109,7 @@
           name={field.id}
           password={field.password}
           bind:value={object[field.name]}
-          on:keyup={validate}
-          on:focus={validate}
+          on:input={validate}
           on:blur={() => {
             trim(field.name)
           }}

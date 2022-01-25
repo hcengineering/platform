@@ -17,6 +17,8 @@
 import { start } from './app'
 import { Client } from 'minio'
 
+const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
+
 const transactorEndpoint = process.env.TRANSACTOR_URL
 if (transactorEndpoint === undefined) {
   console.error('please provide transactor url')
@@ -75,4 +77,4 @@ if (modelVersion === undefined) {
 
 const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion }
 console.log('Starting Front service with', config)
-start(config, 8080)
+start(config, SERVER_PORT)

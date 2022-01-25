@@ -27,9 +27,8 @@ import platform, {
   Status,
   StatusCode
 } from '@anticrm/platform'
-import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
+import toolPlugin, { connect, initModel, upgradeModel, version, decodeToken, generateToken } from '@anticrm/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
-import { decode, encode } from 'jwt-simple'
 import { Binary, Db, ObjectId } from 'mongodb'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -57,10 +56,6 @@ const accountPlugin = plugin(accountId, {
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>
   }
 })
-
-const getSecret = (): string => {
-  return getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
-}
 
 const getEndpoint = (): string => {
   const endpoint = getMetadata(toolPlugin.metadata.Endpoint)
@@ -159,10 +154,6 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   return toAccountInfo(account)
 }
 
-function generateToken (email: string, workspace: string): string {
-  return encode({ email, workspace }, getSecret())
-}
-
 /**
  * @public
  * @param db -
@@ -185,7 +176,7 @@ export async function login (db: Db, email: string, password: string): Promise<L
  * @public
  */
 export async function selectWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
-  const { email } = decode(token, getSecret())
+  const { email } = decodeToken(token)
   const accountInfo = await getAccount(db, email)
   if (accountInfo === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
@@ -214,7 +205,7 @@ export async function selectWorkspace (db: Db, token: string, workspace: string)
  * @public
  */
 export async function join (db: Db, email: string, password: string, workspaceHash: string): Promise<LoginInfo> {
-  const workspace = decode(workspaceHash, getSecret())
+  const { workspace } = decodeToken(workspaceHash)
   const token = (await login(db, email, password)).token
   await assignWorkspace(db, email, workspace)
 
@@ -233,7 +224,7 @@ export async function signUpJoin (
   workspaceHash: string
 ): Promise<LoginInfo> {
   await createAccount(db, email, password, first, last)
-  const workspace = decode(workspaceHash, getSecret())
+  const { workspace } = decodeToken(workspaceHash)
   await assignWorkspace(db, email, workspace)
 
   const token = (await login(db, email, password)).token
@@ -329,7 +320,7 @@ export async function upgradeWorkspace (db: Db, workspace: string): Promise<stri
  * @public
  */
 export async function createUserWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
-  const { email } = decode(token, getSecret())
+  const { email } = decodeToken(token)
   await createWorkspace(db, workspace, '')
   await assignWorkspace(db, email, workspace)
   const result = {
@@ -344,19 +335,19 @@ export async function createUserWorkspace (db: Db, token: string, workspace: str
  * @public
  */
 export async function getWorkspaceHash (db: Db, token: string): Promise<string> {
-  const { workspace } = decode(token, getSecret())
+  const { workspace } = decodeToken(token)
   const wsPromise = await getWorkspace(db, workspace)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
-  return encode(workspace, getSecret())
+  return generateToken('', workspace)
 }
 
 /**
  * @public
  */
 export async function getUserWorkspaces (db: Db, token: string): Promise<Workspace[]> {
-  const { email } = decode(token, getSecret())
+  const { email } = decodeToken(token)
   const account = await getAccount(db, email)
   if (account === null) return []
   return await db
@@ -444,7 +435,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
  * @public
  */
 export async function changePassword (db: Db, token: string, oldPassword: string, password: string): Promise<void> {
-  const { email } = decode(token, getSecret())
+  const { email } = decodeToken(token)
   const account = await getAccountInfo(db, email, oldPassword)
 
   const salt = randomBytes(32)
@@ -457,7 +448,7 @@ export async function changePassword (db: Db, token: string, oldPassword: string
  * @public
  */
 export async function changeName (db: Db, token: string, first: string, last: string): Promise<void> {
-  const { email } = decode(token, getSecret())
+  const { email } = decodeToken(token)
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))

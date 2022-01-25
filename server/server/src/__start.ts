@@ -17,6 +17,8 @@
 // Add this to the VERY top of the first file loaded in your app
 import { start } from '.'
 
+const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
+
 const url = process.env.MONGO_URL
 if (url === undefined) {
   console.error('please provide mongodb url')
@@ -54,7 +56,8 @@ const minioConf = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-const shutdown = start(url, elasticUrl, minioConf, 3333)
+console.log(`starting server on ${serverPort}`)
+const shutdown = start(url, elasticUrl, minioConf, serverPort)
 
 const close = (): void => {
   console.trace('Exiting from server')

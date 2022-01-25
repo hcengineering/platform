@@ -24,6 +24,7 @@ import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { Db, MongoClient } from 'mongodb'
 
+const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
 const dbUri = process.env.MONGO_URL
 if (dbUri === undefined) {
   console.log('Please provide mongodb url')
@@ -83,8 +84,8 @@ app.use(cors())
 app.use(bodyParser())
 app.use(router.routes()).use(router.allowedMethods())
 
-const server = app.listen(3000, () => {
-  console.log('server started on port 3000')
+const server = app.listen(ACCOUNT_PORT, () => {
+  console.log(`server started on port ${ACCOUNT_PORT}`)
 })
 
 const close = (): void => {

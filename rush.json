@@ -970,6 +970,12 @@
       "packageName": "@anticrm/server-tool",
       "projectFolder": "server/tool",
       "shouldPublish": true
-    }
+    },
+    {
+      "packageName": "@anticrm/tests-sanity",
+      "projectFolder": "tests/sanity",
+      "shouldPublish": false
+    },
+
   ]
 }
