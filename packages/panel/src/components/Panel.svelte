@@ -50,7 +50,13 @@
         </div>
         <ActionIcon icon={IconMoreH} size={'medium'} />
       </div>
-      {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
+      {#if $$slots.subtitle}
+        <div class="flex-row-center subtitle">
+          <div class="flex-grow flex-row-center ml-10 mr-10">
+            <slot name="subtitle" />
+          </div>
+        </div>
+      {/if}
       <div class="flex-col scroll-container">
         <div class="flex-col content">
           <slot />
@@ -123,11 +129,19 @@
     }
 
     .subtitle {
+      overflow-x: auto;
       flex-shrink: 0;
-      padding: 0 2rem;
-      height: 3.5rem;
       min-height: 0;
+      height: 3.5rem;
       border-bottom: 1px solid var(--theme-zone-bg);
+
+      &::-webkit-scrollbar:horizontal { height: .25rem; }
+      &::-webkit-scrollbar-track { margin: 0; }
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--theme-menu-divider);
+        border-radius: .25rem;
+        &:hover { background-color: var(--theme-card-divider); }
+      }
     }
   }
 
