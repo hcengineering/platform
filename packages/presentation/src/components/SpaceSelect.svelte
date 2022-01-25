@@ -20,9 +20,10 @@
   import { Label, showPopup, IconFolder } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
-  import type { Ref, Class, Space } from '@anticrm/core'
+  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
 
   export let _class: Ref<Class<Space>>
+  export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let label: IntlString
   export let placeholder: IntlString
   export let value: Ref<Space>
@@ -33,8 +34,8 @@
 
   const client = getClient()
 
-  async function updateSelected(value: Ref<Space>) {
-    selected = await client.findOne(_class, { _id: value })
+  async function updateSelected (value: Ref<Space>) {
+    selected = await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value })
   }
 
   $: updateSelected(value)
@@ -50,7 +51,7 @@
 <div class="flex-col cursor-pointer"
   bind:this={btn}
   on:click|preventDefault={() => {
-    showPopup(SpacesPopup, { _class }, btn, (result) => {
+    showPopup(SpacesPopup, { _class, spaceQuery }, btn, (result) => {
       if (result) {
         value = result._id
       }

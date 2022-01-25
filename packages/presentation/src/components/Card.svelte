@@ -18,7 +18,7 @@
   import type { IntlString } from '@anticrm/platform'
 
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Space } from '@anticrm/core'
+  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
 
   import { Button, Label } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
@@ -26,6 +26,7 @@
 
   export let spaceClass: Ref<Class<Space>> | undefined = undefined
   export let space: Ref<Space>
+  export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let spaceLabel: IntlString | undefined = undefined
   export let spacePlaceholder: IntlString | undefined = undefined
   export let label: IntlString
@@ -52,7 +53,7 @@
   {#if spaceClass && spaceLabel && spacePlaceholder}
     <div class="flex-col pool">
       <div class="separator" />
-      <SpaceSelect _class={spaceClass} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+      <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
     </div>
   {/if}
   <div class="footer">
