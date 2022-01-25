@@ -44,6 +44,7 @@
   const client = getClient()
 
   async function save (newValues: AttachedData<Channel>[]): Promise<void> {
+    const currentProviders = new Set(channels.map((p) => p.provider))
     const promises = []
     for (const value of newValues) {
       const oldChannel = findValue(value.provider)
@@ -54,15 +55,17 @@
           provider: value.provider
         }))
       } else {
+        currentProviders.delete(value.provider)
         if (value.value === oldChannel.value) continue
-        if (value.value.length === 0) {
-          promises.push(client.removeCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection))
-        } else {
-          promises.push(client.updateCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection, {
-            value: value.value
-          }))
-        }
+        promises.push(client.updateCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection, {
+          value: value.value
+        }))
       }
+    }
+    for (const value of currentProviders) {
+      const oldChannel = findValue(value)
+      if (oldChannel === undefined) continue
+      promises.push(client.removeCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection))
     }
     Promise.all(promises)
   }

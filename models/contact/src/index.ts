@@ -13,28 +13,23 @@
 // limitations under the License.
 //
 
-import type { Domain, Ref, Lookup } from '@anticrm/core'
+import type {
+  Channel,
+  ChannelProvider, Contact, Employee, EmployeeAccount, Organization,
+  Organizations, Person,
+  Persons
+} from '@anticrm/contact'
+import type { Domain, Ref } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX, Index, Collection, TypeRef } from '@anticrm/model'
-import type { IntlString, Asset } from '@anticrm/platform'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
-import type {
-  Contact,
-  Person,
-  Persons,
-  Organization,
-  Organizations,
-  Employee,
-  Channel,
-  ChannelProvider,
-  EmployeeAccount
-} from '@anticrm/contact'
-import workbench from '@anticrm/model-workbench'
-import view from '@anticrm/model-view'
-import attachment from '@anticrm/model-attachment'
-import { ids as contact } from './plugin'
 import presentation from '@anticrm/model-presentation'
+import view from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import type { Asset, IntlString } from '@anticrm/platform'
+import { ids as contact } from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
@@ -136,16 +131,12 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
-  const contactTableLookup: Lookup<Contact>[] = [
-    { _id: contact.class.Channel, as: 'channels' }
-  ]
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: contactTableLookup
+      lookup: { _id: { channels: contact.class.Channel } }
     },
     config: [
       '',
@@ -261,5 +252,5 @@ export function createModel (builder: Builder): void {
   }, contact.completion.OrganizationCategory)
 }
 
-export { contact as default }
 export { contactOperation } from './migration'
+export { contact as default }

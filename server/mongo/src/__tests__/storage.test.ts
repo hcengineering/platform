@@ -25,14 +25,12 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
-  Hierarchy, ModelDb, Ref,
+  Hierarchy, MeasureMetricsContext, ModelDb, Ref,
   SortingOrder,
   Space,
   Tx,
   TxOperations,
-  TxResult,
-  MeasureMetricsContext,
-  Lookup
+  TxResult
 } from '@anticrm/core'
 import { createServerStorage, DbAdapter, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { MongoClient } from 'mongodb'
@@ -289,18 +287,17 @@ describe('mongo operations', () => {
     })
 
     const r2 = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {}, {
-      lookup: [{
+      lookup: {
         attachedTo: taskPlugin.class.Task
-      }]
+      }
     })
     expect(r2.length).toEqual(2)
     expect((r2[0].$lookup?.attachedTo as Task)?._id).toEqual(docId)
 
     const r3 = await client.findAll<Task>(taskPlugin.class.Task, {}, {
-      lookup: [{
-        _id: taskPlugin.class.TaskComment,
-        as: 'comment'
-      }]
+      lookup: {
+        _id: { comment: taskPlugin.class.TaskComment }
+      }
     })
 
     expect(r3).toHaveLength(1)
@@ -314,11 +311,7 @@ describe('mongo operations', () => {
     const r4 = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {
       _id: comment2Id
     }, {
-      lookup: [{
-        attachedTo: taskPlugin.class.TaskComment
-      }, {
-        attachedTo: { attachedTo: taskPlugin.class.Task }
-      }] as Lookup<TaskComment>[]
+      lookup: { attachedTo: [taskPlugin.class.TaskComment, { attachedTo: taskPlugin.class.Task } as any] }
     })
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)

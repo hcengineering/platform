@@ -153,9 +153,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: [
-        { _id: contact.class.Channel, as: 'channels' }
-      ]
+      lookup: { _id: { channels: contact.class.Channel } }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -169,13 +167,13 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const applicantTableLookup: Lookup<Applicant>[] = [
-    { attachedTo: recruit.mixin.Candidate },
-    { state: task.class.State },
-    { assignee: contact.class.Employee },
-    { doneState: task.class.DoneState },
-    { attachedTo: { _id: contact.class.Channel, as: 'channels' } }
-  ]
+  const applicantTableLookup: Lookup<Applicant> =
+  {
+    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
+    state: task.class.State,
+    assignee: contact.class.Employee,
+    doneState: task.class.DoneState
+  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
@@ -197,11 +195,11 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const applicantKanbanLookup: Lookup<Applicant>[] = [
-    { attachedTo: recruit.mixin.Candidate },
-    { state: task.class.State },
-    { attachedTo: { _id: contact.class.Channel, as: 'channels' } }
-  ]
+  const applicantKanbanLookup: Lookup<Applicant> =
+  {
+    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
+    state: task.class.State
+  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
@@ -229,7 +227,7 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.attachedTo$lookup..channels'
+      '$lookup.attachedTo.$lookup.channels'
     ]
   })
 

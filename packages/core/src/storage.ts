@@ -49,13 +49,8 @@ export type DocumentQuery<T extends Doc> = {
  * @public
  */
 export type ToClassRef<T extends object> = {
-  [P in keyof T]?: T[P] extends Ref<infer X> | null ? (Ref<Class<X>> | Lookup<X>) : never
+  [P in keyof T]?: T[P] extends Ref<infer X> | null ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
 }
-
-/**
- * @public
- */
-export type PickOne<T> = { [P in keyof T]: Record<P, T[P]> & Partial<Record<Exclude<keyof T, P>, undefined>> }[keyof T]
 
 /**
  * @public
@@ -70,21 +65,26 @@ export type NullableRef = Ref<Doc> | null
 /**
  * @public
  */
-export type Refs<T extends Doc> = ToClassRef<Omit<RefKeys<T>, keyof Doc>>
+export type Refs<T extends Doc> = ToClassRef<RefKeys<T>>
 
 /**
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type ReverseLookup = {
-  _id: Ref<Class<AttachedDoc>>
-  as: string
+export interface ReverseLookups {
+  _id?: ReverseLookup
 }
 
 /**
  * @public
  */
-export type Lookup<T extends Doc> = PickOne<Refs<T>> | ReverseLookup
+export interface ReverseLookup {
+  [key: string]: Ref<Class<AttachedDoc>>
+}
+
+/**
+ * @public
+ */
+export type Lookup<T extends Doc> = Refs<T> | ReverseLookups | (Refs<T> & ReverseLookups)
 
 /**
  * @public
@@ -93,7 +93,7 @@ export type Lookup<T extends Doc> = PickOne<Refs<T>> | ReverseLookup
 export type FindOptions<T extends Doc> = {
   limit?: number
   sort?: SortingQuery<T>
-  lookup?: Lookup<T>[]
+  lookup?: Lookup<T>
 }
 
 /**
@@ -115,7 +115,7 @@ export enum SortingOrder {
  * @public
  */
 export type RefsAsDocs<T> = {
-  [P in keyof T]: T[P] extends Ref<infer X> ? X | WithLookup<X> : never
+  [P in keyof T]: T[P] extends Ref<infer X> ? (T extends X ? X : X | WithLookup<X>) : never
 }
 
 /**
@@ -126,7 +126,7 @@ export type RemoveNever<T extends object> = Omit<T, KeysByType<T, never>>
 /**
  * @public
  */
-export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<Omit<T, keyof Doc>>>> | RemoveNever<{
+export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<T>>> | RemoveNever<{
   [key: string]: Doc[]
 }>
 

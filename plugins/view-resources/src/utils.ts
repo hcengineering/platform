@@ -22,7 +22,6 @@ import core, {
   Doc,
   FindResult,
   Hierarchy,
-  isReverseLookup,
   Lookup,
   matchQuery,
   Obj,
@@ -31,7 +30,7 @@ import core, {
 } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { getAttributePresenterClass } from '@anticrm/presentation'
+import { Channels, getAttributePresenterClass } from '@anticrm/presentation'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
@@ -106,12 +105,12 @@ async function getAttributePresenter (
   }
 }
 
-async function getPresenter (
+async function getPresenter<T extends Doc> (
   client: Client,
-  _class: Ref<Class<Obj>>,
+  _class: Ref<Class<T>>,
   key: BuildModelKey,
   preserveKey: BuildModelKey,
-  lookups?: Lookup<Doc>[]
+  lookup?: Lookup<T>
 ): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
@@ -127,10 +126,10 @@ async function getPresenter (
     return await getObjectPresenter(client, _class, preserveKey)
   } else {
     if (key.key.startsWith('$lookup')) {
-      if (lookups === undefined) {
+      if (lookup === undefined) {
         throw new Error('lookup class does not provided for ' + key)
       }
-      return await getLookupPresenter(client, key, preserveKey, lookups)
+      return await getLookupPresenter(client, _class, key, preserveKey, lookup)
     }
     return await getAttributePresenter(client, _class, key.key, preserveKey)
   }
@@ -244,71 +243,64 @@ export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
   `
 }
 
-async function getLookupPresenter (client: Client, key: BuildModelKey, preserveKey: BuildModelKey, lookups: Lookup<any>[]): Promise<AttributeModel> {
-  const lookupClass = getLookupClass(key.key, lookups)
+async function getLookupPresenter<T extends Doc> (client: Client, _class: Ref<Class<T>>, key: BuildModelKey, preserveKey: BuildModelKey, lookup: Lookup<T>): Promise<AttributeModel> {
+  const lookupClass = getLookupClass(key.key, lookup, _class)
   const lookupProperty = getLookupProperty(key.key)
-  const lookupKey = { ...key, key: lookupProperty }
-  const model = await getPresenter(client, lookupClass, lookupKey, preserveKey)
-  if (lookupKey.key === '') {
-    const clazz = client.getHierarchy().getClass(lookupClass)
-    model.label = clazz.label
-  } else {
-    const attribute = client.getHierarchy().getAttribute(lookupClass, lookupKey.key)
-    model.label = attribute.label
-  }
+  const lookupKey = { ...key, key: lookupProperty[0] }
+  const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey)
+  model.label = getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
   return model
 }
 
-function getLookupClass (key: string, lookups: Lookup<any>[]): Ref<Class<Doc>> {
-  const levels = key.split('$lookup.').filter((p) => p.length > 0).length
-  const _class = getLookup(key, lookups, levels)
+function getLookupLabel<T extends Doc> (client: Client, _class: Ref<Class<T>>, lookupClass: Ref<Class<Doc>>, key: BuildModelKey, attrib: string): IntlString {
+  if (key.label !== undefined) return key.label
+  if (key.key === '') {
+    try {
+      const attribute = client.getHierarchy().getAttribute(_class, attrib)
+      return attribute.label
+    } catch {}
+    const clazz = client.getHierarchy().getClass(lookupClass)
+    return clazz.label
+  } else {
+    const attribute = client.getHierarchy().getAttribute(lookupClass, key.key)
+    return attribute.label
+  }
+}
+
+function getLookupClass<T extends Doc> (key: string, lookup: Lookup<T>, parent: Ref<Class<T>>): [Ref<Class<Doc>>, Ref<Class<Doc>>] {
+  const _class = getLookup(key, lookup, parent)
   if (_class === undefined) {
     throw new Error('lookup class does not provided for ' + key)
   }
   return _class
 }
 
-function getLookupProperty (key: string): string {
+function getLookupProperty (key: string): [string, string] {
   const parts = key.split('$lookup')
   const lastPart = parts[parts.length - 1]
   const split = lastPart.split('.').filter((p) => p.length > 0)
-  split.shift()
+  const prev = split.shift() ?? ''
   const result = split.join('.')
-  return result
+  return [result, prev]
 }
 
-function getLookup (key: string, lookups: Lookup<any>[], level: number): Ref<Class<Doc>> | undefined {
-  if (level === 0) return
+function getLookup (key: string, lookup: Lookup<any>, parent: Ref<Class<Doc>>): [Ref<Class<Doc>>, Ref<Class<Doc>>] | undefined {
   const parts = key.split('$lookup.').filter((p) => p.length > 0)
   const currentKey = parts[0].split('.').filter((p) => p.length > 0)[0]
-  for (const lookup of lookups) {
-    if (level === 1) {
-      const result = getLookupValue(lookup, currentKey)
-      if (result !== undefined) return result
-    } else {
-      const nestedKey = parts.slice(1).join('$lookup.')
-      const result = getNestedLookup(lookup, level, nestedKey, currentKey)
-      if (result !== undefined) return result
+  const current = (lookup as any)[currentKey]
+  const nestedKey = parts.slice(1).join('$lookup.')
+  if (nestedKey) {
+    if (!Array.isArray(current)) {
+      return
     }
+    return getLookup(nestedKey, current[1], current[0])
   }
-}
-
-function getLookupValue (lookup: Lookup<any>, currentKey: string): Ref<Class<Doc>> | undefined {
-  if (isReverseLookup(lookup)) {
-    if (lookup.as === currentKey) return lookup._id
-  } else {
-    const lookupKey = Object.getOwnPropertyNames(lookup)[0]
-    const value = (lookup as any)[lookupKey]
-    if (typeof value === 'string') {
-      if (currentKey === lookupKey) return value as Ref<Class<Doc>>
-    }
+  if (Array.isArray(current)) {
+    return [current[0], parent]
   }
-}
-
-function getNestedLookup (lookup: Lookup<any>, level: number, nestedKey: string, currentKey: string): Ref<Class<Doc>> | undefined {
-  const lookupKey = Object.getOwnPropertyNames(lookup)[0]
-  if (lookupKey !== currentKey) return
-  const value = (lookup as any)[lookupKey]
-  if (typeof value === 'string') return
-  return getLookup(nestedKey, [value], --level)
+  if (current === undefined && lookup._id !== undefined) {
+    const reverse = (lookup._id as any)[currentKey]
+    return reverse !== undefined ? [reverse, parent] : undefined
+  }
+  return current !== undefined ? [current, parent] : undefined
 }

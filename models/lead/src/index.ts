@@ -120,9 +120,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: [
-        { _id: contact.class.Channel, as: 'channels' }
-      ]
+      lookup: { _id: contact.class.Channel, as: 'channels' }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -132,11 +130,11 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const leadLookup: Lookup<Lead>[] = [
-    { attachedTo: contact.class.Contact },
-    { state: task.class.State },
-    { attachedTo: { _id: contact.class.Channel, as: 'channels' } }
-  ]
+  const leadLookup: Lookup<Lead> =
+  {
+    attachedTo: [contact.class.Contact, { _id: { channels: contact.class.Channel } }],
+    state: task.class.State
+  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,

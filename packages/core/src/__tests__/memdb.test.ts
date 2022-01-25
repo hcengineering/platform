@@ -272,13 +272,13 @@ describe('memdb', () => {
       message: 'msg3'
     })
 
-    const simple = await client.findAll(test.class.TestComment, { _id: first }, { lookup: [{ attachedTo: spaces[0]._class }] })
+    const simple = await client.findAll(test.class.TestComment, { _id: first }, { lookup: { attachedTo: spaces[0]._class } })
     expect(simple[0].$lookup?.attachedTo).toEqual(spaces[0])
 
-    const nested = await client.findAll(test.class.TestComment, { _id: second }, { lookup: [{ attachedTo: test.class.TestComment }, { attachedTo: { attachedTo: spaces[0]._class } } as any] })
+    const nested = await client.findAll(test.class.TestComment, { _id: second }, { lookup: { attachedTo: [test.class.TestComment, { attachedTo: spaces[0]._class } as any] } })
     expect((nested[0].$lookup?.attachedTo as any).$lookup?.attachedTo).toEqual(spaces[0])
 
-    const reverse = await client.findAll(spaces[0]._class, { _id: spaces[0]._id }, { lookup: [{ _id: test.class.TestComment, as: 'comments' }] })
+    const reverse = await client.findAll(spaces[0]._class, { _id: spaces[0]._id }, { lookup: { _id: { comments: test.class.TestComment } } })
     expect((reverse[0].$lookup as any).comments).toHaveLength(2)
   })
 })
