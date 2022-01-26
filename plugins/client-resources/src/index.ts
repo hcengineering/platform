@@ -27,14 +27,14 @@ export { connect }
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
-  let _token: string | undefined = undefined
+  let _token: string | undefined
   let client: Client | undefined
 
   return {
     function: {
       GetClient: async (token: string, endpoint: string): Promise<Client> => {
         if (token !== _token && client !== undefined) {
-          client.close()
+          await client.close()
           client = undefined
         }
         if (client === undefined) {
