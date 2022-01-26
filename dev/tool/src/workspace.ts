@@ -114,6 +114,7 @@ export async function restoreWorkspace (
   elasticUrl: string,
   transactorUrl: string
 ): Promise<void> {
+  console.log('Restoring workspace', mongoUrl, dbName, fileName)
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -161,7 +162,7 @@ export async function restoreWorkspace (
       }
     }
 
-    await upgradeModel(dbName, transactorUrl)
+    await upgradeModel(transactorUrl, dbName)
 
     await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
   } finally {
