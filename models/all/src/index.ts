@@ -36,8 +36,6 @@ import { createModel as templatesModel } from '@anticrm/model-templates'
 import { createModel as textEditorModel } from '@anticrm/model-text-editor'
 import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 const builder = new Builder()
 
@@ -70,14 +68,11 @@ const builders = [
 for (const b of builders) {
   b(builder)
 }
-const packageFile = readFileSync(join(__dirname, '..', 'package.json')).toString()
-const json = JSON.parse(packageFile)
-const packageVersion = json.version.split('.')
 
 export const version: Data<Version> = {
-  major: parseInt(packageVersion[0]),
-  minor: parseInt(packageVersion[1]),
-  patch: parseInt(packageVersion[2])
+  major: 0,
+  minor: 6,
+  patch: 0
 }
 
 builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)

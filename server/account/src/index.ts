@@ -391,10 +391,10 @@ async function getWorkspaceAndAccount (
 export async function assignWorkspace (db: Db, email: string, workspace: string): Promise<void> {
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $push: { accounts: accountId } })
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
 
   // Add workspace to account
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $push: { workspaces: workspaceId } })
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
 
   const account = await db.collection<Account>(ACCOUNT_COLLECTION).findOne({ _id: accountId })
 
@@ -408,17 +408,33 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
 
     const name = combineName(account.first, account.last)
 
-    const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
-      name,
-      city: '',
-      channels: []
-    })
+    // Check if EmployeeAccoun is not exists
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
 
-    await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
-      email: account.email,
-      employee,
-      name
-    })
+    if (existingAccount === undefined) {
+      const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+        name,
+        city: '',
+        channels: []
+      })
+
+      await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
+        email: account.email,
+        employee,
+        name
+      })
+    } else {
+      const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
+      if (employee === undefined) {
+        // Employee was deleted, let's restore it.
+        const employeeId = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+          name,
+          city: '',
+          channels: []
+        })
+        await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, { employee: employeeId })
+      }
+    }
   } finally {
     await connection.close()
   }
