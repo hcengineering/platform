@@ -27,17 +27,23 @@ export { connect }
  */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
+  let _token: string | undefined
   let client: Client | undefined
 
   return {
     function: {
       GetClient: async (token: string, endpoint: string): Promise<Client> => {
+        if (token !== _token && client !== undefined) {
+          await client.close()
+          client = undefined
+        }
         if (client === undefined) {
           client = await createClient((handler: TxHander) => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
             return connect(url.href, handler)
           })
+          _token = token
 
           // Check if we had dev hook for client.
           const hook = getMetadata(clientPlugin.metadata.ClientHook)
