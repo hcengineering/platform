@@ -15,11 +15,11 @@
 -->
 <script lang="ts">
   import type { AttachedData, Class, Doc, Ref } from '@anticrm/core'
-  import { CircleButton, showPopup, IconAdd, Label } from '@anticrm/ui'
-  import presentation, { Channels, createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
   import contact from '../plugin'
+  import Channels from './Channels.svelte'
 
   export let attachedTo: Ref<Doc>
   export let attachedClass: Ref<Class<Doc>>
@@ -71,34 +71,4 @@
   }
 </script>
 
-{#if !channels}
-  <CircleButton
-    icon={IconAdd}
-    size={'small'}
-    selected
-    on:click={(ev) =>
-      showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-        save(result)
-      })}
-  />
-  <span><Label label={presentation.string.AddSocialLinks} /></span>
-{:else}
-  <Channels value={channels} size={'small'} {integrations} on:click />
-  <div class="ml-1">
-    <CircleButton
-      icon={contact.icon.Edit}
-      size={'small'}
-      selected
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          save(result)
-        })}
-    />
-  </div>
-{/if}
-
-<style lang="scss">
-  span {
-    margin-left: 0.5rem;
-  }
-</style>
+<Channels {channels} {integrations} on:change={(e) => { save(e.detail) }} />

@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import contact, { combineName, Person } from '@anticrm/contact'
+  import contact, { Channel, combineName, Person } from '@anticrm/contact'
   import type { Data, MixinData, Ref } from '@anticrm/core'
   import { generateId } from '@anticrm/core'
   import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
@@ -23,7 +23,7 @@
   import type { Candidate } from '@anticrm/recruit'
   import { EditBox, IconFile as FileIcon, Label, Link, showPopup, Spinner } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { ChannelsEditor } from '@anticrm/contact-resources'
+  import { Channels } from '@anticrm/contact-resources'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
@@ -80,6 +80,12 @@
         lastModified: resume.lastModified
       })
     }
+    for (const channel of channels) {
+      await client.addCollection(contact.class.Channel, contact.space.Contacts, candidateId, contact.class.Person, 'channels', {
+        value: channel.value,
+        provider: channel.provider
+      })
+    }
 
     dispatch('close')
   }
@@ -130,6 +136,8 @@
     avatar = file
   }
 
+  let channels: Channel[] = []
+
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -154,7 +162,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    <ChannelsEditor attachedTo={candidateId} attachedClass={contact.class.Person} />
+    <Channels bind:channels={channels} />
   </div>
 
   <div class="flex-center resume" class:solid={dragover || resume.uuid} 

@@ -20,11 +20,11 @@
 
   import { EditBox } from '@anticrm/ui'
 
-  import { Organization } from '@anticrm/contact'
+  import { Channel, Organization } from '@anticrm/contact'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
   import { generateId } from '@anticrm/core'
-  import ChannelsEditor from './ChannelsEditor.svelte'
+  import Channels from './Channels.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
@@ -41,9 +41,17 @@
 
   async function createOrganization () {
     await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
+    for (const channel of channels) {
+      await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Organization, 'channels', {
+        value: channel.value,
+        provider: channel.provider
+      })
+    }
 
     dispatch('close')
   }
+
+  let channels: Channel[] = []
 </script>
 
 <Card
@@ -67,7 +75,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    <ChannelsEditor attachedTo={id} attachedClass={contact.class.Organization} />
+    <Channels bind:channels={channels} />
   </div>
 </Card>
 

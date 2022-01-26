@@ -23,9 +23,9 @@
   import attachment from '@anticrm/attachment'
   import { EditBox } from '@anticrm/ui'
 
-  import { combineName, Person } from '@anticrm/contact'
+  import { Channel, combineName, Person } from '@anticrm/contact'
   import contact from '../plugin'
-  import ChannelsEditor from './ChannelsEditor.svelte'
+  import Channels from './Channels.svelte'
 
   let firstName = ''
   let lastName = ''
@@ -64,8 +64,16 @@
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
+    for (const channel of channels) {
+      await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
+        value: channel.value,
+        provider: channel.provider
+      })
+    }
     dispatch('close')
   }
+
+  let channels: Channel[] = []
 </script>
 
 <Card
@@ -89,7 +97,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    <ChannelsEditor attachedTo={id} attachedClass={contact.class.Person} />
+    <Channels bind:channels={channels} />
   </div>
 </Card>
 
