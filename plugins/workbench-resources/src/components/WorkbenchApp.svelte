@@ -15,8 +15,9 @@
 
 <script lang="ts">
 
-import { getResource } from '@anticrm/platform'
+import { getMetadata, getResource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
+import core from '@anticrm/core'
 import { setCurrentAccount } from '@anticrm/core'
 import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
 
@@ -25,8 +26,11 @@ import login from '@anticrm/login'
 import contact from '@anticrm/contact'
 
 import Workbench from './Workbench.svelte'
+import workbench from '../plugin'
 
-async function connect(): Promise<Client | undefined> {
+let versionError: string | undefined = ''
+
+async function connect (): Promise<Client | undefined> {
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
@@ -39,6 +43,7 @@ async function connect(): Promise<Client | undefined> {
   const getClient = await getResource(client.function.GetClient)
   const instance = await getClient(token, endpoint)
   console.log('logging in as', email)
+
   const me = await instance.findOne(contact.class.EmployeeAccount, { email })
   if (me !== undefined) {
     console.log('login: employee account', me)
@@ -46,6 +51,32 @@ async function connect(): Promise<Client | undefined> {
   } else {
     console.log('WARNING: no employee account found.')
   }
+
+  try {
+    console.log('checking model version')
+    const version = await instance.findOne(core.class.Version, {})
+    console.log('Model version', version)
+
+    const requirdVersion = getMetadata(workbench.metadata.RequiredVersion)
+    if (requirdVersion !== undefined) {
+      console.log('checking min model version', requirdVersion)
+      const versionStr = `${version?.major}.${version?.minor}.${version?.patch}`
+
+      if (version === undefined || requirdVersion !== versionStr) {
+        versionError = `${versionStr} => ${requirdVersion}`
+        return undefined
+      }
+    }
+  } catch (err: any) {
+    console.log(err)
+    const requirdVersion = getMetadata(workbench.metadata.RequiredVersion)
+    console.log('checking min model version', requirdVersion)
+    if (requirdVersion !== undefined) {
+      versionError = `'unknown' => ${requirdVersion}`
+      return undefined
+    }
+  }
+
   return instance
 }
 
@@ -54,7 +85,27 @@ async function connect(): Promise<Client | undefined> {
 {#await connect()}
   <Loading/>
 {:then client}
-  <Workbench {client}/>
+  {#if !client && versionError}
+    <div class='antiPopup version-popup'>
+      <h1>Server is under maintenance.</h1>
+      {versionError}
+    </div>
+  {:else}
+    <Workbench {client}/>
+  {/if}
 {:catch error}
   <div>{error} -- {error.stack}</div>
 {/await}
+
+<style lang="scss">
+  .version-popup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    left: 25%;
+    right: 25%;
+    top: 25%;
+    bottom: 25%;
+  }
+</style>

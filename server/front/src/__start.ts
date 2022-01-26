@@ -67,6 +67,12 @@ if (uploadUrl === undefined) {
   process.exit(1)
 }
 
-const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl }
+const modelVersion = process.env.MODEL_VERSION
+if (modelVersion === undefined) {
+  console.error('please provide model version requirement')
+  process.exit(1)
+}
+
+const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion }
 console.log('Starting Front service with', config)
 start(config, 8080)

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import accountPlugin, {
+import {
   ACCOUNT_DB,
   assignWorkspace,
   createAccount,
@@ -22,45 +22,24 @@ import accountPlugin, {
   dropAccount,
   dropWorkspace,
   getAccount,
+  listAccounts,
   listWorkspaces,
-  listAccounts
+  upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
+import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
-import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, dumpWorkspace, restoreWorkspace, upgradeWorkspace } from './workspace'
+import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 
-const mongodbUri = process.env.MONGO_URL
-if (mongodbUri === undefined) {
-  console.error('please provide mongodb url.')
-  process.exit(1)
-}
+const { mongodbUri, minio } = prepareTools()
 
 const transactorUrl = process.env.TRANSACTOR_URL
 if (transactorUrl === undefined) {
   console.error('please provide transactor url.')
-  process.exit(1)
-}
-
-const minioEndpoint = process.env.MINIO_ENDPOINT
-if (minioEndpoint === undefined) {
-  console.error('please provide minio endpoint')
-  process.exit(1)
-}
-
-const minioAccessKey = process.env.MINIO_ACCESS_KEY
-if (minioAccessKey === undefined) {
-  console.error('please provide minio access key')
-  process.exit(1)
-}
-
-const minioSecretKey = process.env.MINIO_SECRET_KEY
-if (minioSecretKey === undefined) {
-  console.error('please provide minio secret key')
   process.exit(1)
 }
 
@@ -70,16 +49,8 @@ if (elasticUrl === undefined) {
   process.exit(1)
 }
 
-setMetadata(accountPlugin.metadata.Endpoint, transactorUrl)
-setMetadata(accountPlugin.metadata.Transactor, transactorUrl)
-
-const minio = new Client({
-  endPoint: minioEndpoint,
-  port: 9000,
-  useSSL: false,
-  accessKey: minioAccessKey,
-  secretKey: minioSecretKey
-})
+setMetadata(toolPlugin.metadata.Endpoint, transactorUrl)
+setMetadata(toolPlugin.metadata.Transactor, transactorUrl)
 
 async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
   console.log(`connecting to database '${uri}'...`)
@@ -139,7 +110,9 @@ program
   .command('upgrade-workspace <name>')
   .description('upgrade workspace')
   .action(async (workspace, cmd) => {
-    await upgradeWorkspace(mongodbUri, workspace, transactorUrl, minio)
+    return await withDatabase(mongodbUri, async (db) => {
+      await upgradeWorkspace(db, workspace)
+    })
   })
 
 program
@@ -158,6 +131,8 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       const workspacesJSON = JSON.stringify(await listWorkspaces(db), null, 2)
       console.info(workspacesJSON)
+
+      console.log('latest model version:', JSON.stringify(version))
     })
   })
 

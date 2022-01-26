@@ -96,6 +96,7 @@
     "@anticrm/server-contact-resources": "~0.6.0",
     "@anticrm/templates": "~0.6.0",
     "@anticrm/templates-assets": "~0.6.0",
-    "@anticrm/templates-resources": "~0.6.0"
+    "@anticrm/templates-resources": "~0.6.0",
+    "@anticrm/core": "~0.6.16"
   }
 }

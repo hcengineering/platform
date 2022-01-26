@@ -16,70 +16,16 @@
 
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import builder, { migrateOperations } from '@anticrm/model-all'
+import builder, { version } from '@anticrm/model-all'
+import { upgradeModel } from '@anticrm/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
 import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
-import { connect } from './connect'
-import { MigrateClientImpl } from './upgrade'
+import { rebuildElastic } from './elastic'
 import { generateModelDiff, printDiff } from './mdiff'
 import { listMinioObjects, MinioWorkspaceItem } from './minio'
-import { rebuildElastic } from './elastic'
-
-const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
-
-/**
- * @public
- */
-export async function upgradeWorkspace (
-  mongoUrl: string,
-  dbName: string,
-  transactorUrl: string,
-  minio: Client
-): Promise<void> {
-  if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
-    throw Error('Model txes must target only core.space.Model')
-  }
-
-  const client = new MongoClient(mongoUrl)
-  try {
-    await client.connect()
-    const db = client.db(dbName)
-
-    console.log('removing model...')
-    // we're preserving accounts (created by core.account.System).
-    const result = await db.collection(DOMAIN_TX).deleteMany({
-      objectSpace: core.space.Model,
-      modifiedBy: core.account.System,
-      objectClass: { $ne: contact.class.EmployeeAccount }
-    })
-    console.log(`${result.deletedCount} transactions deleted.`)
-
-    console.log('creating model...')
-    const model = txes
-    const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    console.log(`${insert.insertedCount} model transactions inserted.`)
-
-    const migrateClient = new MigrateClientImpl(db)
-    for (const op of migrateOperations) {
-      await op.migrate(migrateClient)
-    }
-
-    console.log('Apply upgrade operations')
-
-    const connection = await connect(transactorUrl, dbName)
-    for (const op of migrateOperations) {
-      await op.upgrade(connection)
-    }
-
-    await connection.close()
-  } finally {
-    await client.close()
-  }
-}
-
 interface CollectionInfo {
   name: string
   file: string
@@ -107,7 +53,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
     }
 
     const workspaceInfo: WorkspaceInfo = {
-      version: '0.6.0',
+      version: `${version.major}.${version.minor}.${version.patch}`,
       collections: [],
       minioData: []
     }
@@ -215,7 +161,7 @@ export async function restoreWorkspace (
       }
     }
 
-    await upgradeWorkspace(mongoUrl, dbName, transactorUrl, minio)
+    await upgradeModel(dbName, transactorUrl)
 
     await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
   } finally {

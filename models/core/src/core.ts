@@ -31,7 +31,8 @@ import type {
   Collection,
   RefTo,
   ArrOf,
-  Interface
+  Interface,
+  Version
 } from '@anticrm/core'
 import { DOMAIN_MODEL } from '@anticrm/core'
 import { Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
@@ -128,3 +129,10 @@ export class TTypeTimestamp extends TType {}
 
 @Model(core.class.TypeDate, core.class.Type)
 export class TTypeDate extends TType {}
+
+@Model(core.class.Version, core.class.Doc, DOMAIN_MODEL)
+export class TVersion extends TDoc implements Version {
+  major!: number
+  minor!: number
+  patch!: number
+}

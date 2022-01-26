@@ -15,15 +15,42 @@
 
 import { Builder } from '@anticrm/model'
 import core from './component'
-import { TAttribute, TArrOf, TClass, TDoc, TMixin, TObj, TType, TTypeString, TTypeBoolean, TTypeTimestamp, TTypeDate, TAttachedDoc, TCollection, TRefTo, TInterface } from './core'
-import { TSpace, TAccount } from './security'
-import { TTx, TTxCreateDoc, TTxMixin, TTxUpdateDoc, TTxCUD, TTxPutBag, TTxRemoveDoc, TTxBulkWrite, TTxCollectionCUD } from './tx'
+import {
+  TArrOf,
+  TAttachedDoc,
+  TAttribute,
+  TClass,
+  TCollection,
+  TDoc,
+  TInterface,
+  TMixin,
+  TObj,
+  TRefTo,
+  TType,
+  TTypeBoolean,
+  TTypeDate,
+  TTypeString,
+  TTypeTimestamp,
+  TVersion
+} from './core'
+import { TAccount, TSpace } from './security'
+import {
+  TTx,
+  TTxBulkWrite,
+  TTxCollectionCUD,
+  TTxCreateDoc,
+  TTxCUD,
+  TTxMixin,
+  TTxPutBag,
+  TTxRemoveDoc,
+  TTxUpdateDoc
+} from './tx'
 
 export * from './core'
+export { coreOperation } from './migration'
 export * from './security'
 export * from './tx'
 export { core as default }
-export { coreOperation } from './migration'
 
 export function createModel (builder: Builder): void {
   builder.createModel(
@@ -52,6 +79,7 @@ export function createModel (builder: Builder): void {
     TRefTo,
     TCollection,
     TTypeDate,
-    TArrOf
+    TArrOf,
+    TVersion
   )
 }

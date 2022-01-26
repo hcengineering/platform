@@ -14,7 +14,7 @@
 //
 import type { Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { Mixin } from '.'
+import { Mixin, Version } from '.'
 import type { Account, ArrOf, AnyAttribute, AttachedDoc, Class, Doc, Interface, Obj, PropertyType, Ref, Space, Timestamp, Type, Collection, RefTo } from './classes'
 import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
@@ -50,7 +50,8 @@ export default plugin(coreId, {
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Collection: '' as Ref<Class<Collection<AttachedDoc>>>,
-    Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>
+    Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>,
+    Version: '' as Ref<Class<Version>>
   },
   space: {
     Tx: '' as Ref<Space>,
@@ -62,5 +63,8 @@ export default plugin(coreId, {
   status: {
     ObjectNotFound: '' as StatusCode<{ _id: Ref<Doc> }>,
     ItemNotFound: '' as StatusCode<{ _id: Ref<Doc>, _localId: string }>
+  },
+  version: {
+    Model: '' as Ref<Version>
   }
 })

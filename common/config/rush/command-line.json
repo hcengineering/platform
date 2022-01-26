@@ -244,6 +244,14 @@
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep tsconfig.tsbuildinfo | xargs rm | pwd"
     },    
+    {
+      "commandKind": "global",
+      "name": "model-version",
+      "summary": "show model version",
+      "description": "show model version",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./models/all/ && npx ts-node ./src/__showversion.ts"
+    },    
   ],
 
   /**

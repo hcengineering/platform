@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,13 +13,24 @@
 // limitations under the License.
 //
 
+import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import builder, { createDeps } from '@anticrm/model-all'
+import builder, { createDeps, migrateOperations } from '@anticrm/model-all'
 import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
+import { MigrateClientImpl } from './upgrade'
+import toolPlugin from './plugin'
 
-export async function initWorkspace (transactorUrl: string, dbName: string): Promise<void> {
+export { version } from '@anticrm/model-all'
+export * from './plugin'
+export { toolPlugin as default }
+export * from './connect'
+
+/**
+ * @public
+ */
+export function prepareTools (): { mongodbUri: string, minio: Client, txes: Tx[] } {
   const minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
@@ -54,7 +64,14 @@ export async function initWorkspace (transactorUrl: string, dbName: string): Pro
   })
 
   const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
+  return { mongodbUri, minio, txes }
+}
 
+/**
+ * @public
+ */
+export async function initModel (transactorUrl: string, dbName: string): Promise<void> {
+  const { mongodbUri, minio, txes } = prepareTools()
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
@@ -86,6 +103,55 @@ export async function initWorkspace (transactorUrl: string, dbName: string): Pro
     if (!(await minio.bucketExists(dbName))) {
       await minio.makeBucket(dbName, 'k8s')
     }
+  } finally {
+    await client.close()
+  }
+}
+
+/**
+ * @public
+ */
+export async function upgradeModel (
+  transactorUrl: string,
+  dbName: string
+): Promise<void> {
+  const { mongodbUri, txes } = prepareTools()
+  if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
+    throw Error('Model txes must target only core.space.Model')
+  }
+
+  const client = new MongoClient(mongodbUri)
+  try {
+    await client.connect()
+    const db = client.db(dbName)
+
+    console.log('removing model...')
+    // we're preserving accounts (created by core.account.System).
+    const result = await db.collection(DOMAIN_TX).deleteMany({
+      objectSpace: core.space.Model,
+      modifiedBy: core.account.System,
+      objectClass: { $ne: contact.class.EmployeeAccount }
+    })
+    console.log(`${result.deletedCount} transactions deleted.`)
+
+    console.log('creating model...')
+    const model = txes
+    const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
+    console.log(`${insert.insertedCount} model transactions inserted.`)
+
+    const migrateClient = new MigrateClientImpl(db)
+    for (const op of migrateOperations) {
+      await op.migrate(migrateClient)
+    }
+
+    console.log('Apply upgrade operations')
+
+    const connection = await connect(transactorUrl, dbName)
+    for (const op of migrateOperations) {
+      await op.upgrade(connection)
+    }
+
+    await connection.close()
   } finally {
     await client.close()
   }

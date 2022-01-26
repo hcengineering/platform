@@ -315,7 +315,7 @@ export class Builder {
   }
 
   getTxes (): Tx[] {
-    return this.txes
+    return [...this.txes]
   }
 }
 

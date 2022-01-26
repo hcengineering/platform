@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-import accountPlugin, { ACCOUNT_DB, methods } from '@anticrm/account'
+import { ACCOUNT_DB, methods } from '@anticrm/account'
+import toolPlugin from '@anticrm/server-tool'
 import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@anticrm/platform'
 import cors from '@koa/cors'
 import { IncomingHttpHeaders } from 'http'
@@ -37,8 +38,8 @@ if (transactorUri === undefined) {
 
 const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
 
-setMetadata(accountPlugin.metadata.Endpoint, endpointUri)
-setMetadata(accountPlugin.metadata.Transactor, transactorUri)
+setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
+setMetadata(toolPlugin.metadata.Transactor, transactorUri)
 
 let client: MongoClient
 
