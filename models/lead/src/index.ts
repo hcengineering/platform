@@ -120,7 +120,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { _id: contact.class.Channel, as: 'channels' }
+      lookup: { _id: { channels: contact.class.Channel } } as any
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
