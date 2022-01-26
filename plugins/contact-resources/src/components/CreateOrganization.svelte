@@ -75,7 +75,7 @@
   </div>
 
   <div class="flex-row-center channels">
-    <Channels bind:channels={channels} />
+    <Channels bind:channels={channels} on:change={(e) => { channels = e.detail }} />
   </div>
 </Card>
 

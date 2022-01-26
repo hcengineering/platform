@@ -28,7 +28,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-{#if !channels}
+{#if !channels.length}
   <CircleButton
     icon={IconAdd}
     size={'small'}
