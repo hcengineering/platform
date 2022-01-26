@@ -28,12 +28,13 @@
 
 <Table 
   _class={recruit.class.Applicant}
-  config={['', '$lookup.space.name', '$lookup.state']}
+  config={['', '$lookup.space.name', '$lookup.state', '$lookup.doneState']}
   options={
     {
       lookup: {
         state: task.class.State,
-        space: core.class.Space
+        space: core.class.Space,
+        doneState: task.class.DoneState
       }
     }
   }
