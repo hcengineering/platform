@@ -122,6 +122,7 @@
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
   spaceClass={recruit.class.Vacancy}
+  spaceQuery={{ archived: false }}
   spaceLabel={recruit.string.Vacancy}
   spacePlaceholder={recruit.string.SelectVacancy}
   bind:space={doc.space}

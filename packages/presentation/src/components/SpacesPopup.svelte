@@ -18,17 +18,18 @@
   import ui, { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
   import SpaceInfo from './SpaceInfo.svelte'
 
-  import type { Ref, Class, Space } from '@anticrm/core'
+  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
   import { createQuery } from '../utils'
 
   export let _class: Ref<Class<Space>>
+  export let spaceQuery: DocumentQuery<Space> | undefined
 
   let search: string = ''
   let objects: Space[] = []
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, {}, result => { objects = result })
+  $: query.query(_class, { ...(spaceQuery ?? {}) }, result => { objects = result })
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
