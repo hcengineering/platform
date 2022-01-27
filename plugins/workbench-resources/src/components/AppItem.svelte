@@ -26,7 +26,7 @@
 </script>
 
 <Tooltip {label}>
-  <button class="app" class:selected={selected} on:click|stopPropagation={action}>
+  <button class="app" id={'app-' + label} class:selected={selected} on:click|stopPropagation={action}>
     <div class="flex-center icon-container" class:noty={notify}>
       <Icon icon={icon} size={'large'}/>
     </div>

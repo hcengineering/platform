@@ -251,7 +251,7 @@
       "description": "show model version",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./models/all/ && npx ts-node ./src/__showversion.ts"
-    },    
+    }  
   ],
 
   /**

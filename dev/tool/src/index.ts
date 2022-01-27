@@ -22,12 +22,13 @@ import {
   dropAccount,
   dropWorkspace,
   getAccount,
+  getWorkspace,
   listAccounts,
   listWorkspaces,
   upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
-import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
+import toolPlugin, { generateToken, prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { rebuildElastic } from './elastic'
@@ -120,6 +121,11 @@ program
   .description('drop workspace')
   .action(async (workspace, cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
+      const ws = await getWorkspace(db, workspace)
+      if (ws === null) {
+        console.log('no workspace exists')
+        return
+      }
       await dropWorkspace(db, workspace)
     })
   })
@@ -212,6 +218,13 @@ program
   .description('dump workspace transactions and minio resources')
   .action(async (workspace, fileName, cmd) => {
     return await importXml(transactorUrl, workspace, minio, fileName, mongodbUri, elasticUrl)
+  })
+
+program
+  .command('generate-token <name> <workspace>')
+  .description('generate token')
+  .action(async (name, workspace) => {
+    console.log(generateToken(name, workspace))
   })
 
 program.parse(process.argv)

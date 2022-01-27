@@ -16,22 +16,24 @@
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import builder, { createDeps, migrateOperations } from '@anticrm/model-all'
+import { getMetadata } from '@anticrm/platform'
+import { decode, encode } from 'jwt-simple'
 import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
-import { MigrateClientImpl } from './upgrade'
 import toolPlugin from './plugin'
+import { MigrateClientImpl } from './upgrade'
 
 export { version } from '@anticrm/model-all'
+export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }
-export * from './connect'
 
 /**
  * @public
  */
 export function prepareTools (): { mongodbUri: string, minio: Client, txes: Tx[] } {
-  const minioEndpoint = process.env.MINIO_ENDPOINT
+  let minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
     process.exit(1)
@@ -55,9 +57,16 @@ export function prepareTools (): { mongodbUri: string, minio: Client, txes: Tx[]
     process.exit(1)
   }
 
+  let minioPort = 9000
+  const sp = minioEndpoint.split(':')
+  if (sp.length > 1) {
+    minioEndpoint = sp[0]
+    minioPort = parseInt(sp[1])
+  }
+
   const minio = new Client({
     endPoint: minioEndpoint,
-    port: 9000,
+    port: minioPort,
     useSSL: false,
     accessKey: minioAccessKey,
     secretKey: minioSecretKey
@@ -155,4 +164,22 @@ export async function upgradeModel (
   } finally {
     await client.close()
   }
+}
+
+const getSecret = (): string => {
+  return getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
+}
+
+/**
+ * @public
+ */
+export function generateToken (email: string, workspace: string): string {
+  return encode({ email, workspace }, getSecret())
+}
+
+/**
+ * @public
+ */
+export function decodeToken (token: string): { email: string, workspace: string} {
+  return decode(token, getSecret())
 }

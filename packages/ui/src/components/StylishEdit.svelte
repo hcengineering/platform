@@ -36,6 +36,7 @@
       on:blur
       on:change
       on:keyup
+      on:input
       autocomplete="off"
       placeholder=" "
     />
@@ -49,6 +50,7 @@
       on:blur
       on:change
       on:keyup
+      on:input
       autocomplete="off"
       placeholder=" "
     />

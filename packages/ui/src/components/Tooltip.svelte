@@ -26,11 +26,11 @@
 
   let triggerHTML: HTMLElement
   let shown: boolean = false
-  $: shown = ($tooltip.label || $tooltip.component) ? true : false
+  $: shown = !!(($tooltip.label || $tooltip.component))
 </script>
 
 <div
-  class="tooltip-trigger"
+  class="tooltip-trigger" name={`tooltip-${label}`}
   bind:this={triggerHTML}
   on:mousemove={() => {
     if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor)

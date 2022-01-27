@@ -1,0 +1,106 @@
+{
+  "version": "0.6.0",
+  "collections": [
+    {
+      "name": "inventory",
+      "file": "inventory.json"
+    },
+    {
+      "name": "chunter",
+      "file": "chunter.json"
+    },
+    {
+      "name": "contact",
+      "file": "contact.json"
+    },
+    {
+      "name": "state",
+      "file": "state.json"
+    },
+    {
+      "name": "kanban",
+      "file": "kanban.json"
+    },
+    {
+      "name": "tx",
+      "file": "tx.json"
+    },
+    {
+      "name": "task",
+      "file": "task.json"
+    },
+    {
+      "name": "comment",
+      "file": "comment.json"
+    },
+    {
+      "name": "attachment",
+      "file": "attachment.json"
+    }
+  ],
+  "minioData": [
+    {
+      "name": "0b9ad789-47a8-4d5a-ab5f-c8f1c01fd283",
+      "lastModified": "2022-01-26T08:23:34.808Z",
+      "etag": "569f23247d1c037713b66d9ba9ae4e9c",
+      "size": 19315,
+      "metaData": {
+        "content-type": "application/pdf"
+      }
+    },
+    {
+      "name": "2c6e90a4-c191-46c4-aa9f-921b67b4abc9",
+      "lastModified": "2022-01-26T08:38:03.225Z",
+      "etag": "569f23247d1c037713b66d9ba9ae4e9c",
+      "size": 19315,
+      "metaData": {
+        "content-type": "application/pdf"
+      }
+    },
+    {
+      "name": "85b2dd5f-23cd-4c20-84df-98b58ffbc120",
+      "lastModified": "2022-01-26T08:41:25.094Z",
+      "etag": "1f110617c0cb670ab0dbf56cd64600d2",
+      "size": 102673,
+      "metaData": {
+        "content-type": "image/png"
+      }
+    },
+    {
+      "name": "97a572d1-70b3-4898-8998-412e0117b15c",
+      "lastModified": "2022-01-26T08:25:27.714Z",
+      "etag": "569f23247d1c037713b66d9ba9ae4e9c",
+      "size": 19315,
+      "metaData": {
+        "content-type": "application/pdf"
+      }
+    },
+    {
+      "name": "b1acc1f0-349c-461a-a022-2b04ff39fe32",
+      "lastModified": "2022-01-26T08:26:38.944Z",
+      "etag": "569f23247d1c037713b66d9ba9ae4e9c",
+      "size": 19315,
+      "metaData": {
+        "content-type": "application/pdf"
+      }
+    },
+    {
+      "name": "c9e3ed06-a0cc-4920-8eed-2ef227f73b9d",
+      "lastModified": "2022-01-26T08:39:25.137Z",
+      "etag": "569f23247d1c037713b66d9ba9ae4e9c",
+      "size": 19315,
+      "metaData": {
+        "content-type": "application/pdf"
+      }
+    },
+    {
+      "name": "e9c764ea-6d56-4773-83ff-fe485caadb11",
+      "lastModified": "2022-01-26T08:42:23.947Z",
+      "etag": "1f110617c0cb670ab0dbf56cd64600d2",
+      "size": 102673,
+      "metaData": {
+        "content-type": "image/png"
+      }
+    }
+  ]
+}
