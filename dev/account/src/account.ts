@@ -17,7 +17,7 @@
 import type { Request, Response } from '@anticrm/platform'
 import platform, { Status, Severity } from '@anticrm/platform'
 
-import { encode } from 'jwt-simple'
+import { generateToken } from '@anticrm/server-token'
 
 interface LoginInfo {
   token: string
@@ -37,7 +37,7 @@ function login (endpoint: string, email: string, password: string, workspace: st
     return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
   }
 
-  const token = encode({ email, workspace }, 'secret')
+  const token = generateToken(email, workspace)
   return { result: { token, endpoint } }
 }
 

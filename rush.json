@@ -497,6 +497,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-token",
+      "projectFolder": "server/token",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/server",
       "projectFolder": "server/server",
       "shouldPublish": true

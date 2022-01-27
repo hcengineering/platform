@@ -27,7 +27,8 @@ import platform, {
   Status,
   StatusCode
 } from '@anticrm/platform'
-import toolPlugin, { connect, initModel, upgradeModel, version, decodeToken, generateToken } from '@anticrm/server-tool'
+import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
+import { decodeToken, generateToken } from '@anticrm/server-token'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 
@@ -393,7 +394,7 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 }
 
 async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), workspace, account.email)
+  const connection = await connect(getTransactor(), workspace, false, account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -471,7 +472,7 @@ export async function changeName (db: Db, token: string, first: string, last: st
 }
 
 async function updateEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), workspace, account.email)
+  const connection = await connect(getTransactor(), workspace, false, account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 

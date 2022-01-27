@@ -28,7 +28,8 @@ import {
   upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
-import toolPlugin, { generateToken, prepareTools, version } from '@anticrm/server-tool'
+import { generateToken } from '@anticrm/server-token'
+import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { rebuildElastic } from './elastic'

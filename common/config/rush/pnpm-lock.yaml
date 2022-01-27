@@ -86,6 +86,7 @@ specifiers:
   '@rush-temp/server-contact': file:./projects/server-contact.tgz
   '@rush-temp/server-contact-resources': file:./projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:./projects/server-core.tgz
+  '@rush-temp/server-token': file:./projects/server-token.tgz
   '@rush-temp/server-tool': file:./projects/server-tool.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/setting': file:./projects/setting.tgz
@@ -162,6 +163,7 @@ specifiers:
   intl-messageformat: ^9.7.1
   jpeg-js: ~0.4.3
   just-clone: ^3.2.1
+  jwt-simple: ~0.5.6
   koa: ^2.13.1
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
@@ -278,6 +280,7 @@ dependencies:
   '@rush-temp/server-contact': file:projects/server-contact.tgz
   '@rush-temp/server-contact-resources': file:projects/server-contact-resources.tgz
   '@rush-temp/server-core': file:projects/server-core.tgz
+  '@rush-temp/server-token': file:projects/server-token.tgz
   '@rush-temp/server-tool': file:projects/server-tool.tgz
   '@rush-temp/server-ws': file:projects/server-ws.tgz
   '@rush-temp/setting': file:projects/setting.tgz
@@ -354,6 +357,7 @@ dependencies:
   intl-messageformat: 9.10.0
   jpeg-js: 0.4.3
   just-clone: 3.2.1
+  jwt-simple: 0.5.6
   koa: 2.13.4
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
@@ -11422,7 +11426,7 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-T69SM17sZnYKxu3FyjI47F+wFix2aKjpenQxDThYp5qNkNgZ4/1+znXlJUhUUL+GQpmcLDJ3kcnu/2dkcM1NGg==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-5AF4BBNU65wTk1D+dIOhXhzHGi6QDuGpi/DOEAwF4A1I0f6+J3bq9T5SU/2zXY0i9TLYhD3szFi5zrGcx/KGAg==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
@@ -11811,7 +11815,7 @@ packages:
     dev: false
 
   file:projects/dev-account.tgz:
-    resolution: {integrity: sha512-gKJqJzfPozNrp2KQpEqOwYvlO7xVnxH8/re0ECfdLyDMlHtC3fypTxdprYL/7FheupKZp3YTY4T3MCG2+SG40w==, tarball: file:projects/dev-account.tgz}
+    resolution: {integrity: sha512-hsYsHT6KU6FPYdWhJ6Npwqu2rZmjOoj8FqbV4q3Mie9kG/CAuKAMm2nFw7Vv2E9lpIaeLAJyP4sVI3WkBIGkOg==, tarball: file:projects/dev-account.tgz}
     name: '@rush-temp/dev-account'
     version: 0.0.0
     dependencies:
@@ -11979,7 +11983,7 @@ packages:
     dev: false
 
   file:projects/front.tgz:
-    resolution: {integrity: sha512-iSBgFbScuEX0S/r4FJh/z02rKgeaMPKCe0Z7Unr/g2AzgeO65k1G6uaT/mtlr1ulaYixN+dMMmaxzkJT5psDeQ==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-RXsa4jlZB6UdPjSIAHmf07BEcWlH6N26QnAVFQ3QL5VdqLi73ohsPQV9seKz36c5jGsA//Z0BS9QYVCETuHdgA==, tarball: file:projects/front.tgz}
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
@@ -12012,7 +12016,7 @@ packages:
     dev: false
 
   file:projects/generator.tgz:
-    resolution: {integrity: sha512-Difehi/KDbulPB9s3UOP1fSeLfvWQwpSUr77OnMF31EoCLAXT+9ugFduvlveFdnYCttYKpgGO2bvaxBaH7krdA==, tarball: file:projects/generator.tgz}
+    resolution: {integrity: sha512-FfLadJ6fn6vv/PvtsqrXqC/kRieldqLFfWmeb1Q2wPTnMmWv7r71Hj9tcM8G9BG7HBNolsdqt2yHHHm+SowMTg==, tarball: file:projects/generator.tgz}
     name: '@rush-temp/generator'
     version: 0.0.0
     dependencies:
@@ -13292,6 +13296,31 @@ packages:
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      jwt-simple: 0.5.6
+      minio: 7.0.26
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-token.tgz:
+    resolution: {integrity: sha512-74lvKW1J8vMQI7r+UUFCO8KDItftmBVTc9ecLL9kbWHdFT/kfR1ua57O8XG7MMJDmBVsWylHmM1kr6lxwNpNBA==, tarball: file:projects/server-token.tgz}
+    name: '@rush-temp/server-token'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/minio': 7.0.11
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      jwt-simple: 0.5.6
       minio: 7.0.26
       prettier: 2.5.1
       typescript: 4.5.4
@@ -13300,7 +13329,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz:
-    resolution: {integrity: sha512-jA31a+Q2vADtUml9IaD4IKCxzzqWKz74NIRkBVhY3VqQpiXup+g+Pa2Rf2f3J57yT8aQKCpf63YMysWR42iQjQ==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-Cib8Y9814bARmY3GxSBzMKpmJvQiz149kzwokA3IIbvAqHw+ndpuZYF7gcOG6c6y8975CNltyx4wSlUiojLFfg==, tarball: file:projects/server-tool.tgz}
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
@@ -13328,7 +13357,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz:
-    resolution: {integrity: sha512-MSFFpLjIMFt0oyH4+8JUkNOkCNtdEtMDoxcyN7+kDdz44wSZjSOmheJHYkXO6JTEffcaaRhQ9vO/e7MBNMeoxQ==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-kesBl2gLp031syY1dFuI26w339buhEKja2/9LjlYpV4sX1E8l8+a2RmPOlE6tBRhQ+bEEq/l5YIYNHxBBhGuxg==, tarball: file:projects/server-ws.tgz}
     name: '@rush-temp/server-ws'
     version: 0.0.0
     dependencies:
@@ -13763,7 +13792,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-yAIi2mb58Lhm+ysa7lZxq+at3RSkc5UlkZhhcPRX9BUq+8dHV0PyJZQb+sH2ys77588F+4CV7jCpxmKERe3HYQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-tQSiv1J1yUul6SD2WNyzzSCJeS1VCZgWkun9xGIJELvQ+iZN6S4fznI35eMLBppJWD0XIYHmeOzNCfjX4PWw7g==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
