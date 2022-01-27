@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { start } from './app'
 import { Client } from 'minio'
+import { start } from './app'
 
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
@@ -77,4 +77,14 @@ if (modelVersion === undefined) {
 
 const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion }
 console.log('Starting Front service with', config)
-start(config, SERVER_PORT)
+const shutdown = start(config, SERVER_PORT)
+
+const close = (): void => {
+  console.trace('Exiting from server')
+  console.log('Shutdown request accepted')
+  shutdown()
+  process.exit(0)
+}
+
+process.on('SIGINT', close)
+process.on('SIGTERM', close)

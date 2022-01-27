@@ -16,12 +16,11 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, ServerStorage, Tx, TxResult } from '@anticrm/core'
 import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
-import type { Token } from '@anticrm/server-core'
+import { decodeToken, Token } from '@anticrm/server-token'
 import { createServer, IncomingMessage } from 'http'
-import { decode } from 'jwt-simple'
 import WebSocket, { Server } from 'ws'
 
-let LOGGING_ENABLED = false
+let LOGGING_ENABLED = true
 
 export function disableLogging (): void { LOGGING_ENABLED = false }
 
@@ -60,38 +59,57 @@ class SessionManager {
   async addSession (ws: WebSocket, token: Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
-      const storage = await storageFactory(token.workspace)
-      const session = new Session(this, token, storage)
-      const workspace: Workspace = {
-        storage,
-        sessions: [[session, ws]]
-      }
-      this.workspaces.set(token.workspace, workspace)
-      return session
+      return await this.createWorkspace(storageFactory, token, ws)
     } else {
+      if (token.extra?.model === 'reload') {
+        console.log('reloading workspace', JSON.stringify(token))
+        // If upgrade client is used.
+        // Drop all existing clients
+        if (workspace.sessions.length > 0) {
+          for (const s of workspace.sessions) {
+            this.close(s[1], token.workspace, 0, 'upgrade')
+          }
+        }
+        return await this.createWorkspace(storageFactory, token, ws)
+      }
+
       const session = new Session(this, token, workspace.storage)
       workspace.sessions.push([session, ws])
       return session
     }
   }
 
-  close (ws: WebSocket, token: Token, code: number, reason: string): void {
+  private async createWorkspace (storageFactory: (ws: string) => Promise<ServerStorage>, token: Token, ws: WebSocket): Promise<Session> {
+    const storage = await storageFactory(token.workspace)
+    const session = new Session(this, token, storage)
+    const workspace: Workspace = {
+      storage,
+      sessions: [[session, ws]]
+    }
+    this.workspaces.set(token.workspace, workspace)
+    return session
+  }
+
+  close (ws: WebSocket, workspaceId: string, code: number, reason: string): void {
     if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
-    const workspace = this.workspaces.get(token.workspace)
+    const workspace = this.workspaces.get(workspaceId)
     if (workspace === undefined) {
-      throw new Error('internal: cannot find sessions')
+      console.error(new Error('internal: cannot find sessions'))
+      return
     }
     workspace.sessions = workspace.sessions.filter(session => session[1] !== ws)
     if (workspace.sessions.length === 0) {
-      if (LOGGING_ENABLED) console.log('no sessions for workspace', token.workspace)
-      this.workspaces.delete(token.workspace)
+      if (LOGGING_ENABLED) console.log('no sessions for workspace', workspaceId)
+      this.workspaces.delete(workspaceId)
+      workspace.storage.close().catch(err => console.error(err))
     }
   }
 
   broadcast (from: Session | null, token: Token, resp: Response<any>): void {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
-      throw new Error('internal: cannot find sessions')
+      console.error(new Error('internal: cannot find sessions'))
+      return
     }
     if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
     const msg = serialize(resp)
@@ -138,7 +156,7 @@ export function start (ctx: MeasureContext, storageFactory: (workspace: string) 
     const session = await sessions.addSession(ws, token, storageFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
-    ws.on('close', (code: number, reason: string) => sessions.close(ws, token, code, reason))
+    ws.on('close', (code: number, reason: string) => sessions.close(ws, token.workspace, code, reason))
 
     for (const msg of buffer) {
       await handleRequest(ctx, session, ws, msg)
@@ -149,7 +167,7 @@ export function start (ctx: MeasureContext, storageFactory: (workspace: string) 
   server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     const token = request.url?.substring(1) // remove leading '/'
     try {
-      const payload = decode(token ?? '', 'secret', false)
+      const payload = decodeToken(token ?? '')
       console.log('client connected with payload', payload)
       wss.handleUpgrade(request, socket, head, ws => wss.emit('connection', ws, request, payload))
     } catch (err) {

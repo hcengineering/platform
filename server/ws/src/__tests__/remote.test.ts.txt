@@ -16,7 +16,6 @@
 
 import { readResponse, serialize } from '@anticrm/platform'
 import type { Token } from '@anticrm/server-core'
-import { encode } from 'jwt-simple'
 import WebSocket from 'ws'
 
 describe('server', () => {

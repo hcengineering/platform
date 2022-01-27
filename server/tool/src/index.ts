@@ -16,8 +16,6 @@
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx } from '@anticrm/core'
 import builder, { createDeps, migrateOperations } from '@anticrm/model-all'
-import { getMetadata } from '@anticrm/platform'
-import { decode, encode } from 'jwt-simple'
 import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
@@ -99,7 +97,7 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const connection = await connect(transactorUrl, dbName)
+    const connection = await connect(transactorUrl, dbName, true)
     try {
       await createDeps(connection)
     } catch (e) {
@@ -155,7 +153,7 @@ export async function upgradeModel (
 
     console.log('Apply upgrade operations')
 
-    const connection = await connect(transactorUrl, dbName)
+    const connection = await connect(transactorUrl, dbName, true)
     for (const op of migrateOperations) {
       await op.upgrade(connection)
     }
@@ -164,22 +162,4 @@ export async function upgradeModel (
   } finally {
     await client.close()
   }
-}
-
-const getSecret = (): string => {
-  return getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
-}
-
-/**
- * @public
- */
-export function generateToken (email: string, workspace: string): string {
-  return encode({ email, workspace }, getSecret())
-}
-
-/**
- * @public
- */
-export function decodeToken (token: string): { email: string, workspace: string} {
-  return decode(token, getSecret())
 }

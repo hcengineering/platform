@@ -16,8 +16,7 @@
 
 import { readResponse, serialize } from '@anticrm/platform'
 import { start, disableLogging } from '../server'
-import type { Token } from '@anticrm/server-core'
-import { encode } from 'jwt-simple'
+import { generateToken } from '@anticrm/server-token'
 import WebSocket from 'ws'
 
 import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx, TxResult, MeasureContext } from '@anticrm/core'
@@ -38,11 +37,8 @@ describe('server', () => {
   }), 3333)
 
   function connect (): WebSocket {
-    const payload: Token = {
-      workspace: 'latest'
-    }
-    const token = encode(payload, 'secret')
-    return new WebSocket('ws://localhost:3333/' + token)
+    const token: string = generateToken('', 'latest')
+    return new WebSocket(`ws://localhost:3333/${token}`)
   }
 
   it('should connect to server', (done) => {

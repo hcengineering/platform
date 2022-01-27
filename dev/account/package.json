@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "jwt-simple": "^0.5.6"
+    "@anticrm/server-token": "~0.6.0"
   }
 }

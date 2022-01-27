@@ -17,35 +17,15 @@
 import attachment from '@anticrm/attachment'
 import { Account, Doc, Ref, Space } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
-// import { TxFactory } from '@anticrm/core'
-import type { IndexedDoc, Token } from '@anticrm/server-core'
+import type { IndexedDoc } from '@anticrm/server-core'
+import { decodeToken } from '@anticrm/server-token'
 import cors from 'cors'
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import https from 'https'
-import { decode } from 'jwt-simple'
-// import { createContributingClient } from '@anticrm/contrib'
 import { Client, ItemBucketMetadata } from 'minio'
 import { join, resolve } from 'path'
 import { v4 as uuid } from 'uuid'
-
-// import { createElasticAdapter } from '@anticrm/elastic'
-
-// const BUCKET = 'anticrm-upload-9e4e89c'
-
-// async function awsUpload (file: UploadedFile): Promise<string> {
-//   const id = uuid()
-//   const s3 = new S3()
-//   const resp = await s3.upload({
-//     Bucket: BUCKET,
-//     Key: id,
-//     Body: file.data,
-//     ContentType: file.mimetype,
-//     ACL: 'public-read'
-//   }).promise()
-//   console.log(resp)
-//   return id
-// }
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -59,25 +39,11 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
   return id
 }
 
-// async function createAttachment (endpoint: string, token: string, account: Ref<Account>, space: Ref<Space>, attachedTo: Ref<Doc>, collection: string, name: string, file: string): Promise<void> {
-//   const txFactory = new TxFactory(account)
-//   const tx = txFactory.createTxCreateDoc(chunter.class.Attachment, space, {
-//     attachedTo,
-//     collection,
-//     name,
-//     file
-//   })
-//   const url = new URL(`/${token}`, endpoint)
-//   const client = await createContributingClient(url.href)
-//   await client.tx(tx)
-//   client.close()
-// }
-
 /**
  * @public
  * @param port -
  */
-export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string, modelVersion: string }, port: number): void {
+export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string, modelVersion: string }, port: number): () => void {
   const app = express()
 
   app.use(cors())
@@ -104,7 +70,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
   app.get('/files', async (req, res) => {
     try {
       const token = req.query.token as string
-      const payload = decode(token, 'secret', false) as Token
+      const payload = decodeToken(token)
       const uuid = req.query.file as string
 
       const stat = await config.minio.statObject(payload.workspace, uuid)
@@ -153,7 +119,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
 
     try {
       const token = authHeader.split(' ')[1]
-      const payload = decode(token ?? '', 'secret', false) as Token
+      const payload = decodeToken(token)
       // const fileId = await awsUpload(file as UploadedFile)
       const uuid = await minioUpload(config.minio, payload.workspace, file)
       console.log('uploaded uuid', uuid)
@@ -207,7 +173,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       }
 
       const token = authHeader.split(' ')[1]
-      const payload = decode(token ?? '', 'secret', false) as Token
+      const payload = decodeToken(token)
       const uuid = req.query.file as string
 
       await config.minio.removeObject(payload.workspace, uuid)
@@ -227,7 +193,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       return
     }
     const token = authHeader.split(' ')[1]
-    const payload = decode(token ?? '', 'secret', false) as Token
+    const payload = decodeToken(token)
     const url = req.query.url as string
     const cookie = req.query.cookie as string | undefined
     const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
@@ -305,7 +271,7 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
       return
     }
     const token = authHeader.split(' ')[1]
-    const payload = decode(token ?? '', 'secret', false) as Token
+    const payload = decodeToken(token)
     const { url, cookie, attachedTo, space } = req.body
 
     console.log('importing from', url)
@@ -377,5 +343,8 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
     response.sendFile(join(dist, 'index.html'))
   })
 
-  app.listen(port)
+  const server = app.listen(port)
+  return () => {
+    server.close()
+  }
 }

@@ -39,7 +39,6 @@
   "dependencies": {
     "commander": "^8.1.0",
     "@anticrm/account": "~0.6.0",
-    "jwt-simple": "^0.5.6",
     "@anticrm/core": "~0.6.11",
     "@anticrm/contact": "~0.6.2",
     "@anticrm/model-all": "~0.6.0",
@@ -59,6 +58,7 @@
     "minio": "^7.0.19",
     "@types/pdfkit": "~0.12.3",
     "@anticrm/task": "~0.6.0",
-    "jpeg-js": "~0.4.3"
+    "jpeg-js": "~0.4.3",
+    "@anticrm/server-token": "~0.6.0"
   }
 }

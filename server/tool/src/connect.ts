@@ -17,19 +17,14 @@
 import client from '@anticrm/client'
 import clientResources from '@anticrm/client-resources'
 import { Client } from '@anticrm/core'
-import { getMetadata, setMetadata } from '@anticrm/platform'
-import { encode } from 'jwt-simple'
-
-import toolPlugin from './plugin'
+import { setMetadata } from '@anticrm/platform'
+import { generateToken } from '@anticrm/server-token'
 
 /**
  * @public
  */
-export async function connect (transactorUrl: string, workspace: string, email?: string): Promise<Client> {
-  const token = encode(
-    { email: email ?? 'anticrm@hc.engineering', workspace },
-    getMetadata(toolPlugin.metadata.Secret) ?? 'secret'
-  )
+export async function connect (transactorUrl: string, workspace: string, reloadModel: boolean, email?: string): Promise<Client> {
+  const token = generateToken(email ?? 'anticrm@hc.engineering', workspace, reloadModel ? { model: 'reload' } : undefined)
 
   // We need to override default factory with 'ws' one.
   // eslint-disable-next-line
