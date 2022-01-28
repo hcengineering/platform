@@ -28,7 +28,7 @@ import {
   upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
-import { generateToken } from '@anticrm/server-token'
+import { decodeToken, generateToken } from '@anticrm/server-token'
 import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
@@ -226,6 +226,12 @@ program
   .description('generate token')
   .action(async (name, workspace) => {
     console.log(generateToken(name, workspace))
+  })
+program
+  .command('decode-token <token>')
+  .description('decode token')
+  .action(async (token) => {
+    console.log(decodeToken(token))
   })
 
 program.parse(process.argv)
