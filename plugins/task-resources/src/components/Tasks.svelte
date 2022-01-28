@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space, Doc, Class, FindOptions } from '@anticrm/core'
+  import type { Ref, Space, Doc, Class, FindOptions, Lookup } from '@anticrm/core'
   import type { Issue } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
@@ -38,11 +38,11 @@
     showPopup(CreateTask, { parent: { _id: objectId, _class, space } }, ev.target as HTMLElement, () => {})
   }
 
-  const options: FindOptions<Issue> = {
+  const options: FindOptions<Doc> = {
     lookup: {
       state: task.class.State,
       space: core.class.Space
-    }
+    } as Lookup<Doc>
   }
 </script>
 

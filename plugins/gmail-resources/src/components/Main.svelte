@@ -19,11 +19,14 @@
   import NewMessage from './NewMessage.svelte'
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
+  import { getClient } from '@anticrm/presentation'
 
   export let object: Contact
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
-  $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Email)
+
+  const client = getClient()
+  const channelPromise = client.findOne(contact.class.Channel, { provider: contact.channelProvider.Email, attachedTo: object._id })
 
   function back () {
     if (newMessage) {
@@ -37,12 +40,14 @@
   }
 </script>
 
-{#if contactString}
-  {#if newMessage}
-    <NewMessage {object} contact={contactString.value} {currentMessage} on:close={back} />
-  {:else if currentMessage}
-    <FullMessage {currentMessage} bind:newMessage on:close={back} />
-  {:else}
-    <Chats {object} contactString={contactString.value} bind:newMessage on:select={selectHandler} />
+{#await channelPromise then channel}
+  {#if channel}
+    {#if newMessage}
+      <NewMessage {object} contact={channel.value} {currentMessage} on:close={back} />
+    {:else if currentMessage}
+      <FullMessage {currentMessage} bind:newMessage on:close={back} />
+    {:else}
+      <Chats {object} contactString={channel.value} bind:newMessage on:select={selectHandler} />
+    {/if}
   {/if}
-{/if}
+{/await}

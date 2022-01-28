@@ -46,7 +46,7 @@
     gmail.class.Message,
     { modifiedBy: accountId, contact: { $like: '%' + contactString + '%' } },
     (res) => {
-      // messages = res
+      messages = res
     },
     { sort: { modifiedOn: SortingOrder.Descending } }
   )
@@ -59,8 +59,8 @@
     setting.class.Integration,
     { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
     (res) => {
-      // enabled = res.length > 0
-      // me = res[0].value
+      enabled = res.length > 0
+      me = res[0].value
     }
   )
   const client = getClient()
