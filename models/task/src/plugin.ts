@@ -55,6 +55,7 @@ export default mergeIds(taskId, task, {
     StatePresenter: '' as AnyComponent,
     DoneStatePresenter: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
+    DoneStateEditor: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     Todos: '' as AnyComponent,
     TodoItemPresenter: '' as AnyComponent,

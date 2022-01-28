@@ -67,6 +67,7 @@
     </div>
   </div>
   <AttributeBarEditor key={'state'} {object} showHeader={false} />
+  <AttributeBarEditor key={'doneState'} {object} showHeader={false} />
 </div>
 
 <style lang="scss">
