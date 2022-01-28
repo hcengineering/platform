@@ -38,15 +38,5 @@
 </script>
 
 {#if presenter}  
-  <div class='presenter'>
-    <svelte:component this={presenter.presenter} value={doc}/>
-  </div>
+  <svelte:component this={presenter.presenter} value={doc} inline />
 {/if}
-
-<style lang="scss">
-  .presenter {
-    display: inline-flex;
-    vertical-align: sub;
-  }
-</style>
-

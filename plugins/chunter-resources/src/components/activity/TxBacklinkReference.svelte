@@ -43,13 +43,7 @@
 
 {#if presenter}
   {className} in
-  <div class='presenter'>
+  <div class="ml-2">
     <svelte:component this={presenter.presenter} value={doc}/>
   </div>
 {/if}
-<style lang="scss">
-  .presenter { 
-    margin-left: 0.5rem;
-  }
-</style>
-

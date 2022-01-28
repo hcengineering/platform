@@ -20,6 +20,7 @@
   import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Organization
+  export let inline: boolean = false
 
   async function onClick () {
     showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
@@ -27,7 +28,8 @@
 </script>
 
 {#if value}
-  <div class="sm-tool-icon" on:click={onClick}>
-    <span class="icon small-size flex-center"><Company size={'small'} /></span>&nbsp;{value.name}
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={onClick}>
+    <div class="icon"><Company size={'small'} /></div>
+    <span class="label">{value.name}</span>
   </div>
 {/if}
