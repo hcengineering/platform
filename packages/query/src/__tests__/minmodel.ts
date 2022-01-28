@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Class, Data, Doc, Mixin, Obj, Ref, TxCreateDoc, TxCUD } from '@anticrm/core'
+import type { Account, Arr, Class, Data, Doc, Domain, Mixin, Obj, Ref, TxCreateDoc, TxCUD } from '@anticrm/core'
 import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@anticrm/core'
 import type { IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -62,6 +62,8 @@ export const test = plugin('test' as Plugin, {
   }
 })
 
+const DOMAIN_TEST: Domain = 'test' as Domain
+
 /**
  * @public
  * Generate minimal model for testing purposes.
@@ -86,7 +88,7 @@ export function genMinModel (): TxCUD<Doc>[] {
 
   txes.push(createClass(test.mixin.TestMixin, { label: 'TestMixin' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
 
-  txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
+  txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS, domain: DOMAIN_TEST }))
 
   const u1 = 'User1' as Ref<Account>
   const u2 = 'User2' as Ref<Account>

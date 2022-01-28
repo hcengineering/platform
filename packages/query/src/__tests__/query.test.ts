@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { createClient, Doc, SortingOrder, Space, Tx, TxCreateDoc, TxOperations } from '@anticrm/core'
-import { genMinModel } from './minmodel'
+import core, { createClient, Doc, generateId, Ref, SortingOrder, Space, Tx, TxCreateDoc, TxOperations, WithLookup } from '@anticrm/core'
+import { AttachedComment, test, genMinModel } from './minmodel'
 import { LiveQuery } from '..'
 import { connect } from './connection'
 
@@ -71,7 +71,6 @@ describe('query', () => {
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(core.class.Space, { private: false }, (result) => {
-        console.log('query result attempt', result, attempt)
         expect(result).toHaveLength(expectedLength + attempt)
         if (attempt > 0) {
           expect((result[expectedLength + attempt - 1] as any).x).toBe(attempt)
@@ -213,20 +212,20 @@ describe('query', () => {
     const { liveQuery, factory } = await getClient()
 
     const limit = 1
-    let attempt = -1
-    let doneCount = 0
+    let attempt = 0
+    let descAttempt = 0
 
     const pp1 = new Promise((resolve) => {
       liveQuery.query<Space>(
         core.class.Space,
         { private: true },
         (result) => {
-          if (attempt === 0 && result.length > 0) {
+          if (result.length > 0) {
             expect(result.length).toEqual(limit)
             expect(result[0].name).toMatch('0')
+            attempt++
           }
-          if (attempt === 0) doneCount++
-          if (doneCount === 2) resolve(null)
+          if (attempt === 1) resolve(null)
         },
         { limit: limit, sort: { name: SortingOrder.Ascending } }
       )
@@ -237,19 +236,18 @@ describe('query', () => {
         core.class.Space,
         { private: true },
         (result) => {
-          if (attempt > 0 && result.length > 0) {
+          if (result.length > 0) {
             expect(result.length).toEqual(limit)
-            expect(result[0].name).toMatch(attempt.toString())
+            expect(result[0].name).toMatch(descAttempt.toString())
+            descAttempt++
           }
-          if (attempt === 9) doneCount++
-          if (doneCount === 2) resolve(null)
+          if (descAttempt === 10) resolve(null)
         },
         { limit: limit, sort: { name: SortingOrder.Descending } }
       )
     })
 
     for (let i = 0; i < 10; i++) {
-      attempt = i
       await factory.createDoc(core.class.Space, core.space.Model, {
         private: true,
         name: i.toString(),
@@ -359,6 +357,364 @@ describe('query', () => {
         private: true
       })
     }
+    await pp
+  })
+
+  it('lookup query add doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const futureSpace: Space = {
+      _id: generateId(),
+      _class: core.class.Space,
+      private: false,
+      members: [],
+      space: core.space.Model,
+      name: 'new space',
+      description: '',
+      archived: false,
+      modifiedBy: core.account.System,
+      modifiedOn: 0
+    }
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace._id, futureSpace._id, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    let attempt = 0
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: comment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            if (attempt > 0) {
+              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toEqual(futureSpace)
+              resolve(null)
+            } else {
+              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toBeUndefined()
+              attempt++
+            }
+          }
+        },
+        { lookup: { space: core.class.Space } }
+      )
+    })
+
+    await factory.createDoc(core.class.Space, futureSpace.space, {
+      ...futureSpace
+    }, futureSpace._id)
+    await pp
+  })
+
+  it('lookup nested query add doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const futureSpace: Space = {
+      _id: generateId(),
+      _class: core.class.Space,
+      private: false,
+      members: [],
+      space: core.space.Model,
+      name: 'new space',
+      description: '',
+      archived: false,
+      modifiedBy: core.account.System,
+      modifiedOn: 0
+    }
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace._id, futureSpace._id, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    const childComment = await factory.addCollection(test.class.TestComment, futureSpace._id, comment, test.class.TestComment, 'comments', {
+      message: 'child'
+    })
+    let attempt = 0
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: childComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            if (attempt > 0) {
+              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toEqual(futureSpace)
+              resolve(null)
+            } else {
+              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
+              attempt++
+            }
+          }
+        },
+        { lookup: { attachedTo: [test.class.TestComment, { space: core.class.Space }] } }
+      )
+    })
+
+    await factory.createDoc(core.class.Space, futureSpace.space, {
+      ...futureSpace
+    }, futureSpace._id)
+    await pp
+  })
+
+  it('lookup reverse query add doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const spaces = await liveQuery.findAll(core.class.Space, {})
+    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
+      message: 'test'
+    })
+    let attempt = 0
+    const childLength = 3
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: parentComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            expect(((comment as WithLookup<AttachedComment>).$lookup as any)?.comments).toHaveLength(attempt++)
+          }
+          if (attempt === childLength) {
+            resolve(null)
+          }
+        },
+        { lookup: { _id: { comments: test.class.TestComment } } }
+      )
+    })
+
+    for (let index = 0; index < childLength; index++) {
+      await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
+        message: index.toString()
+      })
+    }
+    await pp
+  })
+
+  it('lookup query remove doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const futureSpace = await factory.createDoc(core.class.Space, core.space.Model, {
+      name: 'new space',
+      description: '',
+      archived: false,
+      private: false,
+      members: []
+    })
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    let attempt = 0
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: comment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            if (attempt > 0) {
+              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toBeUndefined()
+              resolve(null)
+            } else {
+              expect(((comment as WithLookup<AttachedComment>).$lookup?.space as Doc)?._id).toEqual(futureSpace)
+              attempt++
+            }
+          }
+        },
+        { lookup: { space: core.class.Space } }
+      )
+    })
+
+    await factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
+
+    await pp
+  })
+
+  it('lookup nested query remove doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const futureSpace = await factory.createDoc(core.class.Space, core.space.Model, {
+      name: 'new space',
+      description: '',
+      archived: false,
+      private: false,
+      members: []
+    })
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    const childComment = await factory.addCollection(test.class.TestComment, futureSpace, comment, test.class.TestComment, 'comments', {
+      message: 'child'
+    })
+    let attempt = 0
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: childComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            if (attempt > 0) {
+              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
+              resolve(null)
+            } else {
+              expect((((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id).toEqual(futureSpace)
+              attempt++
+            }
+          }
+        },
+        { lookup: { attachedTo: [test.class.TestComment, { space: core.class.Space }] } }
+      )
+    })
+
+    await factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
+
+    await pp
+  })
+
+  it('lookup reverse query remove doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const spaces = await liveQuery.findAll(core.class.Space, {})
+    const comments = await liveQuery.findAll(test.class.TestComment, {})
+    expect(comments).toHaveLength(0)
+    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
+      message: 'test'
+    })
+    let attempt = 0
+    const childLength = 3
+    const childs: Ref<AttachedComment>[] = []
+    for (let index = 0; index < childLength; index++) {
+      childs.push(await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
+        message: index.toString()
+      }))
+    }
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: parentComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            expect(((comment as WithLookup<AttachedComment>).$lookup as any)?.comments).toHaveLength(childLength - attempt)
+            attempt++
+          }
+          if (attempt === childLength) {
+            resolve(null)
+          }
+        },
+        { lookup: { _id: { comments: test.class.TestComment } } }
+      )
+    })
+
+    for (const child of childs) {
+      await factory.removeCollection(test.class.TestComment, spaces[0]._id, child, parentComment, test.class.TestComment, 'comments')
+    }
+    await pp
+  })
+
+  it('lookup query update doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    let attempt = 0
+    const futureSpace = await factory.createDoc(core.class.Space, core.space.Model, {
+      name: '0',
+      description: '',
+      archived: false,
+      private: false,
+      members: []
+    })
+
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: comment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            expect(((comment as WithLookup<AttachedComment>).$lookup?.space as Space).name).toEqual(attempt.toString())
+          }
+          if (attempt > 0) {
+            resolve(null)
+          } else {
+            attempt++
+          }
+        },
+        { lookup: { space: core.class.Space } }
+      )
+    })
+
+    await factory.updateDoc(core.class.Space, core.space.Model, futureSpace, {
+      name: '1'
+    })
+    await pp
+  })
+
+  it('lookup nested query update doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    let attempt = 0
+    const futureSpace = await factory.createDoc(core.class.Space, core.space.Model, {
+      name: '0',
+      description: '',
+      archived: false,
+      private: false,
+      members: []
+    })
+    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
+      message: 'test'
+    })
+    const childComment = await factory.addCollection(test.class.TestComment, futureSpace, comment, test.class.TestComment, 'comments', {
+      message: 'child'
+    })
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: childComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            expect((((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Space).name).toEqual(attempt.toString())
+          }
+          if (attempt > 0) {
+            resolve(null)
+          } else {
+            attempt++
+          }
+        },
+        { lookup: { attachedTo: [test.class.TestComment, { space: core.class.Space }] } }
+      )
+    })
+
+    await factory.updateDoc(core.class.Space, core.space.Model, futureSpace, {
+      name: '1'
+    })
+    await pp
+  })
+
+  it('lookup reverse query update doc', async () => {
+    const { liveQuery, factory } = await getClient()
+    const spaces = await liveQuery.findAll(core.class.Space, {})
+    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
+      message: 'test'
+    })
+    let attempt = 0
+    const childComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
+      message: '0'
+    })
+    const pp = new Promise((resolve) => {
+      liveQuery.query<AttachedComment>(
+        test.class.TestComment,
+        { _id: parentComment },
+        (result) => {
+          const comment = result[0]
+          if (comment !== undefined) {
+            expect((((comment as WithLookup<AttachedComment>).$lookup as any)?.comments[0] as AttachedComment).message).toEqual(attempt.toString())
+          }
+          if (attempt > 0) {
+            resolve(null)
+          } else {
+            attempt++
+          }
+        },
+        { lookup: { _id: { comments: test.class.TestComment } } }
+      )
+    })
+
+    await factory.updateCollection(test.class.TestComment, spaces[0]._id, childComment, parentComment, test.class.TestComment, 'comments', {
+      message: '1'
+    })
     await pp
   })
 

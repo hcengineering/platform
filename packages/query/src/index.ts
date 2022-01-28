@@ -22,6 +22,7 @@ import core, {
   FindOptions,
   findProperty,
   FindResult,
+  getObjectValue,
   Hierarchy, Lookup,
   LookupData,
   ModelDb, Ref, resultSort, ReverseLookups,
@@ -83,7 +84,6 @@ export class LiveQuery extends TxProcessor implements Client {
     const query = q.query
     for (const key in query) {
       if (key === '$search') continue
-      if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
       const value = (query as any)[key]
       const result = findProperty([doc], key, value)
       if (result.length === 0) {
@@ -238,8 +238,49 @@ export class LiveQuery extends TxProcessor implements Client {
       this.sort(q, tx)
       await this.callback(updatedDoc, q)
     } else if (this.matchQuery(q, tx)) {
-      await this.refresh(q)
+      return await this.refresh(q)
     }
+    await this.handleDocUpdateLookup(q, tx)
+  }
+
+  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc>): Promise<void> {
+    if (q.options?.lookup === undefined) return
+    const lookup = q.options.lookup
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    let needCallback = false
+    needCallback = this.proccesLookupUpdateDoc(q.result, lookup, tx)
+
+    if (needCallback) {
+      q.callback(this.clone(q.result))
+    }
+  }
+
+  private proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): boolean {
+    let needCallback = false
+    const lookupWays = this.getLookupWays(lookup, tx.objectClass)
+    for (const lookupWay of lookupWays) {
+      const [objWay, key] = lookupWay
+      for (const resDoc of docs) {
+        const obj = getObjectValue(objWay, resDoc)
+        if (obj === undefined) continue
+        const value = getObjectValue('$lookup.' + key, obj)
+        if (Array.isArray(value)) {
+          const index = value.findIndex((p) => p._id === tx.objectId)
+          if (index !== -1) {
+            TxProcessor.updateDoc2Doc(value[index], tx)
+            needCallback = true
+          }
+        } else {
+          if (obj[key] === tx.objectId) {
+            TxProcessor.updateDoc2Doc(obj.$lookup[key], tx)
+            needCallback = true
+          }
+        }
+      }
+    }
+    return needCallback
   }
 
   /**
@@ -353,6 +394,49 @@ export class LiveQuery extends TxProcessor implements Client {
         q.callback(this.clone(q.result))
       }
     }
+
+    await this.handleDocAddLookup(q, doc)
+  }
+
+  private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
+    if (q.options?.lookup === undefined) return
+    const lookup = q.options.lookup
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    let needCallback = false
+    needCallback = this.proccesLookupAddDoc(q.result, lookup, doc)
+
+    if (needCallback) {
+      q.callback(this.clone(q.result))
+    }
+  }
+
+  private proccesLookupAddDoc (docs: Doc[], lookup: Lookup<Doc>, doc: Doc): boolean {
+    let needCallback = false
+    const lookupWays = this.getLookupWays(lookup, doc._class)
+    for (const lookupWay of lookupWays) {
+      const [objWay, key] = lookupWay
+      for (const resDoc of docs) {
+        const obj = getObjectValue(objWay, resDoc)
+        if (obj === undefined) continue
+        const value = getObjectValue('$lookup.' + key, obj)
+        if (Array.isArray(value)) {
+          if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
+            if ((doc as AttachedDoc).attachedTo === obj._id) {
+              value.push(doc)
+              needCallback = true
+            }
+          }
+        } else {
+          if (obj[key] === doc._id) {
+            obj.$lookup[key] = doc
+            needCallback = true
+          }
+        }
+      }
+    }
+    return needCallback
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
@@ -371,7 +455,6 @@ export class LiveQuery extends TxProcessor implements Client {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    const index = q.result.findIndex((p) => p._id === tx.objectId)
     if (
       q.options?.limit !== undefined &&
       q.options.limit === q.result.length &&
@@ -379,10 +462,83 @@ export class LiveQuery extends TxProcessor implements Client {
     ) {
       return await this.refresh(q)
     }
+    const index = q.result.findIndex((p) => p._id === tx.objectId)
     if (index > -1) {
       q.result.splice(index, 1)
       q.callback(this.clone(q.result))
     }
+    await this.handleDocRemoveLookup(q, tx)
+  }
+
+  private async handleDocRemoveLookup (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+    if (q.options?.lookup === undefined) return
+    let needCallback = false
+    const lookupWays = this.getLookupWays(q.options.lookup, tx.objectClass)
+    if (lookupWays.length === 0) return
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    for (const lookupWay of lookupWays) {
+      const [objWay, key] = lookupWay
+      const docs = q.result
+      for (const doc of docs) {
+        const obj = getObjectValue(objWay, doc)
+        if (obj === undefined) continue
+        const value = getObjectValue('$lookup.' + key, obj)
+        if (value === undefined) continue
+        if (Array.isArray(value)) {
+          const index = value.findIndex((p) => p._id === tx.objectId)
+          if (index !== -1) {
+            value.splice(index, 1)
+            needCallback = true
+          }
+        } else {
+          if (value._id === tx.objectId) {
+            obj.$lookup[key] = undefined
+            needCallback = true
+          }
+        }
+      }
+    }
+    if (needCallback) {
+      q.callback(this.clone(q.result))
+    }
+  }
+
+  private getLookupWays (lookup: Lookup<Doc>, _class: Ref<Class<Doc>>, parent: string = ''): [string, string][] {
+    const result: [string, string][] = []
+    const hierarchy = this.client.getHierarchy()
+    if (lookup._id !== undefined) {
+      for (const key in lookup._id) {
+        const value = (lookup._id as any)[key]
+        const clazz = hierarchy.isMixin(value) ? hierarchy.getBaseClass(value) : value
+        if (hierarchy.isDerived(_class, clazz)) {
+          result.push([parent, key])
+        }
+      }
+    }
+    for (const key in lookup) {
+      if (key === '_id') continue
+      const value = (lookup as any)[key]
+      if (Array.isArray(value)) {
+        const clazz = hierarchy.isMixin(value[0]) ? hierarchy.getBaseClass(value[0]) : value[0]
+        if (hierarchy.isDerived(_class, clazz)) {
+          result.push([parent, key])
+        }
+        const lookupKey = '$lookup.' + key
+        const newParent = parent.length > 0 ? parent + '.' + lookupKey : lookupKey
+        const nested = this.getLookupWays(value[1], _class, newParent)
+        if (nested.length > 0) {
+          result.push(...nested)
+        }
+      } else {
+        const clazz = hierarchy.isMixin(value) ? hierarchy.getBaseClass(value) : value
+        if (hierarchy.isDerived(_class, clazz)) {
+          result.push([parent, key])
+        }
+      }
+    }
+    return result
   }
 
   protected override async txBulkWrite (tx: TxBulkWrite): Promise<TxResult> {
