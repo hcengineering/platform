@@ -159,7 +159,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     if (lookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
-        await this.fillReverseLookup(lookup, object, parentObject)
+        await this.fillReverseLookup(lookup, object, parent, parentObject)
         continue
       }
       const value = (lookup as any)[key]
@@ -175,13 +175,17 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async fillReverseLookup (lookup: ReverseLookups, object: any, parentObject?: any): Promise<void> {
+  private async fillReverseLookup (lookup: ReverseLookups, object: any, parent?: string, parentObject?: any): Promise<void> {
+    const targetObject = parentObject ?? object
+    if (targetObject.$lookup === undefined) {
+      targetObject.$lookup = {}
+    }
     for (const key in lookup._id) {
       const value = lookup._id[key]
       const domain = this.hierarchy.getDomain(value)
-      const targetObject = parentObject ?? object
+      const fullKey = parent !== undefined ? parent + key + '_lookup' : key + '_lookup'
       if (domain !== DOMAIN_MODEL) {
-        const arr = object[key + '_lookup']
+        const arr = object[fullKey]
         targetObject.$lookup[key] = arr
       } else {
         const arr = await this.modelDb.findAll(value, { attachedTo: targetObject._id })

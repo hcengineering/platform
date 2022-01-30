@@ -11983,7 +11983,7 @@ packages:
     dev: false
 
   file:projects/front.tgz:
-    resolution: {integrity: sha512-RXsa4jlZB6UdPjSIAHmf07BEcWlH6N26QnAVFQ3QL5VdqLi73ohsPQV9seKz36c5jGsA//Z0BS9QYVCETuHdgA==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-Nto3Qer5qe5YaIELZhEaJugu6x/1SbThjaKd0Yyc5BCo6UfjeyvQyKz0iHmTtIVfbBfzQSqj+MMBGL0k6zW3dg==, tarball: file:projects/front.tgz}
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
@@ -11998,6 +11998,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
       '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
       cors: 2.8.5
+      cross-env: 7.0.3
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
