@@ -60,9 +60,8 @@
         dispatch('close', null)
       }}
     >
-      <div class='not-done'>
-        <Label label={task.string.NoDoneState}/>
-      </div>
+      <div class="color" style="border: 0.5px #ffffff55 solid"/>
+      <Label label={task.string.NoDoneState}/>
     </div>
 </div>
 
