@@ -79,17 +79,21 @@
   export function done () {
   }
 
-  function updateStyle (popup: HTMLDivElement): void {
-    const x = clientRect().left
-    const height = popup.getBoundingClientRect().height
-    const y = clientRect().bottom
-    style = `left: ${x}px; bottom: calc(100vh - ${y}px + 1.75rem); max-height: calc(${y}px - 2.5rem);`
+  function updateStyle (): void {
+    const rect = clientRect()
+    const docW = document.body.clientWidth
+    let tempStyle = ''
+    if (rect.top < 292) // 20rem - 1.75rem
+      tempStyle = `top: calc(${rect.bottom}px + .75rem); max-heigth: calc(100vh - ${rect.bottom}px - 1.75rem); `
+    else tempStyle = `bottom: calc(100vh - ${rect.top}px + .75rem); max-heigth: calc(${rect.top}px - 1.75rem); `
+    if (docW - rect.left > 452) // 30rem - 1.75rem
+      tempStyle += `left: ${rect.left}px;`
+    else tempStyle += `right: calc(100vw - ${rect.right}px);`
+    style = tempStyle
   }
 
   let style = 'visibility: hidden'
-  $: if (popup) {
-    updateStyle(popup)
-  }
+  $: if (popup) updateStyle()
 
   async function updateItems (category: ObjectSearchCategory, query: string): Promise<void> {
     const f = await getResource(category.query)
@@ -101,7 +105,7 @@
   $: updateItems(category, query)
 </script>
 
-<svelte:window on:resize={() => updateStyle(popup)} />
+<svelte:window on:resize={() => updateStyle()} />
 <div
   class="overlay"
   on:click={() => {
@@ -167,7 +171,7 @@
     min-width: 20rem;
     max-width: 30rem;
     min-height: 0;
-    height: auto;
+    height: 20rem;
     z-index: 2000;
   }
 </style>

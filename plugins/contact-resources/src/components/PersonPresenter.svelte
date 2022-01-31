@@ -20,6 +20,7 @@
   import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Person
+  export let inline: boolean = false
 
   async function onClick () {
     showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
@@ -27,25 +28,10 @@
 </script>
 
 {#if value}
-  <div class="flex-row-center user-container" on:click={onClick}>
-    <Avatar size={'x-small'} avatar={value.avatar} />
-    <div class="overflow-label user">{formatName(value.name)}</div>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={onClick}>
+    <div class="icon">
+      <Avatar size={'x-small'} avatar={value.avatar} />
+    </div>
+    <span class="label">{formatName(value.name)}</span>
   </div>
 {/if}
-
-<style lang="scss">
-  .user-container {
-    cursor: pointer;
-
-    .user {
-      margin-left: 0.5rem;
-      font-weight: 500;
-      text-align: left;
-      color: var(--theme-content-accent-color);
-    }
-    &:hover .user {
-      text-decoration: underline;
-      color: var(--theme-caption-color);
-    }
-  }
-</style>

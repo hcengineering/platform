@@ -20,7 +20,7 @@
   import { ReferenceInput } from '@anticrm/text-editor'
   import { Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-import { updateBacklinks } from '../../backlinks'
+  import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
 
   export let tx: TxCreateDoc<Comment>
