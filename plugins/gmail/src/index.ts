@@ -22,11 +22,11 @@ import type { IntegrationType, Handler } from '@anticrm/setting'
 /**
  * @public
  */
-export interface Message extends NewMessage, Doc {
+export interface Message extends NewMessage, AttachedDoc {
   messageId: string
   from: string
   textContent: string
-  contact: string
+  incoming: boolean
 }
 
 /**

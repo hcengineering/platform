@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Message, SharedMessage } from '@anticrm/gmail'
   import gmail from '../plugin'
-  import { Contact, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { ActionIcon, IconShare, Button, ScrollBox, showPopup, Icon, Label } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
@@ -27,7 +27,7 @@
   import Messages from './Messages.svelte'
 
   export let object: Contact
-  export let contactString: string
+  export let channel: Channel
   export let newMessage: boolean
 
   let messages: Message[] = []
@@ -44,9 +44,9 @@
 
   $: messagesQuery.query(
     gmail.class.Message,
-    { modifiedBy: accountId, contact: { $like: '%' + contactString + '%' } },
+    { modifiedBy: accountId, attachedTo: channel._id },
     (res) => {
-      // messages = res
+      messages = res
     },
     { sort: { modifiedOn: SortingOrder.Descending } }
   )
@@ -59,15 +59,15 @@
     setting.class.Integration,
     { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
     (res) => {
-      // enabled = res.length > 0
-      // me = res[0].value
+      enabled = res.length > 0
+      me = res[0].value
     }
   )
   const client = getClient()
 
   async function share (): Promise<void> {
     const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
-    await client.addCollection(gmail.class.SharedMessages, object.space, object._id, object._class, 'gmailMessages', {
+    await client.addCollection(gmail.class.SharedMessages, object.space, object._id, object._class, 'gmailSharedMessages', {
       messages: convertMessages(selectedMessages)
     })
     clear()
@@ -85,20 +85,15 @@
         ...m,
         _id: m._id as string as Ref<SharedMessage>,
         sender: account ? getName(m, account, true) : '',
-        receiver: account ? getName(m, account, false) : '',
-        incoming: !amISender(m)
+        receiver: account ? getName(m, account, false) : ''
       }
     })
   }
 
   function getName (message: Message, account: EmployeeAccount, sender: boolean): string {
-    return amISender(message) !== sender
-      ? `${formatName(object.name)} (${contactString})`
+    return message.incoming === sender
+      ? `${formatName(object.name)} (${channel.value})`
       : `${formatName(account.name)} (${me})`
-  }
-
-  function amISender (message: Message): boolean {
-    return !message.from.includes(contactString)
   }
 </script>
 

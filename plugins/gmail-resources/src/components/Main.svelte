@@ -24,14 +24,14 @@
   export let object: Contact
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
-  let channelValue: string | undefined = undefined
+  let channel: Channel | undefined = undefined
 
   const client = getClient()
 
   client.findOne(contact.class.Channel, {
     attachedTo: object._id,
     provider: contact.channelProvider.Email
-  }).then((res) => channelValue = res?.value)
+  }).then((res) => channel = res)
 
   function back () {
     if (newMessage) {
@@ -45,12 +45,12 @@
   }
 </script>
 
-{#if channelValue}
+{#if channel}
   {#if newMessage}
-    <NewMessage {object} contact={channelValue} {currentMessage} on:close={back} />
+    <NewMessage {object} {channel} {currentMessage} on:close={back} />
   {:else if currentMessage}
     <FullMessage {currentMessage} bind:newMessage on:close={back} />
   {:else}
-    <Chats {object} contactString={channelValue} bind:newMessage on:select={selectHandler} />
+    <Chats {object} {channel} bind:newMessage on:select={selectHandler} />
   {/if}
 {/if}
