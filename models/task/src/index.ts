@@ -428,6 +428,14 @@ export function createModel (builder: Builder): void {
     presenter: task.component.StatePresenter
   })
 
+  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributeEditor, {
+    editor: task.component.DoneStateEditor
+  })
+
+  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.DoneStatePresenter
+  })
+
   builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,

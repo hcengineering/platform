@@ -26,6 +26,7 @@ import EditIssue from './components/EditIssue.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
+import DoneStateEditor from './components/state/DoneStateEditor.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
@@ -140,7 +141,8 @@ export default async (): Promise<Resources> => ({
     TodoItemPresenter,
     TodoStatePresenter,
     StatusTableView,
-    TaskHeader
+    TaskHeader,
+    DoneStateEditor
   },
   actionImpl: {
     CreateTask: createTask,

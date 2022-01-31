@@ -64,6 +64,7 @@
     "DoneStates": "Done states",
     "States": "States",
     "ChooseAColor": "Choose a color",
-    "SearchTask": "Search for task..."
+    "SearchTask": "Search for task...",
+    "NoDoneState": "Not done"
   }
 }

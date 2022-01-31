@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
@@ -37,7 +36,7 @@
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: typeClassId = (attribute !== undefined) ? getAttributePresenterClass(attribute) : undefined
+  $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
@@ -57,7 +56,6 @@
   {#await editor}
     ...
   {:then instance}
-
     {#if attribute.icon}
       <div class="flex-row-center">
         <CircleButton icon={attribute.icon} size={'large'} />
@@ -66,19 +64,46 @@
             {#if showHeader}
               <Label label={attribute.label} />
             {/if}
-            <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/></div>
+            <div class="value">
+              <svelte:component
+                this={instance}
+                label={attribute?.label}
+                placeholder={attribute?.label}
+                {maxWidth}
+                value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+                space={object.space}
+                {onChange}
+                {focus}
+              />
+            </div>
           </div>
         {/if}
       </div>
     {:else if showHeader}
       <div class="flex-col">
         <Label label={attribute.label} />
-        <div class="value"><svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/></div>
+        <div class="value">
+          <svelte:component
+            this={instance}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            {maxWidth}
+            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            space={object.space}
+            {onChange}
+            {focus}
+          />
+        </div>
       </div>
     {:else}
-      <svelte:component this={instance} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/>
+      <svelte:component
+        this={instance}
+        {maxWidth}
+        value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        space={object.space}
+        {onChange}
+        {focus}
+      />
     {/if}
-
   {/await}
 {/if}
-

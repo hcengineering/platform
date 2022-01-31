@@ -17,16 +17,21 @@
 <script lang="ts">
   import type { DoneState } from '@anticrm/task'
   import task from '@anticrm/task'
+  import { getPlatformColor } from '@anticrm/ui'
 
   export let value: DoneState
+  export let showTitle: boolean = false
 
-  $: color = value._class === task.class.WonState ? '#a5d179' : '#f28469'
+  $: color = value._class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
 
 </script>
 
 {#if value }
   <div class="flex-center">
-    <div class="state-container" style="background-color: {color};" />    
+    <div class="state-container" class:state-container-title={showTitle} style="background-color: {color};" />
+    {#if showTitle}
+      {value.title}
+    {/if}
   </div>
 {/if}
 
@@ -35,5 +40,8 @@
     width: .5rem;
     height: .5rem;
     border-radius: .5rem;
+  }
+  .state-container-title {
+    margin-right: 0.75rem;
   }
 </style>
