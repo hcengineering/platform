@@ -64,7 +64,7 @@ class ModelClient implements Client {
   async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
     const result = await this.client.findOne(_class, query, options)
     console.info('devmodel# findOne=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
-    queries.push({ _class, query, options, result: result !== undefined ? [result] : [], findOne: true })
+    queries.push({ _class, query, options: options as FindOptions<Doc>, result: result !== undefined ? [result] : [], findOne: true })
     if (queries.length > 100) {
       queries.shift()
     }
@@ -74,7 +74,7 @@ class ModelClient implements Client {
   async findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     const result = await this.client.findAll(_class, query, options)
     console.info('devmodel# findAll=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
-    queries.push({ _class, query, options, result, findOne: false })
+    queries.push({ _class, query, options: options as FindOptions<Doc>, result, findOne: false })
     if (queries.length > 100) {
       queries.shift()
     }

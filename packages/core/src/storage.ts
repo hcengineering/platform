@@ -14,7 +14,7 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Class, Doc, Ref } from './classes'
+import type { AttachedDoc, Class, Doc, Ref } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -49,13 +49,42 @@ export type DocumentQuery<T extends Doc> = {
  * @public
  */
 export type ToClassRef<T extends object> = {
-  [P in keyof T]?: T[P] extends Ref<infer X> ? Ref<Class<X>> : never
+  [P in keyof T]?: T[P] extends Ref<infer X> | null ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
 }
 
 /**
  * @public
  */
-export type Refs<T extends Doc> = ToClassRef<Pick<T, KeysByType<T, Ref<Doc>>>>
+export type RefKeys<T extends Doc> = Pick<T, KeysByType<T, NullableRef>>
+
+/**
+ * @public
+ */
+export type NullableRef = Ref<Doc> | null
+
+/**
+ * @public
+ */
+export type Refs<T extends Doc> = ToClassRef<RefKeys<T>>
+
+/**
+ * @public
+ */
+export interface ReverseLookups {
+  _id?: ReverseLookup
+}
+
+/**
+ * @public
+ */
+export interface ReverseLookup {
+  [key: string]: Ref<Class<AttachedDoc>>
+}
+
+/**
+ * @public
+ */
+export type Lookup<T extends Doc> = Refs<T> | ReverseLookups | (Refs<T> & ReverseLookups)
 
 /**
  * @public
@@ -64,7 +93,7 @@ export type Refs<T extends Doc> = ToClassRef<Pick<T, KeysByType<T, Ref<Doc>>>>
 export type FindOptions<T extends Doc> = {
   limit?: number
   sort?: SortingQuery<T>
-  lookup?: Refs<T>
+  lookup?: Lookup<T>
 }
 
 /**
@@ -85,8 +114,8 @@ export enum SortingOrder {
 /**
  * @public
  */
-export type RefsAsDocs<T extends Doc> = {
-  [P in keyof T]: T[P] extends Ref<infer X> ? X : never
+export type RefsAsDocs<T> = {
+  [P in keyof T]: T[P] extends Ref<infer X> ? (T extends X ? X : X | WithLookup<X>) : never
 }
 
 /**
@@ -97,7 +126,9 @@ export type RemoveNever<T extends object> = Omit<T, KeysByType<T, never>>
 /**
  * @public
  */
-export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<T>>>
+export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<T>>> | RemoveNever<{
+  [key: string]: Doc[]
+}>
 
 /**
  * @public

@@ -13,28 +13,23 @@
 // limitations under the License.
 //
 
-import type { Domain, Type, Ref } from '@anticrm/core'
-import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Model, Prop, TypeString, UX, Index, Collection, ArrOf } from '@anticrm/model'
-import type { IntlString, Asset } from '@anticrm/platform'
-import chunter from '@anticrm/model-chunter'
-import core, { TAccount, TDoc, TSpace, TType } from '@anticrm/model-core'
 import type {
-  Contact,
-  Person,
-  Persons,
-  Organization,
-  Organizations,
-  Employee,
   Channel,
-  ChannelProvider,
-  EmployeeAccount
+  ChannelProvider, Contact, Employee, EmployeeAccount, Organization,
+  Organizations, Person,
+  Persons
 } from '@anticrm/contact'
-import workbench from '@anticrm/model-workbench'
-import view from '@anticrm/model-view'
+import type { Domain, Ref } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
-import { ids as contact } from './plugin'
+import chunter from '@anticrm/model-chunter'
+import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
+import view from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import type { Asset, IntlString } from '@anticrm/platform'
+import { ids as contact } from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 
@@ -43,16 +38,6 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
   label!: IntlString
   icon?: Asset
   placeholder!: IntlString
-}
-
-@Model(contact.class.TypeChannel, core.class.Type)
-export class TTypeChannels extends TType {}
-
-/**
- * @public
- */
-export function TypeChannel (): Type<Channel> {
-  return { _class: contact.class.TypeChannel, label: 'Channel' as IntlString }
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
@@ -64,8 +49,8 @@ export class TContact extends TDoc implements Contact {
 
   avatar?: string
 
-  @Prop(ArrOf(TypeChannel()), 'Contact Info' as IntlString)
-  channels!: Channel[]
+  @Prop(Collection(contact.class.Channel), 'Contact Info' as IntlString)
+  channels?: number
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
   attachments?: number
@@ -75,6 +60,16 @@ export class TContact extends TDoc implements Contact {
 
   @Prop(TypeString(), 'Location' as IntlString)
   city!: string
+}
+
+@Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CONTACT)
+@UX('Channel' as IntlString, contact.icon.Person)
+export class TChannel extends TAttachedDoc implements Channel {
+  @Prop(TypeRef(contact.class.ChannelProvider), 'Channel provider' as IntlString)
+  provider!: Ref<ChannelProvider>
+
+  @Prop(TypeString(), 'Value' as IntlString)
+  value!: string
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -106,14 +101,14 @@ export class TPersons extends TSpace implements Persons {}
 export function createModel (builder: Builder): void {
   builder.createModel(
     TChannelProvider,
-    TTypeChannels,
     TContact,
     TPerson,
     TPersons,
     TOrganization,
     TOrganizations,
     TEmployee,
-    TEmployeeAccount
+    TEmployeeAccount,
+    TChannel
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
@@ -140,14 +135,16 @@ export function createModel (builder: Builder): void {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {},
+    options: {
+      lookup: { _id: { channels: contact.class.Channel } }
+    },
     config: [
       '',
       'city',
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       'modifiedOn',
       { presenter: view.component.RolePresenter, label: 'Role' },
-      'channels'
+      '$lookup.channels'
     ]
   })
 
@@ -163,7 +160,7 @@ export function createModel (builder: Builder): void {
     editor: contact.component.EditOrganization
   })
 
-  builder.mixin(contact.class.TypeChannel, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
   })
 
@@ -255,4 +252,5 @@ export function createModel (builder: Builder): void {
   }, contact.completion.OrganizationCategory)
 }
 
+export { contactOperation } from './migration'
 export { contact as default }

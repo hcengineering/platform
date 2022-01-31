@@ -14,16 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact } from '@anticrm/contact'
+  import contact, { Channel, Contact } from '@anticrm/contact'
   import { SharedMessage } from '@anticrm/gmail'
   import NewMessage from './NewMessage.svelte'
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
+  import { getClient } from '@anticrm/presentation'
 
   export let object: Contact
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
-  $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Email)
+  let channelValue: string | undefined = undefined
+
+  const client = getClient()
+
+  client.findOne(contact.class.Channel, {
+    attachedTo: object._id,
+    provider: contact.channelProvider.Email
+  }).then((res) => channelValue = res?.value)
 
   function back () {
     if (newMessage) {
@@ -37,12 +45,12 @@
   }
 </script>
 
-{#if contactString}
+{#if channelValue}
   {#if newMessage}
-    <NewMessage {object} contact={contactString.value} {currentMessage} on:close={back} />
+    <NewMessage {object} contact={channelValue} {currentMessage} on:close={back} />
   {:else if currentMessage}
     <FullMessage {currentMessage} bind:newMessage on:close={back} />
   {:else}
-    <Chats {object} contactString={contactString.value} bind:newMessage on:select={selectHandler} />
+    <Chats {object} contactString={channelValue} bind:newMessage on:select={selectHandler} />
   {/if}
 {/if}

@@ -14,17 +14,16 @@
 // limitations under the License.
 //
 
-// To help typescript locate view plugin properly
-import type { Category, Product, Variant } from '@anticrm/inventory'
 import { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import type { Category, Product, Variant } from '@anticrm/inventory'
 import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import type { IntlString } from '@anticrm/platform'
-import type {} from '@anticrm/view'
-import inventory from './plugin'
-import workbench from '@anticrm/model-workbench'
-import view from '@anticrm/view'
 import attachment from '@anticrm/model-attachment'
+import core, { TAttachedDoc } from '@anticrm/model-core'
+import workbench from '@anticrm/model-workbench'
+import type { IntlString } from '@anticrm/platform'
+import type { } from '@anticrm/view'
+import view from '@anticrm/view'
+import inventory from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
@@ -96,9 +95,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: inventory.class.Category
-      }
+      lookup: { attachedTo: inventory.class.Category }
     } as FindOptions<Doc>,
     config: ['', '$lookup.attachedTo', 'modifiedOn']
   })

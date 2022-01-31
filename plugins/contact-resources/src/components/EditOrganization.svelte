@@ -16,26 +16,20 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, showPopup, IconAdd, Label, IconActivity } from '@anticrm/ui'
-  import presentation, { getClient, createQuery, Channels } from '@anticrm/presentation'
+  import { CircleButton, EditBox, IconActivity } from '@anticrm/ui'
+  import { getClient, createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
   import contact from '../plugin'
   import { Organization } from '@anticrm/contact'
   import Company from './icons/Company.svelte'
+  import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let object: Organization
 
   const client = getClient()
 
   const dispatch = createEventDispatcher()
-
-  function saveChannels (result: any) {
-    if (result !== undefined) {
-      object.channels = result
-      client.updateDoc(object._class, object.space, object._id, { channels: result })
-    }
-  }
 
   function nameChange () {
     client.updateDoc(object._class, object.space, object._id, { name: object.name })
@@ -64,31 +58,7 @@
       </div>
       <div class="flex-between channels">
         <div class="flex-row-center">
-          {#if !object.channels || object.channels.length === 0}
-            <CircleButton
-              icon={IconAdd}
-              size={'small'}
-              selected
-              on:click={(ev) =>
-                showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
-                  saveChannels(result)
-                })}
-            />
-            <span><Label label={presentation.string.AddSocialLinks} /></span>
-          {:else}
-            <Channels value={object.channels} size={'small'} {integrations} on:click />
-            <div class="ml-1">
-              <CircleButton
-                icon={contact.icon.Edit}
-                size={'small'}
-                selected
-                on:click={(ev) =>
-                  showPopup(contact.component.SocialEditor, { values: object.channels ?? [] }, ev.target, (result) => {
-                    saveChannels(result)
-                  })}
-              />
-            </div>
-          {/if}
+          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} />
         </div>
 
         <div class="flex-row-center">
@@ -117,8 +87,5 @@
   }
   .channels {
     margin-top: 0.75rem;
-    span {
-      margin-left: 0.5rem;
-    }
   }
 </style>

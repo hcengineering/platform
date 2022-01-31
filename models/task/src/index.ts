@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-// To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
@@ -281,9 +280,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        assignee: contact.class.Employee
-      }
+      lookup: { assignee: contact.class.Employee }
     } as FindOptions<Doc>,
     config: [
       '',
@@ -313,9 +310,8 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        assignee: contact.class.Employee,
-        state: task.class.State
-        // attachedTo: core.class.Doc
+        state: task.class.State,
+        assignee: contact.class.Employee
       }
     } as FindOptions<Doc>, // TODO: fix
     config: [

@@ -252,4 +252,33 @@ describe('memdb', () => {
     const result2 = await client.findAll(test.class.TestComment, {})
     expect(result2).toHaveLength(1)
   })
+
+  it('lookups', async () => {
+    const { model } = await createModel()
+
+    const client = new TxOperations(model, core.account.System)
+    const spaces = await client.findAll(core.class.Space, {})
+    expect(spaces).toHaveLength(2)
+
+    const first = await client.addCollection(test.class.TestComment, core.space.Model, spaces[0]._id, spaces[0]._class, 'comments', {
+      message: 'msg'
+    })
+
+    const second = await client.addCollection(test.class.TestComment, core.space.Model, first, test.class.TestComment, 'comments', {
+      message: 'msg2'
+    })
+
+    await client.addCollection(test.class.TestComment, core.space.Model, spaces[0]._id, spaces[0]._class, 'comments', {
+      message: 'msg3'
+    })
+
+    const simple = await client.findAll(test.class.TestComment, { _id: first }, { lookup: { attachedTo: spaces[0]._class } })
+    expect(simple[0].$lookup?.attachedTo).toEqual(spaces[0])
+
+    const nested = await client.findAll(test.class.TestComment, { _id: second }, { lookup: { attachedTo: [test.class.TestComment, { attachedTo: spaces[0]._class } as any] } })
+    expect((nested[0].$lookup?.attachedTo as any).$lookup?.attachedTo).toEqual(spaces[0])
+
+    const reverse = await client.findAll(spaces[0]._class, { _id: spaces[0]._id }, { lookup: { _id: { comments: test.class.TestComment } } })
+    expect((reverse[0].$lookup as any).comments).toHaveLength(2)
+  })
 })

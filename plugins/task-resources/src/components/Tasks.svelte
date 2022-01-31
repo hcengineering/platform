@@ -52,7 +52,7 @@
     <CircleButton icon={IconAdd} size={'small'} on:click={createApp} />
   </div>
   {#if tasks.length > 0}
-    <Table 
+    <Table
       _class={task.class.Issue}
       config={['', '$lookup.space.name', '$lookup.state']}
       {options}

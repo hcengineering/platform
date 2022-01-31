@@ -14,7 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, Ref, Timestamp } from '@anticrm/core'
+import { Doc, FindOptions, Lookup, Ref, Timestamp } from '@anticrm/core'
 import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
@@ -153,9 +153,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      // lookup: {
-      //   resume: chunter.class.Attachment
-      // }
+      lookup: { _id: { channels: contact.class.Channel } }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -165,21 +163,24 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      'channels'
+      '$lookup.channels'
     ]
   })
+
+  const applicantTableLookup: Lookup<Applicant> =
+  {
+    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
+    state: task.class.State,
+    assignee: contact.class.Employee,
+    doneState: task.class.DoneState
+  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        state: task.class.State,
-        assignee: contact.class.Employee,
-        doneState: task.class.DoneState
-      }
+      lookup: applicantTableLookup
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -190,21 +191,24 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.attachedTo.channels'
+      '$lookup.attachedTo.$lookup.channels'
     ]
   })
+
+  const applicantKanbanLookup: Lookup<Applicant> =
+  {
+    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
+    state: task.class.State
+  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.Kanban,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        state: task.class.State
-      }
+      lookup: applicantKanbanLookup
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.channels']
+    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.$lookup.channels']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -212,12 +216,7 @@ export function createModel (builder: Builder): void {
     descriptor: task.viewlet.StatusTable,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        state: task.class.State,
-        assignee: contact.class.Employee,
-        doneState: task.class.DoneState
-      }
+      lookup: applicantTableLookup
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -228,7 +227,7 @@ export function createModel (builder: Builder): void {
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
       'modifiedOn',
-      '$lookup.attachedTo.channels'
+      '$lookup.attachedTo.$lookup.channels'
     ]
   })
 
