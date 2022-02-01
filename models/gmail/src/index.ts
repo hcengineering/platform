@@ -15,8 +15,8 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, Prop, ArrOf } from '@anticrm/model'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
+import { Builder, Model, TypeString, Prop, ArrOf, TypeBoolean } from '@anticrm/model'
+import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import gmail from './plugin'
 import type { Message, SharedMessage, SharedMessages } from '@anticrm/gmail'
@@ -30,8 +30,8 @@ function TypeSharedMessage (): Type<SharedMessage> {
   return { _class: gmail.class.SharedMessage, label: 'Shared message' as IntlString }
 }
 
-@Model(gmail.class.Message, core.class.Doc, DOMAIN_GMAIL)
-export class TMessage extends TDoc implements Message {
+@Model(gmail.class.Message, core.class.AttachedDoc, DOMAIN_GMAIL)
+export class TMessage extends TAttachedDoc implements Message {
   @Prop(TypeString(), gmail.string.MessageID)
   messageId!: string
 
@@ -58,6 +58,9 @@ export class TMessage extends TDoc implements Message {
 
   @Prop(ArrOf(TypeString()), 'Copy' as IntlString)
   copy?: string[]
+
+  @Prop(TypeBoolean(), 'Incoming' as IntlString)
+  incoming!: boolean
 }
 
 @Model(gmail.class.SharedMessages, core.class.AttachedDoc, DOMAIN_GMAIL)

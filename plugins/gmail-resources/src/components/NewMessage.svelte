@@ -21,12 +21,12 @@
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
   import { IconArrowLeft, Label } from '@anticrm/ui'
-  import { Contact, formatName } from '@anticrm/contact'
+  import { Channel, Contact, formatName } from '@anticrm/contact'
   import { TextEditor } from '@anticrm/text-editor'
   import plugin from '../plugin'
 
   export let object: Contact
-  export let contact: string
+  export let channel: Channel
   export let currentMessage: SharedMessage | undefined
 
   let editor: TextEditor
@@ -35,7 +35,7 @@
   const obj: NewMessage = {
     subject: currentMessage ? 'RE: ' + currentMessage.subject : '',
     content: '',
-    to: contact,
+    to: channel.value,
     replyTo: currentMessage?.messageId
   }
 
@@ -72,7 +72,7 @@
     <div class="fs-title">Gmail</div>
     <div class="small-text content-dark-color overflow-label">
       <Label label={plugin.string.NewMessageTo} />
-      <span class="content-accent-color">{formatName(object.name)} ({contact})</span>
+      <span class="content-accent-color">{formatName(object.name)} ({channel.value})</span>
     </div>
   </div>
   <div class="mr-3">
