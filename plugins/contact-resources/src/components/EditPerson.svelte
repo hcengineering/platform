@@ -95,7 +95,7 @@
 
       <div class="flex-between channels">
         <div class="flex-row-center">
-          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} />
+          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} on:click />
         </div>
 
         <div class="flex-row-center">
