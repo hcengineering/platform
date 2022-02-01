@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import telegram, { SharedTelegramMessage } from '@anticrm/telegram'
   import type { TelegramMessage } from '@anticrm/telegram'
-  import { Contact, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { ActionIcon, IconShare, Button, ScrollBox, showPopup } from '@anticrm/ui'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -30,8 +30,8 @@
   import Messages from './Messages.svelte'
 
   export let object: Contact
+  let channel: Channel | undefined = undefined
 
-  $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Telegram)
   let messages: TelegramMessage[] = []
   let account: EmployeeAccount | undefined
   let enabled: boolean
@@ -44,10 +44,10 @@
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
-  $: query = contactString?.value.startsWith('+')
-    ? { contactPhone: contactString.value }
-    : { contactUserName: contactString?.value }
-  $: messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, ...query }, (res) => {
+  $: query = channel && (channel.value.startsWith('+')
+    ? { contactPhone: channel.value }
+    : { contactUserName: channel.value })
+  $: query && messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, ...query }, (res) => {
     messages = res
   })
 
@@ -63,6 +63,11 @@
     }
   )
   const client = getClient()
+
+  client.findOne(contact.class.Channel, {
+    attachedTo: object._id,
+    provider: contact.channelProvider.Telegram
+  }).then((res) => channel = res)
 
   async function sendMsg (to: string, msg: string) {
     return await fetch(url + '/send-msg', {
@@ -96,7 +101,7 @@
   }
 
   async function onMessage (event: CustomEvent) {
-    const to = contactString?.value ?? ''
+    const to = channel?.value ?? ''
     const sendRes = await sendMsg(to, event.detail)
 
     if (sendRes.status !== 400 || !to.startsWith('+')) {
