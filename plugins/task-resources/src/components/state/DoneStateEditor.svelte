@@ -52,7 +52,7 @@
         if (result) {
           value = result._id
           onChange(value)
-        } else if (result == null) {
+        } else if (result === null) {
           value = null
           onChange(value)
         }
@@ -65,6 +65,16 @@
   {#if state}
     <DoneStatePresenter value={state} showTitle />
   {:else}
+    <div class="color"/>
     <Label label={task.string.NoDoneState} />
   {/if}
 </div>
+<style lang="scss">
+  .color {
+    border: 0.5px #ffffff55 solid;
+    margin-right: 0.75rem;
+    width: .5rem;
+    height: .5rem;
+    border-radius: .5rem;
+  }
+</style>
