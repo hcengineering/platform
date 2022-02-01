@@ -70,81 +70,38 @@
   }
 </script>
 
-<div class="account-popup">
-  <div class="popup-bg" />
-  {#await getItems() then items}
-    <div class="flex-row-center header item" on:click={() => { editProfile(items) }}>
+<div class="antiPopup">
+  <div class="ap-space" />
+  <div class="ap-scroll"><div class="ap-box">
+    {#await getItems() then items}
+      <div class="ap-menuItem flex-row-center" on:click={() => { editProfile(items) }}>
         {#if employee}
           <Avatar avatar={employee.avatar} size={'medium'} />
         {/if}
-      <div class="ml-2 flex-col">
+        <div class="ml-2 flex-col">
           {#if account}
             <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
-            <div class="overflow-label small-text content-dark-color">{account.email}</div>
+            <div class="overflow-label text-sm content-dark-color">{account.email}</div>
           {/if}
+        </div>
       </div>
-    </div>
-    <div class="content">
       {#if items}
         {#each filterItems(items) as item }
-          <div class="item flex-row-center" on:click={() => selectCategory(item)}>
+          <button class="ap-menuItem" on:click={() => selectCategory(item)}>
             <div class='mr-2'>
-              <Icon icon={item.icon} size={'x-small'}/>
+              <Icon icon={item.icon} size={'small'}/>
             </div>
             <Label label={item.label} />
-          </div>
+          </button>
         {/each}
       {/if}
-      <div class="item" on:click={signOut}><Label label={setting.string.Signout} /></div>
-    </div>
-  {/await}
+      <button class="ap-menuItem" on:click={signOut}>
+        <div class='mr-2'>
+          <Icon icon={setting.icon.Signout} size={'small'}/>
+        </div>
+        <Label label={setting.string.Signout} />
+      </button>
+    {/await}
+  </div></div>
+  <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .account-popup {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 16rem;
-    min-width: 16rem;
-    max-width: 16rem;
-    border-radius: 1.25rem;
-
-    .header {
-      flex-shrink: 0;
-      margin: 0.5rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .content {
-      flex-shrink: 0;
-      flex-grow: 1;
-      margin: 0 .5rem 1rem;
-      height: fit-content;
-    }
-    .item {
-      padding: .5rem;
-      color: var(--theme-content-accent-color);
-      border-radius: .5rem;
-      cursor: pointer;
-
-      &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-button-bg-focused);
-      }
-    }
-
-    .popup-bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--theme-card-bg);
-      border-radius: 1.25rem;
-      backdrop-filter: blur(15px);
-      box-shadow: var(--theme-card-shadow);
-      z-index: -1;
-    }
-  }
-</style>

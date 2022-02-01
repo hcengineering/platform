@@ -70,7 +70,7 @@
   </div>
   <div class="flex-grow flex-col">
     <div class="fs-title">Gmail</div>
-    <div class="small-text content-dark-color overflow-label">
+    <div class="text-sm content-dark-color overflow-label">
       <Label label={plugin.string.NewMessageTo} />
       <span class="content-accent-color">{formatName(object.name)} ({contact})</span>
     </div>

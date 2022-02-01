@@ -125,7 +125,7 @@
     <div class="flex-center icon"><Icon icon={contact.icon.Email} size="small" /></div>
     <div class="flex-grow flex-col">
       <div class="fs-title">Gmail</div>
-      <div class="small-text content-dark-color"><Label label={gmail.string.YouAnd} /> {formatName(object.name)}</div>
+      <div class="text-sm content-dark-color"><Label label={gmail.string.YouAnd} /> {formatName(object.name)}</div>
     </div>
     <div class="mr-3">
       <Button

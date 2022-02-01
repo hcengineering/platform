@@ -85,7 +85,7 @@
           {#if spaceClassInstance}<Label label={spaceClassInstance?.label}/>{:else}...{/if}
         </span>
       </div>
-      <div class="small-text content-dark-color overflow-label">{spaceInstance?.name}</div>
+      <div class="text-sm content-dark-color overflow-label">{spaceInstance?.name}</div>
     </div>
     <div class="ml-4 content-accent-color cursor-pointer" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
   </div>

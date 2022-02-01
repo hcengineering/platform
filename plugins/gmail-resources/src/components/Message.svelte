@@ -37,7 +37,7 @@
     <div class="mr-4"><CheckBox circle primary bind:checked={selected} /></div>
   {/if}
   <div class="flex-col message" class:selected>
-    <div class="flex-between small-text mb-4">
+    <div class="flex-between text-sm mb-4">
       <div class="content-trans-color overflow-label mr-4">From: <span class="content-accent-color">{formatName(message.sender)}</span></div>
       <div class="content-trans-color">{getTime(message.modifiedOn)}</div>
     </div>

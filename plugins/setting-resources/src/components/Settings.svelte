@@ -41,7 +41,7 @@
   }
 </script>
 
-<div class='container'>
+<div class="container">
 <div class="panel-navigator">
   <div class="flex-between navheader-container">
     <span class="fs-title overflow-label">
@@ -49,9 +49,9 @@
     </span>
   </div>
   {#each categories as category}
-      <CategoryElement icon={category.icon} label={category.label} on:click={() => { selectCategory(category.name) }}/>
+    <CategoryElement icon={category.icon} label={category.label} on:click={() => { selectCategory(category.name) }}/>
   {/each}
-  <div class='signout'>
+  <div class="signout">
     <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut}/>
   </div>
 </div>    
@@ -67,7 +67,6 @@
   .container {
     display: flex;
     height: 100%;
-    padding-bottom: 1.25rem;
     background: var(--theme-menu-color); 
    
     .panel-navigator {
@@ -91,7 +90,6 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      margin-right: 1rem;
       height: 100%;
       border-radius: 1.25rem;
       background-color: var(--theme-bg-color);

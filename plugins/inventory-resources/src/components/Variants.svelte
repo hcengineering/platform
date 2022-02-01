@@ -42,10 +42,10 @@
   {:else}
     <div class="flex-col-center mt-5 create-container">
       <Icon size={'large'} icon={inventory.icon.Variant} />
-      <div class="small-text content-dark-color mt-2">
+      <div class="text-sm content-dark-color mt-2">
         <Label label={inventory.string.NoVariantsForProduct} />
       </div>
-      <div class="small-text">
+      <div class="text-sm">
         <a href={'#'} on:click={create}><Label label={inventory.string.CreateVariant} /></a>
       </div>
     </div>

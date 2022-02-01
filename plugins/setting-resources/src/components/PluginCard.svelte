@@ -49,7 +49,7 @@
     <div class="icon mr-4"><Component is={integrationType.icon} /></div>
     <div class="flex-grow flex-col">
       <div class="fs-title max-label overflow-label"><Label label={integrationType.label} /></div>
-      <div class="small-text content-dark-color max-label overflow-label">
+      <div class="text-sm content-dark-color max-label overflow-label">
         <Label label={integrationType.description} />
       </div>
     </div>

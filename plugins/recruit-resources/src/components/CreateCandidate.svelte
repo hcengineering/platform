@@ -156,8 +156,8 @@
     <div class="flex-col">
       <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName}/></div>
       <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName}/></div>
-      <div class="small-text"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title}/></div>
-      <div class="small-text"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city}/></div>
+      <div class="text-sm"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title}/></div>
+      <div class="text-sm"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city}/></div>
     </div>
   </div>
 

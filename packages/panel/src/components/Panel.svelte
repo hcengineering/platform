@@ -45,7 +45,7 @@
         <div class="flex-grow ml-4 flex-col">
           <div class="fs-title">{title}</div>
           {#if subtitle}
-            <div class="small-text content-dark-color">{subtitle}</div>
+            <div class="text-sm content-dark-color">{subtitle}</div>
           {/if}
         </div>
         <ActionIcon icon={IconMoreH} size={'medium'} />
@@ -72,7 +72,7 @@
         <Icon {icon} size={'large'} />
         <div class="flex-grow ml-4 flex-col">
           <div class="fs-title">{title}</div>
-          <div class="small-text content-dark-color">Candidate pool name</div>
+          <div class="text-sm content-dark-color">Candidate pool name</div>
         </div>
         <ActionIcon icon={IconMoreH} size={'medium'} />
       </div>

@@ -61,7 +61,7 @@
             {object.name}
           </div>
         </div>
-        <div class="small-text">{object.description}</div>
+        <div class="text-sm">{object.description}</div>
       </div>
       <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
     </div>

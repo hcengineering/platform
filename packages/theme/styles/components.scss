@@ -13,6 +13,84 @@
 // limitations under the License.
 //
 
+/* Component */
+.antiComponent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .ac-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 0 1.75rem 0 2.5rem;
+    height: 4rem;
+    min-height: 4rem;
+    border-bottom: 1px solid var(--theme-menu-divider);
+
+    .ac-header__icon {
+      margin-right: .75rem;
+      color: var(--theme-content-color);
+    }
+    .ac-header__title {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
+      user-select: none;    
+    }
+  }
+
+  .ac-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+
+    &.columns { flex-direction: row; }
+    &.hScroll {
+      overflow-x: auto;
+      &::-webkit-scrollbar-track { margin: 2.5rem; }
+    }
+
+    .ac-column {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 1.75rem 2.5rem;
+      min-width: 25rem;
+      max-width: 25rem;
+      height: 100%;
+      border-right: 1px solid var(--theme-menu-divider);
+      
+      &.max {
+        flex-grow: 1;
+        min-width: 25rem;
+        max-width: 100%;
+        border-right: none;
+      }
+
+      &__list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 2.5rem;
+        padding: 0 1.25rem;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+    
+        &:hover { background-color: var(--theme-bg-accent-color); }
+        &.selected {
+          background-color: var(--theme-button-bg-enabled);
+          border-color: var(--theme-bg-accent-color);
+          cursor: auto;
+        }
+      }
+    }  
+  }
+}
+.ac-column__list-item + .ac-column__list-item { margin-top: .75rem; }    
+
 /* Popups */
 .antiPopup {
   display: flex;

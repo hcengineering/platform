@@ -44,7 +44,7 @@
   </div>
   <div class="flex-grow flex-col mr-4 min-w-0">
     <div class="fs-title overflow-label">{currentMessage.subject}</div>
-    <div class="small-text content-dark-color overflow-label">
+    <div class="text-sm content-dark-color overflow-label">
       <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
       {title}
     </div>

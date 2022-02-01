@@ -88,13 +88,13 @@
   }
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.EditProfile} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.EditProfile} /></div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={setting.icon.EditProfile} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.EditProfile} /></div>
   </div>
   {#if employee}
-    <div class="container flex-row-streach flex-grow">
+    <div class="ac-body columns p-10">
       <div class="mr-8">
         <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} />
       </div>
@@ -127,7 +127,7 @@
 
         <div class="separator" />
 
-        <div class="flex-between channels">
+        <div class="flex-between mt-3">
           <div class="flex-row-center">
             <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} />
           </div>
@@ -138,16 +138,6 @@
 </div>
 
 <style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-
-  .container {
-    padding: 2.5rem;
-  }
   .location {
     margin-top: 0.25rem;
     font-size: 0.75rem;
@@ -157,12 +147,6 @@
     font-weight: 500;
     font-size: 1.25rem;
     color: var(--theme-caption-color);
-  }
-  .channels {
-    margin-top: 0.75rem;
-    span {
-      margin-left: 0.5rem;
-    }
   }
 
   .separator {

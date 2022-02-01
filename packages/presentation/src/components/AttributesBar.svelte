@@ -23,7 +23,7 @@
   export let keys: (string|KeyedAttribute)[]
 </script>
 
-<div class="flex-row-center small-text">
+<div class="flex-row-center text-sm">
   {#each keys as key}
     <div class="column">
       <AttributeBarEditor {key} {object} />

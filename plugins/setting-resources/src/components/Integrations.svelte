@@ -31,10 +31,10 @@
   integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.Integrations} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.Integrations}/></div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={setting.icon.Integrations} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.Integrations}/></div>
   </div>
   <div class="cards-container">
     {#each integrationTypes as integrationType (integrationType._id)}
@@ -44,13 +44,6 @@
 </div>
 
 <style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
