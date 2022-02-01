@@ -71,4 +71,4 @@
   }
 </script>
 
-<Channels {channels} {integrations} on:change={(e) => { save(e.detail) }} />
+<Channels {channels} {integrations} on:change={(e) => { save(e.detail) }} on:click />
