@@ -37,7 +37,7 @@
     <ActionIcon label={task.string.More} action={(evt) => { showMenu(evt) }} icon={IconMoreH} size={'small'} />
   </div>
   <div class="caption-color mb-3 lines-limit-4">{object.name}</div>
-  <!-- <div class="small-text lines-limit-2">{object.description}</div> -->
+  <!-- <div class="text-sm lines-limit-2">{object.description}</div> -->
   <div class="flex-between">
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}

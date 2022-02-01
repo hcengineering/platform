@@ -18,18 +18,9 @@
   import { Icon, Label } from '@anticrm/ui'
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.Terms} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.Terms}/></div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={setting.icon.Terms} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.Terms}/></div>
   </div>
 </div>
-
-<style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-</style>

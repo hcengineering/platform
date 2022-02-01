@@ -42,22 +42,22 @@
 
 <style lang="scss">
   .container {
-    margin: 0 16px;
-    padding-left: 10px;
-    padding-right: 12px;
-    min-height: 36px;
+    margin: 0 1rem;
+    padding-left: .625rem;
+    padding-right: .75rem;
+    min-height: 2.25rem;
     font-weight: 500;
     color: var(--theme-caption-color);
-    border-radius: 8px;
+    border-radius: .5rem;
     user-select: none;
     cursor: pointer;
 
     .icon {
-      margin-right: 18px;
-      width: 16px;
-      min-width: 16px;
-      height: 16px;
-      border-radius: 4px;
+      margin-right: 1rem;
+      width: 1rem;
+      min-width: 1rem;
+      height: 1rem;
+      border-radius: .25rem;
     }
     span {
       flex-grow: 1;

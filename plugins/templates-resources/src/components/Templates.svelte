@@ -58,23 +58,20 @@
   }
 </script>
 
-<div class="flex-between navheader-container">
-  <span class="fs-title overflow-label flex-row-center">
-    <div class="mr-2">
-      <Icon icon={templatesPlugin.icon.Templates} size={'medium'} />
-    </div>
-    <Label label={templatesPlugin.string.Templates} />
-  </span>
-</div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={templatesPlugin.icon.Templates} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={templatesPlugin.string.Templates} /></div>
+  </div>
 
-<div class="flex flex-grow">
-  <div class="tempaltes-nav flex-row">
-    <div class="flex-between flex-reverse">
-      <CircleButton icon={IconAdd} on:click={addTemplate} />
-      <Label label={templatesPlugin.string.TemplatesHeader} />
-    </div>
-    <div class="templates flex-row">
-      <ScrollBox vertical stretch>       
+  <div class="ac-body columns">
+    <div class="ac-column">
+      <div class="flex-between trans-title mb-3">
+        <Label label={templatesPlugin.string.TemplatesHeader} />
+        <CircleButton icon={IconAdd} on:click={addTemplate} />
+      </div>
+
+      <div class="flex-col overflow-y-auto">
         {#each templates as t}
           <TemplateElement
             label={t.title}
@@ -87,93 +84,70 @@
             object={t}
           />
         {/each}
-      </ScrollBox>
-    </div>
-  </div>
-  <div class="templates-edit">
-    {#if newTemplate}
-      <span class="fs-title overflow-label">
-        {#if mode === Mode.Create}
-          <Label label={templatesPlugin.string.CreateTemplate} />
-        {:else if mode === Mode.Edit}
-          <Label label={templatesPlugin.string.EditTemplate} />
-        {:else}
-          <Label label={templatesPlugin.string.ViewTemplate} />
-        {/if}
-      </span>
-      <div class="titleedit mt-4 mb-4">
-        {#if mode !== Mode.View}
-          <EditBox bind:value={newTemplate.title} maxWidth={'12rem'} placeholder={templatesPlugin.string.TemplatePlaceholder} />
-        {:else}
-          {newTemplate.title}
-        {/if}
       </div>
-      {#if mode !== Mode.View}
-        <StyledTextEditor
-          bind:content={newTemplate.message}
-          bind:this={textEditor}
-          on:value={(evt) => {
-            newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
-          }}>
-          <div class="flex flex-reverse flex-reverse flex-grow">
-            <div class="ml-2">
-              <Button disabled={newTemplate.title.trim().length == 0 } primary label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
+    </div>
+
+    <div class="ac-column max background-bg-accent template-container">
+      {#if newTemplate}
+        <span class="trans-title mb-3">
+          {#if mode === Mode.Create}
+            <Label label={templatesPlugin.string.CreateTemplate} />
+          {:else if mode === Mode.Edit}
+            <Label label={templatesPlugin.string.EditTemplate} />
+          {:else}
+            <Label label={templatesPlugin.string.ViewTemplate} />
+          {/if}
+        </span>
+        <div class="text-lg caption-color">
+          {#if mode !== Mode.View}
+            <EditBox bind:value={newTemplate.title} maxWidth={'12rem'} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+          {:else}
+            {newTemplate.title}
+          {/if}
+        </div>
+        <div class="separator" />
+        {#if mode !== Mode.View}
+          <StyledTextEditor
+            bind:content={newTemplate.message}
+            bind:this={textEditor}
+            on:value={(evt) => {
+              newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
+            }}>
+            <div class="flex flex-reverse flex-grow">
+              <div class="ml-2">
+                <Button disabled={newTemplate.title.trim().length == 0 } primary label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
+              </div>
+              <Button
+                label={templatesPlugin.string.Cancel}
+                on:click={() => {
+                  if (mode === Mode.Create) {
+                    newTemplate = undefined
+                  }
+                  mode = Mode.View
+                }}
+              />
             </div>
-            <Button
-              label={templatesPlugin.string.Cancel}
-              on:click={() => {
-                if (mode === Mode.Create) {
-                  newTemplate = undefined
-                }
-                mode = Mode.View
-              }}
-            />
+          </StyledTextEditor>
+        {:else}
+          <div class="text">
+            <MessageViewer message={newTemplate.message}/>
           </div>
-        </StyledTextEditor>
-      {:else}
-        <div class='text'>
-          <MessageViewer message={newTemplate.message}/>
-        </div>
-        <div class='flex flex-reverse'>
-          <Button primary label={templatesPlugin.string.EditTemplate} on:click={() => { mode = Mode.Edit }} />
-        </div>
+          <div class="flex flex-reverse">
+            <Button primary label={templatesPlugin.string.EditTemplate} on:click={() => { mode = Mode.Edit }} />
+          </div>
+        {/if}
       {/if}
-    {/if}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
-  .navheader-container {
-    padding: 0 1.75rem;
-    height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-  .tempaltes-nav {
-    width: 425px;
-    border-right: 1px solid var(--theme-menu-divider);
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;   
-  }
-  .templates-edit {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 2rem;
-    background-color: var(--theme-button-bg-enabled);
-
-    .titleedit {
-      font-size: 18px;
-      border-bottom: 1px solid var(--theme-menu-divider);
-      padding-bottom: 2rem;
-    }
-  }
-  .templates {
-    margin-top: 2rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  .template-container { padding: 2.25rem 2.5rem 1.75rem; }
+  .separator {
+    flex-shrink: 0;
+    margin: 1.5rem 0;
+    height: 1px;
+    background-color: var(--theme-menu-divider);
   }
   .text {
     flex-grow: 1;

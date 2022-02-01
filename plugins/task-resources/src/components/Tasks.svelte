@@ -61,10 +61,10 @@
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
       <!-- <FileDuo size={'large'} /> -->
-      <div class="small-text content-dark-color mt-2">
+      <div class="text-sm content-dark-color mt-2">
         <Label label={task.string.NoTaskForObject} />
       </div>
-      <div class="small-text">
+      <div class="text-sm">
         <a href={'#'} on:click={createApp}><Label label={task.string.CreateTask} /></a>
       </div>
     </div>

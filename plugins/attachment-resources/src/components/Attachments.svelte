@@ -115,13 +115,13 @@
       on:drop|preventDefault|stopPropagation={fileDrop}
     >
       <UploadDuo size={'large'} />
-      <div class="small-text content-dark-color mt-2">
+      <div class="text-sm content-dark-color mt-2">
         <Label label={attachment.string.NoAttachments} />
         <span class="lower">
           <Label label={classLabel} />
         </span>
       </div>
-      <div class="small-text">
+      <div class="text-sm">
         <a href={'#'} on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></a>
       </div>
     </div>

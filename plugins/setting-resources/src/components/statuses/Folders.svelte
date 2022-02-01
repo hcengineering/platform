@@ -42,14 +42,14 @@
 <div class="flex-col overflow-y-auto">
   {#each folders as f (f._id)}
     <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
-      <div class="icon mr-4">
+      <div class="icon flex-no-shrink mr-4">
         <Component is={f.icon}/>
       </div>
       <div class="flex-grow flex-col">
         <div class="fs-title overflow-label">
           {f.name}
         </div>
-        <div class="small-text content-dark-color overflow-label">
+        <div class="text-sm content-dark-color overflow-label">
           {f.description}
         </div>
       </div>

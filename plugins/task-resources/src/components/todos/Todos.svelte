@@ -57,7 +57,7 @@
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
-      <div class="small-text">
+      <div class="text-sm">
         <a href={'#'} on:click={createApp}><Label label={plugin.string.NoTodoItems} /></a>
       </div>
     </div>

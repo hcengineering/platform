@@ -39,7 +39,7 @@
       <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
         {formatName(object.$lookup?.attachedTo?.name)}
       </div>
-      <div class="small-text lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
+      <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
     </div>
     <div class="tool"><ActionIcon label={undefined} icon={IconMoreH} size={'small'} /></div>
   </div>

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc } from '@anticrm/core'
-  import { IconMoreV, showPopup } from '@anticrm/ui'
+  import { IconMoreH, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
 
@@ -32,57 +32,16 @@
 
 </script>
 
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="flex-row-center container" class:active={active}
+  class="flex-between ac-column__list-item" class:active={active}
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
 >
-  <span>
-    {label}
-  </span>
+  {label}
   {#if object}
-    <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>
+    <div class="hover-trans" on:click|stopPropagation={(ev) => { showMenu(ev, object) }}>
+      <IconMoreH size={'medium'} />
+    </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .container {
-    min-height: 36px;
-    font-weight: 500;
-    color: var(--theme-caption-color);
-    border-radius: 8px;
-    user-select: none;
-    cursor: pointer;
-
-    span {
-      flex-grow: 1;
-      margin-left: 1rem;
-      margin-right: 1rem;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    &.active {
-      background-color: var(--theme-button-bg-enabled);
-    }
-
-    &:hover {
-      background-color: var(--theme-button-bg-enabled);
-      .menuRow {
-        visibility: visible;
-      }
-    }
-  }
-  .menuRow {
-    visibility: hidden;
-    margin-left: 0.5rem;
-    opacity: 0.6;
-    cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
-  }
-</style>

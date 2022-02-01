@@ -52,48 +52,24 @@
   }
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={task.icon.ManageStatuses} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.ManageStatuses}/></div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.ManageStatuses}/></div>
   </div>
-  <div class="flex-row-top h-full overflow-x-auto scroll-m-10">
-    <div class="flex-col section">
+  <div class="ac-body columns hScroll">
+    <div class="ac-column">
       <Folders bind:folder={folder}/>
     </div>
-    <div class="flex-col section">
+    <div class="ac-column">
       {#if folder !== undefined}
         <Templates {folder} bind:template={template}/>
       {/if}
     </div>
-    <div class="flex-col section max">
+    <div class="ac-column max">
       {#if template !== undefined}
         <KanbanTemplateEditor kanban={template} on:delete={(e) => deleteState(e.detail)}/>
       {/if}
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-
-  .section {
-    overflow-y: auto;
-    padding: 1.75rem 2.5rem;
-    min-width: 25rem;
-    max-width: 25rem;
-    height: 100%;
-    border-right: 1px solid var(--theme-menu-divider);
-    
-    &.max {
-      width: 40rem;
-      max-width: 40rem;
-      border-right: none;
-    }
-  }
-</style>

@@ -103,7 +103,7 @@
               showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
             }}
           />
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
           <div class="tool hover-trans"
             on:click={(ev) => {
               showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
@@ -126,7 +126,7 @@
         <div class="states flex-row-center">
           <div class="bar"/>
           <div class="color" style="background-color: #a5d179"/>
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
         </div>
       {/if}
     {/each}
@@ -142,7 +142,7 @@
         <div class="states flex-row-center">
           <div class="bar"/>
           <div class="color" style="background-color: #f28469"/>
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth="20rem" _class={state._class} object={state} key="title"/></div>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
         </div>
       {/if}
     {/each}

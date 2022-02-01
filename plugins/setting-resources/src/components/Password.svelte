@@ -40,12 +40,12 @@
   }
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={setting.icon.Password} size={'medium'} /></div>
-    <div class="fs-title"><Label label={setting.string.ChangePassword} /></div>
+<div class="antiComponent">
+  <div class="ac-header">
+    <div class="ac-header__icon"><Icon icon={setting.icon.Password} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.ChangePassword} /></div>
   </div>
-  <div class="container flex-row-streach flex-grow">
+  <div class="flex-row-streach flex-grow p-10">
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div>
@@ -90,16 +90,3 @@
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-  }
-
-  .container {
-    padding: 2.5rem;
-  }
-</style>

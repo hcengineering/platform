@@ -168,7 +168,7 @@
   <div class="flex-center icon"><TelegramIcon size={'small'} /></div>
   <div class="flex-grow flex-col">
     <div class="fs-title">Telegram</div>
-    <div class="small-text content-dark-color">You and {formatName(object.name)}</div>
+    <div class="text-sm content-dark-color">You and {formatName(object.name)}</div>
   </div>
   <ActionIcon
     icon={IconShare}

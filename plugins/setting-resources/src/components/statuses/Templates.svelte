@@ -96,8 +96,8 @@
 </div>
 <div class="flex-col overflow-y-auto">
   {#each templates as t (t._id)}
-    <div class="flex-between item" class:selected={t._id === template?._id} on:click={() => select(t)}>
-      <AttributeEditor maxWidth={'18rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
+    <div class="ac-column__list-item" class:selected={t._id === template?._id} on:click={() => select(t)}>
+      <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
       <div class="hover-trans"
         on:click|stopPropagation={(ev) => {
           showPopup(ContextMenu, { object: t }, ev.target, () => {})
@@ -108,21 +108,3 @@
     </div>
   {/each}
 </div>
-
-<style lang="scss">
-  .item {
-    min-height: 2.5rem;
-    padding: 0 1.25rem;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    cursor: pointer;
-
-    &:hover { background-color: var(--theme-bg-accent-color); }
-    &.selected {
-      background-color: var(--theme-button-bg-enabled);
-      border-color: var(--theme-bg-accent-color);
-      cursor: auto;
-    }
-  }
-  .item + .item { margin-top: .75rem; }
-</style>
