@@ -30,29 +30,31 @@
   export let channel: Channel
   export let newMessage: boolean
 
+  const EMAIL_REGEX = /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+
   let messages: Message[] = []
-  let account: EmployeeAccount | undefined
+  let accounts: EmployeeAccount[] = []
   let enabled: boolean
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
-  let me = ''
 
   const messagesQuery = createQuery()
-  const accauntQuery = createQuery()
+  const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
   $: messagesQuery.query(
     gmail.class.Message,
-    { modifiedBy: accountId, attachedTo: channel._id },
+    { attachedTo: channel._id },
     (res) => {
       messages = res
     },
     { sort: { modifiedOn: SortingOrder.Descending } }
   )
 
-  $: accauntQuery.query(contact.class.EmployeeAccount, { _id: accountId as Ref<EmployeeAccount> }, (result) => {
-    account = result[0]
+  $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
+  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
+    accounts = result
   })
 
   $: settingsQuery.query(
@@ -60,7 +62,6 @@
     { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
     (res) => {
       enabled = res.length > 0
-      me = res[0].value
     }
   )
   const client = getClient()
@@ -68,7 +69,7 @@
   async function share (): Promise<void> {
     const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
     await client.addCollection(gmail.class.SharedMessages, object.space, object._id, object._class, 'gmailSharedMessages', {
-      messages: convertMessages(selectedMessages)
+      messages: convertMessages(selectedMessages, accounts)
     })
     clear()
   }
@@ -79,21 +80,27 @@
     selected = selected
   }
 
-  function convertMessages (messages: Message[]): SharedMessage[] {
+  function convertMessages (messages: Message[], accounts: EmployeeAccount[]): SharedMessage[] {
     return messages.map((m) => {
       return {
         ...m,
         _id: m._id as string as Ref<SharedMessage>,
-        sender: account ? getName(m, account, true) : '',
-        receiver: account ? getName(m, account, false) : ''
+        sender: getName(m, accounts, true),
+        receiver: getName(m, accounts, false)
       }
     })
   }
 
-  function getName (message: Message, account: EmployeeAccount, sender: boolean): string {
-    return message.incoming === sender
-      ? `${formatName(object.name)} (${channel.value})`
-      : `${formatName(account.name)} (${me})`
+
+  function getName (message: Message, accounts: EmployeeAccount[], sender: boolean): string {
+    if (message.incoming === sender) {
+      return `${formatName(object.name)} (${channel.value})`
+    } else {
+      const account = accounts.find((p) => p._id === message.modifiedBy)
+      const value = message.incoming ? message.to : message.from
+      const email = value.match(EMAIL_REGEX)
+      return account ? `${formatName(account.name)} (${email?.[0] ?? value})` : email?.[0] ?? value
+    }
   }
 </script>
 
@@ -157,7 +164,7 @@
 <div class="h-full right-content">
   <ScrollBox vertical stretch>
     {#if messages}
-      <Messages messages={convertMessages(messages)} {selectable} bind:selected on:select />
+      <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected on:select />
     {/if}
   </ScrollBox>
 </div>
