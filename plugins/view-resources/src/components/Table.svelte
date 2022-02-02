@@ -234,12 +234,11 @@
     align-items: center;
     .menuRow {
       visibility: hidden;
-      margin-left: 0.5rem;
-      opacity: 0.6;
+      margin-left: .5rem;
+      opacity: .6;
       cursor: pointer;
-      &:hover {
-        opacity: 1;
-      }
+      
+      &:hover { opacity: 1; }
     }
   }
   .checkCell {

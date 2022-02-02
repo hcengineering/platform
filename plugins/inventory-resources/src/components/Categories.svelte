@@ -53,7 +53,7 @@
 </div>
 
 <div class="container">
-  <div class="panel-component">
+  <div class="antiPanel-component">
     <ScrollBox vertical stretch noShift>
       <HierarchyView _class={inventory.class.Category} config={['', 'modifiedOn']} options={{}} query={resultQuery} />
     </ScrollBox>
@@ -65,17 +65,6 @@
     display: flex;
     height: 100%;
     padding-bottom: 1.25rem;
-
-    .panel-component {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      margin-right: 1rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-      overflow: hidden;
-    }
   }
   .categories-header-container {
     display: grid;

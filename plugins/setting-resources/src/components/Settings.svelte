@@ -42,7 +42,7 @@
 </script>
 
 <div class="container">
-<div class="panel-navigator">
+<div class="antiPanel-navigator filled indent">
   <div class="flex-between navheader-container">
     <span class="fs-title overflow-label">
       <Label label={setting.string.Settings}/>
@@ -56,7 +56,7 @@
   </div>
 </div>    
 
-<div class="panel-component">
+<div class="antiPanel-component filled">
   {#if category}
     <Component is={category.component} />
   {/if}
@@ -69,32 +69,12 @@
     height: 100%;
     background: var(--theme-menu-color); 
    
-    .panel-navigator {
-      display: flex;
-      flex-direction: column;
-      margin-right: 1rem;
-      min-width: 18rem;
-      width: 18rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-
-      .signout {
-        display: flex;        
-        flex-direction: column-reverse;
-        flex-grow: 1;
-        margin-bottom: 2rem;
-      }
-    }
-    .panel-component {
+    .signout {
+      display: flex;        
+      flex-direction: column-reverse;
       flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-      overflow: hidden;
-    }   
+      margin-bottom: 2rem;
+    }
   }
   .navheader-container {
     padding: 0 1.75rem;
