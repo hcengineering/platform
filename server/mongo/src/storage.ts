@@ -224,6 +224,8 @@ abstract class MongoAdapterBase extends TxProcessor {
               key += '.'
             }
           }
+          // Check if key is belong to mixin class, we need to add prefix.
+          key = this.checkMixinKey<T>(key, clazz)
         }
         sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
       }
@@ -240,6 +242,21 @@ abstract class MongoAdapterBase extends TxProcessor {
       await this.fillLookupValue(options.lookup, row)
     }
     return result
+  }
+
+  private checkMixinKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
+    if (!key.includes('.')) {
+      try {
+        const attr = this.hierarchy.getAttribute(clazz, key)
+        if (this.hierarchy.isMixin(attr.attributeOf)) {
+          // It is mixin
+          key = attr.attributeOf + '.' + key
+        }
+      } catch (err: any) {
+        // ignore, if
+      }
+    }
+    return key
   }
 
   async findAll<T extends Doc>(
@@ -260,8 +277,9 @@ abstract class MongoAdapterBase extends TxProcessor {
       if (options.sort !== undefined) {
         const sort: Sort = {}
         for (const key in options.sort) {
+          const ckey = this.checkMixinKey<T>(key, _class)
           const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
-          sort[key] = order
+          sort[ckey] = order
         }
         cursor = cursor.sort(sort)
       }
