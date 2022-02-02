@@ -23,6 +23,7 @@
 
   export let avatar: string | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let direct: Blob | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -32,7 +33,6 @@
     inputRef.click()
   }
 
-  let direct: Blob | undefined
 
   function onSelect (e: any) {
     const file = e.target?.files[0] as File | undefined
@@ -48,7 +48,7 @@
       direct = blob
       dispatch('done', { file: new File([blob], file.name) })
     })
-    e.target.value = null;
+    e.target.value = null
   }
 </script>
 
