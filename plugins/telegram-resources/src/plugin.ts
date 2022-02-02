@@ -14,8 +14,25 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 
 import telegram, { telegramId } from '@anticrm/telegram'
 
-export default mergeIds(telegramId, telegram, {})
+export default mergeIds(telegramId, telegram, {
+  string: {
+    Next: '' as IntlString,
+    Back: '' as IntlString,
+    Connect: '' as IntlString,
+    Connecting: '' as IntlString,
+    ConnectFull: '' as IntlString,
+    Password: '' as IntlString,
+    Phone: '' as IntlString,
+    PhonePlaceholder: '' as IntlString,
+    PhoneDescr: '' as IntlString,
+    PasswordDescr: '' as IntlString,
+    CodeDescr: '' as IntlString,
+    Cancel: '' as IntlString,
+    Share: '' as IntlString,
+    PublishSelected: '' as IntlString
+  }
+})

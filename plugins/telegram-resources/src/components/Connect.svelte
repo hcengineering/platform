@@ -18,6 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import login from '@anticrm/login'
   import PinPad from './PinPad.svelte'
+  import telegram from '../plugin'
 
   const dispatch = createEventDispatcher()
 
@@ -89,7 +90,7 @@
     secondFactor = false
   }
 
-  $: label = connecting ? 'Connecting...' : requested || secondFactor ? 'Connect' : 'Next'
+  $: label = connecting ? telegram.string.Connecting : requested || secondFactor ? telegram.string.Connect : telegram.string.Next
 
   $: disabled = checkDisabled(connecting, secondFactor, password, requested, error, code, phone)
 
@@ -120,7 +121,7 @@
 
 <div class="card">
   <div class="flex-between header">
-    <div class="overflow-label fs-title"><Label label={'Connect Telegram account'} /></div>
+    <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
     <div
       class="tool"
       on:click={() => {
@@ -132,19 +133,19 @@
   </div>
   <div class="content">
     {#if secondFactor}
-      <p><Label label={'Enter your second factor password'} /></p>
-      <EditBox label={'Password'} password placeholder={'password'} bind:value={password} />
+      <p><Label label={telegram.string.PasswordDescr} /></p>
+      <EditBox label={telegram.string.Password} maxWidth="10rem" password placeholder={telegram.string.Password} bind:value={password} />
     {:else if requested}
-      <p><Label label={'Enter the 5-digit code you received on your Telegram account.'} /></p>
+      <p><Label label={telegram.string.CodeDescr} /></p>
       <PinPad length={5} bind:value={code} bind:error />
     {:else}
-      <p><Label label={'Enter your Telegram phone number to connect your account.'} /></p>
-      <EditBox label={'Phone number'} placeholder={'+1 555 333 7777'} bind:value={phone} />
+      <p><Label label={telegram.string.PhoneDescr} /></p>
+      <EditBox label={telegram.string.Phone} maxWidth="10rem" placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
     {/if}
     <div class="footer">
       <Button {label} primary {disabled} on:click={click} />
       {#if requested || secondFactor}
-        <a class="link" href={'#'} on:click={back}><Label label={'Back'} /></a>
+        <a class="link" href={'#'} on:click={back}><Label label={telegram.string.Back} /></a>
       {/if}
     </div>
   </div>

@@ -22,11 +22,9 @@ import type { IntegrationType, Handler } from '@anticrm/setting'
 /**
  * @public
  */
-export interface TelegramMessage extends Doc {
+export interface TelegramMessage extends AttachedDoc {
   content: string
   incoming: boolean
-  contactPhone?: string
-  contactUserName?: string
 }
 
 /**
