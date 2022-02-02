@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/recruit-resources",
+  "name": "@anticrm/rekoni",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -9,7 +9,8 @@
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
+    "svelte-check": "svelte-check"
   },
   "devDependencies": {
     "svelte-loader": "^3.1.2",
@@ -27,32 +28,10 @@
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
     "svelte-check": "^2.2.10",
-    "@types/deep-equal": "^1.0.1",
     "typescript": "^4.3.5"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11",
-    "svelte": "^3.37.0",
-    "@anticrm/recruit": "~0.6.0",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/text-editor": "~0.6.0",
-    "@anticrm/chunter": "~0.6.0",
-    "@anticrm/contact": "~0.6.2",
-    "@anticrm/login": "~0.6.1",
-    "deep-equal": "^2.0.5",
-    "@anticrm/panel": "~0.6.0",
-    "@anticrm/activity":"~0.6.0",
-    "@anticrm/attachment": "~0.6.0",
-    "@anticrm/attachment-resources": "~0.6.0",
-    "@anticrm/chunter-resources": "~0.6.0",
-    "@anticrm/setting": "~0.6.0",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/task": "~0.6.0",
-    "@anticrm/task-resources": "~0.6.0",
-    "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/rekoni": "~0.6.0"
+    "@anticrm/core": "~0.6.11"
   }
 }

@@ -80,6 +80,7 @@ specifiers:
   '@rush-temp/recruit': file:./projects/recruit.tgz
   '@rush-temp/recruit-assets': file:./projects/recruit-assets.tgz
   '@rush-temp/recruit-resources': file:./projects/recruit-resources.tgz
+  '@rush-temp/rekoni': file:./projects/rekoni.tgz
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-attachment': file:./projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:./projects/server-attachment-resources.tgz
@@ -274,6 +275,7 @@ dependencies:
   '@rush-temp/recruit': file:projects/recruit.tgz
   '@rush-temp/recruit-assets': file:projects/recruit-assets.tgz
   '@rush-temp/recruit-resources': file:projects/recruit-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/rekoni': file:projects/rekoni.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/server': file:projects/server.tgz
   '@rush-temp/server-attachment': file:projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:projects/server-attachment-resources.tgz
@@ -10136,12 +10138,28 @@ packages:
     resolution: {integrity: sha1-fRh9tcbNu9ZNdaMvkbiZi94yc8M=}
     dev: false
 
+  /svelte-hmr/0.14.7:
+    resolution: {integrity: sha512-pDrzgcWSoMaK6AJkBWkmgIsecW0GChxYZSZieIYfCP0v2oPyx2CYU/zm7TBIcjLVUPP714WxmViE9Thht4etog==}
+    peerDependencies:
+      svelte: '>=3.19.0'
+    dev: false
+
   /svelte-hmr/0.14.7_svelte@3.44.3:
     resolution: {integrity: sha512-pDrzgcWSoMaK6AJkBWkmgIsecW0GChxYZSZieIYfCP0v2oPyx2CYU/zm7TBIcjLVUPP714WxmViE9Thht4etog==}
     peerDependencies:
       svelte: '>=3.19.0'
     dependencies:
       svelte: 3.44.3
+    dev: false
+
+  /svelte-loader/3.1.2:
+    resolution: {integrity: sha512-RhVIvitb+mtIwKNyvNQoDQ0EhXg2KH8LhQiiqeJh8u6vqJyGWoMoFcYCar69TT+1iaK5IYe0wPNYJ6TILcsurw==}
+    peerDependencies:
+      svelte: '>3.0.0'
+    dependencies:
+      loader-utils: 2.0.2
+      svelte-dev-helper: 1.1.9
+      svelte-hmr: 0.14.7
     dev: false
 
   /svelte-loader/3.1.2_svelte@3.44.3:
@@ -11983,7 +12001,7 @@ packages:
     dev: false
 
   file:projects/front.tgz:
-    resolution: {integrity: sha512-Nto3Qer5qe5YaIELZhEaJugu6x/1SbThjaKd0Yyc5BCo6UfjeyvQyKz0iHmTtIVfbBfzQSqj+MMBGL0k6zW3dg==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-RXsa4jlZB6UdPjSIAHmf07BEcWlH6N26QnAVFQ3QL5VdqLi73ohsPQV9seKz36c5jGsA//Z0BS9QYVCETuHdgA==, tarball: file:projects/front.tgz}
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
@@ -13065,7 +13083,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-E5QAAHRWBXbn+0MENtAgD6sM4IVzdCzqJHYlEzaw5TUIUZkcyCs+NRLEFBSW/uP1nfOmScrJOyFPiG59FFCeDQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-mb0NOzQOQI/mZjzWLO+zp8F57x5koGPRF0qdrONOBHgKJ+wKpbSrVyW911S0nM8b/mVimVqaXCI2XdjAvYO1mg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -13193,6 +13211,41 @@ packages:
       typescript: 4.5.4
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  file:projects/rekoni.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-y0ghO9RbY5FeFqBM/g2AE2GWIxvfbXXDZUFgl9/QDSKfX6/G3xr2JdsSXMXUr82YAi7xRRpnIkUHmU4Zws7z1Q==, tarball: file:projects/rekoni.tgz}
+    id: file:projects/rekoni.tgz
+    name: '@rush-temp/rekoni'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1
+      sass: 1.45.0
+      svelte-check: 2.3.0_ac194b5590200ebf8338e0f86ec190f4
+      svelte-loader: 3.1.2
+      svelte-preprocess: 4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - svelte
     dev: false
 
   file:projects/server-attachment-resources.tgz:
