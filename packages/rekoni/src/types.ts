@@ -19,13 +19,13 @@
 export interface ReconiDocument {
   firstName: string
   lastName: string
+  title?: string
   avatar?: string
   email?: string
   phone?: string
   city?: string
   skype?: string
   linkedin?: string
-  gmail?: string
   github?: string
   facebook?: string
   telegram?: string

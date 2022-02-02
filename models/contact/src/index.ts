@@ -209,6 +209,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: 'Facebook' as IntlString,
+      icon: contact.icon.Facebook,
+      placeholder: '' as IntlString
+    },
+    contact.channelProvider.Facebook
+  )
+
+  builder.createDoc(
     core.class.Space,
     core.space.Model,
     {

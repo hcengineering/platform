@@ -139,6 +139,10 @@
     try {
       const doc = await recognizeDocument(token, fileUrl)
 
+      if (isUndef(object.title) && doc.title !== undefined) {
+        object.title = doc.title
+      }
+
       if (isUndef(firstName) && doc.firstName !== undefined) {
         firstName = doc.firstName
       }
@@ -169,6 +173,7 @@
       addChannel(newChannels, contact.channelProvider.Phone, doc.phone)
       addChannel(newChannels, contact.channelProvider.Telegram, doc.telegram)
       addChannel(newChannels, contact.channelProvider.Twitter, doc.twitter)
+      addChannel(newChannels, contact.channelProvider.Facebook, doc.facebook)
       channels = newChannels
 
       console.log(doc, channels)

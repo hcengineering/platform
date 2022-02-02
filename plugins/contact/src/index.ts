@@ -139,7 +139,8 @@ export default plugin(contactId, {
     LinkedIn: '' as Ref<ChannelProvider>,
     Twitter: '' as Ref<ChannelProvider>,
     Telegram: '' as Ref<ChannelProvider>,
-    GitHub: '' as Ref<ChannelProvider>
+    GitHub: '' as Ref<ChannelProvider>,
+    Facebook: '' as Ref<ChannelProvider>
   },
   icon: {
     Phone: '' as Asset,
