@@ -17,7 +17,7 @@
   import type { Channel } from '@anticrm/contact'
   import { Channels } from '@anticrm/presentation'
 
-  export let value: Channel[] | null
+  export let value: Channel[] | Channel | null
 </script>
 
 <Channels {value} size={'small'} reverse />
