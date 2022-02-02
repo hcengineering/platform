@@ -26,7 +26,7 @@
   import contact from '@anticrm/contact'
   import { createEventDispatcher } from 'svelte'
 
-  export let value: AttachedData<Channel>[] | null
+  export let value: AttachedData<Channel>[] | AttachedData<Channel> | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
@@ -51,21 +51,35 @@
     return map
   }
 
-  async function update (value: AttachedData<Channel>[]) {
+  function getProvider (item: AttachedData<Channel>, map: Map<Ref<ChannelProvider>, ChannelProvider>): any | undefined {
+    const provider = map.get(item.provider)
+    if (provider) {
+      return {
+        label: provider.label as IntlString,
+        icon: provider.icon as Asset,
+        value: item.value,
+        presenter: provider.presenter,
+        integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
+      }
+    } else {
+      console.log('provider not found: ', item.provider)
+    }
+  }
+
+  async function update (value: AttachedData<Channel>[] | AttachedData<Channel>) {
     const result = []
     const map = await getProviders()
-    for (const item of value) {
-      const provider = map.get(item.provider)
-      if (provider) {
-        result.push({
-          label: provider.label as IntlString,
-          icon: provider.icon as Asset,
-          value: item.value,
-          presenter: provider.presenter,
-          integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
-        })
-      } else {
-        console.log('provider not found: ', item.provider)
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const provider = getProvider(item, map)
+        if (provider !== undefined) {
+          result.push(provider)
+        }
+      }
+    } else {
+      const provider = getProvider(value, map)
+      if (provider !== undefined) {
+        result.push(provider)
       }
     }
     displayItems = result
