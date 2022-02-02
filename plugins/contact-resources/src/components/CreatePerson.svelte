@@ -58,7 +58,6 @@
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city,
-      channels: object.channels,
       ...avatarProp
     }
 

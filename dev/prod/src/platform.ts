@@ -33,6 +33,7 @@ import { gmailId } from '@anticrm/gmail'
 import { imageCropperId } from '@anticrm/image-cropper'
 import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
+import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -57,6 +58,7 @@ export async function configurePlatform() {
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.UploadUrl,  config.UPLOAD_URL)       
 
+  
   if( config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(workbench.metadata.RequiredVersion, config.MODEL_VERSION)
@@ -65,6 +67,8 @@ export async function configurePlatform() {
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   
+  setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
+
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))

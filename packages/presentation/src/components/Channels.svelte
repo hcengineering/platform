@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@anticrm/core'
+  import type { AttachedData, Doc, Ref } from '@anticrm/core'
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import { getClient } from '..'
@@ -26,7 +26,7 @@
   import contact from '@anticrm/contact'
   import { createEventDispatcher } from 'svelte'
 
-  export let value: Channel[] | null
+  export let value: AttachedData<Channel>[] | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
@@ -51,7 +51,7 @@
     return map
   }
 
-  async function update (value: Channel[]) {
+  async function update (value: AttachedData<Channel>[]) {
     const result = []
     const map = await getProviders()
     for (const item of value) {

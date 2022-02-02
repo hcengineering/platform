@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import type { SharedMessage } from '@anticrm/gmail'
-  import { formatName } from '@anticrm/contact'
   import { CheckBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getTime } from '../utils'
@@ -37,10 +36,11 @@
     <div class="mr-4"><CheckBox circle primary bind:checked={selected} /></div>
   {/if}
   <div class="flex-col message" class:selected>
-    <div class="flex-between text-sm mb-4">
-      <div class="content-trans-color overflow-label mr-4">From: <span class="content-accent-color">{formatName(message.sender)}</span></div>
+    <div class="flex-between text-sm mb-1">
+      <div class="content-trans-color overflow-label mr-4">From: <span class="content-accent-color">{message.sender}</span></div>
       <div class="content-trans-color">{getTime(message.modifiedOn)}</div>
     </div>
+    <div class="content-trans-color text-sm overflow-label mr-4 mb-4">To: <span class="content-accent-color">{message.receiver}</span></div>
     <div class="fs-title overflow-label mb-1">
       {message.subject}
     </div>
@@ -62,6 +62,7 @@
     background-color: var(--theme-incoming-msg);
     border-radius: .75rem;
     white-space: nowrap;
+    flex-grow: 1;
 
     &.selected { background-color: var(--primary-button-enabled); }
   }

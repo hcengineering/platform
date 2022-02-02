@@ -136,8 +136,8 @@
       <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z" />
     </clipPath>
   </svg>
-  <div class="container">
-    <div class="panel-app" on:click={toggleNav}>
+  <div class="workbench-container">
+    <div class="antiPanel-application" on:click={toggleNav}>
       <div class="flex-col">
         <ActivityStatus status="active" />
         <AppItem
@@ -162,14 +162,14 @@
       </div>
     </div>
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="panel-navigator antiNav">
+      <div class="antiPanel-navigator filled indent">
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
         {/if}
         <Navigator model={navigatorModel} />
       </div>    
     {/if}
-    <div class="panel-component">
+    <div class="antiPanel-component filled indent">
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />
       {:else}
@@ -191,41 +191,9 @@
 {/if}
 
 <style lang="scss">
-  .container {
+  .workbench-container {
     display: flex;
     height: 100%;
     padding-bottom: 1.25rem;
-
-    .panel-app {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      min-width: 5rem;
-      width: 5rem;
-      height: 100%;
-      border-radius: 1.25rem;
-    }
-    .panel-navigator {
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      margin-right: 1rem;
-      min-width: 18rem;
-      width: 18rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-    }
-    .panel-component {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      margin-right: 1rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-      overflow: hidden;
-    }
   }
 </style>

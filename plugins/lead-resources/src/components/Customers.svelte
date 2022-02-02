@@ -47,7 +47,7 @@
 </div>
 
 <div class="container">
-  <div class="panel-component">
+  <div class="antiPanel-component">
     <ScrollBox vertical stretch noShift>
       {#await tableDescriptor then descr}
         {#if descr}
@@ -68,17 +68,6 @@
     display: flex;
     height: 100%;
     padding-bottom: 1.25rem;
-
-    .panel-component {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      margin-right: 1rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-bg-color);
-      overflow: hidden;
-    }
   }
   .customers-header-container {
     display: grid;

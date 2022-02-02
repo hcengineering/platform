@@ -981,6 +981,10 @@
       "projectFolder": "tests/sanity",
       "shouldPublish": false
     },
-
+    {
+      "packageName": "@anticrm/rekoni",
+      "projectFolder": "packages/rekoni",
+      "shouldPublish": true
+    },    
   ]
 }
