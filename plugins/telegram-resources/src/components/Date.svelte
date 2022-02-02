@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TelegramMessage } from '@anticrm/telegram'
+  import type { SharedTelegramMessage } from '@anticrm/telegram'
 
-  export let message: TelegramMessage
+  export let message: SharedTelegramMessage
 </script>
 
 <div class="datetime-container">

@@ -19,38 +19,12 @@
   import { formatName } from '@anticrm/contact'
   import { CheckBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getPlatformColorForText } from '@anticrm/ui'
 
   export let message: SharedTelegramMessage
   export let showName: boolean = false
   export let selected: boolean = false
   export let selectable: boolean = false
-
-  export let colors: string[] = [
-    '#A5D179',
-    '#77C07B',
-    '#60B96E',
-    '#45AEA3',
-    '#46CBDE',
-    '#47BDF6',
-    '#5AADF6',
-    '#73A6CD',
-    '#B977CB',
-    '#7C6FCD',
-    '#6F7BC5',
-    '#F28469'
-  ]
-
-  function getNameColor (name: string): string {
-    let hash = 0
-    let i
-    let chr
-    for (i = 0; i < name.length; i++) {
-      chr = name.charCodeAt(i)
-      hash = (hash << 5) - hash + chr
-      hash |= 0
-    }
-    return colors[Math.abs(hash) % colors.length]
-  }
 
   const dispatch = createEventDispatcher()
 </script>
@@ -65,7 +39,7 @@
   <div class="flex-grow ml-6 flex" class:mr-6={!selectable} class:justify-end={!message.incoming}>
     <div class="message" class:outcoming={!message.incoming} class:selected>
       {#if showName}
-        <div class="name" style="color: {getNameColor(message.sender)}">{formatName(message.sender)}</div>
+        <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
       {/if}
       <div class="flex">
         <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
@@ -87,6 +61,7 @@
     width: fit-content;
     background-color: var(--theme-incoming-msg);
     border-radius: 0.75rem;
+    overflow-wrap: anywhere;
 
     &.outcoming {
       background-color: var(--theme-outcoming-msg);

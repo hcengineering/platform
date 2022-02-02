@@ -14,45 +14,48 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ReferenceInput } from '@anticrm/text-editor'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import telegram, { SharedTelegramMessage } from '@anticrm/telegram'
-  import type { TelegramMessage } from '@anticrm/telegram'
-  import { Contact, EmployeeAccount, formatName } from '@anticrm/contact'
-  import contact from '@anticrm/contact'
-  import { ActionIcon, IconShare, Button, ScrollBox, showPopup } from '@anticrm/ui'
-  import TelegramIcon from './icons/Telegram.svelte'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import setting from '@anticrm/setting'
+  import contact,{ Channel,Contact,EmployeeAccount,formatName } from '@anticrm/contact'
+  import { getCurrentAccount,Ref,SortingOrder,Space } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata } from '@anticrm/platform'
+  import { createQuery,getClient } from '@anticrm/presentation'
+  import setting from '@anticrm/setting'
+  import type { SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
+  import { ReferenceInput } from '@anticrm/text-editor'
+  import { ActionIcon,Button,IconShare,ScrollBox,showPopup } from '@anticrm/ui'
+  import telegram from '../plugin'
   import Connect from './Connect.svelte'
+  import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
 
   export let object: Contact
+  let channel: Channel | undefined = undefined
+  const client = getClient()
 
-  $: contactString = object.channels.find((p) => p.provider === contact.channelProvider.Telegram)
+  client.findOne(contact.class.Channel, {
+    attachedTo: object._id,
+    provider: contact.channelProvider.Telegram
+  }).then((res) => channel = res)
+
   let messages: TelegramMessage[] = []
-  let account: EmployeeAccount | undefined
+  let accounts: EmployeeAccount[] = []
   let enabled: boolean
   let selected: Set<Ref<SharedTelegramMessage>> = new Set<Ref<SharedTelegramMessage>>()
   let selectable = false
   const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
   const messagesQuery = createQuery()
-  const accauntQuery = createQuery()
+  const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
-  $: query = contactString?.value.startsWith('+')
-    ? { contactPhone: contactString.value }
-    : { contactUserName: contactString?.value }
-  $: messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, ...query }, (res) => {
+  $: channel && messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, attachedTo: channel._id }, (res) => {
     messages = res
-  })
+  }, { sort: { modifiedOn: SortingOrder.Ascending }})
 
-  $: accauntQuery.query(contact.class.EmployeeAccount, { _id: accountId as Ref<EmployeeAccount> }, (result) => {
-    account = result[0]
+  $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
+  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
+    accounts = result
   })
 
   $: settingsQuery.query(
@@ -62,7 +65,6 @@
       enabled = res.length > 0
     }
   )
-  const client = getClient()
 
   async function sendMsg (to: string, msg: string) {
     return await fetch(url + '/send-msg', {
@@ -96,7 +98,7 @@
   }
 
   async function onMessage (event: CustomEvent) {
-    const to = contactString?.value ?? ''
+    const to = channel?.value ?? ''
     const sendRes = await sendMsg(to, event.detail)
 
     if (sendRes.status !== 400 || !to.startsWith('+')) {
@@ -119,20 +121,20 @@
     await sendMsg(to, event.detail)
   }
 
-  function getName (message: TelegramMessage, account: EmployeeAccount | undefined): string {
-    return message.incoming ? object.name : account?.name ?? ''
+  function getName (message: TelegramMessage, accounts: EmployeeAccount[]): string {
+    return message.incoming ? object.name : accounts.find((p) => p._id === message.modifiedBy)?.name ?? ''
   }
 
   async function share (): Promise<void> {
-    const selectedMessages = messages.filter((m) => selected.has(m._id as Ref<SharedTelegramMessage>))
+    const selectedMessages = messages.filter((m) => selected.has(m._id as unknown as Ref<SharedTelegramMessage>))
     await client.addCollection(
       telegram.class.SharedMessages,
       object.space,
       object._id,
       object._class,
-      'telegramMessages',
+      'sharedTelegramMessages',
       {
-        messages: convertMessages(selectedMessages)
+        messages: convertMessages(selectedMessages, accounts)
       }
     )
     clear()
@@ -144,12 +146,12 @@
     selected = selected
   }
 
-  function convertMessages (messages: TelegramMessage[]): SharedTelegramMessage[] {
+  function convertMessages (messages: TelegramMessage[], accounts: EmployeeAccount[]): SharedTelegramMessage[] {
     return messages.map((m) => {
       return {
         ...m,
-        _id: m._id as Ref<SharedTelegramMessage>,
-        sender: getName(m, account)
+        _id: m._id as unknown as Ref<SharedTelegramMessage>,
+        sender: getName(m, accounts)
       }
     })
   }
@@ -173,7 +175,7 @@
   <ActionIcon
     icon={IconShare}
     size={'medium'}
-    label={'Share messages'}
+    label={telegram.string.Share}
     direction={'bottom'}
     action={async () => {
       selectable = !selectable
@@ -182,8 +184,8 @@
 </div>
 <div class="h-full right-content">
   <ScrollBox vertical stretch>
-    {#if messages}
-      <Messages messages={convertMessages(messages)} {selectable} bind:selected />
+    {#if messages && accounts}
+      <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
     {/if}
   </ScrollBox>
 </div>
@@ -194,10 +196,10 @@
       <span>{selected.size} messages selected</span>
       <div class="flex">
         <div>
-          <Button label={'Cancel'} size={'small'} on:click={clear} />
+          <Button label={telegram.string.Cancel} size={'small'} on:click={clear} />
         </div>
         <div class="ml-3">
-          <Button label={'Publish selected'} size={'small'} primary disabled={!selected.size} on:click={share} />
+          <Button label={telegram.string.PublishSelected} size={'small'} primary disabled={!selected.size} on:click={share} />
         </div>
       </div>
     </div>
@@ -206,7 +208,7 @@
   {:else}
     <div class="flex-center">
       <Button
-        label={'Connect'}
+        label={telegram.string.Connect}
         primary
         on:click={(e) => {
           showPopup(Connect, {}, e.target, onConnectClose)
