@@ -214,7 +214,7 @@ export function createModel (builder: Builder): void {
     {
       label: 'Facebook' as IntlString,
       icon: contact.icon.Facebook,
-      placeholder: '' as IntlString
+      placeholder: 'https://fb.com/jappleseed' as IntlString
     },
     contact.channelProvider.Facebook
   )
