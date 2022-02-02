@@ -163,7 +163,7 @@
         while (n--) {
           u8arr[n] = data.charCodeAt(n)
         }
-        avatar = new File([u8arr], 'avatar.png', { type: 'image/png' })
+        avatar = new File([u8arr], doc.avatarName ?? 'avatar.png', { type: doc.avatarFormat ?? 'image/png' })
       }
 
       const newChannels = [...channels]
