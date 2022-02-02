@@ -21,6 +21,8 @@ export interface ReconiDocument {
   lastName: string
   title?: string
   avatar?: string
+  avatarName?: string
+  avatarFormat?: string
   email?: string
   phone?: string
   city?: string
