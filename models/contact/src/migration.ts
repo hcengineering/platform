@@ -72,7 +72,6 @@ async function removeTx (client: MigrationClient, tx: TxCUD<Contact>, doc: Chann
 async function processCreateTxes (client: MigrationClient, createTxes: TxCreateDoc<Contact>[]): Promise<Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>> {
   const result: Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>> = new Map<Ref<Contact>, Map<Ref<ChannelProvider>, Channel>>()
   for (const tx of createTxes) {
-    if (tx.attributes.channels == null) continue
     const { channels, ...attributes } = tx.attributes
     const current = result.get(tx.objectId)
     for (const channel of (channels as any) ?? []) {
@@ -115,7 +114,7 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
   const contacts = await client.find<Contact>(DOMAIN_CONTACT, { _class: { $in: classes } })
   for (const doc of contacts) {
     const obj = doc as any
-    if (obj.channels != null && Array.isArray(obj.channels)) {
+    if (obj.channels == null || Array.isArray(obj.channels)) {
       objectIds.push(doc._id)
     }
   }
