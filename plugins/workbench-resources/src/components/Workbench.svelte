@@ -17,7 +17,8 @@
   import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
-    AnyComponent, closeTooltip,
+    AnyComponent,
+    closeTooltip,
     Component,
     getCurrentLocation,
     location,
@@ -60,7 +61,7 @@
         navigatorModel = currentApplication?.navigatorModel
       }
       const currentFolder = loc.path[2] as Ref<Space>
-  
+
       if (currentSpecial !== currentFolder) {
         specialComponent = getSpecialComponent(currentFolder)
         if (specialComponent !== undefined) {
@@ -69,7 +70,7 @@
         }
       }
 
-      updateSpace(currentSpace)
+      updateSpace(currentFolder)
     })
   )
 
@@ -84,7 +85,7 @@
     if (space) {
       currentSpace = spaceId
       currentSpecial = undefined
-  
+
       const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
       const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
       currentView = view.view
@@ -143,20 +144,31 @@
   let employee: Employee | undefined
   const accountQ = createQuery()
   const employeeQ = createQuery()
-  $: accountQ.query(contact.class.EmployeeAccount, {
-    _id: getCurrentAccount()._id as Ref<EmployeeAccount>
-  }, (res) => {
-    account = res[0]
-  }, { limit: 1 })
+  $: accountQ.query(
+    contact.class.EmployeeAccount,
+    {
+      _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+    },
+    (res) => {
+      account = res[0]
+    },
+    { limit: 1 }
+  )
 
-  $: account && employeeQ.query(contact.class.Employee, {
-    _id: account.employee
-  }, (res) => {
-    employee = res[0]
-  }, { limit: 1 })
+  $: account &&
+    employeeQ.query(
+      contact.class.Employee,
+      {
+        _id: account.employee
+      },
+      (res) => {
+        employee = res[0]
+      },
+      { limit: 1 }
+    )
 
   let isNavigate: boolean = false
-  $: isNavigate = navigatorModel ? true : false
+  $: isNavigate = !!navigatorModel
 </script>
 
 {#if client}
@@ -213,7 +225,7 @@
     {/if}
     <div class="antiPanel-component indent antiComponent" class:filled={isNavigate}>
       {#if currentApplication && currentApplication.component}
-        <Component is={currentApplication.component} />      
+        <Component is={currentApplication.component} />
       {:else if specialComponent}
         <Component is={specialComponent} />
       {:else}
