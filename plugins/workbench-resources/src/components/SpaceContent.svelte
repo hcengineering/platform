@@ -27,23 +27,12 @@
 
 {#if viewlet}
   {#key space}
-    <div class="spacecontent-container">
-      <Component is={viewlet.$lookup?.descriptor?.component} props={ {
-        _class,
-        space,
-        options: viewlet.options, 
-        config: viewlet.config,
-        search
-      } } />
-    </div>
+    <Component is={viewlet.$lookup?.descriptor?.component} props={ {
+      _class,
+      space,
+      options: viewlet.options, 
+      config: viewlet.config,
+      search
+    } } />
   {/key}
 {/if}
-
-<style lang="scss">
-  .spacecontent-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-  }
-</style>

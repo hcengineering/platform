@@ -123,6 +123,9 @@
   }, (res) => {
     employee = res[0]
   }, { limit: 1 })
+
+  let isNavigate: boolean = false
+  $: isNavigate = navigatorModel ? true : false
 </script>
 
 {#if client}
@@ -169,7 +172,7 @@
         <Navigator model={navigatorModel} />
       </div>    
     {/if}
-    <div class="antiPanel-component filled indent">
+    <div class="antiPanel-component indent antiComponent" class:filled={isNavigate}>
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />
       {:else}

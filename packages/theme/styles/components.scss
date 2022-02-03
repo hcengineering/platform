@@ -20,24 +20,71 @@
   height: 100%;
 
   .ac-header {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
     padding: 0 1.75rem 0 2.5rem;
     height: 4rem;
     min-height: 4rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
+
+    &.short {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;  
+    }
+    &.full {
+      display: grid;
+      grid-template-columns: auto;
+      grid-auto-flow: column;
+      grid-auto-columns: min-content;
+      gap: .75rem;
+      align-items: center;
+    }
+    &.divide { border-bottom: 1px solid var(--theme-menu-divider); }
+
+    .ac-header__wrap-description {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;  
+    }
+    .ac-header__wrap-title {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
 
     .ac-header__icon {
-      margin-right: .75rem;
+      margin-right: .5rem;
       color: var(--theme-content-color);
     }
     .ac-header__title {
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
-      user-select: none;    
+      user-select: none;
     }
+    .ac-header__description {
+      font-size: .75rem;
+      color: var(--theme-content-dark-color);
+      user-select: none;
+    }
+
+    .ac-header__icon-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      color: var(--theme-content-trans-color);
+      background-color: transparent;
+      border-radius: .5rem;
+      cursor: pointer;
+  
+      &:hover { color: var(--theme-caption-color); }
+      &.selected {
+        color: var(--theme-content-accent-color);
+        background-color: var(--theme-button-bg-enabled);
+        cursor: default;
+        &:hover { color: var(--theme-caption-color); }
+      }
+    }  
   }
 
   .ac-body {
@@ -86,7 +133,20 @@
           cursor: auto;
         }
       }
-    }  
+    }
+
+    &__cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
+      grid-auto-rows: minmax(12.5rem, auto);
+      grid-gap: 1.5rem;
+      padding: 3rem;
+    }
+    &__space-3 {
+      flex-shrink: 0;
+      min-height: .75rem;
+      height: .75rem;
+    }
   }
 }
 .ac-column__list-item + .ac-column__list-item { margin-top: .75rem; }    

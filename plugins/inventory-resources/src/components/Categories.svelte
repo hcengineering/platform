@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@anticrm/core'
-  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
   import type { Category } from '@anticrm/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -33,12 +33,10 @@
   }
 </script>
 
-<div class="categories-header-container">
-  <div class="header-container">
-    <div class="flex-row-center">
-      <span class="icon"><Icon icon={inventory.icon.Categories} size={'small'} /></span>
-      <span class="label"><Label label={inventory.string.Categories} /></span>
-    </div>
+<div class="ac-header full">
+  <div class="ac-header__wrap-title">
+    <div class="ac-header__icon"><Icon icon={inventory.icon.Categories} size={'small'} /></div>
+    <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
   </div>
 
   <SearchEdit bind:value={search} on:change={() => {
@@ -46,59 +44,14 @@
   }}/>
   <Button
     label={inventory.string.CreateCategoryShort}
+    icon={IconAdd}
     primary={true}
     size={'small'}
     on:click={(ev) => showCreateDialog(ev)}
   />
 </div>
 
-<div class="container">
-  <div class="antiPanel-component">
-    <ScrollBox vertical stretch noShift>
-      <HierarchyView _class={inventory.class.Category} config={['', 'modifiedOn']} options={{}} query={resultQuery} />
-    </ScrollBox>
-  </div>
-</div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    height: 100%;
-    padding-bottom: 1.25rem;
-  }
-  .categories-header-container {
-    display: grid;
-    grid-template-columns: auto;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-    white-space: nowrap;
-
-    .header-container {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-
-      .icon {
-        margin-right: 0.5rem;
-        opacity: 0.6;
-      }
-      .label {
-        flex-grow: 1;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-width: 35rem;
-      }
-      .label {
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-      }
-    }
-  }
-</style>
+<ScrollBox vertical stretch noShift>
+  <HierarchyView _class={inventory.class.Category} config={['', 'modifiedOn']} options={{}} query={resultQuery} />
+</ScrollBox>
+<div class="ac-body__space-3" />

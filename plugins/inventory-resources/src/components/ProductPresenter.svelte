@@ -20,6 +20,7 @@
   import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Product
+  export let inline: boolean = false
 
   function show () {
     closeTooltip()
@@ -28,23 +29,8 @@
 </script>
 
 {#if value}
-  <div class="sm-tool-icon container" on:click={show}>
-    <Icon icon={inventory.icon.Products} size="medium" />
-    <div class="overflow-label name">{value.name}</div>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+    <div class="icon"><Icon icon={inventory.icon.Products} size={'small'} /></div>
+    <span class="label">{value.name}</span>
   </div>
 {/if}
-
-<style lang="scss">
-  .container {
-    .name {
-      margin-left: 0.5rem;
-      font-weight: 500;
-      text-align: left;
-      color: var(--theme-content-accent-color);
-    }
-    &:hover .name {
-      text-decoration: underline;
-      color: var(--theme-caption-color);
-    }
-  }
-</style>

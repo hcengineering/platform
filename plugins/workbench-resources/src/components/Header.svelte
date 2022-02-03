@@ -22,39 +22,10 @@
   export let description: IntlString | undefined
 </script>
 
-<div class="header-container">
-  <div class="flex-row-center">
-    {#if icon }<span class="icon"><Icon {icon} size={'small'}/></span>{/if}
-    <span class="label"><Label {label}/></span>
+<div class="ac-header__wrap-description">
+  <div class="ac-header__wrap-title">
+    {#if icon }<div class="ac-header__icon"><Icon {icon} size={'small'}/></div>{/if}
+    <span class="ac-header__title"><Label {label}/></span>
   </div>
-  {#if description }<div class="description">{description}</div>{/if}
+  {#if description }<span class="ac-header__description">{description}</span>{/if}
 </div>
-
-<style lang="scss">
-  .header-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-
-    .icon {
-      margin-right: .5rem;
-      opacity: .6;
-    }
-    .label, .description {
-      flex-grow: 1;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      max-width: 35rem;
-    }
-    .label {
-      font-weight: 500;
-      font-size: 1rem;
-      color: var(--theme-caption-color);
-    }
-    .description {
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-  }
-</style>
