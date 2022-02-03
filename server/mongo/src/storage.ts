@@ -525,7 +525,14 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   async getModel (): Promise<Tx[]> {
-    return await this.db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
+    const model = await this.db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
+    // We need to put all core.account.System transactions first
+    const systemTr: Tx[] = []
+    const userTx: Tx[] = []
+
+    model.forEach(tx => ((tx.modifiedBy === core.account.System) ? systemTr : userTx).push(tx))
+
+    return systemTr.concat(userTx)
   }
 }
 
