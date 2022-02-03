@@ -134,7 +134,14 @@ export async function createClient (
   }
 
   const conn = await connect(txHander)
-  const txes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model }, { sort: { _id: SortingOrder.Ascending } })
+  const atxes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model }, { sort: { _id: SortingOrder.Ascending } })
+
+  const systemTr: Tx[] = []
+  const userTx: Tx[] = []
+
+  atxes.forEach(tx => ((tx.modifiedBy === core.account.System) ? systemTr : userTx).push(tx))
+
+  const txes = systemTr.concat(userTx)
 
   const txMap = new Map<Ref<Tx>, Ref<Tx>>()
   for (const tx of txes) txMap.set(tx._id, tx._id)
