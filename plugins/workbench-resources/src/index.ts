@@ -16,15 +16,20 @@
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import { Resources } from '@anticrm/platform'
+import Archive from './components/Archive.svelte'
+import { Space } from '@anticrm/core'
 
-/*!
- * Anticrm Platform™ Workbench Plugin
- * © 2020 Anticrm Platform Contributors. All Rights Reserved.
- * Licensed under the Eclipse Public License, Version 2.0
- */
+function hasArchiveSpaces (spaces: Space[]): boolean {
+  return spaces.find(sp => sp.archived) !== undefined
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     WorkbenchApp,
-    ApplicationPresenter
+    ApplicationPresenter,
+    Archive
+  },
+  function: {
+    HasArchiveSpaces: hasArchiveSpaces
   }
 })

@@ -56,34 +56,14 @@ module.exports = {
       {
         test: /\.svelte$/,
         use: {
-          loader: 'svelte-loader',
+          loader: 'svelte-loader',          
           options: { 
+            compilerOptions: {
+              dev: !prod,
+            },
             emitCss: true,
-            preprocess: require('svelte-preprocess')({ postcss: true })
-          }
-          // options: {
-          //   dev: !prod,
-          //   emitCss: true,
-          //   hotReload: !prod,
-          //   preprocess: require('svelte-preprocess')({
-          //     babel: {
-          //       presets: [
-          //         [
-          //           '@babel/preset-env',
-          //           {
-          //             loose: true,
-          //             modules: false,
-          //             targets: {
-          //               esmodules: true
-          //             }
-          //           }
-          //         ],
-          //         '@babel/typescript'
-          //       ],
-          //       plugins: ['@babel/plugin-proposal-optional-chaining']
-          //     }
-          //   })
-          // }
+            preprocess: require('svelte-preprocess')({ postcss: true })            
+          }         
         }
       },
 
