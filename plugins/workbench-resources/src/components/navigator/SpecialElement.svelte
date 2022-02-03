@@ -22,13 +22,14 @@
   export let label: IntlString | undefined = undefined
   export let notifications = 0
   export let actions: Action[] = []
+  export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="flex-row-center container"
+  class="flex-row-center container" class:selected={selected}
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
@@ -86,6 +87,10 @@
       font-weight: 600;
       font-size: 12px;
       line-height: 100%;
+    }
+
+    &.selected {
+      background-color: var(--theme-button-bg-enabled);
     }
 
     &:hover {

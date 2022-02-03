@@ -13,12 +13,20 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { Space } from '@anticrm/core'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 import workbench, { workbenchId } from '@anticrm/workbench'
 
 export default mergeIds(workbenchId, workbench, {
   component: {
-    ApplicationPresenter: '' as AnyComponent
+    ApplicationPresenter: '' as AnyComponent,
+    Archive: '' as AnyComponent
+  },
+  string: {
+    Archive: '' as IntlString
+  },
+  function: {
+    HasArchiveSpaces: '' as Resource<(spaces: Space[]) => boolean>
   }
 })

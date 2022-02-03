@@ -129,6 +129,14 @@ export function createModel (builder: Builder): void {
             icon: contact.icon.Person,
             label: recruit.string.Candidates,
             position: 'bottom'
+          },
+          {
+            id: 'archive',
+            component: workbench.component.Archive,
+            icon: view.icon.Archive,
+            label: workbench.string.Archive,
+            position: 'top',
+            visibleIf: workbench.function.HasArchiveSpaces
           }
         ]
       }
@@ -287,6 +295,22 @@ export function createModel (builder: Builder): void {
     label: recruit.string.SearchApplication,
     query: recruit.completion.ApplicationQuery
   }, recruit.completion.ApplicationCategory)
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Vacancy,
+    action: task.action.ArchiveSpace,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Vacancy,
+    action: task.action.UnarchiveSpace,
+    query: {
+      archived: true
+    }
+  })
 }
 
 export { default } from './plugin'
