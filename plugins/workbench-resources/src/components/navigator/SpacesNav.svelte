@@ -71,7 +71,7 @@
 </script>
 
 <div>
-  <TreeNode label={model.label} actions={[addSpace]}>
+  <TreeNode label={model.label} actions={async () => [addSpace]}>
     {#each spaces as space}
       <TreeItem
         _id={space._id}

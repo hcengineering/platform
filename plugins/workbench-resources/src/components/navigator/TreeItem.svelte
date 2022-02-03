@@ -24,7 +24,7 @@
   export let icon: Asset
   export let title: string
   export let notifications = 0
-  export let actions: () => Action[] = () => []
+  export let actions: () => Promise<Action[]> = async () => []
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
