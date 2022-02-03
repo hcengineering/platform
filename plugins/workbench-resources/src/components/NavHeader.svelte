@@ -21,14 +21,7 @@
   // export let action: () => Promise<void> | void
 </script>
 
-<div class="flex-between navheader-container flex-no-shrink">
+<div class="antiNav-header">
   <span class="fs-title overflow-label"><Label {label}></Label></span>
   <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->
 </div>
-
-<style lang="scss">
-  .navheader-container {
-    padding: 0 1.75rem;
-    height: 4rem;
-  }
-</style>

@@ -29,10 +29,12 @@
         d="M4,0h8c2.2,0,4,1.8,4,4v8c0,2.2-1.8,4-4,4H4c-2.2,0-4-1.8-4-4V4C0,1.8,1.8,0,4,0z"
       />
     {/if}
-    {#if symbol === 'minus'}
-      <rect class="check" class:primary x="4" y="7.4" width="8" height="1.2" />
-    {:else}
-      <polygon class="check" class:primary points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 " />
+    {#if checked}
+      {#if symbol === 'minus'}
+        <rect class="check" class:primary x="4" y="7.4" width="8" height="1.2" />
+      {:else}
+        <polygon class="check" class:primary points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 " />
+      {/if}
     {/if}
   </svg>
 </label>

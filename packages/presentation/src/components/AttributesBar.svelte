@@ -21,12 +21,13 @@
 
   export let object: Doc
   export let keys: (string|KeyedAttribute)[]
+  export let showHeader: boolean = true
 </script>
 
-<div class="flex-row-center text-sm">
+<div class="flex-row-center h-full text-sm">
   {#each keys as key}
-    <div class="column">
-      <AttributeBarEditor {key} {object} />
+    <div class="flex-center h-9 column">
+      <AttributeBarEditor {key} {object} {showHeader} />
     </div>
   {/each}
 </div>

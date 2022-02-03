@@ -143,28 +143,20 @@
   let employee: Employee | undefined
   const accountQ = createQuery()
   const employeeQ = createQuery()
-  $: accountQ.query(
-    contact.class.EmployeeAccount,
-    {
-      _id: getCurrentAccount()._id as Ref<EmployeeAccount>
-    },
-    (res) => {
-      account = res[0]
-    },
-    { limit: 1 }
-  )
+  $: accountQ.query(contact.class.EmployeeAccount, {
+    _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+  }, (res) => {
+    account = res[0]
+  }, { limit: 1 })
 
-  $: account &&
-    employeeQ.query(
-      contact.class.Employee,
-      {
-        _id: account.employee
-      },
-      (res) => {
-        employee = res[0]
-      },
-      { limit: 1 }
-    )
+  $: account && employeeQ.query(contact.class.Employee, {
+    _id: account.employee
+  }, (res) => {
+    employee = res[0]
+  }, { limit: 1 })
+
+  let isNavigate: boolean = false
+  $: isNavigate = navigatorModel ? true : false
 </script>
 
 {#if client}
@@ -219,7 +211,7 @@
         />
       </div>
     {/if}
-    <div class="antiPanel-component filled indent">
+    <div class="antiPanel-component indent antiComponent" class:filled={isNavigate}>
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />      
       {:else if specialComponent}

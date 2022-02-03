@@ -33,12 +33,10 @@
   }
 </script>
 
-<div class="customers-header-container">
-  <div class="header-container">
-    <div class="flex-row-center">
-      <span class="icon"><Icon icon={lead.icon.Lead} size={'small'}/></span>
-      <span class="label"><Label label={lead.string.Customers}/></span>
-    </div>
+<div class="ac-header full">
+  <div class="ac-header__wrap-title">
+    <div class="ac-header__icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
+    <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
   </div>
 
   <SearchEdit bind:value={search} on:change={() => {
@@ -46,59 +44,17 @@
   }}/>
 </div>
 
-<div class="container">
-  <div class="antiPanel-component">
-    <ScrollBox vertical stretch noShift>
-      {#await tableDescriptor then descr}
-        {#if descr}
-          <Table
-            _class={lead.mixin.Customer}
-            config={descr.config}
-            options={descr.options}
-            query={ resultQuery }
-            enableChecking
-          />
-        {/if}
-      {/await}
-    </ScrollBox>
-  </div>
-</div>
-<style lang="scss">
-  .container {
-    display: flex;
-    height: 100%;
-    padding-bottom: 1.25rem;
-  }
-  .customers-header-container {
-    display: grid;
-    grid-template-columns: auto;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-    gap: .75rem;
-    align-items: center;
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-
-    .header-container {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-
-      .icon {
-        margin-right: .5rem;
-        opacity: .6;
-      }
-      .label {
-        flex-grow: 1;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-width: 35rem;
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--theme-caption-color);
-      }
-    }
-  }
-</style>
+<ScrollBox vertical stretch noShift>
+  {#await tableDescriptor then descr}
+    {#if descr}
+      <Table
+        _class={lead.mixin.Customer}
+        config={descr.config}
+        options={descr.options}
+        query={ resultQuery }
+        enableChecking
+      />
+    {/if}
+  {/await}
+</ScrollBox>
+<div class="ac-body__space-3" />

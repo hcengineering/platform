@@ -32,23 +32,13 @@
 </script>
 
 <div class="antiComponent">
-  <div class="ac-header">
+  <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={setting.icon.Integrations} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.Integrations}/></div>
   </div>
-  <div class="cards-container">
+  <div class="ac-body__cards-container">
     {#each integrationTypes as integrationType (integrationType._id)}
       <PluginCard integration={integrations.find((p) => p.type === integrationType._id)} {integrationType} />
     {/each}
   </div>
 </div>
-
-<style lang="scss">
-  .cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
-    grid-auto-rows: minmax(12.5rem, auto);
-    grid-gap: 1.5rem;
-    padding: 3rem;
-  }
-</style>

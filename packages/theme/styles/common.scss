@@ -44,6 +44,14 @@
 .antiPanel-component { flex-grow: 1; }
 
 /* Navigation */
+.antiNav-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.75rem;
+  height: 4rem;
+}
 .antiNav-divider {
   flex-shrink: 0;
   margin: 1.5rem 0;

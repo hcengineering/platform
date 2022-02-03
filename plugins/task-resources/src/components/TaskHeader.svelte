@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import core, { Class, Doc, Ref, RefTo } from '@anticrm/core'
-  import { AttributeBarEditor, AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
+  import { AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
   import { Task } from '@anticrm/task'
   import task from '../plugin'
 
@@ -66,14 +66,13 @@
       <AttributesBar {object} keys={filtredKeys} />
     </div>
   </div>
-  <AttributeBarEditor key={'state'} {object} showHeader={false} />
-  <AttributeBarEditor key={'doneState'} {object} showHeader={false} />
+  <AttributesBar {object} keys={['doneState', 'state']} showHeader={false} />
 </div>
 
 <style lang="scss">
   .header {
     width: 100%;
-    padding: 0 0.5rem;
+    // padding: 0 0.5rem;
 
     .column {
       position: relative;
