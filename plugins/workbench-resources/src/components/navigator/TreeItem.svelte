@@ -24,11 +24,11 @@
   export let icon: Asset
   export let title: string
   export let notifications = 0
-  export let actions: Action[] = []
+  export let actions: () => Action[] = () => []
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed on:click={() => {dispatch('click')}}/>
+<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed on:click={() => { dispatch('click') }}/>

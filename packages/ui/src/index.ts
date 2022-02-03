@@ -14,10 +14,9 @@
 //
 
 import { SvelteComponent } from 'svelte'
-import type { AnySvelteComponent, AnyComponent, PopupAlignment, LabelAndProps, TooltipAligment } from './types'
-import { getResource, IntlString, addStringsLoader } from '@anticrm/platform'
+import { addStringsLoader } from '@anticrm/platform'
 import { uiId } from './plugin'
-import { writable, readable } from 'svelte/store'
+import { readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
@@ -90,97 +89,15 @@ export { default as IconInfo } from './components/icons/Info.svelte'
 export { default as IconBlueCheck } from './components/icons/BlueCheck.svelte'
 export { default as IconArrowLeft } from './components/icons/ArrowLeft.svelte'
 
+export { default as PanelInstance } from './components/PanelInstance.svelte'
+
 export * from './utils'
+export * from './popups'
+export * from './tooltips'
+export * from './panelup'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
-}
-
-interface CompAndProps {
-  id: string
-  is: AnySvelteComponent
-  props: any
-  element?: PopupAlignment
-  onClose?: (result: any) => void
-  close: () => void
-}
-
-export const popupstore = writable<CompAndProps[]>([])
-
-function addPopup (props: CompAndProps): void {
-  popupstore.update((popups) => {
-    popups.push(props)
-    return popups
-  })
-}
-let popupId: number = 0
-export function showPopup (
-  component: AnySvelteComponent | AnyComponent,
-  props: any,
-  element?: PopupAlignment,
-  onClose?: (result: any) => void
-): () => void {
-  const id = `${popupId++}`
-  const closePopupOp = (): void => {
-    popupstore.update((popups) => {
-      const pos = popups.findIndex(p => p.id === id)
-      if (pos !== -1) {
-        popups.splice(pos, 1)
-      }
-      return popups
-    })
-  }
-  if (typeof component === 'string') {
-    getResource(component).then((resolved) => addPopup({ id, is: resolved, props, element, onClose, close: closePopupOp })).catch((err) => console.log(err))
-  } else {
-    addPopup({ id, is: component, props, element, onClose, close: closePopupOp })
-  }
-  return closePopupOp
-}
-
-export function closePopup (): void {
-  popupstore.update((popups) => {
-    popups.pop()
-    return popups
-  })
-}
-
-export const tooltipstore = writable<LabelAndProps>({
-  label: undefined,
-  element: undefined,
-  direction: undefined,
-  component: undefined,
-  props: undefined,
-  anchor: undefined
-})
-
-export function showTooltip (
-  label: IntlString | undefined,
-  element: HTMLElement,
-  direction?: TooltipAligment,
-  component?: AnySvelteComponent | AnyComponent,
-  props?: any,
-  anchor?: HTMLElement
-): void {
-  tooltipstore.set({
-    label: label,
-    element: element,
-    direction: direction,
-    component: component,
-    props: props,
-    anchor: anchor
-  })
-}
-
-export function closeTooltip (): void {
-  tooltipstore.set({
-    label: undefined,
-    element: undefined,
-    direction: undefined,
-    component: undefined,
-    props: undefined,
-    anchor: undefined
-  })
 }
 
 export const ticker = readable(Date.now(), (set) => {

@@ -14,11 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Applicant } from '@anticrm/recruit'
-  import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
-  import { EditDoc } from '@anticrm/view-resources'
+  import type { Applicant } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
+  import { closeTooltip, Icon } from '@anticrm/ui'
+  import { showPanel } from '@anticrm/ui/src/panelup'
+  import view from '@anticrm/view'
 
   export let value: Applicant
 
@@ -27,7 +28,7 @@
 
   function show () {
     closeTooltip()
-    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>
 

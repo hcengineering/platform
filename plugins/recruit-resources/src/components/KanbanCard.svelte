@@ -13,22 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Avatar } from '@anticrm/presentation'
-  import { showPopup, ActionIcon, IconMoreH } from '@anticrm/ui'
-  import type { WithLookup } from '@anticrm/core'
-  import type { Applicant } from '@anticrm/recruit'
-
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
+  import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
+  import type { WithLookup } from '@anticrm/core'
+  import { Avatar } from '@anticrm/presentation'
+  import type { Applicant } from '@anticrm/recruit'
+  import { ActionIcon, IconMoreH, showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
-  import { EditDoc } from '@anticrm/view-resources'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
 
   function showCandidate () {
-    showPopup(EditDoc, { _id: object.attachedTo, _class: object.attachedToClass }, 'full')
+    showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
   }
 </script>
 

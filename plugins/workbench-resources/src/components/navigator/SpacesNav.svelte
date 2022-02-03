@@ -73,18 +73,16 @@
 <div>
   <TreeNode label={model.label} actions={[addSpace]}>
     {#each spaces as space}
-      {#await getActions(space) then actions}
-        <TreeItem
-          _id={space._id}
-          title={space.name}
-          icon={classIcon(client, space._class)}
-          selected={currentSpace === space._id}
-          {actions}
-          on:click={() => {
-            selectSpace(space._id)
-          }}
-        />
-      {/await}
+      <TreeItem
+        _id={space._id}
+        title={space.name}
+        icon={classIcon(client, space._class)}
+        selected={currentSpace === space._id}
+        actions={() => getActions(space)}
+        on:click={() => {
+          selectSpace(space._id)
+        }}
+      />
     {/each}
   </TreeNode>
 </div>

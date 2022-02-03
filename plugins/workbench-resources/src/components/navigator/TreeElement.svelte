@@ -14,14 +14,13 @@
 -->
 
 <script lang="ts">
-  import Collapsed from '../icons/Collapsed.svelte'
-  import Expanded from '../icons/Expanded.svelte'
-
+  import type { Ref, Space } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
-  import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreV } from '@anticrm/ui'
+  import { Icon, IconMoreV, Label, Menu, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import Collapsed from '../icons/Collapsed.svelte'
+  import Expanded from '../icons/Expanded.svelte'
 
   export let _id: Ref<Space> | undefined = undefined
   export let icon: Asset | undefined = undefined
@@ -31,14 +30,14 @@
   export let node = false
   export let collapsed = false
   export let selected = false
-  export let actions: Action[] = []
-
+  export let actions: () => Action[] = () => []
+  
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  function onMenuClick(ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent) {
+    showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => { hovered = false })
     hovered = true
-    showPopup(Menu, { actions, ctx: _id }, ev.target as HTMLElement, () => { hovered = false })
   }
 </script>
 
@@ -57,16 +56,10 @@
   </div>
   <span class="label" class:sub={node}>
     {#if label}<Label {label}/>{:else}{title}{/if}
-  </span>
-  {#if actions.length === 1}
-    <div class="tool">
-      <ActionIcon label={actions[0].label} icon={actions[0].icon} size={'small'} action={(ev) => { actions[0].action(_id, ev) }} />
-    </div>
-  {:else if actions.length > 1}
+  </span>  
     <div class="tool" on:click|stopPropagation={onMenuClick}>
       <IconMoreV size={'small'} />
     </div>
-  {/if}
   {#if notifications > 0 && collapsed}
     <div class="counter">{notifications}</div>
   {/if}

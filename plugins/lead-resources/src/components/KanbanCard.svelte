@@ -19,8 +19,9 @@
   import { ContactPresenter } from '@anticrm/contact-resources'
   import type { WithLookup } from '@anticrm/core'
   import type { Lead } from '@anticrm/lead'
-  import { ActionIcon, IconMoreH, showPopup } from '@anticrm/ui'
-  import { ContextMenu, EditDoc } from '@anticrm/view-resources'
+  import { ActionIcon, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
+  import view from '@anticrm/view'
+  import { ContextMenu } from '@anticrm/view-resources'
   import lead from '../plugin'
 
   export let object: WithLookup<Lead>
@@ -31,7 +32,7 @@
   }
 
   function showLead () {
-    showPopup(EditDoc, { _id: object._id, _class: object._class }, 'full')
+    showPanel(view.component.EditDoc, object._id, object._class, 'full')
   }
 </script>
 
