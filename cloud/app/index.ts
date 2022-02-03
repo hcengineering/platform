@@ -326,3 +326,13 @@ new aws.route53.Record("telegramRecord", {
     "107.191.38.121"
   ]
 })
+
+new aws.route53.Record("rekoniRecord", {
+  name: "rekoni.hc.engineering",
+  zoneId: zoneId,
+  type: "A",
+  ttl: 300,
+  records: [
+    "107.191.38.121"
+  ]
+})

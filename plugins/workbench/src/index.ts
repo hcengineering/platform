@@ -14,7 +14,7 @@
 //
 
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
-import type { Asset, IntlString, Metadata, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -59,6 +59,7 @@ export interface SpecialNavModel {
   icon: Asset
   component: AnyComponent
   position?: 'top'|'bottom' // undefined == 'top
+  visibleIf?: Resource<(spaces: Space[]) => boolean>
 }
 
 /**

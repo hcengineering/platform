@@ -14,78 +14,91 @@
 -->
 
 <script lang="ts">
-  import core from '@anticrm/core'
-  import type { Space } from '@anticrm/core'
-  import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
-  import { getCurrentLocation, navigate, Scroller } from '@anticrm/ui'
+  import core, { Ref, SortingOrder, Space } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import view from '@anticrm/view'
-
-  import workbench from '../plugin'
-
+  import { Scroller } from '@anticrm/ui'
+  import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
+  import { createEventDispatcher } from 'svelte'
   import SpacesNav from './navigator/SpacesNav.svelte'
-  import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
+  import TreeSeparator from './navigator/TreeSeparator.svelte'
 
   export let model: NavigatorModel | undefined
+  export let currentSpace: Ref<Space> | undefined
+  export let currentSpecial: string | undefined
   
   const query = createQuery()
-  let archivedSpaces: Space[] = []
+  let spaces: Space[] = []
+  let shownSpaces: Space[] = []
   $: if (model) {
     query.query(
       core.class.Space,
       {
-        _class: { $in: model.spaces.map(x => x.spaceClass) },
-        archived: true
+        _class: { $in: model.spaces.map(x => x.spaceClass) }
       },
-      (result) => { archivedSpaces = result })
+      (result) => { spaces = result },
+      { sort: { name: SortingOrder.Ascending } })
   }
 
   let showDivider: Boolean = false
   let specTopCount: number
   let specBottomCount: number
-  let spArchCount: number
   let spModelCount: number
-  $: if (model) {
-    if (model.specials) {
-      specTopCount = getSpecials(model.specials, 'top').length
-      specBottomCount = getSpecials(model.specials, 'bottom').length
+
+  let topSpecials: SpecialNavModel[] = []
+  let bottomSpecials: SpecialNavModel[] = []
+
+  async function update (model: NavigatorModel, spaces: Space[]) {
+    if (model.specials !== undefined) {
+      topSpecials = await getSpecials(model.specials, 'top', spaces)
+      specTopCount = topSpecials.length
+      bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
+      specBottomCount = bottomSpecials.length
     }
     if (model.spaces) spModelCount = model.spaces.length
-    if (archivedSpaces) spArchCount = archivedSpaces.length
-    showDivider = ((specTopCount > 0 || spArchCount > 0) && (specBottomCount > 0 || spModelCount > 0)) ?? false
+    showDivider = (specTopCount > 0) ?? false
+  
+    shownSpaces = spaces.filter(sp => !sp.archived)
   }
 
-  function selectSpecial (id: string): void {
-    const loc = getCurrentLocation()
-    loc.path[2] = id
-    loc.path.length = 3
-    navigate(loc)
+  $: if (model) update(model, spaces)
+  
+  async function getSpecials (specials: SpecialNavModel[], state: 'top' | 'bottom', spaces: Space[]): Promise<SpecialNavModel[]> {
+    const result: SpecialNavModel[] = []
+    for (const sp of specials) {
+      if ((sp.position ?? 'top') === state) {
+        if (sp.visibleIf !== undefined) {
+          const f = await getResource(sp.visibleIf)
+          if (f(spaces)) {
+            result.push(sp)
+          }
+        } else {
+          result.push(sp)
+        }
+      }
+    }
+    return result
   }
-  function getSpecials (specials: SpecialNavModel[], state: 'top' | 'bottom'): SpecialNavModel[] {
-    return specials.filter(p => (p.position ?? 'top') === state)
-  }
+  const dispatch = createEventDispatcher()
 </script>
 
 {#if model}
   <Scroller>
     {#if model.specials}
-      {#each getSpecials(model.specials, 'top') as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
+      {#each topSpecials as special}
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} />
       {/each}
-    {/if}
-    {#if archivedSpaces.length > 0}
-      <SpecialElement label={workbench.string.Archive} icon={view.icon.Archive} on:click={() => selectSpecial('archive')} />
     {/if}
 
     {#if showDivider}<TreeSeparator />{/if}
 
     {#each model.spaces as m (m.label)}
-      <SpacesNav model={m}/>
+      <SpacesNav spaces={shownSpaces} {currentSpace} model={m} on:space/>
     {/each}
     {#if model.specials}
-      {#each getSpecials(model.specials, 'bottom') as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => selectSpecial(special.id)} />
+      {#each bottomSpecials as special}
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} />
       {/each}
     {/if}
     <div class="antiNav-space" />

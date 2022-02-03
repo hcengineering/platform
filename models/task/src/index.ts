@@ -404,22 +404,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: task.class.SpaceWithStates,
-    action: task.action.ArchiveSpace,
-    query: {
-      archived: false
-    }
-  })
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: task.class.SpaceWithStates,
-    action: task.action.UnarchiveSpace,
-    query: {
-      archived: true
-    }
-  })
-
   builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
     editor: task.component.StateEditor
   })

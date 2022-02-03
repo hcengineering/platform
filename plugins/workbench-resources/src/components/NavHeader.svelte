@@ -15,8 +15,7 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { ActionIcon, IconMoreH, Label } from '@anticrm/ui'
-  import workbench from '../plugin'
+  import { Label } from '@anticrm/ui'
 
   export let label: IntlString
   // export let action: () => Promise<void> | void
