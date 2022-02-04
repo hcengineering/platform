@@ -71,6 +71,7 @@ export default async (): Promise<Resources> => ({
     DateEditor,
     DatePresenter,
     RolePresenter,
-    ObjectPresenter
+    ObjectPresenter,
+    EditDoc
   }
 })

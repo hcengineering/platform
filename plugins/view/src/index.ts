@@ -171,7 +171,8 @@ const view = plugin(viewId, {
     Table: '' as Ref<ViewletDescriptor>
   },
   component: {
-    ObjectPresenter: '' as AnyComponent
+    ObjectPresenter: '' as AnyComponent,
+    EditDoc: '' as AnyComponent
   },
   icon: {
     Table: '' as Asset,

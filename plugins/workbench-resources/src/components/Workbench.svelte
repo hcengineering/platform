@@ -25,7 +25,8 @@
     navigate,
     Popup,
     showPopup,
-    TooltipInstance
+    TooltipInstance,
+    PanelInstance
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
@@ -234,6 +235,7 @@
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
+  <PanelInstance/>
   <Popup />
   <TooltipInstance />
 {:else}

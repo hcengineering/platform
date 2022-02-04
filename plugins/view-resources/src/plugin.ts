@@ -15,7 +15,6 @@
 //
 
 import { IntlString, mergeIds } from '@anticrm/platform'
-
 import view, { viewId } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {

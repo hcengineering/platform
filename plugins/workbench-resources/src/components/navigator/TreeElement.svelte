@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Collapsed from '../icons/Collapsed.svelte'
   import Expanded from '../icons/Expanded.svelte'
@@ -31,14 +30,16 @@
   export let node = false
   export let collapsed = false
   export let selected = false
-  export let actions: Action[] = []
+  export let actions: () => Promise<Action[]> = async () => []
 
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  function onMenuClick(ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent) {
+    showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
+      hovered = false
+    })
     hovered = true
-    showPopup(Menu, { actions, ctx: _id }, ev.target as HTMLElement, () => { hovered = false })
   }
 </script>
 
@@ -50,27 +51,40 @@
 >
   <div class="an-element__icon" class:sub={!node}>
     {#if icon}
-      <Icon {icon} size={'small'}/>
-    {:else}
-      {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
-    {/if}
+      <Icon {icon} size={'small'} />
+    {:else if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
   </div>
   <span class="an-element__label" class:title={node}>
-    {#if label}<Label {label}/>{:else}{title}{/if}
+    {#if label}<Label {label} />{:else}{title}{/if}
   </span>
-  {#if actions.length === 1}
-    <div class="an-element__tool">
-      <ActionIcon label={actions[0].label} icon={actions[0].icon} size={'small'} action={(ev) => { actions[0].action(_id, ev) }} />
-    </div>
-  {:else if actions.length > 1}
+  {#if node === false}
     <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
       <IconMoreV size={'small'} />
     </div>
+  {:else}
+    {#await actions() then actionItems}
+      {#if actionItems.length === 1}
+        <div class="tool">
+          <ActionIcon
+            label={actionItems[0].label}
+            icon={actionItems[0].icon}
+            size={'small'}
+            action={(ev) => {
+              actionItems[0].action(_id, ev)
+            }}
+          />
+        </div>
+      {:else if actionItems.length > 1}
+        <div class="tool" on:click|stopPropagation={onMenuClick}>
+          <IconMoreV size={'small'} />
+        </div>
+      {/if}
+    {/await}
   {/if}
   {#if notifications > 0 && collapsed}
     <div class="an-element__counter">{notifications}</div>
   {/if}
 </div>
 {#if node && !icon && !collapsed}
-  <div class="antiNav-element__dropbox"><slot/></div>
+  <div class="antiNav-element__dropbox"><slot /></div>
 {/if}
