@@ -48,7 +48,7 @@
             <div class="text-sm content-dark-color">{subtitle}</div>
           {/if}
         </div>
-        <ActionIcon icon={IconMoreH} size={'medium'} />
+        <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
       </div>
       {#if $$slots.subtitle}
         <div class="flex-row-center subtitle">
@@ -74,7 +74,7 @@
           <div class="fs-title">{title}</div>
           <div class="text-sm content-dark-color">Candidate pool name</div>
         </div>
-        <ActionIcon icon={IconMoreH} size={'medium'} />
+        <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
       </div>
       {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
 
