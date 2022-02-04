@@ -15,14 +15,12 @@
 -->
 
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { Ref, Doc, Class, Space } from '@anticrm/core'
-  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon } from '@anticrm/ui'
-  import { getClient, createQuery, AttributeBarEditor } from '@anticrm/presentation'
-
-  import { createEventDispatcher } from 'svelte'
-
+  import type { Class, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
   export let spaceClass: Ref<Class<Space>>
@@ -43,7 +41,7 @@
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString]
   let selected = 0
 
-  function onNameChange(ev: Event) {
+  function onNameChange (ev: Event) {
     client.updateDoc(spaceClass, space.space, space._id, { name: (ev.target as HTMLInputElement).value })
   }
 

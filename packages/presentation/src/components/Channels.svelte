@@ -14,17 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedData, Doc, Ref } from '@anticrm/core'
-  import type { IntlString, Asset } from '@anticrm/platform'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
-  import { getClient } from '..'
-
+  import type { AttachedData, Doc, Ref } from '@anticrm/core'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import type { AnyComponent } from '@anticrm/ui'
-  import { Tooltip, CircleButton } from '@anticrm/ui'
-  import ChannelsPopup from './ChannelsPopup.svelte'
-
-  import contact from '@anticrm/contact'
+  import { CircleButton, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getClient } from '..'
+  import { getChannelProviders } from '../utils'
+  import ChannelsPopup from './ChannelsPopup.svelte'
 
   export let value: AttachedData<Channel>[] | AttachedData<Channel> | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
@@ -41,15 +39,6 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
-
-  async function getProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
-    const providers = await client.findAll(contact.class.ChannelProvider, {})
-    const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
-    for (const provider of providers) {
-      map.set(provider._id, provider)
-    }
-    return map
-  }
 
   function getProvider (item: AttachedData<Channel>, map: Map<Ref<ChannelProvider>, ChannelProvider>): any | undefined {
     const provider = map.get(item.provider)
@@ -68,7 +57,7 @@
 
   async function update (value: AttachedData<Channel>[] | AttachedData<Channel>) {
     const result = []
-    const map = await getProviders()
+    const map = await getChannelProviders()
     if (Array.isArray(value)) {
       for (const item of value) {
         const provider = getProvider(item, map)

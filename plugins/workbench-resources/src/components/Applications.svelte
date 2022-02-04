@@ -15,15 +15,15 @@
 
 <script lang="ts">
 
-  import type { Ref } from '@anticrm/core';
-  import { getCurrentLocation,navigate } from '@anticrm/ui';
-  import type { Application } from '@anticrm/workbench';
-  import AppItem from './AppItem.svelte';
+  import type { Ref } from '@anticrm/core'
+  import { getCurrentLocation, navigate } from '@anticrm/ui'
+  import type { Application } from '@anticrm/workbench'
+  import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
 
-  function navigateApp(app: Ref<Application>) {
+  function navigateApp (app: Ref<Application>) {
     const loc = getCurrentLocation()
     loc.path[1] = app
     loc.path.length = 2
@@ -34,6 +34,6 @@
 
 <div class="flex-col">
   {#each apps as app}
-    <AppItem selected={app._id === active} icon={app.icon} label={app.label} action={async () => {navigateApp(app._id)}}/>
+    <AppItem selected={app._id === active} icon={app.icon} label={app.label} action={async () => { navigateApp(app._id) }} notify={false}/>
   {/each}
 </div>

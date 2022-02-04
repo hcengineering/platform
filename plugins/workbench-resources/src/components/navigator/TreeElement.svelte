@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Collapsed from '../icons/Collapsed.svelte'
   import Expanded from '../icons/Expanded.svelte'
@@ -31,18 +30,23 @@
   export let node = false
   export let collapsed = false
   export let selected = false
-  export let actions: Action[] = []
+  export let actions: () => Promise<Action[]> = async () => []
 
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  function onMenuClick(ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent) {
+    showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
+      hovered = false
+    })
     hovered = true
-    showPopup(Menu, { actions, ctx: _id }, ev.target as HTMLElement, () => { hovered = false })
   }
 </script>
 
-<div class="container" class:selected class:hovered
+<div
+  class="container"
+  class:selected
+  class:hovered
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
@@ -50,29 +54,42 @@
 >
   <div class="icon" class:sub={!node}>
     {#if icon}
-      <Icon {icon} size={'small'}/>
-    {:else}
-      {#if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
-    {/if}
+      <Icon {icon} size={'small'} />
+    {:else if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
   </div>
   <span class="label" class:sub={node}>
-    {#if label}<Label {label}/>{:else}{title}{/if}
+    {#if label}<Label {label} />{:else}{title}{/if}
   </span>
-  {#if actions.length === 1}
-    <div class="tool">
-      <ActionIcon label={actions[0].label} icon={actions[0].icon} size={'small'} action={(ev) => { actions[0].action(_id, ev) }} />
-    </div>
-  {:else if actions.length > 1}
+  {#if node === false}
     <div class="tool" on:click|stopPropagation={onMenuClick}>
       <IconMoreV size={'small'} />
     </div>
+  {:else}
+    {#await actions() then actionItems}
+      {#if actionItems.length === 1}
+        <div class="tool">
+          <ActionIcon
+            label={actionItems[0].label}
+            icon={actionItems[0].icon}
+            size={'small'}
+            action={(ev) => {
+              actionItems[0].action(_id, ev)
+            }}
+          />
+        </div>
+      {:else if actionItems.length > 1}
+        <div class="tool" on:click|stopPropagation={onMenuClick}>
+          <IconMoreV size={'small'} />
+        </div>
+      {/if}
+    {/await}
   {/if}
   {#if notifications > 0 && collapsed}
     <div class="counter">{notifications}</div>
   {/if}
 </div>
 {#if node && !icon && !collapsed}
-  <div class="dropbox"><slot/></div>
+  <div class="dropbox"><slot /></div>
 {/if}
 
 <style lang="scss">
@@ -81,19 +98,21 @@
     align-items: center;
     margin: 0 1rem;
     height: 2.25rem;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     user-select: none;
     cursor: pointer;
 
     .icon {
       min-width: 1rem;
       color: var(--theme-content-trans-color);
-      margin: 0 1.125rem 0 .625rem;
-      &.sub { margin: 0 .5rem 0 2.75rem }
+      margin: 0 1.125rem 0 0.625rem;
+      &.sub {
+        margin: 0 0.5rem 0 2.75rem;
+      }
     }
     .label {
       flex-grow: 1;
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -106,31 +125,34 @@
       }
     }
     .tool {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       visibility: hidden;
     }
     .counter {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       font-weight: 600;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-caption-color);
     }
 
-    &:hover, &.hovered {
+    &:hover,
+    &.hovered {
       background-color: var(--theme-button-bg-enabled);
       .tool {
         visibility: visible;
       }
     }
-    
+
     &.selected {
       background-color: var(--theme-menu-selection);
-      &:hover { background-color: var(--theme-button-bg-enabled); }
+      &:hover {
+        background-color: var(--theme-button-bg-enabled);
+      }
     }
   }
 
   .dropbox {
     height: auto;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 </style>

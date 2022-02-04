@@ -15,15 +15,15 @@
 -->
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
-  import { showPopup } from '@anticrm/ui'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import Company from './icons/Company.svelte'
-  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Organization
   export let inline: boolean = false
 
   async function onClick () {
-    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>
 

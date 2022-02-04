@@ -19,7 +19,7 @@
   import TreeElement from './TreeElement.svelte'
 
   export let label: IntlString
-  export let actions: Action[] = []
+  export let actions: () => Promise<Action[]> = async () => []
   export let notifications = 0
   export let collapsed = false
 

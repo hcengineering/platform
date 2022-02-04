@@ -16,14 +16,14 @@
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
   import { Avatar } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
-  import { EditDoc } from '@anticrm/view-resources'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let value: Person
   export let inline: boolean = false
 
   async function onClick () {
-    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>
 

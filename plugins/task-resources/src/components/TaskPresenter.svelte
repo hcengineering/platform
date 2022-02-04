@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Issue } from '@anticrm/task'
-  import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
+  import type { Issue } from '@anticrm/task'
+  import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import task from '../plugin'
-  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Issue
 
@@ -27,7 +27,7 @@
 
   function show () {
     closeTooltip()
-    showPopup(EditDoc, { _id: value._id, _class: value._class }, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>
 

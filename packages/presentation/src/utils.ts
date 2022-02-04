@@ -22,9 +22,11 @@ import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { onDestroy } from 'svelte'
+import contact, { ChannelProvider } from '@anticrm/contact'
 
 let liveQuery: LQ
 let client: TxOperations
+let channelProviders: Promise<ChannelProvider[]> | undefined
 
 class UIClient extends TxOperations implements Client {
   constructor (client: Client, private readonly liveQuery: LQ) {
@@ -47,6 +49,7 @@ export function setClient (_client: Client): void {
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
   }
+  channelProviders = client.findAll(contact.class.ChannelProvider, {})
 }
 
 export class LiveQuery {
@@ -109,4 +112,13 @@ export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<
     attrClass = (attribute.type as ArrOf<AttachedDoc>).of._class
   }
   return attrClass
+}
+
+export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
+  const cp = (await channelProviders) ?? []
+  const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
+  for (const provider of cp) {
+    map.set(provider._id, provider)
+  }
+  return map
 }
