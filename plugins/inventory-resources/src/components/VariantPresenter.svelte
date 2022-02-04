@@ -20,7 +20,7 @@
 </script>
 
 {#if value}
-  <div class="sm-tool-icon">
+  <div class="overflow-label sm-tool-icon">
     {value.name}
   </div>
 {/if}

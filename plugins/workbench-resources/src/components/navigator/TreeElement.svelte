@@ -43,31 +43,28 @@
   }
 </script>
 
-<div
-  class="container"
-  class:selected
-  class:hovered
+<div class="antiNav-element" class:selected class:hovered
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
   }}
 >
-  <div class="icon" class:sub={!node}>
+  <div class="an-element__icon" class:sub={!node}>
     {#if icon}
       <Icon {icon} size={'small'} />
     {:else if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
   </div>
-  <span class="label" class:sub={node}>
+  <span class="an-element__label" class:title={node}>
     {#if label}<Label {label} />{:else}{title}{/if}
   </span>
   {#if node === false}
-    <div class="tool" on:click|stopPropagation={onMenuClick}>
+    <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
       <IconMoreV size={'small'} />
     </div>
   {:else}
     {#await actions() then actionItems}
       {#if actionItems.length === 1}
-        <div class="tool">
+        <div class="an-element__tool">
           <ActionIcon
             label={actionItems[0].label}
             icon={actionItems[0].icon}
@@ -78,81 +75,16 @@
           />
         </div>
       {:else if actionItems.length > 1}
-        <div class="tool" on:click|stopPropagation={onMenuClick}>
+        <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
           <IconMoreV size={'small'} />
         </div>
       {/if}
     {/await}
   {/if}
   {#if notifications > 0 && collapsed}
-    <div class="counter">{notifications}</div>
+    <div class="an-element__counter">{notifications}</div>
   {/if}
 </div>
 {#if node && !icon && !collapsed}
-  <div class="dropbox"><slot /></div>
+  <div class="antiNav-element__dropbox"><slot /></div>
 {/if}
-
-<style lang="scss">
-  .container {
-    display: flex;
-    align-items: center;
-    margin: 0 1rem;
-    height: 2.25rem;
-    border-radius: 0.5rem;
-    user-select: none;
-    cursor: pointer;
-
-    .icon {
-      min-width: 1rem;
-      color: var(--theme-content-trans-color);
-      margin: 0 1.125rem 0 0.625rem;
-      &.sub {
-        margin: 0 0.5rem 0 2.75rem;
-      }
-    }
-    .label {
-      flex-grow: 1;
-      margin-right: 0.75rem;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      user-select: none;
-      font-weight: 400;
-      color: var(--theme-content-color);
-      &.sub {
-        font-weight: 500;
-        color: var(--theme-caption-color);
-      }
-    }
-    .tool {
-      margin-right: 0.75rem;
-      visibility: hidden;
-    }
-    .counter {
-      margin-right: 0.75rem;
-      font-weight: 600;
-      font-size: 0.75rem;
-      color: var(--theme-caption-color);
-    }
-
-    &:hover,
-    &.hovered {
-      background-color: var(--theme-button-bg-enabled);
-      .tool {
-        visibility: visible;
-      }
-    }
-
-    &.selected {
-      background-color: var(--theme-menu-selection);
-      &:hover {
-        background-color: var(--theme-button-bg-enabled);
-      }
-    }
-  }
-
-  .dropbox {
-    height: auto;
-    margin-bottom: 0.5rem;
-  }
-</style>

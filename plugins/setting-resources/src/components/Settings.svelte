@@ -41,44 +41,34 @@
   }
 </script>
 
-<div class="container">
-<div class="antiPanel-navigator filled indent">
-  <div class="flex-between navheader-container">
-    <span class="fs-title overflow-label">
-      <Label label={setting.string.Settings}/>
-    </span>
-  </div>
-  {#each categories as category}
-    <CategoryElement icon={category.icon} label={category.label} on:click={() => { selectCategory(category.name) }}/>
-  {/each}
-  <div class="signout">
-    <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut}/>
-  </div>
-</div>    
+<div class="flex h-full">
+  <div class="antiPanel-navigator filled indent">
+    <div class="antiNav-header">
+      <span class="fs-title overflow-label">
+        <Label label={setting.string.Settings}/>
+      </span>
+    </div>
+    {#each categories as category}
+      <CategoryElement icon={category.icon} label={category.label} selected={category.name === categoryId} on:click={() => { selectCategory(category.name) }}/>
+    {/each}
+    <div class="signout">
+      <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut}/>
+    </div>
+  </div>    
 
-<div class="antiPanel-component filled">
-  {#if category}
-    <Component is={category.component} />
-  {/if}
-</div>
+  <div class="antiPanel-component filled">
+    {#if category}
+      <Component is={category.component} />
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    height: 100%;
-    background: var(--theme-menu-color); 
-   
-    .signout {
-      display: flex;        
-      flex-direction: column-reverse;
-      flex-grow: 1;
-      margin-bottom: 2rem;
-    }
-  }
-  .navheader-container {
-    padding: 0 1.75rem;
-    height: 4rem;
+  .signout {
+    display: flex;        
+    flex-direction: column-reverse;
+    flex-grow: 1;
+    margin-bottom: 2rem;
   }
 </style>
 

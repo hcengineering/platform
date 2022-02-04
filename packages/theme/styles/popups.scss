@@ -78,6 +78,13 @@
       background-color: var(--theme-button-bg-pressed);
       z-index: 1;
     }
+
+    &.redlight {
+      color: var(--highlight-red);
+      &:hover { color: var(--highlight-red-hover); }
+      &:active { color: var(--highlight-red-press); }
+      &:focus { color: var(--highlight-red-press); }
+    }
   }
   .ap-check {
     margin-left: 1rem;

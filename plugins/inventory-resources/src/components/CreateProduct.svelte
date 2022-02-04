@@ -80,6 +80,7 @@
   <Grid column={1} rowGap={1.75}>
     <EditBox
       label={inventory.string.Product}
+      icon={inventory.icon.Products}
       bind:value={doc.name}
       placeholder={inventory.string.Product}
       maxWidth={'16rem'}
