@@ -24,6 +24,7 @@
   import { Channel, Contact, formatName } from '@anticrm/contact'
   import { TextEditor } from '@anticrm/text-editor'
   import plugin from '../plugin'
+  import { read } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
@@ -42,7 +43,7 @@
   const url = getMetadata(login.metadata.GmailUrl) ?? ''
 
   async function sendMsg () {
-    fetch(url + '/send', {
+    await fetch(url + '/send', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
@@ -53,6 +54,7 @@
         copy: copy.split(',').map((m) => m.trim())
       })
     })
+    await read(channel._id, channel._class, undefined, true)
     dispatch('close')
   }
 
@@ -130,7 +132,7 @@
       background-color: #fff;
       color: #1f212b;
       height: 100%;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
 
       :global(.ProseMirror) {
         min-height: 0;

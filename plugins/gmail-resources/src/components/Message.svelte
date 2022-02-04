@@ -15,9 +15,10 @@
 -->
 <script lang="ts">
   import type { SharedMessage } from '@anticrm/gmail'
-  import { CheckBox } from '@anticrm/ui'
+  import { CheckBox, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getTime } from '../utils'
+  import gmail from '../plugin'
 
   export let message: SharedMessage
   export let selected: boolean = false
@@ -37,10 +38,14 @@
   {/if}
   <div class="flex-col message" class:selected>
     <div class="flex-between text-sm mb-1">
-      <div class="content-trans-color overflow-label mr-4">From: <span class="content-accent-color">{message.sender}</span></div>
+      <div class="content-trans-color overflow-label mr-4">
+        <Label label={gmail.string.From} /><span class="content-accent-color">{message.sender}</span>
+      </div>
       <div class="content-trans-color">{getTime(message.modifiedOn)}</div>
     </div>
-    <div class="content-trans-color text-sm overflow-label mr-4 mb-4">To: <span class="content-accent-color">{message.receiver}</span></div>
+    <div class="content-trans-color text-sm overflow-label mr-4 mb-4">
+      <Label label={gmail.string.To} /><span class="content-accent-color">{message.receiver}</span>
+    </div>
     <div class="fs-title overflow-label mb-1">
       {message.subject}
     </div>
@@ -60,10 +65,12 @@
     padding: 1rem;
     min-width: 0;
     background-color: var(--theme-incoming-msg);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     white-space: nowrap;
     flex-grow: 1;
 
-    &.selected { background-color: var(--primary-button-enabled); }
+    &.selected {
+      background-color: var(--primary-button-enabled);
+    }
   }
 </style>

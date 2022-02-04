@@ -33,6 +33,7 @@ import { gmailId } from '@anticrm/gmail'
 import { imageCropperId } from '@anticrm/image-cropper'
 import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
+import { notificationId } from '@anticrm/notification'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -86,4 +87,6 @@ export async function configurePlatform() {
   addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
+  addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
+  addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
 }

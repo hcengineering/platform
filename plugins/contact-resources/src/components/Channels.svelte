@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Channel } from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref } from '@anticrm/core'
+  import type { Doc, Ref } from '@anticrm/core'
   import presentation, { Channels } from '@anticrm/presentation'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -23,7 +23,7 @@
 
   export let integrations: Set<Ref<Doc>> | undefined = undefined
 
-  export let channels: AttachedData<Channel>[] = []
+  export let channels: Channel[] = []
 
   const dispatch = createEventDispatcher()
 </script>

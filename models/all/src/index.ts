@@ -36,6 +36,7 @@ import { createModel as templatesModel } from '@anticrm/model-templates'
 import { createModel as textEditorModel } from '@anticrm/model-text-editor'
 import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
+import { createModel as notificationModel } from '@anticrm/model-notification'
 
 const builder = new Builder()
 
@@ -57,7 +58,7 @@ const builders = [
   presentationModel,
   templatesModel,
   textEditorModel,
-
+  notificationModel,
   serverCoreModel,
   serverAttachmentModel,
   serverContactModel,

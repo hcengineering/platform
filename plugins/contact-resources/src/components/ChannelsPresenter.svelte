@@ -16,8 +16,23 @@
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
   import { Channels } from '@anticrm/presentation'
+  import { showPopup } from '@anticrm/ui'
+  import { EditDoc } from '@anticrm/view-resources'
 
   export let value: Channel[] | Channel | null
+
+  function click (ev: any) {
+    if (ev.detail.presenter !== undefined && Array.isArray(value)) {
+      const channel = value[0]
+      if (channel !== undefined) {
+        showPopup(
+          EditDoc,
+          { _id: channel.attachedTo, _class: channel.attachedToClass, rightSection: ev.detail.presenter },
+          'full'
+        )
+      }
+    }
+  }
 </script>
 
-<Channels {value} size={'small'} reverse />
+<Channels {value} size={'small'} reverse on:click={click} />

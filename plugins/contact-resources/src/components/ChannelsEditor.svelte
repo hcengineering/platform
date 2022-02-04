@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedData, Class, Doc, Ref } from '@anticrm/core'
+  import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
@@ -35,40 +35,72 @@
   }
 
   const query = createQuery()
-  query.query(contact.class.Channel, {
-    attachedTo: attachedTo
-  }, (res) => {
-    channels = res
-  })
+  query.query(
+    contact.class.Channel,
+    {
+      attachedTo: attachedTo
+    },
+    (res) => {
+      channels = res
+    }
+  )
 
   const client = getClient()
 
-  async function save (newValues: AttachedData<Channel>[]): Promise<void> {
+  async function save (newValues: Channel[]): Promise<void> {
     const currentProviders = new Set(channels.map((p) => p.provider))
     const promises = []
     for (const value of newValues) {
       const oldChannel = findValue(value.provider)
-      if (oldChannel === undefined) { 
+      if (oldChannel === undefined) {
         if (value.value.length === 0) continue
-        promises.push(client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachedClass, 'channels', {
-          value: value.value,
-          provider: value.provider
-        }))
+        promises.push(
+          client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachedClass, 'channels', {
+            value: value.value,
+            provider: value.provider
+          })
+        )
       } else {
         currentProviders.delete(value.provider)
         if (value.value === oldChannel.value) continue
-        promises.push(client.updateCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection, {
-          value: value.value
-        }))
+        promises.push(
+          client.updateCollection(
+            oldChannel._class,
+            oldChannel.space,
+            oldChannel._id,
+            oldChannel.attachedTo,
+            oldChannel.attachedToClass,
+            oldChannel.collection,
+            {
+              value: value.value
+            }
+          )
+        )
       }
     }
     for (const value of currentProviders) {
       const oldChannel = findValue(value)
       if (oldChannel === undefined) continue
-      promises.push(client.removeCollection(oldChannel._class, oldChannel.space, oldChannel._id, oldChannel.attachedTo, oldChannel.attachedToClass, oldChannel.collection))
+      promises.push(
+        client.removeCollection(
+          oldChannel._class,
+          oldChannel.space,
+          oldChannel._id,
+          oldChannel.attachedTo,
+          oldChannel.attachedToClass,
+          oldChannel.collection
+        )
+      )
     }
     Promise.all(promises)
   }
 </script>
 
-<Channels {channels} {integrations} on:change={(e) => { save(e.detail) }} on:click />
+<Channels
+  {channels}
+  {integrations}
+  on:change={(e) => {
+    save(e.detail)
+  }}
+  on:click
+/>

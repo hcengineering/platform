@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedData, Ref } from '@anticrm/core'
+  import { generateId, getCurrentAccount, Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
   import { EditBox, Button, ScrollBox } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
-  import { ChannelProvider, Channel } from '@anticrm/contact'
+  import { ChannelProvider, Channel, Contact } from '@anticrm/contact'
   import contact from '../plugin'
 
   export let values: Channel[]
-  const newValues: AttachedData<Channel>[] = []
+  const newValues: Channel[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -39,17 +39,32 @@
   const client = getClient()
   client.findAll(contact.class.ChannelProvider, {}).then((result) => {
     providers = result
+    const base: Channel =
+      values.length > 0
+        ? values[0]
+        : {
+            _id: generateId(),
+            attachedToClass: contact.class.Contact,
+            attachedTo: '' as Ref<Contact>,
+            _class: contact.class.Channel,
+            space: contact.space.Contacts,
+            modifiedOn: 0,
+            modifiedBy: getCurrentAccount()._id,
+            collection: 'channels',
+            value: '',
+            provider: '' as Ref<ChannelProvider>
+          }
     for (const provider of providers) {
       const i = findValue(provider._id)
       if (i !== -1) {
-        newValues.push({ provider: provider._id, value: values[i].value })
+        newValues.push(values[i])
       } else {
-        newValues.push({ provider: provider._id, value: '' })
+        newValues.push({ ...base, provider: provider._id, value: '' })
       }
     }
   })
 
-  function filterUndefined (channels: AttachedData<Channel>[]):  AttachedData<Channel>[] {
+  function filterUndefined (channels: Channel[]): Channel[] {
     return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
   }
 </script>

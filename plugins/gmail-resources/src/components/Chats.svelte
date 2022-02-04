@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Message, SharedMessage } from '@anticrm/gmail'
@@ -25,12 +24,14 @@
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
+  import { read } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
   export let newMessage: boolean
 
-  const EMAIL_REGEX = /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+  const EMAIL_REGEX =
+    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
   let messages: Message[] = []
   let accounts: EmployeeAccount[] = []
@@ -43,21 +44,29 @@
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
-  $: messagesQuery.query(
-    gmail.class.Message,
-    { attachedTo: channel._id },
-    (res) => {
-      messages = res
-    },
-    { sort: { modifiedOn: SortingOrder.Descending } }
-  )
+  function updateMessagesQuery (channelId: Ref<Channel>): void {
+    messagesQuery.query(
+      gmail.class.Message,
+      { attachedTo: channelId },
+      (res) => {
+        messages = res
+        read(channelId, channel._class)
+        const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
+        updateAccountsQuery(accountsIds)
+      },
+      { sort: { modifiedOn: SortingOrder.Descending } }
+    )
+  }
 
-  $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
-  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
-    accounts = result
-  })
+  $: updateMessagesQuery(channel._id)
 
-  $: settingsQuery.query(
+  function updateAccountsQuery (accountsIds: Set<Ref<EmployeeAccount>>): void {
+    accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: Array.from(accountsIds) } }, (result) => {
+      accounts = result
+    })
+  }
+
+  settingsQuery.query(
     setting.class.Integration,
     { type: gmail.integrationType.Gmail, space: accountId as string as Ref<Space> },
     (res) => {
@@ -68,9 +77,17 @@
 
   async function share (): Promise<void> {
     const selectedMessages = messages.filter((m) => selected.has(m._id as string as Ref<SharedMessage>))
-    await client.addCollection(gmail.class.SharedMessages, object.space, object._id, object._class, 'gmailSharedMessages', {
-      messages: convertMessages(selectedMessages, accounts)
-    })
+    await client.addCollection(
+      gmail.class.SharedMessages,
+      object.space,
+      object._id,
+      object._class,
+      'gmailSharedMessages',
+      {
+        messages: convertMessages(selectedMessages, accounts)
+      }
+    )
+    await read(channel._id, channel._class, undefined, true)
     clear()
   }
 
@@ -90,7 +107,6 @@
       }
     })
   }
-
 
   function getName (message: Message, accounts: EmployeeAccount[], sender: boolean): string {
     if (message.incoming === sender) {

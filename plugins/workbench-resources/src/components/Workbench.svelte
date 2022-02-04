@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Client, Doc, getCurrentAccount, Ref, Space, Timestamp } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
@@ -29,7 +30,8 @@
     PanelInstance
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, setContext } from 'svelte'
+  import { writable } from 'svelte/store'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import ActivityStatus from './ActivityStatus.svelte'
@@ -53,6 +55,19 @@
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let navigatorModel: NavigatorModel | undefined
+
+  const lastViewsStore = writable(new Map<Ref<Doc>, Timestamp>())
+  setContext('lastViews', lastViewsStore)
+
+  const lastViewQuery = createQuery()
+
+  lastViewQuery.query(notification.class.LastView, { user: getCurrentAccount()._id }, (result) => {
+    const res: Map<Ref<Doc>, Timestamp> = new Map<Ref<Doc>, Timestamp>()
+    result.forEach((p) => {
+      res.set(p.attachedTo, p.lastView)
+    })
+    lastViewsStore.set(res)
+  })
 
   onDestroy(
     location.subscribe(async (loc) => {
@@ -235,7 +250,7 @@
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
-  <PanelInstance/>
+  <PanelInstance />
   <Popup />
   <TooltipInstance />
 {:else}

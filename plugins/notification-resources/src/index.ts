@@ -1,6 +1,6 @@
-<!--
+//
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,18 +12,10 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  export let content: string
-</script>
+//
 
-<iframe srcdoc={content} title="e-mail" />
+import { Resources } from '@anticrm/platform'
 
-<style lang="scss">
-  iframe {
-    overflow: auto;
-    border: none;
-    border-radius: 0.5rem;
-    height: 100%;
-  }
-</style>
+export default async (): Promise<Resources> => ({})
+
+export * from './utils'
