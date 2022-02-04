@@ -38,15 +38,20 @@ function extractBacklinks (backlinkId: Ref<Doc>, backlinkClass: Ref<Class<Doc>>,
     nds.forEach((kid) => {
       if (kid.nodeType === Node.ELEMENT_NODE && (kid as HTMLElement).localName === 'span') {
         const el = kid as HTMLElement
-        result.push({
-          attachedTo: el.getAttribute('data-id') as Ref<Doc>,
-          attachedToClass: el.getAttribute('data-objectclass') as Ref<Class<Doc>>,
-          collection: 'backlinks',
-          backlinkId,
-          backlinkClass,
-          message,
-          attachedDocId
-        })
+        const ato = el.getAttribute('data-id') as Ref<Doc>
+        const atoClass = el.getAttribute('data-objectclass') as Ref<Class<Doc>>
+        const e = result.find(e => e.attachedTo === ato && e.attachedToClass === atoClass)
+        if (e === undefined) {
+          result.push({
+            attachedTo: ato,
+            attachedToClass: atoClass,
+            collection: 'backlinks',
+            backlinkId,
+            backlinkClass,
+            message,
+            attachedDocId
+          })
+        }
       }
       nodes.push(kid.childNodes)
     })
