@@ -23,16 +23,18 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex-col popup">
-  <div class="flex-row-center red-color menu-item" on:click={() => { dispatch('close'); onDelete() }}>
+<div class="antiPopup">
+  <div class="ap-space" />
+  <div class="ap-menuItem ap-woScroll flex-row-center redlight" on:click={() => { dispatch('close'); onDelete() }}>
     <div class="mr-3">
       <Delete size={'small'} />
     </div>
-    <div class="flex-grow"><Label label={task.string.Delete} /></div>
+    <Label label={task.string.Delete} />
   </div>
+  <div class="ap-space" />
 </div>
 
-<style lang="scss">
+<!-- <style lang="scss">
   .popup {
     padding: .5rem;
     min-width: 12rem;
@@ -51,4 +53,4 @@
 
     &:hover { background-color: var(--theme-button-bg-hovered); }
   }
-</style>
+</style> -->

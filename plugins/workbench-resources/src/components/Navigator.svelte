@@ -57,9 +57,8 @@
       specBottomCount = bottomSpecials.length
     }
     if (model.spaces) spModelCount = model.spaces.length
-    showDivider = (specTopCount > 0) ?? false
-  
     shownSpaces = spaces.filter(sp => !sp.archived)
+    showDivider = (specTopCount > 0 && specBottomCount + spModelCount > 0) ? true : false
   }
 
   $: if (model) update(model, spaces)

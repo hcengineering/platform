@@ -121,7 +121,7 @@
 
     .header {
       flex-shrink: 0;
-      padding: 0 2rem 0 2.5rem;
+      padding: 0 2.5rem 0 2.5rem;
       min-height: 0;
       height: 4rem;
       color: var(--theme-content-accent-color);

@@ -38,46 +38,27 @@
   )
 </script>
 
-<div class="flex-col statuses-container">
+<div class="antiPopup">
+  <div class="ap-space" />
   {#each states as state}
-    <div
-      class="flex-row-center state"
+    <button
+      class="ap-menuItem ap-woScroll flex-row-center"
       on:click={() => {
         dispatch('close', state)
       }}
     >
       <div class="color" style="background-color: {getPlatformColor(state.color)}" />
       {state.title}
-    </div>
+    </button>
   {/each}
+  <div class="ap-space" />
 </div>
 
 <style lang="scss">
-  .statuses-container {
-    padding: 0.5rem;
-    max-height: 100%;
-    min-width: 10rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
-    user-select: none;
-    filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
-
-    .state {
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--theme-button-bg-hovered);
-      }
-      .color {
-        margin-right: 0.75rem;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 0.25rem;
-      }
-    }
+  .color {
+    margin-right: .75rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: .25rem;
   }
 </style>

@@ -19,53 +19,24 @@
 
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
+  export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="flex-row-center container"
+  class="antiNav-element" class:selected
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
 >
-  <div class="icon">
+  <div class="an-element__icon">
     {#if icon}
       <Icon {icon} size={'small'} />
     {/if}
   </div>
-  <span>
+  <span class="an-element__label title">
     {#if label}<Label {label} />{:else}{label}{/if}
   </span>
 </div>
-
-<style lang="scss">
-  .container {
-    margin: 0 1rem;
-    padding-left: .625rem;
-    padding-right: .75rem;
-    min-height: 2.25rem;
-    font-weight: 500;
-    color: var(--theme-caption-color);
-    border-radius: .5rem;
-    user-select: none;
-    cursor: pointer;
-
-    .icon {
-      margin-right: 1rem;
-      width: 1rem;
-      min-width: 1rem;
-      height: 1rem;
-      border-radius: .25rem;
-    }
-    span {
-      flex-grow: 1;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    &:hover { background-color: var(--theme-button-bg-enabled); }
-  }
-</style>

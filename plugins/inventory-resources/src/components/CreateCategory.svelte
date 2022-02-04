@@ -68,6 +68,7 @@
   <Grid column={1} rowGap={1.5}>
     <EditBox
       label={inventory.string.Category}
+      icon={inventory.icon.Categories}
       bind:value={name}
       placeholder={inventory.string.Category}
       maxWidth={'16rem'}

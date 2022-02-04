@@ -29,75 +29,25 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="flex-row-center container" class:selected={selected}
+  class="antiNav-element" class:selected
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
 >
-  <div class="icon">
+  <div class="an-element__icon">
     {#if icon}
       <Icon {icon} size={'small'} />
     {/if}
   </div>
-  <span>
+  <span class="an-element__label title">
     {#if label}<Label {label} />{:else}{label}{/if}
   </span>
   {#each actions as action}
-    <div class="tool">
+    <div class="an-element__tool">
       <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
     </div>
   {/each}
   {#if notifications > 0}
-    <div class="counter">{notifications}</div>
+    <div class="an-element__counter">{notifications}</div>
   {/if}
 </div>
-
-<style lang="scss">
-  .container {
-    margin: 0 16px;
-    padding-left: 10px;
-    padding-right: 12px;
-    min-height: 36px;
-    font-weight: 500;
-    color: var(--theme-caption-color);
-    border-radius: 8px;
-    user-select: none;
-    cursor: pointer;
-
-    .icon {
-      margin-right: 18px;
-      width: 16px;
-      min-width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      opacity: 0.3;
-    }
-    span {
-      flex-grow: 1;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    .tool {
-      margin-left: 12px;
-      visibility: hidden;
-    }
-    .counter {
-      margin-left: 12px;
-      font-weight: 600;
-      font-size: 12px;
-      line-height: 100%;
-    }
-
-    &.selected {
-      background-color: var(--theme-button-bg-enabled);
-    }
-
-    &:hover {
-      background-color: var(--theme-button-bg-enabled);
-      .tool {
-        visibility: visible;
-      }
-    }
-  }
-</style>
