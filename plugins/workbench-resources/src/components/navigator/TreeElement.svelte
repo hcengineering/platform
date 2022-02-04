@@ -64,7 +64,7 @@
   {:else}
     {#await actions() then actionItems}
       {#if actionItems.length === 1}
-        <div class="tool">
+        <div class="an-element__tool">
           <ActionIcon
             label={actionItems[0].label}
             icon={actionItems[0].icon}
@@ -75,7 +75,7 @@
           />
         </div>
       {:else if actionItems.length > 1}
-        <div class="tool" on:click|stopPropagation={onMenuClick}>
+        <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>
           <IconMoreV size={'small'} />
         </div>
       {/if}
