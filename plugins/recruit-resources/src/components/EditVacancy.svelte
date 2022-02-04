@@ -22,7 +22,7 @@
   import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Component, EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel, ActionIcon, Scroller } from '@anticrm/ui'
+  import { Component, EditBox, Grid, Icon, IconClose, Label, Scroller, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
@@ -108,7 +108,7 @@
         <ToggleWithLabel label={recruit.string.ThisVacancyIsPrivate} description={recruit.string.MakePrivateDescription}/>
       </Scroller>
     {:else if selected === 2}
-      <Component is={activity.component.Activity} props={{object, transparent: true}} />
+      <Component is={activity.component.Activity} props={{ object, transparent: true }} />
     {/if}
   {/if}
 </div>

@@ -28,6 +28,7 @@
   const client = getClient()
 
   function change (field: string, value: any) {
+    console.log('change', value)
     client.updateCollection(
       object._class,
       object.space,
