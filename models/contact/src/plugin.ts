@@ -48,7 +48,8 @@ export const ids = mergeIds(contactId, contact, {
     CreateOrganizations: '' as IntlString,
     SearchEmployee: '' as IntlString,
     SearchPerson: '' as IntlString,
-    SearchOrganization: '' as IntlString
+    SearchOrganization: '' as IntlString,
+    ContactInfo: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

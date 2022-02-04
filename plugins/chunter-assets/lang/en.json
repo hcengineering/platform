@@ -14,6 +14,7 @@
     "EditUpdate": "Save...",
     "EditCancel": "Cancel",
     "Comments" : "Comments",
-    "MentionedIn": "mentioned this "
+    "MentionedIn": "mentioned this ",
+    "ContactInfo": "Contact Info"
   }
 }

@@ -17,6 +17,7 @@
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
   import task from '@anticrm/task'
+  import { StyledTextBox, StyledTextEditor } from '@anticrm/text-editor'
   import { EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
@@ -27,6 +28,7 @@
   const client = getClient()
 
   function change (field: string, value: any) {
+    console.log('change', value)
     client.updateCollection(
       object._class,
       object.space,
@@ -54,13 +56,24 @@
       focus
       on:change={() => change('name', object.name)}
     />
-    <EditBox
-      label={plugin.string.TaskDescription}
-      bind:value={object.description}
-      icon={task.icon.Task}
-      placeholder={plugin.string.TaskDescriptionPlaceholder}
-      maxWidth="39rem"
-      on:change={() => change('description', object.description)}
-    />
+
+    <div class='description'>
+      <StyledTextBox      
+        bind:content={object.description}      
+        placeholder={plugin.string.TaskDescriptionPlaceholder}      
+        on:blur={() => change('description', object.description)}
+      />
+    </div>
   </Grid>
 {/if}
+
+<style lang="scss">
+  .description {
+    display: flex;
+    padding: 1rem;
+    height: 12rem;
+    border-radius: .25rem;
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+  }
+</style>

@@ -13,16 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { IntlString } from '@anticrm/platform'
+
   import { ScrollBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import TextStyle from './icons/TextStyle.svelte'
   import TextEditor from './TextEditor.svelte'
+  import textEditorPlugin from '../plugin'
 
   const dispatch = createEventDispatcher()
 
   export let content: string = ''
+  export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   let textEditor: TextEditor
 
@@ -37,6 +41,7 @@
       <ScrollBox bothScroll stretch>
         <TextEditor
           bind:content
+          {placeholder}
           bind:this={textEditor}
           on:value
           on:content={(ev) => {
@@ -44,6 +49,7 @@
             content = ''
             textEditor.clear()
           }}
+          on:blur
           supportSubmit={false}
         />
       </ScrollBox>

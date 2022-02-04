@@ -31,7 +31,9 @@
     "WorkLocationPreferences": "Work location preferences",
     "Onsite": "Onsite",
     "Remote": "Remote",
-    "SearchApplication": "Search for application..."
+    "SearchApplication": "Search for application...",
+    "Application": "Application",
+    "AssignedRecruiter": "Assigned recruiter"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

@@ -18,7 +18,7 @@
   import type { IntlString } from '@anticrm/platform'
   import type { Ref } from '@anticrm/core'
   import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon, Component } from '@anticrm/ui'
-  import { TextEditor } from '@anticrm/text-editor'
+  import { StyledTextBox } from '@anticrm/text-editor'
   import { AttributesBar, getClient, createQuery } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { createEventDispatcher } from 'svelte'
@@ -40,7 +40,6 @@
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let selected = 0
-  let textEditor: TextEditor
 
   function onChange (key:string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })
@@ -81,13 +80,13 @@
       <div class="flex-col box">
         {#if selected === 0}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={() => {onChange('name', object.name)}}/>
-            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => {onChange('description', object.description)}}/>
+            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={() => { onChange('name', object.name) }}/>
+            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>
           </Grid>
           <div class="mt-10">
-            <span class="title">Description</span>
+            <span class="title">Details</span>
             <div class="description-container">
-              <TextEditor bind:this={textEditor} bind:content={object.fullDescription} on:blur={textEditor.submit} on:content={() => {onChange('fullDescription', object.fullDescription)}} />
+              <StyledTextBox bind:content={object.fullDescription} on:value={(evt) => { onChange('fullDescription', evt.detail) }} />
             </div>
           </div>
           <div class="mt-14">
@@ -96,7 +95,7 @@
         {:else if selected === 1}
           <ToggleWithLabel label={recruit.string.ThisVacancyIsPrivate} description={recruit.string.MakePrivateDescription}/>
         {:else if selected === 2}
-          <Component is={activity.component.Activity} props={{object, transparent: true}} />
+          <Component is={activity.component.Activity} props={{ object, transparent: true }} />
         {/if}
       </div>
     </div>
@@ -205,7 +204,7 @@
     display: flex;
     justify-content: space-between;
     overflow-y: auto;
-    height: 100px;
+    height: 15rem;
     padding: 0px 16px;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);

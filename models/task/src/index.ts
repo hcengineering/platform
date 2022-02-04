@@ -23,6 +23,7 @@ import {
   Model,
   Prop, TypeBoolean,
   TypeDate,
+  TypeMarkup,
   TypeRef,
   TypeString,
   UX
@@ -131,7 +132,7 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeString(), task.string.IssueName)
   name!: string
 
-  @Prop(TypeString(), task.string.TaskDescription)
+  @Prop(TypeMarkup(), task.string.TaskDescription)
   description!: string
 
   @Prop(Collection(chunter.class.Comment), task.string.TaskComments)

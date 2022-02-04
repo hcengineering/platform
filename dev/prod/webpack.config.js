@@ -19,6 +19,7 @@ const path = require('path')
 const autoprefixer = require('autoprefixer')
 const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
+const { resolve } = require('path')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -29,7 +30,7 @@ module.exports = {
   entry: {
     bundle: [
       '@anticrm/theme/styles/global.scss',
-      ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] )
+      ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] ),
     ]
   },
   resolve: {
@@ -59,10 +60,37 @@ module.exports = {
           loader: 'svelte-loader',          
           options: { 
             compilerOptions: {
-              dev: !prod,
+              dev: !prod
             },
             emitCss: true,
-            preprocess: require('svelte-preprocess')({ postcss: true })            
+            hotReload: !prod,
+            preprocess: require('svelte-preprocess')({ postcss: true }),
+            hotOptions: {
+              // Prevent preserving local component state
+              preserveLocalState: true,
+
+              // If this string appears anywhere in your component's code, then local
+              // state won't be preserved, even when noPreserveState is false
+              noPreserveStateKey: '@!hmr',
+
+              // Prevent doing a full reload on next HMR update after fatal error
+              noReload: true,
+
+              // Try to recover after runtime errors in component init
+              optimistic: false,
+
+              // --- Advanced ---
+
+              // Prevent adding an HMR accept handler to components with
+              // accessors option to true, or to components with named exports
+              // (from <script context="module">). This have the effect of
+              // recreating the consumer of those components, instead of the
+              // component themselves, on HMR updates. This might be needed to
+              // reflect changes to accessors / named exports in the parents,
+              // depending on how you use them.
+              acceptAccessors: true,
+              acceptNamedExports: true,
+            }
           }         
         }
       },
@@ -140,13 +168,24 @@ module.exports = {
     new Dotenv({path: prod ? '.env-prod' : '.env'}),
     new DefinePlugin({
       'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
-    })
+    })    
   ],
-  devtool: prod ? false : 'source-map',
+  devtool: prod ? false : 'inline-source-map',
   devServer: {
-    publicPath: '/',
+    static: {
+      directory: path.resolve(__dirname, "public"),
+      publicPath: "/",
+      serveIndex: true,
+      watch: true,
+    },
     historyApiFallback: {
       disableDotRule: true
+    },   
+    hot: true,
+    client: {
+      logging: "info",
+      overlay: false,
+      progress: false,
     },
     proxy: devServer ? {
       '/account': {
