@@ -22,7 +22,7 @@
   import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Component, EditBox, Grid, Icon, IconClose, Label, Scroller, ToggleWithLabel } from '@anticrm/ui'
+  import { ActionIcon, Component, EditBox, Grid, Icon, IconClose, Label, Scroller, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
