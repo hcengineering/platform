@@ -33,10 +33,13 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
+  let oldName: string = ''
 
   const query = createQuery()
   const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
-  $: query.query(recruit.class.Vacancy, { _id }, result => { object = result[0] })
+  $: query.query(recruit.class.Vacancy, { _id }, result => {
+    object = result[0]
+  })
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let selected = 0
@@ -80,8 +83,16 @@
       <div class="flex-col box">
         {#if selected === 0}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={() => { onChange('name', object.name) }}/>
-            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>
+            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder={recruit.string.VacancyPlaceholder} maxWidth="39rem" focus on:change={() => {
+              if (object.name.trim().length > 0) {
+                  onChange('name', object.name)
+              } else {
+                query.query(recruit.class.Vacancy, { _id }, result => {
+                  object = result[0]
+                })
+              }
+            }}/>
+            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder={recruit.string.VacancyDescription} maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>
           </Grid>
           <div class="mt-10">
             <span class="title">Details</span>
