@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import contact,{ Channel,ChannelProvider,combineName,Contact,Person } from '@anticrm/contact'
+  import contact,{ Channel,ChannelProvider,combineName,Person } from '@anticrm/contact'
   import { Channels } from '@anticrm/contact-resources'
-  import { Data,generateId,getCurrentAccount,MixinData,Ref } from '@anticrm/core'
+  import { AttachedData, Data,generateId,MixinData,Ref } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata,getResource,setPlatformStatus,unknownError } from '@anticrm/platform'
   import { Card,EditableAvatar,getClient,getFileUrl,PDFViewer } from '@anticrm/presentation'
@@ -115,19 +115,11 @@
     return value === undefined || value === ''
   }
 
-  function addChannel (channels: Channel[], type: Ref<ChannelProvider>, value?: string): void {
+  function addChannel (channels: AttachedData<Channel>[], type: Ref<ChannelProvider>, value?: string): void {
     if (value !== undefined) {
       const provider = channels.find((e) => e.provider === type)
       if (provider === undefined) {
         channels.push({
-          _id: generateId(),
-          attachedToClass: contact.class.Contact,
-          attachedTo: '' as Ref<Contact>,
-          _class: contact.class.Channel,
-          space: contact.space.Contacts,
-          modifiedOn: 0,
-          modifiedBy: getCurrentAccount()._id,
-          collection: 'channels',
           provider: type,
           value
         })
@@ -237,7 +229,7 @@
     avatar = file
   }
 
-  let channels: Channel[] = []
+  let channels: AttachedData<Channel>[] = []
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->

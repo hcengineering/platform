@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
 //
@@ -12,39 +12,22 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  export let content: string
-</script>
+//
 
-<iframe srcdoc={content} title="e-mail" />
+import contact, { ChannelProvider } from '@anticrm/contact'
+import { Ref } from '@anticrm/core'
+import { getClient } from '@anticrm/presentation'
 
-<style lang="scss">
-  iframe {
-    overflow: auto;
-    border: none;
-    border-radius: 0.5rem;
-    height: 100%;
-    background-color: #fff;
-    color: #1f212b;
+let channelProviders: Promise<ChannelProvider[]> | undefined
 
-    :global(a) {
-      font: inherit;
-      font-weight: 500;
-      text-decoration: initial;
-      color: initial;
-      outline: initial;
-      &:hover {
-        color: initial;
-        text-decoration: initial;
-      }
-      &:active {
-        color: initial;
-        text-decoration: initial;
-      }
-      &:visited {
-        color: initial;
-      }
-    }
+const client = getClient()
+channelProviders = client.findAll(contact.class.ChannelProvider, {})
+
+export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
+  const cp = (await channelProviders) ?? []
+  const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
+  for (const provider of cp) {
+    map.set(provider._id, provider)
   }
-</style>
+  return map
+}

@@ -27,11 +27,12 @@
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
-  import { read } from '@anticrm/notification-resources'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let object: Contact
   let channel: Channel | undefined = undefined
   const client = getClient()
+  const notificationClient = NotificationClient.getClient()
 
   client
     .findOne(contact.class.Channel, {
@@ -61,7 +62,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          read(channel._id, channel._class)
+          notificationClient.updateLastView(channel._id, channel._class)
         }
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
@@ -87,7 +88,7 @@
   )
 
   async function sendMsg (to: string, msg: string) {
-    await fetch(url + '/send-msg', {
+    const res = await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
@@ -99,8 +100,9 @@
       })
     })
     if (channel !== undefined) {
-      await read(channel._id, channel._class, undefined, true)
+      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
     }
+    return res
   }
 
   async function addContact (phone: string) {
@@ -161,7 +163,7 @@
       }
     )
     if (channel !== undefined) {
-      await read(channel._id, channel._class, channel.modifiedOn, true)
+      await notificationClient.updateLastView(channel._id, channel._class, channel.modifiedOn, true)
     }
     clear()
   }

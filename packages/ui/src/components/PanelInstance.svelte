@@ -116,6 +116,7 @@
         bind:this={componentInstance}
         _id={props._id}
         _class={props._class}
+        rightSection={props.rightSection}
         on:update={fitPopup}
         on:close={_close}
       />

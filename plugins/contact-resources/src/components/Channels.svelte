@@ -15,15 +15,16 @@
 -->
 <script lang="ts">
   import { Channel } from '@anticrm/contact'
-  import type { Doc, Ref } from '@anticrm/core'
-  import presentation, { Channels } from '@anticrm/presentation'
+  import type { AttachedData, Doc, Ref } from '@anticrm/core'
+  import presentation from '@anticrm/presentation'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import ChannelsView from './ChannelsView.svelte'
   import contact from '../plugin'
 
   export let integrations: Set<Ref<Doc>> | undefined = undefined
 
-  export let channels: Channel[] = []
+  export let channels: AttachedData<Channel>[] = []
 
   const dispatch = createEventDispatcher()
 </script>
@@ -40,7 +41,7 @@
   />
   <span><Label label={presentation.string.AddSocialLinks} /></span>
 {:else}
-  <Channels value={channels} size={'small'} {integrations} on:click />
+  <ChannelsView value={channels} size={'small'} {integrations} on:click />
   <div class="ml-1">
     <CircleButton
       icon={contact.icon.Edit}

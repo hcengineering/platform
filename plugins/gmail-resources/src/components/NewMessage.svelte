@@ -24,11 +24,12 @@
   import { Channel, Contact, formatName } from '@anticrm/contact'
   import { TextEditor } from '@anticrm/text-editor'
   import plugin from '../plugin'
-  import { read } from '@anticrm/notification-resources'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
   export let currentMessage: SharedMessage | undefined
+  const notificationClient = NotificationClient.getClient()
 
   let editor: TextEditor
   let copy: string = ''
@@ -54,7 +55,7 @@
         copy: copy.split(',').map((m) => m.trim())
       })
     })
-    await read(channel._id, channel._class, undefined, true)
+    await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
     dispatch('close')
   }
 

@@ -24,7 +24,7 @@
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
-  import { read } from '@anticrm/notification-resources'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
@@ -43,6 +43,7 @@
   const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
+  const notificationClient = NotificationClient.getClient()
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
     messagesQuery.query(
@@ -50,7 +51,7 @@
       { attachedTo: channelId },
       (res) => {
         messages = res
-        read(channelId, channel._class)
+        notificationClient.updateLastView(channelId, channel._class)
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
       },
@@ -87,7 +88,7 @@
         messages: convertMessages(selectedMessages, accounts)
       }
     )
-    await read(channel._id, channel._class, undefined, true)
+    await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
     clear()
   }
 

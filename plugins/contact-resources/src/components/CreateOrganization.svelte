@@ -23,7 +23,7 @@
   import { Channel, Organization } from '@anticrm/contact'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
-  import { generateId } from '@anticrm/core'
+  import { AttachedData, generateId } from '@anticrm/core'
   import Channels from './Channels.svelte'
 
   export function canClose (): boolean {
@@ -51,7 +51,7 @@
     dispatch('close')
   }
 
-  let channels: Channel[] = []
+  let channels: AttachedData<Channel>[] = []
 </script>
 
 <Card

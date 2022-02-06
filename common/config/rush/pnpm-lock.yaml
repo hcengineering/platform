@@ -12100,7 +12100,7 @@ packages:
     dev: false
 
   file:projects/gmail-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-zZWhkD/HZH3/ljH7WhD2IG9NhQ6b1JPTgG2Rc35pGwScC2uzyI8xT3cq4K/jbsYLZ3BXj31BYOno7Mqo6pFcZg==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-C7jgVQmN2v6HBKZgVAzWPYRaWrRHhfWpIRIRUyBUmspQreX2ArmCFCjq+1CHYBh9lGcnBZGgaNN1zQ1aTzSFLA==, tarball: file:projects/gmail-resources.tgz}
     id: file:projects/gmail-resources.tgz
     name: '@rush-temp/gmail-resources'
     version: 0.0.0
@@ -12959,7 +12959,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_ac194b5590200ebf8338e0f86ec190f4:
-    resolution: {integrity: sha512-a6MxFIFyirbLPGkmxus0vkJaIN2o/cXhCwsQARGxzXnkoHEIAveZtBCKZ5vPHhL4llgNznxz/GG4+mrXvjxlyw==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-TgP/VzfwZ+LGqaToY+rKYjH683GBuSHetD9bM85Jg6mtCtU09uogF3mwqKCAU1gyKtiVYLA63VmAb8MkxwV56A==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -12974,7 +12974,8 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.5.1
-      svelte-check: 2.3.0_ac194b5590200ebf8338e0f86ec190f4
+      svelte: 3.44.3
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12988,7 +12989,6 @@ packages:
       - stylus
       - sugarss
       - supports-color
-      - svelte
     dev: false
 
   file:projects/notification.tgz:
@@ -13127,7 +13127,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-QhfoHLyegkl3JsleXaZkSWsVQgikJM9jdqkla2mRW3kHyQAYWPBITUnVVWu1qBADViJupNZdYmYEcm7oeMF5og==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-jijMKCYTGrkmr9ShyFIPRnr3Uxyy8gyk8SDmwr9Wl4VevuSO9S/vHE0Pln+bEcKDtnzM/Vzh3GJmwUq3aPV3Aw==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -13163,7 +13163,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-mb0NOzQOQI/mZjzWLO+zp8F57x5koGPRF0qdrONOBHgKJ+wKpbSrVyW911S0nM8b/mVimVqaXCI2XdjAvYO1mg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-8jdkx/UlSEQLfZMUQ/XwQoqOiGAZtR6yJehJqk8TrjkUWKD4y0kroErjmQZ1sv014LnaWuux3mjbte+9b79I7w==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -13691,7 +13691,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-ZneaA8uvCmjuSf+zjIrPM1lzhi1At5Giud4UOzKwz2o0lrC4+npRTtCIZ52ZKjjNoOTmgf/hr9RYrqwCMH+z4g==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-hreZkJ3tRwh2rXC7K/WlkA99TDatMLuHwtC2dTXqivRNEKhwH0RHDXgO1jrjulj7uSNj5+0ksOeQtlWBYmhRiw==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -14071,7 +14071,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-zqDa0vWNFseFg/iea/NI651RzhI018W2GA8H5dC3O2CXTkwTCUPGNK00HzqTTxWTYTNZ0tQ+5EI7+n4bs+n56w==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-yWHOAPBVj1y9VbkYHOaANIkCbBfQOkKKvxj2dEFK3It4WUN/jxZSPqrmW1/ZNkENZVaWzRL1VY6uGhJJ5dwgFQ==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
-  import { Channels } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
-  import { EditDoc } from '@anticrm/view-resources'
+  import ChannelsView from './ChannelsView.svelte'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let value: Channel[] | Channel | null
 
@@ -25,14 +25,16 @@
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPopup(
-          EditDoc,
-          { _id: channel.attachedTo, _class: channel.attachedToClass, rightSection: ev.detail.presenter },
-          'full'
+        showPanel(
+          view.component.EditDoc,
+          channel.attachedTo,
+          channel.attachedToClass,
+          'full',
+          ev.detail.presenter
         )
       }
     }
   }
 </script>
 
-<Channels {value} size={'small'} reverse on:click={click} />
+<ChannelsView {value} size={'small'} reverse on:click={click} />

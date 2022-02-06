@@ -199,7 +199,7 @@ class TServerStorage implements ServerStorage {
     const _class = txClass(tx)
     const objClass = txObjectClass(tx)
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
-      if (tx.objectSpace !== core.space.Derived) {
+      if (tx.objectSpace !== core.space.DerivedTx) {
         await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
       }
 

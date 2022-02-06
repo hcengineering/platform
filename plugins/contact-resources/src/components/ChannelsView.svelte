@@ -15,20 +15,21 @@
 -->
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@anticrm/contact'
-  import type { Doc, Ref, Timestamp } from '@anticrm/core'
+  import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { AnyComponent } from '@anticrm/ui'
   import { CircleButton, Tooltip } from '@anticrm/ui'
-  import { createEventDispatcher, getContext } from 'svelte'
-  import { Writable } from 'svelte/store'
+  import { createEventDispatcher } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
-  export let value: Channel[] | Channel | null
+  export let value: AttachedData<Channel>[] | Channel | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
-  const lastViews = getContext('lastViews') as Writable<Map<Ref<Doc>, Timestamp>>
+  const notificationClient = NotificationClient.getClient()
+  const lastViews = notificationClient.getLastViews()
 
   interface Item {
     label: IntlString
@@ -42,14 +43,13 @@
   const dispatch = createEventDispatcher()
 
   function getProvider (
-    item: Channel,
+    item: AttachedData<Channel>,
     map: Map<Ref<ChannelProvider>, ChannelProvider>,
     lastViews: Map<Ref<Doc>, Timestamp>
   ): any | undefined {
     const provider = map.get(item.provider)
     if (provider) {
-      const lastView = lastViews.get(item._id)
-      const notification = lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+      const notification = (item as Channel)._id !== undefined ? isNew((item as Channel), lastViews) : false
       return {
         label: provider.label as IntlString,
         icon: provider.icon as Asset,
@@ -63,7 +63,12 @@
     }
   }
 
-  async function update (value: Channel[] | Channel, lastViews: Map<Ref<Doc>, Timestamp>) {
+  function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+    const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
+    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+  }
+
+  async function update (value: AttachedData<Channel>[] | Channel, lastViews: Map<Ref<Doc>, Timestamp>) {
     const result = []
     const map = await getChannelProviders()
     if (Array.isArray(value)) {
