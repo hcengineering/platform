@@ -68,7 +68,11 @@
     return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
   }
 
-  async function update (value: AttachedData<Channel>[] | Channel, lastViews: Map<Ref<Doc>, Timestamp>) {
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
+    if (value === null) {
+      displayItems = []
+      return
+    }
     const result = []
     const map = await getChannelProviders()
     if (Array.isArray(value)) {
