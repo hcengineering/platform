@@ -253,6 +253,9 @@ export class LiveQuery extends TxProcessor implements Client {
     needCallback = this.proccesLookupUpdateDoc(q.result, lookup, tx)
 
     if (needCallback) {
+      if (q.options?.sort !== undefined) {
+        resultSort(q.result, q.options?.sort)
+      }
       q.callback(this.clone(q.result))
     }
   }
@@ -408,6 +411,9 @@ export class LiveQuery extends TxProcessor implements Client {
     needCallback = this.proccesLookupAddDoc(q.result, lookup, doc)
 
     if (needCallback) {
+      if (q.options?.sort !== undefined) {
+        resultSort(q.result, q.options?.sort)
+      }
       q.callback(this.clone(q.result))
     }
   }
@@ -501,6 +507,9 @@ export class LiveQuery extends TxProcessor implements Client {
       }
     }
     if (needCallback) {
+      if (q.options?.sort !== undefined) {
+        resultSort(q.result, q.options?.sort)
+      }
       q.callback(this.clone(q.result))
     }
   }
