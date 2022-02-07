@@ -33,6 +33,10 @@ export default plugin(textEditorId, {
     Attach: '' as IntlString,
     TextStyle: '' as IntlString,
     Emoji: '' as IntlString,
-    GIF: '' as IntlString
+    GIF: '' as IntlString,
+    EditorPlaceholder: '' as IntlString,
+    Edit: '' as IntlString,
+    Cancel: '' as IntlString,
+    Save: '' as IntlString
   }
 })

@@ -18,7 +18,6 @@
   import { CommentInput } from '@anticrm/chunter-resources'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
   import { Grid, IconActivity, ScrollBox } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
@@ -51,7 +50,7 @@
 </script>
 
 {#if fullSize || transparent}
-  {#if !transparent}
+  {#if transparent !== undefined && !transparent}
     <div class="flex-row-center header">
       <div class="flex-center icon"><IconActivity size={'small'} /></div>
       <div class="fs-title">Activity</div>

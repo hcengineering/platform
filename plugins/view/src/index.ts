@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, TxOperations, UXObject } from '@anticrm/core'
+import type { AnyAttribute, Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, TxOperations, UXObject } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
@@ -116,6 +116,8 @@ export interface AttributeModel {
   sortingKey: string
   // Extra icon if applicable
   icon?: Asset
+
+  attribute?: AnyAttribute
 }
 
 /**

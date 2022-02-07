@@ -331,6 +331,13 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
+export function TypeMarkup (): Type<string> {
+  return { _class: core.class.TypeMarkup, label: 'TypeMarkup' as IntlString }
+}
+
+/**
+ * @public
+ */
 export function TypeBoolean (): Type<string> {
   return { _class: core.class.TypeBoolean, label: 'TypeBoolean' as IntlString }
 }

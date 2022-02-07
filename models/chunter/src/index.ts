@@ -17,7 +17,7 @@ import activity from '@anticrm/activity'
 import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
 import type { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeString, UX } from '@anticrm/model'
+import { Builder, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
@@ -34,7 +34,7 @@ export class TChannel extends TSpace implements Channel {}
 
 @Model(chunter.class.Message, core.class.Doc, DOMAIN_CHUNTER)
 export class TMessage extends TDoc implements Message {
-  @Prop(TypeString(), 'Content' as IntlString)
+  @Prop(TypeMarkup(), 'Content' as IntlString)
   @Index(IndexKind.FullText)
   content!: string
 }
@@ -42,7 +42,7 @@ export class TMessage extends TDoc implements Message {
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
 @UX('Comment' as IntlString)
 export class TComment extends TAttachedDoc implements Comment {
-  @Prop(TypeString(), 'Message' as IntlString)
+  @Prop(TypeMarkup(), 'Message' as IntlString)
   @Index(IndexKind.FullText)
   message!: string
 }

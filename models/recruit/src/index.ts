@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import { Doc, FindOptions, Lookup, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
@@ -31,7 +31,7 @@ import presentation from '@anticrm/model-presentation'
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
 export class TVacancy extends TSpaceWithStates implements Vacancy {
-  @Prop(TypeString(), 'Full description' as IntlString)
+  @Prop(TypeMarkup(), 'Full description' as IntlString)
   fullDescription?: string
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
@@ -71,19 +71,19 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX('Application' as IntlString, recruit.icon.Application, 'APP' as IntlString, 'number')
+@UX(recruit.string.Application, recruit.icon.Application, 'APP' as IntlString, 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.mixin.Candidate), 'Candidate' as IntlString)
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
   declare attachedTo: Ref<Candidate>
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  @Prop(TypeRef(contact.class.Employee), 'Assigned recruiter' as IntlString)
+  @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null
 }
 

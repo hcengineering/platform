@@ -49,13 +49,13 @@ export class TContact extends TDoc implements Contact {
 
   avatar?: string
 
-  @Prop(Collection(contact.class.Channel), 'Contact Info' as IntlString)
+  @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
   channels?: number
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
-  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
   @Prop(TypeString(), 'Location' as IntlString)

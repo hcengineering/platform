@@ -31,6 +31,7 @@ export default mergeIds(viewId, view, {
   component: {
     StringEditor: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,
+    HTMLPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,

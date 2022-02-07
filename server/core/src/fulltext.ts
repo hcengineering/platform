@@ -153,7 +153,7 @@ export class FullTextIndex implements WithFind {
       const allAttributes = this.hierarchy.getAllAttributes(clazz)
       const result: AnyAttribute[] = []
       for (const [, attr] of allAttributes) {
-        if (attr.type._class === core.class.TypeString) {
+        if (attr.type._class === core.class.TypeString || attr.type._class === core.class.TypeMarkup) {
           result.push(attr)
         }
       }

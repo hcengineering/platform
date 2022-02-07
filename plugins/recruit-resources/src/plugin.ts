@@ -27,6 +27,7 @@ export default mergeIds(recruitId, recruit, {
   string: {
     CreateVacancy: '' as IntlString,
     VacancyName: '' as IntlString,
+    VacancyPlaceholder: '' as IntlString,
     VacancyDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,

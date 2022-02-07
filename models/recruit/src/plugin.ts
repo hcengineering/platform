@@ -38,7 +38,9 @@ export default mergeIds(recruitId, recruit, {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
     CandidatePools: '' as IntlString,
-    SearchApplication: '' as IntlString
+    SearchApplication: '' as IntlString,
+    Application: '' as IntlString,
+    AssignedRecruiter: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>

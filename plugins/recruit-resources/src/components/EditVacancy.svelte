@@ -15,15 +15,15 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import type { Ref } from '@anticrm/core'
-  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon, Component } from '@anticrm/ui'
-  import { TextEditor } from '@anticrm/text-editor'
-  import { AttributesBar, getClient, createQuery } from '@anticrm/presentation'
-  import { Vacancy } from '@anticrm/recruit'
-  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
+  import type { Ref } from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
+  import { Vacancy } from '@anticrm/recruit'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Component, EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
   export let _id: Ref<Vacancy>
@@ -36,11 +36,17 @@
 
   const query = createQuery()
   const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
-  $: query.query(recruit.class.Vacancy, { _id }, result => { object = result[0] })
+
+  async function updateObject (_id: Ref<Vacancy>): Promise<void> {
+    await query.query(recruit.class.Vacancy, { _id }, result => {
+      object = result[0]
+    })
+  }
+
+  $: updateObject(_id)
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let selected = 0
-  let textEditor: TextEditor
 
   function onChange (key:string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })
@@ -81,13 +87,20 @@
       <div class="flex-col box">
         {#if selected === 0}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={() => {onChange('name', object.name)}}/>
-            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder='Description' maxWidth="39rem" focus on:change={() => {onChange('description', object.description)}}/>
+            <EditBox label={recruit.string.VacancyName} bind:value={object.name} placeholder={recruit.string.VacancyPlaceholder} maxWidth="39rem" focus on:change={() => {
+              if (object.name.trim().length > 0) {
+                  onChange('name', object.name)
+              } else {
+                // Revert previos object.name
+                updateObject(_id)
+              }
+            }}/>
+            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder={recruit.string.VacancyDescription} maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>
           </Grid>
           <div class="mt-10">
-            <span class="title">Description</span>
+            <span class="title">Details</span>
             <div class="description-container">
-              <TextEditor bind:this={textEditor} bind:content={object.fullDescription} on:blur={textEditor.submit} on:content={() => {onChange('fullDescription', object.fullDescription)}} />
+              <StyledTextBox bind:content={object.fullDescription} on:value={(evt) => { onChange('fullDescription', evt.detail) }} />
             </div>
           </div>
           <div class="mt-14">
@@ -96,7 +109,7 @@
         {:else if selected === 1}
           <ToggleWithLabel label={recruit.string.ThisVacancyIsPrivate} description={recruit.string.MakePrivateDescription}/>
         {:else if selected === 2}
-          <Component is={activity.component.Activity} props={{object, transparent: true}} />
+          <Component is={activity.component.Activity} props={{ object, transparent: true }} />
         {/if}
       </div>
     </div>
@@ -205,7 +218,7 @@
     display: flex;
     justify-content: space-between;
     overflow-y: auto;
-    height: 100px;
+    height: 15rem;
     padding: 0px 16px;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);

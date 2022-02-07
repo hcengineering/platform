@@ -106,6 +106,9 @@ export class TType extends TObj implements Type<any> {
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
 
+@Model(core.class.TypeMarkup, core.class.Type)
+export class TTypeMarkup extends TType {}
+
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {
   to!: Ref<Class<Doc>>

@@ -17,12 +17,12 @@
   import core from '@anticrm/core'
   import { getResource, IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Action, IconAdd, IconEdit, showPopup } from '@anticrm/ui'
+  import { Action, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import type { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../../plugin'
   import { classIcon } from '../../utils'
-  import SpacePanel from './SpacePanel.svelte'
   import TreeItem from './TreeItem.svelte'
   import TreeNode from './TreeNode.svelte'
 
@@ -44,7 +44,7 @@
     label: 'Open' as IntlString,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      showPopup(model.component ?? SpacePanel, { _id, spaceClass: model.spaceClass }, 'right')
+      showPanel(model.component ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
     }
   }
 
