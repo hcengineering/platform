@@ -95,4 +95,28 @@ test.describe('recruit tests', () => {
     await expect(page.locator('text=John Multiseed').first()).toBeVisible()
     await expect(page.locator('text=Alex P.').first()).toBeVisible()
   })
+
+  test('application-search', async ({ page }) => {
+    // Create user and workspace
+    await openWorkbench(page)
+
+    await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
+
+    await page.click('text=Software Engineer')
+
+    await expect(page.locator('text=Andrey P.')).toBeVisible()
+    expect(await page.locator('.tr-body').count()).toBeGreaterThan(2)
+
+    const searchBox = page.locator('[placeholder="Search"]')
+    await searchBox.fill('Frontend Engineer')
+    await searchBox.press('Enter')
+
+    await expect(page.locator('.tr-body')).toHaveCount(1)
+
+    await searchBox.fill('')
+    await searchBox.press('Enter')
+
+    await expect(page.locator('text=Andrey P.')).toBeVisible()
+    expect(await page.locator('.tr-body').count()).toBeGreaterThan(2)
+  })
 })
