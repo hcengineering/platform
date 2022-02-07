@@ -14,12 +14,24 @@
 -->
 
 <script lang="ts">
-  import { Avatar } from '@anticrm/presentation'
+  import { Avatar, createQuery } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import { Channels } from '@anticrm/presentation'
-  import { formatName } from '@anticrm/contact'
+  import { ChannelsView } from '@anticrm/contact-resources'
+  import contact, { Channel, formatName } from '@anticrm/contact'
 
   export let candidate: Candidate
+
+  let channels: Channel[] = []
+  const channelsQuery = createQuery()
+  channelsQuery.query(
+    contact.class.Channel,
+    {
+      attachedTo: candidate._id
+    },
+    (res) => {
+      channels = res
+    }
+  )
 </script>
 
 <div class="flex-col h-full card-container">
@@ -29,7 +41,7 @@
     <div class="name lines-limit-2">{formatName(candidate.name)}</div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>
-    <div class="footer"><Channels value={candidate.channels} size={'small'} /></div>
+    <div class="footer"><ChannelsView value={channels} size={'small'} on:click /></div>
   {/if}
 </div>
 

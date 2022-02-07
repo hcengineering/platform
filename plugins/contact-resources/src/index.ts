@@ -21,6 +21,7 @@ import { Avatar, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
 import Channels from './components/Channels.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
+import ChannelsView from './components/ChannelsView.svelte'
 import ContactPresenter from './components/ContactPresenter.svelte'
 import Contacts from './components/Contacts.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
@@ -34,7 +35,7 @@ import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
 
-export { Channels, ChannelsEditor, ContactPresenter }
+export { Channels, ChannelsEditor, ContactPresenter, ChannelsView }
 
 async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
   return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({

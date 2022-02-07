@@ -20,18 +20,24 @@
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
   import { getClient } from '@anticrm/presentation'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let object: Contact
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
+  const notificationClient = NotificationClient.getClient()
 
   const client = getClient()
 
-  client.findOne(contact.class.Channel, {
-    attachedTo: object._id,
-    provider: contact.channelProvider.Email
-  }).then((res) => channel = res)
+  client
+    .findOne(contact.class.Channel, {
+      attachedTo: object._id,
+      provider: contact.channelProvider.Email
+    })
+    .then((res) => {
+      channel = res
+    })
 
   function back () {
     if (newMessage) {
@@ -40,8 +46,11 @@
     return (currentMessage = undefined)
   }
 
-  function selectHandler (e: CustomEvent) {
+  async function selectHandler (e: CustomEvent): Promise<void> {
     currentMessage = e.detail
+    if (channel !== undefined) {
+      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+    }
   }
 </script>
 

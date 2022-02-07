@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Client, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
@@ -235,7 +235,7 @@
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->
   </div>
-  <PanelInstance/>
+  <PanelInstance />
   <Popup />
   <TooltipInstance />
 {:else}

@@ -63,13 +63,15 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CONTACT)
-@UX('Channel' as IntlString, contact.icon.Person)
+@UX('Channel' as IntlString, contact.icon.Person, undefined, 'modifiedOn')
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), 'Channel provider' as IntlString)
   provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), 'Value' as IntlString)
   value!: string
+
+  items?: number
 }
 
 @Model(contact.class.Person, contact.class.Contact)

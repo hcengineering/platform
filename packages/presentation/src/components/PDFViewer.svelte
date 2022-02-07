@@ -14,14 +14,13 @@
 -->
 
 <script lang="ts">
-  import { Button, CircleButton, IconClose, IconArrowLeft } from '@anticrm/ui'
-  import Avatar from './Avatar.svelte'
-  import ExpandUp from './icons/ExpandUp.svelte'
-  import ExpandDown from './icons/ExpandDown.svelte'
-
-  import { getFileUrl } from '../utils'
+  import { Button, CircleButton, IconClose } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
+  import { getFileUrl } from '../utils'
+  import Avatar from './Avatar.svelte'
+  import ExpandDown from './icons/ExpandDown.svelte'
+  import ExpandUp from './icons/ExpandUp.svelte'
 
   export let file: string
   export let name: string
@@ -33,9 +32,9 @@
 <div class="pdfviewer-container">
 
   <div class="flex-between header">
-    <div class="flex-center arrow-back">
+    <!-- <div class="flex-center arrow-back">
       <div class="icon"><IconArrowLeft size={'small'} /></div>
-    </div>
+    </div> -->
     <div class="flex-row-center flex-grow">
       <Avatar size={'medium'} />
       <div class="flex-col user">
@@ -44,7 +43,7 @@
       </div>
     </div>
     <div class="flex-row-center">
-      <div class="tool" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
+      <div class="tool" on:click={() => dispatch('close')}><IconClose fill={'black'} size={'small'} /></div>
     </div>
   </div>
 
@@ -67,7 +66,7 @@
   .pdfviewer-container {
     display: flex;
     flex-direction: column;
-    width: 45rem;
+    width: 55rem;
     height: 100%;
     background-color: #F2F2F2;
     border-radius: 1.25rem 1.875rem 1.875rem 1.25rem;

@@ -43,7 +43,7 @@
             {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
           </div>
         </div>
-        <ActionIcon icon={IconMoreH} size={'medium'} />
+        <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
       </div>
       {#if $$slots.subtitle}
         <div class="ac-subtitle">

@@ -18,6 +18,7 @@
   import { afterUpdate } from 'svelte'
   import { Spinner } from '..'
   import { closePanel, PanelProps, panelstore as modal } from '../panelup'
+  import { popupstore } from '../popups'
 
   let modalHTML: HTMLElement
   let componentInstance: any
@@ -31,6 +32,11 @@
   $: props = $modal.panel
 
   function escapeClose () {
+    // Check if there is popup visible, then ignore
+    if ($popupstore.length > 0) {
+      return
+    }
+
     if (componentInstance && componentInstance.canClose) {
       if (!componentInstance.canClose()) return
     }
@@ -116,6 +122,7 @@
         bind:this={componentInstance}
         _id={props._id}
         _class={props._class}
+        rightSection={props.rightSection}
         on:update={fitPopup}
         on:close={_close}
       />

@@ -40,6 +40,7 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/view": "~0.6.0",
     "@anticrm/attachment-resources": "~0.6.0",
+    "@anticrm/notification-resources": "~0.6.0",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/attachment": "~0.6.1"

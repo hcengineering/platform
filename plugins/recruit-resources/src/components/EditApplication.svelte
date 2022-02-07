@@ -51,7 +51,7 @@
 
 {#if object !== undefined && candidate !== undefined}
   <div class="flex-between">
-    <div class="card"><CandidateCard {candidate} /></div>
+    <div class="card"><CandidateCard {candidate} on:click /></div>
     <div class="arrows"><ExpandRightDouble /></div>
     <div class="card"><VacancyCard {vacancy} /></div>
   </div>

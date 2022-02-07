@@ -24,29 +24,32 @@
 
   const maxLenght: number = 16
   const trimFilename = (fname: string): string => (fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-                        : fname
+    ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+    : fname
 
-  function iconLabel(name: string): string {
+  function iconLabel (name: string): string {
     const parts = name.split('.')
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
 
-  function openEmbedded(contentType: string) {
+  function openEmbedded (contentType: string) {
     return contentType.includes('application/pdf') || contentType.startsWith('image/')
   }
 </script>
 
 <div class="flex-row-center">
   {#if openEmbedded(value.type)}
-    <div class="flex-center icon" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file, name: value.name }, 'right') }}>{iconLabel(value.name)}</div>
+    <div class="flex-center icon" on:click={() => {
+      closeTooltip()
+      showPopup(PDFViewer, { file: value.file, name: value.name }, 'right')
+    }}>{iconLabel(value.name)}</div>
   {:else}
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
   {/if}
   <div class="flex-col info">
     {#if openEmbedded(value.type)}
-      <div class="name" on:click={()=> { closeTooltip(); showPopup(PDFViewer, { file: value.file, name: value.name }, 'right') }}>{trimFilename(value.name)}</div>
+      <div class="name" on:click={() => { closeTooltip(); showPopup(PDFViewer, { file: value.file, name: value.name }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
       <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
     {/if}

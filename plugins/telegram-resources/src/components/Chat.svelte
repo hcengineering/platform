@@ -14,28 +14,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact,{ Channel,Contact,EmployeeAccount,formatName } from '@anticrm/contact'
-  import { getCurrentAccount,Ref,SortingOrder,Space } from '@anticrm/core'
+  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata } from '@anticrm/platform'
-  import { createQuery,getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import type { SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
   import { ReferenceInput } from '@anticrm/text-editor'
-  import { ActionIcon,Button,IconShare,ScrollBox,showPopup } from '@anticrm/ui'
+  import { ActionIcon, Button, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let object: Contact
   let channel: Channel | undefined = undefined
   const client = getClient()
+  const notificationClient = NotificationClient.getClient()
 
-  client.findOne(contact.class.Channel, {
-    attachedTo: object._id,
-    provider: contact.channelProvider.Telegram
-  }).then((res) => channel = res)
+  client
+    .findOne(contact.class.Channel, {
+      attachedTo: object._id,
+      provider: contact.channelProvider.Telegram
+    })
+    .then((res) => {
+      channel = res
+    })
 
   let messages: TelegramMessage[] = []
   let accounts: EmployeeAccount[] = []
@@ -49,16 +55,31 @@
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
 
-  $: channel && messagesQuery.query(telegram.class.Message, { modifiedBy: accountId, attachedTo: channel._id }, (res) => {
-    messages = res
-  }, { sort: { modifiedOn: SortingOrder.Ascending }})
+  function updateMessagesQuery (channelId: Ref<Channel>): void {
+    messagesQuery.query(
+      telegram.class.Message,
+      { attachedTo: channelId },
+      (res) => {
+        messages = res.reverse()
+        if (channel !== undefined) {
+          notificationClient.updateLastView(channel._id, channel._class)
+        }
+        const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
+        updateAccountsQuery(accountsIds)
+      },
+      { sort: { modifiedOn: SortingOrder.Descending }, limit: 500 }
+    )
+  }
 
-  $: accountsIds = messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>)
-  $: accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: accountsIds }}, (result) => {
-    accounts = result
-  })
+  $: channel && updateMessagesQuery(channel._id)
 
-  $: settingsQuery.query(
+  function updateAccountsQuery (accountsIds: Set<Ref<EmployeeAccount>>): void {
+    accauntsQuery.query(contact.class.EmployeeAccount, { _id: { $in: Array.from(accountsIds) } }, (result) => {
+      accounts = result
+    })
+  }
+
+  settingsQuery.query(
     setting.class.Integration,
     { type: telegram.integrationType.Telegram, space: accountId as string as Ref<Space> },
     (res) => {
@@ -67,7 +88,7 @@
   )
 
   async function sendMsg (to: string, msg: string) {
-    return await fetch(url + '/send-msg', {
+    const res = await fetch(url + '/send-msg', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
@@ -78,6 +99,10 @@
         msg
       })
     })
+    if (channel !== undefined) {
+      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
+    }
+    return res
   }
 
   async function addContact (phone: string) {
@@ -137,6 +162,9 @@
         messages: convertMessages(selectedMessages, accounts)
       }
     )
+    if (channel !== undefined) {
+      await notificationClient.updateLastView(channel._id, channel._class, channel.modifiedOn, true)
+    }
     clear()
   }
 
@@ -199,7 +227,13 @@
           <Button label={telegram.string.Cancel} size={'small'} on:click={clear} />
         </div>
         <div class="ml-3">
-          <Button label={telegram.string.PublishSelected} size={'small'} primary disabled={!selected.size} on:click={share} />
+          <Button
+            label={telegram.string.PublishSelected}
+            size={'small'}
+            primary
+            disabled={!selected.size}
+            on:click={share}
+          />
         </div>
       </div>
     </div>

@@ -32,10 +32,10 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+  export let rightSection: AnyComponent | undefined = undefined
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
-  let rightSection: AnyComponent | undefined
   let fullSize: boolean = true
 
   const client = getClient()

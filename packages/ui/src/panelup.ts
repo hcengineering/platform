@@ -7,6 +7,7 @@ export interface PanelProps {
   _id: string
   _class: string
   element?: PopupAlignment
+  rightSection?: AnyComponent
 }
 
 export const panelstore = writable < {panel?: PanelProps|undefined}>({ panel: undefined })
@@ -16,6 +17,8 @@ location.subscribe((loc) => {
   if (loc.fragment !== currentLocation && loc.fragment !== undefined && loc.fragment.trim().length > 0) {
     const props = decodeURIComponent(loc.fragment).split('|')
     showPanel(props[0] as AnyComponent, props[1], props[2], 'full')
+  } else if (loc.fragment === '' || (loc.fragment !== undefined && loc.fragment.trim().length === 0)) {
+    closePanel()
   }
 })
 
@@ -23,7 +26,8 @@ export function showPanel (
   component: AnyComponent,
   _id: string,
   _class: string,
-  element?: PopupAlignment
+  element?: PopupAlignment,
+  rightSection?: AnyComponent
 ): void {
   const newLoc = encodeURIComponent([component, _id, _class].join('|'))
   if (currentLocation === newLoc) {
@@ -31,7 +35,7 @@ export function showPanel (
   }
   currentLocation = newLoc
   panelstore.update(() => {
-    return { panel: { component, _id, _class, element } }
+    return { panel: { component, _id, _class, element, rightSection } }
   })
   const location = getCurrentLocation()
   if (location.fragment !== currentLocation) {
