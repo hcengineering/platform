@@ -76,7 +76,7 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Gmail' as IntlString,
+      label: 'Email' as IntlString,
       icon: contact.icon.Email,
       placeholder: 'john.appleseed@apple.com' as IntlString,
       presenter: gmail.component.Main,

@@ -36,7 +36,9 @@
     selected
     on:click={(ev) =>
       showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-        dispatch('change', result)
+        if (result !== undefined) {
+          dispatch('change', result)
+        }
       })}
   />
   <span><Label label={presentation.string.AddSocialLinks} /></span>
@@ -49,7 +51,9 @@
       selected
       on:click={(ev) =>
         showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          dispatch('change', result)
+          if (result !== undefined) {
+            dispatch('change', result)
+          }
         })}
     />
   </div>
