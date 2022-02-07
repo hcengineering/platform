@@ -56,6 +56,7 @@
 
 <style lang="scss">
   .color {
+    flex-shrink: 0;
     margin-right: .75rem;
     width: 1rem;
     height: 1rem;

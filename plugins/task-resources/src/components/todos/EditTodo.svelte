@@ -67,14 +67,15 @@
   on:close={() => {
     dispatch('close')
   }}
-  okLabel={plugin.string.TodoSave}>
-    <Grid column={1} rowGap={1.75}>
-      <EditBox
+  okLabel={plugin.string.TodoSave}
+>
+  <Grid column={1} rowGap={1.75}>
+    <EditBox
       label={plugin.string.TodoDescription}
       bind:value={name}
       icon={task.icon.Task}
       placeholder={plugin.string.TodoDescriptionPlaceholder}
-      maxWidth="39rem"
+      maxWidth={'16rem'}
       focus
     />
     <DatePicker title={plugin.string.TodoDueDate} bind:selected={dueTo} />

@@ -53,9 +53,7 @@
     <div class="ap-box">
       {#each objects as person}
         <button class="ap-menuItem" on:click={() => { dispatch('close', person) }}>
-          <div class='flex-grow'>
-            <UserInfo size={'medium'} value={person} />
-          </div>
+          <UserInfo size={'medium'} value={person} />
           {#if allowDeselect && person._id === selected}
             <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={IconBlueCheck} action={() => { dispatch('close', null) }} size={'small'}/>
           {/if}

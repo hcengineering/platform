@@ -28,6 +28,7 @@
 
 <div class="flex-row-center">
   <button
+    bind:this={container}
     class="focused-button btn"
     class:selected={show}
     on:click|preventDefault={() => {

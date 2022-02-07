@@ -33,24 +33,3 @@
   </div>
   <div class="ap-space" />
 </div>
-
-<!-- <style lang="scss">
-  .popup {
-    padding: .5rem;
-    min-width: 12rem;
-    background-color: var(--theme-button-bg-focused);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0 .75rem 1.25rem rgba(0, 0, 0, .2);
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: .5rem;
-    border-radius: .5rem;
-    cursor: pointer;
-
-    &:hover { background-color: var(--theme-button-bg-hovered); }
-  }
-</style> -->

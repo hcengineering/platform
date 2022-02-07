@@ -24,10 +24,10 @@
 </script>
 
 <div class="flex-row-center">
-  <div class="flex-center {size} caption-color"><IconFolder size={'small'} /></div>
-  <div class="flex-col user-info">
-    {#if subtitle}<div class="subtitle">{subtitle}</div>{/if}
-    <div class="title">{value.name}</div>
+  <div class="flex-center {size} caption-color flex-no-shrink"><IconFolder size={'small'} /></div>
+  <div class="flex-col ml-2 min-w-0">
+    {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
+    <div class="content-accent-color overflow-label">{value.name}</div>
   </div>
 </div>
 
@@ -39,20 +39,5 @@
   .large {
     width: 2.25rem;
     height: 2.25rem;
-  }
-  .user-info {
-    margin-left: .5rem;
-    color: var(--theme-content-accent-color);
-
-    .subtitle {
-      font-size: .75rem;
-      color: var(--theme-content-dark-color);
-    }
-    .title {
-      text-align: left;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
   }
 </style>

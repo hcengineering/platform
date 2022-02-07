@@ -18,7 +18,7 @@
   import type { Doc } from '@anticrm/core'
   import type { Asset } from '@anticrm/platform'
   import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-  import { Icon, IconClose, IconExpand, IconMoreH, Component, ActionIcon } from '@anticrm/ui'
+  import { Icon, IconClose, IconExpand, IconMoreH, Component, ActionIcon, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let title: string
@@ -31,183 +31,63 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div
-  class="overlay"
-  on:click={() => {
-    dispatch('close')
-  }}
-/>
-<div class="dialog-container" class:fullSize>
+<div class="antiOverlay" on:click={() => { dispatch('close') }} />
+<div class="antiDialogs antiComponent" class:fullSize>
   {#if fullSize}
-    <div class="leftSection">
-      <div class="flex-between header">
-        <Icon {icon} size={'large'} />
-        <div class="flex-grow ml-4 flex-col">
-          <div class="fs-title">{title}</div>
-          {#if subtitle}
-            <div class="text-sm content-dark-color">{subtitle}</div>
-          {/if}
+    <div class="ad-section-50 divide">
+      <div class="ac-header short mirror divide">
+        <div class="ac-header__wrap-title">
+          {#if icon }<div class="ac-header__icon"><Icon {icon} size={'large'}/></div>{/if}
+          <div class="ac-header__wrap-description">
+            <span class="ac-header__title">{title}</span>
+            {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
+          </div>
         </div>
         <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
       </div>
       {#if $$slots.subtitle}
-        <div class="flex-row-center subtitle">
-          <div class="flex-grow flex-row-center ml-10 mr-10">
+        <div class="ac-subtitle">
+          <div class="ac-subtitle-content">
             <slot name="subtitle" />
           </div>
         </div>
       {/if}
-      <div class="flex-col scroll-container">
-        <div class="flex-col content">
-          <slot />
-        </div>
-      </div>
+      <Scroller>
+        <div class="p-10"><slot /></div>
+      </Scroller>
     </div>
-    <div class="rightSection">
+    <div class="ad-section-50">
       <Component is={rightSection ?? activity.component.Activity} props={{ object, fullSize }} />
     </div>
   {:else}
-    <div class="unionSection">
-      <div class="flex-row-center header">
-        <Icon {icon} size={'large'} />
-        <div class="flex-grow ml-4 flex-col">
-          <div class="fs-title">{title}</div>
-          <div class="text-sm content-dark-color">Candidate pool name</div>
+    <div class="ac-header short mirror-tool divide">
+      <div class="ac-header__wrap-title">
+        {#if icon }<div class="ac-header__icon"><Icon {icon} size={'large'}/></div>{/if}
+        <div class="ac-header__wrap-description">
+          <span class="ac-header__title">{title}</span>
+          {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
         </div>
-        <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
       </div>
-      {#if $$slots.subtitle}<div class="flex-row-center subtitle"><slot name="subtitle" /></div>{/if}
-
-      <Component is={activity.component.Activity} props={{ object, fullSize }}>
-        <slot />
-      </Component>
+      <ActionIcon icon={IconMoreH} size={'medium'} />
     </div>
+    {#if $$slots.subtitle}
+      <div class="ac-subtitle">
+        <div class="ac-subtitle-content">
+          <slot name="subtitle" />
+        </div>
+      </div>
+    {/if}
+    <Component is={activity.component.Activity} props={{ object, fullSize }}>
+      <slot />
+    </Component>
   {/if}
 
-  <div class="tools">
-    <div
-      class="tool"
-      on:click={() => {
-        fullSize = !fullSize
-      }}
-    >
-      <div class="icon"><IconExpand size={'small'} /></div>
+  <div class="ad-tools">
+    <div class="tool">
+      <ActionIcon icon={IconExpand} size={'medium'} action={() => { fullSize = !fullSize }} />
     </div>
-    <div
-      class="tool"
-      on:click={() => {
-        dispatch('close')
-      }}
-    >
-      <div class="icon"><IconClose size={'small'} /></div>
+    <div class="tool">
+      <ActionIcon icon={IconClose} size={'medium'} action={() => { dispatch('close') }} />
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .dialog-container {
-    overflow: hidden;
-    position: fixed;
-    top: 32px;
-    bottom: 1.25rem;
-    left: 50%;
-    right: 1rem;
-
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-bg-color);
-    border-radius: 1.25rem;
-
-    .header {
-      flex-shrink: 0;
-      padding: 0 2.5rem 0 2.5rem;
-      min-height: 0;
-      height: 4rem;
-      color: var(--theme-content-accent-color);
-      border-bottom: 1px solid var(--theme-zone-bg);
-    }
-
-    .subtitle {
-      overflow-x: auto;
-      flex-shrink: 0;
-      min-height: 0;
-      height: 3.5rem;
-      border-bottom: 1px solid var(--theme-zone-bg);
-
-      &::-webkit-scrollbar:horizontal { height: .25rem; }
-      &::-webkit-scrollbar-track { margin: 0; }
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--theme-menu-divider);
-        border-radius: .25rem;
-        &:hover { background-color: var(--theme-card-divider); }
-      }
-    }
-  }
-
-  .unionSection {
-    flex-grow: 1;
-
-    display: flex;
-    flex-direction: column;
-    height: max-content;
-
-    .header {
-      padding: 0 6rem 0 2.5rem;
-    }
-  }
-
-  .fullSize {
-    flex-direction: row;
-    left: 1rem;
-  }
-
-  .leftSection,
-  .rightSection {
-    flex-basis: 50%;
-    width: 50%;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .leftSection {
-    border-right: 1px solid var(--theme-card-divider);
-    .scroll-container {
-      overflow: auto;
-      margin: 2.5rem 2rem 1.5rem;
-      .content {
-        flex-shrink: 0;
-        margin: 0.5rem 0.5rem 0;
-      }
-    }
-  }
-  // .rightSection {
-  //   background-color: transparent;
-  // }
-
-  .tools {
-    position: absolute;
-    display: flex;
-    top: 1.5rem;
-    right: 2rem;
-
-    .tool {
-      margin-left: 1rem;
-      color: var(--theme-content-accent-color);
-      cursor: pointer;
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    opacity: .5;
-  }
-</style>
