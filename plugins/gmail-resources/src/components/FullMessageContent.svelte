@@ -15,20 +15,18 @@
 -->
 <script lang="ts">
   export let content: string
-
-  let editor: HTMLDivElement
-  $: if (editor) editor.innerHTML = content
 </script>
 
-<div bind:this={editor} class="input clear-mins" />
+<iframe srcdoc={content} title="e-mail" />
 
 <style lang="scss">
-  .input {
+  iframe {
     overflow: auto;
-    padding: 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    height: 100%;
     background-color: #fff;
     color: #1f212b;
-    border-radius: .5rem;
 
     :global(a) {
       font: inherit;

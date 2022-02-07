@@ -985,6 +985,21 @@
       "packageName": "@anticrm/rekoni",
       "projectFolder": "packages/rekoni",
       "shouldPublish": true
-    },    
+    },
+    {
+      "packageName": "@anticrm/model-notification",
+      "projectFolder": "models/notification",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/notification",
+      "projectFolder": "plugins/notification",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/notification-resources",
+      "projectFolder": "plugins/notification-resources",
+      "shouldPublish": true
+    }
   ]
 }

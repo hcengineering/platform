@@ -50,6 +50,7 @@
     "@anticrm/model-inventory": "~0.6.0",
     "@anticrm/model-presentation": "~0.6.0",
     "@anticrm/model-templates": "~0.6.0",
+    "@anticrm/model-notification": "~0.6.0",
     "@anticrm/model-text-editor": "~0.6.0",
     "@anticrm/core": "~0.6.13"
   }

@@ -15,19 +15,21 @@
 -->
 <script lang="ts">
   import type { Channel, ChannelProvider } from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref } from '@anticrm/core'
+  import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { AnyComponent } from '@anticrm/ui'
   import { CircleButton, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getClient } from '..'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
-  export let value: AttachedData<Channel>[] | AttachedData<Channel> | null
+  export let value: AttachedData<Channel>[] | Channel | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+  const notificationClient = NotificationClient.getClient()
+  const lastViews = notificationClient.getLastViews()
 
   interface Item {
     label: IntlString
@@ -35,19 +37,25 @@
     value: string
     presenter?: AnyComponent
     integration: boolean
+    notification: boolean
   }
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  function getProvider (item: AttachedData<Channel>, map: Map<Ref<ChannelProvider>, ChannelProvider>): any | undefined {
+  function getProvider (
+    item: AttachedData<Channel>,
+    map: Map<Ref<ChannelProvider>, ChannelProvider>,
+    lastViews: Map<Ref<Doc>, Timestamp>
+  ): any | undefined {
     const provider = map.get(item.provider)
     if (provider) {
+      const notification = (item as Channel)._id !== undefined ? isNew((item as Channel), lastViews) : false
       return {
         label: provider.label as IntlString,
         icon: provider.icon as Asset,
         value: item.value,
         presenter: provider.presenter,
+        notification,
         integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
       }
     } else {
@@ -55,18 +63,27 @@
     }
   }
 
-  async function update (value: AttachedData<Channel>[] | AttachedData<Channel>) {
+  function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+    const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
+    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+  }
+
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
+    if (value === null) {
+      displayItems = []
+      return
+    }
     const result = []
     const map = await getChannelProviders()
     if (Array.isArray(value)) {
       for (const item of value) {
-        const provider = getProvider(item, map)
+        const provider = getProvider(item, map, lastViews)
         if (provider !== undefined) {
           result.push(provider)
         }
       }
     } else {
-      const provider = getProvider(value, map)
+      const provider = getProvider(value, map, lastViews)
       if (provider !== undefined) {
         result.push(provider)
       }
@@ -74,7 +91,7 @@
     displayItems = result
   }
 
-  $: if (value) update(value)
+  $: if (value) update(value, $lastViews)
 
   let displayItems: Item[] = []
   let divHTML: HTMLElement
@@ -94,7 +111,7 @@
       }}
     >
       <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-        <CircleButton icon={item.icon} {size} primary={item.integration} />
+        <CircleButton icon={item.icon} {size} primary={item.integration || item.notification} />
       </Tooltip>
     </div>
   {/each}

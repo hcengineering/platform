@@ -16,10 +16,23 @@
   import type { SharedTelegramMessage } from '@anticrm/telegram'
 
   export let message: SharedTelegramMessage
+
+  const current = new Date()
+  const target = new Date(message.modifiedOn)
+  let options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long'
+  }
+  if (current.getFullYear() !== target.getFullYear()) {
+    options = {
+      ...options,
+      year: '2-digit'
+    }
+  }
 </script>
 
 <div class="datetime-container">
-  {new Intl.DateTimeFormat('default', { day: 'numeric', month: 'long' }).format(message.modifiedOn)}
+  {new Intl.DateTimeFormat('default', options).format(message.modifiedOn)}
 </div>
 
 <style lang="scss">

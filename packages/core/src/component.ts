@@ -55,6 +55,7 @@ export default plugin(coreId, {
   },
   space: {
     Tx: '' as Ref<Space>,
+    DerivedTx: '' as Ref<Space>,
     Model: '' as Ref<Space>
   },
   account: {

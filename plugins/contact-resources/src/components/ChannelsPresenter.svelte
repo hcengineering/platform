@@ -15,9 +15,26 @@
 -->
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
-  import { Channels } from '@anticrm/presentation'
+  import ChannelsView from './ChannelsView.svelte'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let value: Channel[] | Channel | null
+
+  function click (ev: any) {
+    if (ev.detail.presenter !== undefined && Array.isArray(value)) {
+      const channel = value[0]
+      if (channel !== undefined) {
+        showPanel(
+          view.component.EditDoc,
+          channel.attachedTo,
+          channel.attachedToClass,
+          'full',
+          ev.detail.presenter
+        )
+      }
+    }
+  }
 </script>
 
-<Channels {value} size={'small'} reverse />
+<ChannelsView {value} size={'small'} reverse on:click={click} />

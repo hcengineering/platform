@@ -43,6 +43,7 @@ export interface ChannelProvider extends Doc, UXObject {
 export interface Channel extends AttachedDoc {
   provider: Ref<ChannelProvider>
   value: string
+  items?: number
 }
 
 /**

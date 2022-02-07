@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Data, generateId } from '@anticrm/core'
+  import { AttachedData, Data, generateId } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
 
   import { getClient, Card, EditableAvatar } from '@anticrm/presentation'
@@ -72,7 +72,7 @@
     dispatch('close')
   }
 
-  let channels: Channel[] = []
+  let channels: AttachedData<Channel>[] = []
 </script>
 
 <Card

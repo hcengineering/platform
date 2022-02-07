@@ -66,7 +66,7 @@
   {#if currentMessage.copy?.length}
     <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
   {/if}
-  <div class="flex-col clear-mins mt-9">
+  <div class="flex-col h-full clear-mins mt-9">
     <FullMessageContent content={currentMessage.content} />
   </div>
 </div>

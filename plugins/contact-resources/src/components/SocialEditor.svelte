@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedData, Ref } from '@anticrm/core'
+  import { AttachedData, Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
   import { EditBox, Button, ScrollBox } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
@@ -42,14 +42,14 @@
     for (const provider of providers) {
       const i = findValue(provider._id)
       if (i !== -1) {
-        newValues.push({ provider: provider._id, value: values[i].value })
+        newValues.push(values[i])
       } else {
         newValues.push({ provider: provider._id, value: '' })
       }
     }
   })
 
-  function filterUndefined (channels: AttachedData<Channel>[]):  AttachedData<Channel>[] {
+  function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
     return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
   }
 </script>

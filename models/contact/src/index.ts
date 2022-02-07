@@ -70,6 +70,8 @@ export class TChannel extends TAttachedDoc implements Channel {
 
   @Prop(TypeString(), 'Value' as IntlString)
   value!: string
+
+  items?: number
 }
 
 @Model(contact.class.Person, contact.class.Contact)

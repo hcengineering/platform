@@ -30,7 +30,7 @@ import core, {
 } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { Channels, getAttributePresenterClass } from '@anticrm/presentation'
+import { getAttributePresenterClass } from '@anticrm/presentation'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
