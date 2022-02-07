@@ -93,7 +93,9 @@
     return filterKeys(keys, ignoreKeys)
   }
 
-  function updateKeys (ignoreKeys: string[]): void {
+  let ignoreKeys: string[] = []
+
+  function updateKeys (): void {
     const filtredKeys = getFiltredKeys(
       selectedClass ?? object._class,
       ignoreKeys,
@@ -122,15 +124,21 @@
     return editorMixin.editor
   }
 
+  let mainEditor: AnyComponent
+
+  $: if (object) getEditorOrDefault(selectedClass, object._class)
+
   async function getEditorOrDefault (
     _class: Ref<Class<Doc>> | undefined,
     defaultClass: Ref<Class<Doc>>
-  ): Promise<AnyComponent> {
-    const editor = _class !== undefined ? await getEditor(_class) : undefined
-    if (editor !== undefined) {
-      return editor
+  ): Promise<void> {
+    console.log('get editor or default')
+    let editor = _class !== undefined ? await getEditor(_class) : undefined
+    if (editor === undefined) {
+      editor = await getEditor(defaultClass)
     }
-    return getEditor(defaultClass)
+    mainEditor = editor
+    updateKeys()
   }
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
@@ -218,19 +226,20 @@
         {/await}
       </div>
       <div class="main-editor">
-        {#await getEditorOrDefault(selectedClass, object._class) then is}
+        {#if mainEditor}
           <Component
-            {is}
+            is={mainEditor}
             props={{ object }}
             on:open={(ev) => {
-              updateKeys(ev.detail.ignoreKeys)
+              ignoreKeys = ev.detail.ignoreKeys
+              updateKeys()
             }}
             on:click={(ev) => {
               fullSize = true
               rightSection = ev.detail.presenter
             }}
           />
-        {/await}
+        {/if}
       </div>
       {#if mixins.length > 0}
         <div class="mixin-container">
