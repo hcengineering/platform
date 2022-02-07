@@ -23,6 +23,7 @@
     "Create": "Contact",
     "SearchEmployee": "Search for employee...",
     "SearchPerson": "Search for person...",
-    "SearchOrganization": "Search for organization..."
+    "SearchOrganization": "Search for organization...",
+    "ContactInfo": "Contact Info"
   }
 }
