@@ -115,7 +115,7 @@
             }}>
             <div class="flex flex-reverse flex-grow">
               <div class="ml-2">
-                <Button disabled={newTemplate.title.trim().length == 0 } primary label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
+                <Button disabled={newTemplate.title.trim().length === 0 } primary label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
               </div>
               <Button
                 label={templatesPlugin.string.Cancel}

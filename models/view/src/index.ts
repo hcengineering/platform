@@ -118,6 +118,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringPresenter
   })
 
+  builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.HTMLPresenter
+  })
+
   builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.BooleanPresenter
   })

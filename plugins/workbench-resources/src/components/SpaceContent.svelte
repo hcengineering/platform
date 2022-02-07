@@ -15,9 +15,9 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Class, Doc, Space, WithLookup } from '@anticrm/core'
-  import type { Viewlet } from '@anticrm/view'
+  import type { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { Component } from '@anticrm/ui'
+  import type { Viewlet } from '@anticrm/view'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
@@ -30,7 +30,7 @@
     <Component is={viewlet.$lookup?.descriptor?.component} props={ {
       _class,
       space,
-      options: viewlet.options, 
+      options: viewlet.options,
       config: viewlet.config,
       search
     } } />

@@ -4,11 +4,12 @@
     "Vacancies": "Vacancies",
     "CandidatePools": "Candidate’s pool",
     "Candidates": "Candidates",
-    "VacancyName": "Vacancy Title *",
+    "VacancyName": "Vacancy Name *",
     "VacancyDescription": "Vacancy Description",
     "CreateVacancy": "Create Vacancy",
     "MakePrivate": "Make Private",
     "Vacancy": "Vacancy",
+    "VacancyPlaceholder": "Please type vacancy name",
     "CandidatesName": "Pool name *",
     "MakePrivateDescription": "Only members can see it",
     "CreateAnApplication": "Create an application",
@@ -31,7 +32,9 @@
     "WorkLocationPreferences": "Work location preferences",
     "Onsite": "Onsite",
     "Remote": "Remote",
-    "SearchApplication": "Search for application..."
+    "SearchApplication": "Search for application...",
+    "Application": "Application",
+    "AssignedRecruiter": "Assigned recruiter"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

@@ -17,6 +17,7 @@ import { Ref, Space } from '@anticrm/core'
 import type { IntlString, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(recruitId, recruit, {
   status: {
@@ -27,6 +28,7 @@ export default mergeIds(recruitId, recruit, {
   string: {
     CreateVacancy: '' as IntlString,
     VacancyName: '' as IntlString,
+    VacancyPlaceholder: '' as IntlString,
     VacancyDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
@@ -59,5 +61,8 @@ export default mergeIds(recruitId, recruit, {
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
+  },
+  component: {
+    EditVacancy: '' as AnyComponent
   }
 })

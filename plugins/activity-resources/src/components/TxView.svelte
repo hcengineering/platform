@@ -18,7 +18,7 @@
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Doc, Ref } from '@anticrm/core'
+  import core, { AnyAttribute, Doc, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import {
@@ -106,6 +106,11 @@
     edit = false
     props = { ...props, edit }
   }
+  function isMessageType (attr?: AnyAttribute): boolean {
+    return attr?.type._class === core.class.TypeMarkup
+  }
+
+  $: hasMessageType = model.find(m => isMessageType(m.attribute))
 </script>
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
   <div class="flex-between msgactivity-container">
@@ -153,14 +158,25 @@
               {/if}
             </div>
           {/if}
-          {#if viewlet === undefined && model.length > 0 && tx.updateTx}
-            {#each model as m}
+          {#if viewlet === undefined && model.length > 0 && tx.updateTx}            
+            {#each model as m, i}
               {#await getValue(client, m, tx.updateTx.operations) then value}
                   {#if value === null}
                     <span>unset <Label label={m.label} /></span>
                   {:else}
-                    <span>changed <Label label={m.label} /> to</span>                
-                    <div class="strong"><svelte:component this={m.presenter} {value} /></div>
+                    <span class:flex-grow={hasMessageType}>changed <Label label={m.label} /> to</span>
+                    {#if hasMessageType}
+                      <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+                    {/if}
+                    {#if isMessageType(m.attribute)}
+                      <div class="strong message emphasized">
+                        <svelte:component this={m.presenter} {value} />
+                      </div>
+                    {:else}
+                      <div class="strong">
+                        <svelte:component this={m.presenter} {value} />
+                      </div>
+                    {/if}
                   {/if}
                 {/await}
             {/each}
@@ -171,7 +187,15 @@
                     <span>unset <Label label={m.label} /></span>
                   {:else}
                     <span>changed <Label label={m.label} /> to</span>                
-                    <div class="strong"><svelte:component this={m.presenter} {value} /></div>
+                    {#if isMessageType(m.attribute)}
+                      <div class="strong message emphasized">
+                        <svelte:component this={m.presenter} {value} />
+                      </div>
+                    {:else}
+                      <div class="strong">
+                        <svelte:component this={m.presenter} {value} />
+                      </div>
+                    {/if}
                   {/if}
                 {/await}
             {/each}
@@ -183,7 +207,9 @@
             {/if}
           {/if}
         </div>
-        <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>    
+        {#if !hasMessageType}
+          <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+        {/if}
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
@@ -282,5 +308,9 @@
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
     padding: 1rem 1.25rem;
+  }
+
+  .message {
+    flex-basis: 100%;
   }
 </style>

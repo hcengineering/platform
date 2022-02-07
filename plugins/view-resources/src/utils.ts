@@ -101,7 +101,8 @@ async function getAttributePresenter (
     _class: attrClass,
     label: preserveKey.label ?? attribute.label,
     presenter,
-    icon: presenterMixin.icon
+    icon: presenterMixin.icon,
+    attribute
   }
 }
 

@@ -50,7 +50,6 @@
     if (item.dueTo !== dueTo) {
       ops.dueTo = (dueTo?.getTime() ?? null) as unknown as Timestamp
     }
-    console.log('AHTUNG', ops)
 
     if (Object.keys(ops).length === 0) {
       return

@@ -87,6 +87,7 @@ export { default as IconDelete } from './components/icons/Delete.svelte'
 export { default as IconEdit } from './components/icons/Edit.svelte'
 export { default as IconInfo } from './components/icons/Info.svelte'
 export { default as IconBlueCheck } from './components/icons/BlueCheck.svelte'
+export { default as IconCheck } from './components/icons/Check.svelte'
 export { default as IconArrowLeft } from './components/icons/ArrowLeft.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'

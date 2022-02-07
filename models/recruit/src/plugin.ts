@@ -38,7 +38,9 @@ export default mergeIds(recruitId, recruit, {
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
     CandidatePools: '' as IntlString,
-    SearchApplication: '' as IntlString
+    SearchApplication: '' as IntlString,
+    Application: '' as IntlString,
+    AssignedRecruiter: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -49,7 +51,6 @@ export default mergeIds(recruitId, recruit, {
     KanbanCard: '' as AnyComponent,
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
-    EditVacancy: '' as AnyComponent,
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,

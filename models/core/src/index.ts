@@ -30,6 +30,7 @@ import {
   TTypeBoolean,
   TTypeDate,
   TTypeString,
+  TTypeMarkup,
   TTypeTimestamp,
   TVersion
 } from './core'
@@ -74,6 +75,7 @@ export function createModel (builder: Builder): void {
     TAttribute,
     TType,
     TTypeString,
+    TTypeMarkup,
     TTypeBoolean,
     TTypeTimestamp,
     TRefTo,

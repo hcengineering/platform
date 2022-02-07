@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import { IntlString, translate } from '@anticrm/platform'
+
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import Highlight from '@tiptap/extension-highlight'
   import Link from '@tiptap/extension-link'
@@ -22,14 +23,21 @@
   import Placeholder from '@tiptap/extension-placeholder'
   import StarterKit from '@tiptap/starter-kit'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import textEditorPlugin from '../plugin'
 
   export let content: string = ''
-  export let placeholder: string = 'Type something...'
+  export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
 
   let element: HTMLElement
   let editor: Editor
+
+  let placeHolderStr: string = ''
+
+  $: ph = translate(placeholder, {}).then((r) => {
+    placeHolderStr = r
+  })
 
   const dispatch = createEventDispatcher()
 
@@ -70,29 +78,31 @@
   })
 
   onMount(() => {
-    editor = new Editor({
-      element,
-      content: content,
-      extensions: [
-        StarterKit,
-        Highlight,
-        Link,
-        ...(supportSubmit ? [Handle] : []), // order important
-        // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
-        Placeholder.configure({ placeholder: placeholder }),
-        ...extensions
-      ],
-      onTransaction: () => {
-        // force re-render so `editor.isActive` works as expected
-        editor = editor
-      },
-      onBlur: () => {
-        dispatch('blur')
-      },
-      onUpdate: () => {
-        content = editor.getHTML()
-        dispatch('value', content)
-      }
+    ph.then(() => {
+      editor = new Editor({
+        element,
+        content: content,
+        extensions: [
+          StarterKit,
+          Highlight,
+          Link,
+          ...(supportSubmit ? [Handle] : []), // order important
+          // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
+          Placeholder.configure({ placeholder: placeHolderStr }),
+          ...extensions
+        ],
+        onTransaction: () => {
+          // force re-render so `editor.isActive` works as expected
+          editor = editor
+        },
+        onBlur: () => {
+          dispatch('blur', editor.getHTML())
+        },
+        onUpdate: () => {
+          content = editor.getHTML()
+          dispatch('value', content)
+        }
+      })
     })
   })
 
@@ -103,35 +113,39 @@
   })
 </script>
 
-<div style="width: 100%;" bind:this={element}/>
+<div style="width: 100%;" bind:this={element} />
 
 <style lang="scss" global>
+  .ProseMirror {
+    overflow-y: auto;
+    max-height: 5.5rem;
+    outline: none;
+    line-height: 150%;
+    p:not(:last-child) {
+      margin-block-end: 1em;
+    }
 
-.ProseMirror {
-  overflow-y: auto;
-  max-height: 5.5rem;
-  outline: none;
-  line-height: 150%;
-  p:not(:last-child) {
-    margin-block-end: 1em;
+    > * + * {
+      margin-top: 0.75em;
+    }
+
+    /* Placeholder (at the top) */
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: var(--theme-content-trans-color);
+      pointer-events: none;
+      height: 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--theme-bg-accent-hover);
+    }
+    &::-webkit-scrollbar-corner {
+      background-color: var(--theme-bg-accent-hover);
+    }
+    &::-webkit-scrollbar-track {
+      margin: 0;
+    }
   }
-
-  > * + * {
-    margin-top: 0.75em;
-  }
-
-  /* Placeholder (at the top) */
-  p.is-editor-empty:first-child::before {
-    content: attr(data-placeholder);
-    float: left;
-    color: var(--theme-content-trans-color);
-    pointer-events: none;
-    height: 0;
-  }
-
-  &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-accent-hover); }
-  &::-webkit-scrollbar-corner { background-color: var(--theme-bg-accent-hover); }
-  &::-webkit-scrollbar-track { margin: 0; }
-}
-
 </style>

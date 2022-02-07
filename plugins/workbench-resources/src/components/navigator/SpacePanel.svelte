@@ -19,7 +19,7 @@
   import core from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { EditBox, Grid, Icon, IconClose, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
@@ -42,7 +42,13 @@
   let selected = 0
 
   function onNameChange (ev: Event) {
-    client.updateDoc(spaceClass, space.space, space._id, { name: (ev.target as HTMLInputElement).value })
+    const value = (ev.target as HTMLInputElement).value
+    if (value.trim().length > 0) {
+      client.updateDoc(spaceClass, space.space, space._id, { name: value })
+    } else {
+      // Just refresh value
+      query.query(core.class.Space, { _id }, result => { space = result[0] })
+    }
   }
 
 </script>
@@ -71,9 +77,9 @@
       {#if selected === 0}
         {#if space}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder="Software Engineer" maxWidth="39rem" focus on:change={onNameChange}/>
+            <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder={clazz.label} maxWidth="39rem" focus on:change={onNameChange}/>
             <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
-            <ToggleWithLabel label={'MakePrivate'} description={'MakePrivateDescription'}/>
+            <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
           </Grid>
         {/if}
       {:else}
