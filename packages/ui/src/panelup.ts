@@ -17,6 +17,8 @@ location.subscribe((loc) => {
   if (loc.fragment !== currentLocation && loc.fragment !== undefined && loc.fragment.trim().length > 0) {
     const props = decodeURIComponent(loc.fragment).split('|')
     showPanel(props[0] as AnyComponent, props[1], props[2], 'full')
+  } else if (loc.fragment === '' || (loc.fragment !== undefined && loc.fragment.trim().length === 0)) {
+    closePanel()
   }
 })
 
