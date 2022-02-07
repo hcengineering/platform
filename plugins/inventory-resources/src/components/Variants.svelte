@@ -46,7 +46,7 @@
         <Label label={inventory.string.NoVariantsForProduct} />
       </div>
       <div class="text-sm">
-        <a href={'#'} on:click={create}><Label label={inventory.string.CreateVariant} /></a>
+        <div class='over-underline' on:click={create}><Label label={inventory.string.CreateVariant} /></div>
       </div>
     </div>
   {/if}

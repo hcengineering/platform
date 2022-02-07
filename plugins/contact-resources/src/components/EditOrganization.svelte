@@ -62,10 +62,10 @@
         </div>
 
         <div class="flex-row-center">
-          <a href={'#'} class="flex-row-center" on:click>
+          <div class='over-underline flex-row-center' on:click>
             <CircleButton icon={IconActivity} size={'small'} primary on:click />
             <span class="ml-2 text-sm">View activity</span>
-          </a>
+          </div>
         </div>
       </div>
     </div>

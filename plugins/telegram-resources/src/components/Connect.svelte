@@ -145,7 +145,7 @@
     <div class="footer">
       <Button {label} primary {disabled} on:click={click} />
       {#if requested || secondFactor}
-        <a class="link" href={'#'} on:click={back}><Label label={telegram.string.Back} /></a>
+        <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>
       {/if}
     </div>
   </div>

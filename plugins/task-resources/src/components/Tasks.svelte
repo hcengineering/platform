@@ -65,7 +65,7 @@
         <Label label={task.string.NoTaskForObject} />
       </div>
       <div class="text-sm">
-        <a href={'#'} on:click={createApp}><Label label={task.string.CreateTask} /></a>
+        <div class='over-underline' on:click={createApp}><Label label={task.string.CreateTask} /></div>
       </div>
     </div>
   {/if}

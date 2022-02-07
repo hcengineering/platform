@@ -55,7 +55,7 @@
         <Label label={lead.string.NoLeadsForDocument} />
       </div>
       <div class="text-sm">
-        <a href={'#'} on:click={createLead}><Label label={lead.string.CreateLead} /></a>
+        <div class='over-underline' on:click={createLead}><Label label={lead.string.CreateLead} /></div>
       </div>
     </div>
   {/if}
