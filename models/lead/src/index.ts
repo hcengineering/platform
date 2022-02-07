@@ -16,9 +16,9 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
-import type { Doc, FindOptions, Lookup, Ref } from '@anticrm/core'
+import { Doc, FindOptions, IndexKind, Lookup, Ref } from '@anticrm/core'
 import type { Customer, Funnel, Lead } from '@anticrm/lead'
-import { Builder, Collection, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
@@ -41,6 +41,7 @@ export class TLead extends TTask implements Lead {
   declare attachedTo: Ref<Customer>
 
   @Prop(TypeString(), 'Title' as IntlString)
+  @Index(IndexKind.FullText)
   title!: string
 
   @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
@@ -60,6 +61,7 @@ export class TCustomer extends TPerson implements Customer {
   leads?: number
 
   @Prop(TypeString(), 'Description' as IntlString)
+  @Index(IndexKind.FullText)
   description!: string
 }
 

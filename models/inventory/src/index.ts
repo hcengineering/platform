@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Doc, Domain, FindOptions, Ref } from '@anticrm/core'
+import { Doc, Domain, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import type { Category, Product, Variant } from '@anticrm/inventory'
-import { Builder, Collection, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import workbench from '@anticrm/model-workbench'
@@ -30,6 +30,7 @@ export const DOMAIN_INVENTORY = 'inventory' as Domain
 @UX(inventory.string.Category, inventory.icon.Categories, undefined, 'name')
 export class TCategory extends TAttachedDoc implements Category {
   @Prop(TypeString(), 'Name' as IntlString)
+  @Index(IndexKind.FullText)
   name!: string
 }
 
@@ -41,6 +42,7 @@ export class TProduct extends TAttachedDoc implements Product {
   declare attachedTo: Ref<Category>
 
   @Prop(TypeString(), 'Name' as IntlString)
+  @Index(IndexKind.FullText)
   name!: string
 
   @Prop(Collection(attachment.class.Photo), attachment.string.Photos)
@@ -61,9 +63,11 @@ export class TVariant extends TAttachedDoc implements Variant {
   declare attachedTo: Ref<Product>
 
   @Prop(TypeString(), 'Name' as IntlString)
+  @Index(IndexKind.FullText)
   name!: string
 
   @Prop(TypeString(), inventory.string.SKU)
+  @Index(IndexKind.FullText)
   sku!: string
 }
 

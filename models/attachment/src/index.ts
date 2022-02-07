@@ -14,8 +14,8 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, Prop, UX, TypeString, TypeTimestamp } from '@anticrm/model'
-import type { Domain } from '@anticrm/core'
+import { Builder, Model, Prop, UX, TypeString, TypeTimestamp, Index } from '@anticrm/model'
+import { Domain, IndexKind } from '@anticrm/core'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import type { Attachment, Photo } from '@anticrm/attachment'
 import activity from '@anticrm/activity'
@@ -31,6 +31,7 @@ export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 @UX('File' as IntlString)
 export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeString(), 'Name' as IntlString)
+  @Index(IndexKind.FullText)
   name!: string
 
   @Prop(TypeString(), 'File' as IntlString)
@@ -40,6 +41,7 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   size!: number
 
   @Prop(TypeString(), 'Type' as IntlString)
+  @Index(IndexKind.FullText)
   type!: string
 
   @Prop(TypeTimestamp(), 'Date' as IntlString)
