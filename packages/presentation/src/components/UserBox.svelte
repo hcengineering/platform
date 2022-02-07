@@ -96,7 +96,7 @@
 
   <div class="selectUser">
     <div class="title"><Label label={title} /></div>
-    <div class:caption-color={selected} class:content-dark-color={!selected}>
+    <div class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
       {#if selected}{getName(selected)}{:else}<Label label={presentation.string.NotSelected} />{/if}
     </div>
   </div>
@@ -115,6 +115,7 @@
 
   .selectUser {
     margin-left: .75rem;
+    min-width: 0;
     .title {
       font-size: .75rem;
       font-weight: 500;

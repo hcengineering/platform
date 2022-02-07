@@ -18,8 +18,8 @@
   import { CommentInput } from '@anticrm/chunter-resources'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
-  import { Grid, IconActivity, ScrollBox } from '@anticrm/ui'
+  // import { ReferenceInput } from '@anticrm/text-editor'
+  import { Grid, IconActivity, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
@@ -52,36 +52,42 @@
 
 {#if fullSize || transparent}
   {#if !transparent}
-    <div class="flex-row-center header">
-      <div class="flex-center icon"><IconActivity size={'small'} /></div>
-      <div class="fs-title">Activity</div>
+    <div class="ac-header short mirror-tool divide">
+      <div class="ac-header__wrap-title">
+        <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
+        <span class="ac-header__title">Activity</span>
+      </div>
     </div>
   {/if}
-  <div class="h-full right-content" class:transparent>
-    <ScrollBox vertical stretch>
-      {#if txes}
-        <Grid column={1} rowGap={1.5}>
-          {#each txes as tx (tx.tx._id)}
-            <TxView {tx} {viewlets} />
-          {/each}
-        </Grid>
-      {/if}
-    </ScrollBox>
-  </div>
-  <div class="ref-input" class:transparent>
-    <CommentInput bind:object/>
+  <div class="flex-col h-full min-h-0" class:background-bg-accent={!transparent}>
+    <Scroller>
+      <div class="p-10">
+        {#if txes}
+          <Grid column={1} rowGap={1.5}>
+            {#each txes as tx (tx.tx._id)}
+              <TxView {tx} {viewlets} />
+            {/each}
+          </Grid>
+        {/if}
+      </div>
+    </Scroller>
+    <div class="ref-input">
+      <CommentInput bind:object/>
+    </div>
   </div>
 {:else}
-  <div class="unionSection">
-    <ScrollBox vertical stretch noShift>
-      <div class="flex-col content">
-        <slot />
+  <Scroller isBack>
+    <div class="p-10">
+      <slot />
+    </div>
+    <div class="scroller-back">
+      <div class="ac-header short mirror-tool">
+        <div class="ac-header__wrap-title">
+          <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
+          <span class="ac-header__title">Activity</span>
+        </div>
       </div>
-      <div class="flex-row-center activity header">
-        <div class="flex-center icon"><IconActivity size={'small'} /></div>
-        <div class="fs-title">Activity</div>
-      </div>
-      <div class="flex-col activity content">
+      <div class="p-activity">
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx}
@@ -90,77 +96,30 @@
           </Grid>
         {/if}
       </div>
-    </ScrollBox>
-    <div class="ref-input">
-      <CommentInput bind:object/>
     </div>
+  </Scroller>
+  <div class="ref-input fill">
+    <CommentInput bind:object/>
   </div>
 {/if}
 
 <style lang="scss">
-  .header {
-    flex-shrink: 0;
-    padding: 0 2.5rem;
-    height: 4rem;
-    border-bottom: 1px solid var(--theme-zone-bg);
-
-    .icon {
-      margin-right: 1rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--primary-button-color);
-      background-color: var(--primary-button-enabled);
-      border-radius: 50%;
-    }
+  .icon {
+    margin-right: 1rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-enabled);
+    border-radius: 50%;
   }
-  .activity {
-    background-color: var(--theme-bg-accent-color);
-    &.header {
-      border-bottom: none;
-    }
-    &.content {
-      flex-grow: 1;
-      padding-bottom: 0;
-      background-color: var(--theme-bg-accent-color);
-    }
-  }
-
   .ref-input {
-    background-color: var(--theme-bg-accent-color);
+    flex-shrink: 0;
     padding: 1.5rem 2.5rem;
-    &.transparent {
-      padding: 1.5rem 0 0;
-      background-color: transparent;
-    }
+
+    &.fill { background-color: var(--theme-bg-accent-normal); }
   }
-
-  .right-content {
-    flex-grow: 1;
-    padding: 1.5rem 2.5rem 0;
-    background-color: var(--theme-dialog-accent);
-    &.transparent {
-      min-height: 0;
-      height: 100%;
-      max-height: 100%;
-      padding: 0;
-      background-color: transparent;
-    }
-  }
-
-  .unionSection {
-    flex-grow: 1;
-
-    display: flex;
-    flex-direction: column;
-    height: max-content;
-
-    .content {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      padding: 3rem 2.5rem;
-      height: max-content;
-    }
-  }
+  .p-activity { padding: 1.5rem 2.5rem 2.5rem; }
+  .scroller-back { background-color: var(--theme-bg-accent-normal); }
+  
   :global(.grid .msgactivity-container:last-child::after) { content: none; } // Remove the line in the last Activity message
 </style>

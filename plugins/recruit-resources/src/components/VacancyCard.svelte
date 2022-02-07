@@ -26,8 +26,8 @@
     <Company size={'large'} />
   </div>
   {#if vacancy}
-    <div class="name">{vacancy.name}</div>
-    <div class="description">{vacancy.description ?? ''}</div>
+    <div class="name lines-limit-2">{vacancy.name}</div>
+    <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
   {/if}
 </div>
 

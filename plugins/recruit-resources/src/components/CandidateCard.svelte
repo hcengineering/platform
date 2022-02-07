@@ -26,9 +26,9 @@
   <div class="label">CANDIDATE</div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
-    <div class="name">{formatName(candidate.name)}</div>
-    <div class="description">{candidate.title ?? ''}</div>
-    <div class="description">{candidate.city ?? ''}</div>
+    <div class="name lines-limit-2">{formatName(candidate.name)}</div>
+    <div class="description lines-limit-2">{candidate.title ?? ''}</div>
+    <div class="description overflow-label">{candidate.city ?? ''}</div>
     <div class="footer"><Channels value={candidate.channels} size={'small'} /></div>
   {/if}
 </div>

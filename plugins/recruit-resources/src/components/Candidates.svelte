@@ -43,7 +43,7 @@
 <div class="ac-header full">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
-    <span class="ac-title"><Label label={recruit.string.Candidates} /></span>
+    <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
   </div>
 
   <SearchEdit bind:value={search} on:change={() => {

@@ -106,6 +106,7 @@
   .popup {
     display: flex;
     flex-direction: column;
+    padding: 1rem;
     min-height: 0;
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-focused);

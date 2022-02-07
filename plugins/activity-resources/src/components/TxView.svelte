@@ -266,6 +266,7 @@
   }
 
   .time {
+    align-self: baseline;
     margin-left: 1rem;
     color: var(--theme-content-trans-color);
   }
