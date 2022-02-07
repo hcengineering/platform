@@ -37,6 +37,7 @@ export interface TxViewlet extends Doc {
 
   // Label will be displayed right after author
   label?: IntlString
+  labelParams?: any
   // Do component need to be emphasized or not.
   display: 'inline' | 'content' | 'emphasized'
 

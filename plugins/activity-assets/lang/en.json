@@ -3,6 +3,8 @@
     "Delete": "Delete",
     "Edit": "Edit",
     "Options": "Options",
-    "Edited": "edited"
+    "Edited": "edited",
+    "DocCreated": "created {_class}",
+    "DocDeleted": "deleted {_class}"
   }
 }

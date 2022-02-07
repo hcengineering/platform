@@ -141,7 +141,7 @@
           {#if viewlet && viewlet?.editable}
             <div class="edited">
               {#if viewlet.label}
-                <Label label={viewlet.label} />
+                <Label label={viewlet.label} params={viewlet.labelParams ?? {}}  />
               {/if}
               {#if tx.updated}
                 <Label label={activity.string.Edited} />
@@ -152,7 +152,7 @@
             </div>
           {:else if viewlet && viewlet.label}
             <div class='flex-center'>
-              <Label label={viewlet.label} />
+              <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               {#if viewlet.labelComponent}
                 <Component is={viewlet.labelComponent} {props} />
               {/if}
