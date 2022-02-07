@@ -2,7 +2,7 @@ import { DocumentQuery } from '.'
 import { Doc } from './classes'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
-import { SortingQuery } from './storage'
+import { SortingOrder, SortingQuery } from './storage'
 
 /**
  * @public
@@ -37,27 +37,33 @@ export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuer
     for (const key in sortOptions) {
       const aValue = getValue(key, a)
       const bValue = getValue(key, b)
-      const result = getSortingResult(aValue, bValue)
-      if (result !== 0) return result * (sortOptions[key] as number)
+      const result = getSortingResult(aValue, bValue, (sortOptions[key] as SortingOrder))
+      if (result !== 0) return result
     }
     return 0
   }
   result.sort(sortFunc)
 }
 
-function getSortingResult (aValue: any, bValue: any): number {
+function getSortingResult (aValue: any, bValue: any, order: SortingOrder): number {
+  let res = 0
   if (typeof aValue === 'undefined') {
     return typeof bValue === 'undefined' ? 0 : -1
   }
   if (typeof bValue === 'undefined') {
     return 1
   }
-  return typeof aValue === 'string' ? aValue.localeCompare(bValue) : (aValue - bValue)
+  if (Array.isArray(aValue) && Array.isArray(bValue)) {
+    res = (aValue.sort((a, b) => (a - b) * order)[0] ?? 0) - (bValue.sort((a, b) => (a - b) * order)[0] ?? 0)
+  } else {
+    res = typeof aValue === 'string' ? aValue.localeCompare(bValue) : (aValue - bValue)
+  }
+  return res * order
 }
 
 function getValue (key: string, obj: any): any {
   let value = getObjectValue(key, obj)
-  if (typeof value === 'object') {
+  if (typeof value === 'object' && !Array.isArray(value)) {
     value = JSON.stringify(value)
   }
   return value
