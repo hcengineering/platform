@@ -15,15 +15,15 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import type { Ref } from '@anticrm/core'
-  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon, Component } from '@anticrm/ui'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { AttributesBar, getClient, createQuery } from '@anticrm/presentation'
-  import { Vacancy } from '@anticrm/recruit'
-  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
+  import type { Ref } from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
+  import { Vacancy } from '@anticrm/recruit'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Component, EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
   export let _id: Ref<Vacancy>
@@ -33,13 +33,17 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  let oldName: string = ''
 
   const query = createQuery()
   const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
-  $: query.query(recruit.class.Vacancy, { _id }, result => {
-    object = result[0]
-  })
+
+  async function updateObject (_id: Ref<Vacancy>): Promise<void> {
+    await query.query(recruit.class.Vacancy, { _id }, result => {
+      object = result[0]
+    })
+  }
+
+  $: updateObject(_id)
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let selected = 0
@@ -87,9 +91,8 @@
               if (object.name.trim().length > 0) {
                   onChange('name', object.name)
               } else {
-                query.query(recruit.class.Vacancy, { _id }, result => {
-                  object = result[0]
-                })
+                // Revert previos object.name
+                updateObject(_id)
               }
             }}/>
             <EditBox label={recruit.string.Description} bind:value={object.description} placeholder={recruit.string.VacancyDescription} maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>

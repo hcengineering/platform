@@ -17,7 +17,7 @@
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { StyledTextBox, StyledTextEditor } from '@anticrm/text-editor'
+  import { StyledTextBox } from '@anticrm/text-editor'
   import { EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
@@ -28,7 +28,6 @@
   const client = getClient()
 
   function change (field: string, value: any) {
-    console.log('change', value)
     client.updateCollection(
       object._class,
       object.space,
