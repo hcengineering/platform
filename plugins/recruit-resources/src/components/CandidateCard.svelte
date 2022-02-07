@@ -14,10 +14,12 @@
 -->
 
 <script lang="ts">
+  import contact, { Channel, formatName } from '@anticrm/contact'
+  import { ChannelsView } from '@anticrm/contact-resources'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import { ChannelsView } from '@anticrm/contact-resources'
-  import contact, { Channel, formatName } from '@anticrm/contact'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let candidate: Candidate
 
@@ -34,7 +36,9 @@
   )
 </script>
 
-<div class="flex-col h-full card-container">
+<div class="flex-col h-full card-container" on:click={() => {
+  showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+}}>
   <div class="label">CANDIDATE</div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
@@ -47,10 +51,18 @@
 
 <style lang="scss">
   .card-container {
+    cursor: pointer;
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
+
+    &:hover {
+      &:hover .name {
+        text-decoration: underline;
+      }
+    }
+
 
     .label {
       margin-bottom: 1.75rem;
