@@ -249,7 +249,7 @@
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />
       {:else if specialComponent}
-        <Component is={specialComponent} />
+        <Component is={specialComponent} props={{ model: navigatorModel }} />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} />
       {/if}
