@@ -13,6 +13,7 @@
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
     "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 ts-node ./src/index.ts",
+    "run-local-node": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 node ./bundle.js",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },
