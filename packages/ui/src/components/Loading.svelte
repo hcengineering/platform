@@ -39,7 +39,7 @@
 
 .spinner-container .inner {
   margin: auto;
-  opacity: 0;
+  opacity: 0.5;
   animation-name: makeVisible;
   animation-duration: 0.25s;
   animation-delay: 0.1s;

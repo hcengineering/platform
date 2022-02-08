@@ -36,6 +36,7 @@
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
   let selectRow: number | undefined = undefined
+  let loading = false
 
   let objects: Doc[]
 
@@ -48,11 +49,13 @@
     sortOrder: SortingOrder,
     options?: FindOptions<Doc>
   ) {
+    loading = true
     q.query(
       _class,
       query,
       (result) => {
         objects = result
+        loading = false
       },
       { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
     )
@@ -116,7 +119,9 @@
 </script>
 
 {#await buildModel({ client, _class, keys: config, options })}
-  <Loading />
+  {#if !loading}
+    <Loading />
+  {/if}
 {:then model}
   <table class="table-body" class:enableChecking>
     <thead>
@@ -222,6 +227,10 @@
     {/if}
   </table>
 {/await}
+
+{#if loading}
+  <Loading/>
+{/if}
 
 <style lang="scss">
   .table-body {
