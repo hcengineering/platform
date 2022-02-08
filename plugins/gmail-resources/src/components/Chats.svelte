@@ -51,7 +51,7 @@
       { attachedTo: channelId },
       (res) => {
         messages = res
-        notificationClient.updateLastView(channelId, channel._class)
+        notificationClient.updateLastView(channelId, channel._class, undefined, true)
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
       },

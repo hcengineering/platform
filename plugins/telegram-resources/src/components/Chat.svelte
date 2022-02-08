@@ -62,7 +62,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          notificationClient.updateLastView(channel._id, channel._class)
+          notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
