@@ -28,11 +28,11 @@ test.describe('contact tests', () => {
 
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
-    await expect(page.locator('text=Elton John')).toBeVisible()
+    await expect(page.locator('text=Marina M.')).toBeVisible()
     expect(await page.locator('.tr-body').count()).toBeGreaterThan(5)
 
     const searchBox = page.locator('[placeholder="Search"]')
-    await searchBox.fill('Elton')
+    await searchBox.fill('Marina')
     await searchBox.press('Enter')
 
     await expect(page.locator('.tr-body')).toHaveCount(1)
