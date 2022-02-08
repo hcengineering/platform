@@ -211,7 +211,7 @@
   />
 </div>
 <div class="h-full right-content">
-  <ScrollBox vertical stretch>
+  <ScrollBox vertical stretch autoscrollable>
     {#if messages && accounts}
       <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
     {/if}

@@ -14,13 +14,27 @@
 -->
 
 <script lang="ts">
+  import { afterUpdate } from "svelte"
+
   export let vertical: boolean = false
   export let stretch: boolean = false
   export let bothScroll: boolean = false
   export let noShift: boolean = false
+  export let autoscrollable: boolean = false
+
+  let div: HTMLElement
+  let autoscroll: boolean = true
+
+  afterUpdate(async () => {
+    if (autoscrollable && autoscroll) div.scrollTo(0, div.scrollHeight)
+  })
+
+  function setAutoscroll () {
+    autoscroll = div.scrollTop > div.scrollHeight - div.clientHeight - 50
+  }
 </script>
 
-<div class="scroll" class:vertical class:bothScroll class:noShift>
+<div class="scroll" bind:this={div} class:vertical class:bothScroll class:noShift on:scroll={setAutoscroll}>
   <div class="box" class:stretch>
     <slot/>
   </div>
