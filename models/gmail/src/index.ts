@@ -15,12 +15,12 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, Prop, ArrOf, TypeBoolean } from '@anticrm/model'
+import { Builder, Model, TypeString, Prop, ArrOf, TypeBoolean, Index } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import gmail from './plugin'
 import type { Message, SharedMessage, SharedMessages } from '@anticrm/gmail'
-import type { Domain, Type } from '@anticrm/core'
+import { Domain, IndexKind, Type } from '@anticrm/core'
 import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
 
@@ -36,24 +36,31 @@ export class TMessage extends TAttachedDoc implements Message {
   messageId!: string
 
   @Prop(TypeString(), 'ReplyTo' as IntlString)
+  @Index(IndexKind.FullText)
   replyTo?: string
 
   @Prop(TypeString(), 'From' as IntlString)
+  @Index(IndexKind.FullText)
   from!: string
 
   @Prop(TypeString(), 'To' as IntlString)
+  @Index(IndexKind.FullText)
   to!: string
 
   @Prop(TypeString(), 'Contact' as IntlString)
+  @Index(IndexKind.FullText)
   contact!: string
 
   @Prop(TypeString(), 'Subject' as IntlString)
+  @Index(IndexKind.FullText)
   subject!: string
 
   @Prop(TypeString(), 'Message' as IntlString)
+  @Index(IndexKind.FullText)
   content!: string
 
   @Prop(TypeString(), 'Message' as IntlString)
+  @Index(IndexKind.FullText)
   textContent!: string
 
   @Prop(ArrOf(TypeString()), 'Copy' as IntlString)

@@ -15,10 +15,11 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, Ref, Space, Timestamp } from '@anticrm/core'
+import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Space, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection, Hidden, Implements,
+  Index,
   Mixin,
   Model,
   Prop, TypeBoolean,
@@ -106,6 +107,7 @@ export class TTask extends TAttachedDoc implements Task {
 @UX(task.string.Todo)
 export class TTodoItem extends TAttachedDoc implements TodoItem {
   @Prop(TypeString(), task.string.TodoName, task.icon.Task)
+  @Index(IndexKind.FullText)
   name!: string
 
   @Prop(TypeBoolean(), task.string.TaskDone)
@@ -130,9 +132,11 @@ export class TIssue extends TTask implements Issue {
   declare attachedTo: Ref<Doc>
 
   @Prop(TypeString(), task.string.IssueName)
+  @Index(IndexKind.FullText)
   name!: string
 
   @Prop(TypeMarkup(), task.string.TaskDescription)
+  @Index(IndexKind.FullText)
   description!: string
 
   @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
@@ -142,6 +146,7 @@ export class TIssue extends TTask implements Issue {
   attachments!: number
 
   @Prop(TypeString(), task.string.TaskLabels)
+  @Index(IndexKind.FullText)
   labels!: string
 
   @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
@@ -193,6 +198,7 @@ export class TLostStateTemplate extends TDoneStateTemplate implements LostStateT
 @Model(task.class.KanbanTemplate, core.class.Doc, DOMAIN_KANBAN)
 export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   @Prop(TypeString(), task.string.KanbanTemplateTitle)
+  @Index(IndexKind.FullText)
   title!: string
 
   @Prop(Collection(task.class.StateTemplate), task.string.States)

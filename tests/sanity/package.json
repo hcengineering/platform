@@ -11,7 +11,7 @@
     "format": "prettier --write src && eslint --fix src",
     "ci": "playwright install --with-deps chromium",
     "test": "",
-    "uitest": "playwright test --browser chromium --reporter list,html"
+    "uitest": "playwright test --browser chromium --reporter list,html -c ./tests/playwright.config.ts"
   },
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",

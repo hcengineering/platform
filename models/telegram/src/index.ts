@@ -15,12 +15,12 @@
 //
 
 import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf } from '@anticrm/model'
+import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'
 import type { TelegramMessage, SharedTelegramMessage, SharedTelegramMessages } from '@anticrm/telegram'
-import type { Domain, Type } from '@anticrm/core'
+import { Domain, IndexKind, Type } from '@anticrm/core'
 import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
 
@@ -33,6 +33,7 @@ function TypeSharedMessage (): Type<SharedTelegramMessage> {
 @Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
   @Prop(TypeString(), 'Content' as IntlString)
+  @Index(IndexKind.FullText)
   content!: string
 
   @Prop(TypeBoolean(), 'Incoming' as IntlString)

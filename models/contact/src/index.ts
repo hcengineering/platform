@@ -59,6 +59,7 @@ export class TContact extends TDoc implements Contact {
   comments?: number
 
   @Prop(TypeString(), 'Location' as IntlString)
+  @Index(IndexKind.FullText)
   city!: string
 }
 
@@ -69,6 +70,7 @@ export class TChannel extends TAttachedDoc implements Channel {
   provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), 'Value' as IntlString)
+  @Index(IndexKind.FullText)
   value!: string
 
   items?: number

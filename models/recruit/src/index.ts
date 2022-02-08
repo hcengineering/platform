@@ -14,24 +14,25 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, Lookup, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@anticrm/core'
+import { Builder, Collection, Index, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TSpace } from '@anticrm/model-core'
+import presentation from '@anticrm/model-presentation'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
-import presentation from '@anticrm/model-presentation'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
 export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeMarkup(), 'Full description' as IntlString)
+  @Index(IndexKind.FullText)
   fullDescription?: string
 
   @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
@@ -41,9 +42,11 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   dueTo?: Timestamp
 
   @Prop(TypeString(), 'Location' as IntlString, recruit.icon.Location)
+  @Index(IndexKind.FullText)
   location?: string
 
   @Prop(TypeString(), 'Company' as IntlString, contact.icon.Company)
+  @Index(IndexKind.FullText)
   company?: string
 }
 
@@ -55,6 +58,7 @@ export class TCandidates extends TSpace implements Candidates {}
 @UX('Candidate' as IntlString, recruit.icon.RecruitApplication)
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Title' as IntlString)
+  @Index(IndexKind.FullText)
   title?: string
 
   @Prop(Collection(recruit.class.Applicant), 'Applications' as IntlString)
@@ -67,6 +71,7 @@ export class TCandidate extends TPerson implements Candidate {
   remote?: boolean
 
   @Prop(TypeString(), 'Source' as IntlString)
+  @Index(IndexKind.FullText)
   source?: string
 }
 
@@ -313,6 +318,6 @@ export function createModel (builder: Builder): void {
   })
 }
 
-export { default } from './plugin'
-export { recruitOperation } from './migration'
 export { createDeps } from './creation'
+export { recruitOperation } from './migration'
+export { default } from './plugin'
