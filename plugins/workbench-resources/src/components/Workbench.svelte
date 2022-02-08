@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Client, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
@@ -22,11 +22,9 @@
     Component,
     getCurrentLocation,
     location,
-    navigate,
-    Popup,
+    navigate, PanelInstance, Popup,
     showPopup,
-    TooltipInstance,
-    PanelInstance
+    TooltipInstance
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
@@ -170,6 +168,26 @@
 
   let isNavigate: boolean = false
   $: isNavigate = !!navigatorModel
+
+  function navigateApp (app: Application) {
+    if (currentApp === app._id) {
+      // Nothing to do.
+      return
+    }
+    currentApp = app._id
+    currentApplication = app
+    navigatorModel = currentApplication?.navigatorModel
+
+    currentSpace = undefined
+    currentSpecial = undefined
+    currentView = undefined
+    createItemDialog = undefined
+
+    const loc = getCurrentLocation()
+    loc.path[1] = app._id
+    loc.path.length = 2
+    navigate(loc)
+  }
 </script>
 
 {#if client}
@@ -195,7 +213,9 @@
           notify={false}
         />
       </div>
-      <Applications {apps} active={currentApp} />
+      <Applications {apps} active={currentApp} on:active={(evt) => {
+        navigateApp(evt.detail)
+      }} />
       <div class="flex-center" style="min-height: 6.25rem;">
         <div
           class="cursor-pointer"
