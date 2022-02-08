@@ -33,7 +33,8 @@
     "esbuild": "^0.12.24",
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/body-parser": "~1.19.2"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.11",
@@ -47,6 +48,7 @@
     "@anticrm/server-token": "~0.6.0",
     "@anticrm/attachment": "~0.6.0",
     "@anticrm/contrib": "~0.6.0",
-    "minio": "^7.0.19"
+    "minio": "^7.0.19",
+    "body-parser": "~1.19.1"
   }
 }
