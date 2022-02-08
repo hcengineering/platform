@@ -111,6 +111,8 @@ export const location = derived(locationWritable, (loc) => loc)
 
 export function navigate (location: PlatformLocation): void {
   const url = locationToUrl(location)
-  history.pushState(null, '', url)
-  locationWritable.set(location)
+  if (locationToUrl(getCurrentLocation()) !== url) {
+    history.pushState(null, '', url)
+    locationWritable.set(location)
+  }
 }
