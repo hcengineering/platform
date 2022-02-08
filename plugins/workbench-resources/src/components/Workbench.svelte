@@ -170,6 +170,10 @@
   $: isNavigate = !!navigatorModel
 
   function navigateApp (app: Application) {
+    if (currentApp === app._id) {
+      // Nothing to do.
+      return
+    }
     currentApp = app._id
     currentApplication = app
     navigatorModel = currentApplication?.navigatorModel
