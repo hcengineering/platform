@@ -59,7 +59,7 @@
     (res) => (doneStates = res)
   )
 
-  async function updateQuery (): Promise<void> {
+  async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
     updateConfig()
     const result = {} as DocumentQuery<Task>
     if (search !== '') {
@@ -84,10 +84,10 @@
       selectedDoneStates.add(id)
     }
     selectedDoneStates = selectedDoneStates
-    updateQuery()
+    updateQuery(search, selectedDoneStates)
   }
 
-  $: updateQuery()
+  $: updateQuery(search, selectedDoneStates)
 </script>
 
 <div class="flex-between mb-4 header">
@@ -99,7 +99,7 @@
         doneStatusesView = false
         state = undefined
         selectedDoneStates.clear()
-        updateQuery()
+        updateQuery(search, selectedDoneStates)
       }}
     >
       <Label label={plugin.string.AllStates} />
@@ -111,7 +111,7 @@
         doneStatusesView = true
         state = undefined
         selectedDoneStates.clear()
-        updateQuery()
+        updateQuery(search, selectedDoneStates)
       }}
     >
       <Label label={plugin.string.DoneStates} />
@@ -140,7 +140,7 @@
         </div>
       {/each}
     {:else}
-      <StatesBar bind:state {space} on:change={updateQuery} />
+      <StatesBar bind:state {space} on:change={() => updateQuery(search, selectedDoneStates)} />
     {/if}
   </div>
 </div>
