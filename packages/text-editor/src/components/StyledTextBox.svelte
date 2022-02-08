@@ -62,7 +62,9 @@
     </StyledTextEditor>
   {:else}
     <div class="text">
-      <MessageViewer message={content} />
+      {#if content}
+        <MessageViewer message={content} />
+      {/if}
     </div>
     <div class="flex flex-reverse">
       <ActionIcon
