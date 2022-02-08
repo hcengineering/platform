@@ -25,20 +25,22 @@
   export let is: AnyComponent
   export let props = {}
 
-  $: component = getResource(is)
+  $: component = (is != null) ? getResource(is) : Promise.reject(new Error('is not defined'))
 </script>
 
-{#await component}
-  <Loading/>
-{:then Ctor}
-  <ErrorBoundary>
-    <Ctor {...props} on:change on:close on:open on:click>
-      <slot />
-    </Ctor>
-  </ErrorBoundary>
-{:catch err}
-  <pre style='max-height: 140px; overflow: auto;'>
-    <ErrorPresenter error={err}/>
-  </pre>
-  <!-- <Icon icon={ui.icon.Error} size="32" /> -->
-{/await}
+{#if is}
+  {#await component}
+    <Loading/>
+  {:then Ctor}
+    <ErrorBoundary>
+      <Ctor {...props} on:change on:close on:open on:click>
+        <slot />
+      </Ctor>
+    </ErrorBoundary>
+  {:catch err}
+    <pre style='max-height: 140px; overflow: auto;'>
+      <ErrorPresenter error={err}/>
+    </pre>
+    <!-- <Icon icon={ui.icon.Error} size="32" /> -->
+  {/await}
+{/if}

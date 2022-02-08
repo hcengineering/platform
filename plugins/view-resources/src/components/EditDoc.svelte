@@ -25,7 +25,7 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label } from '@anticrm/ui'
+  import { AnyComponent, Component, Label, Spinner } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { getMixinStyle } from '../utils'
@@ -49,22 +49,20 @@
       object = result[0]
     })
 
-  $: if (object) objectClass = hierarchy.getClass(object._class)
+  $: if (object !== undefined) objectClass = hierarchy.getClass(object._class)
 
   let selectedClass: Ref<Class<Doc>> | undefined
   let prevSelected = selectedClass
 
   let keys: KeyedAttribute[] = []
   let collectionKeys: KeyedAttribute[] = []
+  let collectionEditors: AnyComponent[] = []
 
   let mixins: Mixin<Doc>[] = []
-
-  let selectedMixin: Mixin<Doc> | undefined
 
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
     selectedClass = objectClass._id
-    selectedMixin = undefined
     parentClass = getParentClass(object._class)
     mixins = getMixins()
   }
@@ -128,10 +126,7 @@
 
   $: if (object) getEditorOrDefault(selectedClass, object._class)
 
-  async function getEditorOrDefault (
-    _class: Ref<Class<Doc>> | undefined,
-    defaultClass: Ref<Class<Doc>>
-  ): Promise<void> {
+  async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
     console.log('get editor or default')
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {
@@ -184,6 +179,14 @@
     return result
   }
 
+  let title: string = ''
+
+  $: if (object !== undefined) {
+    getTitle(object).then((t) => {
+      title = t
+    })
+  }
+
   async function getTitle (object: Doc): Promise<string> {
     const name = (object as any).name
     if (name !== undefined) {
@@ -202,88 +205,106 @@
     if (editorMixin.editor != null) return editorMixin.editor
     if (clazz.extends != null) return getHeaderEditor(clazz.extends)
   }
+
+  let headerEditor: AnyComponent | undefined = undefined
+  let headerLoading = false
+  $: if (object !== undefined) {
+    headerLoading = true
+    getHeaderEditor(object._class).then((r) => {
+      headerEditor = r
+      headerLoading = false
+    })
+  }
+
+  async function updateCollectionEditors (keys: KeyedAttribute[]): Promise<void> {
+    const editors: AnyComponent[] = []
+    for (const k of keys) {
+      editors.push(await getCollectionEditor(k))
+    }
+    collectionEditors = editors
+  }
+
+  $: updateCollectionEditors(collectionKeys)
 </script>
 
-{#if object !== undefined}
-  {#await getTitle(object) then title}
-    <Panel
-      {icon}
-      {title}
-      {rightSection}
-      {fullSize}
-      {object}
-      on:close={() => {
-        dispatch('close')
-      }}
-    >
-      <div class="w-full" slot="subtitle">
-        {#await getHeaderEditor(object._class) then is}
-          {#if is}
-            <Component {is} props={{ object, keys }} />
-          {:else}
-            <AttributesBar {object} {keys} />
-          {/if}
-        {/await}
-      </div>
-      <div class="main-editor">
-        {#if mainEditor}
-          <Component
-            is={mainEditor}
-            props={{ object }}
-            on:open={(ev) => {
-              ignoreKeys = ev.detail.ignoreKeys
-              updateKeys()
-            }}
-            on:click={(ev) => {
-              fullSize = true
-              rightSection = ev.detail.presenter
-            }}
-          />
+{#if object !== undefined && title !== undefined}
+  <Panel
+    {icon}
+    {title}
+    {rightSection}
+    {fullSize}
+    {object}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <div class="w-full" slot="subtitle">
+      {#if !headerLoading}
+        {#if headerEditor !== undefined}
+          <Component is={headerEditor} props={{ object, keys }} />
+        {:else}
+          <AttributesBar {object} {keys} />
         {/if}
-      </div>
-      {#if mixins.length > 0}
-        <div class="mixin-container">
+      {/if}
+    </div>
+    <div class="main-editor">
+      {#if mainEditor}
+        <Component
+          is={mainEditor}
+          props={{ object }}
+          on:open={(ev) => {
+            ignoreKeys = ev.detail.ignoreKeys
+            updateKeys()
+          }}
+          on:click={(ev) => {
+            fullSize = true
+            rightSection = ev.detail.presenter
+          }}
+        />
+      {/if}
+    </div>
+    {#if mixins.length > 0}
+      <div class="mixin-container">
+        <div
+          class="mixin-selector"
+          style={getMixinStyle(objectClass._id, selectedClass === objectClass._id)}
+          on:click={() => {
+            selectedClass = objectClass._id
+          }}
+        >
+          <Label label={objectClass.label} />
+        </div>
+        {#each mixins as mixin}
           <div
             class="mixin-selector"
-            style={getMixinStyle(objectClass._id, selectedClass === objectClass._id)}
+            style={getMixinStyle(mixin._id, selectedClass === mixin._id)}
             on:click={() => {
-              selectedClass = objectClass._id
-              selectedMixin = undefined
+              selectedClass = mixin._id
             }}
           >
-            <Label label={objectClass.label} />
+            <Label label={mixin.label} />
           </div>
-          {#each mixins as mixin}
-            <div
-              class="mixin-selector"
-              style={getMixinStyle(mixin._id, selectedClass === mixin._id)}
-              on:click={() => {
-                selectedClass = mixin._id
-                selectedMixin = mixin
-              }}
-            >
-              <Label label={mixin.label} />
-            </div>
-          {/each}
-        </div>
-      {/if}
-      {#each collectionKeys as collection}
+        {/each}
+      </div>
+    {/if}
+    {#if collectionKeys.length !== collectionEditors.length}
+      <Spinner />
+    {:else}
+      {#each collectionKeys as collection, i}
         <div class="mt-14">
-          {#await getCollectionEditor(collection) then is}
-            <Component
-              {is}
-              props={{
-                objectId: object._id,
-                _class: object._class,
-                space: object.space,
-                [collection.key]: getCollectionCounter(object, collection)
-              }}
-            />
-          {/await}
+          <Component
+            is={collectionEditors[i]}
+            props={{
+              objectId: object._id,
+              _class: object._class,
+              space: object.space,
+              [collection.key]: getCollectionCounter(object, collection)
+            }}
+          />
         </div>
       {/each}
-    </Panel>
-  {/await}
+    {/if}
+  </Panel>
 {/if}
 
 <style lang="scss">
