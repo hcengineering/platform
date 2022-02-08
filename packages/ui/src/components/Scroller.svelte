@@ -24,6 +24,7 @@
   let divScroll: HTMLElement
   let divBox: HTMLElement
   let divBack: HTMLElement
+  let divBar: HTMLElement
   let divEl: HTMLElement
 
   const checkBack = (): void => {
@@ -43,6 +44,17 @@
       divBack.style.width = 'auto'
       divBack.style.visibility = 'visible'
     } else divBack.style.visibility = 'hidden'
+  }
+
+  const checkBar = (): void => {
+    if (divBar && divScroll) {
+      const proc = divScroll.clientHeight / divScroll.scrollHeight * 100
+      const procScroll = (divScroll.clientHeight - 8) / 100
+      const procTop = divScroll.scrollTop / divScroll.scrollHeight
+      divBar.style.height = procScroll * proc + 'px'
+      divBar.style.top = procTop * (divScroll.clientHeight - 8) + 4 + 'px'
+      divBar.style.visibility = 'visible'
+    }
   }
 
   let observer = new IntersectionObserver(changes => {
@@ -71,6 +83,7 @@
     else if (b > 0) mask = 'top'
     else mask = 'none'
     if (isBack) checkBack()
+    if (mask !== 'none') checkBar()
   }
 
   onMount(() => {
@@ -89,22 +102,35 @@
   afterUpdate(() => { if (divScroll) checkFade() })
 </script>
 
-<svelte:window on:resize={checkFade} />
-<div
-  bind:this={divScroll}
-  class="scroll relative"
-  class:antiNav-topFade={mask === 'top'}
-  class:antiNav-bottomFade={mask === 'bottom'}
-  class:antiNav-bothFade={mask === 'both'}
-  class:antiNav-noneFade={mask === 'none'}
->
-  <div bind:this={divBox} class="box" class:p-10={padding}>
-    <slot />
+<svelte:window on:resize={checkFade}  />
+<div class="scroller-container">
+  <div
+    bind:this={divScroll}
+    class="scroll relative"
+    class:antiNav-topFade={mask === 'top'}
+    class:antiNav-bottomFade={mask === 'bottom'}
+    class:antiNav-bothFade={mask === 'both'}
+    class:antiNav-noneFade={mask === 'none'}
+  >
+    <div bind:this={divBox} class="box" class:p-10={padding}>
+      <slot />
+    </div>
   </div>
+  <div bind:this={divBack} class="back" />
+  <div
+    bind:this={divBar}
+    class="bar"
+  />
 </div>
-<div bind:this={divBack} class="back" />
 
 <style lang="scss">
+  .scroller-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
   .scroll {
     flex-grow: 1;
     min-height: 0;
@@ -113,16 +139,33 @@
     overflow-x: hidden;
     overflow-y: auto;
 
-    &::-webkit-scrollbar-track { margin: 0; }
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--theme-bg-accent-color);
-      &:hover { background-color: var(--theme-menu-divider); }
-    }
+    &::-webkit-scrollbar:vertical { width: 0; }
   }
   .box {
     display: flex;
     flex-direction: column;
     height: 100%;
+  }
+  .bar {
+    visibility: hidden;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 4px;
+    min-height: 2rem;
+    max-height: calc(100% - 8px);
+    background-color: var(--theme-button-bg-focused);
+    border-radius: .25rem;
+    opacity: .5;
+    cursor: pointer;
+
+    transition: width .1s, opacity .1s;
+
+    &:hover {
+      background-color: var(--theme-button-bg-focused);
+      width: 8px;
+      opacity: 1;
+    }
   }
   .back {
     visibility: hidden;

@@ -76,17 +76,17 @@
       height: 4.5rem;
       min-height: 4.5rem;
 
-      .arrow-back {
-        margin-right: 1rem;
-        width: 1.5rem;
-        height: 1.5rem;
-        cursor: pointer;
-        .icon {
-          color: #1F212B;
-          opacity: .4;
-        }
-        &:hover .icon { opacity: 1; }
-      }
+      // .arrow-back {
+      //   margin-right: 1rem;
+      //   width: 1.5rem;
+      //   height: 1.5rem;
+      //   cursor: pointer;
+      //   .icon {
+      //     color: #1F212B;
+      //     opacity: .4;
+      //   }
+      //   &:hover .icon { opacity: 1; }
+      // }
 
       .user { margin-left: .75rem; }
       .name {
