@@ -1,14 +1,14 @@
 import type { TxViewlet } from '@anticrm/activity'
-import activity from '@anticrm/activity'
+import activity from '../plugin'
 import core, { Class, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
-import { Asset, IntlString } from '@anticrm/platform'
+import { Asset, IntlString, translate } from '@anticrm/platform'
 import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { AttributeModel } from '@anticrm/view'
 import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
 import { ActivityKey, activityKey, DisplayTx } from '../activity'
 
 export type TxDisplayViewlet =
-  | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent'> & {
+  | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent' | 'labelParams'> & {
     component?: AnyComponent | AnySvelteComponent
   })
   | undefined
@@ -16,7 +16,7 @@ export type TxDisplayViewlet =
 async function createPseudoViewlet (
   client: TxOperations,
   dtx: DisplayTx,
-  label: string
+  label: IntlString
 ): Promise<TxDisplayViewlet> {
   const doc = dtx.doc
   if (doc === undefined) {
@@ -24,12 +24,14 @@ async function createPseudoViewlet (
   }
   const docClass: Class<Doc> = client.getModel().getObject(doc._class)
 
+  const trLabel = await translate(docClass.label, {})
   const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
   if (presenter !== undefined) {
     return {
       display: 'inline',
       icon: docClass.icon ?? activity.icon.Activity,
-      label: (`${label} ` + docClass.label) as IntlString,
+      label: label,
+      labelParams: { _class: trLabel },
       component: presenter.presenter
     }
   }
@@ -76,10 +78,10 @@ async function checkInlineViewlets (
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
   if (dtx.tx._class === core.class.TxCreateDoc) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
-    viewlet = await createPseudoViewlet(client, dtx, 'created')
+    viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)
   }
   if (dtx.tx._class === core.class.TxRemoveDoc) {
-    viewlet = await createPseudoViewlet(client, dtx, 'deleted')
+    viewlet = await createPseudoViewlet(client, dtx, activity.string.DocDeleted)
   }
   if (dtx.tx._class === core.class.TxUpdateDoc) {
     model = await createUpdateModel(dtx, client, model)

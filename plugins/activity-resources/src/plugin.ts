@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId } from '@anticrm/chunter'
+import activity, { activityId } from '@anticrm/activity'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 
-export default mergeIds(chunterId, chunter, {
+export default mergeIds(activityId, activity, {
   string: {
-    Activity: '' as IntlString
+    Activity: '' as IntlString,
+    DocCreated: '' as IntlString,
+    DocDeleted: '' as IntlString
   }
 })
