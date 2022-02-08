@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import { afterUpdate } from 'svelte'
-  import { Spinner } from '..'
+  import { AnySvelteComponent, Spinner } from '..'
   import { closePanel, PanelProps, panelstore as modal } from '../panelup'
   import { popupstore } from '../popups'
 
@@ -24,12 +24,20 @@
   let componentInstance: any
   let show: boolean = false
 
+  let component: AnySvelteComponent
+
   let props: PanelProps | undefined
   function _close () {
     closePanel()
   }
 
   $: props = $modal.panel
+
+  $: if (props !== undefined) {
+    getResource(props.component).then((r) => {
+      component = r
+    })
+  }
 
   function escapeClose () {
     // Check if there is popup visible, then ignore
@@ -113,9 +121,9 @@
   }}
 />
 {#if props}
-  {#await getResource(props.component)}
+  {#if !component}
     <Spinner />
-  {:then component}
+  {:else}
     <div class="popup" bind:this={modalHTML} style={'z-index: 401'}>
       <svelte:component
         this={component}
@@ -128,7 +136,7 @@
       />
     </div>
     <div class="modal-overlay" class:show style={'z-index: 400'} on:click={() => escapeClose()} />
-  {/await}
+  {/if}
 {/if}
 
 <style lang="scss">
