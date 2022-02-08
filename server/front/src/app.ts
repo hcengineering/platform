@@ -26,6 +26,7 @@ import https from 'https'
 import { Client, ItemBucketMetadata } from 'minio'
 import { join, resolve } from 'path'
 import { v4 as uuid } from 'uuid'
+import bp from 'body-parser'
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -48,6 +49,8 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
 
   app.use(cors())
   app.use(fileUpload())
+  app.use(bp.json())
+  app.use(bp.urlencoded({ extended: true }))
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
