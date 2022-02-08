@@ -115,20 +115,13 @@ export enum SortingOrder {
  * @public
  */
 export type RefsAsDocs<T> = {
-  [P in keyof T]: T[P] extends Ref<infer X> ? (T extends X ? X : X | WithLookup<X>) : never
+  [P in keyof T]: T[P] extends Ref<infer X> | null ? (T extends X ? X : X | WithLookup<X>) : AttachedDoc[]
 }
 
 /**
  * @public
  */
-export type RemoveNever<T extends object> = Omit<T, KeysByType<T, never>>
-
-/**
- * @public
- */
-export type LookupData<T extends Doc> = Partial<RemoveNever<RefsAsDocs<T>>> | RemoveNever<{
-  [key: string]: Doc[]
-}>
+export type LookupData<T extends Doc> = Partial<RefsAsDocs<T>>
 
 /**
  * @public

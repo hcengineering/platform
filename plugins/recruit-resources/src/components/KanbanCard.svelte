@@ -54,7 +54,7 @@
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
-    <Avatar size={'x-small'} />
+    <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
   </div>
 </div>
 

@@ -311,15 +311,10 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        state: task.class.State,
         assignee: contact.class.Employee
       }
     } as FindOptions<Doc>, // TODO: fix
-    config: [
-      // '$lookup.attachedTo',
-      '$lookup.state',
-      '$lookup.assignee'
-    ]
+    config: []
   })
 
   builder.mixin(task.class.Issue, core.class.Class, task.mixin.KanbanCard, {
