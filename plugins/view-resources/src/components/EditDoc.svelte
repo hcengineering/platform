@@ -55,8 +55,7 @@
   let prevSelected = selectedClass
 
   let keys: KeyedAttribute[] = []
-  let collectionKeys: KeyedAttribute[] = []
-  let collectionEditors: AnyComponent[] = []
+  let collectionEditors: {key: KeyedAttribute, editor: AnyComponent} [] = []
 
   let mixins: Mixin<Doc>[] = []
 
@@ -93,14 +92,21 @@
 
   let ignoreKeys: string[] = []
 
-  function updateKeys (): void {
+  async function updateKeys (): Promise<void> {
     const filtredKeys = getFiltredKeys(
       selectedClass ?? object._class,
       ignoreKeys,
       selectedClass !== objectClass._id ? objectClass._id : undefined
     )
     keys = collectionsFilter(filtredKeys, false)
-    collectionKeys = collectionsFilter(filtredKeys, true)
+
+    const collectionKeys = collectionsFilter(filtredKeys, true)
+    const editors: {key: KeyedAttribute, editor: AnyComponent}[] = []
+    for (const k of collectionKeys) {
+      const editor = await getCollectionEditor(k)
+      editors.push({ key: k, editor })
+    }
+    collectionEditors = editors
   }
 
   function collectionsFilter (keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
@@ -215,16 +221,6 @@
       headerLoading = false
     })
   }
-
-  async function updateCollectionEditors (keys: KeyedAttribute[]): Promise<void> {
-    const editors: AnyComponent[] = []
-    for (const k of keys) {
-      editors.push(await getCollectionEditor(k))
-    }
-    collectionEditors = editors
-  }
-
-  $: updateCollectionEditors(collectionKeys)
 </script>
 
 {#if object !== undefined && title !== undefined}
@@ -287,23 +283,19 @@
         {/each}
       </div>
     {/if}
-    {#if collectionKeys.length !== collectionEditors.length}
-      <Spinner />
-    {:else}
-      {#each collectionKeys as collection, i}
-        <div class="mt-14">
-          <Component
-            is={collectionEditors[i]}
-            props={{
-              objectId: object._id,
-              _class: object._class,
-              space: object.space,
-              [collection.key]: getCollectionCounter(object, collection)
-            }}
-          />
-        </div>
-      {/each}
-    {/if}
+    {#each collectionEditors as collection, i}
+      <div class="mt-14">
+        <Component
+          is={collection.editor}
+          props={{
+            objectId: object._id,
+            _class: object._class,
+            space: object.space,
+            [collection.key.key]: getCollectionCounter(object, collection.key)
+          }}
+        />
+      </div>
+    {/each}
   </Panel>
 {/if}
 
