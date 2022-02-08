@@ -210,8 +210,8 @@ export function createModel (builder: Builder): void {
 
   const applicantKanbanLookup: Lookup<Applicant> =
   {
-    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
-    state: task.class.State
+    attachedTo: recruit.mixin.Candidate,
+    assignee: contact.class.Employee
   }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -221,7 +221,7 @@ export function createModel (builder: Builder): void {
     options: {
       lookup: applicantKanbanLookup
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.attachedTo.city', '$lookup.attachedTo.$lookup.channels']
+    config: []
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

@@ -134,7 +134,7 @@ export function createModel (builder: Builder): void {
 
   const leadLookup: Lookup<Lead> =
   {
-    attachedTo: [contact.class.Contact, { _id: { channels: contact.class.Channel } }],
+    attachedTo: [contact.class.Contact, { _id: { channels: lead.mixin.Customer } }],
     state: task.class.State
   }
 
@@ -161,9 +161,11 @@ export function createModel (builder: Builder): void {
     descriptor: task.viewlet.Kanban,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: leadLookup
+      lookup: {
+        attachedTo: lead.mixin.Customer
+      }
     } as FindOptions<Doc>, // TODO: fix
-    config: ['$lookup.customer', '$lookup.state']
+    config: []
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, task.mixin.KanbanCard, {

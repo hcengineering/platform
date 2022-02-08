@@ -47,9 +47,8 @@
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
-    {#if object.$lookup}
-      <!-- object.$lookup?.assignee?.avatar -->
-      <Avatar avatar={undefined} size={'x-small'} />
+    {#if object.$lookup?.assignee}
+      <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
     {/if}
 </div>
 </div>

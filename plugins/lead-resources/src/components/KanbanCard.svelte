@@ -45,8 +45,8 @@
     </div>
   </div>
   <div class="flex-between">
-    {#if object.$lookup?.customer}
-      <ContactPresenter value={object.$lookup?.customer} />
+    {#if object.$lookup?.attachedTo}
+      <ContactPresenter value={object.$lookup?.attachedTo} />
     {/if}
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
