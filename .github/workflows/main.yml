@@ -46,6 +46,9 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Setting model version from git release...
+        run: node common/scripts/install-run-rush.js bump-model-version
+
       - name: Building...
         run: node common/scripts/install-run-rush.js rebuild -l --verbose
 

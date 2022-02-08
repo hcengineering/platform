@@ -14,6 +14,8 @@
 //
 
 import core, { Data, Version } from '@anticrm/core'
+import jsonVersion from './version.json'
+
 import { Builder } from '@anticrm/model'
 import { createModel as activityModel } from '@anticrm/model-activity'
 import { createModel as attachmentModel } from '@anticrm/model-attachment'
@@ -37,6 +39,8 @@ import { createModel as textEditorModel } from '@anticrm/model-text-editor'
 import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as notificationModel } from '@anticrm/model-notification'
+
+export const version: Data<Version> = jsonVersion as Data<Version>
 
 const builder = new Builder()
 
@@ -68,12 +72,6 @@ const builders = [
 
 for (const b of builders) {
   b(builder)
-}
-
-export const version: Data<Version> = {
-  major: 0,
-  minor: 6,
-  patch: 0
 }
 
 builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)
