@@ -62,7 +62,7 @@
         <Label label={recruit.string.NoApplicationsForCandidate} />
       </div>
       <div class="text-sm">
-        <a href={'#'} on:click={createApp}><Label label={recruit.string.CreateAnApplication} /></a>
+        <div class='over-underline' on:click={createApp}><Label label={recruit.string.CreateAnApplication} /></div>
       </div>
     </div>
   {/if}

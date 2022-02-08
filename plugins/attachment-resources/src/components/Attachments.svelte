@@ -122,7 +122,7 @@
         </span>
       </div>
       <div class="text-sm">
-        <a href={'#'} on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></a>
+        <div class='over-underline' on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></div>
       </div>
     </div>
   {:else}

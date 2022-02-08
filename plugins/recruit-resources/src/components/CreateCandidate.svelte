@@ -279,7 +279,6 @@
     {#if resume.uuid}
       <Link
         label={resume.name}
-        href={'#'}
         icon={FileIcon}
         maxLenght={16}
         on:click={() => {
@@ -288,11 +287,10 @@
       />
     {:else}
       {#if loading}
-        <Link label={'Uploading...'} href={'#'} icon={Spinner} disabled />
+        <Link label={'Uploading...'} icon={Spinner} disabled />
       {:else}
         <Link
           label={'Add or drop resume'}
-          href={'#'}
           icon={FileUpload}
           on:click={() => {
             inputFile.click()

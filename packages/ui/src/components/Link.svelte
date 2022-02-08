@@ -19,14 +19,13 @@
   import Icon from './Icon.svelte'
 
   export let label: string
-  export let href: string = '#'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
   export let maxLenght: number = 26
 
   const trimFilename = (fname: string): string => (fname.length > maxLenght)
-                        ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-                        : fname
+    ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+    : fname
 </script>
 
 <span class="container" class:disabled on:click>
@@ -38,7 +37,7 @@
   {#if disabled}
     {trimFilename(label)}
   {:else}
-    <a {href}>{trimFilename(label)}</a>
+    <div class='over-underline'>{trimFilename(label)}</div>
   {/if}
 </span>
 
