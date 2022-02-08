@@ -169,7 +169,7 @@
   let isNavigate: boolean = false
   $: isNavigate = !!navigatorModel
 
-  function navigateApp (app: Application) {
+  function navigateApp (app: Application): void {
     if (currentApp === app._id) {
       // Nothing to do.
       return
@@ -179,6 +179,7 @@
     navigatorModel = currentApplication?.navigatorModel
 
     currentSpace = undefined
+    specialComponent = undefined
     currentSpecial = undefined
     currentView = undefined
     createItemDialog = undefined
