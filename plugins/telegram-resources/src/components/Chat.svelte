@@ -194,11 +194,13 @@
   }
 </script>
 
-<div class="flex-between header">
-  <div class="flex-center icon"><TelegramIcon size={'small'} /></div>
-  <div class="flex-grow flex-col">
-    <div class="fs-title">Telegram</div>
-    <div class="text-sm content-dark-color">You and {formatName(object.name)}</div>
+<div class="ac-header short mirror-tool divide">
+  <div class="ac-header__wrap-title">
+    <div class="flex-center icon"><TelegramIcon size={'small'} /></div>
+    <div class="ac-header__wrap-description">
+      <span class="ac-header__title">Telegram</span>
+      <span class="ac-header__description">You and {formatName(object.name)}</span>
+    </div>
   </div>
   <ActionIcon
     icon={IconShare}
@@ -253,21 +255,13 @@
 </div>
 
 <style lang="scss">
-  .header {
-    flex-shrink: 0;
-    padding: 0 6rem 0 2.5rem;
-    height: 4rem;
-    color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-zone-bg);
-
-    .icon {
-      margin-right: 1rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--theme-caption-color);
-      background-color: var(--primary-button-enabled);
-      border-radius: 50%;
-    }
+  .icon {
+    margin-right: 1rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--theme-caption-color);
+    background-color: var(--primary-button-enabled);
+    border-radius: 50%;
   }
 
   .ref-input {
