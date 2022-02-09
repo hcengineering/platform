@@ -38,9 +38,8 @@ import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 
-export { default as KanbanTemplateEditor } from './components/kanban/KanbanTemplateEditor.svelte'
-export { default as KanbanTemplateSelector } from './components/kanban/KanbanTemplateSelector.svelte'
-export { default as Tasks } from './components/Tasks.svelte'
+import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
+import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
 
 async function createTask (object: Doc): Promise<void> {
   showPopup(CreateTask, { parent: object._id, space: object.space })
@@ -142,7 +141,9 @@ export default async (): Promise<Resources> => ({
     TodoStatePresenter,
     StatusTableView,
     TaskHeader,
-    DoneStateEditor
+    DoneStateEditor,
+    KanbanTemplateEditor,
+    KanbanTemplateSelector
   },
   actionImpl: {
     CreateTask: createTask,

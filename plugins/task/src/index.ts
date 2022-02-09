@@ -220,6 +220,10 @@ const task = plugin(taskId, {
   space: {
     ProjectTemplates: '' as Ref<KanbanTemplateSpace>,
     Sequence: '' as Ref<Space>
+  },
+  component: {
+    KanbanTemplateEditor: '' as AnyComponent,
+    KanbanTemplateSelector: '' as AnyComponent
   }
 })
 

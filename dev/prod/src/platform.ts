@@ -87,6 +87,5 @@ export async function configurePlatform() {
   addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
-  addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
 }

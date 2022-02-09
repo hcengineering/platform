@@ -40,11 +40,9 @@
     "@anticrm/contact": "~0.6.2",
     "@anticrm/view": "~0.6.0",
     "@anticrm/task": "~0.6.0",
-    "@anticrm/task-resources": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/chunter-resources": "~0.6.0",
-    "@anticrm/workbench-resources": "~0.6.1"
+    "@anticrm/chunter-resources": "~0.6.0"
   }
 }

@@ -15,10 +15,11 @@
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { DropdownLabels } from '@anticrm/ui'
-  import type { DropdownTextItem } from '@anticrm/ui/src/types'
   import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
   import task from '@anticrm/task'
+  import { DropdownLabels } from '@anticrm/ui'
+  import type { DropdownTextItem } from '@anticrm/ui/src/types'
+  import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
   export let folders: Ref<KanbanTemplateSpace>[]
@@ -32,7 +33,12 @@
   $: items = templates.map(x => ({ id: x._id, label: x.title }))
 
   let selectedItem: string | undefined
-  $: template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
+
+  const dispatch = createEventDispatcher()
+  $: {
+    template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
+    dispatch('change', template)
+  }
 </script>
 
 <DropdownLabels {items} bind:selected={selectedItem} title={plugin.string.States} />
