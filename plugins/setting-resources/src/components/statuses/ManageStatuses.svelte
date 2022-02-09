@@ -17,9 +17,8 @@
 <script lang="ts">
   // import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import { getClient, MessageBox } from '@anticrm/presentation'
-  import { Label, Icon, showPopup } from '@anticrm/ui'
+  import { Label, Icon, showPopup, Component } from '@anticrm/ui'
   import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
-  import { KanbanTemplateEditor } from '@anticrm/task-resources'
   import setting from '@anticrm/setting'
   import task from '@anticrm/task'
 
@@ -68,7 +67,7 @@
     </div>
     <div class="ac-column max">
       {#if template !== undefined}
-        <KanbanTemplateEditor kanban={template} on:delete={(e) => deleteState(e.detail)}/>
+        <Component is={task.component.KanbanTemplateEditor} props={{ kanban: template }} on:delete={(e) => deleteState(e.detail)}/>
       {/if}
     </div>
   </div>

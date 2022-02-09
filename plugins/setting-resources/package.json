@@ -43,8 +43,6 @@
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/login-resources": "~0.6.2",
     "@anticrm/task": "~0.6.0",
-    "@anticrm/task-resources": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1",
     "@anticrm/contact-resources": "~0.6.0",
     "@anticrm/login": "~0.6.1"
   }

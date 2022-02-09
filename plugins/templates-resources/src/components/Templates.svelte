@@ -3,7 +3,7 @@
   import { getClient, LiveQuery, MessageViewer } from '@anticrm/presentation'
   import { MessageTemplate } from '@anticrm/templates'
   import { StyledTextEditor } from '@anticrm/text-editor'
-  import { Button, CircleButton, EditBox, Icon, IconAdd, Label, ScrollBox } from '@anticrm/ui'
+  import { Button, CircleButton, EditBox, Icon, IconAdd, Label } from '@anticrm/ui'
   import templatesPlugin from '../plugin'
   import TemplateElement from './TemplateElement.svelte'
 

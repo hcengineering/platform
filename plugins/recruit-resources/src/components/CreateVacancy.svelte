@@ -14,32 +14,28 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
   import core, { Ref } from '@anticrm/core'
-  import { EditBox, Grid, Dropdown } from '@anticrm/ui'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import task, { KanbanTemplate, createKanban } from '@anticrm/task'
-  import { KanbanTemplateSelector } from '@anticrm/task-resources'
-  
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import { Component, Dropdown, EditBox, Grid } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import recruit from '../plugin'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
-
-  import recruit from '../plugin'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let description: string = ''
+  const description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return name === '' && templateId !== undefined
   }
 
   const client = getClient()
 
-  async function createVacancy() {
+  async function createVacancy () {
     if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
@@ -59,12 +55,18 @@
 <SpaceCreateCard 
   label={recruit.string.CreateVacancy} 
   okAction={createVacancy}
-  canSave={name ? true : false}
+  canSave={!!name}
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth={'16rem'} focus/>
     <Dropdown icon={Company} label={recruit.string.Company} placeholder={'Company'} />
-    <KanbanTemplateSelector folders={[recruit.space.VacancyTemplates]} bind:template={templateId}/>
+
+    <Component is={task.component.KanbanTemplateSelector} props={{
+      folders: [recruit.space.VacancyTemplates],
+      template: templateId
+    }} on:change={(evt) => {
+      templateId = evt.detail
+    }}/>
   </Grid>
 </SpaceCreateCard>

@@ -17,9 +17,8 @@
   import { createQuery } from '@anticrm/presentation'
   import { MessageTemplate } from '@anticrm/templates'
   import { TextEditorHandler } from '@anticrm/text-editor'
-  import { closePopup, EditWithIcon, IconSearch, Label, ScrollBox } from '@anticrm/ui'
+  import { closePopup, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
   import templates from '../plugin'
-  import TemplateElement from './TemplateElement.svelte'
 
   export let editor: TextEditorHandler
   let items: MessageTemplate[] = []

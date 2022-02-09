@@ -33,7 +33,7 @@
     <Loading/>
   {:then Ctor}
     <ErrorBoundary>
-      <Ctor {...props} on:change on:close on:open on:click>
+      <Ctor {...props} on:change on:close on:open on:click on:delete>
         <slot />
       </Ctor>
     </ErrorBoundary>

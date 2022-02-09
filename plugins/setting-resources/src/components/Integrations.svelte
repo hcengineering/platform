@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core';
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import type { Integration, IntegrationType } from '@anticrm/setting'
