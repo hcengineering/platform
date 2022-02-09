@@ -284,17 +284,19 @@
       </div>
     {/if}
     {#each collectionEditors as collection, i}
-      <div class="mt-14">
-        <Component
-          is={collection.editor}
-          props={{
-            objectId: object._id,
-            _class: object._class,
-            space: object.space,
-            [collection.key.key]: getCollectionCounter(object, collection.key)
-          }}
-        />
-      </div>
+      {#if collection.editor}
+        <div class="mt-14">
+          <Component
+            is={collection.editor}
+            props={{
+              objectId: object._id,
+              _class: object._class,
+              space: object.space,
+              [collection.key.key]: getCollectionCounter(object, collection.key)
+            }}
+          />
+          </div>
+      {/if}
     {/each}
   </Panel>
 {/if}
