@@ -75,7 +75,7 @@
     </div>
   </div>
 {:else}
-  <Scroller isBack>
+  <Scroller>
     <div class="p-10">
       <slot />
     </div>

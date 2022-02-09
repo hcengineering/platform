@@ -92,7 +92,7 @@
         class="flex-row-center overflow-label label"
         style={item._id === state ? `background-color: ${getPlatformColor(item.color)};` : ''}
       >
-        {item.title}
+        &nbsp;&nbsp;&nbsp;{item.title}&nbsp;&nbsp;&nbsp;
       </div>
       <StatesBarElement
         side={'right'}
@@ -121,7 +121,7 @@
   }
 
   .label {
-    padding: 0.5rem 2rem;
+    // padding: 0.5rem 2rem;
     height: 2.25rem;
     max-height: 2.25rem;
     color: var(--theme-caption-color);
