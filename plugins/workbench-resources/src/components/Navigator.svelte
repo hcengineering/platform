@@ -55,10 +55,15 @@
       specTopCount = topSpecials.length
       bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
       specBottomCount = bottomSpecials.length
+    } else {
+      topSpecials = []
+      bottomSpecials = []
+      specBottomCount = 0
+      specTopCount = 0
     }
     if (model.spaces) spModelCount = model.spaces.length
     shownSpaces = spaces.filter(sp => !sp.archived)
-    showDivider = (specTopCount > 0 && specBottomCount + spModelCount > 0) ? true : false
+    showDivider = !!((specTopCount > 0 && specBottomCount + spModelCount > 0))
   }
 
   $: if (model) update(model, spaces)
