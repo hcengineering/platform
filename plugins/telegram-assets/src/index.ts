@@ -15,6 +15,6 @@
 //
 
 import { addStringsLoader } from '@anticrm/platform'
-import {telegramId} from '@anticrm/telegram'
+import { telegramId } from '@anticrm/telegram'
 
 addStringsLoader(telegramId, async (lang: string) => await import(`../lang/${lang}.json`))

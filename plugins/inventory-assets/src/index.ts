@@ -17,7 +17,7 @@
 import { addStringsLoader, loadMetadata } from '@anticrm/platform'
 import inventory, { inventoryId } from '@anticrm/inventory'
 
-const icons = require('../assets/icons.svg')
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(inventory.icon, {
   InventoryApplication: `${icons}#inventory`,
   Categories: `${icons}#categories`,

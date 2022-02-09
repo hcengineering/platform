@@ -57,6 +57,12 @@ function updatePackage(packageRoot, templates) {
       template = t
     }
 
+    // Allow to configure explicit template selection
+    if( currentPackage.template === t.package.name) {
+      template = t
+      break
+    }
+
     if (t.package.peerDependencies !== undefined) {
       const peers = Object.keys(t.package.peerDependencies)
       const deps = Object.keys(currentPackage.dependencies ?? {})

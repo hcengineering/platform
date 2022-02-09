@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
 //

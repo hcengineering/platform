@@ -1,17 +1,31 @@
 {
   "name": "@anticrm/login-assets",
   "version": "0.6.0",
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "",
-    "build:docs": "api-extractor run --local",
-    "lint": "ts-standard src",
-    "lint:fix": "ts-standard --fix src",
-    "format": "prettier --write 'src/**/*.{ts*,js*,yml}' && ts-standard --fix src"
+    "build": "heft build",
+    "build:docs": "",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src",
+    "format": "prettier --write src && eslint --fix src",
+    "build:watch": "tsc"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@anticrm/platform-rig": "~0.6.0",
+    "@types/heft-jest": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint": "^7.32.0",
+    "prettier": "^2.4.1",
+    "@rushstack/heft": "^0.41.1",
+    "@types/node": "^16.4.10"
+  },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "@anticrm/login": "~0.6.1"

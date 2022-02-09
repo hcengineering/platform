@@ -7,7 +7,7 @@
   "scripts": {
     "build": "echo 'no build for ui'",
     "build:docs": "api-extractor run --local",
-    "lint": "svelte-check && eslint",
+    "lint": "eslint",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
   },

@@ -10,6 +10,10 @@ So ui template with peer dependency to `svelte`, will be matched to any UI plugi
 
 If no template is matched for project then `default` template will be used.
 
+## Explicit template selection
+
+If package.json contains "template" field, template from templates with matched name will be selected.
+
 ## Apply rules
 
 - If file in template folder is pressent and file in project folder is not, it will be copied.

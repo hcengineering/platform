@@ -7,7 +7,7 @@
   "scripts": {
     "build": "echo 'no build for ui'",
     "build:docs": "api-extractor run --local",
-    "lint": "svelte-check && eslint",
+    "lint": "eslint",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
   },
@@ -43,7 +43,7 @@
     "@anticrm/login": "~0.6.1",
     "deep-equal": "^2.0.5",
     "@anticrm/panel": "~0.6.0",
-    "@anticrm/activity":"~0.6.0",
+    "@anticrm/activity": "~0.6.0",
     "@anticrm/attachment": "~0.6.0",
     "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/chunter-resources": "~0.6.0",

@@ -178,6 +178,16 @@
     },
     {
       "commandKind": "bulk",
+      "name": "lint",
+      "summary": "Lint",
+      "description": "Lint",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
       "name": "build:watch",
       "summary": "Build and watch",
       "description": "Perform build with tsc and watch for changes with rush",
@@ -259,7 +269,15 @@
       "description": "set current model version",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./models/all/ && npx ts-node ./src/__bumpversion.ts"
-    }  
+    },
+    {
+      "commandKind": "global",
+      "name": "deps-clean",
+      "summary": "Clean package-deps-*.json files",
+      "description": "Clean package-deps-*.json files",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "find .|grep .rush/temp/package-deps_ | xargs rm"
+    }
   ],
 
   /**

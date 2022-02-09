@@ -22,6 +22,9 @@ export default mergeIds(viewId, view, {
     MoveClass: '' as IntlString,
     SelectToMove: '' as IntlString,
     Move: '' as IntlString,
-    Cancel: '' as IntlString
+    Cancel: '' as IntlString,
+    LabelYes: '' as IntlString,
+    LabelNo: '' as IntlString,
+    LabelNA: '' as IntlString
   }
 })

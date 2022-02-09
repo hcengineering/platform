@@ -15,9 +15,9 @@
 //
 
 import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import lead, {leadId} from '@anticrm/lead'
+import lead, { leadId } from '@anticrm/lead'
 
-const icons = require('../assets/icons.svg')
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(lead.icon, {
   Funnel: `${icons}#funnel`,
   Lead: `${icons}#lead`,

@@ -17,16 +17,11 @@
 <script lang="ts">
   // import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
+  import { getBooleanLabel } from '../utils'
   
   export let value: any
   export let maxWidth: string | undefined = undefined
   export let onChange: (value: any) => void
-  
-  function getLabel(value: boolean | undefined) {
-    if (value === true) return 'Yes'
-    if (value === false) return 'No'
-    return 'N/A'
-  }
 </script>
 
 <div
@@ -52,7 +47,7 @@
       <path fill="#fff" d="M7.3,9.3h1.3V9c0.1-0.5,0.6-0.9,1.1-1.4c0.4-0.4,0.8-0.9,0.8-1.6c0-1.1-0.8-1.8-2.2-1.8c-1.4,0-2.4,0.8-2.5,2.2 h1.4c0.1-0.6,0.4-1,1-1C8.8,5.4,9,5.7,9,6.2c0,0.4-0.3,0.7-0.7,1.1c-0.5,0.5-1,0.9-1,1.7V9.3z M8,11.6c0.5,0,0.9-0.4,0.9-0.9 c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9C7.1,11.2,7.5,11.6,8,11.6z"/>
     {/if}
   </svg>
-  <span><Label label={getLabel(value)} /></span>
+  <span><Label label={getBooleanLabel(value)} /></span>
 </div>
 
 <style lang="scss">
