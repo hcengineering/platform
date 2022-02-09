@@ -42,8 +42,8 @@
 
 <div class="flex-row-center">
   <CircleButton icon={value.icon} size={'x-large'} />
-  <div class="flex-col caption-color ml-3">
-    <div class="label">{value.label}</div>
+  <div class="flex-col caption-color clear-mins ml-3">
+    <div class="text-sm font-medium">{value.label}</div>
     <div class="overflow-label">{value.value}</div>
   </div>
   <div class="button" on:click|preventDefault={copyLink}>
@@ -52,11 +52,8 @@
 </div>
 
 <style lang="scss">
-  .label {
-    font-weight: 500;
-    font-size: .75rem;
-  }
   .button {
+    flex-shrink: 0;
     margin-left: 1.5rem;
     color: var(--theme-content-dark-color);
     cursor: pointer;

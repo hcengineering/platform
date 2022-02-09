@@ -17,7 +17,6 @@
   import { afterUpdate, onDestroy, onMount } from 'svelte'
 
   export let padding: boolean = false
-  export let isBack: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
 
@@ -53,7 +52,8 @@
       const procTop = divScroll.scrollTop / divScroll.scrollHeight
       divBar.style.height = procScroll * proc + 'px'
       divBar.style.top = procTop * (divScroll.clientHeight - 8) + 4 + 'px'
-      divBar.style.visibility = 'visible'
+      if (mask === 'none') divBar.style.visibility = 'hidden'
+      else divBar.style.visibility = 'visible'
     }
   }
 
@@ -82,8 +82,8 @@
     else if (t > 0) mask = 'bottom'
     else if (b > 0) mask = 'top'
     else mask = 'none'
-    if (isBack) checkBack()
-    if (mask !== 'none') checkBar()
+    checkBack()
+    checkBar()
   }
 
   onMount(() => {

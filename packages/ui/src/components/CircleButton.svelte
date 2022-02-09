@@ -33,6 +33,7 @@
 
 <style lang="scss">
   .icon-button {
+    flex-shrink: 0;
     color: var(--theme-caption-color);
     border: 1px solid var(--theme-circle-border);
     border-radius: 50%;

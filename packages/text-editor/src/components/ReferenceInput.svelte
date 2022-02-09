@@ -238,10 +238,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-left: 8px;
+        margin-left: .5rem;
         padding: 0;
-        width: 20px;
-        height: 20px;
+        width: 1.25rem;
+        height: 1.25rem;
         background-color: transparent;
         border: 1px solid transparent;
         border-radius: .25rem;
@@ -249,41 +249,38 @@
         cursor: pointer;
 
         .icon {
-          width: 20px;
-          height: 20px;
-          opacity: 0.3;
+          width: 1.25rem;
+          height: 1.25rem;
+          color: var(--theme-content-dark-color);
           cursor: pointer;
-          &:hover {
-            opacity: 1;
-          }
+
+          &:hover { color: var(--theme-caption-color); }
         }
         &:focus {
           border: 1px solid var(--primary-button-focused-border);
           box-shadow: 0 0 0 3px var(--primary-button-outline);
-          & > .icon {
-            opacity: 1;
-          }
+          
+          & > .icon { color: var(--theme-caption-color); }
         }
       }
     }
     .buttons {
-      margin: 10px 0 0 8px;
       display: flex;
+      margin: .625rem 0 0 .5rem;
 
       .tool {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 20px;
-        height: 20px;
-        opacity: 0.3;
+        width: 1.25rem;
+        height: 1.25rem;
+        color: var(--theme-content-dark-color);
         cursor: pointer;
-        &:hover {
-          opacity: 1;
-        }
+
+        &:hover { color: var(--theme-caption-color); }
       }
       .tool + .tool {
-        margin-left: 16px;
+        margin-left: 1rem;
       }
     }
   }
