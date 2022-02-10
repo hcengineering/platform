@@ -105,6 +105,38 @@ jobs:
 
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
+  linting:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache build results
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-build-results
+        with:
+          path: |
+            cloud
+            common
+            deploy
+            dev
+            models
+            packages
+            plugins
+            pods
+            server
+            templates
+            tests
+            rush.json
+            .prettierrc
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
+      - name: Linting...
+        run: node common/scripts/install-run-rush.js lint
   test:
     needs: build
     runs-on: ubuntu-latest

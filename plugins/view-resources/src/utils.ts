@@ -34,6 +34,7 @@ import { getAttributePresenterClass } from '@anticrm/presentation'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
+import plugin from './plugin'
 
 /**
  * Define some properties to be used to show component until data is properly loaded.
@@ -128,7 +129,7 @@ async function getPresenter<T extends Doc> (
   } else {
     if (key.key.startsWith('$lookup')) {
       if (lookup === undefined) {
-        throw new Error('lookup class does not provided for ' + key)
+        throw new Error(`lookup class does not provided for ${key.key}`)
       }
       return await getLookupPresenter(client, _class, key, preserveKey, lookup)
     }
@@ -290,7 +291,7 @@ function getLookup (key: string, lookup: Lookup<any>, parent: Ref<Class<Doc>>): 
   const currentKey = parts[0].split('.').filter((p) => p.length > 0)[0]
   const current = (lookup as any)[currentKey]
   const nestedKey = parts.slice(1).join('$lookup.')
-  if (nestedKey) {
+  if (nestedKey.length > 0) {
     if (!Array.isArray(current)) {
       return
     }
@@ -304,4 +305,10 @@ function getLookup (key: string, lookup: Lookup<any>, parent: Ref<Class<Doc>>): 
     return reverse !== undefined ? [reverse, parent] : undefined
   }
   return current !== undefined ? [current, parent] : undefined
+}
+
+export function getBooleanLabel (value: boolean | undefined): IntlString {
+  if (value === true) return plugin.string.LabelYes
+  if (value === false) return plugin.string.LabelNo
+  return plugin.string.LabelNA
 }

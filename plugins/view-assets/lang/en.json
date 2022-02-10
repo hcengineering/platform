@@ -4,6 +4,9 @@
     "SelectToMove": "Select the {classLabel} you want to move {class} to.",
     "Delete": "Delete",
     "Move": "Move",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "LabelYes": "Yes",
+    "LabelNo": "No",
+    "LabelNA": "N/A"
   }
 }

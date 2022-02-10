@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
+  "template": "@anticrm/platform-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
@@ -25,7 +26,12 @@
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
     "typescript": "^4.3.5",
-    "svelte-check": "~2.3.0"
+    "svelte-check": "^2.2.10",
+    "svelte-loader": "^3.1.2",
+    "sass": "^1.37.5",
+    "svelte-preprocess": "^4.7.4",
+    "eslint-plugin-svelte3": "~3.2.1",
+    "prettier-plugin-svelte": "^2.2.0"
   },
   "dependencies": {
     "@anticrm/presentation": "~0.6.2",

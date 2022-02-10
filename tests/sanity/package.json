@@ -1,14 +1,15 @@
 {
   "name": "@anticrm/tests-sanity",
   "version": "0.6.1",
+  "template": "@anticrm/default-package",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
     "build": "",
     "build:watch": "",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src",
+    "lint:fix": "eslint --fix tests",
+    "lint": "eslint tests",
+    "format": "prettier --write tests && eslint --fix tests",
     "ci": "playwright install --with-deps chromium",
     "test": "",
     "uitest": "playwright test --browser chromium --reporter list,html -c ./tests/playwright.config.ts"

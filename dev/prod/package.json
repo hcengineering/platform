@@ -10,7 +10,7 @@
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
     "preformat-svelte": "prettier -w src/**/*.svelte",
-    "lint": "eslint --max-warnings=0 src",
+    "lint": "",
     "lint:fix": "yarn preformat-svelte && eslint --fix src",
     "deploy": "cp -p public/* dist && aws s3 sync dist s3://anticrm-platform --delete --acl public-read"
   },

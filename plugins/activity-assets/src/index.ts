@@ -16,9 +16,9 @@
 import { addStringsLoader, loadMetadata } from '@anticrm/platform'
 import activity, { activityId } from '@anticrm/activity'
 
-const icons = require('../assets/icons.svg') // eslint-disable-line
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(activity.icon, {
-  Activity: `${icons}#activity` // eslint-disable-line
+  Activity: `${icons}#activity`
 })
 
 addStringsLoader(activityId, async (lang: string) => await import(`../lang/${lang}.json`))

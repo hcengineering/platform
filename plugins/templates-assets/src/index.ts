@@ -17,7 +17,7 @@
 import { addStringsLoader, loadMetadata } from '@anticrm/platform'
 import templates, { templatesId } from '@anticrm/templates'
 
-const icons = require('../assets/icons.svg')
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(templates.icon, {
   Templates: `${icons}#templates`
 })

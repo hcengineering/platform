@@ -28,8 +28,6 @@ export interface Funnel extends SpaceWithStates {}
 
 /**
  * @public
- *
- * @Mixin
  */
 
 export interface Customer extends Contact {
@@ -55,6 +53,9 @@ export interface Lead extends Task {
  */
 export const leadId = 'lead' as Plugin
 
+/**
+ * @public
+ */
 const lead = plugin(leadId, {
   class: {
     Lead: '' as Ref<Class<Lead>>,
@@ -73,4 +74,7 @@ const lead = plugin(leadId, {
   }
 })
 
+/**
+ * @public
+ */
 export default lead

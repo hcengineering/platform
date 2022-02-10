@@ -20,6 +20,9 @@ import { ReconiDocument } from './types'
 export { default } from './plugin'
 export * from './types'
 
+/**
+ * @public
+ */
 export async function recognizeDocument (token: string, url: string): Promise<ReconiDocument> {
   const rekoniUrl = getMetadata(plugin.metadata.RekoniUrl)
   if (rekoniUrl === undefined) {
