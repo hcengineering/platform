@@ -66,7 +66,6 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     const rect = el.getBoundingClientRect()
     const rectScroll = div.getBoundingClientRect()
-    // el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     div.scrollBy({ top: 0, left: rect.left + (rect.width / 2) - (rectScroll.left + rectScroll.width / 2), behavior: 'smooth' })
     if (state === item._id) {
       state = undefined
@@ -80,11 +79,6 @@
     if (n === 0) return 'start'
     else if (n === states.length - 1) return 'end'
     else return 'middle'
-  }
-
-  const isSafari = (i: number, id: Ref<State>): void => {
-    // renders++
-    state = state
   }
 
   onMount(() => {
@@ -106,7 +100,6 @@
       on:click={(ev) => {
         if (item._id !== state) selectItem(ev, item)
       }}
-      on:update={() => isSafari(i, item._id)}
     />
   {/each}
 </div>

@@ -14,8 +14,6 @@
 -->
 
 <script lang="ts">
-import { tick } from 'svelte';
-
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import type { StatesBarPosition } from '../..'
 
@@ -23,23 +21,18 @@ import { tick } from 'svelte';
   export let position: StatesBarPosition = undefined
   export let selected: boolean = false
   export let color: string = 'var(--theme-button-bg-enabled)'
-  // export let renders: number = 0
 
-  const dispatch = createEventDispatcher()
   let lenght: number = 0
   let text: HTMLElement
-  let div: HTMLElement
 
   afterUpdate(() => {
     if (text) lenght = (text.clientWidth + 20 > 300) ? 300 : text.clientWidth + 20
-    dispatch('update', lenght)
   })
 </script>
 
 <div class="hidden-text" bind:this={text}>{label}</div>
 {#if lenght > 0}
   <div
-    bind:this={div}
     class="statuses-bar"
     class:cursor-pointer={!selected}
     class:cursor-default={selected}
