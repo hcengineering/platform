@@ -14,23 +14,33 @@
 // limitations under the License.
 //
 
-import type { Account, Domain, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Model, Prop, TypeRef, TypeTimestamp } from '@anticrm/model'
+import type { Account, Doc, Domain, Ref, Timestamp, TxCUD } from '@anticrm/core'
+import { Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
-import notificaton, { LastView } from '@anticrm/notification'
+import type { LastView, Notification, NotificationStatus } from '@anticrm/notification'
+import notificaton from './plugin'
 import type { IntlString } from '@anticrm/platform'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
 @Model(notificaton.class.LastView, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TLastView extends TAttachedDoc implements LastView {
-  @Prop(TypeTimestamp(), 'Last View' as IntlString)
+  @Prop(TypeTimestamp(), notificaton.string.LastView)
   lastView!: Timestamp
 
   @Prop(TypeRef(core.class.Account), 'Modified By' as IntlString)
   user!: Ref<Account>
 }
 
+@Model(notificaton.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
+export class TNotification extends TAttachedDoc implements Notification {
+  @Prop(TypeRef(core.class.Tx), 'TX' as IntlString)
+  tx!: Ref<TxCUD<Doc>>
+
+  @Prop(TypeString(), 'Status' as IntlString)
+  status!: NotificationStatus
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TLastView)
+  builder.createModel(TLastView, TNotification)
 }

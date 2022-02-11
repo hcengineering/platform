@@ -22,7 +22,9 @@
     Component,
     getCurrentLocation,
     location,
-    navigate, PanelInstance, Popup,
+    navigate,
+    PanelInstance,
+    Popup,
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
@@ -37,6 +39,7 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import notification, { NotificationStatus } from '@anticrm/notification'
 
   export let client: Client
 
@@ -189,6 +192,23 @@
     loc.path.length = 2
     navigate(loc)
   }
+
+  let hasNotification = false
+  const notificationQuery = createQuery()
+
+  $: notificationQuery.query(
+    notification.class.Notification,
+    {
+      attachedTo: (getCurrentAccount() as EmployeeAccount).employee,
+      status: { $in: [NotificationStatus.New, NotificationStatus.EmailSent] }
+    },
+    (res) => {
+      hasNotification = res.length > 0
+    },
+    {
+      limit: 1
+    }
+  )
 </script>
 
 {#if client}
@@ -214,19 +234,34 @@
           notify={false}
         />
       </div>
-      <Applications {apps} active={currentApp} on:active={(evt) => {
-        navigateApp(evt.detail)
-      }} />
-      <div class="flex-center" style="min-height: 6.25rem;">
-        <div
-          class="cursor-pointer"
-          on:click|stopPropagation={(el) => {
-            showPopup(AccountPopup, {}, 'account')
+      <Applications
+        {apps}
+        active={currentApp}
+        on:active={(evt) => {
+          navigateApp(evt.detail)
+        }}
+      />
+      <div class="flex-row" style="margin-bottom: 2rem;">
+        <AppItem
+          icon={notification.icon.Notifications}
+          label={notification.string.Notifications}
+          selected={false}
+          action={async () => {
+            showPopup(notification.component.NotificationsPopup, {}, 'account')
           }}
-        >
-          {#if employee}
-            <Avatar avatar={employee.avatar} size={'medium'} />
-          {/if}
+          notify={hasNotification}
+        />
+        <div class="flex-center">
+          <div
+            class="cursor-pointer"
+            on:click|stopPropagation={(el) => {
+              showPopup(AccountPopup, {}, 'account')
+            }}
+          >
+            {#if employee}
+              <Avatar avatar={employee.avatar} size={'medium'} />
+            {/if}
+          </div>
         </div>
       </div>
     </div>

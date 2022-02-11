@@ -18,11 +18,15 @@
   import { showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import Company from './icons/Company.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Organization
   export let inline: boolean = false
 
+  const dispatch = createEventDispatcher()
+
   async function onClick () {
+    dispatch('click')
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>

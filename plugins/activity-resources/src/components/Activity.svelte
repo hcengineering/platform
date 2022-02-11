@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
-  import { CommentInput } from '@anticrm/chunter-resources'
+  import chunter from '@anticrm/chunter'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Grid, IconActivity, Scroller } from '@anticrm/ui'
+  import { closePanel, Component, Grid, IconActivity, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
@@ -50,7 +50,7 @@
 </script>
 
 {#if fullSize || transparent}
-  {#if  transparent !== undefined && !transparent}
+  {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool divide">
       <div class="ac-header__wrap-title">
         <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
@@ -64,14 +64,20 @@
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx (tx.tx._id)}
-              <TxView {tx} {viewlets} />
+              <TxView
+                {tx}
+                {viewlets}
+                on:labelComponentClick={() => {
+                  closePanel()
+                }}
+              />
             {/each}
           </Grid>
         {/if}
       </div>
     </Scroller>
     <div class="ref-input">
-      <CommentInput bind:object/>
+      <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
   </div>
 {:else}
@@ -98,7 +104,7 @@
     </div>
   </Scroller>
   <div class="ref-input fill">
-    <CommentInput bind:object/>
+    <Component is={chunter.component.CommentInput} props={{ object }} />
   </div>
 {/if}
 
@@ -115,10 +121,18 @@
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
 
-    &.fill { background-color: var(--theme-bg-accent-normal); }
+    &.fill {
+      background-color: var(--theme-bg-accent-normal);
+    }
   }
-  .p-activity { padding: 1.5rem 2.5rem 2.5rem; }
-  .scroller-back { background-color: var(--theme-bg-accent-normal); }
-  
-  :global(.grid .msgactivity-container:last-child::after) { content: none; } // Remove the line in the last Activity message
+  .p-activity {
+    padding: 1.5rem 2.5rem 2.5rem;
+  }
+  .scroller-back {
+    background-color: var(--theme-bg-accent-normal);
+  }
+
+  :global(.grid .msgactivity-container:last-child::after) {
+    content: none;
+  } // Remove the line in the last Activity message
 </style>

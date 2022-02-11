@@ -25,6 +25,7 @@ import { start as startJsonRpc } from '@anticrm/server-ws'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverContactId } from '@anticrm/server-contact'
+import { serverNotificationId } from '@anticrm/server-notification'
 
 import { metricsContext } from './metrics'
 
@@ -54,6 +55,7 @@ export interface MinioConfig {
 export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfig, port: number, host?: string): () => void {
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
   addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
+  addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
 
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {

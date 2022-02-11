@@ -13,19 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Channel } from '@anticrm/chunter'
   import { Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { closePopup, getCurrentLocation, Icon, navigate } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
 
   export let value: Channel
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
-  
+
   function selectSpace (id: Ref<Space>) {
     closePopup()
     const loc = getCurrentLocation()
@@ -36,11 +37,15 @@
   }
 </script>
 
-<div class="flex-row-center hover-trans" on:click={() => {
-  selectSpace(value._id)
-}}>  
+<div
+  class="flex-row-center hover-trans"
+  on:click={() => {
+    dispatch('click')
+    selectSpace(value._id)
+  }}
+>
   {#if icon}
-    <Icon icon={icon} size={'small'}/>
+    <Icon {icon} size={'small'} />
   {/if}
   {value.name}
 </div>

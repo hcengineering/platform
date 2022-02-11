@@ -17,11 +17,15 @@
   import type { Lead } from '@anticrm/lead'
   import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
   export let value: Lead
 
+  const dispatch = createEventDispatcher()
+
   function show () {
+    dispatch('click')
     closeTooltip()
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }

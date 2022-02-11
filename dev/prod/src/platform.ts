@@ -51,6 +51,7 @@ import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
 import '@anticrm/inventory-assets'
 import '@anticrm/templates-assets'
+import '@anticrm/notification-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  

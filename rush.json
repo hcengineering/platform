@@ -736,7 +736,7 @@
       "projectFolder": "server/attachment-resources",
       "shouldPublish": true
     },
-    {    
+    {
       "packageName": "@anticrm/server-contact",
       "projectFolder": "server/contact",
       "shouldPublish": true
@@ -997,8 +997,28 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/notification-assets",
+      "projectFolder": "plugins/notification-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/notification-resources",
       "projectFolder": "plugins/notification-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-notification",
+      "projectFolder": "server/notification",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-notification",
+      "projectFolder": "models/server-notification",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-notification-resources",
+      "projectFolder": "server/notification-resources",
       "shouldPublish": true
     }
   ]

@@ -72,7 +72,7 @@
 
 <div>
   <TreeNode label={model.label} actions={async () => [addSpace]}>
-    {#each spaces as space}
+    {#each spaces as space (space._id)}
       <TreeItem
         _id={space._id}
         title={space.name}

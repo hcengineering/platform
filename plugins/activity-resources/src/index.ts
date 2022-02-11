@@ -15,6 +15,11 @@
 
 import { Resources } from '@anticrm/platform'
 import Activity from './components/Activity.svelte'
+import TxView from './components/TxView.svelte'
+
+export { TxView }
+
+export * from './activity'
 
 export default async (): Promise<Resources> => ({
   component: {

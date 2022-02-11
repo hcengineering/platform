@@ -16,6 +16,7 @@
 import { IntlString, plugin } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
+import { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -63,6 +64,9 @@ export default plugin(chunterId, {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
     Lock: '' as Asset
+  },
+  component: {
+    CommentInput: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
