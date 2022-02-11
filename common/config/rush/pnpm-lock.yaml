@@ -278,7 +278,7 @@ dependencies:
   '@rush-temp/model-workbench': file:projects/model-workbench.tgz_typescript@4.5.4
   '@rush-temp/mongo': file:projects/mongo.tgz
   '@rush-temp/notification': file:projects/notification.tgz
-  '@rush-temp/notification-assets': file:projects/notification-assets.tgz
+  '@rush-temp/notification-assets': file:projects/notification-assets.tgz_typescript@4.5.4
   '@rush-temp/notification-resources': file:projects/notification-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/panel': file:projects/panel.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/platform': file:projects/platform.tgz
@@ -12757,10 +12757,26 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/notification-assets.tgz:
-    resolution: {integrity: sha512-6CTxgDapeurwdq30fTOyePlcC5WzBdieTPPuahwCCwOkbMwPCVp0iQvuhlb69zlYJtW+AlmyxDzEF+5QnI+/pA==, tarball: file:projects/notification-assets.tgz}
+  file:projects/notification-assets.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-2K6QTmVeQ8n4QRF37QQPTIGFDwzu9L9gWQU1hFrY0JURiX3wKoTX+tLYnqdr/i4QKQFG9DMYxrunrOvRu8kelQ==, tarball: file:projects/notification-assets.tgz}
+    id: file:projects/notification-assets.tgz
     name: '@rush-temp/notification-assets'
     version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
     dev: false
 
   file:projects/notification-resources.tgz_096c09b0b673a57c275d9767a12070b1:

@@ -16,7 +16,7 @@
 import { loadMetadata, addStringsLoader } from '@anticrm/platform'
 import notification, { notificationId } from '@anticrm/notification'
 
-const icons = require('../assets/icons.svg')
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {
   Notifications: `${icons}#notification`
 })
