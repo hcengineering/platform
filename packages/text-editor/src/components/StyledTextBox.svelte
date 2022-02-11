@@ -86,6 +86,7 @@
     flex-grow: 1;
   }
   .text {
+    overflow: auto;
     flex-grow: 1;
     line-height: 150%;
   }

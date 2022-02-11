@@ -27,10 +27,10 @@
     <div class="bar" style="background-color: {color}" />
     <div class="flex-between label">
       <div>
-        {label}
+        <span class="lines-limit-2">{label}</span>
         <!-- <span>({counter})</span> -->
       </div>
-      <div class="tool" on:click|preventDefault={addAction}>
+      <div class="tool ml-3" on:click|preventDefault={addAction}>
         <IconAdd size={'small'} />
       </div>
     </div>

@@ -13,22 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount, afterUpdate } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
+  import type { StatesBarPosition } from '../..'
 
   export let space: Ref<SpaceWithStates>
   export let state: Ref<State> | undefined = undefined
+  export let gap: 'small' | 'big' = 'small'
+
   let states: State[] = []
 
   let div: HTMLElement
   let maskLeft: boolean = false
   let maskRight: boolean = false
   let mask: 'left' | 'right' | 'both' | 'none' = 'none'
+  let stepStyle = (gap === 'small') ? 'step-lr25' : 'step-lr75'
 
   const dispatch = createEventDispatcher()
 
@@ -58,7 +63,9 @@
 
   const selectItem = (ev: Event, item: State): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    const rect = el.getBoundingClientRect()
+    const rectScroll = div.getBoundingClientRect()
+    div.scrollBy({ top: 0, left: rect.left + (rect.width / 2) - (rectScroll.left + rectScroll.width / 2), behavior: 'smooth' })
     if (state === item._id) {
       state = undefined
     } else {
@@ -67,40 +74,32 @@
     dispatch('change')
   }
 
+  const getPosition = (n: number): StatesBarPosition => {
+    if (n === 0) return 'start'
+    else if (n === states.length - 1) return 'end'
+    else return 'middle'
+  }
+
   onMount(() => {
     if (div) {
       checkMask()
       div.addEventListener('scroll', checkMask)
     }
   })
-  onDestroy(() => {
-    if (div) div.removeEventListener('scroll', checkMask)
-  })
+  onDestroy(() => { if (div) div.removeEventListener('scroll', checkMask) })
 </script>
 
-<div bind:this={div} class="flex-row-center statusesbar-container {mask}">
-  {#each states as item, i}
-    <div
-      class="flex-row-center cursor-pointer step-lr25"
-      class:selected={item._id === state}
+<div bind:this={div} class="flex-row-center statusesbar-container mask-{mask} {stepStyle}">
+  {#each states as item, i (item._id)}
+    <StatesBarElement
+      label={item.title}
+      position={getPosition(i)}
+      selected={item._id === state}
+      color={getPlatformColor(item.color)}
       on:click={(ev) => {
-        selectItem(ev, item)
+        if (item._id !== state) selectItem(ev, item)
       }}
-    >
-      <StatesBarElement side={'left'} kind={i ? 'arrow' : 'round'} selected={item._id === state} color={getPlatformColor(item.color)} />
-      <div
-        class="flex-row-center overflow-label label"
-        style={item._id === state ? `background-color: ${getPlatformColor(item.color)};` : ''}
-      >
-        &nbsp;&nbsp;&nbsp;{item.title}&nbsp;&nbsp;&nbsp;
-      </div>
-      <StatesBarElement
-        side={'right'}
-        kind={i < states.length - 1 ? 'arrow' : 'round'}
-        selected={item._id === state}
-        color={getPlatformColor(item.color)}
-      />
-    </div>
+    />
   {/each}
 </div>
 
@@ -108,6 +107,7 @@
   .statusesbar-container {
     overflow-x: auto;
     padding: 0.125rem 0;
+    width: auto;
 
     &::-webkit-scrollbar:horizontal {
       height: 0.125rem;
@@ -120,28 +120,13 @@
     }
   }
 
-  .label {
-    // padding: 0.5rem 2rem;
-    height: 2.25rem;
-    max-height: 2.25rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-enabled);
-    border-top: 1px solid var(--theme-button-border-enabled);
-    border-bottom: 1px solid var(--theme-button-border-enabled);
-  }
-
-  .selected {
-    .label {
-      border-color: transparent;
-    }
-  }
-  .left {
+  .mask-left {
     mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem);
   }
-  .right {
+  .mask-right {
     mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem);
   }
-  .both {
+  .mask-both {
     mask-image: linear-gradient(
       to right,
       rgba(0, 0, 0, 0) 0,
@@ -150,7 +135,7 @@
       rgba(0, 0, 0, 0) 100%
     );
   }
-  .none {
+  .mask-none {
     mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 1);
   }
 </style>
