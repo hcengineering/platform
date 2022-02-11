@@ -34,7 +34,6 @@
   let maskRight: boolean = false
   let mask: 'left' | 'right' | 'both' | 'none' = 'none'
   let stepStyle = (gap === 'small') ? 'step-lr25' : 'step-lr75'
-  // let renders: number = 0
 
   const dispatch = createEventDispatcher()
 
