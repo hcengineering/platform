@@ -16,20 +16,16 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
-  import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
+  import { Icon, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
 
   export let value: Issue
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   function show () {
-    dispatch('click')
-    closeTooltip()
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>

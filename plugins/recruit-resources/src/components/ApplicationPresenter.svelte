@@ -17,21 +17,16 @@
   import { getClient } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
-  import { closeTooltip, Icon } from '@anticrm/ui'
+  import { Icon } from '@anticrm/ui'
   import { showPanel } from '@anticrm/ui/src/panelup'
   import view from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: Applicant
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-  const dispatch = createEventDispatcher()
-
   function show () {
-    dispatch('click')
-    closeTooltip()
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>

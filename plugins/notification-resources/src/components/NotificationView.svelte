@@ -19,7 +19,6 @@
   import core, { AttachedDoc, Doc, TxCollectionCUD } from '@anticrm/core'
   import { Notification, NotificationStatus } from '@anticrm/notification'
   import { getClient } from '@anticrm/presentation'
-  import { closePopup } from '@anticrm/ui'
 
   export let notification: Notification
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -57,9 +56,6 @@
         tx={displayTx}
         {viewlets}
         showIcon={false}
-        on:labelComponentClick={() => {
-          closePopup()
-        }}
       />
     </div>
   {/if}

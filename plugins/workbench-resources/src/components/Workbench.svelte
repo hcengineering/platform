@@ -18,6 +18,8 @@
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
+    closePanel,
+    closePopup,
     closeTooltip,
     Component,
     getCurrentLocation,
@@ -57,6 +59,9 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
+      closeTooltip()
+      closePopup()
+      closePanel()
       if (currentApp !== loc.path[1]) {
         currentApp = loc.path[1] as Ref<Application>
         currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })

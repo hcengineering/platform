@@ -45,6 +45,6 @@
 {#if presenter}
   {className} in
   <div class="ml-2">
-    <svelte:component this={presenter.presenter} value={doc} on:click />
+    <svelte:component this={presenter.presenter} value={doc} />
   </div>
 {/if}

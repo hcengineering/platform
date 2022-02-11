@@ -18,7 +18,7 @@
   import chunter from '@anticrm/chunter'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { closePanel, Component, Grid, IconActivity, Scroller } from '@anticrm/ui'
+  import { Component, Grid, IconActivity, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
@@ -67,9 +67,6 @@
               <TxView
                 {tx}
                 {viewlets}
-                on:labelComponentClick={() => {
-                  closePanel()
-                }}
               />
             {/each}
           </Grid>

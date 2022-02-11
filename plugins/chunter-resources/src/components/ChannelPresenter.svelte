@@ -17,18 +17,15 @@
   import type { Channel } from '@anticrm/chunter'
   import { Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { closePopup, getCurrentLocation, Icon, navigate } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { getCurrentLocation, Icon, navigate } from '@anticrm/ui'
   import chunter from '../plugin'
 
   export let value: Channel
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
 
   function selectSpace (id: Ref<Space>) {
-    closePopup()
     const loc = getCurrentLocation()
     loc.path[1] = chunter.app.Chunter
     loc.path[2] = id
@@ -40,7 +37,6 @@
 <div
   class="flex-row-center hover-trans"
   on:click={() => {
-    dispatch('click')
     selectSpace(value._id)
   }}
 >

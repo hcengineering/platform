@@ -23,7 +23,6 @@
   import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import { ActivityKey, DisplayTx } from '../activity'
   import { getValue, TxDisplayViewlet, updateViewlet } from './utils'
 
@@ -101,8 +100,6 @@
     return attr?.type._class === core.class.TypeMarkup
   }
 
-  const dispatch = createEventDispatcher()
-
   $: hasMessageType = model.find((m) => isMessageType(m.attribute))
 </script>
 
@@ -149,9 +146,6 @@
                 <Component
                   is={viewlet.labelComponent}
                   {props}
-                  on:click={() => {
-                    dispatch('labelComponentClick')
-                  }}
                 />
               {/if}
             </div>
