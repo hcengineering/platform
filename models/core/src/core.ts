@@ -13,44 +13,37 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import type {
+import {
   Account,
-  AnyAttribute,
-  AttachedDoc,
+  AnyAttribute, ArrOf, AttachedDoc,
   Class,
-  ClassifierKind,
-  Doc,
-  Domain,
-  Mixin,
+  ClassifierKind, Collection, Doc,
+  Domain, DOMAIN_MODEL, IndexKind, Interface, Mixin,
   Obj,
-  Ref,
-  Space,
+  Ref, RefTo, Space,
   Timestamp,
-  Type,
-  Collection,
-  RefTo,
-  ArrOf,
-  Interface,
-  Version
+  Type, Version
 } from '@anticrm/core'
-import { DOMAIN_MODEL } from '@anticrm/core'
-import { Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import { Index, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import type { IntlString } from '@anticrm/platform'
 import core from './component'
 
 // C O R E
 @Model(core.class.Obj, core.class.Obj)
 export class TObj implements Obj {
   @Prop(TypeRef(core.class.Class), 'Class' as IntlString)
+  @Index(IndexKind.Indexed)
   _class!: Ref<Class<this>>
 }
 
 @Model(core.class.Doc, core.class.Obj)
 export class TDoc extends TObj implements Doc {
   @Prop(TypeRef(core.class.Doc), 'Id' as IntlString)
+  // @Index(IndexKind.Indexed) // - automatically indexed by default.
   _id!: Ref<this>
 
   @Prop(TypeRef(core.class.Space), 'Space' as IntlString)
+  @Index(IndexKind.Indexed)
   space!: Ref<Space>
 
   @Prop(TypeTimestamp(), 'Modified' as IntlString)
@@ -63,9 +56,11 @@ export class TDoc extends TObj implements Doc {
 @Model(core.class.AttachedDoc, core.class.Doc)
 export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeRef(core.class.Doc), 'Attached to' as IntlString)
+  @Index(IndexKind.Indexed)
   attachedTo!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), 'Attached to class' as IntlString)
+  @Index(IndexKind.Indexed)
   attachedToClass!: Ref<Class<Doc>>
 
   @Prop(TypeString(), 'Collection' as IntlString)

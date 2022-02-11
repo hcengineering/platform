@@ -14,10 +14,10 @@
 //
 
 import contact from '@anticrm/contact'
-import core, { DOMAIN_TX, Tx } from '@anticrm/core'
+import core, { DOMAIN_TX, Tx, Client as CoreClient, Domain, IndexKind, DOMAIN_MODEL } from '@anticrm/core'
 import builder, { createDeps, migrateOperations } from '@anticrm/model-all'
 import { Client } from 'minio'
-import { Document, MongoClient } from 'mongodb'
+import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -106,6 +106,9 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
       await connection.close()
     }
 
+    // Create update indexes
+    await createUpdateIndexes(connection, db)
+
     console.log('create minio bucket')
     if (!(await minio.bucketExists(dbName))) {
       await minio.makeBucket(dbName, 'k8s')
@@ -154,6 +157,10 @@ export async function upgradeModel (
     console.log('Apply upgrade operations')
 
     const connection = await connect(transactorUrl, dbName, true)
+
+    // Create update indexes
+    await createUpdateIndexes(connection, db)
+
     for (const op of migrateOperations) {
       await op.upgrade(connection)
     }
@@ -161,5 +168,40 @@ export async function upgradeModel (
     await connection.close()
   } finally {
     await client.close()
+  }
+}
+
+async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<void> {
+  const classes = await connection.findAll(core.class.Class, {})
+
+  const hierarchy = connection.getHierarchy()
+  const domains = new Map<Domain, Set<string>>()
+  // Find all domains and indexed fields inside
+  for (const c of classes) {
+    try {
+      const domain = hierarchy.getDomain(c._id)
+      if (domain === DOMAIN_MODEL) {
+        continue
+      }
+      const attrs = hierarchy.getAllAttributes(c._id)
+      const domainAttrs = domains.get(domain) ?? new Set<string>()
+      for (const a of attrs.values()) {
+        if (a.index !== undefined && a.index === IndexKind.Indexed) {
+          domainAttrs.add(a.name)
+        }
+      }
+
+      domains.set(domain, domainAttrs)
+    } catch (err: any) {
+      // Ignore, since we have clases without domain.
+    }
+  }
+
+  for (const [d, v] of domains.entries()) {
+    const collection = db.collection(d)
+    for (const vv of v.values()) {
+      console.log('creating index', d, vv)
+      await collection.createIndex(vv)
+    }
   }
 }

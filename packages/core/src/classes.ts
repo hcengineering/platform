@@ -81,7 +81,8 @@ export interface Type<T extends PropertyType> extends UXObject {}
  * @public
  */
 export enum IndexKind {
-  FullText
+  FullText,
+  Indexed
 }
 
 /**
