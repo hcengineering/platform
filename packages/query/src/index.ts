@@ -47,6 +47,9 @@ interface Query {
   result: Doc[] | Promise<Doc[]>
   options?: FindOptions<Doc>
   callback: (result: FindResult<Doc>) => void
+
+  rememberTx: boolean
+  refreshTxes: Tx[]
 }
 
 /**
@@ -121,7 +124,9 @@ export class LiveQuery extends TxProcessor implements Client {
       query,
       result,
       options: options as FindOptions<Doc>,
-      callback: callback as (result: Doc[]) => void
+      callback: callback as (result: Doc[]) => void,
+      rememberTx: false,
+      refreshTxes: []
     }
     this.queries.push(q)
     result
@@ -300,7 +305,66 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async refresh (q: Query): Promise<void> {
-    const res = await this.client.findAll(q._class, q.query, q.options)
+    q.rememberTx = true
+    q.refreshTxes = []
+    let res = await this.client.findAll(q._class, q.query, q.options)
+
+    while (q.refreshTxes.length > 0) {
+      const refs = [...q.refreshTxes]
+      q.refreshTxes = []
+      const toRefresh = new Set<Ref<Doc>>()
+      let needFullRefresh = false
+      for (const tx of refs) {
+        let otx = tx
+        if (tx._class === core.class.TxCollectionCUD) {
+          otx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
+        }
+        if (otx._class === core.class.TxCreateDoc) {
+          const oid = (otx as TxCreateDoc<Doc>).objectId
+          if (res.find(it => it._id === oid) !== undefined) {
+            // we have object in our list, let's fetch it from server again and update.
+            toRefresh.add(oid)
+          } else {
+            // We dont't have it in our list, let's check if it match our doc.
+            const ndoc = TxProcessor.createDoc2Doc(otx as TxCreateDoc<Doc>)
+            if (this.match(q, ndoc)) {
+              // Document matching our.
+              needFullRefresh = true
+            }
+          }
+        } else if (otx._class === core.class.TxUpdateDoc) {
+          const oid = (otx as TxUpdateDoc<Doc>).objectId
+          if (res.find(it => it._id === oid) !== undefined) {
+            // we have object in our list, let's fetch it from server again and update.
+            toRefresh.add(oid)
+          }
+        } else if (otx._class === core.class.TxRemoveDoc) {
+          const oid = (otx as TxRemoveDoc<Doc>).objectId
+          if (res.find(it => it._id === oid) !== undefined) {
+            // we have object in our list, but shoulld not, lets
+            needFullRefresh = true
+          }
+        }
+      }
+      const refIds = Array.from(toRefresh.values())
+      if (refIds.length > 0) {
+        const upd = await this.client.findAll(q._class, { _id: { $in: refIds } }, { ...q.options, limit: refIds.length })
+        // update res documents
+        for (const u of upd) {
+          const idx = res.findIndex(it => it._id === u._id)
+          if (idx !== -1) {
+            res[idx] = u
+          } else {
+            needFullRefresh = true
+            break
+          }
+        }
+      }
+      if (needFullRefresh) {
+        res = await this.client.findAll(q._class, q.query, q.options)
+      }
+    }
+
     q.result = res
     q.callback(this.clone(res))
   }
@@ -555,6 +619,11 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   async tx (tx: Tx): Promise<TxResult> {
+    for (const q of this.queries) {
+      if (q.rememberTx) {
+        q.refreshTxes.push(tx)
+      }
+    }
     return await super.tx(tx)
   }
 
