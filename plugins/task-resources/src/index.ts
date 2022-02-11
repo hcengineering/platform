@@ -124,6 +124,8 @@ export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: 
   }))
 }
 
+export type StatesBarPosition = 'start' | 'middle' | 'end' | undefined
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateTask,

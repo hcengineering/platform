@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2020 Anticrm Platform Contributors.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,59 +12,99 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  export let side: 'left' | 'right'
-  export let kind: 'round' | 'arrow'
+import { tick } from 'svelte';
+
+  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import type { StatesBarPosition } from '../..'
+
+  export let label: string
+  export let position: StatesBarPosition = undefined
   export let selected: boolean = false
-  export let color: string
+  export let color: string = 'var(--theme-button-bg-enabled)'
+  export let renders: number = 0
+
+  const dispatch = createEventDispatcher()
+  let lenght: number = 0
+  let text: HTMLElement
+  let div: HTMLElement
+
+  afterUpdate(() => {
+    if (text) lenght = (text.clientWidth + 20 > 300) ? 300 : text.clientWidth + 20
+    dispatch('update', lenght)
+  })
 </script>
 
-<svg class="svg-statesbar-element" viewBox="0 0 8 36" class:selected xmlns="http://www.w3.org/2000/svg">
-  {#if side === 'left' && kind === 'arrow'}
-    <path
-      class="bg"
-      style={selected ? `fill: ${color}` : ''}
-      d="M1,0C0.3,0-0.2,0.7,0.1,1.4l6,15.9c0.2,0.5,0.2,1,0,1.4l-6,15.9C-0.2,35.3,0.3,36,1,36h7V0H1z"
-    />
-    <path
-      class="border"
-      d="M1,35l6-15.9c0.3-0.7,0.3-1.4,0-2.1L1,1h7V0H1C0.7,0,0.4,0.2,0.2,0.4C0,0.7-0.1,1,0.1,1.4 l6,15.9c0.2,0.5,0.2,1,0,1.4l-6,15.9C-0.1,35,0,35.3,0.2,35.6S0.7,36,1,36h7v-1H1z"
-    />
-  {:else if side === 'left' && kind === 'round'}
-    <path class="bg" style={selected ? `fill: ${color}` : ''} d="M0,8v10v10c0,4.4,3.6,8,8,8V0C3.6,0,0,3.6,0,8z" />
-    <path class="border" d="M1,28V8c0-3.9,3.1-7,7-7V0C3.6,0,0,3.6,0,8v20c0,4.4,3.6,8,8,8v-1C4.1,35,1,31.9,1,28z" />
-  {:else if side === 'right' && kind === 'arrow'}
-    <path
-      class="bg"
-      style={selected ? `fill: ${color}` : ''}
-      d="M1.8,1.3C1.5,0.5,0.8,0,0,0v36c0.8,0,1.5-0.5,1.8-1.3l6.1-16c0.2-0.5,0.2-1,0-1.4L1.8,1.3z"
-    />
-    <path
-      class="border"
-      d="M1.8,1.3L1.8,1.3L1.8,1.3c0,0-0.1-0.2-0.1-0.3L1.6,0.8C1.2,0.3,0.6,0,0,0v1 c0.4,0,0.7,0.3,0.9,0.6l6.1,16c0.1,0.2,0.1,0.5,0,0.7l-6.1,16C0.7,34.7,0.4,35,0,35v1c0.8,0,1.5-0.5,1.8-1.3l6.1-16 c0.2-0.5,0.2-1,0-1.4L1.8,1.3z"
-    />
-  {:else if side === 'right' && kind === 'round'}
-    <path class="bg" style={selected ? `fill: ${color}` : ''} d="M0,0v36c4.4,0,8-3.6,8-8V8C8,3.6,4.4,0,0,0z" />
-    <path class="border" d="M0,0v1c3.9,0,7,3.1,7,7v20c0,3.9-3.1,7-7,7v1c4.4,0,8-3.6,8-8V8C8,3.6,4.4,0,0,0z" />
-  {:else}
-    <rect x={0} y={0} width={'100%'} height={'100%'} fill={'red'} opacity={0.5} />
-  {/if}
-</svg>
+<div class="hidden-text" bind:this={text}>{label}</div>
+{#if lenght > 0}
+  <div
+    bind:this={div}
+    class="statuses-bar"
+    class:cursor-pointer={!selected}
+    class:cursor-default={selected}
+    data-renders={renders}
+    on:click|stopPropagation
+  >
+    <div class="label-container"><div class="overflow-label">{label}</div></div>
+    <svg class="statuses-bar__back" viewBox="0 0 {lenght + 20} 36" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      {#if position === 'start'}
+        <path
+          class="statuses-bar__{selected ? 'selected' : 'element'}"
+          style={selected ? `fill: ${color};` : ''}
+          d="M0,8c0-4.4,3.6-8,8-8h2h{lenght}h1.8c0.8,0,1.6,0.5,1.9,1.3l6.1,16c0.2,0.5,0.2,1,0,1.4l-6.1,16c-0.3,0.8-1,1.3-1.9,1.3L{lenght + 10},36H10 l-2,0c-4.4,0-8-3.6-8-8V8z"
+        />
+      {:else if position === 'middle'}
+        <path
+          class="statuses-bar__{selected ? 'selected' : 'element'}"
+          style={selected ? `fill: ${color};` : ''}
+          d="M6.1,17.3l-6-15.9C-0.2,0.7,0.3,0,1,0h9h{lenght}h1.8c0.8,0,1.6,0.5,1.9,1.3l6.1,16c0.2,0.5,0.2,1,0,1.4l-6.1,16 c-0.3,0.8-1,1.3-1.9,1.3H{lenght + 10}H10H1c-0.7,0-1.2-0.7-0.9-1.4l6-15.9C6.3,18.3,6.3,17.7,6.1,17.3z"
+        />
+      {:else if position === 'end'}
+        <path
+          class="statuses-bar__{selected ? 'selected' : 'element'}"
+          style={selected ? `fill: ${color};` : ''}
+          d="M6.1,17.3l-6-15.9C-0.2,0.7,0.3,0,1,0h9h{lenght}h2c4.4,0,8,3.6,8,8v20c0,4.4-3.6,8-8,8h-2H10H1 c-0.7,0-1.2-0.7-0.9-1.4l6-15.9C6.3,18.3,6.3,17.7,6.1,17.3z"
+        />
+      {:else}
+        <path
+          class="statuses-bar__{selected ? 'selected' : 'element'}"
+          style={selected ? `fill: ${color};` : ''}
+          d="M0,8c0-4.4,3.6-8,8-8l2,0h{lenght}l2,0c4.4,0,8,3.6,8,8v20c0,4.4-3.6,8-8,8h-2H10H8c-4.4,0-8-3.6-8-8V8z"
+        />
+      {/if}
+    </svg>
+  </div>
+{/if}
 
 <style lang="scss">
-  .svg-statesbar-element {
-    width: .5rem;
-    height: 2.25rem;
-  }
-  .bg {
-    fill: var(--theme-button-bg-enabled);
-  }
-  .border {
-    fill: var(--theme-button-border-enabled);
-  }
-  .selected {
-    .border {
-      fill: transparent;
+  .statuses-bar {
+    position: relative;
+    max-width: 100%;
+    height: min-content;
+
+    &__back {
+      height: 2.25rem;
+    }
+    &__element {
+      fill: var(--theme-button-bg-enabled);
+      stroke: var(--theme-bg-accent-color);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    &__selected { fill: red; }
+
+    .label-container {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 1rem;
+      right: 1rem;
+      min-width: 0;
+      width: calc(100% - 2rem);
+      height: 100%;
     }
   }
 </style>

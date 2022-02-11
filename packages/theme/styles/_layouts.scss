@@ -368,6 +368,7 @@ a.no-line {
   &:visited { color: var(--theme-caption-color); }
 }
 .cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
 
 /* Text */
 .text-sm { font-size: .75rem; }
@@ -400,6 +401,7 @@ a.no-line {
   visibility: hidden;
   overflow: hidden;
   white-space: pre-wrap;
+  width: max-content;
 }
 .overflow-label {
   white-space: nowrap;
