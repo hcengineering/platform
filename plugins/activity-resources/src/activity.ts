@@ -88,9 +88,9 @@ class ActivityImpl implements Activity {
   private txes1: Array<TxCUD<Doc>> = []
   private txes2: Array<TxCUD<Doc>> = []
   constructor (readonly client: Client, attributes: Map<string, AnyAttribute>) {
-    this.hiddenAttributes = new Set([...attributes.entries()]
-      .filter(([, value]) => value.hidden === true)
-      .map(([key]) => key))
+    this.hiddenAttributes = new Set(
+      [...attributes.entries()].filter(([, value]) => value.hidden === true).map(([key]) => key)
+    )
     this.txQuery1 = createQuery()
     this.txQuery2 = createQuery()
   }
@@ -118,7 +118,9 @@ class ActivityImpl implements Activity {
         ? { 'tx.objectId': object._id as Ref<AttachedDoc> }
         : {
             objectId: object._id,
-            _class: { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin] }
+            _class: {
+              $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
+            }
           },
       (result) => {
         this.txes1 = result
@@ -230,7 +232,7 @@ class ActivityImpl implements Activity {
       collectionCUD = true
     }
     let firstTx = parents.get(tx.objectId)
-    const result: DisplayTx = this.newDisplayTx(tx)
+    const result: DisplayTx = newDisplayTx(tx, hierarchy)
 
     result.doc = firstTx?.doc ?? result.doc
 
@@ -273,34 +275,19 @@ class ActivityImpl implements Activity {
     return false
   }
 
-  newDisplayTx (tx: TxCUD<Doc>): DisplayTx {
-    const hierarchy = this.client.getHierarchy()
-    const createTx = hierarchy.isDerived(tx._class, core.class.TxCreateDoc) ? (tx as TxCreateDoc<Doc>) : undefined
-    return {
-      tx,
-      txes: [],
-      createTx,
-      updateTx: hierarchy.isDerived(tx._class, core.class.TxUpdateDoc) ? (tx as TxUpdateDoc<Doc>) : undefined,
-      updated: false,
-      removed: false,
-      mixin: false,
-      mixinTx: hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Doc, Doc>) : undefined,
-      doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
-    }
-  }
-
   integrateTxWithResults (results: DisplayTx[], result: DisplayTx): DisplayTx[] {
-    const curUpdate: any = (result.tx._class === core.class.TxUpdateDoc)
-      ? (result.tx as unknown as TxUpdateDoc<Doc>).operations
-      : (result.tx as unknown as TxMixin<Doc, Doc>).attributes
+    const curUpdate: any =
+      result.tx._class === core.class.TxUpdateDoc
+        ? (result.tx as unknown as TxUpdateDoc<Doc>).operations
+        : (result.tx as unknown as TxMixin<Doc, Doc>).attributes
 
     const newResult = results.filter((prevTx) => {
       if (this.isSameKindTx(prevTx, result, result.tx._class)) {
-        const prevUpdate: any = (prevTx.tx._class === core.class.TxUpdateDoc)
-          ? (prevTx.tx as unknown as TxUpdateDoc<Doc>).operations
-          : (prevTx.tx as unknown as TxMixin<Doc, Doc>).attributes
-        if (
-          result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate) ) {
+        const prevUpdate: any =
+          prevTx.tx._class === core.class.TxUpdateDoc
+            ? (prevTx.tx as unknown as TxUpdateDoc<Doc>).operations
+            : (prevTx.tx as unknown as TxMixin<Doc, Doc>).attributes
+        if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
           // we have same keys,
           // Remember previous transactions
           result.txes.push(...prevTx.txes, prevTx.tx)
@@ -324,7 +311,22 @@ class ActivityImpl implements Activity {
   }
 }
 
-function getCollectionTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): TxCUD<Doc> {
+export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy): DisplayTx {
+  const createTx = hierarchy.isDerived(tx._class, core.class.TxCreateDoc) ? (tx as TxCreateDoc<Doc>) : undefined
+  return {
+    tx,
+    txes: [],
+    createTx,
+    updateTx: hierarchy.isDerived(tx._class, core.class.TxUpdateDoc) ? (tx as TxUpdateDoc<Doc>) : undefined,
+    updated: false,
+    removed: false,
+    mixin: false,
+    mixinTx: hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Doc, Doc>) : undefined,
+    doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
+  }
+}
+
+export function getCollectionTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): TxCUD<Doc> {
   if (cltx.tx._class === core.class.TxCreateDoc) {
     // We need to update tx to contain attachedDoc, attachedClass & collection
     const create = cltx.tx as TxCreateDoc<AttachedDoc>

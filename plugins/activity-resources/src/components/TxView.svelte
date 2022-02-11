@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '@anticrm/activity'
@@ -21,15 +20,7 @@
   import core, { AnyAttribute, Doc, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import {
-    Component,
-    Icon,
-    IconEdit,
-    IconMoreH,
-    Label,
-    Menu, ShowMore, showPopup,
-    TimeSince
-  } from '@anticrm/ui'
+  import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
@@ -37,7 +28,7 @@
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
-
+  export let showIcon: boolean = true
 
   let ptx: DisplayTx | undefined
 
@@ -74,7 +65,6 @@
       employee = account
     })
 
-
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
     showPopup(
@@ -110,25 +100,24 @@
     return attr?.type._class === core.class.TypeMarkup
   }
 
-  $: hasMessageType = model.find(m => isMessageType(m.attribute))
+  $: hasMessageType = model.find((m) => isMessageType(m.attribute))
 </script>
-{#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="flex-between msgactivity-container">
 
-    <div class="flex-center icon">
-      {#if viewlet}
-        <Icon icon={viewlet.icon} size="small" />
-      {:else}
-        {#if viewlet === undefined && model.length > 0}
+{#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
+  <div class="flex-between msgactivity-container" class:showIcon>
+    {#if showIcon}
+      <div class="flex-center icon">
+        {#if viewlet}
+          <Icon icon={viewlet.icon} size="small" />
+        {:else if viewlet === undefined && model.length > 0}
           <Icon icon={modelIcon !== undefined ? modelIcon : IconEdit} size="small" />
         {:else}
           <Icon icon={activity.icon.Activity} size="small" />
         {/if}
-      {/if}
-    </div>
+      </div>
+    {/if}
 
     <div class="flex-grow flex-col">
-
       <div class="flex-between">
         <div class="flex-grow label">
           <div class="bold">
@@ -141,7 +130,7 @@
           {#if viewlet && viewlet?.editable}
             <div class="edited">
               {#if viewlet.label}
-                <Label label={viewlet.label} params={viewlet.labelParams ?? {}}  />
+                <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               {/if}
               {#if tx.updated}
                 <Label label={activity.string.Edited} />
@@ -151,53 +140,56 @@
               </div>
             </div>
           {:else if viewlet && viewlet.label}
-            <div class='flex-center'>
+            <div class="flex-center">
               <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               {#if viewlet.labelComponent}
-                <Component is={viewlet.labelComponent} {props} />
+                <Component
+                  is={viewlet.labelComponent}
+                  {props}
+                />
               {/if}
             </div>
           {/if}
-          {#if viewlet === undefined && model.length > 0 && tx.updateTx}            
+          {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m, i}
               {#await getValue(client, m, tx.updateTx.operations) then value}
-                  {#if value === null}
-                    <span>unset <Label label={m.label} /></span>
-                  {:else}
-                    <span class:flex-grow={hasMessageType}>changed <Label label={m.label} /> to</span>
-                    {#if hasMessageType}
-                      <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
-                    {/if}
-                    {#if isMessageType(m.attribute)}
-                      <div class="strong message emphasized">
-                        <svelte:component this={m.presenter} {value} />
-                      </div>
-                    {:else}
-                      <div class="strong">
-                        <svelte:component this={m.presenter} {value} />
-                      </div>
-                    {/if}
+                {#if value === null}
+                  <span>unset <Label label={m.label} /></span>
+                {:else}
+                  <span class:flex-grow={hasMessageType}>changed <Label label={m.label} /> to</span>
+                  {#if hasMessageType}
+                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
-                {/await}
+                  {#if isMessageType(m.attribute)}
+                    <div class="strong message emphasized">
+                      <svelte:component this={m.presenter} {value} />
+                    </div>
+                  {:else}
+                    <div class="strong">
+                      <svelte:component this={m.presenter} {value} />
+                    </div>
+                  {/if}
+                {/if}
+              {/await}
             {/each}
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
               {#await getValue(client, m, tx.mixinTx.attributes) then value}
-                  {#if value === null}
-                    <span>unset <Label label={m.label} /></span>
+                {#if value === null}
+                  <span>unset <Label label={m.label} /></span>
+                {:else}
+                  <span>changed <Label label={m.label} /> to</span>
+                  {#if isMessageType(m.attribute)}
+                    <div class="strong message emphasized">
+                      <svelte:component this={m.presenter} {value} />
+                    </div>
                   {:else}
-                    <span>changed <Label label={m.label} /> to</span>                
-                    {#if isMessageType(m.attribute)}
-                      <div class="strong message emphasized">
-                        <svelte:component this={m.presenter} {value} />
-                      </div>
-                    {:else}
-                      <div class="strong">
-                        <svelte:component this={m.presenter} {value} />
-                      </div>
-                    {/if}
+                    <div class="strong">
+                      <svelte:component this={m.presenter} {value} />
+                    </div>
                   {/if}
-                {/await}
+                {/if}
+              {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             {#if typeof viewlet.component === 'string'}
@@ -230,6 +222,9 @@
 <style lang="scss">
   .msgactivity-container {
     position: relative;
+  }
+
+  .showIcon {
     &::after,
     &::before {
       position: absolute;
@@ -252,10 +247,12 @@
   }
 
   .menuOptions {
-    margin-left: .5rem;
-    opacity: .8;
+    margin-left: 0.5rem;
+    opacity: 0.8;
     cursor: pointer;
-    &:hover { opacity: 1; }
+    &:hover {
+      opacity: 1;
+    }
   }
   .icon {
     flex-shrink: 0;
@@ -279,8 +276,12 @@
     align-items: center;
     flex-wrap: wrap;
 
-    & > * { margin-right: .5rem; }
-    & > *:last-child { margin-right: 0; }
+    & > * {
+      margin-right: 0.5rem;
+    }
+    & > *:last-child {
+      margin-right: 0;
+    }
     .bold {
       font-weight: 500;
       color: var(--theme-caption-color);
@@ -299,14 +300,14 @@
 
   .content {
     flex-shrink: 0;
-    margin-top: .5rem;
+    margin-top: 0.5rem;
   }
 
   .emphasized {
-    margin-top: .5rem;
+    margin-top: 0.5rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     padding: 1rem 1.25rem;
   }
 

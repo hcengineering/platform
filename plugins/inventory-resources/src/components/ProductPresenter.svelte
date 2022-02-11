@@ -15,15 +15,15 @@
 -->
 <script lang="ts">
   import { Product } from '@anticrm/inventory'
-  import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
+  import { Icon, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import inventory from '../plugin'
 
   export let value: Product
   export let inline: boolean = false
 
+
   function show () {
-    closeTooltip()
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>

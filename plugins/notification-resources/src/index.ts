@@ -15,7 +15,12 @@
 //
 
 import { Resources } from '@anticrm/platform'
-
-export default async (): Promise<Resources> => ({})
+import NotificationsPopup from './components/NotificationsPopup.svelte'
 
 export * from './utils'
+
+export default async (): Promise<Resources> => ({
+  component: {
+    NotificationsPopup
+  }
+})

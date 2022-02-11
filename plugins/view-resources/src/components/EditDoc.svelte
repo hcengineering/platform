@@ -133,7 +133,6 @@
   $: if (object) getEditorOrDefault(selectedClass, object._class)
 
   async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
-    console.log('get editor or default')
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {
       editor = await getEditor(defaultClass)

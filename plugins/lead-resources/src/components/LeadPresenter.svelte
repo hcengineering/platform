@@ -15,14 +15,13 @@
 -->
 <script lang="ts">
   import type { Lead } from '@anticrm/lead'
-  import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
+  import { Icon, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import lead from '../plugin'
 
   export let value: Lead
 
   function show () {
-    closeTooltip()
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>

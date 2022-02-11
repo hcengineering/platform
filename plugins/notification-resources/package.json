@@ -1,21 +1,23 @@
 {
   "name": "@anticrm/notification-resources",
   "version": "0.6.0",
-  "main": "lib/index.js",
+  "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@anticrm/platform-package",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "heft build",
-    "build:watch": "tsc",
+    "build": "echo 'no build for ui'",
+    "build:docs": "api-extractor run --local",
+    "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
-    "format": "prettier --write src && eslint --fix src",
+    "format": "prettier --write --plugin-search-dir=. src && eslint --fix src",
     "svelte-check": "svelte-check"
   },
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
-    "@types/heft-jest": "^1.0.2",
+    "svelte-loader": "^3.1.2",
+    "sass": "^1.37.5",
+    "svelte-preprocess": "^4.7.4",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
@@ -23,21 +25,21 @@
     "eslint": "^7.32.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
-    "prettier": "^2.4.1",
-    "@rushstack/heft": "^0.41.1",
-    "typescript": "^4.3.5",
-    "svelte-check": "^2.2.10",
-    "svelte-loader": "^3.1.2",
-    "sass": "^1.37.5",
-    "svelte-preprocess": "^4.7.4",
     "eslint-plugin-svelte3": "~3.2.1",
-    "prettier-plugin-svelte": "^2.2.0"
+    "prettier-plugin-svelte": "^2.2.0",
+    "prettier": "^2.4.1",
+    "svelte-check": "^2.2.10",
+    "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/presentation": "~0.6.2",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11",
+    "svelte": "^3.37.0",
     "@anticrm/notification": "~0.6.0",
-    "svelte": "^3.37.0"
+    "@anticrm/ui": "~0.6.0",
+    "@anticrm/presentation": "~0.6.2",
+    "@anticrm/activity-resources": "~0.6.0",
+    "@anticrm/activity": "~0.6.0",
+    "@anticrm/contact": "~0.6.0",
+    "@anticrm/core": "~0.6.11"
   }
 }

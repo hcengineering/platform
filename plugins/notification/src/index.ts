@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Ref, Space, Timestamp } from '@anticrm/core'
-import type { Plugin } from '@anticrm/platform'
+import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, TxCUD } from '@anticrm/core'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -29,6 +30,23 @@ export interface LastView extends AttachedDoc {
 /**
  * @public
  */
+export interface Notification extends AttachedDoc {
+  tx: Ref<TxCUD<Doc>>
+  status: NotificationStatus
+}
+
+/**
+ * @public
+ */
+export enum NotificationStatus {
+  New,
+  EmailSent,
+  Read
+}
+
+/**
+ * @public
+ */
 export const notificationId = 'notification' as Plugin
 
 /**
@@ -36,10 +54,21 @@ export const notificationId = 'notification' as Plugin
  */
 const notification = plugin(notificationId, {
   class: {
-    LastView: '' as Ref<Class<LastView>>
+    LastView: '' as Ref<Class<LastView>>,
+    Notification: '' as Ref<Class<Notification>>
+  },
+  component: {
+    NotificationsPopup: '' as AnyComponent
+  },
+  icon: {
+    Notifications: '' as Asset
   },
   space: {
     Notifications: '' as Ref<Space>
+  },
+  string: {
+    Notification: '' as IntlString,
+    Notifications: '' as IntlString
   }
 })
 

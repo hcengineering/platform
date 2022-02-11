@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Backlink } from '@anticrm/chunter'
   import type { Doc } from '@anticrm/core'
@@ -30,12 +29,14 @@
   const docQuery = createQuery()
   let doc: Doc | undefined
 
-  $: docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => { doc = r.shift() })
+  $: docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
+    doc = r.shift()
+  })
 
   $: className = client.getHierarchy().getClass(value.attachedToClass).label.toLocaleLowerCase()
 
   $: if (doc !== undefined) {
-    getObjectPresenter(client, doc._class, { key: '' }).then(p => {
+    getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
       presenter = p
     })
   }
@@ -44,6 +45,6 @@
 {#if presenter}
   {className} in
   <div class="ml-2">
-    <svelte:component this={presenter.presenter} value={doc}/>
+    <svelte:component this={presenter.presenter} value={doc} />
   </div>
 {/if}

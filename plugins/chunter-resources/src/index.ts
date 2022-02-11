@@ -25,10 +25,11 @@ import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 
-export { CommentsPresenter, CommentInput }
+export { CommentsPresenter }
 
 export default async (): Promise<Resources> => ({
   component: {
+    CommentInput,
     CreateChannel,
     ChannelView,
     CommentPresenter,

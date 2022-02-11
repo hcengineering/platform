@@ -30,6 +30,7 @@ import { createModel as presentationModel } from '@anticrm/model-presentation'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as serverAttachmentModel } from '@anticrm/model-server-attachment'
 import { createModel as serverContactModel } from '@anticrm/model-server-contact'
+import { createModel as serverNotificationModel } from '@anticrm/model-server-notification'
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as settingModel } from '@anticrm/model-setting'
 import { createModel as taskModel } from '@anticrm/model-task'
@@ -66,7 +67,7 @@ const builders = [
   serverCoreModel,
   serverAttachmentModel,
   serverContactModel,
-
+  serverNotificationModel,
   createDemo
 ]
 
