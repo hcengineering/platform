@@ -230,7 +230,7 @@ export class LiveQuery extends TxProcessor implements Client {
     if (pos !== -1) {
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId })
+        const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId }, q.options)
         if (match === undefined) {
           q.result.splice(pos, 1)
         } else {
@@ -396,7 +396,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.findOne(q._class, { $search: q.query.$search, _id: doc._id })
+        const match = await this.findOne(q._class, { $search: q.query.$search, _id: doc._id }, q.options)
         if (match === undefined) return
       }
       q.result.push(doc)
