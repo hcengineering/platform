@@ -200,3 +200,66 @@
   }
 }
 .ac-column__list-item + .ac-column__list-item { margin-top: .75rem; }
+
+/* StatesBar */
+.antiStatesBar {
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  flex: 1 0;
+  padding: 0.125rem 0;
+  min-width: 0;
+  // width: auto;
+
+  &::-webkit-scrollbar:horizontal { height: 0.125rem; }
+  &::-webkit-scrollbar-track { margin: 0.25rem; }
+  &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-accent-color); }
+
+  &.mask-none { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 1); }  
+  &.mask-left { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
+  &.mask-right { mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
+  &.mask-both {
+    mask-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 1) 1rem,
+      rgba(0, 0, 0, 1) calc(100% - 1rem),
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  .asb-bar {
+    flex: 1 0 auto;
+    position: relative;
+    display: flex;
+    min-width: 0;
+    // max-width: 100%;
+    width: auto;
+    // height: auto;
+
+    &__back {
+      width: auto;
+      height: 2.25rem;
+    }
+    &__element {
+      fill: var(--theme-button-bg-enabled);
+      stroke: var(--theme-bg-accent-color);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    &__selected { fill: red; }
+
+    .asb-label__container {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 1rem;
+      right: 1rem;
+      min-width: 0;
+      width: calc(100% - 2rem);
+      height: 100%;
+    }
+  }
+}
