@@ -23,7 +23,7 @@ import { tick } from 'svelte';
   export let position: StatesBarPosition = undefined
   export let selected: boolean = false
   export let color: string = 'var(--theme-button-bg-enabled)'
-  export let renders: number = 0
+  // export let renders: number = 0
 
   const dispatch = createEventDispatcher()
   let lenght: number = 0
@@ -43,7 +43,6 @@ import { tick } from 'svelte';
     class="statuses-bar"
     class:cursor-pointer={!selected}
     class:cursor-default={selected}
-    data-renders={renders}
     on:click|stopPropagation
   >
     <div class="label-container"><div class="overflow-label">{label}</div></div>
