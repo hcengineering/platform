@@ -30,6 +30,7 @@
     loc.path[1] = chunter.app.Chunter
     loc.path[2] = id
     loc.path.length = 3
+    loc.fragment = undefined
     navigate(loc)
   }
 </script>
