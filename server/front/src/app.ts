@@ -190,156 +190,174 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
 
   // todo remove it after update all customers chrome extensions
   app.get('/import', (req, res) => {
-    const authHeader = req.headers.authorization
-    if (authHeader === undefined) {
-      res.status(403).send()
-      return
-    }
-    const token = authHeader.split(' ')[1]
-    const payload = decodeToken(token)
-    const url = req.query.url as string
-    const cookie = req.query.cookie as string | undefined
-    const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-
-    console.log('importing from', url)
-    console.log('cookie', cookie)
-
-    const options = cookie !== undefined
-      ? {
-          headers: {
-            Cookie: cookie
-          }
-        }
-      : {}
-
-    https.get(url, options, response => {
-      console.log('status', response.statusCode)
-      if (response.statusCode !== 200) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        res.status(500).send(`server returned ${response.statusCode}`)
+    try {
+      const authHeader = req.headers.authorization
+      if (authHeader === undefined) {
+        res.status(403).send()
         return
       }
-      const id = uuid()
-      const contentType = response.headers['content-type']
-      const meta: ItemBucketMetadata = {
-        'Content-Type': contentType
+      const token = authHeader.split(' ')[1]
+      const payload = decodeToken(token)
+      const url = req.query.url as string
+      const cookie = req.query.cookie as string | undefined
+      const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
+      if (url === undefined) {
+        res.status(500).send('URL param is not defined')
+        return
       }
-      const data: Buffer[] = []
-      response.on('data', function (chunk) {
-        data.push(chunk)
-      }).on('end', function () {
-        const buffer = Buffer.concat(data)
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
-          if (err !== null) {
-            console.log('minio putObject error', err)
-            res.status(500).send(err)
-          } else {
-            console.log('uploaded uuid', id)
 
-            if (attachedTo !== undefined) {
-              const space = req.query.space as Ref<Space>
-              const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+      console.log('importing from', url)
+      console.log('cookie', cookie)
 
-              const indexedDoc: IndexedDoc = {
-                id: id as Ref<Doc>,
-                _class: attachment.class.Attachment,
-                space,
-                modifiedOn: Date.now(),
-                modifiedBy: 'core:account:System' as Ref<Account>,
-                attachedTo,
-                data: buffer.toString('base64')
+      const options = cookie !== undefined
+        ? {
+            headers: {
+              Cookie: cookie
+            }
+          }
+        : {}
+
+      https.get(url, options, response => {
+        console.log('status', response.statusCode)
+        if (response.statusCode !== 200) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          res.status(500).send(`server returned ${response.statusCode}`)
+          return
+        }
+        const id = uuid()
+        const contentType = response.headers['content-type']
+        const meta: ItemBucketMetadata = {
+          'Content-Type': contentType
+        }
+        const data: Buffer[] = []
+        response.on('data', function (chunk) {
+          data.push(chunk)
+        }).on('end', function () {
+          const buffer = Buffer.concat(data)
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
+            if (err !== null) {
+              console.log('minio putObject error', err)
+              res.status(500).send(err)
+            } else {
+              console.log('uploaded uuid', id)
+
+              if (attachedTo !== undefined) {
+                const space = req.query.space as Ref<Space>
+                const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+
+                const indexedDoc: IndexedDoc = {
+                  id: id as Ref<Doc>,
+                  _class: attachment.class.Attachment,
+                  space,
+                  modifiedOn: Date.now(),
+                  modifiedBy: 'core:account:System' as Ref<Account>,
+                  attachedTo,
+                  data: buffer.toString('base64')
+                }
+
+                await elastic.index(indexedDoc)
               }
 
-              await elastic.index(indexedDoc)
+              res.status(200).send({
+                id,
+                contentType,
+                size: buffer.length
+              })
             }
-
-            res.status(200).send({
-              id,
-              contentType,
-              size: buffer.length
-            })
-          }
+          })
+        }).on('error', function (err) {
+          res.status(500).send(err)
         })
-      }).on('error', function (err) {
-        res.status(500).send(err)
       })
-    })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
+    }
   })
 
   app.post('/import', (req, res) => {
-    const authHeader = req.headers.authorization
-    if (authHeader === undefined) {
-      res.status(403).send()
-      return
-    }
-    const token = authHeader.split(' ')[1]
-    const payload = decodeToken(token)
-    const { url, cookie, attachedTo, space } = req.body
-
-    console.log('importing from', url)
-    console.log('cookie', cookie)
-
-    const options = cookie !== undefined
-      ? {
-          headers: {
-            Cookie: cookie
-          }
-        }
-      : {}
-
-    https.get(url, options, response => {
-      console.log('status', response.statusCode)
-      if (response.statusCode !== 200) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        res.status(500).send(`server returned ${response.statusCode}`)
+    try {
+      const authHeader = req.headers.authorization
+      if (authHeader === undefined) {
+        res.status(403).send()
         return
       }
-      const id = uuid()
-      const contentType = response.headers['content-type']
-      const meta: ItemBucketMetadata = {
-        'Content-Type': contentType
+      const token = authHeader.split(' ')[1]
+      const payload = decodeToken(token)
+      const { url, cookie, attachedTo, space } = req.body
+      if (url === undefined) {
+        res.status(500).send('URL param is not defined')
+        return
       }
-      const data: Buffer[] = []
-      response.on('data', function (chunk) {
-        data.push(chunk)
-      }).on('end', function () {
-        const buffer = Buffer.concat(data)
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
-          if (err !== null) {
-            console.log('minio putObject error', err)
-            res.status(500).send(err)
-          } else {
-            console.log('uploaded uuid', id)
 
-            if (attachedTo !== undefined) {
-              const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+      console.log('importing from', url)
+      console.log('cookie', cookie)
 
-              const indexedDoc: IndexedDoc = {
-                id: id as Ref<Doc>,
-                _class: attachment.class.Attachment,
-                space,
-                modifiedOn: Date.now(),
-                modifiedBy: 'core:account:System' as Ref<Account>,
-                attachedTo,
-                data: buffer.toString('base64')
+      const options = cookie !== undefined
+        ? {
+            headers: {
+              Cookie: cookie
+            }
+          }
+        : {}
+
+      https.get(url, options, response => {
+        console.log('status', response.statusCode)
+        if (response.statusCode !== 200) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          res.status(500).send(`server returned ${response.statusCode}`)
+          return
+        }
+        const id = uuid()
+        const contentType = response.headers['content-type']
+        const meta: ItemBucketMetadata = {
+          'Content-Type': contentType
+        }
+        const data: Buffer[] = []
+        response.on('data', function (chunk) {
+          data.push(chunk)
+        }).on('end', function () {
+          const buffer = Buffer.concat(data)
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
+            if (err !== null) {
+              console.log('minio putObject error', err)
+              res.status(500).send(err)
+            } else {
+              console.log('uploaded uuid', id)
+
+              if (attachedTo !== undefined) {
+                const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+
+                const indexedDoc: IndexedDoc = {
+                  id: id as Ref<Doc>,
+                  _class: attachment.class.Attachment,
+                  space,
+                  modifiedOn: Date.now(),
+                  modifiedBy: 'core:account:System' as Ref<Account>,
+                  attachedTo,
+                  data: buffer.toString('base64')
+                }
+
+                await elastic.index(indexedDoc)
               }
 
-              await elastic.index(indexedDoc)
+              res.status(200).send({
+                id,
+                contentType,
+                size: buffer.length
+              })
             }
-
-            res.status(200).send({
-              id,
-              contentType,
-              size: buffer.length
-            })
-          }
+          })
+        }).on('error', function (err) {
+          res.status(500).send(err)
         })
-      }).on('error', function (err) {
-        res.status(500).send(err)
       })
-    })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
+    }
   })
 
   app.get('*', function (request, response) {
