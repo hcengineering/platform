@@ -19,7 +19,7 @@
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
-  import { createEventDispatcher, onDestroy, onMount, afterUpdate } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
   import type { StatesBarPosition } from '../..'
 
@@ -87,9 +87,6 @@
     }
   })
   onDestroy(() => { if (div) div.removeEventListener('scroll', checkMask) })
-  afterUpdate(() => {
-    console.log('!!!!!!!!!!!!!!!!!!!!!!! UPDATED')
-  })
 </script>
 
 <div bind:this={div} class="antiStatesBar mask-{mask} {stepStyle}">

@@ -28,14 +28,6 @@
   let divBar: HTMLElement
   let svgBack: SVGElement
 
-  // $: if (text) lenght = (text.clientWidth + 20 > 300) ? 300 : text.clientWidth + 20
-  // $: if (lenght) {
-  //   if (position === 'start') d = `M0,8c0-4.4,3.6-8,8-8h2h${lenght}h1.8c0.8,0,1.6,0.5,1.9,1.3l6.1,16c0.2,0.5,0.2,1,0,1.4l-6.1,16c-0.3,0.8-1,1.3-1.9,1.3L${lenght + 10},36H10 l-2,0c-4.4,0-8-3.6-8-8V8z`
-  //   else if (position === 'middle') d = `M6.1,17.3l-6-15.9C-0.2,0.7,0.3,0,1,0h9h${lenght}h1.8c0.8,0,1.6,0.5,1.9,1.3l6.1,16c0.2,0.5,0.2,1,0,1.4l-6.1,16 c-0.3,0.8-1,1.3-1.9,1.3H${lenght + 10}H10H1c-0.7,0-1.2-0.7-0.9-1.4l6-15.9C6.3,18.3,6.3,17.7,6.1,17.3z`
-  //   else if (position === 'end') d = `M6.1,17.3l-6-15.9C-0.2,0.7,0.3,0,1,0h9h${lenght}h2c4.4,0,8,3.6,8,8v20c0,4.4-3.6,8-8,8h-2H10H1 c-0.7,0-1.2-0.7-0.9-1.4l6-15.9C6.3,18.3,6.3,17.7,6.1,17.3z`
-  //   else d = `M0,8c0-4.4,3.6-8,8-8l2,0h${lenght}l2,0c4.4,0,8,3.6,8,8v20c0,4.4-3.6,8-8,8h-2H10H8c-4.4,0-8-3.6-8-8V8z`
-  // }
-
   afterUpdate(() => {
     if (text) lenght = (text.clientWidth + 20 > 300) ? 300 : text.clientWidth + 20
     if (divBar) divBar.style.width = lenght + 20 + 'px'

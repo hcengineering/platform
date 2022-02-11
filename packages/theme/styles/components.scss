@@ -209,7 +209,6 @@
   flex: 1 0;
   padding: 0.125rem 0;
   min-width: 0;
-  // width: auto;
 
   &::-webkit-scrollbar:horizontal { height: 0.125rem; }
   &::-webkit-scrollbar-track { margin: 0.25rem; }
@@ -233,9 +232,7 @@
     position: relative;
     display: flex;
     min-width: 0;
-    // max-width: 100%;
     width: auto;
-    // height: auto;
 
     &__back {
       width: auto;
