@@ -256,6 +256,10 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationPresenter
   })
 
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: recruit.component.VacancyPresenter
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectValidator, {
     validator: recruit.validator.ApplicantValidator
   })

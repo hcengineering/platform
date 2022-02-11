@@ -32,6 +32,7 @@ import recruit from './plugin'
 import { ObjectSearchResult } from '@anticrm/presentation'
 import task from '@anticrm/task'
 import ApplicationItem from './components/ApplicationItem.svelte'
+import VacancyPresenter from './components/VacancyPresenter.svelte'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
@@ -106,7 +107,8 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     Applications,
     Candidates,
-    CreateCandidate
+    CreateCandidate,
+    VacancyPresenter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)
