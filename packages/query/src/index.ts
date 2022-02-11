@@ -238,11 +238,21 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       } else {
         const updatedDoc = q.result[pos]
-        await this.__updateDoc(q, updatedDoc, tx)
-        if (!this.match(q, updatedDoc)) {
-          q.result.splice(pos, 1)
+        if (updatedDoc.modifiedOn > tx.modifiedOn) return
+        if (updatedDoc.modifiedOn === tx.modifiedOn) {
+          const current = await this.findOne(updatedDoc._class, { _id: updatedDoc._id })
+          if (current !== undefined) {
+            q.result[pos] = current 
+          } else {
+            q.result.splice(pos, 1)
+          }
         } else {
-          q.result[pos] = updatedDoc
+          await this.__updateDoc(q, updatedDoc, tx)
+          if (!this.match(q, updatedDoc)) {
+            q.result.splice(pos, 1)
+          } else {
+            q.result[pos] = updatedDoc
+          }
         }
       }
       this.sort(q, tx)
@@ -310,9 +320,9 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async refresh (q: Query): Promise<void> {
-    const res = await this.client.findAll(q._class, q.query, q.options)
-    q.result = res
-    q.callback(this.clone(res))
+    q.result = this.client.findAll(q._class, q.query, q.options)
+    q.result = await q.result
+    q.callback(this.clone(q.result))
   }
 
   // Check if query is partially matched.
