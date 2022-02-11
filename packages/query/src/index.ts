@@ -23,9 +23,13 @@ import core, {
   findProperty,
   FindResult,
   getObjectValue,
-  Hierarchy, Lookup,
+  Hierarchy,
+  Lookup,
   LookupData,
-  ModelDb, Ref, resultSort, ReverseLookups,
+  ModelDb,
+  Ref,
+  resultSort,
+  ReverseLookups,
   SortingQuery,
   Tx,
   TxBulkWrite,
@@ -174,9 +178,9 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
           // Mixin potentially added to object we doesn't have in out results
-          const doc = await this.findOne(tx.objectClass, { _id: tx.objectId })
+          const doc = await this.findOne(tx.objectClass, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
-            this.handleDocAdd(q, doc)
+            await this.handleDocAdd(q, doc)
           }
         }
       }
@@ -344,7 +348,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async getLookupValue<T extends Doc> (doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+  private async getLookupValue<T extends Doc>(doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(doc, lookup, result)
@@ -368,7 +372,11 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async getReverseLookupValue<T extends Doc> (doc: T, lookup: ReverseLookups, result: LookupData<T>): Promise<void> {
+  private async getReverseLookupValue<T extends Doc>(
+    doc: T,
+    lookup: ReverseLookups,
+    result: LookupData<T>
+  ): Promise<void> {
     for (const key in lookup._id) {
       const value = lookup._id[key]
       const objects = await this.findAll(value, { attachedTo: doc._id })
@@ -376,7 +384,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async lookup<T extends Doc> (doc: T, lookup: Lookup<T>): Promise<void> {
+  private async lookup<T extends Doc>(doc: T, lookup: Lookup<T>): Promise<void> {
     const result: LookupData<Doc> = {}
     await this.getLookupValue(doc, lookup, result)
     ;(doc as WithLookup<Doc>).$lookup = result
