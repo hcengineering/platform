@@ -23,7 +23,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
-  export let spaceClass: Ref<Class<Space>>
+  export let _class: Ref<Class<Space>>
 
   let space: Space
 
@@ -33,7 +33,7 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  const clazz = client.getHierarchy().getClass(spaceClass)
+  const clazz = client.getHierarchy().getClass(_class)
 
   const query = createQuery()
   $: query.query(core.class.Space, { _id }, result => { space = result[0] })
@@ -44,7 +44,7 @@
   function onNameChange (ev: Event) {
     const value = (ev.target as HTMLInputElement).value
     if (value.trim().length > 0) {
-      client.updateDoc(spaceClass, space.space, space._id, { name: value })
+      client.updateDoc(_class, space.space, space._id, { name: value })
     } else {
       // Just refresh value
       query.query(core.class.Space, { _id }, result => { space = result[0] })
