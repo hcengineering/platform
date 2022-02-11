@@ -174,7 +174,10 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
           // Mixin potentially added to object we doesn't have in out results
-          await this.refresh(q)
+          const doc = await this.findOne(tx.objectClass, { _id: tx.objectId })
+          if (doc !== undefined) {
+            this.handleDocAdd(q, doc)
+          }
         }
       }
     }
