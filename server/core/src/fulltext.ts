@@ -28,6 +28,7 @@ import core, {
   IndexKind,
   MeasureContext,
   Obj,
+  ObjQueryType,
   PropertyType,
   Ref,
   Tx,
@@ -148,7 +149,8 @@ export class FullTextIndex implements WithFind {
         ids.add(doc.attachedTo)
       }
     }
-    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: Array.from(ids) as any }, ...mainQuery }, options) // TODO: remove `as any`
+    const resultIds = getResultIds(ids, _id)
+    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>, parentDoc?: Doc): AnyAttribute[] {
@@ -308,4 +310,26 @@ function isFullTextAttribute (attr: AnyAttribute): boolean {
     attr.index === IndexKind.FullText &&
     (attr.type._class === core.class.TypeString || attr.type._class === core.class.TypeMarkup)
   )
+}
+
+function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefined): Ref<Doc>[] {
+  let result = []
+  if (_id !== undefined) {
+    if (typeof _id === 'string') {
+      if (!ids.has(_id)) {
+        return []
+      } else {
+        result = [_id]
+      }
+    } else if (_id.$in !== undefined) {
+      for (const id of _id.$in) {
+        if (ids.has(id)) {
+          result.push(id)
+        }
+      }
+    }
+  } else {
+    result = Array.from(ids)
+  }
+  return result
 }

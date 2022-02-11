@@ -228,15 +228,25 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     const pos = q.result.findIndex((p) => p._id === tx.objectId)
     if (pos !== -1) {
-      const updatedDoc = q.result[pos]
-      await this.__updateDoc(q, updatedDoc, tx)
-      if (!this.match(q, updatedDoc)) {
-        q.result.splice(pos, 1)
+      // If query contains search we must check use fulltext
+      if (q.query.$search != null && q.query.$search.length > 0) {
+        const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId })
+        if (match === undefined) {
+          q.result.splice(pos, 1)
+        } else {
+          q.result[pos] = match
+        }
       } else {
-        q.result[pos] = updatedDoc
+        const updatedDoc = q.result[pos]
+        await this.__updateDoc(q, updatedDoc, tx)
+        if (!this.match(q, updatedDoc)) {
+          q.result.splice(pos, 1)
+        } else {
+          q.result[pos] = updatedDoc
+        }
       }
       this.sort(q, tx)
-      await this.callback(updatedDoc, q)
+      await this.callback(q.result[pos], q)
     } else if (this.matchQuery(q, tx)) {
       return await this.refresh(q)
     }
@@ -382,6 +392,12 @@ export class LiveQuery extends TxProcessor implements Client {
       if (pos >= 0) {
         // No need to update, document already in results.
         return
+      }
+
+      // If query contains search we must check use fulltext
+      if (q.query.$search != null && q.query.$search.length > 0) {
+        const match = await this.findOne(q._class, { $search: q.query.$search, _id: doc._id })
+        if (match === undefined) return
       }
       q.result.push(doc)
 
