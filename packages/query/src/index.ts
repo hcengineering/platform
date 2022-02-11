@@ -309,7 +309,10 @@ export class LiveQuery extends TxProcessor implements Client {
     q.refreshTxes = []
     let res = await this.client.findAll(q._class, q.query, q.options)
 
-    while (q.refreshTxes.length > 0) {
+    // Limit number of attempts to refresh of refresh.
+    let counter = 10
+    while (q.refreshTxes.length > 0 && counter > 0) {
+      counter--
       const refs = [...q.refreshTxes]
       q.refreshTxes = []
       const toRefresh = new Set<Ref<Doc>>()
