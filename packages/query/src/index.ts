@@ -247,7 +247,7 @@ export class LiveQuery extends TxProcessor implements Client {
         const updatedDoc = q.result[pos]
         if (updatedDoc.modifiedOn > tx.modifiedOn) return
         if (updatedDoc.modifiedOn === tx.modifiedOn) {
-          const current = await this.findOne(updatedDoc._class, { _id: updatedDoc._id })
+          const current = await this.findOne(q._class, { _id: updatedDoc._id })
           if (current !== undefined) {
             q.result[pos] = current 
           } else {
