@@ -178,7 +178,7 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
           // Mixin potentially added to object we doesn't have in out results
-          const doc = await this.findOne(tx.objectClass, { _id: tx.objectId }, q.options)
+          const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
             await this.handleDocAdd(q, doc)
           }
