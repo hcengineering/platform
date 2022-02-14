@@ -184,6 +184,7 @@
     currentApp = app._id
     currentApplication = app
     navigatorModel = currentApplication?.navigatorModel
+    visibileNav = true
 
     currentSpace = undefined
     specialComponent = undefined
