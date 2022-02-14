@@ -23,9 +23,13 @@ import core, {
   findProperty,
   FindResult,
   getObjectValue,
-  Hierarchy, Lookup,
+  Hierarchy,
+  Lookup,
   LookupData,
-  ModelDb, Ref, resultSort, ReverseLookups,
+  ModelDb,
+  Ref,
+  resultSort,
+  ReverseLookups,
   SortingQuery,
   Tx,
   TxBulkWrite,
@@ -174,7 +178,10 @@ export class LiveQuery extends TxProcessor implements Client {
       } else {
         if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
           // Mixin potentially added to object we doesn't have in out results
-          await this.refresh(q)
+          const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
+          if (doc !== undefined) {
+            await this.handleDocAdd(q, doc)
+          }
         }
       }
     }
@@ -238,11 +245,21 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       } else {
         const updatedDoc = q.result[pos]
-        await this.__updateDoc(q, updatedDoc, tx)
-        if (!this.match(q, updatedDoc)) {
-          q.result.splice(pos, 1)
+        if (updatedDoc.modifiedOn > tx.modifiedOn) return
+        if (updatedDoc.modifiedOn === tx.modifiedOn) {
+          const current = await this.findOne(q._class, { _id: updatedDoc._id })
+          if (current !== undefined) {
+            q.result[pos] = current
+          } else {
+            q.result.splice(pos, 1)
+          }
         } else {
-          q.result[pos] = updatedDoc
+          await this.__updateDoc(q, updatedDoc, tx)
+          if (!this.match(q, updatedDoc)) {
+            q.result.splice(pos, 1)
+          } else {
+            q.result[pos] = updatedDoc
+          }
         }
       }
       this.sort(q, tx)
@@ -310,9 +327,9 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async refresh (q: Query): Promise<void> {
-    const res = await this.client.findAll(q._class, q.query, q.options)
-    q.result = res
-    q.callback(this.clone(res))
+    q.result = this.client.findAll(q._class, q.query, q.options)
+    q.result = await q.result
+    q.callback(this.clone(q.result))
   }
 
   // Check if query is partially matched.
@@ -331,7 +348,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async getLookupValue<T extends Doc> (doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+  private async getLookupValue<T extends Doc>(doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(doc, lookup, result)
@@ -355,7 +372,11 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async getReverseLookupValue<T extends Doc> (doc: T, lookup: ReverseLookups, result: LookupData<T>): Promise<void> {
+  private async getReverseLookupValue<T extends Doc>(
+    doc: T,
+    lookup: ReverseLookups,
+    result: LookupData<T>
+  ): Promise<void> {
     for (const key in lookup._id) {
       const value = lookup._id[key]
       const objects = await this.findAll(value, { attachedTo: doc._id })
@@ -363,7 +384,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async lookup<T extends Doc> (doc: T, lookup: Lookup<T>): Promise<void> {
+  private async lookup<T extends Doc>(doc: T, lookup: Lookup<T>): Promise<void> {
     const result: LookupData<Doc> = {}
     await this.getLookupValue(doc, lookup, result)
     ;(doc as WithLookup<Doc>).$lookup = result
