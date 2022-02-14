@@ -16,17 +16,12 @@
 <script lang="ts">
   import type { Vacancy } from '@anticrm/recruit'
   import recruit from '../plugin'
-  import { closeTooltip, Icon } from '@anticrm/ui'
+  import { Icon } from '@anticrm/ui'
   import { showPanel } from '@anticrm/ui/src/panelup'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: Vacancy
 
-  const dispatch = createEventDispatcher()
-
   function show () {
-    dispatch('click')
-    closeTooltip()
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
   }
 </script>
