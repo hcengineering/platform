@@ -47,7 +47,7 @@
 <div class:editing>
   {#if edit}
     <ReferenceInput bind:this={refInput} content={value.message} on:message={onMessage} showSend={false}/>
-    <div class='flex-row-reverse safari-gap-2 reverse'>
+    <div class='flex-row-reverse gap-2 reverse'>
       <Button label={chunter.string.EditCancel} on:click={() => {
         dispatch('close', false)
       }}/>

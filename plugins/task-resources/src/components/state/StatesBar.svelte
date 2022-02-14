@@ -19,7 +19,7 @@
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
-  import { createEventDispatcher, onDestroy, onMount, afterUpdate } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
   import type { StatesBarPosition } from '../..'
 
@@ -33,7 +33,7 @@
   let maskLeft: boolean = false
   let maskRight: boolean = false
   let mask: 'left' | 'right' | 'both' | 'none' = 'none'
-  let stepStyle = (gap === 'small') ? 'step-lr25' : 'step-lr75'
+  let stepStyle = (gap === 'small') ? 'gap-1' : 'gap-2'
 
   const dispatch = createEventDispatcher()
 
@@ -89,7 +89,7 @@
   onDestroy(() => { if (div) div.removeEventListener('scroll', checkMask) })
 </script>
 
-<div bind:this={div} class="flex-row-center statusesbar-container mask-{mask} {stepStyle}">
+<div bind:this={div} class="antiStatesBar mask-{mask} {stepStyle}">
   {#each states as item, i (item._id)}
     <StatesBarElement
       label={item.title}
@@ -102,40 +102,3 @@
     />
   {/each}
 </div>
-
-<style lang="scss">
-  .statusesbar-container {
-    overflow-x: auto;
-    padding: 0.125rem 0;
-    width: auto;
-
-    &::-webkit-scrollbar:horizontal {
-      height: 0.125rem;
-    }
-    &::-webkit-scrollbar-track {
-      margin: 0.25rem;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--theme-bg-accent-color);
-    }
-  }
-
-  .mask-left {
-    mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem);
-  }
-  .mask-right {
-    mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem);
-  }
-  .mask-both {
-    mask-image: linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 1rem,
-      rgba(0, 0, 0, 1) calc(100% - 1rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  .mask-none {
-    mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 1);
-  }
-</style>
