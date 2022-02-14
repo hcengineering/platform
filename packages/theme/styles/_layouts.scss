@@ -198,7 +198,7 @@ p:last-child { margin-block-end: 0; }
   .icon { transform: translateY(.2rem); }
 }
 
-.safari-gap-1 {
+.gap-1 {
   & > * { margin-right: .25rem; }
   & > *:last-child { margin-right: 0; }
   &.reverse {
@@ -207,7 +207,7 @@ p:last-child { margin-block-end: 0; }
     & > :first-child { margin-right: 0; }
   }
 }
-.safari-gap-2 {
+.gap-2 {
   & > * { margin-right: .5rem; }
   & > *:last-child { margin-right: 0; }
   &.reverse {

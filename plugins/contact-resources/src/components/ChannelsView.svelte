@@ -100,8 +100,8 @@
 <div
   bind:this={divHTML}
   class="flex-row-center"
-  class:safari-gap-1={size === 'small'}
-  class:safari-gap-2={size !== 'small'}
+  class:gap-1={size === 'small'}
+  class:gap-2={size !== 'small'}
   class:reverse
 >
   {#each displayItems as item}
