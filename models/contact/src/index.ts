@@ -32,6 +32,7 @@ import type { Asset, IntlString } from '@anticrm/platform'
 import { ids as contact } from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
+export const DOMAIN_CHANNEL = 'channel' as Domain
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
 export class TChannelProvider extends TDoc implements ChannelProvider {
@@ -41,7 +42,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
-@UX('Contact' as IntlString, contact.icon.Person, undefined, 'name')
+@UX(contact.string.Contact, contact.icon.Person, undefined, 'name')
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), 'Name' as IntlString)
   @Index(IndexKind.FullText)
@@ -58,18 +59,18 @@ export class TContact extends TDoc implements Contact {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  @Prop(TypeString(), 'Location' as IntlString)
+  @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
   city!: string
 }
 
-@Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CONTACT)
-@UX('Channel' as IntlString, contact.icon.Person, undefined, 'modifiedOn')
+@Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
+@UX(contact.string.Channel, contact.icon.Person, undefined, 'modifiedOn')
 export class TChannel extends TAttachedDoc implements Channel {
-  @Prop(TypeRef(contact.class.ChannelProvider), 'Channel provider' as IntlString)
+  @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
   provider!: Ref<ChannelProvider>
 
-  @Prop(TypeString(), 'Value' as IntlString)
+  @Prop(TypeString(), contact.string.Value)
   @Index(IndexKind.FullText)
   value!: string
 
@@ -77,15 +78,15 @@ export class TChannel extends TAttachedDoc implements Channel {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX('Person' as IntlString, contact.icon.Person, undefined, 'name')
+@UX(contact.string.Person, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {}
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX('Organization' as IntlString, contact.icon.Company, undefined, 'name')
+@UX(contact.string.Organization, contact.icon.Company, undefined, 'name')
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Employee, contact.class.Person)
-@UX('Employee' as IntlString, contact.icon.Person)
+@UX(contact.string.Employee, contact.icon.Person)
 export class TEmployee extends TPerson implements Employee {}
 
 @Model(contact.class.EmployeeAccount, core.class.Account)

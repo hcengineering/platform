@@ -49,7 +49,15 @@ export const ids = mergeIds(contactId, contact, {
     SearchEmployee: '' as IntlString,
     SearchPerson: '' as IntlString,
     SearchOrganization: '' as IntlString,
-    ContactInfo: '' as IntlString
+    ContactInfo: '' as IntlString,
+    Contact: '' as IntlString,
+    Location: '' as IntlString,
+    Channel: '' as IntlString,
+    ChannelProvider: '' as IntlString,
+    Person: '' as IntlString,
+    Organization: '' as IntlString,
+    Employee: '' as IntlString,
+    Value: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,
