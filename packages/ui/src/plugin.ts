@@ -33,6 +33,7 @@ export default plugin(uiId, {
     ShowLess: '' as IntlString,
     Search: '' as IntlString,
     SearchDots: '' as IntlString,
-    Suggested: '' as IntlString
+    Suggested: '' as IntlString,
+    TimeTooltip: '' as IntlString
   }
 })

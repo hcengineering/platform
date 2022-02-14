@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
   import { tooltipstore as tooltip, closeTooltip } from '..'
@@ -28,19 +27,24 @@
   let nubDirection: 'top' | 'bottom' | 'left' | 'right' | undefined = undefined
   let clWidth: number
 
-  $: tooltipSW = $tooltip.component ? false : true
+  $: tooltipSW = !$tooltip.component
 
   const fitTooltip = (): void => {
     if (($tooltip.label || $tooltip.component) && tooltipHTML) {
       if ($tooltip.element) {
         const doc = document.body.getBoundingClientRect()
         rect = $tooltip.element.getBoundingClientRect()
-        rectAnchor = ($tooltip.anchor) ? $tooltip.anchor.getBoundingClientRect()
-                                       : $tooltip.element.getBoundingClientRect()
+        rectAnchor = $tooltip.anchor
+          ? $tooltip.anchor.getBoundingClientRect()
+          : $tooltip.element.getBoundingClientRect()
 
         if ($tooltip.component) {
-
-          tooltipHTML.style.top = tooltipHTML.style.bottom = tooltipHTML.style.left = tooltipHTML.style.right = tooltipHTML.style.height = ''
+          tooltipHTML.style.top =
+            tooltipHTML.style.bottom =
+            tooltipHTML.style.left =
+            tooltipHTML.style.right =
+            tooltipHTML.style.height =
+              ''
           if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
@@ -72,9 +76,7 @@
             nubHTML.style.height = rect.height + 'px'
             nubDirection = dir
           }
-
         } else {
-
           if (!$tooltip.direction) {
             if (rectAnchor.right < doc.width / 5) dir = 'right'
             else if (rectAnchor.left > doc.width - doc.width / 5) dir = 'left'
@@ -100,7 +102,6 @@
             tooltipHTML.style.transform = 'translateX(-50%)'
           }
           tooltipHTML.classList.remove('no-arrow')
-
         }
       } else {
         tooltipHTML.style.top = '50%'
@@ -139,20 +140,35 @@
   onDestroy(() => hideTooltip())
 </script>
 
-<svelte:window on:resize={hideTooltip} on:mousemove={(ev) => { whileShow(ev) }} />
+<svelte:window
+  on:resize={hideTooltip}
+  on:mousemove={(ev) => {
+    whileShow(ev)
+  }}
+/>
 <svg class="svg-mask">
-  <clipPath id="nub-bg"><path d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z" /></clipPath>
-  <clipPath id="nub-border"><path d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z" /></clipPath>
+  <clipPath id="nub-bg"
+    ><path
+      d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z"
+    /></clipPath
+  >
+  <clipPath id="nub-border"
+    ><path
+      d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z"
+    /></clipPath
+  >
 </svg>
 {#if $tooltip.component}
   <div class="popup-tooltip" bind:clientWidth={clWidth} bind:this={tooltipHTML}>
-    {#if $tooltip.label}<div class="fs-title mb-4"><Label label={$tooltip.label} /></div>{/if}
+    {#if $tooltip.label}<div class="fs-title mb-4">
+        <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+      </div>{/if}
     <svelte:component this={$tooltip.component} {...$tooltip.props} />
   </div>
   <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
 {:else if $tooltip.label}
   <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
-    <Label label={$tooltip.label} />
+    <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
   </div>
 {/if}
 
@@ -167,8 +183,8 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     user-select: none;
     z-index: 10000;
   }
@@ -180,69 +196,85 @@
     pointer-events: none;
     z-index: 10000;
 
-    &::after, &::before {
+    &::after,
+    &::before {
       position: absolute;
       width: 18px;
       height: 7px;
     }
     &::before {
       background-color: var(--theme-tooltip-color);
-      clip-path: url("#nub-bg");
+      clip-path: url('#nub-bg');
       z-index: 1;
     }
     &::after {
       background-color: var(--theme-bg-accent-color);
-      clip-path: url("#nub-border");
+      clip-path: url('#nub-border');
       z-index: 2;
     }
 
-    &.top::after, &.bottom::after,
-    &.top::before, &.bottom::before,
-    &.right::after, &.left::after,
-    &.right::before, &.left::before { content: ''; }
-    &.top::after, &.bottom::after,
-    &.top::before, &.bottom::before {
+    &.top::after,
+    &.bottom::after,
+    &.top::before,
+    &.bottom::before,
+    &.right::after,
+    &.left::after,
+    &.right::before,
+    &.left::before {
+      content: '';
+    }
+    &.top::after,
+    &.bottom::after,
+    &.top::before,
+    &.bottom::before {
       left: 50%;
       margin-left: -9px;
     }
-    &.top::after, &.top::before {
-      top: calc(-7px - .25rem);
+    &.top::after,
+    &.top::before {
+      top: calc(-7px - 0.25rem);
       transform: rotate(180deg);
     }
-    &.bottom::after, &.bottom::before {
-      bottom: calc(-7px - .25rem);
+    &.bottom::after,
+    &.bottom::before {
+      bottom: calc(-7px - 0.25rem);
     }
 
-    &.right::after, &.left::after,
-    &.right::before, &.left::before {
+    &.right::after,
+    &.left::after,
+    &.right::before,
+    &.left::before {
       top: 50%;
       margin-top: -9px;
     }
-    &.left::after, &.left::before {
+    &.left::after,
+    &.left::before {
       transform-origin: left top;
-      left: -.25rem;
+      left: -0.25rem;
       transform: rotate(90deg);
     }
-    &.right::after, &.right::before {
+    &.right::after,
+    &.right::before {
       transform-origin: right top;
-      right: -.25rem;
+      right: -0.25rem;
       transform: rotate(-90deg);
     }
   }
 
   .tooltip {
     position: fixed;
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     text-align: center;
     color: var(--theme-caption-color);
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     user-select: none;
     z-index: 10000;
 
-    &::after, &::before {
+    &::after,
+    &::before {
       content: '';
       position: absolute;
       width: 18px;
@@ -250,42 +282,49 @@
     }
     &::before {
       background-color: var(--theme-tooltip-color);
-      clip-path: url("#nub-bg");
+      clip-path: url('#nub-bg');
       z-index: 1;
     }
     &::after {
       background-color: var(--theme-bg-accent-color);
-      clip-path: url("#nub-border");
+      clip-path: url('#nub-border');
       z-index: 2;
     }
 
-    &.top::after, &.bottom::after,
-    &.top::before, &.bottom::before {
+    &.top::after,
+    &.bottom::after,
+    &.top::before,
+    &.bottom::before {
       left: 50%;
       margin-left: -9px;
     }
     &.top {
       bottom: 100%;
-      &::after, &::before {
+      &::after,
+      &::before {
         bottom: -7px;
         transform: rotate(180deg);
       }
     }
     &.bottom {
       top: 100%;
-      &::after, &::before {
+      &::after,
+      &::before {
         top: -7px;
       }
     }
 
-    &.right::after, &.left::after,
-    &.right::before, &.left::before {
+    &.right::after,
+    &.left::after,
+    &.right::before,
+    &.left::before {
       top: 50%;
       margin-top: -9px;
     }
     &.right {
       left: 100%;
-      &::after, &::before {
+      &::after,
+      &::before {
         transform-origin: right top;
         left: -25px;
         transform: rotate(-90deg);
@@ -293,7 +332,8 @@
     }
     &.left {
       right: 100%;
-      &::after, &::before {
+      &::after,
+      &::before {
         transform-origin: left top;
         right: -25px;
         transform: rotate(90deg);
@@ -301,8 +341,9 @@
     }
   }
   .no-arrow {
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, .75);
-    &::after, &::before {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.75);
+    &::after,
+    &::before {
       content: none;
     }
   }
