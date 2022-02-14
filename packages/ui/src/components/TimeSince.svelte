@@ -16,7 +16,7 @@
 
 <script lang="ts">
 
-  import { translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@anticrm/platform'
   import { ticker } from '..'
   import ui from '../plugin'
   import Tooltip from './Tooltip.svelte'
