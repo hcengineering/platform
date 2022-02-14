@@ -77,18 +77,18 @@
       {/if}
     </div>
     <div class="grow-separator" />
-    {#if workspaces.length}
-      <div class="footer">
+    <div class="footer">
+      {#if workspaces.length}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
           <a href="." on:click|preventDefault={createWorkspace}><Label label={login.string.CreateWorkspace} /></a>
         </div>
-        <div>
-          <span><Label label={login.string.NotSeeingWorkspace} /></span>
-          <a href="." on:click|preventDefault={changeAccount}><Label label={login.string.ChangeAccount} /></a>
-        </div>
+      {/if}
+      <div>
+        <span><Label label={login.string.NotSeeingWorkspace} /></span>
+        <a href="." on:click|preventDefault={changeAccount}><Label label={login.string.ChangeAccount} /></a>
       </div>
-    {/if}
+    </div>
   {/await}
 </form>
 
