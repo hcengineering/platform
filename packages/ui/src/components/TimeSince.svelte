@@ -16,9 +16,10 @@
 
 <script lang="ts">
 
-  import { translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@anticrm/platform'
   import { ticker } from '..'
   import ui from '../plugin'
+  import Tooltip from './Tooltip.svelte'
 
   export let value: number
 
@@ -43,6 +44,10 @@
 
   $: formatTime($ticker)
 
+  $: tooltip = new Date(value).toLocaleString('default', { minute:'2-digit', hour:'numeric', day:'2-digit', month: 'short', year: 'numeric'}) as IntlString
+
 </script>
 
-<span style="white-space: nowrap;">{time}</span>
+<Tooltip label={tooltip}>
+  <span style="white-space: nowrap;" >{time}</span>
+</Tooltip>
