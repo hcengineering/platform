@@ -249,7 +249,7 @@ export class LiveQuery extends TxProcessor implements Client {
         if (updatedDoc.modifiedOn === tx.modifiedOn) {
           const current = await this.findOne(q._class, { _id: updatedDoc._id })
           if (current !== undefined) {
-            q.result[pos] = current 
+            q.result[pos] = current
           } else {
             q.result.splice(pos, 1)
           }
