@@ -44,7 +44,7 @@
 
   $: formatTime($ticker)
 
-  $: tooltip = new Date(value).toLocaleString('default', { minute:'2-digit', hour:'numeric', day:'2-digit', month: 'short', year: 'numeric'})
+  $: tooltip = new Date(value).toLocaleString('default', { minute:'2-digit', hour:'numeric', day:'2-digit', month: 'short', year: 'numeric'}) as IntlString
 
 </script>
 
