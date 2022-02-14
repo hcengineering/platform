@@ -51,7 +51,7 @@
 
   <div class="flex-between footer">
     <div class="flex-row-reverse">
-      <Button label={presentation.string.Download} primary />
+      <a class="no-line ml-4" href={getFileUrl(file)} download={name}><Button label={presentation.string.Download} primary /></a>
       <Button label={presentation.string.Delete} />
     </div>
     <div class="flex-row-center">
@@ -120,9 +120,6 @@
       height: 6rem;
       min-height: 6rem;
       color: #1F212B;
-
-      :global(button + button) { margin-right: 1rem; }
-      :global(.icon-button + .icon-button) { margin-left: .5rem; }
     }
   }
 </style>
