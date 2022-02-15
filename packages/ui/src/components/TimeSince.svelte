@@ -30,7 +30,7 @@
 
   let time: string = ''
 
-  async function formatTime(now: number) {
+  async function formatTime (now: number) {
     let passed = now - value
     if (passed < 0) passed = 0
     if (passed < HOUR) {
@@ -44,10 +44,10 @@
 
   $: formatTime($ticker)
 
-  $: tooltip = new Date(value).toLocaleString('default', { minute:'2-digit', hour:'numeric', day:'2-digit', month: 'short', year: 'numeric'}) as IntlString
+  $: tooltip = new Date(value).toLocaleString('default', { minute: '2-digit', hour: 'numeric', day: '2-digit', month: 'short', year: 'numeric' })
 
 </script>
 
-<Tooltip label={tooltip}>
+<Tooltip label={ui.string.TimeTooltip} props={{ value: tooltip }}>
   <span style="white-space: nowrap;" >{time}</span>
 </Tooltip>

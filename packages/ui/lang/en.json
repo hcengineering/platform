@@ -9,6 +9,7 @@
     "ShowLess": "Show less",
     "Search": "Search",
     "SearchDots": "Search...",
-    "Suggested": "Suggested"
+    "Suggested": "Suggested",
+    "TimeTooltip": "{value}"
   }
 }

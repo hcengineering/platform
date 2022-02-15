@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import type { TooltipAligment, AnySvelteComponent, AnyComponent } from '..'
@@ -26,11 +25,12 @@
 
   let triggerHTML: HTMLElement
   let shown: boolean = false
-  $: shown = !!(($tooltip.label || $tooltip.component))
+  $: shown = !!($tooltip.label || $tooltip.component)
 </script>
 
 <div
-  class="tooltip-trigger" name={`tooltip-${label}`}
+  class="tooltip-trigger"
+  name={`tooltip-${label}`}
   bind:this={triggerHTML}
   on:mousemove={() => {
     if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor)
@@ -40,5 +40,7 @@
 </div>
 
 <style lang="scss">
-  .tooltip-trigger { width: fit-content; }
+  .tooltip-trigger {
+    width: fit-content;
+  }
 </style>
