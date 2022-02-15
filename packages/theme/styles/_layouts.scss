@@ -90,7 +90,10 @@ table {
 p:first-child { margin-block-start: 0; } // First and last padding
 p:last-child { margin-block-end: 0; }
 
-.p-inline { line-height: 150%; }
+.p-inline {
+  word-break: break-all;
+  line-height: 150%;
+}
 
 /* Flex */
 .flex { display: flex; }

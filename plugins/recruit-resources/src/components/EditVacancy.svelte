@@ -71,14 +71,14 @@
         <AttributesBar {object} keys={['dueTo', 'location', 'company']} />
       </div>
     </div>
-    <div class="flex-stretch tab-container">
+    <div class="ac-tabs">
       {#each tabs as tab, i}
-        <div class="flex-row-center tab" class:selected={i === selected}
+        <div class="ac-tabs__tab" class:selected={i === selected}
             on:click={() => { selected = i }}>
-          <Label label={tab}/>
+          <Label label={tab} />
         </div>
       {/each}
-      <div class="grow"/>
+      <div class="ac-tabs__empty" />
     </div>
     {#if selected === 0}
       <Scroller padding>
@@ -114,42 +114,13 @@
 </div>
 
 <style lang="scss">
-  .tab-container {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-    margin: 0 2.5rem;
-    height: 4.5rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-
-    .tab {
-      height: 4.5rem;
-      font-weight: 500;
-      color: var(--theme-content-trans-color);
-      cursor: pointer;
-      user-select: none;
-
-      &.selected {
-        border-top: .125rem solid transparent;
-        border-bottom: .125rem solid var(--theme-caption-color);
-        color: var(--theme-caption-color);
-        cursor: default;
-      }
-    }
-    .tab + .tab {
-      margin-left: 2.5rem;
-    }
-    .grow {
-      min-width: 2.5rem;
-      flex-grow: 1;
-    }
-  }
   .description-container {
-    margin-top: 0.5rem;
     display: flex;
+    margin-top: .5rem;
     padding: 1rem;
     height: 12rem;
-    border-radius: .25rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
+    border-radius: .25rem;
   }
 </style>

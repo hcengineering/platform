@@ -19,7 +19,7 @@
   import core from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { EditBox, Grid, Icon, IconClose, Label } from '@anticrm/ui'
+  import { EditBox, Grid, Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
@@ -53,131 +53,35 @@
 
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
-<div class="dialog-container">
-  <div class="flex-row-center header">
-    <Icon icon={clazz.icon} size={'medium'} />
-    <div class="flex-grow fs-title ml-2"><Label label={clazz.label} /></div>
-    <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
+<div class="antiOverlay" on:click={() => { dispatch('close') }}/>
+<div class="antiDialogs antiComponent">
+  <div class="ac-header short mirror divide">
+    <div class="ac-header__wrap-title">
+      <div class="ac-header__icon"><Icon icon={clazz.icon} size={'medium'} /></div>
+      <div class="ac-header__title"><Label label={clazz.label} /></div>
+    </div>
+    <div class="tool"><ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} /></div>
   </div>
-  <!-- <div class="flex-row-center subtitle">
-    Subtitle
-  </div> -->
-  <div class="flex-stretch tab-container">
+  <div class="ac-tabs">
     {#each tabs as tab, i}
-      <div class="flex-row-center tab" class:selected={i === selected}
+      <div class="ac-tabs__tab" class:selected={i === selected}
            on:click={() => { selected = i }}>
-        <Label label={tab}/>
+        <Label label={tab} />
       </div>
     {/each}
-    <div class="grow"/>
+    <div class="ac-tabs__empty" />
   </div>
-  <div class="scroll">
-    <div class="flex-col box">
-      {#if selected === 0}
-        {#if space}
-          <Grid column={1} rowGap={1.5}>
-            <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder={clazz.label} maxWidth="39rem" focus on:change={onNameChange}/>
-            <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
-            <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
-          </Grid>
-        {/if}
-      {:else}
-        Members and other
+  <Scroller padding>
+    {#if selected === 0}
+      {#if space}
+        <Grid column={1} rowGap={1.5}>
+          <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder={clazz.label} maxWidth="39rem" focus on:change={onNameChange}/>
+          <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
+          <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
+        </Grid>
       {/if}
-    </div>
-  </div>
+    {:else}
+      Members and other
+    {/if}
+  </Scroller>
 </div>
-
-<style lang="scss">
-  .dialog-container {
-    overflow: hidden;
-    position: fixed;
-    top: 32px;
-    bottom: 1.25rem;
-    left: 50%;
-    right: 1rem;
-
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-dialog-bg-spec);
-    border-radius: 1.25rem;
-    box-shadow: var(--theme-dialog-shadow);
-    backdrop-filter: blur(15px);
-
-    .header {
-      flex-shrink: 0;
-      padding: 0 2rem 0 2.5rem;
-      height: 4.5rem;
-      border-bottom: 1px solid var(--theme-dialog-divider);
-
-      .tool {
-        margin-left: .75rem;
-        color: var(--theme-content-accent-color);
-        cursor: pointer;
-        &:hover { color: var(--theme-caption-color); }
-      }
-    }
-
-    // .subtitle {
-    //   flex-shrink: 0;
-    //   padding: 0 2.5rem;
-    //   height: 3.5rem;
-    //   border-bottom: 1px solid var(--theme-dialog-divider);
-    // }
-  }
-
-  .tab-container {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-    margin: 0 2.5rem;
-    height: 4.5rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-
-    .tab {
-      height: 4.5rem;
-      font-weight: 500;
-      color: var(--theme-content-trans-color);
-      cursor: pointer;
-      user-select: none;
-
-      &.selected {
-        border-top: .125rem solid transparent;
-        border-bottom: .125rem solid var(--theme-caption-color);
-        color: var(--theme-caption-color);
-        cursor: default;
-      }
-    }
-    .tab + .tab {
-      margin-left: 2.5rem;
-    }
-    .grow {
-      min-width: 2.5rem;
-      flex-grow: 1;
-    }
-  }
-
-  .scroll {
-    flex-grow: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-    margin: 1rem 0;
-    padding: 1.5rem 2.5rem;
-
-    .box {
-      margin-right: 1px;
-      height: 100%;
-    }
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--theme-menu-color);
-    opacity: .6;
-  }
-</style>

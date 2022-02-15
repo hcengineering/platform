@@ -103,7 +103,7 @@
               showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
             }}
           />
-          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
+          <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
           <div class="tool hover-trans"
             on:click={(ev) => {
               showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})

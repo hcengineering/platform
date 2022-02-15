@@ -21,7 +21,7 @@
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task from '@anticrm/task'
   import KanbanEditor from '../kanban/KanbanEditor.svelte'
-  import { Icon, IconClose, Label, showPopup } from '@anticrm/ui'
+  import { Icon, IconClose, Label, showPopup, ActionIcon, ScrollBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '@anticrm/workbench'
 
@@ -74,56 +74,26 @@
   }
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
-<div class="flex-col floatdialog-container">
-  <div class="flex-between header">
-    <div class="flex-grow flex-col">
-      <div class="flex-row-center">
-        <div class="mr-2"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
-        <span class="fs-title overflow-label">
+<div class="antiOverlay" on:click={() => { dispatch('close') }}/>
+<div class="antiDialogs antiComponent">
+  <div class="ac-header short mirror divide">
+    <div class="ac-header__wrap-description">
+      <div class="ac-header__wrap-title">
+        <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
+        <span class="ac-header__title">
           Manage application statuses within 
           {#if spaceClassInstance}<Label label={spaceClassInstance?.label}/>{:else}...{/if}
         </span>
       </div>
-      <div class="text-sm content-dark-color overflow-label">{spaceInstance?.name}</div>
+      {#if spaceInstance?.name }<span class="ac-header__description">{spaceInstance?.name}</span>{/if}
     </div>
-    <div class="ml-4 content-accent-color cursor-pointer" on:click={() => dispatch('close')}><IconClose size={'small'} /></div>
+    <div class="tool"><ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} /></div>
   </div>
-  <div class="flex-grow flex-col content">
-    {#if kanban !== undefined}
-      <KanbanEditor {kanban} on:delete={(e) => deleteState(e.detail)} />
-    {/if}
+  <div class="p-10 flex-grow">
+    <ScrollBox vertical stretch>
+      {#if kanban !== undefined}
+        <KanbanEditor {kanban} on:delete={(e) => deleteState(e.detail)} />
+      {/if}
+    </ScrollBox>
   </div>
 </div>
-
-<style lang="scss">
-  .floatdialog-container {
-    position: fixed;
-    top: 32px;
-    bottom: 1.25rem;
-    right: 1rem;
-    height: calc(100% - 32px - 1.25rem);
-    background-color: var(--theme-bg-color);
-    border-radius: 1.25rem;
-
-    .header {
-      padding: 0 2rem 0 2.5rem;
-      height: 4.5rem;
-      min-height: 4.5rem;
-    }
-    .content {
-      overflow: auto;
-      margin: 1rem 2.5rem 1rem 2.5rem;
-    }
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    opacity: .5;
-  }
-</style>
