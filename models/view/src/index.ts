@@ -118,6 +118,14 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringPresenter
   })
 
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributeEditor, {
+    editor: view.component.NumberEditor
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.NumberPresenter
+  })
+
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.HTMLPresenter
   })

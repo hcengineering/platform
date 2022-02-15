@@ -25,9 +25,10 @@
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let maxWidth: string | undefined
-  export let value: string | undefined
+  export let value: string | number | undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
-  export let password: boolean = false
+  export let placeholderParam: any | undefined = undefined
+  export let format: 'text'| 'password' | 'number' = 'text'
   export let focus: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -38,13 +39,17 @@
   let phTraslate: string = ''
 
   $: style = maxWidth ? `max-width: ${maxWidth};` : ''
-  $: translate(placeholder, {}).then(res => { phTraslate = res })
+  $: translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? phTraslate : value).replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + 'px'
+    if (format === 'number') {
+      target.style.width = maxWidth ?? '5rem'
+    } else {
+      target.style.width = text.clientWidth + 'px'
+    }
     dispatch('input')
   }
 
@@ -71,10 +76,12 @@
       </div>
     {/if}
     <div class="wrap">
-      {#if password}
-        <input bind:this={input} type="password" bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      {#if format === 'password'}
+        <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      {:else if format === 'number'}
+        <input bind:this={input} type='number' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {:else}
-        <input bind:this={input} type="text" bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+        <input bind:this={input} type='text' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {/if}
     </div>
   </div>

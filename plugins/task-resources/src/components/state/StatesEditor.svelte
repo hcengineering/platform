@@ -20,7 +20,7 @@
   import type { DoneState, State } from '@anticrm/task'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import ColorsPopup from './ColorsPopup.svelte'
+  import { ColorsPopup } from '@anticrm/view-resources'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'

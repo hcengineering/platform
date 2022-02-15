@@ -54,6 +54,7 @@
     "@anticrm/model-templates": "~0.6.0",
     "@anticrm/model-notification": "~0.6.0",
     "@anticrm/model-text-editor": "~0.6.0",
-    "@anticrm/core": "~0.6.13"
+    "@anticrm/core": "~0.6.13",
+    "@anticrm/model-tags": "~0.6.0"
   }
 }

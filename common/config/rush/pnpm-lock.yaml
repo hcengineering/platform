@@ -65,6 +65,7 @@ specifiers:
   '@rush-temp/model-server-core': file:./projects/model-server-core.tgz
   '@rush-temp/model-server-notification': file:./projects/model-server-notification.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
+  '@rush-temp/model-tags': file:./projects/model-tags.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
   '@rush-temp/model-telegram': file:./projects/model-telegram.tgz
   '@rush-temp/model-templates': file:./projects/model-templates.tgz
@@ -100,6 +101,9 @@ specifiers:
   '@rush-temp/setting': file:./projects/setting.tgz
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
   '@rush-temp/setting-resources': file:./projects/setting-resources.tgz
+  '@rush-temp/tags': file:./projects/tags.tgz
+  '@rush-temp/tags-assets': file:./projects/tags-assets.tgz
+  '@rush-temp/tags-resources': file:./projects/tags-resources.tgz
   '@rush-temp/task': file:./projects/task.tgz
   '@rush-temp/task-assets': file:./projects/task-assets.tgz
   '@rush-temp/task-resources': file:./projects/task-resources.tgz
@@ -193,7 +197,7 @@ specifiers:
   smartcrop: ~2.0.5
   style-loader: ^3.2.1
   svelte-loader: ^3.1.2
-  svelte-preprocess: ^4.7.4
+  svelte-preprocess: ^4.10.3
   svgo-loader: ^3.0.0
   toposort: ^2.0.2
   ts-loader: ^9.2.5
@@ -270,6 +274,7 @@ dependencies:
   '@rush-temp/model-server-core': file:projects/model-server-core.tgz_typescript@4.5.4
   '@rush-temp/model-server-notification': file:projects/model-server-notification.tgz_typescript@4.5.4
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.5.4
+  '@rush-temp/model-tags': file:projects/model-tags.tgz_typescript@4.5.4
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.5.4
   '@rush-temp/model-telegram': file:projects/model-telegram.tgz_typescript@4.5.4
   '@rush-temp/model-templates': file:projects/model-templates.tgz_typescript@4.5.4
@@ -305,6 +310,9 @@ dependencies:
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz_typescript@4.5.4
   '@rush-temp/setting-resources': file:projects/setting-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/tags': file:projects/tags.tgz
+  '@rush-temp/tags-assets': file:projects/tags-assets.tgz
+  '@rush-temp/tags-resources': file:projects/tags-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/task': file:projects/task.tgz
   '@rush-temp/task-assets': file:projects/task-assets.tgz_typescript@4.5.4
   '@rush-temp/task-resources': file:projects/task-resources.tgz_6cae74ea501386c76c405ad0408e0339
@@ -398,7 +406,7 @@ dependencies:
   smartcrop: 2.0.5
   style-loader: 3.3.1_webpack@5.65.0
   svelte-loader: 3.1.2
-  svelte-preprocess: 4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f
+  svelte-preprocess: 4.10.3_3ae2e5fc7d8fb60bbcea513ad0b15c0f
   svgo-loader: 3.0.0
   toposort: 2.0.2
   ts-loader: 9.2.6_typescript@4.5.4+webpack@5.65.0
@@ -2414,7 +2422,7 @@ packages:
   /@types/sass/1.43.1:
     resolution: {integrity: sha512-BPdoIt1lfJ6B7rw35ncdwBZrAssjcwzI5LByIrYs+tpXlj/CAkuVdRsgZDdP4lq5EjyWzwxZCqAoFyHKFwp32g==}
     dependencies:
-      '@types/node': 17.0.0
+      '@types/node': 17.0.10
     dev: false
 
   /@types/serve-index/1.9.1:
@@ -9855,7 +9863,7 @@ packages:
       sade: 1.7.4
       source-map: 0.7.3
       svelte: 3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -9883,7 +9891,7 @@ packages:
       picocolors: 1.0.0
       sade: 1.7.4
       source-map: 0.7.3
-      svelte-preprocess: 4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f
+      svelte-preprocess: 4.10.3_3ae2e5fc7d8fb60bbcea513ad0b15c0f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -9937,23 +9945,23 @@ packages:
       svelte-hmr: 0.14.7_svelte@3.44.3
     dev: false
 
-  /svelte-preprocess/4.10.1_14d64cad431e31f100de7363af24a44f:
-    resolution: {integrity: sha512-NSNloaylf+o9UeyUR2KvpdxrAyMdHl3U7rMnoP06/sG0iwJvlUM4TpMno13RaNqovh4AAoGsx1jeYcIyuGUXMw==}
+  /svelte-preprocess/4.10.3_14d64cad431e31f100de7363af24a44f:
+    resolution: {integrity: sha512-ttw17lJfb/dx2ZJT9sesaXT5l7mPQ9Apx1H496Kli3Hkk7orIRGpOw6rCPkRNzr6ueVPqb4vzodS5x7sBFhKHw==}
     engines: {node: '>= 9.11.2'}
     requiresBuild: true
     peerDependencies:
       '@babel/core': ^7.10.2
       coffeescript: ^2.5.1
-      less: ^3.11.3
+      less: ^3.11.3 || ^4.0.0
       node-sass: '*'
       postcss: ^7 || ^8
       postcss-load-config: ^2.1.0 || ^3.0.0
       pug: ^3.0.0
       sass: ^1.26.8
-      stylus: ^0.54.7
+      stylus: ^0.55.0
       sugarss: ^2.0.0
       svelte: ^3.23.0
-      typescript: ^4.5.2
+      typescript: ^3.9.5 || ^4.0.0
     peerDependenciesMeta:
       '@babel/core':
         optional: true
@@ -9991,23 +9999,23 @@ packages:
       typescript: 4.5.4
     dev: false
 
-  /svelte-preprocess/4.10.1_3ae2e5fc7d8fb60bbcea513ad0b15c0f:
-    resolution: {integrity: sha512-NSNloaylf+o9UeyUR2KvpdxrAyMdHl3U7rMnoP06/sG0iwJvlUM4TpMno13RaNqovh4AAoGsx1jeYcIyuGUXMw==}
+  /svelte-preprocess/4.10.3_3ae2e5fc7d8fb60bbcea513ad0b15c0f:
+    resolution: {integrity: sha512-ttw17lJfb/dx2ZJT9sesaXT5l7mPQ9Apx1H496Kli3Hkk7orIRGpOw6rCPkRNzr6ueVPqb4vzodS5x7sBFhKHw==}
     engines: {node: '>= 9.11.2'}
     requiresBuild: true
     peerDependencies:
       '@babel/core': ^7.10.2
       coffeescript: ^2.5.1
-      less: ^3.11.3
+      less: ^3.11.3 || ^4.0.0
       node-sass: '*'
       postcss: ^7 || ^8
       postcss-load-config: ^2.1.0 || ^3.0.0
       pug: ^3.0.0
       sass: ^1.26.8
-      stylus: ^0.54.7
+      stylus: ^0.55.0
       sugarss: ^2.0.0
       svelte: ^3.23.0
-      typescript: ^4.5.2
+      typescript: ^3.9.5 || ^4.0.0
     peerDependenciesMeta:
       '@babel/core':
         optional: true
@@ -11195,7 +11203,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-o6RpdrtwnGmVtudJ14BdbkVOXYJ2kWdlC8BrM7HZnHNlWRbCoTUX9wAXdyOvwbkxcXbWANNNb8B9v9A+BE9f4Q==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-CKoVEo115okdjOw8sAj3LSKwdeaCJxHYXxA+q5AfE/dnGXSs6FafXMFwk8epAMDA2v8Ia5szMiR88kTwtURsPw==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -11214,7 +11222,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11272,7 +11280,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-MRImst0WyxQ5iFxrOLL2P6aD9s4GXYtxPdTbCFcUDsqut/jxCWmIfHYIcuNOq/m2M4EEvqjhq4W/jOOf9215Fw==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-NM5ixh2NsK2enMbee/o90emEngDEyLybFOdk2O8gHr53ccEEs5ymTF7gpjHU5k6o0gWKAZxAynfJv49FgypQhg==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -11292,7 +11300,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11350,7 +11358,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-dPR2m2XzU66FBdJBsKI2Ga24D38iI4et+u+uORNgas6bohKQaOZN9F4H/CF4cTWJj80MflwIrk4jz7D5Ksdv5Q==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-Ah0rr5uVXgAWSijLuVIxdtLjpc//rR4gw6AwtdF0adV89ZA70k/B7mKpjHAw2kIRkMjfgS5P30bRhx83Fh2CdQ==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -11369,7 +11377,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11480,7 +11488,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-g7B06yLgy4cATtr/oG6tQFvV8bJZkwJlVuMfZy+W4uLqgbF/Iix0dY+cQqdOmS2jMGi3HO7rrWmUBb7lx3lnaw==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-ncFeUeWdAObn9laLaK18Co0lUSdvTGHSMiQZtGioRx/iaXzHjdH6/unwKEYx3e6en/THEF4n3EonxhRc6yqsCg==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -11499,7 +11507,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11670,7 +11678,7 @@ packages:
     dev: false
 
   file:projects/devmodel-resources.tgz_6cae74ea501386c76c405ad0408e0339:
-    resolution: {integrity: sha512-eA8s5XJOwP4vu/EVRb73vl3z0C2K4cqsp3Pa2E0TREP2K78AjJPSGxIZD6WEwjg4K2L1dCOCG9kWGSShWwAt3A==, tarball: file:projects/devmodel-resources.tgz}
+    resolution: {integrity: sha512-HeGrVj5D+GdP5bJYWTmy+a8dYiOd74GcsME7pJXf3Cht5U1XMFAztYzwCEVin2c2rglUGcJn7w74XryeERPW7A==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
     name: '@rush-temp/devmodel-resources'
     version: 0.0.0
@@ -11689,7 +11697,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -11846,7 +11854,7 @@ packages:
     dev: false
 
   file:projects/gmail-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-C7jgVQmN2v6HBKZgVAzWPYRaWrRHhfWpIRIRUyBUmspQreX2ArmCFCjq+1CHYBh9lGcnBZGgaNN1zQ1aTzSFLA==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-c/15o6tsdSp0oLcPg3CQ7/n3HVufXMmGvn3bL2SUcjCRnE+f4MyVMC4dtsnkKB0FBHUpE5UPZ6Yz+DMTYzNLKw==, tarball: file:projects/gmail-resources.tgz}
     id: file:projects/gmail-resources.tgz
     name: '@rush-temp/gmail-resources'
     version: 0.0.0
@@ -11865,7 +11873,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11901,7 +11909,7 @@ packages:
     dev: false
 
   file:projects/image-cropper-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-ljTYKZOYl34hx76ETCFNAcExK+MP6WSS09tbRRixWxD7SYc7NmBeMntGyZTy3qNu4/jAwNaDAIH52kXQg9ktXQ==, tarball: file:projects/image-cropper-resources.tgz}
+    resolution: {integrity: sha512-K9bILvzF/P2rkTtpkuT1hX2Y2aA1C2nmhm3SuzUUfR+Rvrfl42QyzXNJctSBHN2pQCq1cvZcC+AAJWlgqVDuMg==, tarball: file:projects/image-cropper-resources.tgz}
     id: file:projects/image-cropper-resources.tgz
     name: '@rush-temp/image-cropper-resources'
     version: 0.0.0
@@ -11922,7 +11930,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -11979,7 +11987,7 @@ packages:
     dev: false
 
   file:projects/inventory-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-MrUT0/F04u5zOmtGq/iBCXPTt2HNfw4/D7xtrL3BJLP/djmiWT6P0lELSF9wUsMpEeOiJ5LlJqH+ho22VsDhSQ==, tarball: file:projects/inventory-resources.tgz}
+    resolution: {integrity: sha512-QPMUPTMuvahinsVH8OO3BUj9lpAq2cITHPgk/EL8XlZ0xEq497JjXy3N8KW4gHSwrM8kGBPfpwD2bRbXI4V7Vg==, tarball: file:projects/inventory-resources.tgz}
     id: file:projects/inventory-resources.tgz
     name: '@rush-temp/inventory-resources'
     version: 0.0.0
@@ -11998,7 +12006,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12056,7 +12064,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-od6TTUKq72g4CBbHS06/M64kzZK//B9NF7aftYl91RVwL+gm5JQLFCLwksdo4NE7VSyb7VWop199pYfMaKOcdg==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-gd3fCKU/E1ZrIFQBm966XaGVIH/RB0C4XyfWQFueKhy95cUbjiEe88Jf6Xh+4a7hkF96VMKc3z51SH1pLGtnFA==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -12075,7 +12083,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12133,7 +12141,7 @@ packages:
     dev: false
 
   file:projects/login-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-85HwyicQhgSqbvQ/Lb+/qMxRZmCxC71u7HaZMVcw92Fa3Mu3wEH0kB0JHyPjvMA/mgrs6uvJmPh5bJwQHhkB0Q==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-eAuUAbu+JIIlqoDJeMMhg55BzH41L3tflVTSTnGpoLsBooCLQQXAaJlmtJgRz8QlrMSH7PJYjy+xcl3TlnI/Rw==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
@@ -12152,7 +12160,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12209,7 +12217,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-KDrsTCCCt8hoQSwtTAQOsgbNjHRb9g270jtlXlT320EbfHNUslOzMLwns850SHjoA+6XxerLV/ItBBPMc4xCUw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-MnTIVPbt9yvy+dNZaMUPScfjYp12cF1P8GXay1jUizfZyTaeMsb+uN3Z2jnzQPhrAJxW4DDjAoCLO+yK7xGbRA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -12444,7 +12452,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-M2V190p42TMpwBagu8ts2iLvDu2hFprTiMX2i/KIwANipE9lJGHmjYlvh7HEGsdSYbeFavMuWdqoUNWjnCjy1Q==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-8jDIXUx3KFtzeCO7AChSlND5+RBTLNG83eAO8syMdJVAmOA5UpEhFQvpPZCRLhYEzj3VG2zgJg7USd+CZKEPhA==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -12571,6 +12579,27 @@ packages:
     resolution: {integrity: sha512-zwbVN3PDOfDeqGcL36IHQIufdePTd68yLUm83rfIg4v8+uilseid981y/BrAysmxTXAfhVYWlDmtYXvNPS4DMQ==, tarball: file:projects/model-setting.tgz}
     id: file:projects/model-setting.tgz
     name: '@rush-temp/model-setting'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-tags.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-M+xHdfGituHUoH7YgkHc5lw2TXsvV3jvf3g73EpjJgGl4NFclNd1VkBtyEQ9Czsjy3N/jff1B2FePFu7u2p6FA==, tarball: file:projects/model-tags.tgz}
+    id: file:projects/model-tags.tgz
+    name: '@rush-temp/model-tags'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -12780,7 +12809,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-raqBx9exX10O9GZ0ltv6U0XgNO1DZxV5HzvCjACbdqL9C9wjlxcFci+0iOpwSLxMzPZn1IkkKDo18q5bH2oC7g==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-saNzTGP0Bz7u0f2qimEbhL3w9xhZb8pgenUpAuDpeT6fMPmG7CNYpkwefhayEeIUmU4frbIC5kjAOMSPUxsg6A==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -12801,7 +12830,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12837,7 +12866,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-RxiNEW/PUGlF6/JrOvYWaUVfmC4kVnrd1tUQBpUM9tcRQebTwjPIUF1+V19xT63Rer6sRmz4SWo9v6/BtRAJlw==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-who5tWJNg2zsPL6xJZpXBXDoD7Oqyo/HlaLsfW7Z1GwuvI9o9aRHE59FhrnKDPF4y6rGEWlWlPekj50AZ02Etw==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
@@ -12856,7 +12885,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12952,7 +12981,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-QhfoHLyegkl3JsleXaZkSWsVQgikJM9jdqkla2mRW3kHyQAYWPBITUnVVWu1qBADViJupNZdYmYEcm7oeMF5og==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-GIyAnCPE65c4sOMVJp3I6T/DLNb4u5v/Xb8BVRzH2XT4Kr+ia3YYjcElDIHBPCw5tYtLRwG2CTPraXVX6Bzs+g==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -12972,7 +13001,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -12988,7 +13017,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_sass@1.45.0+typescript@4.5.4:
-    resolution: {integrity: sha512-+ke/wA1+S6z6mgIO2IAwtov8K5Zpc4ScgRc+cdU34ie7/5JpPmdoQhDgxG3QbPrf+BlADvJEaVOVZRvml16TVw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-a6wHdZhYC1h8QOrfCkS6HQz4L0llPz8YJqJaJPH/tkMHanaUSixCiCcjr+T+ANBfacXQf8GjTqvPBir/Hd3FzQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -13080,7 +13109,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-8pFvHj9M1cjOrdU5vQPrYmV0Yqd76ErwcRrAuiiLXpKIpYqlRdAXTb9Xe34PygnwWRI3icjB+dl22AINYksbHA==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-nZLvaOr850iq0AQidGvnFlzPWLdwosv9ORArSA5ihRGea8X+RpzD/pjDswtJp6nF7G2ctmL8tFLN9cvFA45lDw==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -13101,7 +13130,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13441,7 +13470,7 @@ packages:
     dev: false
 
   file:projects/setting-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-SwFlNFhQYEi0au+47ljHLl/kE1MKP2Oi290r8xZJL4VMNUHzTsKiHlS7teyE7p1IdGar1AIUm2Xi3JveR5NFIA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-95Lkou5zRLY34iyo6xN43hbmFt85hPoUTeVstR2ksAeUjY8WqN50g/Ctdht2Skwp/kYBYooHPdv9HcXzW1ZCRw==, tarball: file:projects/setting-resources.tgz}
     id: file:projects/setting-resources.tgz
     name: '@rush-temp/setting-resources'
     version: 0.0.0
@@ -13460,7 +13489,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13478,6 +13507,82 @@ packages:
   file:projects/setting.tgz:
     resolution: {integrity: sha512-2SjLCeU7fjQTT/X3CqBAv7/TZbr0vVtDniTOGoOMUKDuguJqb9IpR0/xRjZqLUkwxnByTGOdHCsaevajKwq9OA==, tarball: file:projects/setting.tgz}
     name: '@rush-temp/setting'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/tags-assets.tgz:
+    resolution: {integrity: sha512-uixenCqg/yD5B+cz50s+Gnf4zYqUeZAOY9mRnkir7zj2YkW1hUYOqQPo2Wf5KqXbs5Vk8wVUQkJsN/lLfPJ8sg==, tarball: file:projects/tags-assets.tgz}
+    name: '@rush-temp/tags-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/tags-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-xpKU24ySwiNF8/saqTeQwCobyfHrLNMFuqTxBzU8vscuFchbyJF6dWQH4tzrJ+KKcxoqwm4flPE+XjDPimlYCQ==, tarball: file:projects/tags-resources.tgz}
+    id: file:projects/tags-resources.tgz
+    name: '@rush-temp/tags-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
+      sass: 1.45.0
+      svelte: 3.44.3
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/tags.tgz:
+    resolution: {integrity: sha512-dDZIEx6iNmqyXw6CrYnmGL1PV3li1Tjuc0OSYr00PKg6UsvhrX3ah6J6W9jHm7tjL25ccMkhrVjpWQQOJsC6LQ==, tarball: file:projects/tags.tgz}
+    name: '@rush-temp/tags'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -13518,7 +13623,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz_6cae74ea501386c76c405ad0408e0339:
-    resolution: {integrity: sha512-s/MtNSr/ERDwItbtGtcaE+nnTepUKUsuD2SrtGcpgYUXT3XarZyVaGHC4Q9ol6Ok7RajfDSdAj1ZD8V2LLn3Pw==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-Y9e5rh5mS7fo7fNYNwkFF3F3qXGSZ8/nPE39eo2D47o1yznt/wS9ysm2Vr9YQlR7OMIt4EVVHYtHzcIkX14fhw==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -13537,7 +13642,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -13595,7 +13700,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-hreZkJ3tRwh2rXC7K/WlkA99TDatMLuHwtC2dTXqivRNEKhwH0RHDXgO1jrjulj7uSNj5+0ksOeQtlWBYmhRiw==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-YUNGd590d01AlbNqj/inzsZqKT+9c+4+Nu9OO20ceAHaYLyzevi/BQ7ylD6abBB36N6+xDv6DYM2bRQyy52gfg==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -13614,7 +13719,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13671,7 +13776,7 @@ packages:
     dev: false
 
   file:projects/templates-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-ms8wJBkOIYY64ptCGC6pQ6M+jQrKrVtJBLbDJNtp6Fxo+D1G8ksbg1S80hvpeZctOhUK14j3AkVt90IYgtgLbA==, tarball: file:projects/templates-resources.tgz}
+    resolution: {integrity: sha512-aC1aeAq1kTUIclyGtGb3E9WcLnjDOCC9cyue5vHbPcfa+V087gaNYesq/mmHH9JUYQ4pMS+orhPu+a4ccvzvLw==, tarball: file:projects/templates-resources.tgz}
     id: file:projects/templates-resources.tgz
     name: '@rush-temp/templates-resources'
     version: 0.0.0
@@ -13690,7 +13795,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13749,7 +13854,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-mHTzsgBUTd2d3Y8xW1y8GOTLU0r4IyOsF7RpV1N4GVwaqnCZSxuFdC/T7PqX33XYI0hD6q+0KNegRs+MzvOeeg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-vy7fgtS17yBOQWGmK5vJZge3wZqlltQPnJEY4e84iIBMLJbc104qQ09j5dG5ssjXvg5Z4yZBcDhi10dIOzm24g==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -13780,7 +13885,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13796,7 +13901,7 @@ packages:
     dev: false
 
   file:projects/theme.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-/eBxOZXj6j3ii3CPm7zYEW8ln/whv2YBSxPWdz3PXG14Taq1i6UItMyRSCrYfB6QI9Vt4fS5Y75Zbj4+iJmAJg==, tarball: file:projects/theme.tgz}
+    resolution: {integrity: sha512-k3dSeeTOEwtDIXU6vbNdMUGc+hsb6tmJxNOHakJGqvzTYqKqALzoJ9iVsvoiOBRViYielE7L8Fm6PBNqVi/lWA==, tarball: file:projects/theme.tgz}
     id: file:projects/theme.tgz
     name: '@rush-temp/theme'
     version: 0.0.0
@@ -13815,7 +13920,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13872,7 +13977,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-MXRC/kqyCWkIGfEkt7Y4EKAps3XKvhjmXpdEOX+3f5KYn3OybiYvztOGK8hEmNBy3Pu56rYWkkzCWdbw97jVEg==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-+VUS/8pCD2vXIMkRLWtVtXBIRBkYboAdHBsDdyusTWJPx6LKVwuUw77IJAosqQEhwREbpVYq7GdP5q5ZgmwGEg==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -13891,7 +13996,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -13929,7 +14034,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-6d+XQfG6pEVmJN/wmtsjCSSC0XGG/ZQC0jWePTo+6OfT2W3ot4f2G4unN8Loj8rHdcgOG4Df+/zW1eg+J3goTQ==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-0uqaCFXTCJs/1Iax4FnM7ohqcR63vtE2rkoFeW1++xJS32DXDJiPDRjTsV620g1kBdcryMMBS35cBP3h+TVNMg==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -13949,7 +14054,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'
@@ -14006,7 +14111,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-zqDa0vWNFseFg/iea/NI651RzhI018W2GA8H5dC3O2CXTkwTCUPGNK00HzqTTxWTYTNZ0tQ+5EI7+n4bs+n56w==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-LkjBY56xBzdbBuRYGBCygy33nv5nDlXFHistZo8sEdX7TU0z0x2fz+4kFvYeywTvw3P2AT63nCfa1JydmfBMDg==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0
@@ -14025,7 +14130,7 @@ packages:
       svelte: 3.44.3
       svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
       svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.1_14d64cad431e31f100de7363af24a44f
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@babel/core'

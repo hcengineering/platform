@@ -152,6 +152,17 @@
       }
     }
   }  
+
+  .ap-footer {
+    flex-shrink: 0;
+    display: grid;
+    grid-auto-flow: column;
+    direction: rtl;
+    grid-gap: 0.5rem;
+    justify-content: start;
+    padding: 1rem 1.75rem 1.75rem 0.5rem;
+    overflow: hidden;
+  }
 }
 
 // Remove highlights table rows and hide dots in popups

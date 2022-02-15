@@ -130,6 +130,9 @@ p:last-child { margin-block-end: 0; }
   align-items: stretch;
   flex-wrap: nowrap;
 }
+.flex-wrap {
+  flex-wrap: wrap;
+}
 .flex-row-top {
   display: flex;
   align-items: flex-start;

@@ -17,7 +17,7 @@
     "@anticrm/platform-rig": "~0.6.0",
     "svelte-loader": "^3.1.2",
     "sass": "^1.37.5",
-    "svelte-preprocess": "^4.7.4",
+    "svelte-preprocess": "^4.10.3",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",

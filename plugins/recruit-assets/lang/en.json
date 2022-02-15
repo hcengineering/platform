@@ -34,7 +34,9 @@
     "Remote": "Remote",
     "SearchApplication": "Search for application...",
     "Application": "Application",
-    "AssignedRecruiter": "Assigned recruiter"
+    "AssignedRecruiter": "Assigned recruiter",
+    "SkillLabel": "Skill",
+    "SkillsLabel": "Skills"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

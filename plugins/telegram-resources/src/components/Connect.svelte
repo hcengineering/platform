@@ -134,7 +134,7 @@
   <div class="content">
     {#if secondFactor}
       <p><Label label={telegram.string.PasswordDescr} /></p>
-      <EditBox label={telegram.string.Password} maxWidth="10rem" password placeholder={telegram.string.Password} bind:value={password} />
+      <EditBox label={telegram.string.Password} maxWidth="10rem" format='password' placeholder={telegram.string.Password} bind:value={password} />
     {:else if requested}
       <p><Label label={telegram.string.CodeDescr} /></p>
       <PinPad length={5} bind:value={code} bind:error />

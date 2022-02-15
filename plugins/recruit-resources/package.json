@@ -14,7 +14,7 @@
   "devDependencies": {
     "svelte-loader": "^3.1.2",
     "sass": "^1.37.5",
-    "svelte-preprocess": "^4.7.4",
+    "svelte-preprocess": "^4.10.3",
     "@anticrm/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -52,6 +52,7 @@
     "@anticrm/task": "~0.6.0",
     "@anticrm/task-resources": "~0.6.0",
     "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/rekoni": "~0.6.0"
+    "@anticrm/rekoni": "~0.6.0",
+    "@anticrm/tags": "~0.6.0"
   }
 }

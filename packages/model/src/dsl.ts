@@ -331,6 +331,13 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
+export function TypeNumber (): Type<string> {
+  return { _class: core.class.TypeNumber, label: 'TypeNumber' as IntlString }
+}
+
+/**
+ * @public
+ */
 export function TypeMarkup (): Type<string> {
   return { _class: core.class.TypeMarkup, label: 'TypeMarkup' as IntlString }
 }
@@ -366,8 +373,8 @@ export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
 /**
  * @public
  */
-export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>): TypeCollection<T> {
-  return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString }
+export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLabel?: IntlString): TypeCollection<T> {
+  return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString, itemLabel }
 }
 
 /**

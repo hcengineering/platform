@@ -57,7 +57,9 @@ export default mergeIds(recruitId, recruit, {
     Delete: '' as IntlString,
     WorkLocationPreferences: '' as IntlString,
     Onsite: '' as IntlString,
-    Remote: '' as IntlString
+    Remote: '' as IntlString,
+    SkillLabel: '' as IntlString,
+    SkillsLabel: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

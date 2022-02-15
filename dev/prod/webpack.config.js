@@ -64,7 +64,10 @@ module.exports = {
             },
             emitCss: true,
             hotReload: !prod,
-            preprocess: require('svelte-preprocess')({ postcss: true }),
+            preprocess: require('svelte-preprocess')({ 
+              postcss: true,
+              sourceMap: !prod,
+            }),
             hotOptions: {
               // Prevent preserving local component state
               preserveLocalState: true,
@@ -199,6 +202,11 @@ module.exports = {
         changeOrigin: true,
         logLevel: 'debug'
       },
+      '/import': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        logLevel: 'debug'
+      },
     } : {
       '/account': {
         // target: 'https://ftwm71rwag.execute-api.us-west-2.amazonaws.com/stage/',
@@ -214,7 +222,7 @@ module.exports = {
         changeOrigin: true,
         pathRewrite: { '^/files': '' },
         logLevel: 'debug'
-      },
+      }
     }
   }
 }

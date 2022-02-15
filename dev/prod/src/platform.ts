@@ -14,7 +14,6 @@
 //
 
 import { addLocation } from '@anticrm/platform'
-import {Data, Version} from '@anticrm/core'
 
 import login, { loginId } from '@anticrm/login'
 import workbench, { workbenchId } from '@anticrm/workbench'
@@ -34,6 +33,7 @@ import { imageCropperId } from '@anticrm/image-cropper'
 import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
+import { tagsId } from '@anticrm/tags'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -52,6 +52,7 @@ import '@anticrm/workbench-assets'
 import '@anticrm/inventory-assets'
 import '@anticrm/templates-assets'
 import '@anticrm/notification-assets'
+import '@anticrm/tags-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
@@ -89,4 +90,5 @@ export async function configurePlatform() {
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
+  addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@anticrm/tags-resources'))
 }

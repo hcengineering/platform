@@ -16,19 +16,20 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { getPlatformColors } from '@anticrm/ui'
   import PopupDialog from './PopupDialog.svelte'
+  import view from '../plugin'
 
-  export let colors: string[] = ['#A5D179', '#77C07B', '#60B96E', '#45AEA3', '#46CBDE', '#47BDF6',
-    '#5AADF6', '#73A6CD', '#B977CB', '#7C6FCD', '#6F7BC5', '#F28469']
+  export let colors: readonly string[] = getPlatformColors()
   export let columns: number = 5
 
   const dispatch = createEventDispatcher()
 </script>
 
-<PopupDialog label={'CHOOSE A COLOR'}>
+<PopupDialog label={view.string.ChooseAColor}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
-    {#each colors as color}
-      <div class="color" style="background-color: {color}" on:click={() => { dispatch('close', color) }} />
+    {#each colors as color, i}
+      <div class="color" style="background-color: {color}" on:click={() => { dispatch('close', i) }} />
     {/each}
   </div>
 </PopupDialog>

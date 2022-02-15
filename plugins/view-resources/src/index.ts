@@ -23,6 +23,8 @@ import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import NumberEditor from './components/NumberEditor.svelte'
+import NumberPresenter from './components/NumberPresenter.svelte'
 import Table from './components/Table.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
@@ -32,10 +34,11 @@ import EditDoc from './components/EditDoc.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
+import ColorsPopup from './components/ColorsPopup.svelte'
 
 export { default as ContextMenu } from './components/Menu.svelte'
-export { buildModel, getActions, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView, EditDoc }
+export { buildModel, getActions, getObjectPresenter, LoadingProps, getCollectionCounter } from './utils'
+export { Table, TableView, EditDoc, ColorsPopup }
 
 function Delete (object: Doc): void {
   showPopup(
@@ -65,6 +68,8 @@ export default async (): Promise<Resources> => ({
   component: {
     StringEditor,
     StringPresenter,
+    NumberEditor,
+    NumberPresenter,
     BooleanPresenter,
     BooleanEditor,
     TableView,

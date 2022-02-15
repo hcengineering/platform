@@ -25,10 +25,10 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label, Spinner } from '@anticrm/ui'
+  import { AnyComponent, Component, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { getMixinStyle } from '../utils'
+  import { getCollectionCounter, getMixinStyle } from '../utils'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -62,6 +62,7 @@
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
     selectedClass = objectClass._id
+  
     parentClass = getParentClass(object._class)
     mixins = getMixins()
   }
@@ -161,13 +162,6 @@
   }
 
   $: icon = object && getIcon(object._class)
-
-  function getCollectionCounter (object: Doc, key: KeyedAttribute): number {
-    if (hierarchy.isMixin(key.attr.attributeOf)) {
-      return (hierarchy.as(object, key.attr.attributeOf) as any)[key.key]
-    }
-    return (object as any)[key.key] ?? 0
-  }
 
   function getParentClass (_class: Ref<Class<Doc>>): Ref<Class<Doc>> {
     const baseDomain = hierarchy.getDomain(_class)
@@ -289,9 +283,11 @@
             is={collection.editor}
             props={{
               objectId: object._id,
-              _class: object._class,
+              _class: collection.key.attr.attributeOf,
+              object,
               space: object.space,
-              [collection.key.key]: getCollectionCounter(object, collection.key)
+              key: collection.key,
+              [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
             }}
           />
           </div>

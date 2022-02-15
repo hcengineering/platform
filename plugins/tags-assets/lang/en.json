@@ -1,0 +1,29 @@
+{
+  "string": {
+    "TagElementLabel": "Tag",
+    "TitleLabel": "Title",
+    "DescriptionLabel": "Description",
+    "ColorLabel": "Color",
+    "CategoryLabel": "Category",
+    "TagReferenceLabel": "Tag",
+    "TagLabel": "Tag",
+    "Plural": "{word}s",
+    "TagName": "Please type {word} title",
+    "AddTagTooltip": "Add/Create {word}",
+    "AddNowTooltip": "Create {word}",
+    "AddTag": "Create {word}",
+    "EditTag": "Edit {word}",
+    "CreateItemLabel": "Create",
+    "CancelLabel": "Cancel",
+    "SearchCreate": "Search/Name ...",
+    "NoItems": "There is no {word} added ...",
+    "TagDescriptionLabel": "Description",
+    "TagDescriptionPlaceholder": "Please type description here",
+    "TagTooltip": "{text}",
+    "Tags": "Tags",
+    "SaveLabel": "Save",
+    "WeightLabel": "Weight",
+    "WeightPlaceholder": "Please type weight here",
+    "CategoryPlaceholder": "Please type category here"
+  }
+}

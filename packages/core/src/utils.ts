@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Account } from './classes'
+import type { Account, Doc, Ref } from './classes'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -58,4 +58,10 @@ export function getCurrentAccount (): Account { return currentAccount }
  */
 export function setCurrentAccount (account: Account): void {
   currentAccount = account
+}
+/**
+ * @public
+ */
+export function escapeLikeForRegexp (value: string): string {
+  return value.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 }

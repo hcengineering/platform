@@ -14,15 +14,31 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import contact,{ Channel,ChannelProvider,combineName,Person } from '@anticrm/contact'
+  import contact, { Channel, ChannelProvider, combineName, Person } from '@anticrm/contact'
   import { Channels } from '@anticrm/contact-resources'
-  import { AttachedData, Data,generateId,MixinData,Ref } from '@anticrm/core'
+  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor } from '@anticrm/core'
   import login from '@anticrm/login'
-  import { getMetadata,getResource,setPlatformStatus,unknownError } from '@anticrm/platform'
-  import { Card,EditableAvatar,getClient,getFileUrl,PDFViewer } from '@anticrm/presentation'
+  import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import {
+    Card,
+    createQuery,
+    EditableAvatar,
+    getClient,
+    getFileUrl,
+    KeyedAttribute,
+    PDFViewer
+  } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import { EditBox,IconFile as FileIcon,Label,Link,showPopup,Spinner } from '@anticrm/ui'
+  import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import {
+    Component,
+    EditBox,
+    getColorNumberByText, IconFile as FileIcon,
+    Label,
+    Link, showPopup,
+    Spinner
+  } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'
@@ -48,6 +64,40 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const candidateId = generateId()
+
+  let inputFile: HTMLInputElement
+  let loading = false
+  let dragover = false
+
+  let avatar: File | undefined
+  let channels: AttachedData<Channel>[] = []
+
+  let skills: TagReference[] = []
+  const key: KeyedAttribute = {
+    key: 'skills',
+    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
+  }
+
+  let elements = new Map<Ref<TagElement>, TagElement>()
+  let namedElements = new Map<string, TagElement>()
+
+  const newElements: TagElement[] = []
+
+  const elementQuery = createQuery()
+  let elementsPromise: Promise<void>
+  $: elementsPromise = new Promise((resolve) => {
+    elementQuery.query(tags.class.TagElement, {}, (result) => {
+      const ne = new Map<Ref<TagElement>, TagElement>()
+      const nne = new Map<string, TagElement>()
+      for (const t of newElements.concat(result)) {
+        ne.set(t._id, t)
+        nne.set(t.title.trim().toLowerCase(), t)
+      }
+      elements = ne
+      namedElements = nne
+      resolve()
+    })
+  })
 
   async function createCandidate () {
     const uploadFile = await getResource(attachment.helper.UploadFile)
@@ -103,13 +153,27 @@
         }
       )
     }
+    // Tag elements
+    const skillTagElements = new Map(Array.from((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it]))))
+    for (const skill of skills) {
+      // Create update tag if missing
+      if (!skillTagElements.has(skill.tag)) {
+        skill.tag = await client.createDoc(tags.class.TagElement, skill.space, {
+          title: skill.title,
+          color: skill.color,
+          targetClass: recruit.mixin.Candidate,
+          description: ''
+        })
+      }
+      await client.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
+        title: skill.title,
+        color: skill.color,
+        tag: skill.tag
+      })
+    }
 
     dispatch('close')
   }
-
-  let inputFile: HTMLInputElement
-  let loading = false
-  let dragover = false
 
   function isUndef (value?: string): boolean {
     return value === undefined || value === ''
@@ -175,7 +239,42 @@
       addChannel(newChannels, contact.channelProvider.Facebook, doc.facebook)
       channels = newChannels
 
-      console.log(doc, channels)
+      // Create skills
+      await elementsPromise
+
+      const newSkills:TagReference[] = []
+      // Create missing tag elemnts
+      for (const s of doc.skills) {
+        const title = s.trim().toLowerCase()
+        let e = namedElements.get(title)
+        if (e === undefined) {
+          // No yet tag with title
+          e = TxProcessor.createDoc2Doc(
+            client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
+              title,
+              description: '',
+              color: getColorNumberByText(s),
+              targetClass: recruit.mixin.Candidate
+            })
+          )
+          namedElements.set(title, e)
+          elements.set(e._id, e)
+          newElements.push(e)
+        }
+        newSkills.push(
+          TxProcessor.createDoc2Doc(
+            client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
+              title: e.title,
+              color: e.color,
+              tag: e._id,
+              attachedTo: '' as Ref<Doc>,
+              attachedToClass: recruit.mixin.Candidate,
+              collection: 'skills'
+            })
+          )
+        )
+      }
+      skills = [...skills, ...newSkills]
     } catch (err: any) {
       console.error(err)
     }
@@ -195,7 +294,7 @@
       resume.type = file.type
       resume.lastModified = file.lastModified
 
-      recognize(resume.uuid)
+      await recognize(resume.uuid)
 
       console.log('uploaded file uuid', resume.uuid)
     } catch (err: any) {
@@ -221,15 +320,30 @@
     }
   }
 
-  let avatar: File | undefined
-
   function onAvatarDone (e: any) {
     const { file } = e.detail
 
     avatar = file
   }
 
-  let channels: AttachedData<Channel>[] = []
+  function addTagRef (tag: TagElement): void {
+    skills = [
+      ...skills,
+      {
+        _class: tags.class.TagReference,
+        _id: generateId() as Ref<TagReference>,
+        attachedTo: '' as Ref<Doc>,
+        attachedToClass: recruit.mixin.Candidate,
+        collection: 'skills',
+        space: tags.space.Tags,
+        modifiedOn: 0,
+        modifiedBy: '' as Ref<Account>,
+        title: tag.title,
+        tag: tag._id,
+        color: tag.color
+      }
+    ]
+  }
 </script>
 
 <!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
@@ -306,6 +420,22 @@
     <span><Label label={recruit.string.WorkLocationPreferences} /></span>
     <div class="row"><Label label={recruit.string.Onsite} /><YesNo bind:value={object.onsite} /></div>
     <div class="row"><Label label={recruit.string.Remote} /><YesNo bind:value={object.remote} /></div>
+  </div>
+  <div class="separator" />
+  <div class="flex-col locations">
+    <span><Label label={recruit.string.SkillsLabel} /></span>
+    <div class="flex-grow">
+      <Component
+        is={tags.component.TagsEditor}
+        props={{ items: skills, key, targetClass: recruit.mixin.Candidate, showTitle: false, elements }}
+        on:open={(evt) => {
+          addTagRef(evt.detail)
+        }}
+        on:delete={(evt) => {
+          skills = skills.filter((it) => it._id !== evt.detail)
+        }}
+      />
+    </div>
   </div>
 </Card>
 

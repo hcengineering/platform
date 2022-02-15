@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
+  import { Asset, IntlString } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
   import Label from './Label.svelte'
   import ArrowUp from './icons/Up.svelte'
   import ArrowDown from './icons/Down.svelte'
+  import Icon from './Icon.svelte'
 
-  export let icon: AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent
   export let label: IntlString
   export let closed: boolean = false
 </script>
@@ -28,9 +29,9 @@
 <div class="flex-row-center section-container"
   on:click|preventDefault={() => {
     closed = !closed
-  }}
->
-  <svelte:component this={icon} size={'small'} />
+  }}>
+  <Icon icon={icon} size={'small'}/>
+  <!-- <svelte:component this={icon} size={'small'} /> -->
   <div class="title"><Label {label} /></div>
   <div class="arrow">{#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}</div>
 </div>

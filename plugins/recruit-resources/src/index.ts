@@ -33,6 +33,7 @@ import { ObjectSearchResult } from '@anticrm/presentation'
 import task from '@anticrm/task'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
+import SkillsView from './components/SkillsView.svelte'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
@@ -108,7 +109,8 @@ export default async (): Promise<Resources> => ({
     Applications,
     Candidates,
     CreateCandidate,
-    VacancyPresenter
+    VacancyPresenter,
+    SkillsView
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)

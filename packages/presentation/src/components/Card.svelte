@@ -30,6 +30,7 @@
   export let spaceLabel: IntlString | undefined = undefined
   export let spacePlaceholder: IntlString | undefined = undefined
   export let label: IntlString
+  export let labelProps: any | undefined = undefined
   export let okAction: () => void
   export let canSave: boolean = false
 
@@ -42,7 +43,7 @@
 <form class="card-container" on:submit|preventDefault={ () => {} }>
   <div class="card-bg" />
   <div class="flex-between header">
-    <div class="overflow-label fs-title"><Label {label} /></div>
+    <div class="overflow-label fs-title"><Label {label} params={labelProps ?? {}} /></div>
     {#if $$slots.error}
       <div class="flex-grow error">
         <slot name="error" />
