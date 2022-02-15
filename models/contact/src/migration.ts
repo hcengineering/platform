@@ -18,7 +18,7 @@ import { Channel, ChannelProvider, Contact } from '@anticrm/contact'
 import { Class, DOMAIN_TX, generateId, Ref, SortingOrder, TxCreateDoc, TxCUD, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import contact, { DOMAIN_CONTACT } from './index'
+import contact, { DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
 
 function createChannel (tx: TxCUD<Contact>, channel: any): Channel {
   const doc: Channel = {
@@ -203,10 +203,15 @@ export async function migrateContactChannels (client: MigrationClient, classes: 
   }
 }
 
+async function migrateChannelsDomain (client: MigrationClient): Promise<void> {
+  await client.move(DOMAIN_CONTACT, { _class: contact.class.Channel }, DOMAIN_CHANNEL)
+}
+
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     const classes = [contact.class.Contact, contact.class.Person, contact.class.Employee, contact.class.Organization]
     await migrateContactChannels(client, classes)
+    await migrateChannelsDomain(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
   }

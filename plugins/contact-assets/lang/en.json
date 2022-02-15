@@ -24,6 +24,14 @@
     "SearchEmployee": "Search for employee...",
     "SearchPerson": "Search for person...",
     "SearchOrganization": "Search for organization...",
-    "ContactInfo": "Contact Info"
+    "ContactInfo": "Contact Info",
+    "Contact": "Contact",
+    "Location": "Location",
+    "Channel": "Channel",
+    "ChannelProvider": "Channel provider",
+    "Person": "Person",
+    "Organization": "Organization",
+    "Employee": "Employee",
+    "Value": "Value"
   }
 }
