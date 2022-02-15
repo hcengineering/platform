@@ -24,7 +24,11 @@
   let divBox: HTMLElement
   let divBack: HTMLElement
   let divBar: HTMLElement
+  let divTrack: HTMLElement
   let divEl: HTMLElement
+  let isBack: boolean = false
+  let isScrolling: boolean = false
+  let dY: number
 
   const checkBack = (): void => {
     const rectScroll = divScroll.getBoundingClientRect()
@@ -42,18 +46,10 @@
       divBack.style.height = 'auto'
       divBack.style.width = 'auto'
       divBack.style.visibility = 'visible'
-    } else divBack.style.visibility = 'hidden'
-  }
-
-  const checkBar = (): void => {
-    if (divBar && divScroll) {
-      const proc = divScroll.clientHeight / divScroll.scrollHeight * 100
-      const procScroll = (divScroll.clientHeight - 8) / 100
-      const procTop = divScroll.scrollTop / divScroll.scrollHeight
-      divBar.style.height = procScroll * proc + 'px'
-      divBar.style.top = procTop * (divScroll.clientHeight - 8) + 4 + 'px'
-      if (mask === 'none') divBar.style.visibility = 'hidden'
-      else divBar.style.visibility = 'visible'
+      isBack = true
+    } else {
+      divBack.style.visibility = 'hidden'
+      isBack = false
     }
   }
 
@@ -74,6 +70,53 @@
       }
     }
   }, { root: null, threshold: .1 })
+
+  const checkBar = (): void => {
+    if (divBar && divScroll) {
+      const proc = divScroll.clientHeight / divScroll.scrollHeight * 100
+      const procScroll = (divScroll.clientHeight - 4) / 100
+      const procTop = divScroll.scrollTop / divScroll.scrollHeight
+      divBar.style.height = procScroll * proc + 'px'
+      divBar.style.top = procTop * (divScroll.clientHeight - 4) + 2 + 'px'
+      if (mask === 'none') divBar.style.visibility = 'hidden'
+      else divBar.style.visibility = 'visible'
+    }
+  }
+
+  const onScroll = (event: MouseEvent): void => {
+    if (isScrolling && divBar && divScroll) {
+      const rectScroll = divScroll.getBoundingClientRect()
+      let Y = event.clientY - dY
+      if (Y < rectScroll.top + 2) Y = rectScroll.top + 2
+      if (Y > rectScroll.bottom - divBar.clientHeight - 2) Y = rectScroll.bottom - divBar.clientHeight - 2
+      divBar.style.top = Y - rectScroll.y + 'px'
+      const topBar = Y - rectScroll.y - 2
+      const heightScroll = rectScroll.height - 4 - divBar.clientHeight
+      const procBar = topBar / heightScroll
+      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+    }
+  }
+  const onScrollEnd = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && isScrolling) {
+      document.removeEventListener('mousemove', onScroll)
+      document.body.style.userSelect = 'auto'
+      document.body.style.webkitUserSelect = 'auto'
+    }
+    document.removeEventListener('mouseup', onScrollEnd)
+    isScrolling = false
+  }
+  const onScrollStart = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && divScroll) {
+      dY = event.clientY - el.getBoundingClientRect().y
+      document.addEventListener('mouseup', onScrollEnd)
+      document.addEventListener('mousemove', onScroll)
+      document.body.style.userSelect = 'none'
+      document.body.style.webkitUserSelect = 'none'
+      isScrolling = true
+    }
+  }
   
   const checkFade = (): void => {
     const t = divScroll.scrollTop
@@ -83,7 +126,7 @@
     else if (b > 0) mask = 'top'
     else mask = 'none'
     checkBack()
-    checkBar()
+    if (!isScrolling) checkBar()
   }
 
   onMount(() => {
@@ -118,8 +161,15 @@
   </div>
   <div bind:this={divBack} class="back" />
   <div
-    bind:this={divBar}
     class="bar"
+    class:hovered={isScrolling}
+    bind:this={divBar}
+    on:mousedown={onScrollStart}
+  />
+  <div
+    class="track"
+    class:hovered={isScrolling}
+    bind:this={divTrack}
   />
 </div>
 
@@ -146,26 +196,50 @@
     flex-direction: column;
     height: 100%;
   }
+  .track {
+    visibility: hidden;
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    right: 2px;
+    width: 8px;
+    transform-origin: center;
+    transform: scaleX(0);
+    transition: all .1s ease-in-out;
+    background-color: var(--theme-menu-color);
+    border-radius: .5rem;
+  }
   .bar {
     visibility: hidden;
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 4px;
+    top: 2px;
+    right: 2px;
+    width: 8px;
     min-height: 2rem;
-    max-height: calc(100% - 8px);
+    max-height: calc(100% - 12px);
+    transform-origin: center;
+    transform: scaleX(.5);
     background-color: var(--theme-button-bg-focused);
-    border-radius: .25rem;
+    border-radius: .125rem;
     opacity: .5;
     cursor: pointer;
+    z-index: 1;
+    transition: all .1s ease-in-out;
 
-    transition: width .1s, opacity .1s;
-
-    &:hover {
-      background-color: var(--theme-button-bg-focused);
-      width: 8px;
+    &:hover, &.hovered {
+      background-color: var(--theme-button-bg-hovered);
+      transform: scaleX(1);
+      border-radius: .25rem;
       opacity: 1;
+      filter: drop-shadow(0 0 1px black);
+
+      & + .track {
+        visibility: visible;
+        right: 2px;
+        transform: scaleX(1);
+      }
     }
+    &.hovered { transition: none; }
   }
   .back {
     visibility: hidden;
