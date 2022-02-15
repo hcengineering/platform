@@ -42,14 +42,14 @@
   {#if openEmbedded(value.type)}
     <div class="flex-center icon" on:click={() => {
       closeTooltip()
-      showPopup(PDFViewer, { file: value.file, name: value.name }, 'right')
+      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
     }}>{iconLabel(value.name)}</div>
   {:else}
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
   {/if}
   <div class="flex-col info">
     {#if openEmbedded(value.type)}
-      <div class="name" on:click={() => { closeTooltip(); showPopup(PDFViewer, { file: value.file, name: value.name }, 'right') }}>{trimFilename(value.name)}</div>
+      <div class="name" on:click={() => { closeTooltip(); showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right') }}>{trimFilename(value.name)}</div>
     {:else}
       <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div> 
     {/if}

@@ -24,6 +24,7 @@
 
   export let file: string
   export let name: string
+  export let contentType: string | undefined
 
   const dispatch = createEventDispatcher()
 
@@ -47,7 +48,11 @@
     </div>
   </div>
 
-  <iframe class="flex-grow content" src={getFileUrl(file)} title=""/>
+  {#if contentType && contentType.startsWith('image/') }
+    <img src={getFileUrl(file)} alt=''/>
+  {:else}
+    <iframe class="flex-grow content" src={getFileUrl(file)} title=""/>
+  {/if}
 
   <div class="flex-between footer">
     <div class="flex-row-reverse">
