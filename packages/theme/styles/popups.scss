@@ -69,6 +69,7 @@
         background-color: transparent;
       }
     }
+    &.withCheck { justify-content: space-between; }
 
     &:hover {
       color: var(--theme-caption-color);
