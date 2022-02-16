@@ -295,7 +295,9 @@
       resume.type = file.type
       resume.lastModified = file.lastModified
 
-      await recognize(resume.uuid)
+      if (file.type.includes('application/pdf')) {
+        await recognize(resume.uuid)
+      }
 
       console.log('uploaded file uuid', resume.uuid)
     } catch (err: any) {
