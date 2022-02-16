@@ -43,7 +43,7 @@ const predicates: Record<string, PredicateFactory> = {
   },
 
   $like: (query: string, propertyKey: string): Predicate => {
-    const searchString = escapeLikeForRegexp(query).split('%').join('.*')
+    const searchString = query.split('%').map(it => escapeLikeForRegexp(it)).join('.*')
     const regex = RegExp(`^${searchString}$`, 'i')
 
     return (docs) => execPredicate(docs, propertyKey, (value) => regex.test(value))

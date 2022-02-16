@@ -56,9 +56,9 @@ abstract class MongoAdapterBase extends TxProcessor {
       if (value !== null && typeof value === 'object') {
         const keys = Object.keys(value)
         if (keys[0] === '$like') {
-          const pattern = escapeLikeForRegexp(value.$like as string)
+          const pattern = value.$like as string
           translated[key] = {
-            $regex: `^${pattern.split('%').join('.*')}$`,
+            $regex: `^${pattern.split('%').map(it => escapeLikeForRegexp(it)).join('.*')}$`,
             $options: 'i'
           }
           continue

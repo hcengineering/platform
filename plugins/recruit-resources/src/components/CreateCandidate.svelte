@@ -201,6 +201,7 @@
 
     try {
       const doc = await recognizeDocument(token, fileUrl)
+      console.log('recognize:', doc)
 
       if (isUndef(object.title) && doc.title !== undefined) {
         object.title = doc.title
@@ -244,7 +245,7 @@
 
       const newSkills:TagReference[] = []
       // Create missing tag elemnts
-      for (const s of doc.skills) {
+      for (const s of doc.skills ?? []) {
         const title = s.trim().toLowerCase()
         let e = namedElements.get(title)
         if (e === undefined) {

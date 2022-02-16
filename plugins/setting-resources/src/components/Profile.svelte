@@ -65,13 +65,6 @@
     )
   }
 
-  function saveChannels (result: any) {
-    if (employee !== undefined && result !== undefined) {
-      employee.channels = result
-      client.updateDoc(employee._class, employee.space, employee._id, { channels: result })
-    }
-  }
-
   async function onAvatarDone (e: any) {
     if (employee === undefined) return
     const uploadFile = await getResource(attachment.helper.UploadFile)
