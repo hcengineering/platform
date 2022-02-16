@@ -56,7 +56,6 @@
 <style lang="scss">
   .tag-item {
     margin: 0.25rem;
-    height: 1.5rem;
     padding: 0.5rem;
 
     border-radius: 0.5rem;
