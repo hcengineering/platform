@@ -50,7 +50,7 @@
       <div class="flex-grow flex-col">
         <div>
           <EditBox
-            password
+            format='password'
             placeholder={setting.string.EnterCurrentPassword}
             label={setting.string.CurrentPassword}
             maxWidth="20rem"
@@ -59,7 +59,7 @@
         </div>
         <div class="mt-6">
           <EditBox
-            password
+            format='password'
             placeholder={setting.string.EnterNewPassword}
             label={setting.string.NewPassword}
             maxWidth="20rem"
@@ -68,7 +68,7 @@
         </div>
         <div class="mt-6">
           <EditBox
-            password
+            format='password'
             placeholder={setting.string.RepeatNewPassword}
             label={setting.string.NewPassword}
             maxWidth="20rem"

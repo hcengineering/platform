@@ -44,6 +44,7 @@
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown/>
+  <slot name='extra'/>
   {#if value}
     <div class="ml-2 btn" on:click={() => { value = ''; dispatch('change', '') }}>
       <Icon icon={IconClose} size={'x-small'} />

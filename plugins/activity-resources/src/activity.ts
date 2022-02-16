@@ -1,8 +1,10 @@
 import core, {
   AnyAttribute,
   AttachedDoc,
+  Attribute,
   Class,
   Client,
+  Collection,
   Doc,
   DocumentUpdate,
   Hierarchy,
@@ -62,6 +64,8 @@ export interface DisplayTx {
   updated: boolean
   mixin: boolean
   removed: boolean
+
+  collectionAttribute?: Attribute<Collection<AttachedDoc>>
 }
 
 /**
@@ -227,12 +231,28 @@ class ActivityImpl implements Activity {
     let updateCUD = false
     let mixinCUD = false
     const hierarchy = this.client.getHierarchy()
+
+    let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
     if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-      tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
+      const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      tx = getCollectionTx(cltx)
+
+      // Check mixin classes for desired attribute
+      for (const cl of hierarchy.getDescendants(cltx.objectClass)) {
+        try {
+          collectionAttribute = hierarchy.getAttribute(cl, cltx.collection) as Attribute<Collection<AttachedDoc>>
+          if (collectionAttribute !== undefined) {
+            break
+          }
+        } catch (err: any) {
+          // Ignore
+        }
+      }
       collectionCUD = true
     }
     let firstTx = parents.get(tx.objectId)
     const result: DisplayTx = newDisplayTx(tx, hierarchy)
+    result.collectionAttribute = collectionAttribute
 
     result.doc = firstTx?.doc ?? result.doc
 

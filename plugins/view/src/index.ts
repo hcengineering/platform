@@ -99,6 +99,9 @@ export const viewId = 'view' as Plugin
 export interface BuildModelKey {
   key: string
   presenter?: AnyComponent
+  // A set of extra props passed to presenter.
+  props?: Record<string, any>
+
   label?: IntlString
   sortingKey?: string
 }

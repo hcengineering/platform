@@ -178,7 +178,7 @@ describe('memdb', () => {
     })
     expect(zero).toHaveLength(0)
     const end = await model.findAll(core.class.Doc, {
-      space: { $like: 'core.space.M%' }
+      space: { $like: 'core:space:M%' }
     })
     expect(end).toHaveLength(expectedLength)
     const mid = await model.findAll(core.class.Doc, {

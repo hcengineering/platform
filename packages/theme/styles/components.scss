@@ -1,14 +1,14 @@
 //
 // Copyright © 2021 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -27,14 +27,14 @@
     &.short {
       display: flex;
       align-items: center;
-      flex-wrap: nowrap;  
+      flex-wrap: nowrap;
     }
     &.full {
       display: grid;
       grid-template-columns: auto;
       grid-auto-flow: column;
       grid-auto-columns: min-content;
-      gap: .75rem;
+      gap: 0.75rem;
       align-items: center;
     }
     &.mirror {
@@ -46,7 +46,9 @@
         padding: 0 6.5rem 0 2.5rem;
       }
     }
-    &.divide { border-bottom: 1px solid var(--theme-menu-divider); }
+    &.divide {
+      border-bottom: 1px solid var(--theme-menu-divider);
+    }
 
     .ac-header__wrap-description,
     .ac-header__wrap-title {
@@ -59,10 +61,12 @@
       flex-direction: column;
       flex-grow: 1;
     }
-    .ac-header__wrap-title { align-items: center; }
+    .ac-header__wrap-title {
+      align-items: center;
+    }
 
     .ac-header__icon {
-      margin-right: .5rem;
+      margin-right: 0.5rem;
       color: var(--theme-content-color);
     }
     .ac-header__title {
@@ -78,7 +82,7 @@
     }
     .ac-header__description {
       min-width: 0;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-dark-color);
 
       overflow: hidden;
@@ -87,7 +91,7 @@
       /* autoprefixer: ignore next */
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
-      line-clamp: 2;  
+      line-clamp: 2;
       user-select: none;
     }
 
@@ -99,15 +103,19 @@
       height: 2.5rem;
       color: var(--theme-content-trans-color);
       background-color: transparent;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       cursor: pointer;
-  
-      &:hover { color: var(--theme-caption-color); }
+
+      &:hover {
+        color: var(--theme-caption-color);
+      }
       &.selected {
         color: var(--theme-content-accent-color);
         background-color: var(--theme-button-bg-enabled);
         cursor: default;
-        &:hover { color: var(--theme-caption-color); }
+        &:hover {
+          color: var(--theme-caption-color);
+        }
       }
     }
   }
@@ -121,12 +129,18 @@
     height: 3.5rem;
     border-bottom: 1px solid var(--theme-zone-bg);
 
-    &::-webkit-scrollbar:horizontal { height: .25rem; }
-    &::-webkit-scrollbar-track { margin: 0; }
+    &::-webkit-scrollbar:horizontal {
+      height: 0.25rem;
+    }
+    &::-webkit-scrollbar-track {
+      margin: 0;
+    }
     &::-webkit-scrollbar-thumb {
       background-color: var(--theme-menu-divider);
-      border-radius: .25rem;
-      &:hover { background-color: var(--theme-card-divider); }
+      border-radius: 0.25rem;
+      &:hover {
+        background-color: var(--theme-card-divider);
+      }
     }
 
     .ac-subtitle-content {
@@ -143,10 +157,14 @@
     align-items: flex-start;
     height: 100%;
 
-    &.columns { flex-direction: row; }
+    &.columns {
+      flex-direction: row;
+    }
     &.hScroll {
       overflow-x: auto;
-      &::-webkit-scrollbar-track { margin: 2.5rem; }
+      &::-webkit-scrollbar-track {
+        margin: 2.5rem;
+      }
     }
 
     .ac-column {
@@ -175,8 +193,10 @@
         border: 1px solid transparent;
         border-radius: 12px;
         cursor: pointer;
-    
-        &:hover { background-color: var(--theme-bg-accent-color); }
+
+        &:hover {
+          background-color: var(--theme-bg-accent-color);
+        }
         &.selected {
           background-color: var(--theme-button-bg-enabled);
           border-color: var(--theme-bg-accent-color);
@@ -194,10 +214,13 @@
     }
     &__space-3 {
       flex-shrink: 0;
-      min-height: .75rem;
-      height: .75rem;
+      min-height: 0.75rem;
+      height: 0.75rem;
     }
-  }
+  }  
+}
+.ac-column__list-item + .ac-column__list-item {
+  margin-top: 0.75rem;
 }
 .ac-column__list-item + .ac-column__list-item { margin-top: .75rem; }
 

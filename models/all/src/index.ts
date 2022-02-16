@@ -40,6 +40,7 @@ import { createModel as textEditorModel } from '@anticrm/model-text-editor'
 import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as notificationModel } from '@anticrm/model-notification'
+import { createModel as tagsModel } from '@anticrm/model-tags'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -68,6 +69,8 @@ const builders = [
   serverAttachmentModel,
   serverContactModel,
   serverNotificationModel,
+  tagsModel,
+
   createDemo
 ]
 

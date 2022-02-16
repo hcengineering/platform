@@ -21,6 +21,7 @@
   import Tooltip from './Tooltip.svelte'
 
   export let label: IntlString = '' as IntlString
+  export let labelProps: any = undefined
   export let direction: TooltipAligment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
@@ -28,7 +29,7 @@
   export let invisible: boolean = false
 </script>
 
-<Tooltip {label} {direction}>
+<Tooltip {label} {direction} props={labelProps}>
   <button class="button {size}" on:click|stopPropagation={action}>
     <div class="icon {size}" class:invisible={invisible}>
       <Icon {icon} {size}/>

@@ -56,7 +56,8 @@ export default mergeIds(recruitId, recruit, {
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
     Candidates: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent
+    CreateCandidate: '' as AnyComponent,
+    SkillsView: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>

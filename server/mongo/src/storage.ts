@@ -16,7 +16,7 @@
 import core, {
   Class,
   Doc,
-  DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, isOperator, Lookup, Mixin, ModelDb, Ref, ReverseLookups, SortingOrder, Tx,
+  DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, escapeLikeForRegexp, FindOptions, FindResult, Hierarchy, isOperator, Lookup, Mixin, ModelDb, Ref, ReverseLookups, SortingOrder, Tx,
   TxCreateDoc,
   TxMixin, TxProcessor, TxPutBag,
   TxRemoveDoc,
@@ -58,7 +58,7 @@ abstract class MongoAdapterBase extends TxProcessor {
         if (keys[0] === '$like') {
           const pattern = value.$like as string
           translated[key] = {
-            $regex: `^${pattern.split('%').join('.*')}$`,
+            $regex: `^${pattern.split('%').map(it => escapeLikeForRegexp(it)).join('.*')}$`,
             $options: 'i'
           }
           continue

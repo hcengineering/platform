@@ -16,6 +16,7 @@
 
 import type { Doc } from './classes'
 import { getObjectValue } from './objvalue'
+import { escapeLikeForRegexp } from './utils'
 
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
@@ -42,7 +43,7 @@ const predicates: Record<string, PredicateFactory> = {
   },
 
   $like: (query: string, propertyKey: string): Predicate => {
-    const searchString = query.split('%').join('.*')
+    const searchString = query.split('%').map(it => escapeLikeForRegexp(it)).join('.*')
     const regex = RegExp(`^${searchString}$`, 'i')
 
     return (docs) => execPredicate(docs, propertyKey, (value) => regex.test(value))

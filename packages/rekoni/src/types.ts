@@ -32,4 +32,5 @@ export interface ReconiDocument {
   facebook?: string
   telegram?: string
   twitter?: string
+  skills: string[]
 }

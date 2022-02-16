@@ -30,7 +30,7 @@ import core, {
 } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { getAttributePresenterClass } from '@anticrm/presentation'
+import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
 import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
@@ -117,11 +117,12 @@ async function getPresenter<T extends Doc> (
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
     return {
-      key: '',
+      key: key.key ?? '',
       sortingKey: sortingKey ?? '',
       _class,
       label: label as IntlString,
-      presenter: await getResource(presenter)
+      presenter: await getResource(presenter),
+      props: key.props
     }
   }
   if (key.key.length === 0) {
@@ -311,4 +312,10 @@ export function getBooleanLabel (value: boolean | undefined): IntlString {
   if (value === true) return plugin.string.LabelYes
   if (value === false) return plugin.string.LabelNo
   return plugin.string.LabelNA
+}
+export function getCollectionCounter (hierarchy: Hierarchy, object: Doc, key: KeyedAttribute): number {
+  if (hierarchy.isMixin(key.attr.attributeOf)) {
+    return (hierarchy.as(object, key.attr.attributeOf) as any)[key.key]
+  }
+  return (object as any)[key.key] ?? 0
 }

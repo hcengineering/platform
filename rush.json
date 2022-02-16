@@ -1020,6 +1020,26 @@
       "packageName": "@anticrm/server-notification-resources",
       "projectFolder": "server/notification-resources",
       "shouldPublish": true
-    }
+    },
+    {
+    "packageName": "@anticrm/tags",
+      "projectFolder": "plugins/tags",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/tags-assets",
+      "projectFolder": "plugins/tags-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/tags-resources",
+      "projectFolder": "plugins/tags-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-tags",
+      "projectFolder": "models/tags",
+      "shouldPublish": true
+    },
   ]
 }

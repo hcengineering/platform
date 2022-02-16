@@ -44,6 +44,7 @@ export default plugin(coreId, {
     Space: '' as Ref<Class<Space>>,
     Account: '' as Ref<Class<Account>>,
     TypeString: '' as Ref<Class<Type<string>>>,
+    TypeNumber: '' as Ref<Class<Type<string>>>,
     TypeMarkup: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,

@@ -1,11 +1,11 @@
 import type { TxViewlet } from '@anticrm/activity'
-import activity from '../plugin'
-import core, { Class, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
+import core, { AttachedDoc, Class, Collection, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
 import { Asset, IntlString, translate } from '@anticrm/platform'
 import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { AttributeModel } from '@anticrm/view'
 import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
 import { ActivityKey, activityKey, DisplayTx } from '../activity'
+import activity from '../plugin'
 
 export type TxDisplayViewlet =
   | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent' | 'labelParams'> & {
@@ -24,7 +24,15 @@ async function createPseudoViewlet (
   }
   const docClass: Class<Doc> = client.getModel().getObject(doc._class)
 
-  const trLabel = await translate(docClass.label, {})
+  let trLabel = await translate(docClass.label, {})
+  if (dtx.collectionAttribute !== undefined) {
+    const itemLabel = (dtx.collectionAttribute.type as Collection<AttachedDoc>).itemLabel
+    if (itemLabel !== undefined) {
+      trLabel = await translate(itemLabel, {})
+    }
+  }
+
+  // Check if it is attached doc and collection have title override.
   const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
   if (presenter !== undefined) {
     return {

@@ -32,7 +32,8 @@ import {
   TTypeString,
   TTypeMarkup,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TTypeNumber
 } from './core'
 import { TAccount, TSpace } from './security'
 import {
@@ -82,6 +83,7 @@ export function createModel (builder: Builder): void {
     TCollection,
     TTypeDate,
     TArrOf,
-    TVersion
+    TVersion,
+    TTypeNumber
   )
 }

@@ -15,12 +15,26 @@
 
 import type { Employee } from '@anticrm/contact'
 import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@anticrm/core'
-import { Builder, Collection, Index, Mixin, Model, Prop, TypeBoolean, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import {
+  Builder,
+  Collection,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeDate,
+  TypeMarkup,
+  TypeRef,
+  TypeString,
+  UX
+} from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
+import tags from '@anticrm/model-tags'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
@@ -73,6 +87,9 @@ export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), 'Source' as IntlString)
   @Index(IndexKind.FullText)
   source?: string
+
+  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel)
+  skills?: number
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
@@ -142,6 +159,13 @@ export function createModel (builder: Builder): void {
             label: workbench.string.Archive,
             position: 'top',
             visibleIf: workbench.function.HasArchiveSpaces
+          },
+          {
+            id: 'skills',
+            component: recruit.component.SkillsView,
+            icon: tags.icon.Tags,
+            label: recruit.string.SkillsLabel,
+            position: 'bottom'
           }
         ]
       }
@@ -166,7 +190,12 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { _id: { channels: contact.class.Channel } }
+      lookup: {
+        _id: {
+          channels: contact.class.Channel
+          // skills: tags.class.TagReference // Required if TagsItemPresenter is used
+        }
+      }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
@@ -175,13 +204,22 @@ export function createModel (builder: Builder): void {
       { presenter: recruit.component.ApplicationsPresenter, label: 'Apps', sortingKey: 'applications' },
       { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      {
+        // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
+        presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
+        label: recruit.string.SkillsLabel,
+        // sortingKey: '$lookup.skills',
+        props: {
+          _class: recruit.mixin.Candidate,
+          key: 'skills'
+        }
+      },
       'modifiedOn',
       '$lookup.channels'
     ]
   })
 
-  const applicantTableLookup: Lookup<Applicant> =
-  {
+  const applicantTableLookup: Lookup<Applicant> = {
     attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
     state: task.class.State,
     assignee: contact.class.Employee,
@@ -208,8 +246,7 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const applicantKanbanLookup: Lookup<Applicant> =
-  {
+  const applicantKanbanLookup: Lookup<Applicant> = {
     attachedTo: recruit.mixin.Candidate,
     assignee: contact.class.Employee
   }
@@ -299,11 +336,16 @@ export function createModel (builder: Builder): void {
     recruit.space.VacancyTemplates
   )
 
-  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
-    icon: recruit.icon.Application,
-    label: recruit.string.SearchApplication,
-    query: recruit.completion.ApplicationQuery
-  }, recruit.completion.ApplicationCategory)
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: recruit.icon.Application,
+      label: recruit.string.SearchApplication,
+      query: recruit.completion.ApplicationQuery
+    },
+    recruit.completion.ApplicationCategory
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Vacancy,
