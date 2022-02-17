@@ -182,7 +182,7 @@
     <ScrollBox>
       <div class="kanban-content">
         {#each states as state (state)}
-          <KanbanPanel label={state.title} color={getPlatformColor(state.color)} addAction={() => {}}
+          <KanbanPanel label={state.title} color={getPlatformColor(state.color)}
             on:dragover={(event) => {
               event.preventDefault()
               if (dragCard.state !== state._id) {
