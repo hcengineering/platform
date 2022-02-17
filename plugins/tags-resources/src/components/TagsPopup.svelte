@@ -114,11 +114,3 @@
     />
   </div>
 </div>
-
-<style lang="scss">
-  .create-item {
-    position: absolute;
-    left: 105%;
-    top: 0px;
-  }
-</style>

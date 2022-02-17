@@ -14,12 +14,12 @@
 -->
 
 <script lang="ts">
-  import { ScrollBox, IconAdd } from '@anticrm/ui'
+  import { ScrollBox } from '@anticrm/ui'
 
   export let label: string
   export let color: string
   // export let counter: number
-  export let addAction: () => void | undefined
+  // export let addAction: () => void | undefined
 </script>
 
 <div class="panel-container step-lr75">
@@ -30,9 +30,9 @@
         <span class="lines-limit-2">{label}</span>
         <!-- <span>({counter})</span> -->
       </div>
-      <div class="tool ml-3" on:click|preventDefault={addAction}>
+      <!-- <div class="tool ml-3" on:click|preventDefault={addAction}>
         <IconAdd size={'small'} />
-      </div>
+      </div> -->
     </div>
   </div>
   <div class="scroll" on:dragover on:drop>
@@ -75,11 +75,11 @@
         //   color: var(--theme-content-dark-color);
         // }
       }
-      .tool {
-        opacity: .4;
-        cursor: pointer;
-        &:hover { opacity: 1; }
-      }
+      // .tool {
+      //   opacity: .4;
+      //   cursor: pointer;
+      //   &:hover { opacity: 1; }
+      // }
     }
 
     .scroll {
