@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import core, { Data, DocumentUpdate } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
+  import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import { EditBox, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { DropdownLabels, EditBox, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
@@ -28,10 +29,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
+  let categoryItems: DropdownTextItem[] = []
+
   const data: Omit<Data<TagElement>, 'targetClass'> = {
     title: value.title,
     description: value.description,
-    color: value.color
+    color: value.color,
+    category: value.category
   }
 
   async function updateElement () {
@@ -45,6 +49,10 @@
 
     if (data.description !== value.description) {
       documentUpdate.description = data.description
+    }
+
+    if (data.category !== value.category) {
+      documentUpdate.category = data.category
     }
 
     if (data.color !== value.color) {
@@ -67,6 +75,18 @@
 
     dispatch('close')
   }
+
+  const query = createQuery()
+  query.query(tags.class.TagCategory, {}, async (result) => {
+    const newItems: DropdownTextItem[] = []
+    for (const r of result) {
+      newItems.push({
+        id: r._id,
+        label: r.label
+      })
+    }
+    categoryItems = newItems
+  })
 </script>
 
 <Card
@@ -104,6 +124,10 @@
 
       <div class="fs-title mt-4">
         <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth="15rem" bind:value={data.description} />
+      </div>
+
+      <div class="text-sm mt-4">
+        <DropdownLabels title={tags.string.CategoryLabel} bind:selected={data.category} items={categoryItems} />
       </div>
     </div>
   </div>

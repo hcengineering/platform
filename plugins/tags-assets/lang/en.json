@@ -24,6 +24,13 @@
     "SaveLabel": "Save",
     "WeightLabel": "Weight",
     "WeightPlaceholder": "Please type weight here",
-    "CategoryPlaceholder": "Please type category here"
+    "CategoryPlaceholder": "Please type category here",
+
+    "AssetLabel": "Asset",
+    "CategoryTargetClass": "Category",
+    "CategoryTagsLabel": "Category Items",
+    "DataStructuresLabel": "Data Structures",   
+    "OtherCategoryLabel": "Other",
+    "AllCategories": "All Categories"
   }
 }

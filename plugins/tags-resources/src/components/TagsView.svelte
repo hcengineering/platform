@@ -13,11 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
+  import { TagCategory, TagElement } from '@anticrm/tags'
   import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import tags from '../plugin'
+  import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'
 
   export let title: IntlString = tags.string.Tags
@@ -30,15 +32,24 @@
   })
 
   let search = ''
-  let resultQuery: DocumentQuery<Doc> = { targetClass }
+  let resultQuery: DocumentQuery<TagElement> = { targetClass }
 
-  function updateResultQuery (search: string): void {
+  function updateResultQuery (search: string, category?: Ref<TagCategory>): void {
     resultQuery = search === '' ? { targetClass } : { $search: search, targetClass }
+    if (category !== undefined) {
+      resultQuery.category = category
+    }
   }
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateTagElement, { targetClass, keyTitle }, ev.target as HTMLElement)
   }
+  const opt: FindOptions<TagElement> = {
+    lookup: {
+      category: tags.class.TagCategory
+    }
+  }
+  let category: Ref<TagCategory> | undefined = undefined
 </script>
 
 <div class="ac-header full">
@@ -50,12 +61,20 @@
   <SearchEdit
     bind:value={search}
     on:change={() => {
-      updateResultQuery(search)
+      updateResultQuery(search, category)
     }}
   />
   <Button label={tags.string.CreateItemLabel} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
+<CategoryBar
+  {targetClass}
+  {category}
+  on:change={(evt) => {
+    category = evt.detail.category ?? undefined
+    updateResultQuery(search, category)
+  }}
+/>
 <ScrollBox vertical stretch noShift>
   <Table
     _class={tags.class.TagElement}
@@ -67,10 +86,20 @@
         props: { edit: true, keyTitle },
         sortingKey: 'title'
       },
+      ...(category === undefined
+        ? [
+            {
+              key: '$lookup.category',
+              presenter: tags.component.CategoryPresenter,
+              sortingKey: '$lookup.category',
+              label: tags.string.CategoryLabel
+            }
+          ]
+        : []),
       'description',
       'modifiedOn'
     ]}
-    options={{}}
+    options={opt}
     query={resultQuery}
     enableChecking
   />

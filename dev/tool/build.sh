@@ -16,5 +16,5 @@
 #
 
 rushx bundle
-rushx docker:build
+rushx docker:build $@
 rushx docker:push

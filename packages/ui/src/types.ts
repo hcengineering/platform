@@ -74,5 +74,5 @@ export interface ListItem {
 
 export interface DropdownTextItem {
   id: string
-  label: IntlString | string
+  label: string
 }

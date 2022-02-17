@@ -34,6 +34,9 @@ import type {
 } from '@anticrm/view'
 import view from './plugin'
 
+export { ObjectDDParticipant } from '@anticrm/view'
+export { viewOperation } from './migration'
+
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
   editor!: AnyComponent
@@ -190,5 +193,3 @@ export function createModel (builder: Builder): void {
 }
 
 export default view
-
-export { viewOperation } from './migration'

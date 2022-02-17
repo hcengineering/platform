@@ -33,7 +33,7 @@
   let maskLeft: boolean = false
   let maskRight: boolean = false
   let mask: 'left' | 'right' | 'both' | 'none' = 'none'
-  let stepStyle = (gap === 'small') ? 'gap-1' : 'gap-2'
+  $: stepStyle = (gap === 'small') ? 'gap-1' : 'gap-2'
 
   const dispatch = createEventDispatcher()
 

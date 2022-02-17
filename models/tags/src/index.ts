@@ -13,13 +13,14 @@
 // limitations under the License.
 
 import { Class, Doc, Domain, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import view from '@anticrm/model-view'
-import type { TagElement, TagReference } from '@anticrm/tags'
-import { ObjectDDParticipant } from '../../view/node_modules/@anticrm/view/lib'
+import view, { ObjectDDParticipant } from '@anticrm/model-view'
+import { Asset, IntlString } from '@anticrm/platform'
+import type { TagCategory, TagElement, TagReference } from '@anticrm/tags'
 import tags from './plugin'
 
+export { tagsOperation } from './migration'
 export { tags as default }
 
 export const DOMAIN_TAGS = 'tags' as Domain
@@ -40,6 +41,9 @@ export class TTagElement extends TDoc implements TagElement {
 
   @Prop(TypeString(), tags.string.ColorLabel)
   color!: number
+
+  @Prop(TypeRef(tags.class.TagCategory), tags.string.CategoryLabel)
+  category!: Ref<TagCategory>
 }
 
 @Model(tags.class.TagReference, core.class.AttachedDoc, DOMAIN_TAGS)
@@ -56,8 +60,24 @@ export class TTagReference extends TAttachedDoc implements TagReference {
   color!: number
 }
 
+@Model(tags.class.TagCategory, core.class.Doc, DOMAIN_TAGS)
+@UX(tags.string.TargetCategoryLabel)
+export class TTagCategory extends TDoc implements TagCategory {
+  @Prop(TypeString(), tags.string.AssetLabel)
+  icon!: Asset
+
+  @Prop(TypeString(), tags.string.CategoryLabel)
+  label!: IntlString
+
+  @Prop(TypeString(), tags.string.CategoryTargetClass)
+  targetClass!: Ref<Class<Doc>>
+
+  @Prop(Collection(core.class.TypeString), tags.string.CategoryTagsLabel)
+  tags!: string[]
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTagElement, TTagReference)
+  builder.createModel(TTagElement, TTagReference, TTagCategory)
 
   builder.createDoc(
     core.class.Space,

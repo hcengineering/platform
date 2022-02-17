@@ -23,6 +23,7 @@
   export let tag: TagReference | undefined = undefined
   export let element: TagElement | undefined = undefined
   export let action: Asset | AnySvelteComponent | undefined = undefined
+  export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -36,7 +37,7 @@
 >
   <div
     class="text-sm flex flex-between tag-item"
-    style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0))}`}
+    style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
   >
     {name}
     {#if action}

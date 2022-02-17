@@ -30,7 +30,7 @@
   } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
     Component,
     EditBox,
@@ -153,6 +153,8 @@
         }
       )
     }
+
+    const categories = await client.findAll(tags.class.TagCategory, {})
     // Tag elements
     const skillTagElements = new Map(Array.from((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it]))))
     for (const skill of skills) {
@@ -162,7 +164,8 @@
           title: skill.title,
           color: skill.color,
           targetClass: recruit.mixin.Candidate,
-          description: ''
+          description: '',
+          category: findTagCategory(skill.title, categories)
         })
       }
       await client.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
