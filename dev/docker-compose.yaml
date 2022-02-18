@@ -65,6 +65,7 @@ services:
       - 8081:8080
     environment:
       - ACCOUNTS_URL=http://localhost:3000
+      - FRONT_URL=http://localhost:8081
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200

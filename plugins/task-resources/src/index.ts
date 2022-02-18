@@ -15,31 +15,34 @@
 //
 
 import { Class, Client, Doc, Ref } from '@anticrm/core'
-import { IntlString, Resources, translate } from '@anticrm/platform'
+import login from '@anticrm/login'
+import { getMetadata, IntlString, Resources, translate } from '@anticrm/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@anticrm/presentation'
-import task, { SpaceWithStates, Task, TodoItem } from '@anticrm/task'
+import { Issue, SpaceWithStates, Task, TodoItem } from '@anticrm/task'
+import task from './plugin'
 import { showPopup } from '@anticrm/ui'
-import TaskItem from './components/TaskItem.svelte'
+import view from '@anticrm/view'
+import workbench from '@anticrm/workbench'
 import CreateProject from './components/CreateProject.svelte'
 import CreateTask from './components/CreateTask.svelte'
 import EditIssue from './components/EditIssue.svelte'
+import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
+import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
-import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import DoneStateEditor from './components/state/DoneStateEditor.svelte'
+import DoneStatePresenter from './components/state/DoneStatePresenter.svelte'
 import EditStatuses from './components/state/EditStatuses.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
 import StatusTableView from './components/StatusTableView.svelte'
 import TaskHeader from './components/TaskHeader.svelte'
+import TaskItem from './components/TaskItem.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
-
-import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
-import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
 
 async function createTask (object: Doc): Promise<void> {
   showPopup(CreateTask, { parent: object._id, space: object.space })
@@ -126,7 +129,21 @@ export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: 
 
 export type StatesBarPosition = 'start' | 'middle' | 'end' | undefined
 
+function issueHTMLPresenter (doc: Doc): string {
+  const issue = doc as Issue
+  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${task.app.Tasks}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
+}
+
+function issueTextPresenter (doc: Doc): string {
+  const issue = doc as Issue
+  return `Task-${issue.number}`
+}
+
 export default async (): Promise<Resources> => ({
+  function: {
+    IssueHTMLPresenter: issueHTMLPresenter,
+    IssueTextPresenter: issueTextPresenter
+  },
   component: {
     CreateTask,
     CreateProject,

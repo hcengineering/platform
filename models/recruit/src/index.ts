@@ -301,6 +301,22 @@ export function createModel (builder: Builder): void {
     validator: recruit.validator.ApplicantValidator
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: recruit.function.ApplicationHTMLPresenter
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.TextPresenter, {
+    presenter: recruit.function.ApplicationTextPresenter
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: recruit.function.VacancyHTMLPresenter
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.TextPresenter, {
+    presenter: recruit.function.VacancyTextPresenter
+  })
+
   builder.createDoc(
     view.class.Action,
     core.space.Model,

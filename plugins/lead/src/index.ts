@@ -15,9 +15,9 @@
 //
 
 import type { Contact } from '@anticrm/contact'
-import type { Class, Ref } from '@anticrm/core'
+import type { Class, Doc, Ref } from '@anticrm/core'
 import { Mixin } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Asset, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 
@@ -60,6 +60,10 @@ const lead = plugin(leadId, {
   class: {
     Lead: '' as Ref<Class<Lead>>,
     Funnel: '' as Ref<Class<Funnel>>
+  },
+  function: {
+    LeadHTMLPresenter: '' as Resource<(doc: Doc) => string>,
+    LeadTextPresenter: '' as Resource<(doc: Doc) => string>
   },
   mixin: {
     Customer: '' as Ref<Mixin<Customer>>

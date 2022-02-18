@@ -30,6 +30,8 @@ import type {
   ObjectFactory,
   ObjectValidator,
   Viewlet,
+  HTMLPresenter,
+  TextPresenter,
   ViewletDescriptor
 } from '@anticrm/view'
 import view from './plugin'
@@ -98,6 +100,16 @@ export class TActionTarget extends TDoc implements ActionTarget {
   action!: Ref<Action>
 }
 
+@Mixin(view.mixin.HTMLPresenter, core.class.Class)
+export class THTMLPresenter extends TClass implements HTMLPresenter {
+  presenter!: Resource<(doc: Doc) => string>
+}
+
+@Mixin(view.mixin.TextPresenter, core.class.Class)
+export class TTextPresenter extends TClass implements TextPresenter {
+  presenter!: Resource<(doc: Doc) => string>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAttributeEditor,
@@ -110,7 +122,9 @@ export function createModel (builder: Builder): void {
     TObjectValidator,
     TObjectFactory,
     TObjectEditorHeader,
-    TObjectDDParticipant
+    TObjectDDParticipant,
+    THTMLPresenter,
+    TTextPresenter
   )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {

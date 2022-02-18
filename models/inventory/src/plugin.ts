@@ -20,12 +20,8 @@ import inventory from '@anticrm/inventory-resources/src/plugin'
 import { mergeIds, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action } from '@anticrm/view'
-import { Application } from '@anticrm/workbench'
 
 export default mergeIds(inventoryId, inventory, {
-  app: {
-    Inventory: '' as Ref<Application>
-  },
   action: {
     CreateSubcategory: '' as Ref<Action>
   },

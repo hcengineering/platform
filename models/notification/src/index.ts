@@ -15,11 +15,11 @@
 //
 
 import type { Account, Doc, Domain, Ref, Timestamp, TxCUD } from '@anticrm/core'
-import { Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import type { LastView, Notification, NotificationStatus } from '@anticrm/notification'
-import notificaton from './plugin'
+import { ArrOf, Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
+import type { EmaiNotification, LastView, Notification, NotificationStatus } from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
+import notificaton from './plugin'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
@@ -41,6 +41,29 @@ export class TNotification extends TAttachedDoc implements Notification {
   status!: NotificationStatus
 }
 
-export function createModel (builder: Builder): void {
-  builder.createModel(TLastView, TNotification)
+@Model(notificaton.class.EmaiNotification, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TEmaiNotification extends TDoc implements EmaiNotification {
+  @Prop(TypeString(), 'Sender' as IntlString)
+  sender!: string
+
+  @Prop(ArrOf(TypeString()), 'Receivers' as IntlString)
+  receivers!: string[]
+
+  @Prop(TypeString(), 'Subject' as IntlString)
+  subject!: string
+
+  @Prop(TypeString(), 'Text' as IntlString)
+  text!: string
+
+  @Prop(TypeString(), 'Html' as IntlString)
+  html?: string
+
+  @Prop(TypeString(), 'Status' as IntlString)
+  status!: 'new' | 'sent'
 }
+
+export function createModel (builder: Builder): void {
+  builder.createModel(TLastView, TNotification, TEmaiNotification)
+}
+
+export { notificationOperation } from './migration'

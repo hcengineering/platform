@@ -36,6 +36,6 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/contact": "~0.6.2",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/contact-resources": "~0.6.0"
   }
 }

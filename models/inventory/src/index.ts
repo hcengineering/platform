@@ -94,6 +94,14 @@ export function createModel (builder: Builder): void {
     editor: inventory.component.EditProduct
   })
 
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: inventory.function.ProductHTMLPresenter
+  })
+
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.TextPresenter, {
+    presenter: inventory.function.ProductTextPresenter
+  })
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,

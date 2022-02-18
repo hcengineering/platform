@@ -17,8 +17,12 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 
 import lead, { leadId } from '@anticrm/lead'
 import { AnyComponent } from '@anticrm/ui'
+import { Doc, Ref } from '@anticrm/core'
 
 export default mergeIds(leadId, lead, {
+  app: {
+    Lead: '' as Ref<Doc>
+  },
   string: {
     FunnelName: '' as IntlString,
     MakePrivate: '' as IntlString,

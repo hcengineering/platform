@@ -15,15 +15,18 @@
 //
 
 import chunter, { Backlink } from '@anticrm/chunter'
-import contact from '@anticrm/contact'
-import core, { Data, Doc, generateId, Tx, TxCollectionCUD, TxCreateDoc } from '@anticrm/core'
-import notification, { Notification, NotificationStatus } from '@anticrm/notification'
+import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+import core, { Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import notification, { EmaiNotification, Notification, NotificationStatus } from '@anticrm/notification'
+import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
+import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
 
 /**
  * @public
  */
-export async function OnBacklinkCreate (tx: Tx, { findAll, hierarchy, storageFx }: TriggerControl): Promise<Tx[]> {
+export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
   if (tx._class !== core.class.TxCollectionCUD) {
     return []
   }
@@ -53,14 +56,84 @@ export async function OnBacklinkCreate (tx: Tx, { findAll, hierarchy, storageFx 
     } as unknown as Data<Notification>
   }
 
-  const result: TxCollectionCUD<Doc, Notification> = {
+  const createNotificationTx: TxCollectionCUD<Doc, Notification> = {
     ...ptx,
     _id: generateId(),
     collection: 'notifications',
     tx: createTx
   }
 
-  return [result]
+  const result: Tx[] = []
+  result.push(createNotificationTx)
+  const emailTx = await getEmailTx(ptx, control)
+  if (emailTx !== undefined) {
+    result.push(emailTx)
+  }
+  return result
+}
+
+async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCreateDoc<EmaiNotification> | undefined> {
+  const hierarchy = control.hierarchy
+  const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
+  const account = (await control.findAll(contact.class.EmployeeAccount, {
+    _id: ptx.modifiedBy as Ref<EmployeeAccount>
+  }, { limit: 1 }))[0]
+  if (account === undefined) return undefined
+  const sender = formatName(account.name)
+  const attached = (await control.findAll(contact.class.EmployeeAccount, {
+    employee: ptx.objectId as Ref<Employee>
+  }, { limit: 1 }))[0]
+  if (attached === undefined) return undefined
+  const receiver = attached.email
+  const doc = (await control.findAll(backlink.backlinkClass, {
+    _id: backlink.backlinkId
+  }, { limit: 1 }))[0]
+  if (doc === undefined) return undefined
+  const TextPresenter = getTextPresenter(doc._class, hierarchy)
+  if (TextPresenter === undefined) return
+  const HTMLPresenter = getHTMLPresenter(doc._class, hierarchy)
+  const htmlPart = HTMLPresenter !== undefined ? (await getResource(HTMLPresenter.presenter))(doc) : undefined
+  const textPart = (await getResource(TextPresenter.presenter))(doc)
+  const html = `<p><b>${sender}</b> mentioned you in ${htmlPart !== undefined ? htmlPart : textPart}</p> ${backlink.message}`
+  const text = `${sender} mentioned you in ${textPart}`
+  return {
+    _id: generateId(),
+    objectId: generateId(),
+    _class: core.class.TxCreateDoc,
+    space: core.space.DerivedTx,
+    objectClass: notification.class.EmaiNotification,
+    objectSpace: notification.space.Notifications,
+    modifiedOn: ptx.modifiedOn,
+    modifiedBy: ptx.modifiedBy,
+    attributes: {
+      status: 'new',
+      sender,
+      receivers: [receiver],
+      subject: `You was mentioned in ${textPart}`,
+      text,
+      html
+    }
+  }
+}
+
+function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): HTMLPresenter | undefined {
+  let clazz: Ref<Class<Obj>> | undefined = _class
+  while (clazz !== undefined) {
+    const _class = hierarchy.getClass(clazz)
+    const presenter = hierarchy.as(_class, view.mixin.HTMLPresenter)
+    if (presenter.presenter != null) return presenter
+    clazz = _class.extends
+  }
+}
+
+function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
+  let clazz: Ref<Class<Obj>> | undefined = _class
+  while (clazz !== undefined) {
+    const _class = hierarchy.getClass(clazz)
+    const presenter = hierarchy.as(_class, view.mixin.TextPresenter)
+    if (presenter.presenter != null) return presenter
+    clazz = _class.extends
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

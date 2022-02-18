@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Contact, formatName } from '@anticrm/contact'
-import { Class, Client, Ref } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
+import { Contact, formatName, Organization, Person } from '@anticrm/contact'
+import { Class, Client, Doc, Ref } from '@anticrm/core'
+import { getMetadata, Resources } from '@anticrm/platform'
 import { Avatar, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
 import Channels from './components/Channels.svelte'
@@ -34,6 +34,9 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
+import login from '@anticrm/login'
+import workbench from '@anticrm/workbench'
+import view from '@anticrm/view'
 
 export { Channels, ChannelsEditor, ContactPresenter, ChannelsView }
 
@@ -46,6 +49,26 @@ async function queryContact (_class: Ref<Class<Contact>>, client: Client, search
     component: UserInfo,
     componentProps: { size: 'x-small' }
   }))
+}
+
+function personHTMLPresenter (doc: Doc): string {
+  const person = doc as Person
+  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${person._id}|${person._class}">${formatName(person.name)}</a>`
+}
+
+function personTextPresenter (doc: Doc): string {
+  const person = doc as Person
+  return `${formatName(person.name)}`
+}
+
+function organizationHTMLPresenter (doc: Doc): string {
+  const organization = doc as Organization
+  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
+}
+
+function organizationTextPresenter (doc: Doc): string {
+  const organization = doc as Organization
+  return `${organization.name}`
 }
 
 export default async (): Promise<Resources> => ({
@@ -62,6 +85,12 @@ export default async (): Promise<Resources> => ({
     CreateOrganizations,
     SocialEditor,
     Contacts
+  },
+  function: {
+    PersonHTMLPresenter: personHTMLPresenter,
+    PersonTextPresenter: personTextPresenter,
+    OrganizationHTMLPresenter: organizationHTMLPresenter,
+    OrganizationTextPresenter: organizationTextPresenter
   },
   completion: {
     EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),

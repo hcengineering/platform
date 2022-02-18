@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { IntlString, plugin } from '@anticrm/platform'
+import { IntlString, plugin, Resource } from '@anticrm/platform'
 import type { Asset, Plugin } from '@anticrm/platform'
 import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
 import { AnyComponent } from '@anticrm/ui'
@@ -67,6 +67,10 @@ export default plugin(chunterId, {
   },
   component: {
     CommentInput: '' as AnyComponent
+  },
+  function: {
+    ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
+    ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
   },
   class: {
     Message: '' as Ref<Class<Message>>,

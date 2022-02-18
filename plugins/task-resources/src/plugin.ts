@@ -13,12 +13,16 @@
 // limitations under the License.
 //
 
+import { Doc, Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import task, { taskId } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(taskId, task, {
+  app: {
+    Tasks: '' as Ref<Doc>
+  },
   string: {
     CreateProject: '' as IntlString,
     ProjectName: '' as IntlString,

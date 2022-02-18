@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { getMetadata, Resources } from '@anticrm/platform'
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
 import Customers from './components/Customers.svelte'
@@ -24,8 +24,28 @@ import LeadPresenter from './components/LeadPresenter.svelte'
 import LeadsPresenter from './components/LeadsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Leads from './components/Leads.svelte'
+import { Lead } from '@anticrm/lead'
+import { Doc } from '@anticrm/core'
+import login from '@anticrm/login'
+import workbench from '@anticrm/workbench'
+import view from '@anticrm/view'
+import leadP from './plugin'
+
+function leadHTMLPresenter (doc: Doc): string {
+  const lead = doc as Lead
+  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${leadP.app.Lead}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
+}
+
+function leadTextPresenter (doc: Doc): string {
+  const lead = doc as Lead
+  return `${lead.title}`
+}
 
 export default async (): Promise<Resources> => ({
+  function: {
+    LeadHTMLPresenter: leadHTMLPresenter,
+    LeadTextPresenter: leadTextPresenter
+  },
   component: {
     CreateFunnel,
     CreateLead,

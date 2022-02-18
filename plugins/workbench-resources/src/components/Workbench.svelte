@@ -205,7 +205,7 @@
     notification.class.Notification,
     {
       attachedTo: (getCurrentAccount() as EmployeeAccount).employee,
-      status: { $in: [NotificationStatus.New, NotificationStatus.EmailSent] }
+      status: NotificationStatus.New
     },
     (res) => {
       hasNotification = res.length > 0

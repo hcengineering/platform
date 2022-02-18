@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { IntlString, plugin } from '@anticrm/platform'
+import { IntlString, plugin, Resource } from '@anticrm/platform'
 import type { Plugin, Asset } from '@anticrm/platform'
 import type { Doc, Ref, Class, UXObject, Space, Account, AttachedDoc } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
@@ -130,6 +130,12 @@ export default plugin(contactId, {
     Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
     EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
+  },
+  function: {
+    PersonHTMLPresenter: '' as Resource<(doc: Doc) => string>,
+    PersonTextPresenter: '' as Resource<(doc: Doc) => string>,
+    OrganizationHTMLPresenter: '' as Resource<(doc: Doc) => string>,
+    OrganizationTextPresenter: '' as Resource<(doc: Doc) => string>
   },
   component: {
     SocialEditor: '' as AnyComponent

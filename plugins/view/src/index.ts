@@ -91,6 +91,20 @@ export interface ActionTarget<T extends Doc = Doc> extends Doc {
 /**
  * @public
  */
+export interface HTMLPresenter extends Class<Doc> {
+  presenter: Resource<(doc: Doc) => string>
+}
+
+/**
+ * @public
+ */
+export interface TextPresenter extends Class<Doc> {
+  presenter: Resource<(doc: Doc) => string>
+}
+
+/**
+ * @public
+ */
 export const viewId = 'view' as Plugin
 
 /**
@@ -164,7 +178,9 @@ const view = plugin(viewId, {
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
-    ObjectDDParticipant: '' as Ref<ObjectDDParticipant>
+    ObjectDDParticipant: '' as Ref<ObjectDDParticipant>,
+    HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
+    TextPresenter: '' as Ref<Mixin<TextPresenter>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,

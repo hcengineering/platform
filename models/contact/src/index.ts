@@ -29,7 +29,7 @@ import presentation from '@anticrm/model-presentation'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { ids as contact } from './plugin'
+import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
@@ -167,6 +167,22 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: contact.function.PersonHTMLPresenter
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.TextPresenter, {
+    presenter: contact.function.PersonTextPresenter
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: contact.function.OrganizationHTMLPresenter
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.TextPresenter, {
+    presenter: contact.function.OrganizationTextPresenter
   })
 
   builder.createDoc(
