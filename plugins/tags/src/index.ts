@@ -100,4 +100,7 @@ export function findTagCategory (title: string, categories: TagCategory[]): Ref<
   return tagsPlugin.category.Other
 }
 
-export const selectedElements = writable<Ref<TagElement>[]>([])
+/**
+ * @public
+ */
+export const selectedTagElements = writable<Ref<TagElement>[]>([])

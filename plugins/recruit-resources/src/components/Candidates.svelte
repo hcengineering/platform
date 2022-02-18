@@ -18,7 +18,7 @@
   import contact from '@anticrm/contact'
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import tags, { selectedElements, TagCategory, TagElement } from '@anticrm/tags'
+  import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
   import { Button, Component, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
@@ -48,7 +48,7 @@
   // Find all tags for object classe with matched elements
   const query = createQuery()
 
-  $: query.query(tags.class.TagReference, { tag: { $in: $selectedElements } }, (result) => {
+  $: query.query(tags.class.TagReference, { tag: { $in: $selectedTagElements } }, (result) => {
     documentIds = Array.from(new Set<Ref<Doc>>(result.map(it => it.attachedTo)).values())
   })
 
@@ -57,7 +57,7 @@
   function updateCategory (detail: {category: Ref<TagCategory> | null, elements: TagElement[] }) {
     console.log(detail)
     category = detail.category ?? undefined
-    selectedElements.set(Array.from(detail.elements ?? []).map(it => it._id))
+    selectedTagElements.set(Array.from(detail.elements ?? []).map(it => it._id))
   }
 </script>
 
