@@ -39,8 +39,6 @@
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/core": "~0.6.11",
     "@anticrm/view": "~0.6.0",
-    "@anticrm/login": "~0.6.1",
-    "@anticrm/workbench": "~0.6.1",
     "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/notification-resources": "~0.6.0",
     "@anticrm/panel": "~0.6.0",

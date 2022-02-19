@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { IntlString, plugin, Resource } from '@anticrm/platform'
+import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
-import type { Space, Doc, Ref, Class, AttachedDoc } from '@anticrm/core'
+import { IntlString, plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
 /**
@@ -68,14 +68,11 @@ export default plugin(chunterId, {
   component: {
     CommentInput: '' as AnyComponent
   },
-  function: {
-    ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
-  },
   class: {
     Message: '' as Ref<Class<Message>>,
     Backlink: '' as Ref<Class<Backlink>>,
-    Comment: '' as Ref<Class<Comment>>
+    Comment: '' as Ref<Class<Comment>>,
+    Channel: '' as Ref<Class<Channel>>
   },
   space: {
     Backlinks: '' as Ref<Space>
@@ -84,5 +81,8 @@ export default plugin(chunterId, {
     EditUpdate: '' as IntlString,
     EditCancel: '' as IntlString,
     Comments: '' as IntlString
+  },
+  app: {
+    Chunter: '' as Ref<Doc>
   }
 })

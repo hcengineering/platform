@@ -129,21 +129,7 @@ export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: 
 
 export type StatesBarPosition = 'start' | 'middle' | 'end' | undefined
 
-function issueHTMLPresenter (doc: Doc): string {
-  const issue = doc as Issue
-  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${task.app.Tasks}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
-}
-
-function issueTextPresenter (doc: Doc): string {
-  const issue = doc as Issue
-  return `Task-${issue.number}`
-}
-
 export default async (): Promise<Resources> => ({
-  function: {
-    IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter
-  },
   component: {
     CreateTask,
     CreateProject,

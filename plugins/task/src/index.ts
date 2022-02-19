@@ -25,11 +25,10 @@ import {
   Timestamp,
   TxOperations
 } from '@anticrm/core'
-import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
-
 import { genRanks } from './utils'
 
 /**
@@ -176,15 +175,14 @@ export const taskId = 'task' as Plugin
  * @public
  */
 const task = plugin(taskId, {
+  app: {
+    Tasks: '' as Ref<Doc>
+  },
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
   },
   interface: {
     DocWithRank: '' as Ref<Interface<DocWithRank>>
-  },
-  function: {
-    IssueHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    IssueTextPresenter: '' as Resource<(doc: Doc) => string>
   },
   class: {
     Issue: '' as Ref<Class<Issue>>,

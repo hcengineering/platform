@@ -15,7 +15,7 @@
 //
 
 import type { Client as MinioClient } from 'minio'
-import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext, ModelDb } from '@anticrm/core'
 import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
@@ -26,6 +26,7 @@ export interface TriggerControl {
   txFactory: TxFactory
   findAll: Storage['findAll']
   hierarchy: Hierarchy
+  modelDb: ModelDb
 
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient

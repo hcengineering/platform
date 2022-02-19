@@ -458,14 +458,6 @@ export function createModel (builder: Builder): void {
     presenter: task.component.TodoItemPresenter
   })
 
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: task.function.IssueHTMLPresenter
-  })
-
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.TextPresenter, {
-    presenter: task.function.IssueTextPresenter
-  })
-
   builder.createDoc(
     view.class.Action,
     core.space.Model,

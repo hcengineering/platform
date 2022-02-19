@@ -112,14 +112,6 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.CommentPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: chunter.function.ChannelHTMLPresenter
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.TextPresenter, {
-    presenter: chunter.function.ChannelTextPresenter
-  })
-
   builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, view.mixin.ObjectDDParticipant, {
     collectDocs: chunter.action.CommentRemove
   })

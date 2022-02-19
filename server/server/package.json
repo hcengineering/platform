@@ -49,6 +49,16 @@
     "@anticrm/server-contact": "~0.6.1",
     "@anticrm/server-contact-resources": "~0.6.0",
     "@anticrm/server-notification": "~0.6.0",
-    "@anticrm/server-notification-resources": "~0.6.0"
+    "@anticrm/server-notification-resources": "~0.6.0",
+    "@anticrm/server-chunter": "~0.6.0",
+    "@anticrm/server-chunter-resources": "~0.6.0",
+    "@anticrm/server-inventory": "~0.6.0",
+    "@anticrm/server-inventory-resources": "~0.6.0",
+    "@anticrm/server-lead": "~0.6.0",
+    "@anticrm/server-lead-resources": "~0.6.0",
+    "@anticrm/server-recruit": "~0.6.0",
+    "@anticrm/server-recruit-resources": "~0.6.0",
+    "@anticrm/server-task": "~0.6.0",
+    "@anticrm/server-task-resources": "~0.6.0"
   }
 }

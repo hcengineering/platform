@@ -184,14 +184,6 @@ export function createModel (builder: Builder): void {
     editor: lead.component.Leads
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: lead.function.LeadHTMLPresenter
-  })
-
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.TextPresenter, {
-    presenter: lead.function.LeadTextPresenter
-  })
-
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,

@@ -15,7 +15,7 @@
 //
 
 import { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
-import type { Asset, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
@@ -57,10 +57,6 @@ const inventory = plugin(inventoryId, {
     Category: '' as Ref<Class<Category>>,
     Variant: '' as Ref<Class<Variant>>
   },
-  function: {
-    ProductHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ProductTextPresenter: '' as Resource<(doc: Doc) => string>
-  },
   icon: {
     InventoryApplication: '' as Asset,
     Products: '' as Asset,
@@ -74,6 +70,9 @@ const inventory = plugin(inventoryId, {
   space: {
     Category: '' as Ref<Space>,
     Products: '' as Ref<Space>
+  },
+  app: {
+    Inventory: '' as Ref<Doc>
   }
 })
 

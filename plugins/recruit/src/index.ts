@@ -15,9 +15,10 @@
 
 import type { Person } from '@anticrm/contact'
 import type { Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
-import type { Asset, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -64,6 +65,9 @@ export const recruitId = 'recruit' as Plugin
  * @public
  */
 const recruit = plugin(recruitId, {
+  app: {
+    Recruit: '' as Ref<Doc>
+  },
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
     Candidates: '' as Ref<Class<Candidates>>,
@@ -72,11 +76,8 @@ const recruit = plugin(recruitId, {
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>
   },
-  function: {
-    VacancyHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    VacancyTextPresenter: '' as Resource<(doc: Doc) => string>,
-    ApplicationHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ApplicationTextPresenter: '' as Resource<(doc: Doc) => string>
+  component: {
+    EditVacancy: '' as AnyComponent
   },
   icon: {
     RecruitApplication: '' as Asset,

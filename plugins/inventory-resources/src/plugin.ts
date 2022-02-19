@@ -14,15 +14,11 @@
 // limitations under the License.
 //
 
+import inventory, { inventoryId } from '@anticrm/inventory'
 import { IntlString, mergeIds, StatusCode } from '@anticrm/platform'
 
-import inventory, { inventoryId } from '@anticrm/inventory'
-import { Doc, Ref } from '@anticrm/core'
 
 export default mergeIds(inventoryId, inventory, {
-  app: {
-    Inventory: '' as Ref<Doc>
-  },
   status: {
     CategoryRequired: '' as StatusCode,
     NameRequired: '' as StatusCode

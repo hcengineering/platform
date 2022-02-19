@@ -237,6 +237,7 @@ class TServerStorage implements ServerStorage {
               triggerFx.fx(() => f(adapter, this.workspace))
             },
             findAll: fAll(ctx),
+            modelDb: this.modelDb,
             hierarchy: this.hierarchy
           })
         ))

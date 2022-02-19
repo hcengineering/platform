@@ -14,44 +14,25 @@
 // limitations under the License.
 //
 
-import { getMetadata, Resources } from '@anticrm/platform'
-import Categories from './components/Categories.svelte'
-import CreateCategory from './components/CreateCategory.svelte'
-import CategoryPresenter from './components/CategoryPresenter.svelte'
-import Products from './components/Products.svelte'
-import ProductPresenter from './components/ProductPresenter.svelte'
-import EditProduct from './components/EditProduct.svelte'
-import Variants from './components/Variants.svelte'
-import VariantPresenter from './components/VariantPresenter.svelte'
 import { Doc } from '@anticrm/core'
+import { Resources } from '@anticrm/platform'
 import { showPopup } from '@anticrm/ui'
-import { Product } from '@anticrm/inventory'
-import login from '@anticrm/login'
-import workbench from '@anticrm/workbench'
-import view from '@anticrm/view'
-import inventory from './plugin'
+import Categories from './components/Categories.svelte'
+import CategoryPresenter from './components/CategoryPresenter.svelte'
+import CreateCategory from './components/CreateCategory.svelte'
+import EditProduct from './components/EditProduct.svelte'
+import ProductPresenter from './components/ProductPresenter.svelte'
+import Products from './components/Products.svelte'
+import VariantPresenter from './components/VariantPresenter.svelte'
+import Variants from './components/Variants.svelte'
 
 async function createSubcategory (object: Doc): Promise<void> {
   showPopup(CreateCategory, { attachedTo: object._id })
 }
 
-function productHTMLPresenter (doc: Doc): string {
-  const product = doc as Product
-  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${inventory.app.Inventory}/Products/#${view.component.EditDoc}|${product._id}|${product._class}">${product.name}</a>`
-}
-
-function productTextPresenter (doc: Doc): string {
-  const product = doc as Product
-  return `${product.name}`
-}
-
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateSubcategory: createSubcategory
-  },
-  function: {
-    ProductHTMLPresenter: productHTMLPresenter,
-    ProductTextPresenter: productTextPresenter
   },
   component: {
     Categories,

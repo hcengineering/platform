@@ -723,7 +723,7 @@
     },
     {    
       "packageName": "@anticrm/server-attachment",
-      "projectFolder": "server/attachment",
+      "projectFolder": "server-plugins/attachment",
       "shouldPublish": true
     },
     {
@@ -733,12 +733,12 @@
     },
     {
       "packageName": "@anticrm/server-attachment-resources",
-      "projectFolder": "server/attachment-resources",
+      "projectFolder": "server-plugins/attachment-resources",
       "shouldPublish": true
     },
     {
       "packageName": "@anticrm/server-contact",
-      "projectFolder": "server/contact",
+      "projectFolder": "server-plugins/contact",
       "shouldPublish": true
     },
     {
@@ -748,7 +748,7 @@
     },
     {
       "packageName": "@anticrm/server-contact-resources",
-      "projectFolder": "server/contact-resources",
+      "projectFolder": "server-plugins/contact-resources",
       "shouldPublish": true
     },
     {
@@ -1008,7 +1008,7 @@
     },
     {
       "packageName": "@anticrm/server-notification",
-      "projectFolder": "server/notification",
+      "projectFolder": "server-plugins/notification",
       "shouldPublish": true
     },
     {
@@ -1018,7 +1018,7 @@
     },
     {
       "packageName": "@anticrm/server-notification-resources",
-      "projectFolder": "server/notification-resources",
+      "projectFolder": "server-plugins/notification-resources",
       "shouldPublish": true
     },
     {
@@ -1039,6 +1039,81 @@
     {
       "packageName": "@anticrm/model-tags",
       "projectFolder": "models/tags",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-chunter",
+      "projectFolder": "server-plugins/chunter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-chunter",
+      "projectFolder": "models/server-chunter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-chunter-resources",
+      "projectFolder": "server-plugins/chunter-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-inventory",
+      "projectFolder": "server-plugins/inventory",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-inventory",
+      "projectFolder": "models/server-inventory",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-inventory-resources",
+      "projectFolder": "server-plugins/inventory-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-lead",
+      "projectFolder": "server-plugins/lead",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-lead",
+      "projectFolder": "models/server-lead",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-lead-resources",
+      "projectFolder": "server-plugins/lead-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-recruit",
+      "projectFolder": "server-plugins/recruit",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-recruit",
+      "projectFolder": "models/server-recruit",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-recruit-resources",
+      "projectFolder": "server-plugins/recruit-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-task",
+      "projectFolder": "server-plugins/task",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-task",
+      "projectFolder": "models/server-task",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-task-resources",
+      "projectFolder": "server-plugins/task-resources",
       "shouldPublish": true
     },
   ]

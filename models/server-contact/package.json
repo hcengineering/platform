@@ -29,6 +29,8 @@
     "@anticrm/model": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-contact": "~0.6.0",
-    "@anticrm/server-core": "~0.6.0"
+    "@anticrm/server-core": "~0.6.0",
+    "@anticrm/contact": "~0.6.2",
+    "@anticrm/view": "~0.6.0"
   }
 }

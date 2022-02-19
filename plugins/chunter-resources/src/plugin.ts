@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-import type { Channel } from '@anticrm/chunter'
 import chunter, { chunterId } from '@anticrm/chunter'
-import type { Class, Doc, Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -24,9 +22,6 @@ export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
     ChannelView: '' as AnyComponent
-  },
-  class: {
-    Channel: '' as Ref<Class<Channel>>
   },
   string: {
     Channel: '' as IntlString,
@@ -37,8 +32,5 @@ export default mergeIds(chunterId, chunter, {
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString
-  },
-  app: {
-    Chunter: '' as Ref<Doc>
   }
 })

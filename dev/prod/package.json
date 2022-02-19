@@ -106,6 +106,16 @@
     "@anticrm/rekoni": "~0.6.0",
     "@anticrm/tags-assets": "~0.6.0",
     "@anticrm/tags": "~0.6.0",
-    "@anticrm/tags-resources": "~0.6.0"
+    "@anticrm/tags-resources": "~0.6.0",
+    "@anticrm/server-chunter": "~0.6.0",
+    "@anticrm/server-chunter-resources": "~0.6.0",
+    "@anticrm/server-inventory": "~0.6.0",
+    "@anticrm/server-inventory-resources": "~0.6.0",
+    "@anticrm/server-lead": "~0.6.0",
+    "@anticrm/server-lead-resources": "~0.6.0",
+    "@anticrm/server-recruit": "~0.6.0",
+    "@anticrm/server-recruit-resources": "~0.6.0",
+    "@anticrm/server-task": "~0.6.0",
+    "@anticrm/server-task-resources": "~0.6.0"
   }
 }

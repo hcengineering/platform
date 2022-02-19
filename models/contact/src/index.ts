@@ -169,22 +169,6 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.ChannelsPresenter
   })
 
-  builder.mixin(contact.class.Person, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: contact.function.PersonHTMLPresenter
-  })
-
-  builder.mixin(contact.class.Person, core.class.Class, view.mixin.TextPresenter, {
-    presenter: contact.function.PersonTextPresenter
-  })
-
-  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: contact.function.OrganizationHTMLPresenter
-  })
-
-  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.TextPresenter, {
-    presenter: contact.function.OrganizationTextPresenter
-  })
-
   builder.createDoc(
     contact.class.ChannelProvider,
     core.space.Model,

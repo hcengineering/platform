@@ -13,16 +13,12 @@
 // limitations under the License.
 //
 
-import { Doc, Ref, Space } from '@anticrm/core'
+import { Ref, Space } from '@anticrm/core'
 import type { IntlString, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
-import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(recruitId, recruit, {
-  app: {
-    Recruit: '' as Ref<Doc>
-  },
   status: {
     ApplicationExists: '' as StatusCode,
     CandidateRequired: '' as StatusCode,
@@ -66,8 +62,5 @@ export default mergeIds(recruitId, recruit, {
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
-  },
-  component: {
-    EditVacancy: '' as AnyComponent
   }
 })

@@ -93,38 +93,12 @@ export async function queryApplication (client: Client, search: string): Promise
   }))
 }
 
-function vacancyHTMLPresenter (doc: Doc): string {
-  const vacancy = doc as Vacancy
-  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${recruit.app.Recruit}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
-}
-
-function vacancyTextPresenter (doc: Doc): string {
-  const vacancy = doc as Vacancy
-  return `${vacancy.name}`
-}
-
-function applicationHTMLPresenter (doc: Doc): string {
-  const applicant = doc as Applicant
-  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${recruit.app.Recruit}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
-}
-
-function applicationTextPresenter (doc: Doc): string {
-  const applicant = doc as Applicant
-  return `APP-${applicant.number}`
-}
-
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateApplication: createApplication
   },
   validator: {
     ApplicantValidator: applicantValidator
-  },
-  function: {
-    VacancyHTMLPresenter: vacancyHTMLPresenter,
-    VacancyTextPresenter: vacancyTextPresenter,
-    ApplicationHTMLPresenter: applicationHTMLPresenter,
-    ApplicationTextPresenter: applicationTextPresenter
   },
   component: {
     CreateVacancy,

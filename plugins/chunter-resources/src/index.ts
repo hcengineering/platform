@@ -32,16 +32,6 @@ import workbench from '@anticrm/workbench'
 
 export { CommentsPresenter }
 
-function channelHTMLPresenter (doc: Doc): string {
-  const channel = doc as Channel
-  return `<a href="${getMetadata(login.metadata.FrontUrl)}/${workbench.component.WorkbenchApp}/${chunter.app.Chunter}/${channel._id}">${channel.name}</a>`
-}
-
-function channelTextPresenter (doc: Doc): string {
-  const channel = doc as Channel
-  return `${channel.name}`
-}
-
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -50,10 +40,6 @@ export default async (): Promise<Resources> => ({
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter
-  },
-  function: {
-    ChannelHTMLPresenter: channelHTMLPresenter,
-    ChannelTextPresenter: channelTextPresenter
   },
   activity: {
     TxCommentCreate,

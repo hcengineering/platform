@@ -31,6 +31,11 @@ import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as serverAttachmentModel } from '@anticrm/model-server-attachment'
 import { createModel as serverContactModel } from '@anticrm/model-server-contact'
 import { createModel as serverNotificationModel } from '@anticrm/model-server-notification'
+import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
+import { createModel as serverInventoryModel } from '@anticrm/model-server-inventory'
+import { createModel as serverLeadModel } from '@anticrm/model-server-lead'
+import { createModel as serverTaskModel } from '@anticrm/model-server-task'
+import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
 import { createModel as serverCoreModel } from '@anticrm/model-server-core'
 import { createModel as settingModel } from '@anticrm/model-setting'
 import { createModel as taskModel } from '@anticrm/model-task'
@@ -70,7 +75,11 @@ const builders = [
   serverContactModel,
   serverNotificationModel,
   tagsModel,
-
+  serverChunterModel,
+  serverInventoryModel,
+  serverLeadModel,
+  serverTaskModel,
+  serverRecruitModel,
   createDemo
 ]
 

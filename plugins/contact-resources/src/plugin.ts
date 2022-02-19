@@ -15,7 +15,6 @@
 //
 
 import contact, { contactId } from '@anticrm/contact'
-import { Doc, Ref } from '@anticrm/core'
 import { IntlString, mergeIds } from '@anticrm/platform'
 
 export default mergeIds(contactId, contact, {
@@ -40,8 +39,5 @@ export default mergeIds(contactId, contact, {
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     Create: '' as IntlString
-  },
-  app: {
-    Contacts: '' as Ref<Doc>
   }
 })
