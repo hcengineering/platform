@@ -30,7 +30,7 @@
   } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
+  import tags, { findTagCategory, findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
     Component,
     EditBox,
