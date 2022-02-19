@@ -85,7 +85,7 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
   }, { limit: 1 }))[0]
   if (attached === undefined) return undefined
   const receiver = attached.email
-  let doc: Doc | undefined = undefined
+  let doc: Doc | undefined
   if (hierarchy.isDerived(backlink.backlinkClass, core.class.Space)) {
     doc = (await control.modelDb.findAll(backlink.backlinkClass, {
       _id: backlink.backlinkId
