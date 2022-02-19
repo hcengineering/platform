@@ -28,8 +28,8 @@
 
   export let object: Person
 
-  let firstName = getFirstName(object.name)
-  let lastName = getLastName(object.name)
+  $: firstName = getFirstName(object.name)
+  $: lastName = getLastName(object.name)
 
   const client = getClient()
 
