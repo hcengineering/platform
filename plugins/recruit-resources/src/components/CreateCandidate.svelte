@@ -30,7 +30,7 @@
   } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
+  import tags, { findTagCategory, findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
     Component,
     EditBox,
@@ -246,6 +246,9 @@
       // Create skills
       await elementsPromise
 
+      const categories = await client.findAll(tags.class.TagCategory, {})
+      const categoriesMap = new Map(Array.from(categories.map(it => ([it._id, it]))))
+   
       const newSkills:TagReference[] = []
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {
@@ -253,12 +256,15 @@
         let e = namedElements.get(title)
         if (e === undefined) {
           // No yet tag with title
+          const category = findTagCategory(s, categories)
+          const cinstance = categoriesMap.get(category)
           e = TxProcessor.createDoc2Doc(
             client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
               title,
-              description: '',
+              description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
               color: getColorNumberByText(s),
-              targetClass: recruit.mixin.Candidate
+              targetClass: recruit.mixin.Candidate,
+              category
             })
           )
           namedElements.set(title, e)

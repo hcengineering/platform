@@ -1,8 +1,8 @@
-import core, { Ref, TxOperations } from '@anticrm/core'
+import core, { DocumentQuery, Ref, TxOperations } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import tags from './plugin'
 import { getCategories } from '@anticrm/skillset'
-import { TagCategory } from '@anticrm/tags'
+import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
+import tags from './plugin'
 
 export const tagsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
@@ -35,6 +35,16 @@ export const tagsOperation: MigrateOperation = {
         },
         (tags.category.Category + c.id) as Ref<TagCategory>
       )
+    }
+
+    const categories = await tx.findAll(tags.class.TagCategory, {})
+    // Find all existing TagElement and update category based on skillset
+    const tagElements = await tx.findAll(tags.class.TagElement, { category: null } as unknown as DocumentQuery<TagElement>)
+    for (const t of tagElements) {
+      if (t.category == null) {
+        const category = findTagCategory(t.title, categories)
+        await tx.update(t, { category: category })
+      }
     }
   }
 }

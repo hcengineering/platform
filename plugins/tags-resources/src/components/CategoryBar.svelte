@@ -87,36 +87,38 @@
   }
 </script>
 
-<div class="flex-between mb-4 header">
-  <div class="flex-row-center buttons">
-    <div
-      class="button flex-center"
-      class:active={category === undefined}
-      on:click={() => {
-        category = undefined
-        dispatch('change', { category, elements: [] })
-      }}
-    >
-      <Label label={tags.string.AllCategories} />
+{#if visibleCategories.length > 0}
+  <div class="flex-between mb-4 header">
+    <div class="flex-row-center buttons">
+      <div
+        class="button flex-center"
+        class:active={category === undefined}
+        on:click={() => {
+          category = undefined
+          dispatch('change', { category, elements: [] })
+        }}
+      >
+        <Label label={tags.string.AllCategories} />
+      </div>
+    </div>
+    <div class="flex-row-center caption-color states">
+      <div class="antiStatesBar mask-none {stepStyle}">
+        {#each visibleCategories as item, i (item._id)}
+          <div
+            class="categoryElement flex-center"
+            label={item.label}
+            style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
+            on:click={(ev) => {
+              if (item._id !== category) selectItem(ev, item)
+            }}
+          >
+            {item.label} ({categoryCounts.get(item._id)?.length ?? ''})
+          </div>
+        {/each}
+      </div>
     </div>
   </div>
-  <div class="flex-row-center caption-color states">
-    <div class="antiStatesBar mask-none {stepStyle}">
-      {#each visibleCategories as item, i (item._id)}
-        <div
-          class="categoryElement flex-center"
-          label={item.label}
-          style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
-          on:click={(ev) => {
-            if (item._id !== category) selectItem(ev, item)
-          }}
-        >
-          {item.label} ({categoryCounts.get(item._id)?.length ?? ''})
-        </div>
-      {/each}
-    </div>
-  </div>
-</div>
+{/if}
 
 <style lang="scss">
   .categoryElement {
