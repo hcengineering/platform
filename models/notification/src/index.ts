@@ -17,7 +17,7 @@
 import type { Account, Doc, Domain, Ref, Timestamp, TxCUD } from '@anticrm/core'
 import { ArrOf, Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import type { EmaiNotification, LastView, Notification, NotificationStatus } from '@anticrm/notification'
+import type { EmailNotification, LastView, Notification, NotificationStatus } from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
 import notificaton from './plugin'
 
@@ -41,8 +41,8 @@ export class TNotification extends TAttachedDoc implements Notification {
   status!: NotificationStatus
 }
 
-@Model(notificaton.class.EmaiNotification, core.class.Doc, DOMAIN_NOTIFICATION)
-export class TEmaiNotification extends TDoc implements EmaiNotification {
+@Model(notificaton.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TEmaiNotification extends TDoc implements EmailNotification {
   @Prop(TypeString(), 'Sender' as IntlString)
   sender!: string
 

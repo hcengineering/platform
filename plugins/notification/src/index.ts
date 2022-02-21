@@ -38,7 +38,7 @@ export interface Notification extends AttachedDoc {
 /**
  * @public
  */
-export interface EmaiNotification extends Doc {
+export interface EmailNotification extends Doc {
   sender: string
   receivers: string[]
   subject: string
@@ -67,7 +67,7 @@ const notification = plugin(notificationId, {
   class: {
     LastView: '' as Ref<Class<LastView>>,
     Notification: '' as Ref<Class<Notification>>,
-    EmaiNotification: '' as Ref<Class<EmaiNotification>>
+    EmailNotification: '' as Ref<Class<EmailNotification>>
   },
   component: {
     NotificationsPopup: '' as AnyComponent

@@ -17,7 +17,7 @@
 import chunter, { Backlink } from '@anticrm/chunter'
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
 import core, { Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
-import notification, { EmaiNotification, Notification, NotificationStatus } from '@anticrm/notification'
+import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
 import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
@@ -72,7 +72,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   return result
 }
 
-async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCreateDoc<EmaiNotification> | undefined> {
+async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCreateDoc<EmailNotification> | undefined> {
   const hierarchy = control.hierarchy
   const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
   const account = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
@@ -108,7 +108,7 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
     objectId: generateId(),
     _class: core.class.TxCreateDoc,
     space: core.space.DerivedTx,
-    objectClass: notification.class.EmaiNotification,
+    objectClass: notification.class.EmailNotification,
     objectSpace: notification.space.Notifications,
     modifiedOn: ptx.modifiedOn,
     modifiedBy: ptx.modifiedBy,
