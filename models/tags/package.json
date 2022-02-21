@@ -34,6 +34,6 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
-    "@anticrm/skillset": "https://github.com/hcengineering/skillset.git"
+    "@anticrm/skillset": "^0.6.0"
   }
 }
