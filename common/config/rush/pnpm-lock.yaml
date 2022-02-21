@@ -1,7 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
-  '@anticrm/skillset': https://github.com/hcengineering/skillset.git
+  '@anticrm/skillset': ^0.6.0
   '@elastic/elasticsearch': ^7.14.0
   '@koa/cors': ^3.1.0
   '@microsoft/api-extractor': ^7.18.4
@@ -211,7 +211,7 @@ specifiers:
   xml2js: ~0.4.23
 
 dependencies:
-  '@anticrm/skillset': github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f
+  '@anticrm/skillset': 0.6.0
   '@elastic/elasticsearch': 7.16.0
   '@koa/cors': 3.1.0
   '@microsoft/api-extractor': 7.19.2
@@ -421,6 +421,10 @@ dependencies:
   xml2js: 0.4.23
 
 packages:
+
+  /@anticrm/skillset/0.6.0:
+    resolution: {integrity: sha512-k5/57q9ie73oCFKAxZrKy/BSnakiaVZsJmfjzmqhoko+3dZq2M2o/h1r+RSZrQ6re51iMqFdsVZAtfdPL15hjA==}
+    dev: false
 
   /@babel/code-frame/7.12.11:
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -12599,12 +12603,12 @@ packages:
     dev: false
 
   file:projects/model-tags.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-ydbpF6SS1lFreF2Dyb7mHeKUD5ajzVa/KhOSiAMiVCU9zwy7aoFfUE3Uy+98biYE+qv/6jsF9x93o3r5WfYEfg==, tarball: file:projects/model-tags.tgz}
+    resolution: {integrity: sha512-M9oDcJc4rUtXqhC4FcPW+Z62RTGfstzLFi6DnorfVhtEANY/2VTUPiyjwLM+ml6sCHVdG49kaAx1gLHyEbAF7Q==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
     name: '@rush-temp/model-tags'
     version: 0.0.0
     dependencies:
-      '@anticrm/skillset': github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f
+      '@anticrm/skillset': 0.6.0
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
@@ -14168,11 +14172,4 @@ packages:
       typescript: 4.5.4
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f:
-    resolution: {tarball: https://codeload.github.com/hcengineering/skillset/tar.gz/7c97534c09c7382546f10d16ae27721a5704018f}
-    name: '@anticrm/skillset'
-    version: 0.6.0
-    requiresBuild: true
     dev: false
