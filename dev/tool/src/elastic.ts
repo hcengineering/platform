@@ -185,6 +185,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const isCollectionCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
 
     const tdata = data.filter(tx => isCreateTx(tx) || isMixinTx(tx) || isCollectionCreateTx(tx))
+    const removedDocument = new Set<Ref<Doc>>()
     for (const tx of tdata) {
       pos++
       if (pos % 5000 === 0) {
@@ -209,12 +210,27 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
           } catch (err: any) {
             console.error('failed to replay tx', tx, err.message)
           }
+        } else {
+          removedDocument.add(createTx.objectId)
         }
       }
 
       // We need process mixins.
       if (isMixinTx(tx)) {
-        await tool.storage.tx(metricsCtx, tx)
+        try {
+          let deleted = false
+          if (tx._class === core.class.TxMixin) {
+            deleted = removedDocument.has((tx as TxMixin<Doc, Doc>).objectId)
+          }
+          if (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin) {
+            deleted = removedDocument.has((tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId)
+          }
+          if (!deleted) {
+            await tool.storage.tx(metricsCtx, tx)
+          }
+        } catch (err: any) {
+          console.error('failed to replay tx', tx, err.message)
+        }
       }
 
       // We need process collection creations.
@@ -263,6 +279,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     console.log('replay elastic transactions done')
     console.log(metricsToString(m))
   } finally {
+    console.log('Elastic restore done')
     await done()
   }
 }
