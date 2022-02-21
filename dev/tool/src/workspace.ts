@@ -77,22 +77,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
 
         const fileHandle = await open(join(minioDbLocation, d.name), 'w')
 
-        const data = await minio.getObject(dbName, d.name)
-        const chunks: Buffer[] = []
-
-        await new Promise((resolve) => {
-          data.on('readable', () => {
-            let chunk
-            while ((chunk = data.read()) !== null) {
-              const b = chunk as Buffer
-              chunks.push(b)
-            }
-          })
-
-          data.on('end', () => {
-            resolve(null)
-          })
-        })
+        const chunks: Buffer[] = await readMinioData(minio, dbName, d.name)
         for (const b of chunks) {
           await fileHandle.write(b)
         }
@@ -104,6 +89,26 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
   } finally {
     await client.close()
   }
+}
+
+export async function readMinioData (minio: Client, dbName: string, name: string): Promise<Buffer[]> {
+  const data = await minio.getObject(dbName, name)
+  const chunks: Buffer[] = []
+
+  await new Promise((resolve) => {
+    data.on('readable', () => {
+      let chunk
+      while ((chunk = data.read()) !== null) {
+        const b = chunk as Buffer
+        chunks.push(b)
+      }
+    })
+
+    data.on('end', () => {
+      resolve(null)
+    })
+  })
+  return chunks
 }
 
 export async function restoreWorkspace (

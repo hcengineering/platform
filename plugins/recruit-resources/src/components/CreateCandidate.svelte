@@ -30,7 +30,7 @@
   } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { findTagCategory, findTagCategory, TagElement, TagReference } from '@anticrm/tags'
+  import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
     Component,
     EditBox,
@@ -248,7 +248,7 @@
 
       const categories = await client.findAll(tags.class.TagCategory, {})
       const categoriesMap = new Map(Array.from(categories.map(it => ([it._id, it]))))
-   
+  
       const newSkills:TagReference[] = []
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {

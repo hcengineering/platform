@@ -32,8 +32,10 @@ import { decodeToken, generateToken } from '@anticrm/server-token'
 import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
+import { exit } from 'process'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
+import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 
@@ -232,6 +234,17 @@ program
   .description('decode token')
   .action(async (token) => {
     console.log(decodeToken(token))
+  })
+program
+  .command('update-recruit <workspace>')
+  .description('process pdf documents inside minio and update resumes with skills, etc.')
+  .action(async (workspace) => {
+    const rekoniUrl = process.env.REKONI_URL
+    if (rekoniUrl === undefined) {
+      console.log('Please provide REKONI_URL environment variable')
+      exit(1)
+    }
+    return await updateCandidates(transactorUrl, workspace, minio, mongodbUri, elasticUrl, rekoniUrl)
   })
 
 program.parse(process.argv)

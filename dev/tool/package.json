@@ -12,7 +12,7 @@
     "bundle": "esbuild src/index.ts --bundle --minify --platform=node > bundle.js",
     "docker:build": "docker build -t anticrm/tool .",
     "docker:push": "docker push anticrm/tool",
-    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 ts-node ./src/index.ts",
+    "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 REKONI_URL=http://localhost:4004 ts-node ./src/index.ts",
     "run-local-node": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 node ./bundle.js",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
@@ -37,7 +37,8 @@
     "typescript": "^4.3.5",
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
-    "@types/mime-types": "~2.1.1"
+    "@types/mime-types": "~2.1.1",
+    "@types/request": "~2.48.8"
   },
   "dependencies": {
     "mongodb": "^4.1.1",
@@ -85,6 +86,9 @@
     "@anticrm/server-recruit": "~0.6.0",
     "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/server-task": "~0.6.0",
-    "@anticrm/server-task-resources": "~0.6.0"
+    "@anticrm/server-task-resources": "~0.6.0",
+    "@anticrm/rekoni": "~0.6.0",
+    "request": "~2.88.2",
+    "@anticrm/tags": "~0.6.0"
   }
 }

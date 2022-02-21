@@ -17,6 +17,7 @@
  * @public
  */
 export interface ReconiDocument {
+  format: string
   firstName: string
   lastName: string
   title?: string
