@@ -54,6 +54,7 @@ export class TTagReference extends TAttachedDoc implements TagReference {
   title!: string
 
   @Prop(TypeRef(tags.class.TagElement), tags.string.TagLabel)
+  @Index(IndexKind.Indexed)
   tag!: Ref<TagElement>
 
   @Prop(TypeString(), tags.string.ColorLabel)
