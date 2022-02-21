@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
+  import core, { AnyAttribute, Class, ClassifierKind, Doc, Hierarchy, Mixin, Obj, Ref } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { Asset, translate } from '@anticrm/platform'
   import {
@@ -62,6 +62,8 @@
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
     selectedClass = objectClass._id
+
+    selectedClass = Hierarchy.mixinClass(object) ?? selectedClass
   
     parentClass = getParentClass(object._class)
     mixins = getMixins()
@@ -93,15 +95,21 @@
 
   let ignoreKeys: string[] = []
 
+  function getDepth (ref: AnyAttribute): number {
+    console.log(ref, client.getHierarchy().getAncestors(ref.attributeOf))
+    return client.getHierarchy().getAncestors(ref.attributeOf).length
+  }
+
   async function updateKeys (): Promise<void> {
     const filtredKeys = getFiltredKeys(
       selectedClass ?? object._class,
       ignoreKeys,
-      selectedClass !== objectClass._id ? objectClass._id : undefined
+      undefined // selectedClass !== objectClass._id ? objectClass._id : undefined
     )
     keys = collectionsFilter(filtredKeys, false)
-
+  
     const collectionKeys = collectionsFilter(filtredKeys, true)
+    collectionKeys.sort((a, b) => getDepth(a.attr) - getDepth(b.attr))
     const editors: {key: KeyedAttribute, editor: AnyComponent}[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
