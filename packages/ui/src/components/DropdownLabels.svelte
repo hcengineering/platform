@@ -23,6 +23,7 @@
 
   import type { DropdownTextItem } from '../types'
   import { showPopup } from '..'
+import { createEventDispatcher } from 'svelte'
 
   export let title: IntlString
   export let caption: IntlString | undefined = undefined
@@ -42,6 +43,8 @@
   }
   
   const none = 'None' as IntlString
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="flex-col cursor-pointer"
@@ -50,7 +53,10 @@
     if (!opened) {
       opened = true
       showPopup(DropdownLabelsPopup, { title, caption, items, selected, header }, btn, (result) => {
-        if (result) selected = result
+        if (result) {
+          selected = result
+          dispatch('selected', result)
+        }
         opened = false
       })
     }

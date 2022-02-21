@@ -18,6 +18,7 @@
   import { TagElement, TagReference } from '@anticrm/tags'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
+  import { selectedTagElements } from '@anticrm/tags'
 
   export let object: Doc
   export let _class: Ref<Class<Doc>>
@@ -43,8 +44,8 @@
 </script>
 
 <div class="tags flex flex-wrap">
-  {#each items as tag, i}
-    <TagItem {tag} element={elements.get(tag.tag)} />
+  {#each items as tag}
+    <TagItem {tag} element={elements.get(tag.tag)} selected={$selectedTagElements.includes(tag.tag)} />
   {/each}
 </div>
 

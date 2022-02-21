@@ -30,7 +30,7 @@
   } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import tags, { findTagCategory, findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
     Component,
     EditBox,
@@ -153,6 +153,8 @@
         }
       )
     }
+
+    const categories = await client.findAll(tags.class.TagCategory, {})
     // Tag elements
     const skillTagElements = new Map(Array.from((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it]))))
     for (const skill of skills) {
@@ -162,7 +164,8 @@
           title: skill.title,
           color: skill.color,
           targetClass: recruit.mixin.Candidate,
-          description: ''
+          description: '',
+          category: findTagCategory(skill.title, categories)
         })
       }
       await client.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
@@ -243,6 +246,9 @@
       // Create skills
       await elementsPromise
 
+      const categories = await client.findAll(tags.class.TagCategory, {})
+      const categoriesMap = new Map(Array.from(categories.map(it => ([it._id, it]))))
+   
       const newSkills:TagReference[] = []
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {
@@ -250,12 +256,15 @@
         let e = namedElements.get(title)
         if (e === undefined) {
           // No yet tag with title
+          const category = findTagCategory(s, categories)
+          const cinstance = categoriesMap.get(category)
           e = TxProcessor.createDoc2Doc(
             client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
               title,
-              description: '',
+              description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
               color: getColorNumberByText(s),
-              targetClass: recruit.mixin.Candidate
+              targetClass: recruit.mixin.Candidate,
+              category
             })
           )
           namedElements.set(title, e)

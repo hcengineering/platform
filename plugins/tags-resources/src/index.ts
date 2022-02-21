@@ -21,7 +21,9 @@ import TagsPresenter from './components/TagsPresenter.svelte'
 import TagsItemPresenter from './components/TagsItemPresenter.svelte'
 import TagsView from './components/TagsView.svelte'
 import TagsEditor from './components/TagsEditor.svelte'
+import CategoryPresenter from './components/CategoryPresenter.svelte'
 import tags from './plugin'
+import TagsCategoryBar from './components/CategoryBar.svelte'
 
 async function DeleteTagElement (doc: TagElement, client: TxOperations): Promise<Doc[]> {
   return await client.findAll(tags.class.TagReference, { tag: doc._id })
@@ -35,7 +37,9 @@ export default async (): Promise<Resources> => ({
     TagsPresenter,
     TagsView,
     TagsEditor,
-    TagsItemPresenter
+    TagsItemPresenter,
+    CategoryPresenter,
+    TagsCategoryBar
   },
   dd: {
     DeleteTagElement

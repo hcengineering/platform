@@ -17,6 +17,7 @@ import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { writable } from 'svelte/store'
 
 /**
  * @public
@@ -26,6 +27,7 @@ export interface TagElement extends Doc {
   targetClass: Ref<Class<Doc>>
   description: string
   color: number
+  category: Ref<TagCategory>
 }
 
 /**
@@ -38,14 +40,32 @@ export interface TagReference extends AttachedDoc {
 }
 
 /**
+ * Defined set of skills per category.
+ *
+ * Will be used as skill category templates or category detection
+ * @public
+ */
+export interface TagCategory extends Doc {
+  icon: Asset
+  label: string
+  targetClass: Ref<Class<Doc>>
+  // A list of possible variants.
+  tags: string[]
+}
+
+/**
  * @public
  */
 export const tagsId = 'tags' as Plugin
 
-export default plugin(tagsId, {
+/**
+ * @public
+ */
+const tagsPlugin = plugin(tagsId, {
   class: {
     TagElement: '' as Ref<Class<TagElement>>,
-    TagReference: '' as Ref<Class<TagReference>>
+    TagReference: '' as Ref<Class<TagReference>>,
+    TagCategory: '' as Ref<Class<TagCategory>>
   },
   space: {
     Tags: '' as Ref<Space>
@@ -55,6 +75,32 @@ export default plugin(tagsId, {
   },
   component: {
     TagsView: '' as AnyComponent,
-    TagsEditor: '' as AnyComponent
+    TagsEditor: '' as AnyComponent,
+    TagsCategoryBar: '' as AnyComponent
+  },
+  category: {
+    Other: '' as Ref<TagCategory>
   }
 })
+
+/**
+ * @public
+ */
+export default tagsPlugin
+
+/**
+ * @public
+ */
+export function findTagCategory (title: string, categories: TagCategory[]): Ref<TagCategory> {
+  for (const c of categories) {
+    if (c.tags.findIndex((it) => it.toLowerCase() === title.toLowerCase()) !== -1) {
+      return c._id
+    }
+  }
+  return tagsPlugin.category.Other
+}
+
+/**
+ * @public
+ */
+export const selectedTagElements = writable<Ref<TagElement>[]>([])

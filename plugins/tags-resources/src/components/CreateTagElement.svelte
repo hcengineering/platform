@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { Class, Data, Doc, generateId, Ref } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { TagElement } from '@anticrm/tags'
-  import { EditBox, getColorNumberByText, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { Card, createQuery, getClient } from '@anticrm/presentation'
+  import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
+  import { DropdownLabels, EditBox, getColorNumberByText, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
@@ -29,10 +30,20 @@
   let description = ''
   let color: number = 0
 
+  let categoryWasSet = false
+  let category: Ref<TagCategory> = tags.category.Other
+
+  let categories: TagCategory[] = []
+  let categoryItems: DropdownTextItem[] = []
+
   let colorSet = false
 
   $: if (!colorSet) {
     color = getColorNumberByText(title)
+  }
+
+  $: if (!categoryWasSet) {
+    category = findTagCategory(title, categories)
   }
 
   export function canClose (): boolean {
@@ -43,12 +54,27 @@
   const client = getClient()
   const tagElementId = generateId()
 
+  const query = createQuery()
+
+  query.query(tags.class.TagCategory, {}, async (result) => {
+    const newItems: DropdownTextItem[] = []
+    for (const r of result) {
+      newItems.push({
+        id: r._id,
+        label: r.label
+      })
+    }
+    categories = result
+    categoryItems = newItems
+  })
+
   async function createTagElenent () {
     const tagElement: Data<TagElement> = {
       title: title,
       description,
       targetClass,
-      color
+      color,
+      category: category
     }
 
     await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
@@ -92,6 +118,17 @@
 
       <div class="text-sm mt-4">
         <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth="15rem" bind:value={description} />
+      </div>
+
+      <div class="text-sm mt-4">
+        <DropdownLabels
+          title={tags.string.CategoryLabel}
+          bind:selected={category}
+          items={categoryItems}
+          on:selected={() => {
+            categoryWasSet = true
+          }}
+        />
       </div>
     </div>
   </div>

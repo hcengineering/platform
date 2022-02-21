@@ -208,7 +208,7 @@ export function createModel (builder: Builder): void {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
         presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
         label: recruit.string.SkillsLabel,
-        // sortingKey: '$lookup.skills',
+        sortingKey: 'skills',
         props: {
           _class: recruit.mixin.Candidate,
           key: 'skills'

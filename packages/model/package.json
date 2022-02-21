@@ -29,6 +29,7 @@
   "dependencies": {
     "@anticrm/core": "~0.6.11",
     "@anticrm/platform": "~0.6.5",
-    "toposort": "^2.0.2"
+    "toposort": "^2.0.2",
+    "fast-equals": "^2.0.3"
   }
 }

@@ -15,3 +15,4 @@
 
 export * from './dsl'
 export * from './migration'
+export * from './utils'

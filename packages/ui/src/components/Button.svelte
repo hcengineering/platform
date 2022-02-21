@@ -18,6 +18,7 @@
   import Spinner from './Spinner.svelte'
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
+import { onMount } from 'svelte'
 
   export let label: IntlString
   export let primary: boolean = false
@@ -27,9 +28,18 @@
   export let loading: boolean = false
   export let transparent: boolean = false
   export let width: string | undefined = undefined
+  export let focus: boolean = false
+
+  let input: HTMLButtonElement
+  onMount(() => {
+    if (focus) {
+      input.focus()
+      focus = false
+    }
+  })
 </script>
 
-<button class="button {size}" class:transparent class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button bind:this={input} class="button {size}" class:transparent class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if icon && !loading}
     <div class="icon">
       <Icon {icon} size={'small'}/>

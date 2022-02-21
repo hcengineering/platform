@@ -13,14 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TagReference } from '@anticrm/tags'
-  import TagItem from './TagItem.svelte'
+  import { TagCategory } from '@anticrm/tags'
 
-  export let value: TagReference[] | TagReference
-
-  $: values = Array.isArray(value) ? value : [value]
+  export let value: TagCategory
 </script>
 
-{#each values as v}
-  <TagItem tag={v} />
-{/each}
+{#if value}
+  {value.label}
+{/if}

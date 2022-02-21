@@ -23,6 +23,7 @@ import { leadOperation } from '@anticrm/model-lead'
 import { recruitOperation } from '@anticrm/model-recruit'
 import { viewOperation } from '@anticrm/model-view'
 import { contactOperation } from '@anticrm/model-contact'
+import { tagsOperation } from '@anticrm/model-tags'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -31,5 +32,6 @@ export const migrateOperations: MigrateOperation[] = [
   leadOperation,
   recruitOperation,
   viewOperation,
-  contactOperation
+  contactOperation,
+  tagsOperation
 ]

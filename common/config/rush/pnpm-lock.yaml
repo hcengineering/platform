@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@anticrm/skillset': https://github.com/hcengineering/skillset.git
   '@elastic/elasticsearch': ^7.14.0
   '@koa/cors': ^3.1.0
   '@microsoft/api-extractor': ^7.18.4
@@ -210,6 +211,7 @@ specifiers:
   xml2js: ~0.4.23
 
 dependencies:
+  '@anticrm/skillset': github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f
   '@elastic/elasticsearch': 7.16.0
   '@koa/cors': 3.1.0
   '@microsoft/api-extractor': 7.19.2
@@ -12597,11 +12599,12 @@ packages:
     dev: false
 
   file:projects/model-tags.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-M+xHdfGituHUoH7YgkHc5lw2TXsvV3jvf3g73EpjJgGl4NFclNd1VkBtyEQ9Czsjy3N/jff1B2FePFu7u2p6FA==, tarball: file:projects/model-tags.tgz}
+    resolution: {integrity: sha512-ydbpF6SS1lFreF2Dyb7mHeKUD5ajzVa/KhOSiAMiVCU9zwy7aoFfUE3Uy+98biYE+qv/6jsF9x93o3r5WfYEfg==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
     name: '@rush-temp/model-tags'
     version: 0.0.0
     dependencies:
+      '@anticrm/skillset': github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
@@ -12744,7 +12747,7 @@ packages:
     dev: false
 
   file:projects/model.tgz:
-    resolution: {integrity: sha512-7sg1S1NADyRy2HZFRHyYjlq55h31ArIg5XVIo4Ydm9NfmOObk0gocDHP/6cP/7Y+vgvS2JlUZTTTTGQ35qG0XA==, tarball: file:projects/model.tgz}
+    resolution: {integrity: sha512-1k5LE7nXCQ1TvWCYoxozAUY0TJXD/l2z4QbObZl27O0O0HFPhQsu1kcjsC5zlfK1PDNIAYbG4msK5ka9E0LIYg==, tarball: file:projects/model.tgz}
     name: '@rush-temp/model'
     version: 0.0.0
     dependencies:
@@ -12758,6 +12761,7 @@ packages:
       eslint-plugin-import: 2.25.3_eslint@7.32.0
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      fast-equals: 2.0.4
       prettier: 2.5.1
       toposort: 2.0.2
       typescript: 4.5.4
@@ -13581,7 +13585,7 @@ packages:
     dev: false
 
   file:projects/tags.tgz:
-    resolution: {integrity: sha512-dDZIEx6iNmqyXw6CrYnmGL1PV3li1Tjuc0OSYr00PKg6UsvhrX3ah6J6W9jHm7tjL25ccMkhrVjpWQQOJsC6LQ==, tarball: file:projects/tags.tgz}
+    resolution: {integrity: sha512-JUARXu0wQ++Y0afKL5DLKcEQUgTjdC4gy/HZR+KLyQ6oNBJXDW/HYGVF/X012K4V2qa3LDcNNMIBrgRggfAGHg==, tarball: file:projects/tags.tgz}
     name: '@rush-temp/tags'
     version: 0.0.0
     dependencies:
@@ -13595,6 +13599,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.5.1
+      svelte: 3.44.3
       typescript: 4.5.4
     transitivePeerDependencies:
       - supports-color
@@ -14163,4 +14168,11 @@ packages:
       typescript: 4.5.4
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  github.com/hcengineering/skillset/7c97534c09c7382546f10d16ae27721a5704018f:
+    resolution: {tarball: https://codeload.github.com/hcengineering/skillset/tar.gz/7c97534c09c7382546f10d16ae27721a5704018f}
+    name: '@anticrm/skillset'
+    version: 0.6.0
+    requiresBuild: true
     dev: false
