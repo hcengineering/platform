@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
+import core, { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
 import notification, { LastView } from '@anticrm/notification'
 import { createQuery, getClient } from '@anticrm/presentation'
 import { writable, Writable } from 'svelte/store'
@@ -63,18 +63,22 @@ export class NotificationClient {
     const current = this.lastViews.get(_id)
     if (current !== undefined) {
       if (current.lastView < lastView || force) {
-        await client.updateDoc(current._class, current.space, current._id, {
+        const u = client.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
           lastView: lastView
         })
+        u.space = core.space.DerivedTx
+        await client.tx(u)
       }
     } else if (force) {
-      await client.createDoc(notification.class.LastView, notification.space.Notifications, {
+      const u = client.txFactory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
         user,
         lastView,
         attachedTo: _id,
         attachedToClass: _class,
         collection: 'lastViews'
       })
+      u.space = core.space.DerivedTx
+      await client.tx(u)
     }
   }
 
