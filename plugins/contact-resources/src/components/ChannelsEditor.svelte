@@ -35,7 +35,7 @@
   }
 
   const query = createQuery()
-  query.query(
+  $: attachedTo && query.query(
     contact.class.Channel,
     {
       attachedTo: attachedTo
