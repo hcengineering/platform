@@ -37,6 +37,7 @@ export const loginId = 'login' as Plugin
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
+    FrontUrl: '' as Asset,
     UploadUrl: '' as Asset,
     TelegramUrl: '' as Asset,
     GmailUrl: '' as Asset,

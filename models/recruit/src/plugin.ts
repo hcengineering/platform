@@ -21,13 +21,9 @@ import recruit from '@anticrm/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action } from '@anticrm/view'
-import { Application } from '@anticrm/workbench'
 import { ObjectSearchFactory, ObjectSearchCategory } from '@anticrm/model-presentation'
 
 export default mergeIds(recruitId, recruit, {
-  app: {
-    Recruit: '' as Ref<Application>
-  },
   action: {
     CreateApplication: '' as Ref<Action>
   },

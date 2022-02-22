@@ -21,9 +21,9 @@ import Customers from './components/Customers.svelte'
 import EditLead from './components/EditLead.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import LeadPresenter from './components/LeadPresenter.svelte'
+import Leads from './components/Leads.svelte'
 import LeadsPresenter from './components/LeadsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
-import Leads from './components/Leads.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {

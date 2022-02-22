@@ -38,10 +38,44 @@ export interface Notification extends AttachedDoc {
 /**
  * @public
  */
+export interface EmailNotification extends Doc {
+  sender: string
+  receivers: string[]
+  subject: string
+  text: string
+  html?: string
+  status: 'new' | 'sent'
+}
+
+/**
+ * @public
+ */
 export enum NotificationStatus {
   New,
-  EmailSent,
   Read
+}
+
+/**
+ * @public
+ */
+export interface NotificationType extends Doc {
+  label: IntlString
+}
+
+/**
+ * @public
+ */
+export interface NotificationProvider extends Doc {
+  label: IntlString
+}
+
+/**
+ * @public
+ */
+export interface NotificationSetting extends Doc {
+  type: Ref<NotificationType>
+  provider: Ref<NotificationProvider>
+  enabled: boolean
 }
 
 /**
@@ -55,7 +89,17 @@ export const notificationId = 'notification' as Plugin
 const notification = plugin(notificationId, {
   class: {
     LastView: '' as Ref<Class<LastView>>,
-    Notification: '' as Ref<Class<Notification>>
+    Notification: '' as Ref<Class<Notification>>,
+    EmailNotification: '' as Ref<Class<EmailNotification>>,
+    NotificationType: '' as Ref<Class<NotificationType>>,
+    NotificationProvider: '' as Ref<Class<NotificationProvider>>,
+    NotificationSetting: '' as Ref<Class<NotificationSetting>>
+  },
+  ids: {
+    MentionNotification: '' as Ref<NotificationType>,
+    PlatformNotification: '' as Ref<NotificationProvider>,
+    EmailNotification: '' as Ref<NotificationProvider>,
+    NotificationSettings: '' as Ref<Doc>
   },
   component: {
     NotificationsPopup: '' as AnyComponent

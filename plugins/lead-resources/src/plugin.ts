@@ -13,9 +13,8 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
-
 import lead, { leadId } from '@anticrm/lead'
+import { IntlString, mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(leadId, lead, {

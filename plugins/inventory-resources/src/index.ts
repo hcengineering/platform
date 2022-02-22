@@ -14,17 +14,17 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
-import Categories from './components/Categories.svelte'
-import CreateCategory from './components/CreateCategory.svelte'
-import CategoryPresenter from './components/CategoryPresenter.svelte'
-import Products from './components/Products.svelte'
-import ProductPresenter from './components/ProductPresenter.svelte'
-import EditProduct from './components/EditProduct.svelte'
-import Variants from './components/Variants.svelte'
-import VariantPresenter from './components/VariantPresenter.svelte'
 import { Doc } from '@anticrm/core'
+import { Resources } from '@anticrm/platform'
 import { showPopup } from '@anticrm/ui'
+import Categories from './components/Categories.svelte'
+import CategoryPresenter from './components/CategoryPresenter.svelte'
+import CreateCategory from './components/CreateCategory.svelte'
+import EditProduct from './components/EditProduct.svelte'
+import ProductPresenter from './components/ProductPresenter.svelte'
+import Products from './components/Products.svelte'
+import VariantPresenter from './components/VariantPresenter.svelte'
+import Variants from './components/Variants.svelte'
 
 async function createSubcategory (object: Doc): Promise<void> {
   showPopup(CreateCategory, { attachedTo: object._id })

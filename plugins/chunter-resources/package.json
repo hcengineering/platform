@@ -36,11 +36,13 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/chunter": "~0.6.0",
+    "@anticrm/login": "~0.6.1",
     "svelte": "^3.37.0",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.2",
     "@anticrm/contact-resources": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/view": "~0.6.0"
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/workbench": "~0.6.1"
   }
 }

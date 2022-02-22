@@ -16,13 +16,16 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  
+
   import Toggle from './Toggle.svelte'
   import Label from './Label.svelte'
-  
+  import { createEventDispatcher } from 'svelte'
+
   export let label: IntlString
   export let description: IntlString | undefined = undefined
   export let on: boolean = false
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="flex-between">
@@ -32,7 +35,7 @@
       <span><Label label={description} /></span>
     {/if}
   </div>
-  <Toggle bind:on={on}/>
+  <Toggle bind:on={on} on:change={() => {dispatch('change', on)}} />
 </div>
 
 <style lang="scss">

@@ -3,6 +3,9 @@
     "LastView": "Last View",
     "Notification": "Notification",
     "Notifications": "Notifications",
-    "NoNotifications": "No notifications"
+    "NoNotifications": "No notifications",
+    "MentionNotification": "Mentioned",
+    "EmailNotification": "by email",
+    "PlatformNotification": "in platform"
   }
 }

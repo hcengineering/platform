@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
+import inventory, { inventoryId } from '@anticrm/inventory'
 import { IntlString, mergeIds, StatusCode } from '@anticrm/platform'
 
-import inventory, { inventoryId } from '@anticrm/inventory'
 
 export default mergeIds(inventoryId, inventory, {
   status: {

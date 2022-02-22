@@ -29,7 +29,6 @@ import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
-
 import { genRanks } from './utils'
 
 /**
@@ -176,6 +175,9 @@ export const taskId = 'task' as Plugin
  * @public
  */
 const task = plugin(taskId, {
+  app: {
+    Tasks: '' as Ref<Doc>
+  },
   mixin: {
     KanbanCard: '' as Ref<Mixin<KanbanCard>>
   },

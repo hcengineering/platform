@@ -15,16 +15,13 @@
 
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { Ref } from '@anticrm/core'
-import contact, { contactId } from '@anticrm/contact'
+import { contactId } from '@anticrm/contact'
+import contact from '@anticrm/contact-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import {} from '@anticrm/core'
-import { Application } from '@anticrm/workbench'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 
-export const ids = mergeIds(contactId, contact, {
-  app: {
-    Contacts: '' as Ref<Application>
-  },
+export default mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
@@ -39,13 +36,7 @@ export const ids = mergeIds(contactId, contact, {
     Contacts: '' as AnyComponent
   },
   string: {
-    Organizations: '' as IntlString,
-    OrganizationsFolder: '' as IntlString,
-    PersonsFolder: '' as IntlString,
     Persons: '' as IntlString,
-    Contacts: '' as IntlString,
-    CreatePersons: '' as IntlString,
-    CreateOrganizations: '' as IntlString,
     SearchEmployee: '' as IntlString,
     SearchPerson: '' as IntlString,
     SearchOrganization: '' as IntlString,

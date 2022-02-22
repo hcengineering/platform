@@ -163,5 +163,8 @@ export default plugin(contactId, {
   space: {
     Employee: '' as Ref<Space>,
     Contacts: '' as Ref<Space>
+  },
+  app: {
+    Contacts: '' as Ref<Doc>
   }
 })

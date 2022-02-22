@@ -50,6 +50,11 @@ import {
 import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverContactId } from '@anticrm/server-contact'
 import { serverNotificationId } from '@anticrm/server-notification'
+import { serverChunterId } from '@anticrm/server-chunter'
+import { serverInventoryId } from '@anticrm/server-inventory'
+import { serverLeadId } from '@anticrm/server-lead'
+import { serverRecruitId } from '@anticrm/server-recruit'
+import { serverTaskId } from '@anticrm/server-task'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -106,6 +111,11 @@ export class ElasticTool {
     addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
     addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
     addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
+    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/server-chunter-resources'))
+    addLocation(serverInventoryId, () => import(/* webpackChunkName: "server-inventory" */ '@anticrm/server-inventory-resources'))
+    addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
+    addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
+    addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 

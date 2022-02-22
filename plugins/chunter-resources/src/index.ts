@@ -13,7 +13,10 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { Channel } from '@anticrm/chunter'
+import { Doc } from '@anticrm/core'
+import login from '@anticrm/login'
+import { getMetadata, Resources } from '@anticrm/platform'
 import { collectBacklinks } from './backlinks'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
@@ -24,6 +27,8 @@ import CommentInput from './components/CommentInput.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
+import chunter from './plugin'
+import workbench from '@anticrm/workbench'
 
 export { CommentsPresenter }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Ref, Space } from '@anticrm/core'
+import { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
@@ -70,6 +70,9 @@ const inventory = plugin(inventoryId, {
   space: {
     Category: '' as Ref<Space>,
     Products: '' as Ref<Space>
+  },
+  app: {
+    Inventory: '' as Ref<Doc>
   }
 })
 

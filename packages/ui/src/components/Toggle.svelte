@@ -18,7 +18,7 @@
 </script>
 
 <label class="toggle">
-  <input class="chBox" type="checkbox" bind:checked={on}>
+  <input class="chBox" type="checkbox" bind:checked={on} on:change>
   <span class="toggle-switch"></span>
 </label>
 

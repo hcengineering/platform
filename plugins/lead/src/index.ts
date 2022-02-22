@@ -15,7 +15,7 @@
 //
 
 import type { Contact } from '@anticrm/contact'
-import type { Class, Ref } from '@anticrm/core'
+import type { Class, Doc, Ref } from '@anticrm/core'
 import { Mixin } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -57,6 +57,9 @@ export const leadId = 'lead' as Plugin
  * @public
  */
 const lead = plugin(leadId, {
+  app: {
+    Lead: '' as Ref<Doc>
+  },
   class: {
     Lead: '' as Ref<Class<Lead>>,
     Funnel: '' as Ref<Class<Funnel>>

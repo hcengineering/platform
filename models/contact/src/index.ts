@@ -29,7 +29,7 @@ import presentation from '@anticrm/model-presentation'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { ids as contact } from './plugin'
+import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain

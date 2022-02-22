@@ -18,9 +18,27 @@ import { Builder } from '@anticrm/model'
 
 import serverCore from '@anticrm/server-core'
 import core from '@anticrm/core'
+import contact from '@anticrm/contact'
+import view from '@anticrm/view'
 import serverContact from '@anticrm/server-contact'
 
 export function createModel (builder: Builder): void {
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: serverContact.function.PersonHTMLPresenter
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.TextPresenter, {
+    presenter: serverContact.function.PersonTextPresenter
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.HTMLPresenter, {
+    presenter: serverContact.function.OrganizationHTMLPresenter
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.TextPresenter, {
+    presenter: serverContact.function.OrganizationTextPresenter
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverContact.trigger.OnContactDelete
   })

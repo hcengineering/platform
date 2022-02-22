@@ -20,6 +20,8 @@ spec:
             - containerPort: 3333
           imagePullPolicy: Always
           env:
+          - name: FRONT_URL
+            value: https://front.hc.engineering/
           - name: MONGO_URL
             valueFrom:
               secretKeyRef:

@@ -30,6 +30,7 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
-    "@anticrm/notification": "~0.6.0"
+    "@anticrm/notification": "~0.6.0",
+    "@anticrm/setting": "~0.6.0"
   }
 }

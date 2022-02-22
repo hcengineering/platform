@@ -67,6 +67,7 @@ jobs:
             plugins
             pods
             server
+            server-plugins
             templates
             tests
             rush.json
@@ -96,6 +97,7 @@ jobs:
             plugins
             pods
             server
+            server-plugins
             templates
             tests
             rush.json
@@ -128,6 +130,7 @@ jobs:
             plugins
             pods
             server
+            server-plugins
             templates
             tests
             rush.json
@@ -160,6 +163,7 @@ jobs:
             plugins
             pods
             server
+            server-plugins
             templates
             tests
             rush.json
@@ -204,6 +208,7 @@ jobs:
             plugins
             pods
             server
+            server-plugins
             templates
             tests
             rush.json

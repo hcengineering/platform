@@ -1,0 +1,135 @@
+<!--
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { getCurrentAccount,Ref,Space,Tx, TxProcessor } from '@anticrm/core'
+  import type { NotificationProvider,NotificationSetting,NotificationType } from '@anticrm/notification'
+  import presentation,{ createQuery,getClient } from '@anticrm/presentation'
+  import { Button,Grid,Icon,Label,ToggleWithLabel } from '@anticrm/ui'
+  import notification from '../plugin'
+  import justClone from 'just-clone'
+
+  const accountId = getCurrentAccount()._id
+  const typeQuery = createQuery()
+  const providersQuery = createQuery()
+  const settingsQuery = createQuery()
+  const client = getClient()
+  const space = accountId as string as Ref<Space>
+
+  let types: NotificationType[] = []
+  let providers: NotificationProvider[] = []
+  let settings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
+  let oldSettings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
+
+  typeQuery.query(notification.class.NotificationType, {}, (res) => (types = res))
+  providersQuery.query(notification.class.NotificationProvider, { }, (res) => (providers = res))
+  settingsQuery.query(notification.class.NotificationSetting, { space }, (res) => {
+    settings = convertToMap(res)
+    oldSettings = convertToMap(justClone(res))
+  })
+
+  function convertToMap (settings: NotificationSetting[]): Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> {
+    const result = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
+    for (const setting of settings) {
+      setSetting(result, setting)
+    }
+    return result
+  }
+
+  function change (type: Ref<NotificationType>, provider: Ref<NotificationProvider>, value: boolean): void {
+    const current = getSetting(settings, type, provider)
+    if (current === undefined) {
+      const tx = client.txFactory.createTxCreateDoc(notification.class.NotificationSetting, space, {
+        provider,
+        type,
+        enabled: value
+      })
+      const setting = TxProcessor.createDoc2Doc(tx)
+      setSetting(settings, setting)
+    } else {
+      current.enabled = value
+    }
+  }
+
+  function getSetting (map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, type: Ref<NotificationType>, provider: Ref<NotificationProvider>): NotificationSetting | undefined {
+    const typeMap = map.get(type) 
+    if (typeMap === undefined) return
+    return typeMap.get(provider)
+  }
+
+  function setSetting (result: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, setting: NotificationSetting): void {
+    let typeMap = result.get(setting.type)
+    if (typeMap === undefined) {
+      typeMap = new Map<Ref<NotificationProvider>, NotificationSetting>()
+      result.set(setting.type, typeMap)
+    }
+    typeMap.set(setting.provider, setting)
+  }
+
+  async function save (): Promise<void> {
+    const promises: Promise<any>[] = []
+    for (const type of settings.values()) {
+      for (const setting of type.values()) {
+        const old = getSetting(oldSettings, setting.type, setting.provider)
+        if (old === undefined) {
+          promises.push(client.createDoc(setting._class, setting.space, setting))
+        } else if (old.enabled !== setting.enabled) {
+          promises.push(client.updateDoc(old._class, old.space, old._id, {
+            enabled: setting.enabled
+          }))
+        }
+      }
+    }
+    await Promise.all(promises)
+  }
+
+  $: column = providers.length + 1
+</script>
+
+<div class="antiComponent">
+  <div class="ac-header short divide">
+    <div class="ac-header__icon"><Icon icon={notification.icon.Notifications} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={notification.string.Notifications}/></div>
+  </div>
+  <div class="flex-row-streach flex-grow container">
+    <div class="flex-col flex-grow">
+      <div class="flex-grow">
+        <Grid {column} columnGap={5} rowGap={1.5} >
+          {#each types as type (type._id)}
+            <Label label={type.label} />
+            {#each providers as provider (provider._id)}
+              <ToggleWithLabel label={provider.label} on={getSetting(settings, type._id, provider._id)?.enabled} on:change={(e) => change(type._id, provider._id, e.detail)} />
+            {/each}
+          {/each}
+        </Grid>
+      </div>
+      <div class="flex-row-reverse">
+        <Button
+        label={presentation.string.Save}
+        primary
+        on:click={() => {
+          save()
+        }}
+      />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  .container {
+    padding: 3rem;
+  }
+</style>
+

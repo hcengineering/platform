@@ -14,8 +14,8 @@
 //
 
 import type { Client, Doc } from '@anticrm/core'
-import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
-import { Applicant } from '@anticrm/recruit'
+import { getMetadata, IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
+import { Applicant, Vacancy } from '@anticrm/recruit'
 import { showPopup } from '@anticrm/ui'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
@@ -34,6 +34,9 @@ import task from '@anticrm/task'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import SkillsView from './components/SkillsView.svelte'
+import login from '@anticrm/login'
+import workbench from '@anticrm/workbench'
+import view from '@anticrm/view'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })

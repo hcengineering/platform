@@ -21,12 +21,8 @@ import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import { Application } from '@anticrm/workbench'
 
 export default mergeIds(leadId, lead, {
-  app: {
-    Lead: '' as Ref<Application>
-  },
   string: {
     Funnel: '' as IntlString,
     Funnels: '' as IntlString,

@@ -41,6 +41,7 @@
     "@anticrm/chunter": "~0.6.0",
     "@anticrm/contact": "~0.6.2",
     "@anticrm/login": "~0.6.1",
+    "@anticrm/workbench": "~0.6.1",
     "deep-equal": "^2.0.5",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
