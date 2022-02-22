@@ -154,7 +154,7 @@
       )
     }
 
-    const categories = await client.findAll(tags.class.TagCategory, {})
+    const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
     // Tag elements
     const skillTagElements = new Map(Array.from((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it]))))
     for (const skill of skills) {
@@ -246,7 +246,7 @@
       // Create skills
       await elementsPromise
 
-      const categories = await client.findAll(tags.class.TagCategory, {})
+      const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
       const categoriesMap = new Map(Array.from(categories.map(it => ([it._id, it]))))
   
       const newSkills:TagReference[] = []

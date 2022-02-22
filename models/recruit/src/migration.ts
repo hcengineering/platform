@@ -14,13 +14,16 @@
 //
 
 import { Person } from '@anticrm/contact'
-import core, { AttachedDoc, Class, Doc, DOMAIN_TX, MixinData, Ref, TxCollectionCUD, TxCreateDoc, TxMixin, TxUpdateDoc } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import core, { AttachedDoc, Class, Doc, DocumentQuery, DOMAIN_TX, MixinData, Ref, TxCollectionCUD, TxCreateDoc, TxMixin, TxOperations, TxUpdateDoc } from '@anticrm/core'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
 import { DOMAIN_COMMENT } from '@anticrm/model-chunter'
 import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import tags, { DOMAIN_TAGS, TagCategory, TagElement } from '@anticrm/model-tags'
 import { DOMAIN_TASK } from '@anticrm/model-task'
-import recruit, { Candidate } from '@anticrm/recruit'
+import { Candidate } from '@anticrm/recruit'
+import recruit from './plugin'
+import { getCategories } from '@anticrm/skillset'
 
 function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'> | undefined): MixinData<Person, Candidate> {
   if (c === undefined) {
@@ -37,12 +40,15 @@ function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'>
   return result
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function logInfo (msg: string, result: MigrationResult): void {
-  if (result.updated > 0) {
-    console.log(`Recruit: Migrate ${msg} ${result.updated}`)
+function findTagCategory (title: string, categories: TagCategory[]): Ref<TagCategory> {
+  for (const c of categories) {
+    if (c.tags.findIndex((it) => it.toLowerCase() === title.toLowerCase()) !== -1) {
+      return c._id
+    }
   }
+  return recruit.category.Other
 }
+
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // Move all candidates to mixins.
@@ -128,8 +134,88 @@ export const recruitOperation: MigrateOperation = {
     }, {
       objectClass: contact.class.Person
     })
+
+    // Rename other
+    const categories = await client.find(DOMAIN_TAGS, { _class: tags.class.TagCategory })
+    let prefix = 'tags:category:Category'
+    for (const c of categories) {
+      if (c._id.startsWith(prefix) || c._id === 'tags:category:Other') {
+        let newCID = c._id.replace(prefix, recruit.category.Category + '.') as Ref<TagCategory>
+        if (c._id === 'tags:category:Other') {
+          newCID = recruit.category.Other
+        }
+        await client.delete(DOMAIN_TAGS, c._id)
+        await client.create(DOMAIN_TAGS, { ...c, _id: newCID, targetClass: recruit.mixin.Candidate })
+        await client.update(DOMAIN_TAGS, { _class: tags.class.TagElement, category: c._id }, {
+          category: newCID,
+          targetClass: recruit.mixin.Candidate
+        })
+      }
+    }
+
+    prefix = 'recruit:category:Category'
+    for (const c of categories) {
+      if ((c._id.startsWith(prefix) && !c._id.startsWith(prefix + '.')) || c._id === 'tags:category:Other') {
+        let newCID = c._id.replace(prefix, recruit.category.Category + '.') as Ref<TagCategory>
+        if (c._id === 'tags:category:Other') {
+          newCID = recruit.category.Other
+        }
+        await client.delete(DOMAIN_TAGS, c._id)
+        try {
+          await client.create(DOMAIN_TAGS, { ...c, _id: newCID, targetClass: recruit.mixin.Candidate })
+        } catch (err: any) {
+          // Ignore
+        }
+        await client.update(DOMAIN_TAGS, { _class: tags.class.TagElement, category: c._id }, {
+          category: newCID,
+          targetClass: recruit.mixin.Candidate
+        })
+      }
+    }
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
+
+    await createOrUpdate(
+      tx,
+      tags.class.TagCategory,
+      tags.space.Tags,
+      {
+        icon: tags.icon.Tags,
+        label: 'Other',
+        targetClass: recruit.mixin.Candidate,
+        tags: [],
+        default: true
+      },
+      recruit.category.Other
+    )
+
+    for (const c of getCategories()) {
+      await createOrUpdate(
+        tx,
+        tags.class.TagCategory,
+        tags.space.Tags,
+        {
+          icon: tags.icon.Tags,
+          label: c.label,
+          targetClass: recruit.mixin.Candidate,
+          tags: c.skills,
+          default: false
+        },
+        (recruit.category.Category + '.' + c.id) as Ref<TagCategory>
+      )
+    }
+
+    const categories = await tx.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
+    // Find all existing TagElement and update category based on skillset
+    const tagElements = await tx.findAll(tags.class.TagElement, { category: null } as unknown as DocumentQuery<TagElement>)
+    for (const t of tagElements) {
+      if (t.category == null) {
+        const category = findTagCategory(t.title, categories)
+        await tx.update(t, { category: category })
+      }
+    }
+  }
 }
 async function migrateUpdateCandidateToPersonAndMixin (client: MigrationClient): Promise<void> {
   const updateCandidates = await client.find(DOMAIN_TX, {

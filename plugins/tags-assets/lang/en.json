@@ -31,6 +31,7 @@
     "CategoryTagsLabel": "Category Items",
     "DataStructuresLabel": "Data Structures",   
     "OtherCategoryLabel": "Other",
-    "AllCategories": "All Categories"
+    "AllCategories": "All Categories",
+    "DefaultLabel": "Default category"
   }
 }

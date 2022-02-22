@@ -22,6 +22,7 @@ import tags from './plugin'
 
 export { tagsOperation } from './migration'
 export { tags as default }
+export { TagElement, TagReference, TagCategory } from '@anticrm/tags'
 
 export const DOMAIN_TAGS = 'tags' as Domain
 
@@ -75,6 +76,9 @@ export class TTagCategory extends TDoc implements TagCategory {
 
   @Prop(Collection(core.class.TypeString), tags.string.CategoryTagsLabel)
   tags!: string[]
+
+  @Prop(TypeString(), tags.string.DefaultLabel)
+  default!: boolean
 }
 
 export function createModel (builder: Builder): void {

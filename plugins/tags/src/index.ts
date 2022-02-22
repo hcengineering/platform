@@ -51,6 +51,9 @@ export interface TagCategory extends Doc {
   targetClass: Ref<Class<Doc>>
   // A list of possible variants.
   tags: string[]
+
+  // If defined, will be used for unidentified tags
+  default: boolean
 }
 
 /**
@@ -79,7 +82,7 @@ const tagsPlugin = plugin(tagsId, {
     TagsCategoryBar: '' as AnyComponent
   },
   category: {
-    Other: '' as Ref<TagCategory>
+    NoCategory: '' as Ref<TagCategory>
   }
 })
 
@@ -92,12 +95,19 @@ export default tagsPlugin
  * @public
  */
 export function findTagCategory (title: string, categories: TagCategory[]): Ref<TagCategory> {
+  let defaultCategory: TagCategory | undefined
   for (const c of categories) {
+    if (c.default) {
+      defaultCategory = c
+    }
     if (c.tags.findIndex((it) => it.toLowerCase() === title.toLowerCase()) !== -1) {
       return c._id
     }
   }
-  return tagsPlugin.category.Other
+  if (defaultCategory === undefined) {
+    throw new Error('Tag category not found')
+  }
+  return defaultCategory._id
 }
 
 /**
