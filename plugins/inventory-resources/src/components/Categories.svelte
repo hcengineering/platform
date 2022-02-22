@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@anticrm/core'
-  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
   import type { Category } from '@anticrm/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -51,7 +51,6 @@
   />
 </div>
 
-<ScrollBox vertical stretch noShift>
+<Scroller>
   <HierarchyView _class={inventory.class.Category} config={['', 'modifiedOn']} options={{}} query={resultQuery} />
-</ScrollBox>
-<div class="ac-body__space-3" />
+</Scroller>

@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -75,7 +75,7 @@
     updateResultQuery(search, category)
   }}
 />
-<ScrollBox vertical stretch noShift>
+<Scroller>
   <Table
     _class={tags.class.TagElement}
     config={[
@@ -103,5 +103,4 @@
     query={resultQuery}
     enableChecking
   />
-</ScrollBox>
-<div class="ac-body__space-3" />
+</Scroller>

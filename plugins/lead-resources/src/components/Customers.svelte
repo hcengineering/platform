@@ -17,7 +17,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Icon, Label, ScrollBox, SearchEdit } from '@anticrm/ui'
+  import { Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import view, { Viewlet } from '@anticrm/view'
   import lead from '../plugin'
@@ -44,7 +44,7 @@
   }}/>
 </div>
 
-<ScrollBox vertical stretch noShift>
+<Scroller>
   {#await tableDescriptor then descr}
     {#if descr}
       <Table
@@ -56,5 +56,4 @@
       />
     {/if}
   {/await}
-</ScrollBox>
-<div class="ac-body__space-3" />
+</Scroller>
