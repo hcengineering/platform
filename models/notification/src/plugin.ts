@@ -14,12 +14,18 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
 import notification, { notificationId } from '@anticrm/notification'
-import {} from '@anticrm/ui'
+import { IntlString, mergeIds } from '@anticrm/platform'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(notificationId, notification, {
   string: {
-    LastView: '' as IntlString
+    LastView: '' as IntlString,
+    MentionNotification: '' as IntlString,
+    PlatformNotification: '' as IntlString,
+    EmailNotification: '' as IntlString
+  },
+  component: {
+    NotificationSettings: '' as AnyComponent
   }
 })

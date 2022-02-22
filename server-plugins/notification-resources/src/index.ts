@@ -16,7 +16,7 @@
 
 import chunter, { Backlink } from '@anticrm/chunter'
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-import core, { Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import core, { Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
 import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
@@ -41,6 +41,34 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
     return []
   }
 
+  const result: Tx[] = []
+
+  const createNotificationTx = await getPlatformNotificationTx(ptx, control)
+
+  if (createNotificationTx !== undefined) {
+    result.push(createNotificationTx)
+  }
+
+  const emailTx = await getEmailTx(ptx, control)
+  if (emailTx !== undefined) {
+    result.push(emailTx)
+  }
+  return result
+}
+
+async function getPlatformNotificationTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCollectionCUD<Doc, Notification> | undefined> {
+  const attached = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
+    employee: ptx.objectId as Ref<Employee>
+  }, { limit: 1 }))[0]
+  if (attached === undefined) return undefined
+
+  const setting = (await control.findAll(notification.class.NotificationSetting, {
+    provider: notification.ids.PlatformNotification,
+    type: notification.ids.MentionNotification,
+    space: attached._id as unknown as Ref<Space>
+  }, { limit: 1 }))[0]
+  if (setting === undefined || !setting.enabled) return
+
   const createTx: TxCreateDoc<Notification> = {
     objectClass: notification.class.Notification,
     objectSpace: notification.space.Notifications,
@@ -63,13 +91,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
     tx: createTx
   }
 
-  const result: Tx[] = []
-  result.push(createNotificationTx)
-  const emailTx = await getEmailTx(ptx, control)
-  if (emailTx !== undefined) {
-    result.push(emailTx)
-  }
-  return result
+  return createNotificationTx
 }
 
 async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCreateDoc<EmailNotification> | undefined> {
@@ -79,11 +101,20 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
     _id: ptx.modifiedBy as Ref<EmployeeAccount>
   }, { limit: 1 }))[0]
   if (account === undefined) return undefined
+
   const sender = formatName(account.name)
   const attached = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
     employee: ptx.objectId as Ref<Employee>
   }, { limit: 1 }))[0]
   if (attached === undefined) return undefined
+
+  const setting = (await control.findAll(notification.class.NotificationSetting, {
+    provider: notification.ids.EmailNotification,
+    type: notification.ids.MentionNotification,
+    space: attached._id as unknown as Ref<Space>
+  }, { limit: 1 }))[0]
+  if (setting === undefined || !setting.enabled) return
+
   const receiver = attached.email
   let doc: Doc | undefined
   if (hierarchy.isDerived(backlink.backlinkClass, core.class.Space)) {
@@ -96,8 +127,10 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
     }, { limit: 1 }))[0]
   }
   if (doc === undefined) return undefined
+
   const TextPresenter = getTextPresenter(doc._class, hierarchy)
   if (TextPresenter === undefined) return
+
   const HTMLPresenter = getHTMLPresenter(doc._class, hierarchy)
   const htmlPart = HTMLPresenter !== undefined ? (await getResource(HTMLPresenter.presenter))(doc) : undefined
   const textPart = (await getResource(TextPresenter.presenter))(doc)

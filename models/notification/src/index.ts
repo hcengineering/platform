@@ -14,25 +14,26 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Domain, Ref, Timestamp, TxCUD } from '@anticrm/core'
+import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@anticrm/core'
 import { ArrOf, Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import type { EmailNotification, LastView, Notification, NotificationStatus } from '@anticrm/notification'
+import type { EmailNotification, LastView, NotificationType, NotificationProvider, NotificationSetting, Notification, NotificationStatus } from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
-import notificaton from './plugin'
+import notification from './plugin'
+import setting from '@anticrm/setting'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
-@Model(notificaton.class.LastView, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
+@Model(notification.class.LastView, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TLastView extends TAttachedDoc implements LastView {
-  @Prop(TypeTimestamp(), notificaton.string.LastView)
+  @Prop(TypeTimestamp(), notification.string.LastView)
   lastView!: Timestamp
 
   @Prop(TypeRef(core.class.Account), 'Modified By' as IntlString)
   user!: Ref<Account>
 }
 
-@Model(notificaton.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
+@Model(notification.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TNotification extends TAttachedDoc implements Notification {
   @Prop(TypeRef(core.class.Tx), 'TX' as IntlString)
   tx!: Ref<TxCUD<Doc>>
@@ -41,7 +42,7 @@ export class TNotification extends TAttachedDoc implements Notification {
   status!: NotificationStatus
 }
 
-@Model(notificaton.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
+@Model(notification.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TEmaiNotification extends TDoc implements EmailNotification {
   @Prop(TypeString(), 'Sender' as IntlString)
   sender!: string
@@ -62,8 +63,45 @@ export class TEmaiNotification extends TDoc implements EmailNotification {
   status!: 'new' | 'sent'
 }
 
+@Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
+export class TNotificationType extends TDoc implements NotificationType {
+  label!: IntlString
+}
+
+@Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
+export class TNotificationProvider extends TDoc implements NotificationProvider {
+  label!: IntlString
+}
+
+@Model(notification.class.NotificationSetting, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TNotificationSetting extends TDoc implements NotificationSetting {
+  type!: Ref<TNotificationType>
+  provider!: Ref<TNotificationProvider>
+  enabled!: boolean
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TLastView, TNotification, TEmaiNotification)
+  builder.createModel(TLastView, TNotification, TEmaiNotification, TNotificationType, TNotificationProvider, TNotificationSetting)
+
+  builder.createDoc(notification.class.NotificationType, core.space.Model, {
+    label: notification.string.MentionNotification
+  }, notification.ids.MentionNotification)
+
+  builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
+    label: notification.string.PlatformNotification
+  }, notification.ids.PlatformNotification)
+
+  builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
+    label: notification.string.EmailNotification
+  }, notification.ids.EmailNotification)
+
+  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
+    name: 'notifications',
+    label: notification.string.Notifications,
+    icon: notification.icon.Notifications,
+    component: notification.component.NotificationSettings,
+    order: 2500
+  }, notification.ids.NotificationSettings)
 }
 
 export { notificationOperation } from './migration'

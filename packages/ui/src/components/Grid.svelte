@@ -17,7 +17,7 @@
   export let rowGap: number = 2.5
   export let columnGap: number = 1.5
 
-  const style = `grid-template-columns: repeat(${column}, 1fr); row-gap: ${rowGap}rem; column-gap: ${columnGap}rem;`
+  $: style = `grid-template-columns: repeat(${column}, 1fr); row-gap: ${rowGap}rem; column-gap: ${columnGap}rem;`
 </script>
 
 <div class="grid" {style}>

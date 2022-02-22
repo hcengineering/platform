@@ -12446,7 +12446,7 @@ packages:
     dev: false
 
   file:projects/model-notification.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-oXjmLAI4ablTqm5zdk23LYWTRRdqLGxshn164t87FLm4T/6sFK7xlikIuxGNn+XED0/m1T9ShPXEwXcYFJ/YQw==, tarball: file:projects/model-notification.tgz}
+    resolution: {integrity: sha512-WhD1VyRSZ7EB9HYyGawyxHxuKkfogkfdibpRcSXkJ9SPy+MNmnABMhG5Jj2d9Man/3FRqiAwJhSxsHYoKpwkNQ==, tarball: file:projects/model-notification.tgz}
     id: file:projects/model-notification.tgz
     name: '@rush-temp/model-notification'
     version: 0.0.0
@@ -12952,7 +12952,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-saNzTGP0Bz7u0f2qimEbhL3w9xhZb8pgenUpAuDpeT6fMPmG7CNYpkwefhayEeIUmU4frbIC5kjAOMSPUxsg6A==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-XFpqe60nZYFgS9+a5fMJSJeBIyb8tsmHawXI1Ee0B5eb38R7oUmnE6ezb2hYXl/EKPabYL/Pt1cxMjkRMz4Njw==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -12967,6 +12967,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      just-clone: 3.2.1
       prettier: 2.5.1
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
       sass: 1.45.0
