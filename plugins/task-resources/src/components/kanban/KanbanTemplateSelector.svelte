@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
+  import type { Doc, Ref, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
   import task from '@anticrm/task'
@@ -27,7 +27,7 @@
 
   let templates: KanbanTemplate[] = []
   const templatesQ = createQuery()
-  $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: folders } }, (result) => { templates = result })
+  $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: (folders as Ref<Doc>[] as Ref<Space>[]) } }, (result) => { templates = result })
 
   let items: DropdownTextItem[] = []
   $: items = templates.map(x => ({ id: x._id, label: x.title }))
