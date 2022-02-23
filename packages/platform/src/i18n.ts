@@ -21,7 +21,7 @@ import { setPlatformStatus } from './event'
 import { IntlMessageFormat } from 'intl-messageformat'
 
 import platform from './platform'
-import { getMetadata } from '.'
+import { getMetadata } from './metadata'
 
 /**
  * @public

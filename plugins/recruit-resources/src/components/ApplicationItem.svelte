@@ -36,7 +36,7 @@
 <div class='flex item'>
     <Icon icon={recruit.icon.Application} size={'large'} />
     <div class='ml-2'>
-      <Label label={shortLabel} />-{value.number}
+      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
     </div>
     {#if person}
       <div class='ml-1'>{formatName(person.name)}</div>

@@ -33,6 +33,6 @@
 
 {#if value && shortLabel}
   <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;<Label label={shortLabel} />-{value.number}
+    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp{#if shortLabel}<Label label={shortLabel} />-{/if}-{value.number}
   </div>
 {/if}

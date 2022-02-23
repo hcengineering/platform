@@ -34,7 +34,7 @@
 <div class='flex item'>
     <Icon icon={task.icon.Task} size={'large'} />
     <div class='ml-2'>
-      <Label label={shortLabel} />-{value.number}
+      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
     </div>
     {#if name}
       <div class='ml-1'>{name}</div>
