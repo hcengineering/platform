@@ -19,7 +19,7 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Component, Icon, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Component, Icon, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -75,7 +75,7 @@
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: recruit.mixin.Candidate, category }} on:change={(evt) => updateCategory(evt.detail) }/>
 
-<ScrollBox vertical stretch noShift>
+<Scroller>
   {#await tableDescriptor then descr}
     {#if descr}
       <Table 
@@ -87,5 +87,4 @@
       />
     {/if}
   {/await}
-</ScrollBox>
-<div class="ac-body__space-3" />
+</Scroller>

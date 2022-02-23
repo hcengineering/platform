@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
-  import { ScrollBox } from '@anticrm/ui'
+  import { Scroller } from '@anticrm/ui'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -29,17 +29,6 @@
   $: resultQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
 </script>
 
-<div class="tableview-container">
-  <ScrollBox vertical stretch noShift>
-    <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} enableChecking />
-  </ScrollBox>
-</div>
-
-<style lang="scss">
-  .tableview-container {
-    flex-grow: 1;
-    margin-bottom: .75rem;
-    min-height: 0;
-    height: 100%;
-  }
-</style>
+<Scroller>
+  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} enableChecking />
+</Scroller>

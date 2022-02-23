@@ -124,8 +124,8 @@
   {/if}
 {:then model}
   <table class="table-body" class:enableChecking>
-    <thead>
-      <tr class="tr-head">
+    <thead class="scroller-thead">
+      <tr class="tr-head scroller-thead__tr">
         {#each model as attribute, cellHead}
           {#if enableChecking && !cellHead}
             <th>

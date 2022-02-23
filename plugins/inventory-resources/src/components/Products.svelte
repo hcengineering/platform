@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, ScrollBox, showPopup, IconAdd } from '@anticrm/ui'
+  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, Scroller, showPopup, IconAdd } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
   import { Table } from '@anticrm/view-resources'
@@ -58,7 +58,7 @@
   />
 </div>
 
-<ScrollBox vertical stretch noShift>
+<Scroller>
   {#await tableDescriptor then descr}
     {#if descr}
       <Table
@@ -70,5 +70,4 @@
       />
     {/if}
   {/await}
-</ScrollBox>
-<div class="ac-body__space-3" />
+</Scroller>

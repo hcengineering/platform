@@ -17,7 +17,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, ScrollBox, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import contact from '../plugin'
@@ -52,7 +52,7 @@
     <Button icon={IconAdd} label={contact.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
   </div>
 
-  <ScrollBox vertical stretch noShift>
+  <Scroller>
     {#await tableDescriptor then descr}
       {#if descr}
         <Table 
@@ -64,6 +64,5 @@
         />
       {/if}
     {/await}
-  </ScrollBox>
-  <div class="ac-body__space-3" />
+  </Scroller>
 </div>
