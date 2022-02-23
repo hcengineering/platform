@@ -13,5 +13,5 @@
 // limitations under the License.
 //
 
-import { version } from '.'
+import version from './version.json'
 console.log(`"${version.major}.${version.minor}.${version.patch}"`)

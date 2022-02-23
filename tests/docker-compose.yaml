@@ -35,7 +35,7 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: anticrm/account
+    image: hardcoreeng/account
     links:
       - mongodb
       - minio
@@ -51,7 +51,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
   front:
-    image: anticrm/front
+    image: hardcoreeng/front
     links:
       - account
       - mongodb
@@ -70,7 +70,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
   transactor:
-    image: anticrm/transactor
+    image: hardcoreeng/transactor
     links:
       - mongodb
       - elastic

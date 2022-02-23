@@ -230,6 +230,16 @@
     },
     {
       "commandKind": "bulk",
+      "name": "docker:staging",
+      "summary": "docker:staging",
+      "description": "Push docker staging images",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
       "name": "bundle",
       "summary": "bundle",
       "description": "Build bundles",

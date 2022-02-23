@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: anticrm/account
+          image: hardcoreeng/account
           ports:
             - containerPort: 3000
           imagePullPolicy: Always
