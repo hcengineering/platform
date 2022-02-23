@@ -26,8 +26,7 @@ import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import type { IntlString } from '@anticrm/platform'
-import type {} from '@anticrm/view'
+import type { } from '@anticrm/view'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -35,32 +34,32 @@ import lead from './plugin'
 export class TFunnel extends TSpaceWithStates implements Funnel {}
 
 @Model(lead.class.Lead, task.class.Task)
-@UX('Lead' as IntlString, lead.icon.Lead, undefined, 'title')
+@UX(lead.string.Lead, lead.icon.Lead, undefined, 'title')
 export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
   declare attachedTo: Ref<Customer>
 
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), lead.string.Title)
   @Index(IndexKind.FullText)
   title!: string
 
-  @Prop(Collection(chunter.class.Comment), 'Comments' as IntlString)
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
-  @Prop(TypeRef(contact.class.Employee), 'Assignee' as IntlString)
+  @Prop(TypeRef(contact.class.Employee), lead.string.Assignee)
   declare assignee: Ref<Employee> | null
 }
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)
-@UX('Customer' as IntlString, lead.icon.LeadApplication)
+@UX(lead.string.Customer, lead.icon.LeadApplication)
 export class TCustomer extends TPerson implements Customer {
-  @Prop(Collection(lead.class.Lead), 'Leads' as IntlString)
+  @Prop(Collection(lead.class.Lead), lead.string.Leads)
   leads?: number
 
-  @Prop(TypeString(), 'Description' as IntlString)
+  @Prop(TypeString(), core.string.Description)
   @Index(IndexKind.FullText)
   description!: string
 }
@@ -134,7 +133,7 @@ export function createModel (builder: Builder): void {
 
   const leadLookup: Lookup<Lead> =
   {
-    attachedTo: [contact.class.Contact, { _id: { channels: lead.mixin.Customer } }],
+    attachedTo: [lead.mixin.Customer, { _id: { channels: contact.class.Channel } }],
     state: task.class.State
   }
 
@@ -149,8 +148,8 @@ export function createModel (builder: Builder): void {
       '',
       '$lookup.attachedTo',
       '$lookup.state',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]
@@ -188,11 +187,8 @@ export function createModel (builder: Builder): void {
     task.class.KanbanTemplateSpace,
     core.space.Model,
     {
-      name: 'Funnels',
-      description: 'Manage funnel statuses',
-      members: [],
-      private: false,
-      archived: false,
+      name: lead.string.Funnels,
+      description: lead.string.ManageFunnelStatuses,
       icon: lead.component.TemplatesIcon
     },
     lead.space.FunnelTemplates

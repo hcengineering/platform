@@ -16,7 +16,7 @@
 <script lang="ts">
   import { AttachedData, Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Button, ScrollBox } from '@anticrm/ui'
+  import { EditBox, Button, ScrollBox, Label } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
@@ -57,7 +57,7 @@
 <div class="popup">
   <ScrollBox vertical stretch>
     <div class="popup-block">
-      <span>Contact Links</span>
+      <span><Label label={contact.string.SocialLinks} /></span>
       {#each providers as provider, i}
         <EditBox
           label={provider.label}

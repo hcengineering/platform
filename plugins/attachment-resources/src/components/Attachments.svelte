@@ -33,7 +33,6 @@
   let loading = 0
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   async function createAttachment (file: File) {
     loading++
@@ -73,12 +72,11 @@
   }
 
   let dragover = false
-  $: classLabel = hierarchy.getClass(_class).label
 </script>
 
 <div class="attachments-container">
   <div class="flex-row-center">
-    <span class="title">Attachments</span>
+    <span class="title"><Label label={attachment.string.Attachments} /></span>
     {#if loading}
       <Spinner />
     {:else}
@@ -117,9 +115,6 @@
       <UploadDuo size={'large'} />
       <div class="text-sm content-dark-color mt-2">
         <Label label={attachment.string.NoAttachments} />
-        <span class="lower">
-          <Label label={classLabel} />
-        </span>
       </div>
       <div class="text-sm">
         <div class='over-underline' on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></div>

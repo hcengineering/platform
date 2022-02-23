@@ -98,7 +98,7 @@
       label={lead.string.LeadName}
       bind:value={title}
       icon={lead.icon.Lead}
-      placeholder="The simple lead"
+      placeholder={lead.string.LeadPlaceholder}
       maxWidth={'16rem'}
       focus
     />

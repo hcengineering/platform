@@ -1,0 +1,16 @@
+{
+  "string": {
+    "Cancel": "Отменить",
+    "Templates": "Шаблоны",
+    "TemplatesHeader": "ШАБЛОНЫ",
+    "CreateTemplate": "СОЗДАТЬ ШАБЛОН",
+    "SaveTemplate": "Сохранить шаблон",
+    "EditTemplate": "Редактировать шаблон",
+    "ViewTemplate": "Просмотреть шаблон",
+    "Suggested": "РЕКОМЕНДУЕМЫЕ",
+    "SearchTemplate": "Поиск шаблона",
+    "TemplatePlaceholder": "Новый шаблон",
+    "Title": "Заголовок",
+    "Message": "Сообщение"
+  }
+}

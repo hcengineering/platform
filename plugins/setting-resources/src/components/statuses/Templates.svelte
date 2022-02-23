@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
+  import type { Doc, Ref, Space } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
@@ -29,7 +29,7 @@
   let templateMap = new Map<Ref<KanbanTemplate>, KanbanTemplate>()
   const templatesQ = createQuery()
   $: if (folder !== undefined) {
-    templatesQ.query(task.class.KanbanTemplate, { space: folder._id }, (result) => {
+    templatesQ.query(task.class.KanbanTemplate, { space: folder._id as Ref<Doc> as Ref<Space> }, (result) => {
       templates = result
     })
   }
@@ -50,7 +50,7 @@
 
     const space = folder._id
 
-    const template = await client.createDoc(task.class.KanbanTemplate, space, {
+    const template = await client.createDoc(task.class.KanbanTemplate, space as Ref<Doc> as Ref<Space>, {
       doneStatesC: 0,
       statesC: 0,
       title: 'New Template'
@@ -73,7 +73,7 @@
     await Promise.all(doneStates.map(async (ds) => {
       await client.addCollection(
         ds.class,
-        space,
+        space as Ref<Doc> as Ref<Space>,
         template,
         task.class.KanbanTemplate,
         'doneStatesC',

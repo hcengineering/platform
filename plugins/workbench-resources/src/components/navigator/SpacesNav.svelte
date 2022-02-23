@@ -19,7 +19,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Action, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
-  import type { SpacesNavModel } from '@anticrm/workbench'
+  import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { classIcon } from '../../utils'
@@ -41,7 +41,7 @@
   }
 
   const editSpace: Action = {
-    label: 'Open' as IntlString,
+    label: plugin.string.Open,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
       showPanel(model.component ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')

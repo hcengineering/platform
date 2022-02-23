@@ -1,0 +1,15 @@
+{
+  "string": {
+    "MoveClass": "Переместить {class}",
+    "SelectToMove": "Выберите {classLabel} который вы хотите переместить в {class}.",
+    "Delete": "Удалть",
+    "Move": "Переместить",
+    "Cancel": "Отменть",
+    "LabelYes": "Да",
+    "LabelNo": "Нет",
+    "LabelNA": "Н/Д",
+    "ChooseAColor": "Выбрать цвет",
+    "Table": "Таблица",
+    "Role": "Роль"
+  }
+}

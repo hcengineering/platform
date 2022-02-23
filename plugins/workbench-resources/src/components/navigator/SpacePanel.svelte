@@ -20,7 +20,9 @@
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { EditBox, Grid, Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
+import LangPopup from '@anticrm/ui/src/components/internal/LangPopup.svelte'
   import { createEventDispatcher } from 'svelte'
+  import workbench from '../../plugin'
 
   export let _id: Ref<Space>
   export let _class: Ref<Class<Space>>
@@ -38,7 +40,7 @@
   const query = createQuery()
   $: query.query(core.class.Space, { _id }, result => { space = result[0] })
 
-  const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString]
+  const tabs: IntlString[] = [workbench.string.General, workbench.string.Members]
   let selected = 0
 
   function onNameChange (ev: Event) {
@@ -81,7 +83,7 @@
         </Grid>
       {/if}
     {:else}
-      Members and other
+      <Label label={workbench.string.Members} />
     {/if}
   </Scroller>
 </div>

@@ -171,7 +171,7 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
-      label: 'Table' as IntlString,
+      label: view.string.Table,
       icon: view.icon.Table,
       component: view.component.TableView
     },
@@ -182,7 +182,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Delete' as IntlString,
+      label: view.string.Delete,
       icon: view.icon.Delete,
       action: view.actionImpl.Delete
     },
@@ -198,7 +198,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Move' as IntlString,
+      label: view.string.Move,
       icon: view.icon.Move,
       action: view.actionImpl.Move
     },

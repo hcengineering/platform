@@ -28,7 +28,7 @@
 
   let keyTitle: string
   $: translate(item, {}).then((t) => {
-    keyTitle = t
+    keyTitle = t.toLowerCase()
   })
 
   let search = ''

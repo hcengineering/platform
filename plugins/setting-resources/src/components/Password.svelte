@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import setting from '@anticrm/setting'
+  import presentation from '@anticrm/presentation'
   import { Button, EditBox, Icon, Label } from '@anticrm/ui'
   import { changePassword } from '@anticrm/login-resources'
 
   let oldPassword: string = ''
   let password: string = ''
   let password2: string = ''
-  let label = setting.string.Save
+  let label = presentation.string.Save
   let saved = false
 
   $: disabled =
@@ -34,7 +35,7 @@
       label = setting.string.Saved
     } catch (e) {
       console.log(e)
-      label = setting.string.Save
+      label = presentation.string.Save
       saved = false
     }
   }

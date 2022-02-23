@@ -24,7 +24,8 @@ export default mergeIds(workbenchId, workbench, {
     Archive: '' as AnyComponent
   },
   string: {
-    Archive: '' as IntlString
+    Archive: '' as IntlString,
+    Application: '' as IntlString
   },
   function: {
     HasArchiveSpaces: '' as Resource<(spaces: Space[]) => boolean>

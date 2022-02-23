@@ -156,7 +156,7 @@
 
     const categories = await client.findAll(tags.class.TagCategory, {})
     // Tag elements
-    const skillTagElements = new Map(Array.from((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it]))))
+    const skillTagElements = new Map((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it])))
     for (const skill of skills) {
       // Create update tag if missing
       if (!skillTagElements.has(skill.tag)) {
@@ -375,10 +375,10 @@
       <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder="John" maxWidth="10rem" bind:value={firstName} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder="Appleseed" maxWidth="10rem" bind:value={lastName} /></div>
-      <div class="text-sm"><EditBox placeholder="Title" maxWidth="10rem" bind:value={object.title} /></div>
-      <div class="text-sm"><EditBox placeholder="Location" maxWidth="10rem" bind:value={object.city} /></div>
+      <div class="fs-title"><EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} /></div>
+      <div class="fs-title mb-1"><EditBox placeholder={recruit.string.PersonLastNamePlaceholder} maxWidth="10rem" bind:value={lastName} /></div>
+      <div class="text-sm"><EditBox placeholder={recruit.string.Title} maxWidth="10rem" bind:value={object.title} /></div>
+      <div class="text-sm"><EditBox placeholder={recruit.string.Location} maxWidth="10rem" bind:value={object.city} /></div>
     </div>
   </div>
 

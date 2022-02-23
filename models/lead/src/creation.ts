@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
+import core, { Doc, Space, TxOperations } from '@anticrm/core'
 import type { Client, Ref } from '@anticrm/core'
 import task, { createKanban } from '@anticrm/task'
 import type { KanbanTemplate } from '@anticrm/task'
@@ -54,7 +54,7 @@ const defaultKanban = {
 const createDefaultKanbanTemplate = async (client: TxOperations): Promise<Ref<KanbanTemplate>> =>
   await createKanbanTemplate(client, {
     kanbanId: lead.template.DefaultFunnel,
-    space: lead.space.FunnelTemplates,
+    space: lead.space.FunnelTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default funnel',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

@@ -16,12 +16,11 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
+  import presentation from '@anticrm/presentation'
+  import { Button,Grid,IconClose,Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { Label, Button, Grid, IconClose } from '@anticrm/ui'
-  import recruit from '../plugin'
-
   import Avatar from '../../img/avatar.png'
-
+  import recruit from '../plugin'
   export let label: IntlString
 
   const dispatch = createEventDispatcher()
@@ -46,7 +45,7 @@
     </Grid>
   </div>
   <div class="abs-rb-content">
-    <Button label={recruit.string.Save} />
+    <Button label={presentation.string.Save} />
   </div>
 </div>
 

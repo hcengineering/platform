@@ -1,0 +1,14 @@
+{
+  "string": {
+    "More": "Еще...",
+    "Delete": "Удалить",
+    "ShowMenu": "Показать меню",
+    "HideMenu": "Спрятать меню",
+    "Archive": "Архивировать",
+    "Archived": "Архивировал {object}",
+    "Open": "Открыть",
+    "General": "Общее",
+    "Members": "Участники",
+    "Application": "Приложение"
+  }
+}

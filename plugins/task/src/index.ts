@@ -162,7 +162,9 @@ export interface KanbanTemplate extends Doc {
 /**
  * @public
  */
-export interface KanbanTemplateSpace extends Space {
+export interface KanbanTemplateSpace extends Doc {
+  name: IntlString
+  description: IntlString
   icon: AnyComponent
 }
 
@@ -244,11 +246,11 @@ export async function createKanban (
     const ranks = [...genRanks(2)]
     await Promise.all([
       client.createDoc(task.class.WonState, attachedTo, {
-        title: 'Won' as IntlString,
+        title: 'Won',
         rank: ranks[0]
       }),
       client.createDoc(task.class.LostState, attachedTo, {
-        title: 'Lost' as IntlString,
+        title: 'Lost',
         rank: ranks[1]
       })
     ])

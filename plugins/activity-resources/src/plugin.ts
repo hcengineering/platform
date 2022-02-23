@@ -19,8 +19,11 @@ import { mergeIds } from '@anticrm/platform'
 
 export default mergeIds(activityId, activity, {
   string: {
-    Activity: '' as IntlString,
     DocCreated: '' as IntlString,
-    DocDeleted: '' as IntlString
+    DocDeleted: '' as IntlString,
+    Changed: '' as IntlString,
+    To: '' as IntlString,
+    Unset: '' as IntlString,
+    NoEmployee: '' as IntlString
   }
 })

@@ -34,6 +34,9 @@ export default plugin(uiId, {
     Search: '' as IntlString,
     SearchDots: '' as IntlString,
     Suggested: '' as IntlString,
-    TimeTooltip: '' as IntlString
+    TimeTooltip: '' as IntlString,
+    None: '' as IntlString,
+    English: '' as IntlString,
+    Russian: '' as IntlString
   }
 })

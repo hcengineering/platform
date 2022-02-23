@@ -18,13 +18,13 @@
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
-  import { Icon } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
   import recruit from '../plugin'
 
   export let value: Applicant
 
   const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel?.toUpperCase()
+  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   let person: Person| undefined
 
@@ -36,7 +36,7 @@
 <div class='flex item'>
     <Icon icon={recruit.icon.Application} size={'large'} />
     <div class='ml-2'>
-      {shortLabel}-{value.number}
+      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
     </div>
     {#if person}
       <div class='ml-1'>{formatName(person.name)}</div>

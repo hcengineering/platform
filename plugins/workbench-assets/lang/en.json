@@ -2,10 +2,13 @@
   "string": {
     "More": "More...",
     "Delete": "Delete",
-    "Create": "Create",
     "ShowMenu": "Show menu",
     "HideMenu": "Hide menu",
     "Archive": "Archive",
-    "Archived": "Archived {object}"
+    "Archived": "Archived {object}",
+    "Open": "Open",
+    "General": "General",
+    "Members": "Members",
+    "Application": "Application"
   }
 }

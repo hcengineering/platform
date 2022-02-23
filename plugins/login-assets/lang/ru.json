@@ -1,0 +1,30 @@
+{
+  "status": {
+    "RequiredField": "Требуется заполнить {field}",
+    "FieldsDoNotMatch": "{field} не совпадает {field2}",
+    "ConnectingToServer": "Подключение к серверуConnecting to server....",
+    "IncorrectValue": "Неправильное значение {field}"
+  },
+  "string": {
+    "LogIn": "Вход",
+    "SignUp": "Регистрация",
+    "CreateWorkspace": "Создать рабочее пространство",
+    "HaveWorkspace": "Уже есть рабочее пространство?",
+    "LastName": "Фамилия",
+    "FirstName": "Имя",
+    "Join": "Присоедениться",
+    "Email": "Email",
+    "Password": "Пароль",
+    "Workspace": "Рабочее пространство",
+    "DoNotHaveAnAccount": "Нет учетной записи?",
+    "PasswordRepeat": "Повторите пароль",
+    "HaveAccount": "Уже есть учетная запись?",
+    "SelectWorkspace": "Выбрать рабочее пространство",
+    "Copy": "Копировать",
+    "Close": "Закрыть",
+    "InviteDescription": "Поделитесь ссылкой чтобы пригласить других участников",
+    "WantAnotherWorkspace": "Хотите создать другое рабочее пространство?",
+    "ChangeAccount": "Сменить пользователя",
+    "NotSeeingWorkspace": "Не видите ваше рабочее пространство?"
+  }
+}

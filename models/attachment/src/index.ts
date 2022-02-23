@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, Prop, UX, TypeString, TypeTimestamp, Index } from '@anticrm/model'
-import { Domain, IndexKind } from '@anticrm/core'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import type { Attachment, Photo } from '@anticrm/attachment'
 import activity from '@anticrm/activity'
-
+import type { Attachment, Photo } from '@anticrm/attachment'
+import { Domain, IndexKind } from '@anticrm/core'
+import { Builder, Index, Model, Prop, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import core, { TAttachedDoc } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import attachment from './plugin'
 
@@ -28,28 +26,28 @@ export { attachmentOperation } from './migration'
 export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 
 @Model(attachment.class.Attachment, core.class.AttachedDoc, DOMAIN_ATTACHMENT)
-@UX('File' as IntlString)
+@UX(attachment.string.File)
 export class TAttachment extends TAttachedDoc implements Attachment {
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), attachment.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 
-  @Prop(TypeString(), 'File' as IntlString)
+  @Prop(TypeString(), attachment.string.File)
   file!: string
 
-  @Prop(TypeString(), 'Size' as IntlString)
+  @Prop(TypeString(), attachment.string.Size)
   size!: number
 
-  @Prop(TypeString(), 'Type' as IntlString)
+  @Prop(TypeString(), attachment.string.Type)
   @Index(IndexKind.FullText)
   type!: string
 
-  @Prop(TypeTimestamp(), 'Date' as IntlString)
+  @Prop(TypeTimestamp(), attachment.string.Date)
   lastModified!: number
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)
-@UX('Photo' as IntlString)
+@UX(attachment.string.Photo)
 export class TPhoto extends TAttachment implements Photo {}
 
 export function createModel (builder: Builder): void {

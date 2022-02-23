@@ -47,10 +47,10 @@
       </div>
       <div class="flex-grow flex-col">
         <div class="fs-title overflow-label">
-          {f.name}
+          <Label label={f.name} />
         </div>
         <div class="text-sm content-dark-color overflow-label">
-          {f.description}
+          <Label label={f.description} />
         </div>
       </div>
       {#if f._id === folder?._id}

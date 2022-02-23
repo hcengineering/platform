@@ -35,7 +35,7 @@ import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import type { IntlString } from '@anticrm/platform'
+import { IntlString } from '@anticrm/platform'
 import type {
   DoneState, DoneStateTemplate, Issue, Kanban,
   KanbanCard, KanbanTemplate, KanbanTemplateSpace, LostState, LostStateTemplate, Project, Sequence, State, StateTemplate, Task,
@@ -125,7 +125,7 @@ export class TSpaceWithStates extends TSpace {}
 export class TProject extends TSpaceWithStates implements Project {}
 
 @Model(task.class.Issue, task.class.Task, DOMAIN_TASK)
-@UX('Task' as IntlString, task.icon.Task, 'Task' as IntlString, 'number')
+@UX(task.string.Task, task.icon.Task, task.string.Task, 'number')
 export class TIssue extends TTask implements Issue {
   // We need to declare, to provide property with label
   @Prop(TypeRef(core.class.Doc), task.string.TaskParent)
@@ -142,7 +142,7 @@ export class TIssue extends TTask implements Issue {
   @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
   comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), task.string.TaskAttachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments!: number
 
   @Prop(TypeString(), task.string.TaskLabels)
@@ -165,8 +165,10 @@ export class TKanban extends TDoc implements Kanban {
   attachedTo!: Ref<Space>
 }
 
-@Model(task.class.KanbanTemplateSpace, core.class.Space, DOMAIN_MODEL)
-export class TKanbanTemplateSpace extends TSpace implements KanbanTemplateSpace {
+@Model(task.class.KanbanTemplateSpace, core.class.Doc, DOMAIN_MODEL)
+export class TKanbanTemplateSpace extends TDoc implements KanbanTemplateSpace {
+  name!: IntlString
+  description!: IntlString
   icon!: AnyComponent
 }
 
@@ -293,8 +295,8 @@ export function createModel (builder: Builder): void {
       '',
       'name',
       '$lookup.assignee',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
   })
@@ -344,11 +346,8 @@ export function createModel (builder: Builder): void {
     task.class.KanbanTemplateSpace,
     core.space.Model,
     {
-      name: 'Projects',
-      description: 'Manage project statuses',
-      members: [],
-      private: false,
-      archived: false,
+      name: task.string.Projects,
+      description: task.string.ManageProjectStatues,
       icon: task.component.TemplatesIcon
     },
     task.space.ProjectTemplates

@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Id": "Id",
+    "Space": "Пространство",
+    "Modified": "Изменено",
+    "ModifiedBy": "Изменен",
+    "Class": "Класс",
+    "AttachedTo": "Прикреплен к",
+    "AttachedToClass": "Прикреплен к классу",
+    "Name": "Название",
+    "Description": "Описание",
+    "Private": "Личный",
+    "Archived": "Архивный"
+  }
+}

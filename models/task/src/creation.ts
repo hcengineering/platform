@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
+import core, { Doc, TxOperations } from '@anticrm/core'
 import type { Client, Ref, Space } from '@anticrm/core'
 import { createKanban, genRanks } from '@anticrm/task'
 import type { DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/task'
@@ -110,7 +110,7 @@ export async function createKanbanTemplate (client: TxOperations, data: KanbanTe
 const createDefaultKanbanTemplate = async (client: TxOperations): Promise<Ref<KanbanTemplate>> =>
   await createKanbanTemplate(client, {
     kanbanId: task.template.DefaultProject,
-    space: task.space.ProjectTemplates,
+    space: task.space.ProjectTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default project',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

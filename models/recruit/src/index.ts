@@ -38,28 +38,27 @@ import tags from '@anticrm/model-tags'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import type { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
 export class TVacancy extends TSpaceWithStates implements Vacancy {
-  @Prop(TypeMarkup(), 'Full description' as IntlString)
+  @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
   fullDescription?: string
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
-  @Prop(TypeDate(), 'Due date' as IntlString, recruit.icon.Calendar)
+  @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
   dueTo?: Timestamp
 
-  @Prop(TypeString(), 'Location' as IntlString, recruit.icon.Location)
+  @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
   @Index(IndexKind.FullText)
   location?: string
 
-  @Prop(TypeString(), 'Company' as IntlString, contact.icon.Company)
+  @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
   @Index(IndexKind.FullText)
   company?: string
 }
@@ -69,22 +68,22 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX('Candidate' as IntlString, recruit.icon.RecruitApplication)
+@UX(recruit.string.Candidate, recruit.icon.RecruitApplication)
 export class TCandidate extends TPerson implements Candidate {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
   title?: string
 
-  @Prop(Collection(recruit.class.Applicant), 'Applications' as IntlString)
+  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications)
   applications?: number
 
-  @Prop(TypeBoolean(), 'Onsite' as IntlString)
+  @Prop(TypeBoolean(), recruit.string.Onsite)
   onsite?: boolean
 
-  @Prop(TypeBoolean(), 'Remote' as IntlString)
+  @Prop(TypeBoolean(), recruit.string.Remote)
   remote?: boolean
 
-  @Prop(TypeString(), 'Source' as IntlString)
+  @Prop(TypeString(), recruit.string.Source)
   @Index(IndexKind.FullText)
   source?: string
 
@@ -93,7 +92,7 @@ export class TCandidate extends TPerson implements Candidate {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX(recruit.string.Application, recruit.icon.Application, 'APP' as IntlString, 'number')
+@UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
@@ -201,9 +200,9 @@ export function createModel (builder: Builder): void {
       '',
       'title',
       'city',
-      { presenter: recruit.component.ApplicationsPresenter, label: 'Apps', sortingKey: 'applications' },
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      { presenter: recruit.component.ApplicationsPresenter, label: recruit.string.ApplicationsShort, sortingKey: 'applications' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
         presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
@@ -239,8 +238,8 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]
@@ -274,8 +273,8 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: 'Comments', sortingKey: 'comments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]
@@ -305,7 +304,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: 'Create application' as IntlString,
+      label: recruit.string.CreateApplication,
       icon: recruit.icon.Create,
       action: recruit.actionImpl.CreateApplication
     },
@@ -326,11 +325,8 @@ export function createModel (builder: Builder): void {
     task.class.KanbanTemplateSpace,
     core.space.Model,
     {
-      name: 'Vacancies',
-      description: 'Manage vacancy statuses',
-      members: [],
-      private: false,
-      archived: false,
+      name: recruit.string.Vacancies,
+      description: recruit.string.ManageVacancyStatuses,
       icon: recruit.component.TemplatesIcon
     },
     recruit.space.VacancyTemplates

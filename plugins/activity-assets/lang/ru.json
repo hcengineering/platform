@@ -1,0 +1,14 @@
+{
+  "string": {
+    "Delete": "Удалить",
+    "Edit": "Редактировать",
+    "Edited": "отредактировал(а)",
+    "DocCreated": "создал(а) {_class}",
+    "DocDeleted": "удалил(а) {_class}",
+    "Activity": "Активность",
+    "Changed": "изменил(а)",
+    "To": "на",
+    "Unset": "сбросил",
+    "NoEmployee": "Не сотрудник"
+  }
+}

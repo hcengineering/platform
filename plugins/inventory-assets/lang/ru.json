@@ -1,0 +1,23 @@
+{
+  "status": {
+    "CategoryRequired": "Требуется категория",
+    "NameRequired": "Требуется название"
+  },
+  "string": {
+    "Categories": "Категории",
+    "Category": "Категория",
+    "CreateCategoryShort": "Категория",
+    "CreateCategory": "Создать категорию",
+    "CreateSubcategory": "Создать подкатегорию",
+    "Inventory": "Инвентарь",
+    "CreateProductShort": "Продукт",
+    "CreateProduct": "Создать продукт",
+    "Products": "Продукты",
+    "Product": "Продукт",
+    "Variant": "Вариант",
+    "SKU": "Артикул",
+    "Variants": "Варианты",
+    "NoVariantsForProduct": "Нет вариантов для этого продукта.",
+    "CreateVariant": "Создать вариант"
+  }
+}

@@ -51,7 +51,7 @@
     if (provider) {
       const notification = (item as Channel)._id !== undefined ? isNew((item as Channel), lastViews) : false
       return {
-        label: provider.label as IntlString,
+        label: provider.label,
         icon: provider.icon as Asset,
         value: item.value,
         presenter: provider.presenter,

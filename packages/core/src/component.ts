@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Plugin, StatusCode } from '@anticrm/platform'
+import type { IntlString, Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Mixin, Version } from '.'
 import type { Account, ArrOf, AnyAttribute, AttachedDoc, Class, Doc, Interface, Obj, PropertyType, Ref, Space, Timestamp, Type, Collection, RefTo } from './classes'
@@ -69,5 +69,14 @@ export default plugin(coreId, {
   },
   version: {
     Model: '' as Ref<Version>
+  },
+  string: {
+    Id: '' as IntlString,
+    Space: '' as IntlString,
+    Modified: '' as IntlString,
+    ModifiedBy: '' as IntlString,
+    Class: '' as IntlString,
+    AttachedTo: '' as IntlString,
+    AttachedToClass: '' as IntlString
   }
 })

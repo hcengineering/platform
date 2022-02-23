@@ -26,7 +26,14 @@ export default mergeIds(gmailId, gmail, {
     MessageID: '' as IntlString,
     IntegrationLabel: '' as IntlString,
     IntegrationDescription: '' as IntlString,
-    SharedMessages: '' as IntlString
+    SharedMessages: '' as IntlString,
+    SharedMessage: '' as IntlString,
+    ReplyTo: '' as IntlString,
+    Message: '' as IntlString,
+    Messages: '' as IntlString,
+    Incoming: '' as IntlString,
+    Email: '' as IntlString,
+    EmailPlaceholder: '' as IntlString
   },
   ids: {
     TxSharedCreate: '' as Ref<TxViewlet>

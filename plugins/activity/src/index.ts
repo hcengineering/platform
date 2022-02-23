@@ -56,8 +56,8 @@ export default plugin(activityId, {
   string: {
     Delete: '' as IntlString,
     Edit: '' as IntlString,
-    Options: '' as IntlString,
-    Edited: '' as IntlString
+    Edited: '' as IntlString,
+    Activity: '' as IntlString
   },
   icon: {
     Activity: '' as Asset

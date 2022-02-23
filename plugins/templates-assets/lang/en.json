@@ -9,6 +9,8 @@
     "ViewTemplate": "View template",
     "Suggested": "SUGGESTED",
     "SearchTemplate": "search for template",
-    "TemplatePlaceholder": "New template"
+    "TemplatePlaceholder": "New template",
+    "Title": "Title",
+    "Message": "Message"
   }
 }

@@ -4,6 +4,13 @@
     "NoAttachments": "There are no attachments for this",
     "AddAttachment": "uploaded an attachment",
     "Attachments": "Attachments",
-    "Photos": "Photos"
+    "Photos": "Photos",
+    "File": "File",
+    "Files": "Files",
+    "Type": "Type",
+    "Size": "Size",
+    "Photo": "Photo",
+    "Date": "Date",
+    "Name": "Name"
   }
 }

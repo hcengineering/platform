@@ -35,8 +35,6 @@ export default plugin(textEditorId, {
     Emoji: '' as IntlString,
     GIF: '' as IntlString,
     EditorPlaceholder: '' as IntlString,
-    Edit: '' as IntlString,
-    Cancel: '' as IntlString,
-    Save: '' as IntlString
+    Edit: '' as IntlString
   }
 })

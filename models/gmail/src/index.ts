@@ -14,20 +14,19 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { Builder, Model, TypeString, Prop, ArrOf, TypeBoolean, Index } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import contact from '@anticrm/model-contact'
-import gmail from './plugin'
-import type { Message, SharedMessage, SharedMessages } from '@anticrm/gmail'
-import { Domain, IndexKind, Type } from '@anticrm/core'
-import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
+import { Domain, IndexKind, Type } from '@anticrm/core'
+import type { Message, SharedMessage, SharedMessages } from '@anticrm/gmail'
+import { ArrOf, Builder, Index, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
+import contact from '@anticrm/model-contact'
+import core, { TAttachedDoc } from '@anticrm/model-core'
+import setting from '@anticrm/setting'
+import gmail from './plugin'
 
 export const DOMAIN_GMAIL = 'gmail' as Domain
 
 function TypeSharedMessage (): Type<SharedMessage> {
-  return { _class: gmail.class.SharedMessage, label: 'Shared message' as IntlString }
+  return { _class: gmail.class.SharedMessage, label: gmail.string.SharedMessage }
 }
 
 @Model(gmail.class.Message, core.class.AttachedDoc, DOMAIN_GMAIL)
@@ -35,44 +34,44 @@ export class TMessage extends TAttachedDoc implements Message {
   @Prop(TypeString(), gmail.string.MessageID)
   messageId!: string
 
-  @Prop(TypeString(), 'ReplyTo' as IntlString)
+  @Prop(TypeString(), gmail.string.ReplyTo)
   @Index(IndexKind.FullText)
   replyTo?: string
 
-  @Prop(TypeString(), 'From' as IntlString)
+  @Prop(TypeString(), gmail.string.From)
   @Index(IndexKind.FullText)
   from!: string
 
-  @Prop(TypeString(), 'To' as IntlString)
+  @Prop(TypeString(), gmail.string.To)
   @Index(IndexKind.FullText)
   to!: string
 
-  @Prop(TypeString(), 'Contact' as IntlString)
+  @Prop(TypeString(), contact.string.Contact)
   @Index(IndexKind.FullText)
   contact!: string
 
-  @Prop(TypeString(), 'Subject' as IntlString)
+  @Prop(TypeString(), gmail.string.Subject)
   @Index(IndexKind.FullText)
   subject!: string
 
-  @Prop(TypeString(), 'Message' as IntlString)
+  @Prop(TypeString(), gmail.string.Message)
   @Index(IndexKind.FullText)
   content!: string
 
-  @Prop(TypeString(), 'Message' as IntlString)
+  @Prop(TypeString(), gmail.string.Message)
   @Index(IndexKind.FullText)
   textContent!: string
 
-  @Prop(ArrOf(TypeString()), 'Copy' as IntlString)
+  @Prop(ArrOf(TypeString()), gmail.string.Copy)
   copy?: string[]
 
-  @Prop(TypeBoolean(), 'Incoming' as IntlString)
+  @Prop(TypeBoolean(), gmail.string.Incoming)
   incoming!: boolean
 }
 
 @Model(gmail.class.SharedMessages, core.class.AttachedDoc, DOMAIN_GMAIL)
 export class TSharedMessages extends TAttachedDoc implements SharedMessages {
-  @Prop(ArrOf(TypeSharedMessage()), 'Messages' as IntlString)
+  @Prop(ArrOf(TypeSharedMessage()), gmail.string.Messages)
   messages!: SharedMessage[]
 }
 
@@ -83,9 +82,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Email' as IntlString,
+      label: gmail.string.Email,
       icon: contact.icon.Email,
-      placeholder: 'john.appleseed@apple.com' as IntlString,
+      placeholder: gmail.string.EmailPlaceholder,
       presenter: gmail.component.Main,
       integrationType: gmail.integrationType.Gmail
     },

@@ -1,0 +1,27 @@
+{
+  "string": {
+    "Setting": "Настройки",
+    "ManageStatuses": "Управление статусами",
+    "Integrations": "Интеграции",
+    "Support": "Поддержка",
+    "Privacy": "Конфиденциальность",
+    "Terms": "Условия",
+    "EditProfile": "Редактировать профиль",
+    "Folders": "Папки",
+    "Templates": "Шаблоны",
+    "Delete": "Удалить",
+    "ChangePassword": "Изменить пароль",
+    "CurrentPassword": "Текущий пароль",
+    "NewPassword": "Новый пароль",
+    "Disconnect": "Отключить",
+    "Saving": "Сохранение...",
+    "Saved": "Сохранено",
+    "Add": "Добавить",
+    "LearnMore": "Узнать больше",
+    "EnterCurrentPassword": "Введите текущий пароль",
+    "EnterNewPassword": "Введите новый пароль",
+    "RepeatNewPassword": "Повторите новый пароль",
+    "Signout": "Выйти",
+    "Settings": "Настройки"
+  }
+}

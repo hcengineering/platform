@@ -14,14 +14,13 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core'
-  import core, { Class, Doc, WithLookup } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Ref,Space } from '@anticrm/core'
+  import core,{ WithLookup } from '@anticrm/core'
+  import presentation,{ createQuery,getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
-  import { Button, Icon, SearchEdit, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button,Icon,SearchEdit,showPopup,Tooltip } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import workbench from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
 
@@ -73,7 +72,7 @@
       dispatch('search', search)
     }}/>
     {#if createItemDialog}
-      <Button label={workbench.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button label={presentation.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
   {/if}
 </div>

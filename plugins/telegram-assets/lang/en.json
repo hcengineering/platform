@@ -14,6 +14,12 @@
     "CodeDescr": "Enter the 5-digit code you received on your Telegram account.",
     "Cancel": "Cancel",
     "Share": "Share messages",
-    "PublishSelected": "Publish selected"
+    "PublishSelected": "Publish selected",
+    "SharedMessage": "Shared message",
+    "Content": "Content",
+    "Incoming": "Incoming",
+    "Messages": "Messages",
+    "Telegram": "Telegram",
+    "TelegramIntegrationDesc": "Use telegram integration"
   }
 }

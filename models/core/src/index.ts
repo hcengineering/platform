@@ -28,12 +28,8 @@ import {
   TRefTo,
   TType,
   TTypeBoolean,
-  TTypeDate,
-  TTypeString,
-  TTypeMarkup,
-  TTypeTimestamp,
-  TVersion,
-  TTypeNumber
+  TTypeDate, TTypeMarkup, TTypeNumber, TTypeString, TTypeTimestamp,
+  TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
 import {

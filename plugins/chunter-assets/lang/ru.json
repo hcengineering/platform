@@ -1,0 +1,25 @@
+{
+  "string": {
+    "ApplicationLabelChunter": "Чат",
+    "LeftComment": "оставил(а) комментарий",
+    "Channels": "Каналы",
+    "CreateChannel": "Создать канал",
+    "ChannelName": "Название",
+    "ChannelNamePlaceholder": "Канал",
+    "ChannelDescription": "Описание",
+    "MakePrivate": "Сделать личным",
+    "MakePrivateDescription": "Только пользователи могут видеть это",
+    "Channel": "Канал ",
+    "EditUpdate": "Сохранить...",
+    "EditCancel": "Отменить",
+    "Comments" : "Комментарии",
+    "MentionedIn": "упомянул(а) ",
+    "ContactInfo": "Контактная информация",
+    "Content": "Содержимое",
+    "Comment": "Комментарий",
+    "Message": "Сообщение",
+    "Reference": "Ссылка",
+    "Chat": "Чат",
+    "In": "в"
+  }
+}

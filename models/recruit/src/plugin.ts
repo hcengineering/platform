@@ -31,12 +31,18 @@ export default mergeIds(recruitId, recruit, {
     CreateApplication: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
+    ApplicationShort: '' as IntlString,
+    ApplicationsShort: '' as IntlString,
     RecruitApplication: '' as IntlString,
     Vacancies: '' as IntlString,
     CandidatePools: '' as IntlString,
     SearchApplication: '' as IntlString,
     Application: '' as IntlString,
-    AssignedRecruiter: '' as IntlString
+    AssignedRecruiter: '' as IntlString,
+    FullDescription: '' as IntlString,
+    Due: '' as IntlString,
+    Source: '' as IntlString,
+    ManageVacancyStatuses: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>

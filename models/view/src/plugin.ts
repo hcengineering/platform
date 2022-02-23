@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 import type { Ref, Doc } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -41,5 +41,11 @@ export default mergeIds(viewId, view, {
     DatePresenter: '' as AnyComponent,
     TableView: '' as AnyComponent,
     RolePresenter: '' as AnyComponent
+  },
+  string: {
+    Table: '' as IntlString,
+    Delete: '' as IntlString,
+    Move: '' as IntlString,
+    Role: '' as IntlString
   }
 })

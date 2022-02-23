@@ -1,0 +1,32 @@
+{
+  "string": {
+    "MessageID": "MessageID",
+    "IntegrationLabel": "Gmail",
+    "IntegrationDescription": "Используйте интеграцию с Gmail",
+    "SharedMessages": "общие письма",
+    "To": "Кому:",
+    "From": "От:",
+    "Copy": "Копия",
+    "MessagesSelected": "сообщений выбрано",
+    "PublishSelected": "Опубликовать выбранное",
+    "YouAnd": "Вы и",
+    "CreateMessage": "Создать сообщение",
+    "ShareMessages": "Поделиться сообщениями",
+    "Connect": "Подключить",
+    "RedirectGoogle": "Вы будете перенаправлены на страницу авторизации Google",
+    "ConnectGmai": "Подключить Gmail",
+    "Reply": "Ответить",
+    "Subject": "Тема",
+    "Send": "Отправить",
+    "NewMessageTo": "Новое сообщение to",
+    "Cancel": "Отменить",
+    "SubjectPlaceholder": "Тема сообщения",
+    "CopyPlaceholder": "Копия",
+    "ReplyTo": "Ответить на",
+    "Message": "Сообщение",
+    "Messages": "Сообщения",
+    "Incoming": "Входящие",
+    "Email": "Email",
+    "EmailPlaceholder": "john.appleseed@apple.com"
+  }
+}

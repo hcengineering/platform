@@ -18,7 +18,6 @@ import { Domain, IndexKind } from '@anticrm/core'
 import { Builder, Index, Model, Prop, TypeString } from '@anticrm/model'
 import core, { TDoc } from '@anticrm/model-core'
 import textEditor from '@anticrm/model-text-editor'
-import { IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
 import type { MessageTemplate } from '@anticrm/templates'
 import templates from './plugin'
@@ -27,11 +26,11 @@ export const DOMAIN_TEMPLATES = 'templates' as Domain
 
 @Model(templates.class.MessageTemplate, core.class.Doc, DOMAIN_TEMPLATES)
 export class TMessageTemplate extends TDoc implements MessageTemplate {
-  @Prop(TypeString(), 'Title' as IntlString)
+  @Prop(TypeString(), templates.string.Title)
   @Index(IndexKind.FullText)
   title!: string;
 
-  @Prop(TypeString(), 'Message' as IntlString)
+  @Prop(TypeString(), templates.string.Message)
   @Index(IndexKind.FullText)
   message!: string;
 }

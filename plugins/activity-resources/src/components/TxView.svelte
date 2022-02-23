@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { TxViewlet } from '@anticrm/activity'
-  import activity from '@anticrm/activity'
+  import activity from '../plugin'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { AnyAttribute, Doc, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
@@ -124,7 +124,7 @@
             {#if employee}
               {formatName(employee.name)}
             {:else}
-              No employee
+              <Label label={activity.string.NoEmployee} />
             {/if}
           </div>
           {#if viewlet && viewlet?.editable}
@@ -141,7 +141,9 @@
             </div>
           {:else if viewlet && viewlet.label}
             <div class="flex-center">
-              <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
+              <span class="lower">
+                <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
+              </span>
               {#if viewlet.labelComponent}
                 <Component
                   is={viewlet.labelComponent}
@@ -154,9 +156,9 @@
             {#each model as m, i}
               {#await getValue(client, m, tx.updateTx.operations) then value}
                 {#if value === null}
-                  <span>unset <Label label={m.label} /></span>
+                  <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
                 {:else}
-                  <span class:flex-grow={hasMessageType}>changed <Label label={m.label} /> to</span>
+                  <span class="lower" class:flex-grow={hasMessageType}><Label label={activity.string.Changed} /> <Label label={m.label} /> <Label label={activity.string.To} /></span>
                   {#if hasMessageType}
                     <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
@@ -176,9 +178,9 @@
             {#each model as m}
               {#await getValue(client, m, tx.mixinTx.attributes) then value}
                 {#if value === null}
-                  <span>unset <Label label={m.label} /></span>
+                  <span><Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span></span>
                 {:else}
-                  <span>changed <Label label={m.label} /> to</span>
+                  <span><Label label={activity.string.Changed} /> <span class="lower"><Label label={m.label} /></span> <Label label={activity.string.To} /></span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
                       <svelte:component this={m.presenter} {value} />

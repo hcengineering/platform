@@ -29,7 +29,7 @@ export class TLastView extends TAttachedDoc implements LastView {
   @Prop(TypeTimestamp(), notification.string.LastView)
   lastView!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), 'Modified By' as IntlString)
+  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
   user!: Ref<Account>
 }
 

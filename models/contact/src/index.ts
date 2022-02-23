@@ -44,7 +44,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
 @UX(contact.string.Contact, contact.icon.Person, undefined, 'name')
 export class TContact extends TDoc implements Contact {
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 
@@ -146,9 +146,9 @@ export function createModel (builder: Builder): void {
     config: [
       '',
       'city',
-      { presenter: attachment.component.AttachmentsPresenter, label: 'Files', sortingKey: 'attachments' },
+      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
       'modifiedOn',
-      { presenter: view.component.RolePresenter, label: 'Role' },
+      { presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'
     ]
   })
@@ -173,9 +173,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Phone' as IntlString,
+      label: contact.string.Phone,
       icon: contact.icon.Phone,
-      placeholder: '+1 555 333 7777' as IntlString
+      placeholder: contact.string.PhonePlaceholder
     },
     contact.channelProvider.Phone
   )
@@ -184,9 +184,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'LinkedIn' as IntlString,
+      label: contact.string.LinkedIn,
       icon: contact.icon.LinkedIn,
-      placeholder: 'https://linkedin.com/in/jappleseed' as IntlString
+      placeholder: contact.string.LinkedInPlaceholder
     },
     contact.channelProvider.LinkedIn
   )
@@ -195,9 +195,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Twitter' as IntlString,
+      label: contact.string.Twitter,
       icon: contact.icon.Twitter,
-      placeholder: '@appleseed' as IntlString
+      placeholder: contact.string.AtPlaceHolder
     },
     contact.channelProvider.Twitter
   )
@@ -206,9 +206,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'GitHub' as IntlString,
+      label: contact.string.GitHub,
       icon: contact.icon.GitHub,
-      placeholder: '@appleseed' as IntlString
+      placeholder: contact.string.AtPlaceHolder
     },
     contact.channelProvider.GitHub
   )
@@ -217,9 +217,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Facebook' as IntlString,
+      label: contact.string.Facebook,
       icon: contact.icon.Facebook,
-      placeholder: 'https://fb.com/jappleseed' as IntlString
+      placeholder: contact.string.FacebookPlaceholder
     },
     contact.channelProvider.Facebook
   )

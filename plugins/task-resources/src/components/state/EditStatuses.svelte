@@ -19,7 +19,7 @@
   import core from '@anticrm/core'
   import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import task from '@anticrm/task'
+  import task from '../../plugin'
   import KanbanEditor from '../kanban/KanbanEditor.svelte'
   import { Icon, IconClose, Label, showPopup, ActionIcon, ScrollBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -81,7 +81,7 @@
       <div class="ac-header__wrap-title">
         <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
         <span class="ac-header__title">
-          Manage application statuses within 
+          <Label label={task.string.ManageStatusesWithin} />
           {#if spaceClassInstance}<Label label={spaceClassInstance?.label}/>{:else}...{/if}
         </span>
       </div>

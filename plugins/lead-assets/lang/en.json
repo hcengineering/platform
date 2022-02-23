@@ -14,6 +14,11 @@
     "Customer": "Customer",
     "Customers": "Customers",
     "Leads": "Leads",
-    "SelectCustomer": "Select customer"
+    "SelectCustomer": "Select customer",
+    "Lead": "Lead",
+    "Assignee": "Assignee",
+    "Title": "Title",
+    "LeadPlaceholder": "The simple lead",
+    "ManageFunnelStatuses": "Manage funnel statuses"
   }
 }

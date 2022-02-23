@@ -16,7 +16,7 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import { CircleButton, closeTooltip } from '@anticrm/ui'
+  import { CircleButton, closeTooltip, Label } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
 
   interface Item {
@@ -43,7 +43,7 @@
 <div class="flex-row-center">
   <CircleButton icon={value.icon} size={'x-large'} />
   <div class="flex-col caption-color clear-mins ml-3">
-    <div class="text-sm font-medium">{value.label}</div>
+    <div class="text-sm font-medium"><Label label={value.label} /></div>
     <div class="overflow-label">{value.value}</div>
   </div>
   <div class="button" on:click|preventDefault={copyLink}>

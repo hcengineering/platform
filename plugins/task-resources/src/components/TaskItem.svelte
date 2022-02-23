@@ -16,13 +16,13 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue, Task } from '@anticrm/task'
-  import { Icon } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
   import task from '../plugin'
 
   export let value: Task
 
   const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel?.toUpperCase()
+  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   let name: string | undefined = undefined
 
@@ -34,7 +34,7 @@
 <div class='flex item'>
     <Icon icon={task.icon.Task} size={'large'} />
     <div class='ml-2'>
-      {shortLabel}-{value.number}
+      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
     </div>
     {#if name}
       <div class='ml-1'>{name}</div>
