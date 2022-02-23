@@ -17,7 +17,7 @@
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
 import contact, { Channel, ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
-import core, { AttachedData, AttachedDoc, Class, Data, Doc, DocumentUpdate, Ref, SortingOrder, Space, TxOperations, TxResult, MixinData } from '@anticrm/core'
+import core, { AttachedData, Class, Data, Doc, MixinData, Ref, SortingOrder, Space, TxOperations, TxResult } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
 import task, { calcRank, DoneState, genRanks, Kanban, State } from '@anticrm/task'
@@ -30,6 +30,7 @@ import { dirname, join } from 'path'
 import { parseStringPromise } from 'xml2js'
 import { connect } from './connect'
 import { ElasticTool } from './elastic'
+import { findOrUpdateAttached } from './utils'
 
 const _ = {
   candidates: 'Кандидаты',
@@ -431,14 +432,4 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
     }
   )
   return states
-}
-async function findOrUpdateAttached<T extends AttachedDoc> (client: TxOperations, space: Ref<Space>, _class: Ref<Class<T>>, objectId: Ref<T>, data: AttachedData<T>, attached: {attachedTo: Ref<Doc>, attachedClass: Ref<Class<Doc>>, collection: string}): Promise<T> {
-  let existingObj = await client.findOne<Doc>(_class, { _id: objectId, space }) as T
-  if (existingObj !== undefined) {
-    await client.updateCollection(_class, space, objectId, attached.attachedTo, attached.attachedClass, attached.collection, data as unknown as DocumentUpdate<T>)
-  } else {
-    await client.addCollection(_class, space, attached.attachedTo, attached.attachedClass, attached.collection, data, objectId)
-    existingObj = { _id: objectId, _class, space, ...data, ...attached } as unknown as T
-  }
-  return existingObj
 }

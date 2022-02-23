@@ -164,6 +164,7 @@ specifiers:
   '@types/mime-types': ~2.1.1
   '@types/pdfkit': ~0.12.3
   '@types/prosemirror-model': ~1.16.0
+  '@types/request': ~2.48.8
   '@types/toposort': ^2.0.3
   '@types/uuid': ^8.3.1
   '@types/xml2js': ~0.4.9
@@ -207,6 +208,7 @@ specifiers:
   prettier: ^2.4.1
   prettier-plugin-svelte: ^2.2.0
   prosemirror-model: ~1.16.1
+  request: ~2.88.2
   sass: ^1.37.5
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
@@ -389,6 +391,7 @@ dependencies:
   '@types/mime-types': 2.1.1
   '@types/pdfkit': 0.12.3
   '@types/prosemirror-model': 1.16.0
+  '@types/request': 2.48.8
   '@types/toposort': 2.0.3
   '@types/uuid': 8.3.3
   '@types/xml2js': 0.4.9
@@ -432,6 +435,7 @@ dependencies:
   prettier: 2.5.1
   prettier-plugin-svelte: 2.5.1_prettier@2.5.1
   prosemirror-model: 1.16.1
+  request: 2.88.2
   sass: 1.45.0
   sass-loader: 12.4.0_sass@1.45.0+webpack@5.65.0
   simplytyped: 3.3.0_typescript@4.5.4
@@ -2125,6 +2129,10 @@ packages:
       '@types/node': 17.0.0
     dev: false
 
+  /@types/caseless/0.12.2:
+    resolution: {integrity: sha512-6ckxMjBBD8URvjB6J3NcnuAn5Pkl7t3TizAg+xdlzzQGSPSmBcXf8KoIH0ua/i+tio+ZRUHEXp0HEmvaR4kt0w==}
+    dev: false
+
   /@types/connect-history-api-fallback/1.3.5:
     resolution: {integrity: sha512-h8QJa8xSb1WD4fpKBDcATDNGXghFj6/3GRWG6dhmRcu0RX1Ubasur2Uvx5aeEwlf0MwblEC2bMzzMQntxnw/Cw==}
     dependencies:
@@ -2451,6 +2459,15 @@ packages:
     resolution: {integrity: sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==}
     dev: false
 
+  /@types/request/2.48.8:
+    resolution: {integrity: sha512-whjk1EDJPcAR2kYHRbFl/lKeeKYTi05A15K9bnLInCVroNDCtXce57xKdI0/rQaA3K+6q0eFyUBPmqfSndUZdQ==}
+    dependencies:
+      '@types/caseless': 0.12.2
+      '@types/node': 17.0.10
+      '@types/tough-cookie': 4.0.1
+      form-data: 2.5.1
+    dev: false
+
   /@types/retry/0.12.1:
     resolution: {integrity: sha512-xoDlM2S4ortawSWORYqsdU+2rxdh4LRW9ytc3zmT37RIKQh6IHyKwwtKhKis9ah8ol07DCkZxPt8BBvPjC6v4g==}
     dev: false
@@ -2494,6 +2511,10 @@ packages:
 
   /@types/toposort/2.0.3:
     resolution: {integrity: sha512-jRtyvEu0Na/sy0oIxBW0f6wPQjidgVqlmCTJVHEGTNEUdL1f0YSvdPzHY7nX7MUWAZS6zcAa0KkqofHjy/xDZQ==}
+    dev: false
+
+  /@types/tough-cookie/4.0.1:
+    resolution: {integrity: sha512-Y0K95ThC3esLEYD6ZuqNek29lNX2EM1qxV8y2FTLUB0ff5wWrk7az+mLrnNFUnaXcgKye22+sFBRXOgpPILZNg==}
     dev: false
 
   /@types/uuid/8.3.3:
@@ -5650,6 +5671,15 @@ packages:
 
   /form-data/2.3.3:
     resolution: {integrity: sha512-1lLKB2Mu3aGP1Q/2eCOx0fNbRMe7XdwktwOruhfqqd0rIJWwN4Dh+E3hrPSlDCXnSR7UtZ1N38rVXm+6+MEhJQ==}
+    engines: {node: '>= 0.12'}
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      mime-types: 2.1.34
+    dev: false
+
+  /form-data/2.5.1:
+    resolution: {integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==}
     engines: {node: '>= 0.12'}
     dependencies:
       asynckit: 0.4.0
@@ -14286,7 +14316,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-3L/wr78VWV79qjSBCDWg37qMPdsEzAf5STbeXuHPOaMCvkhij64Nv0wN3vzj8CRwWRuKrX0o3Ts0NLw2SSl7hQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-mU+wxglCPtQylCz6eJOSTVv0pnsJcZ7F9nWUFIimMVNzAf3SR1vRHgozcESbMWCzDnwNx1rRb5SJUMFP5Uy2cQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -14296,6 +14326,7 @@ packages:
       '@types/mime-types': 2.1.1
       '@types/minio': 7.0.11
       '@types/node': 16.11.14
+      '@types/request': 2.48.8
       '@types/ws': 8.2.2
       '@types/xml2js': 0.4.9
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
@@ -14314,6 +14345,7 @@ packages:
       minio: 7.0.26
       mongodb: 4.2.2
       prettier: 2.5.1
+      request: 2.88.2
       ts-node: 10.4.0_5d12c2add188ff0e728b4ade3dacd39b
       typescript: 4.5.4
       ws: 8.4.2
