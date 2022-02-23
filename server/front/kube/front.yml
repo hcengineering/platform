@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: anticrm/front
+          image: hardcoreeng/front
           ports:
             - containerPort: 8080
           imagePullPolicy: Always

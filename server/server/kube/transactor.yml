@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: anticrm/transactor
+          image: hardcoreeng/transactor
           ports:
             - containerPort: 3333
           imagePullPolicy: Always
