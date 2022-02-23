@@ -27,7 +27,7 @@ exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
     const version = {
       major: parseInt(rawVersion[0]),
       minor: parseInt(rawVersion[1]),
-      patch: parseInt(rawVersion[2]) + 1 // Always use +1 version from released already.
+      patch: parseInt(rawVersion[2])
     }
     const newVersion = JSON.stringify(version)
     if (JSON.stringify(currentVersion) !== newVersion) {
