@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
+  import type { Doc, Ref, Space } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
@@ -73,7 +73,7 @@
     await Promise.all(doneStates.map(async (ds) => {
       await client.addCollection(
         ds.class,
-        space,
+        space as Ref<Doc> as Ref<Space>,
         template,
         task.class.KanbanTemplate,
         'doneStatesC',
