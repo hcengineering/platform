@@ -7,7 +7,6 @@
     "CategoryLabel": "Category",
     "TagReferenceLabel": "Tag",
     "TagLabel": "Tag",
-    "Plural": "{word}s",
     "TagName": "Please type {word} title",
     "AddTagTooltip": "Add/Create {word}",
     "AddNowTooltip": "Create {word}",
@@ -29,7 +28,6 @@
     "AssetLabel": "Asset",
     "CategoryTargetClass": "Category",
     "CategoryTagsLabel": "Category Items",
-    "DataStructuresLabel": "Data Structures",   
     "OtherCategoryLabel": "Other",
     "AllCategories": "All Categories"
   }

@@ -23,7 +23,8 @@
 
   import type { DropdownTextItem } from '../types'
   import { showPopup } from '..'
-import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
+  import ui from '../plugin'
 
   export let title: IntlString
   export let caption: IntlString | undefined = undefined
@@ -41,10 +42,9 @@ import { createEventDispatcher } from 'svelte'
   $: if (selected === undefined && items[0] !== undefined) {
     selected = items[0].id
   }
-  
-  const none = 'None' as IntlString
 
   const dispatch = createEventDispatcher()
+  const none = ui.string.None
 </script>
 
 <div class="flex-col cursor-pointer"

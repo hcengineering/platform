@@ -106,7 +106,6 @@ export default plugin(settingId, {
     ChangePassword: '' as IntlString,
     CurrentPassword: '' as IntlString,
     NewPassword: '' as IntlString,
-    Save: '' as IntlString,
     Saving: '' as IntlString,
     Saved: '' as IntlString,
     EnterCurrentPassword: '' as IntlString,

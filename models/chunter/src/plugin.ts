@@ -31,7 +31,12 @@ export default mergeIds(chunterId, chunter, {
   string: {
     ApplicationLabelChunter: '' as IntlString,
     LeftComment: '' as IntlString,
-    MentionedIn: '' as IntlString
+    MentionedIn: '' as IntlString,
+    Content: '' as IntlString,
+    Comment: '' as IntlString,
+    Message: '' as IntlString,
+    Reference: '' as IntlString,
+    Chat: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

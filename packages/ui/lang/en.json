@@ -10,6 +10,9 @@
     "Search": "Search",
     "SearchDots": "Search...",
     "Suggested": "Suggested",
-    "TimeTooltip": "{value}"
+    "TimeTooltip": "{value}",
+    "None": "None",
+    "English": "English",
+    "Russian": "Russian"
   }
 }

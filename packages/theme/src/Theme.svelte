@@ -15,13 +15,14 @@
 
 <script lang="ts">
   import { setContext, onMount } from 'svelte'
+  import platform, { setMetadata } from '@anticrm/platform'
 
   const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
   const getCurrnetFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
   const getCurrnetLanguage = (): string => localStorage.getItem('lang') ?? 'en'
   const currentTheme = getCurrentTheme()
   const currentFontSize = getCurrnetFontSize()
-  const currentLanguage = getCurrnetLanguage()
+  let currentLanguage = getCurrnetLanguage()
 
   const setRootColors = (theme: string) => {
     document.documentElement.setAttribute('class', `${theme} ${getCurrnetFontSize()}`)
@@ -47,13 +48,16 @@
   setContext('lang', {
     currentLanguage: currentLanguage,
     setLanguage: (lang: string) => {
+      currentLanguage = lang
       localStorage.setItem('lang', lang)
+      location.reload()
     }
   })
 
   onMount(() => {
     setRootColors(currentTheme)
     setRootFontSize(currentFontSize)
+    setMetadata(platform.metadata.locale, currentLanguage)
   })
 </script>
 

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
-  import { Icon, showPanel } from '@anticrm/ui'
+  import { Icon, Label, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import task from '../plugin'
 
@@ -31,5 +31,5 @@
 </script>
 
 <div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span>{shortLabel}-{value.number}
+  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span><Label label={shortLabel} />-{value.number}
 </div>

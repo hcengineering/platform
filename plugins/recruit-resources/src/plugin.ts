@@ -31,7 +31,6 @@ export default mergeIds(recruitId, recruit, {
     VacancyDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    CandidatesName: '' as IntlString,
     CandidatesDescription: '' as IntlString,
     CreateAnApplication: '' as IntlString,
     NoApplicationsForCandidate: '' as IntlString,
@@ -51,14 +50,22 @@ export default mergeIds(recruitId, recruit, {
     ThisVacancyIsPrivate: '' as IntlString,
     Description: '' as IntlString,
     Company: '' as IntlString,
-    Save: '' as IntlString,
     Edit: '' as IntlString,
     Delete: '' as IntlString,
     WorkLocationPreferences: '' as IntlString,
     Onsite: '' as IntlString,
     Remote: '' as IntlString,
     SkillLabel: '' as IntlString,
-    SkillsLabel: '' as IntlString
+    SkillsLabel: '' as IntlString,
+    General: '' as IntlString,
+    Members: '' as IntlString,
+    Yes: '' as IntlString,
+    No: '' as IntlString,
+    NA: '' as IntlString,
+    PersonFirstNamePlaceholder: '' as IntlString,
+    PersonLastNamePlaceholder: '' as IntlString,
+    Location: '' as IntlString,
+    Title: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

@@ -15,7 +15,6 @@
 
 import { Account, Arr, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
 import { Index, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
-import type { IntlString } from '@anticrm/platform'
 import core from './component'
 import { TDoc } from './core'
 
@@ -23,18 +22,18 @@ import { TDoc } from './core'
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_MODEL)
 export class TSpace extends TDoc implements Space {
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 
-  @Prop(TypeString(), 'Description' as IntlString)
+  @Prop(TypeString(), core.string.Description)
   @Index(IndexKind.FullText)
   description!: string
 
-  @Prop(TypeBoolean(), 'Private' as IntlString)
+  @Prop(TypeBoolean(), core.string.Private)
   private!: boolean
 
-  @Prop(TypeBoolean(), 'Archived' as IntlString)
+  @Prop(TypeBoolean(), core.string.Archived)
   archived!: boolean
 
   members!: Arr<Ref<Account>>

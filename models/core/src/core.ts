@@ -31,35 +31,35 @@ import core from './component'
 // C O R E
 @Model(core.class.Obj, core.class.Obj)
 export class TObj implements Obj {
-  @Prop(TypeRef(core.class.Class), 'Class' as IntlString)
+  @Prop(TypeRef(core.class.Class), core.string.Class)
   @Index(IndexKind.Indexed)
   _class!: Ref<Class<this>>
 }
 
 @Model(core.class.Doc, core.class.Obj)
 export class TDoc extends TObj implements Doc {
-  @Prop(TypeRef(core.class.Doc), 'Id' as IntlString)
+  @Prop(TypeRef(core.class.Doc), core.string.Id)
   // @Index(IndexKind.Indexed) // - automatically indexed by default.
   _id!: Ref<this>
 
-  @Prop(TypeRef(core.class.Space), 'Space' as IntlString)
+  @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   space!: Ref<Space>
 
-  @Prop(TypeTimestamp(), 'Modified' as IntlString)
+  @Prop(TypeTimestamp(), core.string.Modified)
   modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), 'Modified By' as IntlString)
+  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
   modifiedBy!: Ref<Account>
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)
 export class TAttachedDoc extends TDoc implements AttachedDoc {
-  @Prop(TypeRef(core.class.Doc), 'Attached to' as IntlString)
+  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
   attachedTo!: Ref<Doc>
 
-  @Prop(TypeRef(core.class.Class), 'Attached to class' as IntlString)
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
   attachedToClass!: Ref<Class<Doc>>
 

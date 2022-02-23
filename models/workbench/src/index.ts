@@ -23,7 +23,7 @@ import core, { TDoc, TClass } from '@anticrm/model-core'
 import workbench from './plugin'
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
-@UX('Application' as IntlString)
+@UX(workbench.string.Application)
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset

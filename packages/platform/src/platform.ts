@@ -14,6 +14,8 @@
 // limitations under the License.
 */
 
+import { Metadata } from '.'
+
 /**
  * Id in format 'plugin.resource-kind.id'
  *
@@ -140,5 +142,8 @@ export default plugin(platformId, {
     Unauthorized: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,
     InternalServerError: '' as StatusCode
+  },
+  metadata: {
+    locale: '' as Metadata<string>
   }
 })

@@ -15,16 +15,16 @@
 
 <script lang="ts">
   import { getContext } from 'svelte'
-  import type { IntlString } from '@anticrm/platform'
   import { showPopup } from '../..'
   import LangPopup from './LangPopup.svelte'
+  import ui from '../../plugin'
 
   import Flags from './icons/Flags.svelte'
 
   const { currentLanguage, setLanguage } = getContext('lang')
   const langs
-          = [{ id: 'en', label: 'English' as IntlString },
-             { id: 'ru', label: 'Russian' as IntlString }]
+          = [{ id: 'en', label: ui.string.English },
+             { id: 'ru', label: ui.string.Russian }]
 
   $: selected = langs.find(item => item.id === currentLanguage)
   let trigger: HTMLElement

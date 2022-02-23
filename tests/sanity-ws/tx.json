@@ -2338,7 +2338,7 @@
         "of": "attachment:class:Attachment",
         "label": "Collection"
       },
-      "label": "task:string:TaskAttachments",
+      "label": "attachment:string:Attachments",
       "attributeOf": "task:class:Issue"
     }
   },

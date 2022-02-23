@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, IconActivity } from '@anticrm/ui'
+  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
@@ -64,7 +64,7 @@
         <div class="flex-row-center">
           <div class='over-underline flex-row-center' on:click>
             <CircleButton icon={IconActivity} size={'small'} primary on:click />
-            <span class="ml-2 text-sm">View activity</span>
+            <span class="ml-2 text-sm"><Label label={contact.string.ViewActivity} /></span>
           </div>
         </div>
       </div>

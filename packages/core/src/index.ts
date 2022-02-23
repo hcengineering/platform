@@ -11,19 +11,26 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+import { addStringsLoader } from '@anticrm/platform'
+import { coreId } from './component'
+
 //
 export * from './classes'
-export * from './tx'
-export * from './storage'
-export * from './operations'
-export * from './utils'
-export * from './hierarchy'
-export * from './memdb'
 export * from './client'
-export * from './operator'
+export { coreId, default } from './component'
+export * from './hierarchy'
+export * from './measurements'
+export * from './memdb'
 export * from './objvalue'
+export * from './operations'
+export * from './operator'
 export * from './query'
 export * from './server'
-export * from './measurements'
+export * from './storage'
+export * from './tx'
+export * from './utils'
 
-export { default, coreId } from './component'
+addStringsLoader(coreId, async (lang: string) => {
+  return await import(`../lang/${lang}.json`)
+})

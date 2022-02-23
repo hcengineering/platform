@@ -21,6 +21,12 @@
     "NewMessageTo": "New message to",
     "Cancel": "Cancel",
     "SubjectPlaceholder": "Message subject",
-    "CopyPlaceholder": "Copy to"
+    "CopyPlaceholder": "Copy to",
+    "ReplyTo": "Reply to",
+    "Message": "Message",
+    "Messages": "Messages",
+    "Incoming": "Incoming",
+    "Email": "Email",
+    "EmailPlaceholder": "john.appleseed@apple.com"
   }
 }

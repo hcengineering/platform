@@ -15,7 +15,7 @@
 //
 
 import { Ref } from '@anticrm/core'
-import { mergeIds, Resource } from '@anticrm/platform'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import { SettingsCategory } from '@anticrm/setting'
 import { templatesId } from '@anticrm/templates'
 import templates from '@anticrm/templates-resources/src/plugin'
@@ -35,5 +35,9 @@ export default mergeIds(templatesId, templates, {
   },
   action: {
     ShowTemplates: '' as Resource<RefInputAction>
+  },
+  string: {
+    Title: '' as IntlString,
+    Message: '' as IntlString
   }
 })

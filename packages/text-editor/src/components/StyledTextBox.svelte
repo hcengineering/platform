@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
-  import { MessageViewer } from '@anticrm/presentation'
+  import presentation, { MessageViewer } from '@anticrm/presentation'
   import { ActionIcon, IconCheck, IconClose, IconEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
@@ -41,7 +41,7 @@
             icon={IconCheck}
             size={'medium'}
             direction={'bottom'}
-            label={textEditorPlugin.string.Save}
+            label={presentation.string.Save}
             action={() => {
               dispatch('value', rawValue)
               content = rawValue
@@ -53,7 +53,7 @@
           size={'medium'}
           icon={IconClose}
           direction={'top'}
-          label={textEditorPlugin.string.Cancel}
+          label={presentation.string.Cancel}
           action={() => {
             mode = Mode.View
           }}

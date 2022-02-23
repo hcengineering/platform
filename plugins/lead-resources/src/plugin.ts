@@ -31,7 +31,8 @@ export default mergeIds(leadId, lead, {
     SelectCustomer: '' as IntlString,
     Customers: '' as IntlString,
     Leads: '' as IntlString,
-    NoLeadsForDocument: '' as IntlString
+    NoLeadsForDocument: '' as IntlString,
+    LeadPlaceholder: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

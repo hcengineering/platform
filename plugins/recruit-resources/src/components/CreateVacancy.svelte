@@ -59,7 +59,7 @@
   on:close={() => { dispatch('close') }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder="Software Engineer" maxWidth={'16rem'} focus/>
+    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder={recruit.string.VacancyPlaceholder} maxWidth={'16rem'} focus/>
     <Dropdown icon={Company} label={recruit.string.Company} placeholder={'Company'} />
 
     <Component is={task.component.KanbanTemplateSelector} props={{

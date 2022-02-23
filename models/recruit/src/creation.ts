@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Ref, TxOperations } from '@anticrm/core'
+import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import type { Client } from '@anticrm/core'
 import { createKanbanTemplate } from '@anticrm/model-task'
 
@@ -54,7 +54,7 @@ const defaultKanban = {
 export const createDefaultKanbanTemplate = async (client: TxOperations): Promise<Ref<KanbanTemplate>> =>
   await createKanbanTemplate(client, {
     kanbanId: recruit.template.DefaultVacancy,
-    space: recruit.space.VacancyTemplates,
+    space: recruit.space.VacancyTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default vacancy',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates

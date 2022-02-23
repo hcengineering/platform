@@ -45,7 +45,7 @@
 
   $: updateObject(_id)
 
-  const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
+  const tabs: IntlString[] = [recruit.string.General, recruit.string.Members, activity.string.Activity]
   let selected = 0
 
   function onChange (key:string, value: any): void {

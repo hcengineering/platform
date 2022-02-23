@@ -15,10 +15,16 @@
 
 import type { Class, Ref, Type } from '@anticrm/core'
 import core, { coreId } from '@anticrm/core'
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 
 export default mergeIds(coreId, core, {
   class: {
     Type: '' as Ref<Class<Type<any>>>
+  },
+  string: {
+    Name: '' as IntlString,
+    Description: '' as IntlString,
+    Private: '' as IntlString,
+    Archived: '' as IntlString
   }
 })

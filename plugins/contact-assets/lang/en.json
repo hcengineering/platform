@@ -32,6 +32,18 @@
     "Person": "Person",
     "Organization": "Organization",
     "Employee": "Employee",
-    "Value": "Value"
+    "Value": "Value",
+    "FullDescription": "Full description",
+    "Phone": "Phone",
+    "LinkedIn": "LinkedIn",
+    "GitHub": "GitHub",
+    "Twitter": "Twitter",
+    "PhonePlaceholder": "+1 555 333 7777",
+    "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
+    "AtPlaceHolder": "@appleseed",
+    "FacebookPlaceholder": "https://fb.com/jappleseed",
+    "Facebook": "Facebook",
+    "SocialLinks": "Socail links",
+    "ViewActivity": "View activity"
   }
 }

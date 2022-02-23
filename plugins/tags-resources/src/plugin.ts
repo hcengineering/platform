@@ -24,7 +24,6 @@ export default mergeIds(tagsId, tags, {
     NoTags: '' as IntlString,
     AddTag: '' as IntlString,
     EditTag: '' as IntlString,
-    Plural: '' as IntlString,
     AddTagTooltip: '' as IntlString,
     AddNowTooltip: '' as IntlString,
     CreateItemLabel: '' as IntlString,

@@ -41,7 +41,7 @@
       label={lead.string.LeadName}
       bind:value={object.title}
       icon={lead.icon.Lead}
-      placeholder="The simple lead"
+      placeholder={lead.string.LeadPlaceholder}
       maxWidth="39rem"
       focus
       on:change={(evt) => change('title', object.title)}

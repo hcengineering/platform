@@ -21,7 +21,6 @@ import { Builder, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import type { IntlString } from '@anticrm/platform'
 import { ObjectDDParticipant } from '@anticrm/view'
 import chunter from './plugin'
 
@@ -34,21 +33,21 @@ export class TChannel extends TSpace implements Channel {}
 
 @Model(chunter.class.Message, core.class.Doc, DOMAIN_CHUNTER)
 export class TMessage extends TDoc implements Message {
-  @Prop(TypeMarkup(), 'Content' as IntlString)
+  @Prop(TypeMarkup(), chunter.string.Content)
   @Index(IndexKind.FullText)
   content!: string
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
-@UX('Comment' as IntlString)
+@UX(chunter.string.Comment)
 export class TComment extends TAttachedDoc implements Comment {
-  @Prop(TypeMarkup(), 'Message' as IntlString)
+  @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
   message!: string
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)
-@UX('Reference' as IntlString, chunter.icon.Chunter)
+@UX(chunter.string.Reference, chunter.icon.Chunter)
 export class TBacklink extends TComment implements Backlink {
   backlinkId!: Ref<Doc>
   backlinkClass!: Ref<Class<Doc>>
@@ -67,7 +66,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: 'Chat' as IntlString,
+    label: chunter.string.Chat,
     icon: view.icon.Table,
     component: chunter.component.ChannelView
   }, chunter.viewlet.Chat)

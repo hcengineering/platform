@@ -14,7 +14,6 @@
     "IssueName": "Name",
     "TaskDescription": "Description",
     "TaskComments": "Comments",
-    "TaskAttachments": "Attachments",
     "TaskLabels": "Labels",
     "TaskAssignee": "Assignee",
     "StateTemplateTitle": "Title",
@@ -64,6 +63,8 @@
     "DoneStates": "Done states",
     "States": "States",    
     "SearchTask": "Search for task...",
-    "NoDoneState": "Not done"
+    "NoDoneState": "Not done",
+    "ManageStatusesWithin": "Manage application statuses within",
+    "ManageProjectStatues": "Manage project statues"
   }
 }

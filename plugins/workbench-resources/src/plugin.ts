@@ -23,11 +23,13 @@ export default mergeIds(workbenchId, workbench, {
   string: {
     More: '' as IntlString,
     Delete: '' as IntlString,
-    Create: '' as IntlString,
     ShowMenu: '' as IntlString,
     HideMenu: '' as IntlString,
     Archive: '' as IntlString,
-    Archived: '' as IntlString
+    Archived: '' as IntlString,
+    Open: '' as IntlString,
+    General: '' as IntlString,
+    Members: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent

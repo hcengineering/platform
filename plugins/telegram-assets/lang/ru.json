@@ -1,0 +1,25 @@
+{
+  "string": {
+    "SharedMessages": "опубликованные сообщения Telegram",
+    "Next": "Далее",
+    "Back": "Назад",
+    "Connect": "Подключить",
+    "Connecting": "Подключение...",
+    "ConnectFull": "Подключить Telegram",
+    "Password": "Пароль",
+    "Phone": "Телефон",
+    "PhonePlaceholder": "+1 555 333 7777",
+    "PhoneDescr": "Введите номер телефона для подключения Telegram.",
+    "PasswordDescr": "Введите пароль второго фактора защиты",
+    "CodeDescr": "Введите 5-значный код.",
+    "Cancel": "Отменить",
+    "Share": "Опубликовать сообщения",
+    "PublishSelected": "Опубликовать выбранные",
+    "SharedMessage": "Опубликованное сообщение",
+    "Content": "Содержимое",
+    "Incoming": "Входящее",
+    "Messages": "Сообщения",
+    "Telegram": "Telegram",
+    "TelegramIntegrationDesc": "Подключить Telegram"
+  }
+}

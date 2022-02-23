@@ -16,8 +16,10 @@
   import type { Backlink } from '@anticrm/chunter'
   import type { Doc } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '@anticrm/view-resources'
+  import chunter from '../../plugin'
 
   // export let tx: TxCreateDoc<Backlink>
   export let value: Backlink
@@ -25,15 +27,26 @@
 
   const client = getClient()
   let presenter: AttributeModel | undefined
+  let targetPresenter: AttributeModel | undefined
 
   const docQuery = createQuery()
+  const targetQuery = createQuery()
   let doc: Doc | undefined
+  let target: Doc | undefined
 
   $: docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
     doc = r.shift()
   })
 
-  $: className = client.getHierarchy().getClass(value.attachedToClass).label.toLocaleLowerCase()
+  $: targetQuery.query(value.attachedToClass, { _id: value.attachedTo }, (r) => {
+    target = r.shift()
+  })
+
+  $: if (target !== undefined) {
+    getObjectPresenter(client, target._class, { key: '' }).then((p) => {
+      targetPresenter = p
+    })
+  }
 
   $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
@@ -43,7 +56,12 @@
 </script>
 
 {#if presenter}
-  {className} in
+  {#if targetPresenter}
+    <div class="ml-2">
+      <svelte:component this={targetPresenter.presenter} value={target} />
+    </div>
+  {/if}
+  <span class="lower">&nbsp; <Label label={chunter.string.In} /></span>
   <div class="ml-2">
     <svelte:component this={presenter.presenter} value={doc} />
   </div>

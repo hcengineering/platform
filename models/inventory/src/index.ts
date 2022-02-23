@@ -20,7 +20,6 @@ import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import workbench from '@anticrm/model-workbench'
-import type { IntlString } from '@anticrm/platform'
 import type { } from '@anticrm/view'
 import view from '@anticrm/view'
 import inventory from './plugin'
@@ -29,7 +28,7 @@ export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
 @UX(inventory.string.Category, inventory.icon.Categories, undefined, 'name')
 export class TCategory extends TAttachedDoc implements Category {
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 }
@@ -41,7 +40,7 @@ export class TProduct extends TAttachedDoc implements Product {
   @Prop(TypeRef(inventory.class.Category), inventory.string.Category)
   declare attachedTo: Ref<Category>
 
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 
@@ -51,7 +50,7 @@ export class TProduct extends TAttachedDoc implements Product {
   @Prop(Collection(inventory.class.Variant), inventory.string.Variants)
   variants?: number
 
-  @Prop(Collection(attachment.class.Attachment), 'Attachments' as IntlString)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 }
 
@@ -62,7 +61,7 @@ export class TVariant extends TAttachedDoc implements Variant {
   @Prop(TypeRef(inventory.class.Product), inventory.string.Product)
   declare attachedTo: Ref<Product>
 
-  @Prop(TypeString(), 'Name' as IntlString)
+  @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
   name!: string
 

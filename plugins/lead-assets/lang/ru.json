@@ -1,0 +1,24 @@
+{
+  "string": {
+    "CreateFunnel": "Создать воронку",
+    "CreateLead": "Создать сделку",
+    "Funnel": "Воронка",
+    "FunnelName": "Название воронки",
+    "Funnels": "Воронки",
+    "MakePrivate": "Сделать личным",
+    "MakePrivateDescription": "Только пользователи могут видеть это",
+    "LeadApplication": "Сделки",
+    "SelectFunnel": "Выбрать воронку",
+    "LeadName": "Название сделки",
+    "More": "Еще...",
+    "Customer": "Клиент",
+    "Customers": "Клиенты",
+    "Leads": "Сделки",
+    "SelectCustomer": "Выбрать клиента",
+    "Lead": "Сделка",
+    "Assignee": "Назначена",
+    "Title": "Загаловок",
+    "LeadPlaceholder": "Простая сделка",
+    "ManageFunnelStatuses": "Управление статусами воронки"
+  }
+}

@@ -2,7 +2,6 @@
   "string": {
     "ApplicationLabelChunter": "Chat",
     "LeftComment": "left a comment",
-    "AddAttachment": "uploaded an attachment",
     "Channels": "Channels",
     "CreateChannel": "New Channel",
     "ChannelName": "Name",
@@ -15,6 +14,12 @@
     "EditCancel": "Cancel",
     "Comments" : "Comments",
     "MentionedIn": "mentioned this ",
-    "ContactInfo": "Contact Info"
+    "ContactInfo": "Contact Info",
+    "Content": "Content",
+    "Comment": "Comment",
+    "Message": "Message",
+    "Reference": "Reference",
+    "Chat": "Chat",
+    "In": "In"
   }
 }

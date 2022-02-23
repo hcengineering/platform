@@ -21,6 +21,7 @@ import { setPlatformStatus } from './event'
 import { IntlMessageFormat } from 'intl-messageformat'
 
 import platform from './platform'
+import { getMetadata } from '.'
 
 /**
  * @public
@@ -28,8 +29,6 @@ import platform from './platform'
 export type Loader = (locale: string) => Promise<Record<string, string | Record<string, string>>>
 
 type Messages = Record<string, IntlString | Record<string, IntlString>>
-
-const locale = 'en'
 
 const loaders = new Map<Plugin, Loader>()
 const translations = new Map<Plugin, Messages | Status>()
@@ -44,7 +43,7 @@ export function addStringsLoader (plugin: Plugin, loader: Loader): void {
   loaders.set(plugin, loader)
 }
 
-async function loadTranslationsForComponent (plugin: Plugin): Promise<Messages | Status> {
+async function loadTranslationsForComponent (plugin: Plugin, locale: string): Promise<Messages | Status> {
   const loader = loaders.get(plugin)
   if (loader === undefined) {
     const status = new Status(Severity.ERROR, platform.status.NoLoaderForStrings, { plugin })
@@ -60,12 +59,12 @@ async function loadTranslationsForComponent (plugin: Plugin): Promise<Messages |
   }
 }
 
-async function getTranslation (message: IntlString): Promise<IntlString | Status> {
+async function getTranslation (message: IntlString, locale: string): Promise<IntlString | Status> {
   try {
     const id = _parseId(message)
     let messages = translations.get(id.component)
     if (messages === undefined) {
-      messages = await loadTranslationsForComponent(id.component)
+      messages = await loadTranslationsForComponent(id.component, locale)
       translations.set(id.component, messages)
     }
     if (messages instanceof Status) {
@@ -90,6 +89,7 @@ async function getTranslation (message: IntlString): Promise<IntlString | Status
  * @returns
  */
 export async function translate<P extends Record<string, any>> (message: IntlString<P>, params: P): Promise<string> {
+  const locale = getMetadata(platform.metadata.locale) ?? 'en'
   const compiled = cache.get(message)
   if (compiled !== undefined) {
     if (compiled instanceof Status) {
@@ -97,7 +97,7 @@ export async function translate<P extends Record<string, any>> (message: IntlStr
     }
     return compiled.format(params)
   } else {
-    const translation = await getTranslation(message)
+    const translation = await getTranslation(message, locale)
     if (translation instanceof Status) {
       cache.set(message, translation)
       return message

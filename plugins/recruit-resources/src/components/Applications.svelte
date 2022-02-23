@@ -36,7 +36,7 @@
 
 <div class="applications-container">
   <div class="flex-row-center">
-    <div class="title">Applications</div>
+    <div class="title"><Label label={recruit.string.Applications} /></div>
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
   {#if applications > 0}

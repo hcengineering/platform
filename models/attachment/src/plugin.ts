@@ -27,7 +27,14 @@ export default mergeIds(attachmentId, attachment, {
     AttachmentPresenter: '' as AnyComponent
   },
   string: {
-    AddAttachment: '' as IntlString
+    AddAttachment: '' as IntlString,
+    Files: '' as IntlString,
+    File: '' as IntlString,
+    Name: '' as IntlString,
+    Size: '' as IntlString,
+    Type: '' as IntlString,
+    Photo: '' as IntlString,
+    Date: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>

@@ -70,7 +70,6 @@ export default mergeIds(taskId, task, {
     TaskParent: '' as IntlString,
     IssueName: '' as IntlString,
     TaskComments: '' as IntlString,
-    TaskAttachments: '' as IntlString,
     TaskLabels: '' as IntlString,
     StateTemplateTitle: '' as IntlString,
     StateTemplateColor: '' as IntlString,
@@ -84,7 +83,8 @@ export default mergeIds(taskId, task, {
     Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
-    SearchTask: '' as IntlString
+    SearchTask: '' as IntlString,
+    ManageProjectStatues: '' as IntlString
   },
   space: {
     TasksPublic: '' as Ref<Space>

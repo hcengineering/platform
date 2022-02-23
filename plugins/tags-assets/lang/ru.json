@@ -1,0 +1,34 @@
+{
+  "string": {
+    "TagElementLabel": "Тег",
+    "TitleLabel": "Заголовок",
+    "DescriptionLabel": "Описание",
+    "ColorLabel": "Цвет",
+    "CategoryLabel": "Категория",
+    "TagReferenceLabel": "Тег",
+    "TagLabel": "Тег",
+    "TagName": "Пожалуйста введите название {word}",
+    "AddTagTooltip": "Добавить/создать {word}",
+    "AddNowTooltip": "Создать {word}",
+    "AddTag": "Создать {word}",
+    "EditTag": "Редактировать {word}",
+    "CreateItemLabel": "Создать",
+    "CancelLabel": "Отмена",
+    "SearchCreate": "Название...",
+    "NoItems": "Отсутсвует добавленный {word}",
+    "TagDescriptionLabel": "Описание",
+    "TagDescriptionPlaceholder": "Пожалуйста введите описание",
+    "TagTooltip": "{text}",
+    "Tags": "Теги",
+    "SaveLabel": "Сохранить",
+    "WeightLabel": "Вес",
+    "WeightPlaceholder": "Пожалуйста введите вес",
+    "CategoryPlaceholder": "Пожалуйста введите категорию",
+
+    "AssetLabel": "Asset",
+    "CategoryTargetClass": "Категория",
+    "CategoryTagsLabel": "Теги категории",
+    "OtherCategoryLabel": "Другое",
+    "AllCategories": "Все категории"
+  }
+}

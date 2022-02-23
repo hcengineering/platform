@@ -1,0 +1,12 @@
+{
+  "status": {
+    "LoadingPlugin": "Загрузка плагина '<b>'{plugin}'</b>'...",
+    "UnknownError": "Неизвестная ошибка: {message}",
+    "InvalidId": "Некорректный Id: {id}",
+    "BadRequest": "Некорректный запрос",
+    "Forbidden": "Запрещено",
+    "Unauthorized": "Неавторизован",
+    "UnknownMethod": "Неизвестный метод: {method}",
+    "InternalServerError": "Внутренняя ошибка сервеа"
+  }
+}

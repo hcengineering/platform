@@ -2,9 +2,13 @@
   "string": {
     "Delete": "Delete",
     "Edit": "Edit",
-    "Options": "Options",
     "Edited": "edited",
     "DocCreated": "created {_class}",
-    "DocDeleted": "deleted {_class}"
+    "DocDeleted": "deleted {_class}",
+    "Activity": "Activity",
+    "Changed": "changed",
+    "To": "to",
+    "Unset": "unset",
+    "NoEmployee": "No employee"
   }
 }

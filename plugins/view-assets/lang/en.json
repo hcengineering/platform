@@ -8,6 +8,8 @@
     "LabelYes": "Yes",
     "LabelNo": "No",
     "LabelNA": "N/A",
-    "ChooseAColor": "Choose a color"
+    "ChooseAColor": "Choose a color",
+    "Table": "Table",
+    "Role": "Role"
   }
 }

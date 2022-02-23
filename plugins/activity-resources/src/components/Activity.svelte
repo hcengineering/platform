@@ -18,7 +18,7 @@
   import chunter from '@anticrm/chunter'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Component, Grid, IconActivity, Scroller } from '@anticrm/ui'
+  import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
@@ -54,7 +54,7 @@
     <div class="ac-header short mirror-tool divide">
       <div class="ac-header__wrap-title">
         <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
-        <span class="ac-header__title">Activity</span>
+        <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
     </div>
   {/if}
@@ -86,7 +86,7 @@
       <div class="ac-header short mirror-tool">
         <div class="ac-header__wrap-title">
           <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
-          <span class="ac-header__title">Activity</span>
+          <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
         </div>
       </div>
       <div class="p-activity">

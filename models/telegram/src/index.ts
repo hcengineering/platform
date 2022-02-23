@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
 import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
@@ -27,22 +26,22 @@ import activity from '@anticrm/activity'
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
 function TypeSharedMessage (): Type<SharedTelegramMessage> {
-  return { _class: telegram.class.SharedMessage, label: 'Shared message' as IntlString }
+  return { _class: telegram.class.SharedMessage, label: telegram.string.SharedMessage }
 }
 
 @Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
-  @Prop(TypeString(), 'Content' as IntlString)
+  @Prop(TypeString(), telegram.string.Content)
   @Index(IndexKind.FullText)
   content!: string
 
-  @Prop(TypeBoolean(), 'Incoming' as IntlString)
+  @Prop(TypeBoolean(), telegram.string.Incoming)
   incoming!: boolean
 }
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TSharedTelegramMessages extends TAttachedDoc implements SharedTelegramMessages {
-  @Prop(ArrOf(TypeSharedMessage()), 'Messages' as IntlString)
+  @Prop(ArrOf(TypeSharedMessage()), telegram.string.Messages)
   messages!: SharedTelegramMessage[]
 }
 
@@ -53,9 +52,9 @@ export function createModel (builder: Builder): void {
     contact.class.ChannelProvider,
     core.space.Model,
     {
-      label: 'Telegram' as IntlString,
+      label: telegram.string.Telegram,
       icon: contact.icon.Telegram,
-      placeholder: '@appleseed' as IntlString,
+      placeholder: contact.string.AtPlaceHolder,
       presenter: telegram.component.Chat,
       integrationType: telegram.integrationType.Telegram
     },
@@ -66,8 +65,8 @@ export function createModel (builder: Builder): void {
     setting.class.IntegrationType,
     core.space.Model,
     {
-      label: 'Telegram' as IntlString,
-      description: 'Use telegram integration' as IntlString,
+      label: telegram.string.Telegram,
+      description: telegram.string.TelegramIntegrationDesc,
       icon: telegram.component.IconTelegram,
       createComponent: telegram.component.Connect,
       onDisconnect: telegram.handler.DisconnectHandler

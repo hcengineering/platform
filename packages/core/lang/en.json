@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Id": "Id",
+    "Space": "Space",
+    "Modified": "Modified",
+    "ModifiedBy": "Modified by",
+    "Class": "Class",
+    "AttachedTo": "Attached to",
+    "AttachedToClass": "Attached to class",
+    "Name": "Name",
+    "Description": "Description",
+    "Private": "Private",
+    "Archived": "Archived"
+  }
+}

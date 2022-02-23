@@ -1,0 +1,16 @@
+{
+  "string": {
+    "UploadDropFilesHere": "Загрузите или перетащите файлы сюда",
+    "NoAttachments": "Нет вложений",
+    "AddAttachment": "загрузил вложение",
+    "Attachments": "Вложения",
+    "Photos": "Фотографии",
+    "File": "Файл",
+    "Files": "Файлы",
+    "Type": "Тип",
+    "Size": "Размер",
+    "Photo": "Фотография",
+    "Date": "Дата",
+    "Name": "Название"
+  }
+}

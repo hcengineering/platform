@@ -17,7 +17,7 @@
   import { getClient } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
-  import { Icon } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
   import { showPanel } from '@anticrm/ui/src/panelup'
   import view from '@anticrm/view'
 
@@ -33,6 +33,6 @@
 
 {#if value && shortLabel}
   <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
+    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;<Label label={shortLabel} />-{value.number}
   </div>
 {/if}

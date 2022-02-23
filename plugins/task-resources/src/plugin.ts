@@ -58,7 +58,8 @@ export default mergeIds(taskId, task, {
     DoneStatesWon: '' as IntlString,
     DoneStatesLost: '' as IntlString,
     AllStates: '' as IntlString,
-    NoDoneState: '' as IntlString
+    NoDoneState: '' as IntlString,
+    ManageStatusesWithin: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

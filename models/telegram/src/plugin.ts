@@ -23,7 +23,13 @@ import type { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(telegramId, telegram, {
   string: {
-    SharedMessages: '' as IntlString
+    SharedMessages: '' as IntlString,
+    SharedMessage: '' as IntlString,
+    Content: '' as IntlString,
+    Incoming: '' as IntlString,
+    Messages: '' as IntlString,
+    Telegram: '' as IntlString,
+    TelegramIntegrationDesc: '' as IntlString
   },
   ids: {
     TxSharedCreate: '' as Ref<TxViewlet>
