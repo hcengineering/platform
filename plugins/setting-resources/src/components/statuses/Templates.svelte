@@ -29,7 +29,7 @@
   let templateMap = new Map<Ref<KanbanTemplate>, KanbanTemplate>()
   const templatesQ = createQuery()
   $: if (folder !== undefined) {
-    templatesQ.query(task.class.KanbanTemplate, { space: folder._id }, (result) => {
+    templatesQ.query(task.class.KanbanTemplate, { space: folder._id as Ref<Doc> as Ref<Space> }, (result) => {
       templates = result
     })
   }
@@ -50,7 +50,7 @@
 
     const space = folder._id
 
-    const template = await client.createDoc(task.class.KanbanTemplate, space, {
+    const template = await client.createDoc(task.class.KanbanTemplate, space as Ref<Doc> as Ref<Space>, {
       doneStatesC: 0,
       statesC: 0,
       title: 'New Template'
