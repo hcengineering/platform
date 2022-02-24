@@ -15,6 +15,8 @@
 //
 
 import { Client } from 'minio'
+import { setMetadata } from '@anticrm/platform'
+import serverToken from '@anticrm/server-token'
 import { start } from './app'
 
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
@@ -74,6 +76,14 @@ if (modelVersion === undefined) {
   console.error('please provide model version requirement')
   process.exit(1)
 }
+
+const serverSecret = process.env.SERVER_SECRET
+if (serverSecret === undefined) {
+  console.log('Please provide server secret')
+  process.exit(1)
+}
+
+setMetadata(serverToken.metadata.Secret, serverSecret)
 
 const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion }
 console.log('Starting Front service with', config)

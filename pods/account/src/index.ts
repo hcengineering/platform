@@ -16,6 +16,7 @@
 
 import { ACCOUNT_DB, methods } from '@anticrm/account'
 import toolPlugin from '@anticrm/server-tool'
+import serverToken from '@anticrm/server-token'
 import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@anticrm/platform'
 import cors from '@koa/cors'
 import { IncomingHttpHeaders } from 'http'
@@ -39,6 +40,13 @@ if (transactorUri === undefined) {
 
 const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
 
+const serverSecret = process.env.SERVER_SECRET
+if (serverSecret === undefined) {
+  console.log('Please provide server secret')
+  process.exit(1)
+}
+
+setMetadata(serverToken.metadata.Secret, serverSecret)
 setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
 setMetadata(toolPlugin.metadata.Transactor, transactorUri)
 

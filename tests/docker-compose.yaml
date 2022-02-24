@@ -44,6 +44,7 @@ services:
       - 3003:3003
     environment:
       - ACCOUNT_PORT=3003
+      - SERVER_SECRET=secret
       - MONGO_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334
       - ENDPOINT_URL=ws://localhost:3334
@@ -62,6 +63,7 @@ services:
       - 8083:8083
     environment:
       - SERVER_PORT=8083
+      - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3003
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3334
@@ -79,6 +81,7 @@ services:
       - 3334:3334
     environment:
       - SERVER_PORT=3334
+      - SERVER_SECRET=secret
       - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=true

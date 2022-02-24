@@ -15,6 +15,8 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
+import { setMetadata } from '@anticrm/platform'
+import serverToken from '@anticrm/server-token'
 import { start } from '.'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
@@ -54,6 +56,14 @@ const minioConf = {
   accessKey: minioAccessKey,
   secretKey: minioSecretKey
 }
+
+const serverSecret = process.env.SERVER_SECRET
+if (serverSecret === undefined) {
+  console.log('Please provide server secret')
+  process.exit(1)
+}
+
+setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(`starting server on ${serverPort}`)
