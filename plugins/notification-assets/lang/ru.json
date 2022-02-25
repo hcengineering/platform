@@ -6,6 +6,8 @@
     "NoNotifications": "Нет уведомлений",
     "MentionNotification": "Упомянул",
     "EmailNotification": "по email",
-    "PlatformNotification": "в системе"
+    "PlatformNotification": "в системе",
+    "Track": "Отслеживать",
+    "DontTrack": "Не отслеживать"
   }
 }

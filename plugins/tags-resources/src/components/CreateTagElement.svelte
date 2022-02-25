@@ -31,7 +31,7 @@
   let color: number = 0
 
   let categoryWasSet = false
-  let category: Ref<TagCategory> = tags.category.Other
+  let category: Ref<TagCategory> | undefined
 
   let categories: TagCategory[] = []
   let categoryItems: DropdownTextItem[] = []
@@ -42,7 +42,7 @@
     color = getColorNumberByText(title)
   }
 
-  $: if (!categoryWasSet) {
+  $: if (!categoryWasSet && categories.length > 0) {
     category = findTagCategory(title, categories)
   }
 
@@ -56,7 +56,7 @@
 
   const query = createQuery()
 
-  query.query(tags.class.TagCategory, {}, async (result) => {
+  query.query(tags.class.TagCategory, { targetClass }, async (result) => {
     const newItems: DropdownTextItem[] = []
     for (const r of result) {
       newItems.push({
@@ -74,7 +74,7 @@
       description,
       targetClass,
       color,
-      category: category
+      category: category ?? tags.category.NoCategory
     }
 
     await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)

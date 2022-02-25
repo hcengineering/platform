@@ -42,7 +42,7 @@
     for (const provider of providers) {
       const i = findValue(provider._id)
       if (i !== -1) {
-        newValues.push(values[i])
+        newValues.push({ ...values[i] })
       } else {
         newValues.push({ provider: provider._id, value: '' })
       }

@@ -39,7 +39,8 @@ export default mergeIds(tagsId, tags, {
     TagReference: '' as IntlString,
     AssetLabel: '' as IntlString,
     CategoryTargetClass: '' as IntlString,
-    CategoryTagsLabel: '' as IntlString
+    CategoryTagsLabel: '' as IntlString,
+    DefaultLabel: '' as IntlString
   },
   dd: {
     DeleteTagElement: '' as Resource<(doc: Doc, client: TxOperations) => Promise<Doc[]>>

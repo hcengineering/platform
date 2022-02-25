@@ -77,7 +77,7 @@
   }
 
   const query = createQuery()
-  query.query(tags.class.TagCategory, {}, async (result) => {
+  query.query(tags.class.TagCategory, { targetClass: value.targetClass }, async (result) => {
     const newItems: DropdownTextItem[] = []
     for (const r of result) {
       newItems.push({

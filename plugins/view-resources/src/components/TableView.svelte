@@ -30,5 +30,5 @@
 </script>
 
 <Scroller>
-  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} enableChecking />
+  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification/>
 </Scroller>

@@ -26,4 +26,4 @@ kubectl run anticrm-tool --rm --tty -i --restart='Never' \
   --env="TELEGRAM_DATABASE=telegram-service" \
   --env="MINIO_ENDPOINT=$MINIO_ENDPOINT" \
   --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
-  --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image anticrm/tool --command -- bash
+  --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image hardcoreeng/tool --command -- bash

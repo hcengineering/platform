@@ -18,10 +18,11 @@
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
-  import { ActionIcon, IconMoreH, showPopup } from '@anticrm/ui'
+  import { ActionIcon, Component, IconMoreH, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
+  import notification from '@anticrm/notification' 
 
   export let object: WithLookup<Issue>
   export let draggable: boolean
@@ -34,7 +35,12 @@
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
   <div class="flex-between mb-2">
     <TaskPresenter value={object} />
-    <ActionIcon label={task.string.More} action={(evt) => { showMenu(evt) }} icon={IconMoreH} size={'small'} />
+    <div class="flex-row-center">
+      <div class="mr-2">
+        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+      </div>
+      <ActionIcon label={task.string.More} action={(evt) => { showMenu(evt) }} icon={IconMoreH} size={'small'} />
+    </div>
   </div>
   <div class="caption-color mb-3 lines-limit-4">{object.name}</div>
   <!-- <div class="text-sm lines-limit-2">{object.description}</div> -->
@@ -47,9 +53,7 @@
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
-    {#if object.$lookup?.assignee}
-      <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
-    {/if}
+    <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
 </div>
 </div>
 

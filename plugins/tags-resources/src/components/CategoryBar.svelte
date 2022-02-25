@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import tags from '../plugin'
   import { getPlatformColorForText, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import tags from '../plugin'
   import { getTagStyle } from '../utils'
 
   export let targetClass: Ref<Class<Doc>>
@@ -31,7 +31,6 @@
   const stepStyle = gap === 'small' ? 'gap-1' : 'gap-2'
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let elements: TagElement[] = []
 
@@ -41,7 +40,7 @@
   const elementsQuery = createQuery()
   $: elementsQuery.query(
     tags.class.TagElement,
-    { targetClass: { $in: [targetClass, ...client.getHierarchy().getAncestors(targetClass)] } },
+    { targetClass },
     (res) => {
       elements = res
     },

@@ -11,8 +11,7 @@ export const toolId = 'tool' as Plugin
 const toolPlugin = plugin(toolId, {
   metadata: {
     Endpoint: '' as Metadata<string>,
-    Transactor: '' as Metadata<string>,
-    Secret: '' as Metadata<string>
+    Transactor: '' as Metadata<string>
   }
 })
 
