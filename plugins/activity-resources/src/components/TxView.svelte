@@ -17,7 +17,7 @@
   import type { TxViewlet } from '@anticrm/activity'
   import activity from '../plugin'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import core, { AnyAttribute, Doc, Ref } from '@anticrm/core'
+  import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
@@ -135,9 +135,11 @@
               {#if tx.updated}
                 <Label label={activity.string.Edited} />
               {/if}
-              <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
-                <IconMoreH size={'medium'} />
-              </div>
+              {#if tx.tx.modifiedBy === getCurrentAccount()._id}
+                <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
+                  <IconMoreH size={'medium'} />
+                </div>
+              {/if}
             </div>
           {:else if viewlet && viewlet.label}
             <div class="flex-center">
