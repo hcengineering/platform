@@ -18,7 +18,9 @@ import notification, { notificationId } from '@anticrm/notification'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {
-  Notifications: `${icons}#notification`
+  Notifications: `${icons}#notification`,
+  Track: `${icons}#track`,
+  DontTrack: `${icons}#donttrack`
 })
 
 addStringsLoader(notificationId, async (lang: string) => await import(`../lang/${lang}.json`))

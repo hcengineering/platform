@@ -17,12 +17,16 @@
 import { Resources } from '@anticrm/platform'
 import NotificationsPopup from './components/NotificationsPopup.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
+import NotificationPresenter from './components/NotificationPresenter.svelte'
+import LastViewEditor from './components/LastViewEditor.svelte'
 
 export * from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
     NotificationsPopup,
-    NotificationSettings
+    NotificationPresenter,
+    NotificationSettings,
+    LastViewEditor
   }
 })

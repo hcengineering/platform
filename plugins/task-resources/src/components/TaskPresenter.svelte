@@ -31,5 +31,5 @@
 </script>
 
 <div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span>{#if shortLabel}<Label label={shortLabel} />-{/if}-{value.number}
+  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span>{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
 </div>

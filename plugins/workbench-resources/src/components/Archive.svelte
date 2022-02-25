@@ -64,7 +64,6 @@
     _class={spaceSample._class}
     config={['name', 'company', 'location', 'modifiedOn']}
     options={{}}
-    enableChecking={true}
     baseMenuClass={core.class.Space}
     query={{
       _class: { $in: model?.spaces.map(x => x.spaceClass) ?? [] },

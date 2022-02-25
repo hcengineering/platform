@@ -19,9 +19,10 @@
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
-  import { ActionIcon, IconMoreH, showPanel } from '@anticrm/ui'
+  import { ActionIcon, Component, IconMoreH, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
+  import notification from '@anticrm/notification'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
@@ -33,14 +34,21 @@
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
   <div class="flex-between mb-3">
-    <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
-    <div class="flex-grow flex-col min-w-0 ml-2">
-      <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
-        {formatName(object.$lookup?.attachedTo?.name)}
+    <div class="flex-row-center">
+      <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
+      <div class="flex-grow flex-col min-w-0 ml-2">
+        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
+          {formatName(object.$lookup?.attachedTo?.name)}
+        </div>
+        <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
-      <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
     </div>
-    <div class="tool"><ActionIcon label={undefined} icon={IconMoreH} size={'small'} /></div>
+    <div class="tool mr-1 flex-row-center">
+      <div class="mr-2">
+        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+      </div>
+      <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
+    </div>
   </div>
   <div class="flex-between">
     <div class="flex-row-center">

@@ -42,10 +42,12 @@
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
   import notification, { NotificationStatus } from '@anticrm/notification'
+  import { NotificationClient } from '@anticrm/notification-resources'
 
   export let client: Client
 
   setClient(client)
+  NotificationClient.getClient()
 
   let currentApp: Ref<Application> | undefined
   let currentSpace: Ref<Space> | undefined
