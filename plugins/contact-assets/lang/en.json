@@ -44,6 +44,7 @@
     "FacebookPlaceholder": "https://fb.com/jappleseed",
     "Facebook": "Facebook",
     "SocialLinks": "Socail links",
-    "ViewActivity": "View activity"
+    "ViewActivity": "View activity",
+    "PersonAlreadyExists": "Person already exists..."
   }
 }
