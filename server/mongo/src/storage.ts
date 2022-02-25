@@ -240,8 +240,18 @@ abstract class MongoAdapterBase extends TxProcessor {
     for (const row of result) {
       row.$lookup = {}
       await this.fillLookupValue(options.lookup, row)
+      this.clearExtraLookups(row)
     }
     return result
+  }
+
+  private clearExtraLookups (row: any): void {
+    for (const key in row) {
+      if (key.endsWith('_lookup')) {
+        // eslint-disable-next-line
+        delete row[key]
+      }
+    }
   }
 
   private checkMixinKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
