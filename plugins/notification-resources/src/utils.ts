@@ -15,15 +15,15 @@
 //
 
 import core, { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
-import notification, { LastView } from '@anticrm/notification'
+import notification, { LastView, NotificationClient } from '@anticrm/notification'
 import { createQuery, getClient } from '@anticrm/presentation'
 import { writable, Writable } from 'svelte/store'
 
 /**
  * @public
  */
-export class NotificationClient {
-  protected static _instance: NotificationClient | undefined = undefined
+export class NotificationClientImpl implements NotificationClient {
+  protected static _instance: NotificationClientImpl | undefined = undefined
   private lastViews = new Map<Ref<Doc>, LastView>()
   private readonly lastViewsStore = writable(new Map<Ref<Doc>, Timestamp>())
 
@@ -42,11 +42,11 @@ export class NotificationClient {
     })
   }
 
-  static getClient (): NotificationClient {
-    if (NotificationClient._instance === undefined) {
-      NotificationClient._instance = new NotificationClient()
+  static getClient (): NotificationClientImpl {
+    if (NotificationClientImpl._instance === undefined) {
+      NotificationClientImpl._instance = new NotificationClientImpl()
     }
-    return NotificationClient._instance
+    return NotificationClientImpl._instance
   }
 
   getLastViews (): Writable<Map<Ref<Doc>, Timestamp>> {
@@ -61,9 +61,6 @@ export class NotificationClient {
   ): Promise<void> {
     const client = getClient()
     const user = getCurrentAccount()._id
-    console.log('SUBSCRIBE')
-    console.log('USER')
-    console.log(user)
     const lastView = time ?? new Date().getTime()
     const current = this.lastViews.get(_id)
     if (current !== undefined) {
@@ -90,9 +87,6 @@ export class NotificationClient {
   async unsubscribe (_id: Ref<Doc>): Promise<void> {
     const client = getClient()
     const user = getCurrentAccount()._id
-    console.log('UNSUBSCRIBE')
-    console.log('USER')
-    console.log(user)
     const current = await client.findOne(notification.class.LastView, { attachedTo: _id, user })
     if (current !== undefined) {
       await client.removeDoc(current._class, current.space, current._id)

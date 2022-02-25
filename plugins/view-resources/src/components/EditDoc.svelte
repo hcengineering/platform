@@ -17,7 +17,7 @@
   import contact, { formatName } from '@anticrm/contact'
   import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
-  import { Asset, translate } from '@anticrm/platform'
+  import { Asset, getResource, translate } from '@anticrm/platform'
   import {
     AttributesBar,
     createQuery,
@@ -27,12 +27,15 @@
   } from '@anticrm/presentation'
   import { AnyComponent, Component, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate, onDestroy  } from 'svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
+  import notification from '@anticrm/notification'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let rightSection: AnyComponent | undefined = undefined
+  let lastId: Ref<Doc> = _id
+  let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
@@ -40,7 +43,24 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
+
+  $: read(_id)
+  function read (_id: Ref<Doc>) {
+    if (lastId !== _id) {
+      const prev = lastId
+      const prevClass = lastClass
+      lastId = _id
+      lastClass = _class
+      notificationClient.then((client) => client.updateLastView(prev, prevClass))
+    }
+  }
+
+  onDestroy(async () => {
+    notificationClient.then((client) => client.updateLastView(_id, _class))
+  })
 
   const query = createQuery()
   $: _id &&

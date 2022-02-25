@@ -15,11 +15,11 @@
 <script lang="ts">
   import { Doc } from '@anticrm/core'
   import { getPlatformColor } from '@anticrm/ui'
-  import { NotificationClient } from '../utils'
+  import { NotificationClientImpl } from '../utils'
 
   export let value: Doc
 
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
 
   $: lastView = $lastViews.get(value._id)

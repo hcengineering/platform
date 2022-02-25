@@ -24,12 +24,12 @@
   import { Channel, Contact, formatName } from '@anticrm/contact'
   import { TextEditor } from '@anticrm/text-editor'
   import plugin from '../plugin'
-  import { NotificationClient } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
   export let currentMessage: SharedMessage | undefined
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
 
   let editor: TextEditor
   let copy: string = ''

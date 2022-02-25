@@ -27,12 +27,12 @@
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
-  import { NotificationClient } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let object: Contact
   let channel: Channel | undefined = undefined
   const client = getClient()
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
 
   client
     .findOne(contact.class.Channel, {

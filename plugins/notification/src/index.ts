@@ -15,7 +15,7 @@
 //
 
 import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, TxCUD } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -86,6 +86,18 @@ export const notificationId = 'notification' as Plugin
 /**
  * @public
  */
+export interface NotificationClient {
+  updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
+}
+
+/**
+ * @public
+ */
+export type NotificationClientFactoy = () => NotificationClient
+
+/**
+ * @public
+ */
 const notification = plugin(notificationId, {
   class: {
     LastView: '' as Ref<Class<LastView>>,
@@ -117,6 +129,9 @@ const notification = plugin(notificationId, {
   string: {
     Notification: '' as IntlString,
     Notifications: '' as IntlString
+  },
+  function: {
+    GetNotificationClient: '' as Resource<NotificationClientFactoy>
   }
 })
 

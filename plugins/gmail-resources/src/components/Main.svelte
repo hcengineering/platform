@@ -20,13 +20,13 @@
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
   import { getClient } from '@anticrm/presentation'
-  import { NotificationClient } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let object: Contact
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
 
   const client = getClient()
 
