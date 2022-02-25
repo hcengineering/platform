@@ -29,6 +29,7 @@
     "CategoryTargetClass": "Category",
     "CategoryTagsLabel": "Category Items",
     "OtherCategoryLabel": "Other",
-    "AllCategories": "All Categories"
+    "AllCategories": "All Categories",
+    "DefaultLabel": "Default category"
   }
 }

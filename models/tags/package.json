@@ -33,7 +33,6 @@
     "@anticrm/tags-resources": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/model-core": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0",
-    "@anticrm/skillset": "^0.6.0"
+    "@anticrm/model-view": "~0.6.0"    
   }
 }

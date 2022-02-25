@@ -12518,11 +12518,12 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-8jDIXUx3KFtzeCO7AChSlND5+RBTLNG83eAO8syMdJVAmOA5UpEhFQvpPZCRLhYEzj3VG2zgJg7USd+CZKEPhA==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-e8rfK0JjHSG0Zy0OzesYS38vL7VPzaKOUx5FC9PjeckdklAGYFbPUc1PZnLkeisogVcd3tDR7UkjIL0GvohJ+w==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
     dependencies:
+      '@anticrm/skillset': 0.6.0
       '@rushstack/heft': 0.41.8
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
@@ -12768,7 +12769,7 @@ packages:
     dev: false
 
   file:projects/model-tags.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-M9oDcJc4rUtXqhC4FcPW+Z62RTGfstzLFi6DnorfVhtEANY/2VTUPiyjwLM+ml6sCHVdG49kaAx1gLHyEbAF7Q==, tarball: file:projects/model-tags.tgz}
+    resolution: {integrity: sha512-M+xHdfGituHUoH7YgkHc5lw2TXsvV3jvf3g73EpjJgGl4NFclNd1VkBtyEQ9Czsjy3N/jff1B2FePFu7u2p6FA==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
     name: '@rush-temp/model-tags'
     version: 0.0.0

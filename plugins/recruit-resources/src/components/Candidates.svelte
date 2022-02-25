@@ -55,7 +55,6 @@
   $: updateResultQuery(search, documentIds)
 
   function updateCategory (detail: {category: Ref<TagCategory> | null, elements: TagElement[] }) {
-    console.log(detail)
     category = detail.category ?? undefined
     selectedTagElements.set(Array.from(detail.elements ?? []).map(it => it._id))
   }
