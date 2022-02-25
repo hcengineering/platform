@@ -174,7 +174,13 @@ function filterActions (
 ): Array<Ref<Action>> {
   const result: Array<Ref<Action>> = []
   const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(doc._class)
+  const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
+  const ignore = ignoreActions?.actions ?? []
   for (const target of targets) {
+    if (ignore.includes(target.action)) {
+      continue
+    }
     if (target.query !== undefined) {
       const r = matchQuery([doc], target.query)
       if (r.length === 0) {

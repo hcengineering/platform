@@ -84,8 +84,14 @@ export interface Action extends Doc, UXObject {
 export interface ActionTarget<T extends Doc = Doc> extends Doc {
   target: Ref<Class<T>>
   action: Ref<Action>
-
   query?: DocumentQuery<T>
+}
+
+/**
+ * @public
+ */
+export interface IgnoreActions extends Class<Doc> {
+  actions: Ref<Action>[]
 }
 
 /**
@@ -179,6 +185,7 @@ const view = plugin(viewId, {
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectDDParticipant: '' as Ref<ObjectDDParticipant>,
+    IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
     TextPresenter: '' as Ref<Mixin<TextPresenter>>
   },

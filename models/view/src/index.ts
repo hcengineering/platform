@@ -24,6 +24,7 @@ import type {
   ActionTarget,
   AttributeEditor,
   AttributePresenter,
+  IgnoreActions,
   ObjectDDParticipant,
   ObjectEditor,
   ObjectEditorHeader,
@@ -100,6 +101,11 @@ export class TActionTarget extends TDoc implements ActionTarget {
   action!: Ref<Action>
 }
 
+@Mixin(view.mixin.IgnoreActions, core.class.Class)
+export class TIgnoreActions extends TClass implements IgnoreActions {
+  actions!: Ref<Action>[]
+}
+
 @Mixin(view.mixin.HTMLPresenter, core.class.Class)
 export class THTMLPresenter extends TClass implements HTMLPresenter {
   presenter!: Resource<(doc: Doc) => string>
@@ -124,7 +130,8 @@ export function createModel (builder: Builder): void {
     TObjectEditorHeader,
     TObjectDDParticipant,
     THTMLPresenter,
-    TTextPresenter
+    TTextPresenter,
+    TIgnoreActions
   )
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeEditor, {
