@@ -83,7 +83,7 @@
         config={descr.config}
         options={descr.options}
         query={ resultQuery }
-        enableChecking
+        showNotification
       />
     {/if}
   {/await}

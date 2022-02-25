@@ -6,6 +6,8 @@
     "NoNotifications": "No notifications",
     "MentionNotification": "Mentioned",
     "EmailNotification": "by email",
-    "PlatformNotification": "in platform"
+    "PlatformNotification": "in platform",
+    "Track": "Track",
+    "DontTrack": "Don't track"
   }
 }

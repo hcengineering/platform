@@ -51,7 +51,7 @@
     btn.focus()
     if (!opened) {
       opened = true
-      showPopup(DropdownPopup, { title: label, caption: 'suggested', items }, container, (result) => {
+      showPopup(DropdownPopup, { title: label, items }, container, (result) => {
         if (result) selected = result
         opened = false
       })

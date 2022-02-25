@@ -16,9 +16,9 @@
 <script lang="ts">
   import activity from '@anticrm/activity'
   import type { Doc } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-  import { Icon, IconClose, IconExpand, IconMoreH, Component, ActionIcon, Scroller } from '@anticrm/ui'
+  import { ActionIcon,AnyComponent,AnySvelteComponent,Component,Icon,IconClose,IconExpand,IconMoreH,Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let title: string
@@ -43,7 +43,7 @@
             {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
           </div>
         </div>
-        <!-- <ActionIcon icon={IconMoreH} size={'medium'} /> -->
+        <Component is={notification.component.LastViewEditor} props={{ value: object }} />
       </div>
       {#if $$slots.subtitle}
         <div class="ac-subtitle">
@@ -68,7 +68,7 @@
           {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
         </div>
       </div>
-      <ActionIcon icon={IconMoreH} size={'medium'} />
+      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
     </div>
     {#if $$slots.subtitle}
       <div class="ac-subtitle">

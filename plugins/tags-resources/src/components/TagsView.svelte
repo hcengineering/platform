@@ -101,6 +101,6 @@
     ]}
     options={opt}
     query={resultQuery}
-    enableChecking
+    showNotification
   />
 </Scroller>

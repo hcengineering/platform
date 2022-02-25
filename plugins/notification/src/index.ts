@@ -102,10 +102,14 @@ const notification = plugin(notificationId, {
     NotificationSettings: '' as Ref<Doc>
   },
   component: {
-    NotificationsPopup: '' as AnyComponent
+    NotificationsPopup: '' as AnyComponent,
+    NotificationPresenter: '' as AnyComponent,
+    LastViewEditor: '' as AnyComponent
   },
   icon: {
-    Notifications: '' as Asset
+    Notifications: '' as Asset,
+    Track: '' as Asset,
+    DontTrack: '' as Asset
   },
   space: {
     Notifications: '' as Ref<Space>

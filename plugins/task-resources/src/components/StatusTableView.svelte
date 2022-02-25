@@ -146,7 +146,7 @@
 </div>
 <div class="statustableview-container">
   <ScrollBox vertical stretch noShift>
-    <Table {_class} {query} config={resConfig} {options} enableChecking />
+    <Table {_class} {query} config={resConfig} {options} showNotification />
   </ScrollBox>
 </div>
 

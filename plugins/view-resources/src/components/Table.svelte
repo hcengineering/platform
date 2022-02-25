@@ -17,15 +17,17 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
+  import { Component, CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { buildModel, LoadingProps } from '../utils'
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
+  import notification from '@anticrm/notification'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
   export let enableChecking: boolean = false
+  export let showNotification: boolean = false
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
@@ -123,23 +125,26 @@
     <Loading />
   {/if}
 {:then model}
-  <table class="table-body" class:enableChecking>
+  <table class="table-body" class:enableChecking class:showNotification>
     <thead class="scroller-thead">
       <tr class="tr-head scroller-thead__tr">
-        {#each model as attribute, cellHead}
-          {#if enableChecking && !cellHead}
-            <th>
-              <div class="checkCell" class:checkall={checked.size > 0}>
-                <CheckBox
-                  symbol={'minus'}
-                  checked={objects?.length === checked.size && objects?.length > 0}
-                  on:change={(e) => {
-                    objects.map((o) => check(o._id, e))
-                  }}
-                />
-              </div>
-            </th>
-          {/if}
+        {#if enableChecking}
+          <th>
+            <div class="checkCell" class:checkall={checked.size > 0}>
+              <CheckBox
+                symbol={'minus'}
+                checked={objects?.length === checked.size && objects?.length > 0}
+                on:change={(e) => {
+                  objects.map((o) => check(o._id, e))
+                }}
+              />
+            </div>
+          </th>
+        {/if}
+        {#if showNotification}
+          <th></th>
+        {/if}
+        {#each model as attribute}
           <th
             class:sortable={attribute.sortingKey}
             class:sorted={attribute.sortingKey === sortKey}
@@ -177,6 +182,11 @@
                         }}
                       />
                     </div>
+                  </td>
+                {/if}
+                {#if showNotification}
+                  <td class="notificationCell">
+                    <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
                   </td>
                 {/if}
                 <td>
@@ -237,6 +247,12 @@
     width: 100%;
   }
 
+  .notificationCell {
+    padding: 0.5rem;
+    padding-left: 1rem !important;
+    padding-right: 0rem;
+  }
+
   .firstCell {
     display: flex;
     // justify-content: space-between;
@@ -268,7 +284,7 @@
     }
   }
 
-  .enableChecking {
+  .enableChecking, .showNotification {
     th,
     td {
       &:first-child {

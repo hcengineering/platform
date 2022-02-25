@@ -24,7 +24,7 @@ import { writable, Writable } from 'svelte/store'
  */
 export class NotificationClient {
   protected static _instance: NotificationClient | undefined = undefined
-  private readonly lastViews = new Map<Ref<Doc>, LastView>()
+  private lastViews = new Map<Ref<Doc>, LastView>()
   private readonly lastViewsStore = writable(new Map<Ref<Doc>, Timestamp>())
 
   private readonly lastViewQuery = createQuery()
@@ -32,10 +32,12 @@ export class NotificationClient {
   private constructor () {
     this.lastViewQuery.query(notification.class.LastView, { user: getCurrentAccount()._id }, (result) => {
       const res: Map<Ref<Doc>, Timestamp> = new Map<Ref<Doc>, Timestamp>()
+      const lastViews: Map<Ref<Doc>, LastView> = new Map<Ref<Doc>, LastView>()
       result.forEach((p) => {
         res.set(p.attachedTo, p.lastView)
-        this.lastViews.set(p.attachedTo, p)
+        lastViews.set(p.attachedTo, p)
       })
+      this.lastViews = lastViews
       this.lastViewsStore.set(res)
     })
   }
@@ -59,6 +61,9 @@ export class NotificationClient {
   ): Promise<void> {
     const client = getClient()
     const user = getCurrentAccount()._id
+    console.log('SUBSCRIBE')
+    console.log('USER')
+    console.log(user)
     const lastView = time ?? new Date().getTime()
     const current = this.lastViews.get(_id)
     if (current !== undefined) {
@@ -85,6 +90,9 @@ export class NotificationClient {
   async unsubscribe (_id: Ref<Doc>): Promise<void> {
     const client = getClient()
     const user = getCurrentAccount()._id
+    console.log('UNSUBSCRIBE')
+    console.log('USER')
+    console.log(user)
     const current = await client.findOne(notification.class.LastView, { attachedTo: _id, user })
     if (current !== undefined) {
       await client.removeDoc(current._class, current.space, current._id)

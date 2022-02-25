@@ -19,10 +19,11 @@
   import { ContactPresenter } from '@anticrm/contact-resources'
   import type { WithLookup } from '@anticrm/core'
   import type { Lead } from '@anticrm/lead'
-  import { ActionIcon, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
+  import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { ContextMenu } from '@anticrm/view-resources'
   import lead from '../plugin'
+  import notification from '@anticrm/notification'
 
   export let object: WithLookup<Lead>
   export let draggable: boolean
@@ -37,16 +38,27 @@
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
-  <div class="content">
+  <div class="flex-between mb-4">
+    <div class="flex-col">
+      <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
+    </div>
     <div class="flex-row-center">
-      <div class="flex-col ml-2">
-        <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
+      <div class="mr-2">
+        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
       </div>
+      <ActionIcon
+        label={lead.string.More}
+        action={(evt) => {
+          showMenu(evt)
+        }}
+        icon={IconMoreH}
+        size={'small'}
+      />
     </div>
   </div>
   <div class="flex-between">
     {#if object.$lookup?.attachedTo}
-      <ContactPresenter value={object.$lookup?.attachedTo} />
+      <ContactPresenter value={object.$lookup.attachedTo} />
     {/if}
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
@@ -55,16 +67,6 @@
       {#if (object.comments ?? 0) > 0}
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
-      <div class="step-lr75">
-        <ActionIcon
-          label={lead.string.More}
-          action={(evt) => {
-            showMenu(evt)
-          }}
-          icon={IconMoreH}
-          size={'small'}
-        />
-      </div>
     </div>
   </div>
 </div>
@@ -79,11 +81,6 @@
     user-select: none;
     backdrop-filter: blur(10px);
 
-    .content {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
     &.draggable {
       cursor: grab;
     }
