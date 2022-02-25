@@ -1,4 +1,3 @@
-
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
@@ -16,17 +15,18 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Data, generateId } from '@anticrm/core'
+  import { AttachedData, Data, FindResult, generateId } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
 
   import { getClient, Card, EditableAvatar } from '@anticrm/presentation'
 
   import attachment from '@anticrm/attachment'
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, IconInfo, Label } from '@anticrm/ui'
 
-  import { Channel, combineName, Person } from '@anticrm/contact'
+  import { Channel, combineName, findPerson, Person } from '@anticrm/contact'
   import contact from '../plugin'
   import Channels from './Channels.svelte'
+  import PersonPresenter from './PersonPresenter.svelte'
 
   let firstName = ''
   let lastName = ''
@@ -52,9 +52,7 @@
 
   async function createPerson () {
     const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarProp = avatar !== undefined 
-      ? { avatar: await uploadFile(avatar) }
-      : {}
+    const avatarProp = avatar !== undefined ? { avatar: await uploadFile(avatar) } : {}
 
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
@@ -74,35 +72,81 @@
   }
 
   let channels: AttachedData<Channel>[] = []
+
+  let matches: FindResult<Person> = []
+  $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
+    matches = p
+  })
 </script>
 
 <Card
   label={contact.string.CreatePerson}
   okAction={createPerson}
-  canSave={firstName.length > 0 && lastName.length > 0}
+  canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
   bind:space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}
 >
+  {#if matches.length > 0}
+    <div class="flex-row update-container ERROR">
+      <div class="flex mb-2">
+        <IconInfo size={'small'} />
+        <div class="text-sm ml-2 overflow-label">
+          <Label label={contact.string.PersonAlreadyExists} />
+        </div>
+      </div>
+      <PersonPresenter value={matches[0]} />
+    </div>
+  {/if}
   <div class="flex-row-center">
     <div class="mr-4">
       <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="12rem" bind:value={lastName} /></div>
-      <div class="text-sm"><EditBox placeholder={contact.string.PersonLocationPlaceholder} maxWidth="12rem" bind:value={object.city} /></div>
+      <div class="fs-title">
+        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} />
+      </div>
+      <div class="fs-title mb-1">
+        <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="12rem" bind:value={lastName} />
+      </div>
+      <div class="text-sm">
+        <EditBox placeholder={contact.string.PersonLocationPlaceholder} maxWidth="12rem" bind:value={object.city} />
+      </div>
     </div>
   </div>
 
   <div class="flex-row-center channels">
-    <Channels bind:channels={channels} on:change={(e) => { channels = e.detail }} />
+    <Channels
+      bind:channels
+      on:change={(e) => {
+        channels = e.detail
+      }}
+    />
   </div>
 </Card>
 
 <style lang="scss">
   .channels {
     margin-top: 1.25rem;
+  }
+  .update-container {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    user-select: none;
+    font-size: 14px;
+    color: var(--theme-content-color);
+    &.WARNING {
+      color: yellow;
+    }
+    &.ERROR {
+      color: var(--system-error-color);
+    }
+
+    border: 1px dashed var(--theme-zone-border);
+    border-radius: 0.5rem;
+    backdrop-filter: blur(10px);
   }
 </style>

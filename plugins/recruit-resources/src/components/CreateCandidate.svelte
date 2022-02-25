@@ -14,12 +14,24 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import contact, { Channel, ChannelProvider, combineName, Person } from '@anticrm/contact'
+  import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
   import { Channels } from '@anticrm/contact-resources'
-  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor } from '@anticrm/core'
+  import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
+  import {
+    Account,
+    AttachedData,
+    Data,
+    Doc,
+    FindResult,
+    generateId,
+    Hierarchy,
+    MixinData,
+    Ref,
+    TxProcessor
+  } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
-  import {
+  import presentation, {
     Card,
     createQuery,
     EditableAvatar,
@@ -34,9 +46,12 @@
   import {
     Component,
     EditBox,
-    getColorNumberByText, IconFile as FileIcon,
+    getColorNumberByText,
+    IconFile as FileIcon,
+    IconInfo,
     Label,
-    Link, showPopup,
+    Link,
+    showPopup,
     Spinner
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -156,7 +171,12 @@
 
     const categories = await client.findAll(tags.class.TagCategory, {})
     // Tag elements
-    const skillTagElements = new Map((await client.findAll(tags.class.TagElement, { _id: { $in: skills.map(it => it.tag) } })).map(it => ([it._id, it])))
+    const skillTagElements = new Map(
+      (await client.findAll(tags.class.TagElement, { _id: { $in: skills.map((it) => it.tag) } })).map((it) => [
+        it._id,
+        it
+      ])
+    )
     for (const skill of skills) {
       // Create update tag if missing
       if (!skillTagElements.has(skill.tag)) {
@@ -247,9 +267,9 @@
       await elementsPromise
 
       const categories = await client.findAll(tags.class.TagCategory, {})
-      const categoriesMap = new Map(Array.from(categories.map(it => ([it._id, it]))))
-  
-      const newSkills:TagReference[] = []
+      const categoriesMap = new Map(Array.from(categories.map((it) => [it._id, it])))
+
+      const newSkills: TagReference[] = []
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {
         const title = s.trim().toLowerCase()
@@ -356,29 +376,50 @@
       }
     ]
   }
-</script>
 
-<!-- <DialogHeader {space} {object} {newValue} {resume} create={true} on:save={createCandidate}/> -->
+  let matches: FindResult<Person> = []
+  $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
+    matches = p
+  })
+</script>
 
 <Card
   label={recruit.string.CreateCandidate}
   okAction={createCandidate}
-  canSave={firstName.length > 0 && lastName.length > 0}
+  canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
   space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}
 >
-  <!-- <StatusComponent slot="error" status={{ severity: Severity.ERROR, code: 'Can’t save the object because it already exists' }} /> -->
+  {#if matches.length > 0}
+    <div class="flex-row update-container ERROR">
+      <div class="flex mb-2">
+        <IconInfo size={'small'} />
+        <div class="text-sm ml-2 overflow-label">
+          <Label label={contact.string.PersonAlreadyExists} />
+        </div>
+      </div>
+      <PersonPresenter value={matches[0]} />
+    </div>
+  {/if}
   <div class="flex-row-center">
     <div class="mr-4">
       <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title"><EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} /></div>
-      <div class="fs-title mb-1"><EditBox placeholder={recruit.string.PersonLastNamePlaceholder} maxWidth="10rem" bind:value={lastName} /></div>
-      <div class="text-sm"><EditBox placeholder={recruit.string.Title} maxWidth="10rem" bind:value={object.title} /></div>
-      <div class="text-sm"><EditBox placeholder={recruit.string.Location} maxWidth="10rem" bind:value={object.city} /></div>
+      <div class="fs-title">
+        <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} />
+      </div>
+      <div class="fs-title mb-1">
+        <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} maxWidth="10rem" bind:value={lastName} />
+      </div>
+      <div class="text-sm">
+        <EditBox placeholder={recruit.string.Title} maxWidth="10rem" bind:value={object.title} />
+      </div>
+      <div class="text-sm">
+        <EditBox placeholder={recruit.string.Location} maxWidth="10rem" bind:value={object.city} />
+      </div>
     </div>
   </div>
 
@@ -489,5 +530,24 @@
     &.solid {
       border-style: solid;
     }
+  }
+  .update-container {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    user-select: none;
+    font-size: 14px;
+    color: var(--theme-content-color);
+    &.WARNING {
+      color: yellow;
+    }
+    &.ERROR {
+      color: var(--system-error-color);
+    }
+
+    border: 1px dashed var(--theme-zone-border);
+    border-radius: 0.5rem;
+    backdrop-filter: blur(10px);
   }
 </style>
