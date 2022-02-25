@@ -20,10 +20,12 @@
   import { ChannelProvider, Channel } from '@anticrm/contact'
   import contact from '../plugin'
   import Channels from './Channels.svelte'
+  import ChannelsView from './ChannelsView.svelte'
 
   export let attachedTo: Ref<Doc>
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
+  export let editable = true
 
   let channels: Channel[] = []
 
@@ -96,11 +98,15 @@
   }
 </script>
 
-<Channels
-  {channels}
-  {integrations}
-  on:change={(e) => {
-    save(e.detail)
-  }}
-  on:click
-/>
+{#if editable}
+  <Channels
+    {channels}
+    {integrations}
+    on:change={(e) => {
+      save(e.detail)
+    }}
+    on:click
+  />
+{:else}
+  <ChannelsView value={channels} size={'small'} {integrations} on:click />
+{/if}

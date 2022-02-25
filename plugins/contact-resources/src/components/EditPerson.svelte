@@ -14,20 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
-  import { getClient, createQuery, EditableAvatar, AttributeEditor } from '@anticrm/presentation'
-  import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
-  import setting from '@anticrm/setting'
-  import { IntegrationType } from '@anticrm/setting'
+  import { combineName,getFirstName,getLastName,Person } from '@anticrm/contact'
+  import { getCurrentAccount,Ref,Space } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
+  import { AttributeEditor,Avatar,createQuery,EditableAvatar,getClient } from '@anticrm/presentation'
+  import setting,{ IntegrationType } from '@anticrm/setting'
+  import { CircleButton,EditBox,IconActivity,Label } from '@anticrm/ui'
+  import { afterUpdate,createEventDispatcher,onMount } from 'svelte'
   import contact from '../plugin'
-  import { combineName, getFirstName, getLastName, Person } from '@anticrm/contact'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let object: Person
+  const client = getClient()
 
+  const hierarchy = client.getHierarchy()
+
+  $: editable = !hierarchy.isDerived(object._class, contact.class.Employee)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 
@@ -37,8 +40,6 @@
     firstName = getFirstName(object.name)
     lastName = getLastName(object.name)
   }
-
-  const client = getClient()
 
   const dispatch = createEventDispatcher()
 
@@ -83,18 +84,30 @@
 {#if object !== undefined}
   <div class="flex-row-streach flex-grow">
     <div class="mr-8">
-      <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} />
+      {#if editable}
+        <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} />
+      {:else}
+        <Avatar avatar={object.avatar} size={'x-large'} />
+      {/if}
     </div>
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div class="name">
-          <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+          {#if editable}
+            <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+          {:else}
+            {firstName}
+          {/if}
         </div>
         <div class="name">
-          <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+          {#if editable}
+            <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+          {:else}
+            {lastName}
+          {/if}
         </div>
         <div class="location">
-          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" />
+          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" />
         </div>
       </div>
 
@@ -102,7 +115,7 @@
 
       <div class="flex-between channels">
         <div class="flex-row-center">
-          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} on:click />
+          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {editable} {integrations} on:click />
         </div>
 
         <div class="flex-row-center">

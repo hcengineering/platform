@@ -28,6 +28,7 @@
   export let object: any
   export let maxWidth: string
   export let focus: boolean = false
+  export let editable = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -45,6 +46,7 @@
   }
 
   function onChange (value: any) {
+    if (!editable) return
     const doc = object as Doc
     updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
   }

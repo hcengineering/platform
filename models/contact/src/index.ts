@@ -249,6 +249,10 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.ContactPresenter
   })
 
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
+
   builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
     icon: contact.icon.Person,
     label: contact.string.SearchEmployee,
