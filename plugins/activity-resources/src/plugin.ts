@@ -21,6 +21,7 @@ export default mergeIds(activityId, activity, {
   string: {
     DocCreated: '' as IntlString,
     DocDeleted: '' as IntlString,
+    CollectionUpdated: '' as IntlString,
     Changed: '' as IntlString,
     To: '' as IntlString,
     Unset: '' as IntlString,

@@ -137,25 +137,9 @@ export const recruitOperation: MigrateOperation = {
 
     // Rename other
     const categories = await client.find(DOMAIN_TAGS, { _class: tags.class.TagCategory })
-    let prefix = 'tags:category:Category'
+    const prefix = 'tags:category:Category'
     for (const c of categories) {
       if (c._id.startsWith(prefix) || c._id === 'tags:category:Other') {
-        let newCID = c._id.replace(prefix, recruit.category.Category + '.') as Ref<TagCategory>
-        if (c._id === 'tags:category:Other') {
-          newCID = recruit.category.Other
-        }
-        await client.delete(DOMAIN_TAGS, c._id)
-        await client.create(DOMAIN_TAGS, { ...c, _id: newCID, targetClass: recruit.mixin.Candidate })
-        await client.update(DOMAIN_TAGS, { _class: tags.class.TagElement, category: c._id }, {
-          category: newCID,
-          targetClass: recruit.mixin.Candidate
-        })
-      }
-    }
-
-    prefix = 'recruit:category:Category'
-    for (const c of categories) {
-      if ((c._id.startsWith(prefix) && !c._id.startsWith(prefix + '.')) || c._id === 'tags:category:Other') {
         let newCID = c._id.replace(prefix, recruit.category.Category + '.') as Ref<TagCategory>
         if (c._id === 'tags:category:Other') {
           newCID = recruit.category.Other
@@ -164,7 +148,7 @@ export const recruitOperation: MigrateOperation = {
         try {
           await client.create(DOMAIN_TAGS, { ...c, _id: newCID, targetClass: recruit.mixin.Candidate })
         } catch (err: any) {
-          // Ignore
+          // ignore
         }
         await client.update(DOMAIN_TAGS, { _class: tags.class.TagElement, category: c._id }, {
           category: newCID,
