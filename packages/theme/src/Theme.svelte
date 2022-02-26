@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { setContext, onMount } from 'svelte'
-  import platform, { setMetadata } from '@anticrm/platform'
+  import platform, { loadPluginStrings, setMetadata } from '@anticrm/platform'
 
   const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
   const getCurrnetFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
@@ -58,6 +58,7 @@
     setRootColors(currentTheme)
     setRootFontSize(currentFontSize)
     setMetadata(platform.metadata.locale, currentLanguage)
+    loadPluginStrings(currentLanguage)
   })
 </script>
 
