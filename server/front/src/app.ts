@@ -19,6 +19,8 @@ import { Account, Doc, Ref, Space } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import type { IndexedDoc } from '@anticrm/server-core'
 import { decodeToken } from '@anticrm/server-token'
+import bp from 'body-parser'
+import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
@@ -26,7 +28,6 @@ import https from 'https'
 import { Client, ItemBucketMetadata } from 'minio'
 import { join, resolve } from 'path'
 import { v4 as uuid } from 'uuid'
-import bp from 'body-parser'
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -47,6 +48,17 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
 export function start (config: { transactorEndpoint: string, elasticUrl: string, minio: Client, accountsUrl: string, uploadUrl: string, modelVersion: string }, port: number): () => void {
   const app = express()
 
+  app.use(compression({
+    filter: (req, res) => {
+      if (req.headers['x-no-compression'] != null) {
+        // don't compress responses with this request header
+        return false
+      }
+
+      // fallback to standard filter function
+      return compression.filter(req, res)
+    }
+  }))
   app.use(cors())
   app.use(fileUpload())
   app.use(bp.json())
@@ -65,9 +77,9 @@ export function start (config: { transactorEndpoint: string, elasticUrl: string,
     )
   })
 
-  const dist = resolve(__dirname, 'dist')
+  const dist = resolve(process.env.PUBLIC_DIR ?? __dirname, 'dist')
   console.log('serving static files from', dist)
-  app.use(express.static(dist, { maxAge: '10m' }))
+  app.use(express.static(dist, { maxAge: '168h' }))
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/files', async (req, res) => {
