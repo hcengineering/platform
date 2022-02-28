@@ -22,13 +22,13 @@
   import { createEventDispatcher } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
-  import { NotificationClient } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
 
   interface Item {

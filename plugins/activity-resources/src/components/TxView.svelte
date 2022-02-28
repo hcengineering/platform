@@ -124,7 +124,7 @@
             {#if employee}
               {formatName(employee.name)}
             {:else}
-              <Label label={activity.string.NoEmployee} />
+              <Label label={activity.string.System} />
             {/if}
           </div>
           {#if viewlet && viewlet?.editable}

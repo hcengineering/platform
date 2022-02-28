@@ -16,11 +16,11 @@
   import { Doc } from '@anticrm/core'
   import { ActionIcon } from '@anticrm/ui'
   import notification from '../plugin'
-  import { NotificationClient } from '../utils'
+  import { NotificationClientImpl } from '../utils'
 
   export let value: Doc
 
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
   $: subscribed = $lastViews.has(value._id)
 

@@ -24,7 +24,7 @@
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
-  import { NotificationClient } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let object: Contact
   export let channel: Channel
@@ -43,7 +43,7 @@
   const accauntsQuery = createQuery()
   const settingsQuery = createQuery()
   const accountId = getCurrentAccount()._id
-  const notificationClient = NotificationClient.getClient()
+  const notificationClient = NotificationClientImpl.getClient()
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
     messagesQuery.query(

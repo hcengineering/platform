@@ -19,6 +19,7 @@ import NotificationsPopup from './components/NotificationsPopup.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import LastViewEditor from './components/LastViewEditor.svelte'
+import { NotificationClientImpl } from './utils'
 
 export * from './utils'
 
@@ -28,5 +29,8 @@ export default async (): Promise<Resources> => ({
     NotificationPresenter,
     NotificationSettings,
     LastViewEditor
+  },
+  function: {
+    GetNotificationClient: NotificationClientImpl.getClient
   }
 })
