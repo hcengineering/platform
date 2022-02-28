@@ -224,7 +224,7 @@
       "summary": "docker:build",
       "description": "Build and make docker containers",
       "enableParallelism": true,
-      "incremental": true,
+      "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
@@ -234,7 +234,17 @@
       "summary": "docker:staging",
       "description": "Push docker staging images",
       "enableParallelism": true,
-      "incremental": true,
+      "incremental": false,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "docker:push",
+      "summary": "docker:push",
+      "description": "Push docker release images",
+      "enableParallelism": true,
+      "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
@@ -244,7 +254,7 @@
       "summary": "bundle",
       "description": "Build bundles",
       "enableParallelism": true,
-      "incremental": true,
+      "incremental": false,
       "ignoreDependencyOrder": false,
       "ignoreMissingScript": true
     },
