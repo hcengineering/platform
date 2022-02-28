@@ -16,7 +16,7 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import { Doc, SortingOrder } from '@anticrm/core'
+  import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
@@ -33,20 +33,25 @@
 
   const activityQuery = newActivity(client, attrs)
 
+  let viewlets: Map<ActivityKey, TxViewlet>
+  let editable: Map<Ref<Class<Doc>>, boolean> = new Map()
+
+  const descriptors = createQuery()
+  $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
+    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
+  
+    editable = new Map(result.map(it => [it.objectClass, it.editable ?? false]))
+  })
+
   $: activityQuery.update(
     object,
     (result) => {
       txes = result
     },
-    SortingOrder.Descending
+    SortingOrder.Descending,
+    editable
   )
 
-  let viewlets: Map<ActivityKey, TxViewlet>
-
-  const descriptors = createQuery()
-  $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
-  })
 </script>
 
 {#if fullSize || transparent}

@@ -39,10 +39,14 @@ async function createPseudoViewlet (
       display: 'inline',
       icon: docClass.icon ?? activity.icon.Activity,
       label: label,
-      labelParams: { _class: trLabel },
+      labelParams: { _class: trLabel, collection: dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : '' },
       component: presenter.presenter
     }
   }
+}
+
+export function getDTxProps (dtx: DisplayTx): any {
+  return { tx: dtx.tx, value: dtx.doc, dtx }
 }
 
 export async function updateViewlet (
@@ -59,7 +63,7 @@ export async function updateViewlet (
   const key = activityKey(dtx.tx.objectClass, dtx.tx._class)
   let viewlet: TxDisplayViewlet = viewlets.get(key)
 
-  const props = { tx: dtx.tx, value: dtx.doc, dtx }
+  const props = getDTxProps(dtx)
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined
 
@@ -84,14 +88,15 @@ async function checkInlineViewlets (
   client: TxOperations,
   model: AttributeModel[]
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
-  if (dtx.tx._class === core.class.TxCreateDoc) {
+  if (dtx.collectionAttribute !== undefined && dtx.txes.length > 0) {
+    // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
+    viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated)
+  } else if (dtx.tx._class === core.class.TxCreateDoc) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)
-  }
-  if (dtx.tx._class === core.class.TxRemoveDoc) {
+  } else if (dtx.tx._class === core.class.TxRemoveDoc) {
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocDeleted)
-  }
-  if (dtx.tx._class === core.class.TxUpdateDoc) {
+  } else if (dtx.tx._class === core.class.TxUpdateDoc) {
     model = await createUpdateModel(dtx, client, model)
   }
   return { viewlet, model }

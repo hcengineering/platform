@@ -6,7 +6,6 @@ import core, {
   Client,
   Collection,
   Doc,
-  DocumentUpdate,
   Hierarchy,
   Ref,
   SortingOrder,
@@ -32,7 +31,13 @@ export function activityKey (objectClass: Ref<Class<Doc>>, txClass: Ref<Class<Tx
   return objectClass + ':' + txClass
 }
 
-function isEqualOps (op1: DocumentUpdate<Doc>, op2: DocumentUpdate<Doc>): boolean {
+function isEqualOps (op1: any, op2: any): boolean {
+  if (typeof op1 === 'string' && typeof op2 === 'string') {
+    return op1 === op2
+  }
+  if (typeof op1 !== typeof op2) {
+    return false
+  }
   const o1 = Object.keys(op1).sort().join('-')
   const o2 = Object.keys(op2).sort().join('-')
   return o1 === o2
@@ -47,7 +52,7 @@ export interface DisplayTx {
   tx: TxCUD<Doc>
 
   // A set of collapsed transactions.
-  txes: Array<TxCUD<Doc>>
+  txes: DisplayTx[]
 
   // type check for createTx
   createTx?: TxCreateDoc<Doc>
@@ -81,7 +86,7 @@ const combineThreshold = 5 * 60 * 1000
  * Allow to recieve a list of transactions and notify client about it.
  */
 export interface Activity {
-  update: (object: Doc, listener: DisplayTxListener, sort: SortingOrder) => void
+  update: (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>) => void
 }
 
 class ActivityImpl implements Activity {
@@ -99,8 +104,8 @@ class ActivityImpl implements Activity {
     this.txQuery2 = createQuery()
   }
 
-  private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder): void {
-    this.combineTransactions(object, this.txes1, this.txes2).then(
+  private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
+    this.combineTransactions(object, this.txes1, this.txes2, editable).then(
       (result) => {
         const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
         listener(sorted)
@@ -111,7 +116,7 @@ class ActivityImpl implements Activity {
     )
   }
 
-  update (object: Doc, listener: DisplayTxListener, sort: SortingOrder): void {
+  update (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
     let isAttached = false
 
     isAttached = this.client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)
@@ -128,7 +133,7 @@ class ActivityImpl implements Activity {
           },
       (result) => {
         this.txes1 = result
-        this.notify(object, listener, sort)
+        this.notify(object, listener, sort, editable)
       },
       { sort: { modifiedOn: SortingOrder.Descending } }
     )
@@ -141,13 +146,13 @@ class ActivityImpl implements Activity {
       },
       (result) => {
         this.txes2 = result
-        this.notify(object, listener, sort)
+        this.notify(object, listener, sort, editable)
       },
       { sort: { modifiedOn: SortingOrder.Descending } }
     )
   }
 
-  async combineTransactions (object: Doc, txes1: Array<TxCUD<Doc>>, txes2: Array<TxCUD<Doc>>): Promise<DisplayTx[]> {
+  async combineTransactions (object: Doc, txes1: Array<TxCUD<Doc>>, txes2: Array<TxCUD<Doc>>, editable: Map<Ref<Class<Doc>>, boolean>): Promise<DisplayTx[]> {
     const hierarchy = this.client.getHierarchy()
 
     // We need to sort with with natural order, to build a proper doc values.
@@ -163,7 +168,7 @@ class ActivityImpl implements Activity {
       // We do not need collection object updates, in main list of displayed transactions.
       if (this.isDisplayTxRequired(collectionCUD, updateCUD || mixinCUD, ntx, object)) {
         // Combine previous update transaction for same field and if same operation and time treshold is ok
-        results = this.integrateTxWithResults(results, result)
+        results = this.integrateTxWithResults(results, result, editable)
         this.updateRemovedState(result, results)
       }
     }
@@ -248,7 +253,7 @@ class ActivityImpl implements Activity {
           // Ignore
         }
       }
-      collectionCUD = true
+      collectionCUD = (cltx.tx._class === core.class.TxUpdateDoc) || (cltx.tx._class === core.class.TxMixin)
     }
     let firstTx = parents.get(tx.objectId)
     const result: DisplayTx = newDisplayTx(tx, hierarchy)
@@ -295,22 +300,21 @@ class ActivityImpl implements Activity {
     return false
   }
 
-  integrateTxWithResults (results: DisplayTx[], result: DisplayTx): DisplayTx[] {
-    const curUpdate: any =
-      result.tx._class === core.class.TxUpdateDoc
-        ? (result.tx as unknown as TxUpdateDoc<Doc>).operations
-        : (result.tx as unknown as TxMixin<Doc, Doc>).attributes
+  integrateTxWithResults (results: DisplayTx[], result: DisplayTx, editable: Map<Ref<Class<Doc>>, boolean>): DisplayTx[] {
+    const curUpdate: any = getCombineOpFromTx(result)
 
+    if (curUpdate === undefined || (result.doc !== undefined && editable.has(result.doc._class))) {
+      results.push(result)
+      return results
+    }
     const newResult = results.filter((prevTx) => {
-      if (this.isSameKindTx(prevTx, result, result.tx._class)) {
-        const prevUpdate: any =
-          prevTx.tx._class === core.class.TxUpdateDoc
-            ? (prevTx.tx as unknown as TxUpdateDoc<Doc>).operations
-            : (prevTx.tx as unknown as TxMixin<Doc, Doc>).attributes
+      const prevUpdate: any = getCombineOpFromTx(prevTx)
+      // If same tx or same collection
+      if (this.isSameKindTx(prevTx, result, result.tx._class) || (prevUpdate === curUpdate)) {
         if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
           // we have same keys,
           // Remember previous transactions
-          result.txes.push(...prevTx.txes, prevTx.tx)
+          result.txes.push(...prevTx.txes, prevTx)
           return false
         }
       }
@@ -329,6 +333,20 @@ class ActivityImpl implements Activity {
       prevTx.tx.modifiedBy === result.tx.modifiedBy // Same user
     )
   }
+}
+
+function getCombineOpFromTx (result: DisplayTx): any {
+  let curUpdate: any
+  if (result.tx._class === core.class.TxUpdateDoc) {
+    curUpdate = (result.tx as unknown as TxUpdateDoc<Doc>).operations
+  }
+  if (result.tx._class === core.class.TxMixin) {
+    curUpdate = (result.tx as unknown as TxMixin<Doc, Doc>).attributes
+  }
+  if (result.collectionAttribute !== undefined) {
+    curUpdate = result.collectionAttribute.attributeOf + '.' + result.collectionAttribute.name
+  }
+  return curUpdate
 }
 
 export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy): DisplayTx {

@@ -15,15 +15,25 @@
 -->
 <script lang="ts">
   import type { TxViewlet } from '@anticrm/activity'
-  import activity from '../plugin'
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
+  import {
+    Component,
+    Icon, IconEdit,
+    IconMoreH,
+    Label,
+    Menu,
+    ShowMore,
+    showPopup,
+    TimeSince
+  } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
+  import activity from '../plugin'
+  import TxViewTx from './TxViewTx.svelte'
   import { getValue, TxDisplayViewlet, updateViewlet } from './utils'
 
   export let tx: DisplayTx
@@ -50,12 +60,16 @@
 
   const client = getClient()
 
+  function getProps (props: any, edit: boolean): any {
+    return { ...props, edit }
+  }
+
   $: updateViewlet(client, viewlets, tx).then((result) => {
     if (result.id === tx.tx._id) {
       viewlet = result.viewlet
       model = result.model
       modelIcon = result.modelIcon
-      props = { ...result.props, edit }
+      props = getProps(result.props, edit)
     }
   })
 
@@ -76,7 +90,7 @@
             icon: IconEdit,
             action: () => {
               edit = true
-              props = { ...props, edit }
+              props = getProps(props, edit)
             }
           },
           ...actions.map((a) => ({
@@ -94,7 +108,7 @@
   }
   const onCancelEdit = () => {
     edit = false
-    props = { ...props, edit }
+    props = getProps(props, edit)
   }
   function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
@@ -147,10 +161,7 @@
                 <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               </span>
               {#if viewlet.labelComponent}
-                <Component
-                  is={viewlet.labelComponent}
-                  {props}
-                />
+                <Component is={viewlet.labelComponent} {props} />
               {/if}
             </div>
           {/if}
@@ -160,7 +171,11 @@
                 {#if value === null}
                   <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
                 {:else}
-                  <span class="lower" class:flex-grow={hasMessageType}><Label label={activity.string.Changed} /> <Label label={m.label} /> <Label label={activity.string.To} /></span>
+                  <span class="lower" class:flex-grow={hasMessageType}
+                    ><Label label={activity.string.Changed} />
+                    <Label label={m.label} />
+                    <Label label={activity.string.To} /></span
+                  >
                   {#if hasMessageType}
                     <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
@@ -180,9 +195,15 @@
             {#each model as m}
               {#await getValue(client, m, tx.mixinTx.attributes) then value}
                 {#if value === null}
-                  <span><Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span></span>
+                  <span>
+                    <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
+                  </span>
                 {:else}
-                  <span><Label label={activity.string.Changed} /> <span class="lower"><Label label={m.label} /></span> <Label label={activity.string.To} /></span>
+                  <span>
+                    <Label label={activity.string.Changed} />
+                    <span class="lower"><Label label={m.label} /></span>
+                    <Label label={activity.string.To} />
+                  </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
                       <svelte:component this={m.presenter} {value} />
@@ -196,10 +217,18 @@
               {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-            {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-            {:else}
-              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+            {#if tx.collectionAttribute !== undefined && tx.txes.length > 0}
+              <ShowMore ignore={edit}>
+                <div class="flex-row-center flex-grow flex-wrap">
+                  <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
+                </div>
+              </ShowMore>
+            {:else} 
+              {#if typeof viewlet.component === 'string'}
+                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+              {:else}
+                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+              {/if}
             {/if}
           {/if}
         </div>
@@ -211,10 +240,16 @@
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
         <div class={viewlet.display}>
           <ShowMore ignore={viewlet.display !== 'content' || edit}>
-            {#if typeof viewlet.component === 'string'}
-              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-            {:else}
-              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+            {#if tx.collectionAttribute !== undefined && tx.txes.length > 0}
+              <div class="flex-row-center flex-grow flex-wrap">
+                <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
+              </div>
+            {:else} 
+              {#if typeof viewlet.component === 'string'}
+                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+              {:else}
+                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
+              {/if}
             {/if}
           </ShowMore>
         </div>

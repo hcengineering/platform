@@ -9,6 +9,7 @@
     "Changed": "изменил(а)",
     "To": "на",
     "Unset": "сбросил",
-    "System": "Система"
+    "System": "Система",
+    "CollectionUpdated": "Обновлена {collection}"
   }
 }

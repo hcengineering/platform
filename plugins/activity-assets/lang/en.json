@@ -9,6 +9,7 @@
     "Changed": "changed",
     "To": "to",
     "Unset": "unset",
-    "System": "System"
+    "System": "System",
+    "CollectionUpdated": "Update {collection}"
   }
 }
