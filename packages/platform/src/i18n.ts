@@ -43,6 +43,20 @@ export function addStringsLoader (plugin: Plugin, loader: Loader): void {
   loaders.set(plugin, loader)
 }
 
+/**
+ * Perform load of all internationalization sources for all plugins available.
+ * @public
+ */
+export async function loadPluginStrings (locale: string): Promise<void> {
+  for (const [plugin] of loaders) {
+    let messages = translations.get(plugin)
+    if (messages === undefined) {
+      messages = await loadTranslationsForComponent(plugin, locale)
+      translations.set(plugin, messages)
+    }
+  }
+}
+
 async function loadTranslationsForComponent (plugin: Plugin, locale: string): Promise<Messages | Status> {
   const loader = loaders.get(plugin)
   if (loader === undefined) {
