@@ -129,20 +129,18 @@
     <thead class="scroller-thead">
       <tr class="tr-head scroller-thead__tr">
         {#if enableChecking}
-          <th>
-            <div class="checkCell" class:checkall={checked.size > 0}>
-              <CheckBox
-                symbol={'minus'}
-                checked={objects?.length === checked.size && objects?.length > 0}
-                on:change={(e) => {
-                  objects.map((o) => check(o._id, e))
-                }}
-              />
-            </div>
+          <th class="checkCell" class:checkall={checked.size > 0}>
+            <CheckBox
+              symbol={'minus'}
+              checked={objects?.length === checked.size && objects?.length > 0}
+              on:change={(e) => {
+                objects.map((o) => check(o._id, e))
+              }}
+            />
           </th>
         {/if}
         {#if showNotification}
-          <th></th>
+          <th />
         {/if}
         {#each model as attribute}
           <th
@@ -194,7 +192,8 @@
                     <svelte:component
                       this={attribute.presenter}
                       value={getValue(object, attribute.key)}
-                      {...attribute.props}/>
+                      {...attribute.props}
+                    />
                     <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
                   </div>
                 </td>
@@ -220,15 +219,13 @@
                 {#if enableChecking}
                   <td>
                     <div class="checkCell">
-                      <CheckBox
-                        checked={false}                        
-                      />
+                      <CheckBox checked={false} />
                     </div>
                   </td>
                 {/if}
                 <td>
                   <Spinner size="small" />
-                </td>              
+                </td>
               {/if}
             {/each}
           </tr>
@@ -239,7 +236,7 @@
 {/await}
 
 {#if loading}
-  <Loading/>
+  <Loading />
 {/if}
 
 <style lang="scss">
@@ -259,11 +256,13 @@
     align-items: center;
     .menuRow {
       visibility: hidden;
-      margin-left: .5rem;
-      opacity: .6;
+      margin-left: 0.5rem;
+      opacity: 0.6;
       cursor: pointer;
-      
-      &:hover { opacity: 1; }
+
+      &:hover {
+        opacity: 1;
+      }
     }
   }
   .checkCell {
@@ -284,7 +283,8 @@
     }
   }
 
-  .enableChecking, .showNotification {
+  .enableChecking,
+  .showNotification {
     th,
     td {
       &:first-child {

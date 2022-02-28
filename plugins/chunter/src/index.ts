@@ -66,7 +66,8 @@ export default plugin(chunterId, {
     Lock: '' as Asset
   },
   component: {
-    CommentInput: '' as AnyComponent
+    CommentInput: '' as AnyComponent,
+    CommentsPresenter: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
