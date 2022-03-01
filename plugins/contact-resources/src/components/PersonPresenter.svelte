@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
+  import { Hierarchy } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import { showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
@@ -23,7 +24,7 @@
   export let inline: boolean = false
 
   async function onClick () {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
+    showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
   }
 </script>
 
