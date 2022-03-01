@@ -27,7 +27,7 @@
   $: hasNotification = lastView !== undefined && lastView < value.modifiedOn
 </script>
 
-{#if !hasNotification}
+{#if hasNotification}
   <div class="notify-{kind}-kind" style="color: {getPlatformColor(11)}" />
 {/if}
 
