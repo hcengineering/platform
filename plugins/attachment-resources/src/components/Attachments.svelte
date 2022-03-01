@@ -151,8 +151,4 @@
     border: 1px dashed var(--theme-zone-border-lite);
     border-radius: 0.75rem;
   }
-
-  .lower {
-    text-transform: lowercase;
-  }
 </style>
