@@ -105,18 +105,18 @@ test.describe('recruit tests', () => {
     await page.click('text=Software Engineer')
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()
-    expect(await page.locator('.tr-body').count()).toBeGreaterThan(2)
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
 
     const searchBox = page.locator('[placeholder="Search"]')
     await searchBox.fill('Frontend Engineer')
     await searchBox.press('Enter')
 
-    await expect(page.locator('.tr-body')).toHaveCount(1)
+    await expect(page.locator('.antiTable-body__row')).toHaveCount(1)
 
     await searchBox.fill('')
     await searchBox.press('Enter')
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()
-    expect(await page.locator('.tr-body').count()).toBeGreaterThan(2)
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
   })
 })
