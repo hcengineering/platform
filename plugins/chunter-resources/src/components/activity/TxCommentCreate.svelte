@@ -17,6 +17,7 @@
   import type { Comment } from '@anticrm/chunter'
   import type { TxCreateDoc } from '@anticrm/core'
   import { getClient, MessageViewer } from '@anticrm/presentation'
+  import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { ReferenceInput } from '@anticrm/text-editor'
   import { Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -55,6 +56,7 @@
     </div>
   {:else}
     <MessageViewer message={value.message}/>
+    <AttachmentDocList {value} />
   {/if}
 </div>
 

@@ -28,6 +28,7 @@ export interface Channel extends Space {}
  */
 export interface Message extends Doc {
   content: string
+  attachments?: number
 }
 
 /**
@@ -35,6 +36,7 @@ export interface Message extends Doc {
  */
 export interface Comment extends AttachedDoc {
   message: string
+  attachments?: number
 }
 
 /**

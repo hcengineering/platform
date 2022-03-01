@@ -17,6 +17,7 @@
   import type { Ref, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
+  import attachment from '@anticrm/attachment'
   import chunter from '../plugin'
 
   import { default as MessageComponent } from './Message.svelte'
@@ -26,7 +27,7 @@
   let messages: Message[] | undefined
   const query = createQuery()
 
-  $: query.query(chunter.class.Message, { space }, result => { messages = result })
+  $: query.query(chunter.class.Message, { space }, result => { messages = result }, { lookup: { _id: { attachments: attachment.class.Attachment } }})
 </script>
 
 <div class="flex-col container">

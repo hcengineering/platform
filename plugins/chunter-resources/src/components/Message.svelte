@@ -26,14 +26,19 @@
   import { MessageViewer } from '@anticrm/presentation'
   import { getTime, getUser } from '../utils'
   import { formatName } from '@anticrm/contact'
+  import { AttachmentList } from '@anticrm/attachment-resources'
+  import { WithLookup } from '@anticrm/core'
+  import { Attachment } from '@anticrm/attachment'
 
-  export let message: Message
+  export let message: WithLookup<Message>
 
   let reactions: boolean = false
   let replies: boolean = false
   let thread: boolean = false
 
   const client = getClient()
+
+  $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 </script>
 
 <div class="container">
@@ -46,6 +51,7 @@
     <span>{getTime(message.modifiedOn)}</span>
     </div>
     <div class="text"><MessageViewer message={message.content}/></div>
+    <div class="attachments"><AttachmentList {attachments} /></div>
     {#if (reactions || replies) && !thread}
       <div class="footer">
         <div>{#if reactions}<Reactions/>{/if}</div>
@@ -95,6 +101,9 @@
       }
       .text {
         line-height: 150%;
+      }
+      .attachments {
+        margin-top: 1rem;
       }
       .footer {
         display: flex;

@@ -16,21 +16,25 @@
 -->
 <script lang="ts">
   import { Comment } from '@anticrm/chunter'
-  import { Doc } from '@anticrm/core'
+  import { Doc, generateId, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
+  import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
 
   const client = getClient()
   export let object: Doc
+  const _class = chunter.class.Comment
+  let _id: Ref<Comment> = generateId()
   
   async function onMessage (event: CustomEvent) {
-    const commentId = await client.addCollection<Doc, Comment>(chunter.class.Comment, object.space, object._id, object._class, 'comments', { message: event.detail })
+    const { message, attachments } = event.detail
+    await client.addCollection<Doc, Comment>(_class, object.space, object._id, object._class, 'comments', { message, attachments }, _id)
 
     // Create an backlink to document
-    await createBacklinks(client, object._id, object._class, commentId, event.detail)
+    await createBacklinks(client, object._id, object._class, _id, message)
+    _id = generateId()
   }
 
 </script>
-<ReferenceInput on:message={onMessage} />
+<AttachmentRefInput {_class} space={object.space} objectId={_id} on:message={onMessage}/>
