@@ -21,12 +21,17 @@
   import chunter from '@anticrm/chunter'
 
   export let value: Doc & { comments?: number }
+  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let showCounter = true
 </script>
 
 {#if value && value.comments && value.comments > 0}
   <Tooltip label={chunter.string.Comments} component={CommentPopup} props={{ objectId: value._id }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><IconThread size="small"/></span>&nbsp;{value.comments}
+    <div class="sm-tool-icon ml-1 mr-1">
+      <span class="icon"><IconThread {size}/></span>
+      {#if showCounter}
+      &nbsp;{value.comments}
+      {/if}
     </div>
   </Tooltip>
 {/if}

@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Ref, Class, AttachedDoc, Space, Doc } from '@anticrm/core'
-import { plugin, Resource } from '@anticrm/platform'
+import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
+import { IntlString, plugin, Resource } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
 /**
@@ -43,7 +43,8 @@ export const attachmentId = 'attachment' as Plugin
 export default plugin(attachmentId, {
   component: {
     Attachments: '' as AnyComponent,
-    Photos: '' as AnyComponent
+    Photos: '' as AnyComponent,
+    AttachmentsPresenter: '' as AnyComponent
   },
   icon: {
     Attachment: '' as Asset
@@ -55,5 +56,8 @@ export default plugin(attachmentId, {
   helper: {
     UploadFile: '' as Resource<(file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }) => Promise<string>>,
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
+  },
+  string: {
+    Files: '' as IntlString
   }
 })

@@ -24,7 +24,6 @@ import type { ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
-    CommentsPresenter: '' as AnyComponent,
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent
   },

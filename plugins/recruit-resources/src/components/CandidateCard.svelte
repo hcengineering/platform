@@ -18,8 +18,10 @@
   import { ChannelsView } from '@anticrm/contact-resources'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import { showPanel } from '@anticrm/ui'
+  import { Component, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import chunter from '@anticrm/chunter'
+  import attachment from '@anticrm/attachment'
 
   export let candidate: Candidate
 
@@ -45,7 +47,15 @@
     <div class="name lines-limit-2">{formatName(candidate.name)}</div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>
-    <div class="footer"><ChannelsView value={channels} size={'small'} on:click /></div>
+    <div class="footer flex flex-reverse flex-grow">
+      <div class='flex-center flex-wrap'>
+        <Component is={chunter.component.CommentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
+        <Component is={attachment.component.AttachmentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
+      </div>
+      <div class='flex flex-grow'>
+        <ChannelsView value={channels} size={'small'} on:click />
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -80,6 +90,9 @@
       font-size: .75rem;
       color: var(--theme-content-dark-color);
     }
-    .footer { margin-top: 1.5rem; }
+    .footer { 
+      margin-top: 1.5rem;
+      overflow: hidden;
+    }
   }
 </style>
