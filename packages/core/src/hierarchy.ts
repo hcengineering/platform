@@ -59,6 +59,11 @@ export class Hierarchy {
     return _mixinClass(doc)
   }
 
+  static mixinOrClass<D extends Doc, M extends D>(doc: D): Ref<Mixin<M> | Class<Doc>> {
+    const m = _mixinClass(doc)
+    return m ?? doc._class
+  }
+
   hasMixin<D extends Doc, M extends D>(doc: D, mixin: Ref<Mixin<M>>): boolean {
     const d = Hierarchy.toDoc(doc)
     return typeof (d as any)[mixin] === 'object'

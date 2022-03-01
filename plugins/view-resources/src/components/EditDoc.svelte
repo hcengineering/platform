@@ -15,7 +15,8 @@
 -->
 <script lang="ts">
   import contact, { formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
+  import core, { Class, ClassifierKind, Doc, Hierarchy, Mixin, Obj, Ref } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, translate } from '@anticrm/platform'
   import {
@@ -27,9 +28,8 @@
   } from '@anticrm/presentation'
   import { AnyComponent, Component, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { createEventDispatcher, afterUpdate, onDestroy  } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
-  import notification from '@anticrm/notification'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -81,7 +81,7 @@
 
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
-    selectedClass = objectClass._id
+    selectedClass = Hierarchy.mixinOrClass(object)
   
     parentClass = getParentClass(object._class)
     mixins = getMixins()
