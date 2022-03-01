@@ -44,7 +44,7 @@ module.exports = {
   output: {
     path: __dirname + '/dist',
     filename: '[name].js',
-    chunkFilename: '[name].[id].js',
+    chunkFilename: '[name].[id][contenthash].js',
     publicPath: '/'
   },
   module: {
@@ -101,7 +101,8 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          prod ? MiniCssExtractPlugin.loader : 'style-loader',
+          // prod ? MiniCssExtractPlugin.loader : 
+          'style-loader',
           'css-loader',
           'postcss-loader'
         ]
@@ -110,7 +111,8 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          prod ? MiniCssExtractPlugin.loader : 'style-loader',
+          // prod ? MiniCssExtractPlugin.loader : 
+          'style-loader',
           'css-loader',
           'postcss-loader',
           'sass-loader',
@@ -165,9 +167,9 @@ module.exports = {
   mode,
   plugins: [
     ...(prod ? [new CompressionPlugin()] : []),
-    new MiniCssExtractPlugin({
-      filename: '[name].css'
-    }),
+    // new MiniCssExtractPlugin({
+    //   filename: '[name].[id][contenthash].css'
+    // }),
     new Dotenv({path: prod ? '.env-prod' : '.env'}),
     new DefinePlugin({
       'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
