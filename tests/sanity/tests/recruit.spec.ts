@@ -28,7 +28,7 @@ test.describe('recruit tests', () => {
     await location.click()
     await location.fill('Cupertino')
 
-    await page.locator('.card-container').locator('button:has-text("Create")').click()
+    await page.locator('.antiCard').locator('button:has-text("Create")').click()
   })
 
   test('create-application', async ({ page }) => {
