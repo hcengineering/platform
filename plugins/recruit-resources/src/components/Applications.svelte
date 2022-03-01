@@ -22,6 +22,8 @@
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import FileDuo from './icons/FileDuo.svelte'
+  import chunter from '@anticrm/chunter'
+  import attachment from '@anticrm/attachment'
 
   export let objectId: Ref<Doc>
   // export let space: Ref<Space>
@@ -42,7 +44,14 @@
   {#if applications > 0}
     <Table 
       _class={recruit.class.Applicant}
-      config={['', '$lookup.space.name', '$lookup.state', '$lookup.doneState']}
+      config={[
+        '',
+        '$lookup.space.name',
+        { key: '', presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+        { key: '', presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+       '$lookup.state',
+       '$lookup.doneState'
+       ]}
       options={
         {
           lookup: {

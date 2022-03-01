@@ -99,7 +99,7 @@
 
 <div
   bind:this={divHTML}
-  class="flex-row-center"
+  class="flex-row-center flex-wrap"
   class:gap-1={size === 'small'}
   class:gap-2={size !== 'small'}
   class:reverse

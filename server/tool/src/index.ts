@@ -199,9 +199,13 @@ async function createUpdateIndexes (connection: CoreClient, db: Db): Promise<voi
 
   for (const [d, v] of domains.entries()) {
     const collection = db.collection(d)
+    const bb: string[] = []
     for (const vv of v.values()) {
-      console.log('creating index', d, vv)
       await collection.createIndex(vv)
+      bb.push(vv)
+    }
+    if (bb.length > 0) {
+      console.log('created indexes', d, bb)
     }
   }
 }

@@ -252,5 +252,5 @@
 {/await}
 
 {#if loading}
-  <Loading/>
+  <Loading />
 {/if}

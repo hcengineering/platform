@@ -120,6 +120,19 @@ program
   })
 
 program
+  .command('upgrade')
+  .description('upgrade')
+  .action(async (cmd) => {
+    return await withDatabase(mongodbUri, async (db) => {
+      const workspaces = await listWorkspaces(db)
+      for (const ws of workspaces) {
+        console.log('---UPGRADING----', ws.workspace)
+        await upgradeWorkspace(db, ws.workspace)
+      }
+    })
+  })
+
+program
   .command('drop-workspace <name>')
   .description('drop workspace')
   .action(async (workspace, cmd) => {

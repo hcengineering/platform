@@ -21,13 +21,17 @@
   import attachment from '../plugin'
 
   export let value: Doc & { attachments?: number }
-
+  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let showCounter = true
 </script>
 
 {#if value && value.attachments && value.attachments > 0}
   <Tooltip label={attachment.string.Attachments} component={AttachmentPopup} props={{ objectId: value._id, attachments: value.attachments }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><IconAttachment size="small"/></span>&nbsp;{value.attachments}
+    <div class="sm-tool-icon ml-1 mr-1">
+      <span class="icon"><IconAttachment {size}/></span>
+      {#if showCounter}
+        &nbsp;{value.attachments}
+      {/if}
     </div>
   </Tooltip>
 {/if}
