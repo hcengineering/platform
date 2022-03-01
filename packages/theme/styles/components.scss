@@ -318,3 +318,93 @@
     }
   }
 }
+
+/* Table */
+.antiTable {
+  width: 100%;
+
+  th, td {
+    padding: .5rem 1.5rem;
+    text-align: left;
+    &:first-child { padding-left: 0; }
+    &:last-child { padding-right: 0; }
+  }
+  th {
+    height: 2.5rem;
+    font-weight: 500;
+    font-size: .75rem;
+    color: var(--theme-content-dark-color);
+    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    user-select: none;
+    // z-index: 5;
+
+    &.sortable { cursor: pointer; }
+    &.sorted .icon {
+      margin-left: .25rem;
+      opacity: .6;
+    }
+    &:hover .antiTable-cells__checkCell { visibility: visible; }
+    .checkall { visibility: visible; }
+  }
+
+  &.metaColumn {
+    th, td {
+      &:first-child {
+        padding: 0;
+        min-width: 2.5rem;
+        width: 2.5rem;
+      }
+      &:nth-child(2) { padding-left: 0; }
+      &:last-child { padding-right: 1.5rem; }
+    }
+  }
+
+  .antiTable-cells {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+
+    &__checkCell, &__notifyCell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    &__checkCell { visibility: hidden; }
+    &__firstCell {
+      display: flex;
+      align-items: center;
+
+      &-menuRow {
+        visibility: hidden;
+        margin-left: .5rem;
+        opacity: .6;
+        cursor: pointer;
+
+        &:hover { opacity: 1; }
+      }
+    }
+  }
+
+  .antiTable-body__row {
+    height: 3.25rem;
+    color: var(--theme-caption-color);
+    border-bottom: 1px solid var(--theme-button-border-hovered);
+
+    &:last-child { border-bottom: none; }
+    &:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: visible; }
+    &:hover, &.checking {
+      background-color: var(--theme-table-bg-hover);
+      .antiTable-cells__checkCell { visibility: visible; }
+      .antiTable-cells__notifyCell .notify-table-kind {
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--theme-button-bg-hovered);
+        outline-color: currentColor;
+      }
+    }
+    &.fixed {
+      .antiTable-cells__checkCell { visibility: visible; }
+      .antiTable-cells__firstCell-menuRow { visibility: visible; }
+    }
+  }
+}

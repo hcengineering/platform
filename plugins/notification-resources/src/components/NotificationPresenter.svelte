@@ -18,6 +18,7 @@
   import { NotificationClientImpl } from '../utils'
 
   export let value: Doc
+  export let kind: 'table' | 'block' = 'block'
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
@@ -26,14 +27,29 @@
   $: hasNotification = lastView !== undefined && lastView < value.modifiedOn
 </script>
 
-{#if hasNotification}
-  <div class="color" style="background-color: {getPlatformColor(11)}" />
+{#if !hasNotification}
+  <div class="notify-{kind}-kind" style="color: {getPlatformColor(11)}" />
 {/if}
 
 <style lang="scss">
-  .color {
+  .notify-block-kind {
     width: .5rem;
     height: .5rem;
+    background-color: currentColor;
     border-radius: .5rem;
+  }
+  .notify-table-kind {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: .5rem;
+    height: .5rem;
+    background-color: currentColor;
+    border-radius: .25rem;
+    outline: 1px solid transparent;
+    outline-offset: 2px;
+    transform: translate(-50%, -50%);
+    transition: all .1s ease-in-out;
+    z-index: -1;
   }
 </style>

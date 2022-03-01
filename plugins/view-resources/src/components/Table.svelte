@@ -125,24 +125,23 @@
     <Loading />
   {/if}
 {:then model}
-  <table class="table-body" class:enableChecking class:showNotification>
+  <table class="antiTable" class:metaColumn={enableChecking || showNotification}>
     <thead class="scroller-thead">
-      <tr class="tr-head scroller-thead__tr">
-        {#if enableChecking}
+      <tr class="scroller-thead__tr">
+        {#if enableChecking || showNotification}
           <th>
-            <div class="checkCell" class:checkall={checked.size > 0}>
-              <CheckBox
-                symbol={'minus'}
-                checked={objects?.length === checked.size && objects?.length > 0}
-                on:change={(e) => {
-                  objects.map((o) => check(o._id, e))
-                }}
-              />
-            </div>
+            {#if enableChecking && objects?.length > 0}
+              <div class="antiTable-cells__checkCell" class:checkall={checked.size > 0}>
+                <CheckBox
+                  symbol={'minus'}
+                  checked={objects?.length === checked.size && objects?.length > 0}
+                  on:change={(e) => {
+                    objects.map((o) => check(o._id, e))
+                  }}
+                />
+              </div>
+            {/if}
           </th>
-        {/if}
-        {#if showNotification}
-          <th></th>
         {/if}
         {#each model as attribute}
           <th
@@ -150,7 +149,7 @@
             class:sorted={attribute.sortingKey === sortKey}
             on:click={() => changeSorting(attribute.sortingKey)}
           >
-            <div class="flex-row-center whitespace-nowrap">
+            <div class="antiTable-cells">
               <Label label={attribute.label} />
               {#if attribute.sortingKey === sortKey}
                 <div class="icon">
@@ -169,33 +168,47 @@
     {#if objects}
       <tbody>
         {#each objects as object, row (object._id)}
-          <tr class="tr-body" class:checking={checked.has(object._id)} class:fixed={row === selectRow}>
+          <tr class="antiTable-body__row" class:checking={checked.has(object._id)} class:fixed={row === selectRow}>
             {#each model as attribute, cell}
               {#if !cell}
-                {#if enableChecking}
-                  <td>
-                    <div class="checkCell">
-                      <CheckBox
-                        checked={checked.has(object._id)}
-                        on:change={(e) => {
-                          check(object._id, e)
-                        }}
-                      />
-                    </div>
-                  </td>
-                {/if}
-                {#if showNotification}
-                  <td class="notificationCell">
-                    <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+                {#if enableChecking || showNotification}
+                  <td class="relative">
+                    {#if showNotification}
+                      <div class="antiTable-cells__notifyCell">
+                        {#if enableChecking}
+                          <div class="antiTable-cells__checkCell">
+                            <CheckBox
+                              checked={checked.has(object._id)}
+                              on:change={(e) => {
+                                check(object._id, e)
+                              }}
+                            />
+                          </div>
+                        {/if}
+                        <Component is={notification.component.NotificationPresenter} props={{ value: object, kind: enableChecking ? 'table' : 'block' }} />
+                      </div>
+                    {:else}
+                      <div class="antiTable-cells__checkCell">
+                        <CheckBox
+                          checked={checked.has(object._id)}
+                          on:change={(e) => {
+                            check(object._id, e)
+                          }}
+                        />
+                      </div>
+                    {/if}
                   </td>
                 {/if}
                 <td>
-                  <div class="firstCell">
+                  <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
                       value={getValue(object, attribute.key)}
-                      {...attribute.props}/>
-                    <div class="menuRow" on:click={(ev) => showMenu(ev, object, row)}><MoreV size={'small'} /></div>
+                      {...attribute.props}
+                    />
+                    <div class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
+                      <MoreV size={'small'} />
+                    </div>
                   </div>
                 </td>
               {:else}
@@ -214,21 +227,21 @@
     {:else if loadingProps !== undefined}
       <tbody>
         {#each Array(getLoadingLength(loadingProps, options)) as i, row}
-          <tr class="tr-body" class:fixed={row === selectRow}>
+          <tr class="antiTable-body__tr" class:fixed={row === selectRow}>
             {#each model as attribute, cell}
               {#if !cell}
                 {#if enableChecking}
                   <td>
-                    <div class="checkCell">
+                    <div class="antiTable-cells__checkCell">
                       <CheckBox
-                        checked={false}                        
+                        checked={false}
                       />
                     </div>
                   </td>
                 {/if}
                 <td>
                   <Spinner size="small" />
-                </td>              
+                </td>
               {/if}
             {/each}
           </tr>
@@ -241,116 +254,3 @@
 {#if loading}
   <Loading/>
 {/if}
-
-<style lang="scss">
-  .table-body {
-    width: 100%;
-  }
-
-  .notificationCell {
-    padding: 0.5rem;
-    padding-left: 1rem !important;
-    padding-right: 0rem;
-  }
-
-  .firstCell {
-    display: flex;
-    // justify-content: space-between;
-    align-items: center;
-    .menuRow {
-      visibility: hidden;
-      margin-left: .5rem;
-      opacity: .6;
-      cursor: pointer;
-      
-      &:hover { opacity: 1; }
-    }
-  }
-  .checkCell {
-    visibility: hidden;
-    display: flex;
-    align-items: center;
-  }
-
-  th,
-  td {
-    padding: 0.5rem 1.5rem;
-    text-align: left;
-    &:first-child {
-      padding-left: 0;
-    }
-    &:last-child {
-      padding-right: 0;
-    }
-  }
-
-  .enableChecking, .showNotification {
-    th,
-    td {
-      &:first-child {
-        padding: 0 0.75rem;
-        width: 2.5rem;
-      }
-      &:nth-child(2) {
-        padding-left: 0;
-        // padding-right: 0;
-      }
-      &:last-child {
-        padding-right: 1.5rem;
-      }
-    }
-  }
-
-  th {
-    height: 2.5rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
-    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
-    user-select: none;
-    z-index: 5;
-
-    &.sortable {
-      cursor: pointer;
-    }
-    &.sorted .icon {
-      margin-left: 0.25rem;
-      opacity: 0.6;
-    }
-    &:hover {
-      .checkCell {
-        visibility: visible;
-      }
-    }
-    .checkall {
-      visibility: visible;
-    }
-  }
-
-  .tr-body {
-    height: 3.25rem;
-    color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-    &:hover .firstCell .menuRow {
-      visibility: visible;
-    }
-    &:last-child {
-      border-bottom: none;
-    }
-    &:hover,
-    &.checking {
-      background-color: var(--theme-table-bg-hover);
-      .checkCell {
-        visibility: visible;
-      }
-    }
-  }
-  .fixed {
-    .checkCell {
-      visibility: visible;
-    }
-    .menuRow {
-      visibility: visible;
-    }
-  }
-</style>

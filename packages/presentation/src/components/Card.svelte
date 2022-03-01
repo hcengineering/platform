@@ -40,98 +40,24 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="card-container" on:submit|preventDefault={ () => {} }>
-  <div class="card-bg" />
-  <div class="flex-between header">
-    <div class="overflow-label fs-title"><Label {label} params={labelProps ?? {}} /></div>
+<form class="antiCard" on:submit|preventDefault={ () => {} }>
+  <div class="antiCard-header">
+    <div class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></div>
     {#if $$slots.error}
-      <div class="flex-grow error">
+      <div class="antiCard-header__error">
         <slot name="error" />
       </div>
     {/if}
   </div>
-  <div class="content"><slot /></div>
+  <div class="antiCard-content"><slot /></div>
   {#if spaceClass && spaceLabel && spacePlaceholder}
-    <div class="flex-col pool">
-      <div class="separator" />
+    <div class="antiCard-pool">
+      <div class="antiCard-pool__separator" />
       <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
     </div>
   {/if}
-  <div class="footer">
+  <div class="antiCard-footer">
     <Button disabled={!canSave} label={okLabel} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
     <Button label={cancelLabel} size={'small'} transparent on:click={() => { dispatch('close') }} />
   </div>
 </form>
-
-<style lang="scss">
-  .card-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 21.25rem;
-    min-width: 21.25rem;
-    max-width: 21.25rem;
-    border-radius: 1.25rem;
-
-    .header {
-      position: relative;
-      flex-shrink: 0;
-      padding: 1.75rem;
-
-      .error {
-        position: absolute;
-        display: flex;
-        top: 3.25rem;
-        left: 1.75rem;
-        right: 1.75rem;
-        font-weight: 500;
-        font-size: .75rem;
-        color: var(--system-error-color);
-        &:empty { visibility: hidden; }
-      }
-    }
-
-    .content {
-      flex-shrink: 0;
-      flex-grow: 1;
-      margin: 0 1.75rem;
-      height: fit-content;
-    }
-
-    .pool {
-      margin: 0 1.75rem .75rem;
-      color: var(--theme-caption-color);
-      .separator {
-        margin: 1rem 0;
-        height: 1px;
-        background-color: var(--theme-card-divider);
-      }
-    }
-
-    .footer {
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: start;
-      align-items: center;
-      column-gap: .75rem;
-      padding: 1rem 1.75rem 1.75rem;
-      height: 5.25rem;
-      overflow: hidden;
-      border-radius: 0 0 1.25rem 1.25rem;
-    }
-
-    .card-bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--theme-card-bg);
-      border-radius: 1.25rem;
-      box-shadow: var(--theme-card-shadow);
-      z-index: -1;
-    }
-  }
-</style>
