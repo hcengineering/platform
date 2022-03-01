@@ -17,12 +17,13 @@ import activity from '@anticrm/activity'
 import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
 import type { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { ObjectDDParticipant } from '@anticrm/view'
 import chunter from './plugin'
+import attachment from '@anticrm/model-attachment'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -36,6 +37,9 @@ export class TMessage extends TDoc implements Message {
   @Prop(TypeMarkup(), chunter.string.Content)
   @Index(IndexKind.FullText)
   content!: string
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
@@ -44,6 +48,9 @@ export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
   message!: string
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)

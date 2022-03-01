@@ -34,6 +34,7 @@
   const dispatch = createEventDispatcher()
   export let content: string = ''
   export let showSend = true
+  export let withoutTopBorder = false
   const client = getClient()
 
   let textEditor: TextEditor
@@ -53,7 +54,7 @@
     {
       label: textEditorPlugin.string.Attach,
       icon: Attach,
-      action: () => {},
+      action: () => { dispatch('attach') },
       order: 1000
     },
     {
@@ -156,7 +157,7 @@
 </script>
 
 <div class="ref-container">
-  <div class="textInput">
+  <div class="textInput" class:withoutTopBorder>
     <div class="inputMsg">
       <TextEditor bind:content={content} bind:this={textEditor} on:content={
         ev => {
@@ -194,6 +195,11 @@
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
       border-radius: .75rem;
+
+      &.withoutTopBorder {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
 
       .inputMsg {
         display: flex;

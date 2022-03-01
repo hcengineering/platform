@@ -14,25 +14,30 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core'
+  import { generateId, Ref, Space } from '@anticrm/core'
   import chunter from '../plugin'
   import { getClient } from '@anticrm/presentation'
 
   import Channel from './Channel.svelte'
-  import { ReferenceInput } from '@anticrm/text-editor'
+  import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { createBacklinks } from '../backlinks'
 
   export let space: Ref<Space>
 
   const client = getClient()
+  const _class = chunter.class.Message
+  let _id = generateId()
 
   async function onMessage (event: CustomEvent) {
-    const msgRef = await client.createDoc(chunter.class.Message, space, {
-      content: event.detail
-    })
+    const { message, attachments } = event.detail
+    await client.createDoc(_class, space, {
+      content: message,
+      attachments
+    }, _id)
   
     // Create an backlink to document
-    await createBacklinks(client, space, chunter.class.Channel, msgRef, event.detail)
+    await createBacklinks(client, space, chunter.class.Channel, _id, message)
+    _id = generateId()
   }
 </script>
 
@@ -40,7 +45,7 @@
   <Channel {space} />
 </div>
 <div class="reference">
-  <ReferenceInput on:message={onMessage}/>
+  <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage}/>
 </div>
 
 <style lang="scss">
