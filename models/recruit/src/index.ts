@@ -61,6 +61,9 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
   @Index(IndexKind.FullText)
   company?: string
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  comments?: number
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
@@ -135,15 +138,15 @@ export function createModel (builder: Builder): void {
       hidden: false,
       navigatorModel: {
         spaces: [
-          {
-            label: recruit.string.Vacancies,
-            spaceClass: recruit.class.Vacancy,
-            addSpaceLabel: recruit.string.CreateVacancy,
-            createComponent: recruit.component.CreateVacancy,
-            component: recruit.component.EditVacancy
-          }
         ],
         specials: [
+          {
+            id: 'vacancies',
+            component: recruit.component.Vacancies,
+            icon: recruit.icon.Vacancy,
+            label: recruit.string.Vacancies,
+            position: 'bottom'
+          },
           {
             id: 'candidates',
             component: recruit.component.Candidates,
@@ -157,7 +160,8 @@ export function createModel (builder: Builder): void {
             icon: view.icon.Archive,
             label: workbench.string.Archive,
             position: 'top',
-            visibleIf: workbench.function.HasArchiveSpaces
+            visibleIf: workbench.function.HasArchiveSpaces,
+            spaceClass: recruit.class.Vacancy
           },
           {
             id: 'skills',
@@ -357,6 +361,28 @@ export function createModel (builder: Builder): void {
     query: {
       archived: true
     }
+  })
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: recruit.string.EditVacancy,
+      icon: recruit.icon.Vacancy,
+      action: recruit.actionImpl.EditVacancy
+    },
+    recruit.action.EditVacancy
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Vacancy,
+    action: recruit.action.EditVacancy,
+    query: {
+    }
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
   })
 }
 

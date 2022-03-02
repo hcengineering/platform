@@ -25,16 +25,17 @@ import { ObjectSearchFactory, ObjectSearchCategory } from '@anticrm/model-presen
 
 export default mergeIds(recruitId, recruit, {
   action: {
-    CreateApplication: '' as Ref<Action>
+    CreateApplication: '' as Ref<Action>,
+    EditVacancy: '' as Ref<Action>
   },
   actionImpl: {
-    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>
+    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>,
+    EditVacancy: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationShort: '' as IntlString,
     ApplicationsShort: '' as IntlString,
     RecruitApplication: '' as IntlString,
-    Vacancies: '' as IntlString,
     CandidatePools: '' as IntlString,
     SearchApplication: '' as IntlString,
     Application: '' as IntlString,
@@ -42,7 +43,8 @@ export default mergeIds(recruitId, recruit, {
     FullDescription: '' as IntlString,
     Due: '' as IntlString,
     Source: '' as IntlString,
-    ManageVacancyStatuses: '' as IntlString
+    ManageVacancyStatuses: '' as IntlString,
+    EditVacancy: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
@@ -59,7 +61,8 @@ export default mergeIds(recruitId, recruit, {
     Applications: '' as AnyComponent,
     Candidates: '' as AnyComponent,
     CreateCandidate: '' as AnyComponent,
-    SkillsView: '' as AnyComponent
+    SkillsView: '' as AnyComponent,
+    Vacancies: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>

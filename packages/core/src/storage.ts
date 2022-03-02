@@ -78,7 +78,7 @@ export interface ReverseLookups {
  * @public
  */
 export interface ReverseLookup {
-  [key: string]: Ref<Class<AttachedDoc>>
+  [key: string]: Ref<Class<AttachedDoc>> | [Ref<Class<Doc>>, string]
 }
 
 /**
@@ -94,6 +94,9 @@ export type FindOptions<T extends Doc> = {
   limit?: number
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
+  projection?: {
+    [P in keyof T]?: 0 | 1
+  }
 }
 
 /**

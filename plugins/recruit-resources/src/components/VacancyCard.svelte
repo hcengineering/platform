@@ -14,8 +14,9 @@
 -->
 
 <script lang="ts">
-  import Company from './icons/Company.svelte'
   import type { Vacancy } from '@anticrm/recruit'
+  import { closePanel, closePopup, closeTooltip, getCurrentLocation, navigate } from '@anticrm/ui'
+  import Company from './icons/Company.svelte'
 
   export let vacancy: Vacancy
 </script>
@@ -26,7 +27,15 @@
     <Company size={'large'} />
   </div>
   {#if vacancy}
-    <div class="name lines-limit-2">{vacancy.name}</div>
+    <div class="name lines-limit-2 over-underline" on:click={() => {
+      closeTooltip()
+      closePopup()
+      closePanel()
+      const loc = getCurrentLocation()
+      loc.path[2] = vacancy._id
+      loc.path.length = 3
+      navigate(loc)
+    }}>{vacancy.name}</div>
     <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
   {/if}
 </div>

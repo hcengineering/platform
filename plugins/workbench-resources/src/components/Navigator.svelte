@@ -20,6 +20,7 @@
   import { Scroller } from '@anticrm/ui'
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
+  import { getSpecialSpaceClass } from '../utils'
   import SpacesNav from './navigator/SpacesNav.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
@@ -31,11 +32,12 @@
   const query = createQuery()
   let spaces: Space[] = []
   let shownSpaces: Space[] = []
+  
   $: if (model) {
     query.query(
       core.class.Space,
       {
-        _class: { $in: model.spaces.map(x => x.spaceClass) }
+        _class: { $in: getSpecialSpaceClass(model) }
       },
       (result) => { spaces = result },
       { sort: { name: SortingOrder.Ascending } })

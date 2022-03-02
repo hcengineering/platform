@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,20 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref } from '@anticrm/core'
   import type { Vacancy } from '@anticrm/recruit'
+  import { ActionIcon, Icon, IconEdit, showPanel } from '@anticrm/ui'
   import recruit from '../plugin'
-  import { Icon } from '@anticrm/ui'
-  import { showPanel } from '@anticrm/ui/src/panelup'
 
   export let value: Vacancy
+  export let action: (item: Ref<Vacancy>) => void
 
-  function show () {
+  function editVacancy ():void {
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
   }
 </script>
 
 {#if value}
-  <div class="sm-tool-icon over-underline" on:click={show}>
+  <div class="sm-tool-icon vacancy-item over-underline" on:click={() => (action(value._id))}>
     <span class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></span>&nbsp;{value.name}
+    <div class='action ml-4'>
+      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy}/>
+    </div>
   </div>
 {/if}
+<style type='scss'>
+  .vacancy-item {
+    &:hover .action {
+      visibility: visible;
+    }
+    .action {
+      visibility: hidden;
+    }
+  }
+</style>
