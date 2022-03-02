@@ -540,13 +540,9 @@
     margin-bottom: 1rem;
     user-select: none;
     font-size: 14px;
+
     color: var(--theme-content-color);
-    &.WARNING {
-      color: yellow;
-    }
-    &.ERROR {
-      color: var(--system-error-color);
-    }
+    &.ERROR { color: var(--system-error-color); }
 
     border: 1px dashed var(--theme-zone-border);
     border-radius: 0.5rem;

@@ -68,3 +68,83 @@
   background: #000;
   opacity: .5;
 }
+
+
+/* Cards */
+.antiCard {
+  display: flex;
+  flex-direction: column;
+  width: 21.25rem;
+  min-width: 21.25rem;
+  max-width: 21.25rem;
+  background-color: var(--theme-card-bg);
+  border-radius: 1.25rem;
+  box-shadow: var(--theme-card-shadow);
+
+  .antiCard-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 1.75rem;
+
+    &__title {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      user-select: none;
+      min-width: 0;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
+    }
+    &__error {
+      min-width: 0;
+      flex-grow: 1;
+      position: absolute;
+      display: flex;
+      top: 3.25rem;
+      left: 1.75rem;
+      right: 1.75rem;
+      font-weight: 500;
+      font-size: .75rem;
+      color: var(--system-error-color);
+      &:empty { visibility: hidden; }
+    }
+  }
+
+  .antiCard-content {
+    flex-shrink: 0;
+    flex-grow: 1;
+    margin: 0 1.75rem;
+    height: fit-content;
+  }
+
+  .antiCard-pool {
+    display: flex;
+    flex-direction: column;
+    margin: 0 1.75rem .75rem;
+    color: var(--theme-caption-color);
+
+    &__separator {
+      margin: 1rem 0;
+      height: 1px;
+      background-color: var(--theme-card-divider);
+    }
+  }
+
+  .antiCard-footer {
+    overflow: hidden;
+    flex-shrink: 0;
+    display: grid;
+    grid-auto-flow: column;
+    direction: rtl;
+    justify-content: start;
+    align-items: center;
+    column-gap: .75rem;
+    padding: 1rem 1.75rem 1.75rem;
+    height: 5.25rem;
+    border-radius: 0 0 1.25rem 1.25rem;
+  }
+}

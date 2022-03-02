@@ -20,7 +20,7 @@ test.describe('contact tests', () => {
     await lastName.click()
     await lastName.fill('John')
 
-    await page.locator('.card-container').locator('button:has-text("Create")').click()
+    await page.locator('.antiCard').locator('button:has-text("Create")').click()
   })
   test('contact-search', async ({ page }) => {
     // Create user and workspace
@@ -29,18 +29,18 @@ test.describe('contact tests', () => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
     await expect(page.locator('text=Marina M.')).toBeVisible()
-    expect(await page.locator('.tr-body').count()).toBeGreaterThan(5)
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
     const searchBox = page.locator('[placeholder="Search"]')
     await searchBox.fill('Marina')
     await searchBox.press('Enter')
 
-    await expect(page.locator('.tr-body')).toHaveCount(1)
+    await expect(page.locator('.antiTable-body__row')).toHaveCount(1)
 
     await searchBox.fill('')
     await searchBox.press('Enter')
 
     await expect(page.locator('text=Rosamund Chen')).toBeVisible()
-    expect(await page.locator('.tr-body').count()).toBeGreaterThan(5)
+    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
   })
 })

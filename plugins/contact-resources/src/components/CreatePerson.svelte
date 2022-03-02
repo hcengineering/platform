@@ -116,7 +116,7 @@
     </div>
   </div>
 
-  <div class="flex-row-center channels">
+  <div class="flex-row-center mt-5">
     <Channels
       bind:channels
       on:change={(e) => {
@@ -127,9 +127,6 @@
 </Card>
 
 <style lang="scss">
-  .channels {
-    margin-top: 1.25rem;
-  }
   .update-container {
     margin-left: -1rem;
     margin-right: -1rem;
@@ -137,13 +134,9 @@
     margin-bottom: 1rem;
     user-select: none;
     font-size: 14px;
+
     color: var(--theme-content-color);
-    &.WARNING {
-      color: yellow;
-    }
-    &.ERROR {
-      color: var(--system-error-color);
-    }
+    &.ERROR { color: var(--system-error-color); }
 
     border: 1px dashed var(--theme-zone-border);
     border-radius: 0.5rem;

@@ -60,9 +60,7 @@
       width: 3.5rem;
       height: 1.75rem;
       border-radius: 3.125rem;
-      // vertical-align: top;
       background-color: var(--theme-off-color);
-      box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
       transition: left .2s, background-color .2s;
       &:before {
         content: '';
