@@ -99,13 +99,12 @@
 
 <div
   bind:this={divHTML}
-  class="flex-row-center flex-wrap"
-  class:gap-1={size === 'small'}
-  class:gap-2={size !== 'small'}
-  class:reverse
+  class="channels"
 >
-  {#each displayItems as item}
+  {#each displayItems as item,i}
     <div
+      class:ml-1={i % 4 !== 0 }
+      class:mt-1={i >= 4}
       on:click|stopPropagation={() => {
         dispatch('click', item)
       }}
@@ -116,3 +115,9 @@
     </div>
   {/each}
 </div>
+<style lang="scss">
+  .channels {
+    display: grid;  
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+</style>
