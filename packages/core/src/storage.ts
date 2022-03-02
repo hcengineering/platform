@@ -48,8 +48,12 @@ export type DocumentQuery<T extends Doc> = {
 /**
  * @public
  */
+export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+/**
+ * @public
+ */
 export type ToClassRef<T extends object> = {
-  [P in keyof T]?: T[P] extends Ref<infer X> | null ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+  [P in keyof T]?: ToClassRefT<T, P>
 }
 
 /**

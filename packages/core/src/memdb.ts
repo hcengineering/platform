@@ -147,7 +147,8 @@ export abstract class MemDb extends TxProcessor {
     if (options?.sort !== undefined) resultSort(result, options?.sort)
 
     result = result.slice(0, options?.limit)
-    return clone(result) as T[]
+    const tresult = clone(result) as T[]
+    return tresult.map(it => this.hierarchy.updateLookupMixin(_class, it, options))
   }
 
   addDoc (doc: Doc): void {
