@@ -13,16 +13,14 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Class } from './classes'
-import type { Tx } from './tx'
-import type { Storage, DocumentQuery, FindOptions, FindResult, WithLookup, TxResult } from './storage'
-
-import { SortingOrder } from './storage'
+import type { Class, Doc, Ref } from './classes'
+import { DOMAIN_MODEL } from './classes'
+import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
-import { DOMAIN_MODEL } from './classes'
-
-import core from './component'
+import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
+import { SortingOrder } from './storage'
+import type { Tx } from './tx'
 
 /**
  * @public
@@ -67,15 +65,16 @@ class ClientImpl implements Client {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
-    const result = (domain === DOMAIN_MODEL)
+    let result = (domain === DOMAIN_MODEL)
       ? await this.model.findAll(_class, query, options)
       : await this.conn.findAll(_class, query, options)
 
     // In case of mixin we need to create mixin proxies.
-    const baseClass = this.hierarchy.getBaseClass(_class)
-    if (baseClass !== _class) {
-      return result.map(v => this.hierarchy.as(v, _class))
-    }
+
+    // Update mixins & lookups
+    result = result.map(v => {
+      return this.hierarchy.updateLookupMixin(_class, v, options)
+    })
     return result
   }
 

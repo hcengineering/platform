@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { FindOptions, Lookup, ToClassRefT, WithLookup } from '.'
 import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
 import core from './component'
@@ -333,6 +334,44 @@ export class Hierarchy {
       }
     }
   }
+
+  updateLookupMixin<T extends Doc>(_class: Ref<Class<T>>, result: WithLookup<T>, options?: FindOptions<T>): WithLookup<T> {
+    const baseClass = this.getBaseClass(_class)
+    const vResult = baseClass !== _class ? this.as(result, _class) : result
+    const lookup = result.$lookup
+    if (lookup !== undefined) {
+      // We need to check if lookup type is mixin and cast to it if required.
+      const lu = options?.lookup as Lookup<Doc>
+      if (lu?._id !== undefined) {
+        for (const [k, v] of Object.entries(lu._id)) {
+          const _cl = getClass(v as ToClassRefT<T, keyof T>)
+          if (this.isMixin(_cl)) {
+            const mval = (lookup as any)[k]
+            if (mval !== undefined) {
+              if (Array.isArray(mval)) {
+                (lookup as any)[k] = mval.map(it => this.as(it, _cl))
+              } else {
+                (lookup as any)[k] = this.as(mval, _cl)
+              }
+            }
+          }
+        }
+      }
+      for (const [k, v] of Object.entries(lu)) {
+        if (k === '_id') {
+          continue
+        }
+        const _cl = getClass(v as ToClassRefT<T, keyof T>)
+        if (this.isMixin(_cl)) {
+          const mval = (lookup as any)[k]
+          if (mval !== undefined) {
+            (lookup as any)[k] = this.as(mval, _cl)
+          }
+        }
+      }
+    }
+    return vResult
+  }
 }
 
 function addNew<T> (val: Set<T>, value: T): boolean {
@@ -347,4 +386,11 @@ function addIf<T> (array: T[], value: T): void {
   if (!array.includes(value)) {
     array.push(value)
   }
+}
+
+function getClass<T extends Doc> (vvv: ToClassRefT<T, keyof T>): Ref<Class<T>> {
+  if (Array.isArray(vvv)) {
+    return vvv[0]
+  }
+  return vvv
 }

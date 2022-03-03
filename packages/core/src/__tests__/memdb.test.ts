@@ -281,4 +281,35 @@ describe('memdb', () => {
     const reverse = await client.findAll(spaces[0]._class, { _id: spaces[0]._id }, { lookup: { _id: { comments: test.class.TestComment } } })
     expect((reverse[0].$lookup as any).comments).toHaveLength(2)
   })
+
+  it('mixin lookups', async () => {
+    const { model } = await createModel()
+
+    const client = new TxOperations(model, core.account.System)
+    const spaces = await client.findAll(core.class.Space, {})
+    expect(spaces).toHaveLength(2)
+
+    const task = await client.createDoc(test.class.Task, spaces[0]._id, {
+      name: 'TSK1',
+      number: 1,
+      state: 0
+    })
+
+    await client.createMixin(task, test.class.Task, spaces[0]._id, test.mixin.TaskMixinTodos, {
+      todos: 0
+    })
+
+    await client.addCollection(test.class.TestMixinTodo, spaces[0]._id, task, test.mixin.TaskMixinTodos, 'todos', {
+      text: 'qwe'
+    })
+    await client.addCollection(test.class.TestMixinTodo, spaces[0]._id, task, test.mixin.TaskMixinTodos, 'todos', {
+      text: 'qwe2'
+    })
+
+    const results = await client.findAll(test.class.TestMixinTodo, {}, { lookup: { attachedTo: test.mixin.TaskMixinTodos } })
+    expect(results.length).toEqual(2)
+    const attached = results[0].$lookup?.attachedTo
+    expect(attached).toBeDefined()
+    expect(Hierarchy.mixinOrClass(attached as Doc)).toEqual(test.mixin.TaskMixinTodos)
+  })
 })

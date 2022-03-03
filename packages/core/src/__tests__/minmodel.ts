@@ -51,6 +51,14 @@ export interface Task extends Doc, WithState {
   name: string
 }
 
+export interface TaskMixinTodos extends Task {
+  todos: number
+}
+
+export interface TaskMixinTodo extends AttachedDoc {
+  text: string
+}
+
 export interface TaskCheckItem extends AttachedDoc, WithState {
   name: string
   complete: boolean
@@ -58,12 +66,14 @@ export interface TaskCheckItem extends AttachedDoc, WithState {
 
 export const test = plugin('test' as Plugin, {
   mixin: {
-    TestMixin: '' as Ref<Mixin<TestMixin>>
+    TestMixin: '' as Ref<Mixin<TestMixin>>,
+    TaskMixinTodos: '' as Ref<Mixin<TaskMixinTodos>>
   },
   class: {
     Task: '' as Ref<Class<Task>>,
     TaskCheckItem: '' as Ref<Class<TaskCheckItem>>,
-    TestComment: '' as Ref<Class<AttachedComment>>
+    TestComment: '' as Ref<Class<AttachedComment>>,
+    TestMixinTodo: '' as Ref<Mixin<TaskMixinTodo>>
   },
   interface: {
     WithState: '' as Ref<Interface<WithState>>,
@@ -101,6 +111,9 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
   txes.push(createClass(test.class.Task, { label: 'Task' as IntlString, extends: core.class.Doc, implements: [test.interface.DummyWithState], kind: ClassifierKind.CLASS }))
   txes.push(createClass(test.class.TaskCheckItem, { label: 'Task' as IntlString, extends: core.class.AttachedDoc, implements: [test.interface.WithState], kind: ClassifierKind.CLASS }))
+
+  txes.push(createClass(test.mixin.TaskMixinTodos, { label: 'TaskMixinTodos' as IntlString, extends: test.class.Task, kind: ClassifierKind.MIXIN }))
+  txes.push(createClass(test.class.TestMixinTodo, { label: 'TestMixinTodo' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
 
   txes.push(
     createDoc(core.class.Space, {
