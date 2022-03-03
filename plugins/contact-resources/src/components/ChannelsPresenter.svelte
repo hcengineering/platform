@@ -37,4 +37,4 @@
   }
 </script>
 
-<ChannelsView {value} size={'small'} reverse on:click={click} />
+<ChannelsView {value} size={'small'} length={'short'} on:click={click} />

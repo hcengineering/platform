@@ -26,6 +26,7 @@
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
+  export let length: 'short' | 'full' = 'full'
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
   const notificationClient = NotificationClientImpl.getClient()
@@ -99,20 +100,36 @@
 
 <div
   bind:this={divHTML}
-  class="flex-row-center flex-wrap"
-  class:gap-1={size === 'small'}
-  class:gap-2={size !== 'small'}
+  class="channels {length}"
+  class:one={displayItems?.length === 1}
   class:reverse
+  class:small-gap={size === 'small'}
+  class:normal-gap={size !== 'small'}
 >
-  {#each displayItems as item}
-    <div
-      on:click|stopPropagation={() => {
-        dispatch('click', item)
-      }}
-    >
-      <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-        <CircleButton icon={item.icon} {size} primary={item.integration || item.notification} />
-      </Tooltip>
-    </div>
+  {#each displayItems as item,i}
+    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
+      <CircleButton
+        icon={item.icon}
+        {size}
+        primary={item.integration || item.notification}
+        on:click={() => {
+          dispatch('click', item)
+        }}
+      />
+    </Tooltip>
   {/each}
 </div>
+<style lang="scss">
+  .channels {
+    display: grid;
+    &.one { display: block; }
+    &.short {
+      grid-template-columns: repeat(4, min-content);
+      grid-auto-rows: auto;
+    }
+    &.full { grid-auto-flow: column; }
+    &.reverse { grid-auto-flow: dense; }
+    &.small-gap { gap: .25rem; }
+    &.normal-gap { gap: .5rem; }
+  }
+</style>

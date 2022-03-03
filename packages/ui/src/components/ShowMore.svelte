@@ -42,7 +42,7 @@
   ><slot /></div>
 
   {#if !ignore && bigger && !fixed}
-    <div class="showMore" class:outter={cHeight > limit} on:click={toggle}>
+    <div class="showMore" on:click={toggle}>
       <Label label={(cHeight > limit) ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>
   {/if}
@@ -76,10 +76,5 @@
     border-radius: 2.5rem;
     user-select: none;
     cursor: pointer;
-    
-    &.outter {
-      bottom: -2.75rem;
-      transform: translateX(-50%);
-    }
   }
 </style>

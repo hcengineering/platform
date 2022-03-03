@@ -113,7 +113,7 @@
 
       <div class="separator" />
 
-      <div class="flex-between channels">
+      <div class="flex-between">
         <div class="flex-row-center">
           <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {editable} {integrations} on:click />
         </div>
@@ -134,9 +134,6 @@
     font-weight: 500;
     font-size: 1.25rem;
     color: var(--theme-caption-color);
-  }
-  .channels {
-    margin-top: 0.75rem;
   }
   .location {
     margin-top: 0.25rem;
