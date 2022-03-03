@@ -22,6 +22,8 @@
     "EnterNewPassword": "Введите новый пароль",
     "RepeatNewPassword": "Повторите новый пароль",
     "Signout": "Выйти",
-    "Settings": "Настройки"
+    "Settings": "Настройки",
+    "DeleteStatus": "Удаление статуса",
+    "DeleteStatusConfirm": "Вы действительно хотите удалить этот статус?"
   }
 }

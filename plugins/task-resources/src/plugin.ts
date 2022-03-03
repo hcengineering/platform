@@ -59,7 +59,15 @@ export default mergeIds(taskId, task, {
     DoneStatesLost: '' as IntlString,
     AllStates: '' as IntlString,
     NoDoneState: '' as IntlString,
-    ManageStatusesWithin: '' as IntlString
+    ManageStatusesWithin: '' as IntlString,
+    ArchiveConfirm: '' as IntlString,
+    UnarchiveConfirm: '' as IntlString,
+    StatusDeleteConfirm: '' as IntlString,
+    StatusDelete: '' as IntlString,
+    CantStatusDelete: '' as IntlString,
+    CantStatusDeleteError: '' as IntlString,
+    Archive: '' as IntlString,
+    Unarchive: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
