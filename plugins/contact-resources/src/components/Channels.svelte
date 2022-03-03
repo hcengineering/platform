@@ -41,7 +41,7 @@
         }
       })}
   />
-  <span><Label label={presentation.string.AddSocialLinks} /></span>
+  <span class="ml-2"><Label label={presentation.string.AddSocialLinks} /></span>
 {:else}
   <ChannelsView value={channels} size={'small'} {integrations} on:click />
   <div class="ml-1">
@@ -58,9 +58,3 @@
     />
   </div>
 {/if}
-
-<style lang="scss">
-  span {
-    margin-left: 0.5rem;
-  }
-</style>

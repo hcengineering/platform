@@ -25,7 +25,7 @@
   export let primary: boolean = false
 </script>
 
-<div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click on:mousemove>
+<div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click|stopPropagation on:mousemove>
   <div class="content">
     <Icon {icon} size={'full'} />
   </div>

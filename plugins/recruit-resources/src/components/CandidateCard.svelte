@@ -53,7 +53,7 @@
         <Component is={attachment.component.AttachmentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
       </div>
       <div class='flex flex-grow'>
-        <ChannelsView value={channels} size={'small'} on:click />
+        <ChannelsView value={channels} size={'small'} length={'short'} on:click />
       </div>
     </div>
   {/if}
