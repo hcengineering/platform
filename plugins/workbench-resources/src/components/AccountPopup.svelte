@@ -59,6 +59,10 @@
     navigate({ path: [login.component.LoginApp] })
   }
 
+  function selectWorkspace (): void {
+    navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+  }
+
   function filterItems (items: SettingsCategory[]): SettingsCategory[] {
     return items?.filter((p) => p.name !== 'profile' && p.name !== 'password')
   }
@@ -95,6 +99,12 @@
           </button>
         {/each}
       {/if}
+      <button class="ap-menuItem" on:click={selectWorkspace}>
+        <div class='mr-2'>
+          <Icon icon={setting.icon.SelectWorkspace} size={'small'}/>
+        </div>
+        <Label label={setting.string.SelectWorkspace} />
+      </button>
       <button class="ap-menuItem" on:click={signOut}>
         <div class='mr-2'>
           <Icon icon={setting.icon.Signout} size={'small'}/>
