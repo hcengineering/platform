@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { SharedMessage } from '@anticrm/gmail'
+  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { CheckBox, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getTime } from '../utils'
@@ -41,7 +42,10 @@
       <div class="content-trans-color overflow-label mr-4">
         <Label label={gmail.string.From} /><span class="content-accent-color">{message.sender}</span>
       </div>
-      <div class="content-trans-color">{getTime(message.modifiedOn)}</div>
+      <div class="content-trans-color flex">
+        <AttachmentsPresenter value={message} />
+        {getTime(message.modifiedOn)}
+      </div>
     </div>
     <div class="content-trans-color text-sm overflow-label mr-4 mb-4">
       <Label label={gmail.string.To} /><span class="content-accent-color">{message.receiver}</span>

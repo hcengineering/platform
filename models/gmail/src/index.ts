@@ -16,10 +16,11 @@
 
 import activity from '@anticrm/activity'
 import { Domain, IndexKind, Type } from '@anticrm/core'
-import type { Message, SharedMessage, SharedMessages } from '@anticrm/gmail'
-import { ArrOf, Builder, Index, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
+import type { Message, NewMessage, SharedMessage, SharedMessages } from '@anticrm/gmail'
+import { ArrOf, Builder, Collection, Index, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc } from '@anticrm/model-core'
+import core, { TDoc, TAttachedDoc } from '@anticrm/model-core'
+import attachment from '@anticrm/model-attachment'
 import setting from '@anticrm/setting'
 import gmail from './plugin'
 
@@ -46,10 +47,6 @@ export class TMessage extends TAttachedDoc implements Message {
   @Index(IndexKind.FullText)
   to!: string
 
-  @Prop(TypeString(), contact.string.Contact)
-  @Index(IndexKind.FullText)
-  contact!: string
-
   @Prop(TypeString(), gmail.string.Subject)
   @Index(IndexKind.FullText)
   subject!: string
@@ -67,6 +64,37 @@ export class TMessage extends TAttachedDoc implements Message {
 
   @Prop(TypeBoolean(), gmail.string.Incoming)
   incoming!: boolean
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
+}
+
+@Model(gmail.class.NewMessage, core.class.Doc, DOMAIN_GMAIL)
+export class TNewMessage extends TDoc implements NewMessage {
+  @Prop(TypeString(), gmail.string.ReplyTo)
+  @Index(IndexKind.FullText)
+  replyTo?: string
+
+  @Prop(TypeString(), gmail.string.To)
+  @Index(IndexKind.FullText)
+  to!: string
+
+  @Prop(TypeString(), gmail.string.Subject)
+  @Index(IndexKind.FullText)
+  subject!: string
+
+  @Prop(TypeString(), gmail.string.Message)
+  @Index(IndexKind.FullText)
+  content!: string
+
+  @Prop(TypeString(), gmail.string.Status)
+  status!: 'new' | 'sent'
+
+  @Prop(ArrOf(TypeString()), gmail.string.Copy)
+  copy?: string[]
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
 }
 
 @Model(gmail.class.SharedMessages, core.class.AttachedDoc, DOMAIN_GMAIL)
@@ -76,7 +104,7 @@ export class TSharedMessages extends TAttachedDoc implements SharedMessages {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMessage, TSharedMessages)
+  builder.createModel(TMessage, TSharedMessages, TNewMessage)
 
   builder.createDoc(
     contact.class.ChannelProvider,

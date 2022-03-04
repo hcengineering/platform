@@ -24,7 +24,7 @@ import Photos from './components/Photos.svelte'
 import { Resources } from '@anticrm/platform'
 import { uploadFile, deleteFile } from './utils'
 
-export { Attachments, AttachmentsPresenter, AttachmentRefInput, AttachmentList, AttachmentDocList }
+export { Attachments, AttachmentsPresenter, AttachmentPresenter, AttachmentRefInput, AttachmentList, AttachmentDocList }
 
 export default async (): Promise<Resources> => ({
   component: {

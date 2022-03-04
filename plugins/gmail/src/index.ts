@@ -22,7 +22,7 @@ import type { IntegrationType, Handler } from '@anticrm/setting'
 /**
  * @public
  */
-export interface Message extends NewMessage, AttachedDoc {
+export interface Message extends BaseMessage, AttachedDoc {
   messageId: string
   from: string
   textContent: string
@@ -32,12 +32,20 @@ export interface Message extends NewMessage, AttachedDoc {
 /**
  * @public
  */
-export interface NewMessage {
+export interface BaseMessage extends Doc {
   replyTo?: string
   to: string
   subject: string
   content: string
   copy?: string[]
+  attachments?: number
+}
+
+/**
+ * @public
+ */
+export interface NewMessage extends BaseMessage {
+  status: 'new' | 'sent'
 }
 
 /**
@@ -51,6 +59,7 @@ export interface SharedMessage extends Doc {
   receiver: string
   incoming: boolean
   textContent: string
+  attachments?: number
   copy?: string[]
 }
 
@@ -80,6 +89,7 @@ export default plugin(gmailId, {
   },
   class: {
     Message: '' as Ref<Class<Message>>,
+    NewMessage: '' as Ref<Class<NewMessage>>,
     SharedMessages: '' as Ref<Class<SharedMessages>>,
     SharedMessage: '' as Ref<Class<SharedMessage>>
   },

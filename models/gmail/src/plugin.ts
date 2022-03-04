@@ -33,6 +33,7 @@ export default mergeIds(gmailId, gmail, {
     Messages: '' as IntlString,
     Incoming: '' as IntlString,
     Email: '' as IntlString,
+    Status: '' as IntlString,
     EmailPlaceholder: '' as IntlString
   },
   ids: {

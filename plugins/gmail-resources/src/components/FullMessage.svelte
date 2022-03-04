@@ -20,6 +20,9 @@
   import { IconArrowLeft, Label } from '@anticrm/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
+  import { createQuery } from '@anticrm/presentation'
+  import attachment, { Attachment } from '@anticrm/attachment'
+  import { AttachmentPresenter } from '@anticrm/attachment-resources'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean
@@ -28,6 +31,13 @@
   $: if (editor) editor.innerHTML = currentMessage.content
 
   const dispatch = createEventDispatcher()
+
+  const query = createQuery()
+  let attachments: Attachment[] = []
+
+  $: currentMessage._id && query.query(attachment.class.Attachment, {
+    attachedTo: currentMessage._id
+  }, (res) => attachments = res)
 
   $: title = currentMessage.incoming ? currentMessage.sender : currentMessage.receiver
   $: user = currentMessage.incoming ? currentMessage.receiver : currentMessage.sender
@@ -60,13 +70,22 @@
     />
   </div>
 </div>
-<div class="flex-col clear-mins right-content">
+<div class="flex-col clear-mins content">
   <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
   {user}
   {#if currentMessage.copy?.length}
     <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
   {/if}
-  <div class="flex-col h-full clear-mins mt-9">
+  {#if attachments.length}
+    <div class='flex-row-center list mt-2'>
+      {#each attachments as attachment}
+        <div class='item flex'>
+          <AttachmentPresenter value={attachment} />
+        </div>
+      {/each}
+    </div>
+  {/if}
+  <div class="flex-col h-full clear-mins mt-4">
     <FullMessageContent content={currentMessage.content} />
   </div>
 </div>
@@ -90,8 +109,23 @@
     }
   }
 
-  .right-content {
+  .content {
     flex-grow: 1;
     padding: 1.5rem 2.5rem;
+
+    .list {
+      padding: 1rem;
+      color: var(--theme-caption-color);
+      overflow-x: auto;
+      overflow-y: hidden;
+      background-color: var(--theme-bg-accent-color);
+      border: 1px solid var(--theme-bg-accent-color);
+      border-radius: .75rem;
+
+      .item + .item {
+        padding-left: 1rem;
+        border-left: 1px solid var(--theme-bg-accent-color);
+      }
+    }
   }
 </style>
