@@ -144,8 +144,20 @@ export async function createClient (
 
   const txMap = new Map<Ref<Tx>, Ref<Tx>>()
   for (const tx of txes) txMap.set(tx._id, tx._id)
-  for (const tx of txes) hierarchy.tx(tx)
-  for (const tx of txes) await model.tx(tx)
+  for (const tx of txes) {
+    try {
+      hierarchy.tx(tx)
+    } catch (err: any) {
+      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    }
+  }
+  for (const tx of txes) {
+    try {
+      await model.tx(tx)
+    } catch (err: any) {
+      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    }
+  }
 
   txBuffer = txBuffer.filter((tx) => txMap.get(tx._id) === undefined)
 
