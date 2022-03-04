@@ -25,7 +25,7 @@ class ElasticAdapter implements FullTextAdapter {
     await this.client.close()
   }
 
-  async search (_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, size: number | undefined): Promise<IndexedDoc[]> {
+  async search (_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, size: number | undefined, from: number | undefined): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
     const search = query.$search.replace(/[\\/+\-=&><!()|{}^"~*&:[\]]/g, '\\$&')
 
@@ -52,15 +52,27 @@ class ElasticAdapter implements FullTextAdapter {
     }
 
     if (query.space != null) {
-      request.bool.should.push({
-        term: {
-          space: {
-            value: query.space,
-            boost: 2.0,
-            case_insensitive: true
+      if (typeof query.space === 'object' && query.space.$in !== undefined) {
+        request.bool.should.push({
+          term: {
+            space: {
+              value: query.space.$in,
+              boost: 2.0,
+              case_insensitive: true
+            }
           }
-        }
-      })
+        })
+      } else {
+        request.bool.should.push({
+          term: {
+            space: {
+              value: query.space,
+              boost: 2.0,
+              case_insensitive: true
+            }
+          }
+        })
+      }
     }
 
     try {
@@ -68,7 +80,8 @@ class ElasticAdapter implements FullTextAdapter {
         index: this.db,
         body: {
           query: request,
-          size: size ?? 200
+          size: size ?? 200,
+          from: from ?? 0
         }
       })
       const hits = result.body.hits.hits as any[]

@@ -104,8 +104,13 @@ export abstract class MemDb extends TxProcessor {
   private async getReverseLookupValue<T extends Doc> (doc: T, lookup: ReverseLookups, result: LookupData<T>): Promise<void> {
     for (const key in lookup._id) {
       const value = lookup._id[key]
-      const objects = await this.findAll(value, { attachedTo: doc._id })
-      ;(result as any)[key] = objects
+      if (Array.isArray(value)) {
+        const objects = await this.findAll(value[0], { [value[1]]: doc._id })
+        ;(result as any)[key] = objects
+      } else {
+        const objects = await this.findAll(value, { attachedTo: doc._id })
+        ;(result as any)[key] = objects
+      }
     }
   }
 

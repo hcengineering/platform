@@ -63,14 +63,12 @@ test.describe('recruit tests', () => {
 
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
-    await page.locator('text=Vacancies').hover()
-    await page.click('text=Vacancies Software Engineer >> button')
+    await page.locator('text=Vacancies').click()
 
-    await page.click('[placeholder="Software\\ Engineer"]')
-    await page.fill('[placeholder="Software\\ Engineer"]', 'My vacancy')
     await page.click('button:has-text("Create")')
-
-    await page.click('span:has-text("My vacancy")')
+    await page.fill('[placeholder="Software\\ Engineer"]', 'My vacancy')
+    await page.click('text=Create Cancel >> button')
+    await page.locator('text=My vacancy').click()
 
     // Create Applicatio n1
     await page.click('text=Create')
@@ -87,6 +85,7 @@ test.describe('recruit tests', () => {
 
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
+    await page.locator('text=Vacancies').click()
     await page.click('text=Software Engineer')
 
     await page.click('[name="tooltip-task:string:Kanban"]')
@@ -102,6 +101,7 @@ test.describe('recruit tests', () => {
 
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
+    await page.locator('text=Vacancies').click()
     await page.click('text=Software Engineer')
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()

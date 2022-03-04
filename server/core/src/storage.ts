@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import type { Client as MinioClient } from 'minio'
 import core, {
   AttachedDoc,
   Class,
@@ -26,8 +25,7 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
-  MeasureContext,
-  ModelDb,
+  MeasureContext, ModelDb,
   Ref,
   ServerStorage,
   Storage,
@@ -38,6 +36,7 @@ import core, {
   TxFactory,
   TxResult
 } from '@anticrm/core'
+import type { Client as MinioClient } from 'minio'
 import { FullTextIndex } from './fulltext'
 import { Triggers } from './triggers'
 import type { FullTextAdapter, FullTextAdapterFactory } from './types'

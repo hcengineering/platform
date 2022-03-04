@@ -18,6 +18,7 @@ import type { IntlString, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
 import { TagCategory } from '@anticrm/tags'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(recruitId, recruit, {
   status: {
@@ -66,7 +67,8 @@ export default mergeIds(recruitId, recruit, {
     PersonFirstNamePlaceholder: '' as IntlString,
     PersonLastNamePlaceholder: '' as IntlString,
     Location: '' as IntlString,
-    Title: '' as IntlString
+    Title: '' as IntlString,
+    Vacancies: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -74,5 +76,9 @@ export default mergeIds(recruitId, recruit, {
   category: {
     Other: '' as Ref<TagCategory>,
     Category: '' as Ref<TagCategory>
+  },
+  component: {
+    VacancyItemPresenter: '' as AnyComponent,
+    VacancyCountPresenter: '' as AnyComponent
   }
 })

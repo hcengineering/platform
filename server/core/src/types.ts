@@ -68,7 +68,7 @@ export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   remove: (id: Ref<Doc>) => Promise<void>
-  search: (_class: Ref<Class<Doc>>, search: DocumentQuery<Doc>, size: number | undefined) => Promise<IndexedDoc[]>
+  search: (_class: Ref<Class<Doc>>, search: DocumentQuery<Doc>, size: number | undefined, from?: number) => Promise<IndexedDoc[]>
   close: () => Promise<void>
 }
 

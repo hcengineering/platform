@@ -38,13 +38,13 @@
   )
 </script>
 
-<div class="flex-col h-full card-container" on:click={() => {
-  showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
-}}>
+<div class="flex-col h-full card-container">
   <div class="label">CANDIDATE</div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
-    <div class="name lines-limit-2">{formatName(candidate.name)}</div>
+    <div class="name lines-limit-2 over-underline" on:click={() => {
+      showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+    }}>{formatName(candidate.name)}</div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">
@@ -61,18 +61,10 @@
 
 <style lang="scss">
   .card-container {
-    cursor: pointer;
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: .75rem;
-
-    &:hover {
-      &:hover .name {
-        text-decoration: underline;
-      }
-    }
-
 
     .label {
       margin-bottom: 1.75rem;

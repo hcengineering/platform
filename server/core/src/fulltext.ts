@@ -142,15 +142,27 @@ export class FullTextIndex implements WithFind {
     console.log('search', query)
     const { _id, $search, ...mainQuery } = query
     if ($search === undefined) return []
-    const docs = await this.adapter.search(_class, query, options?.limit)
-    const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>(docs.map((p) => p.id))
-    for (const doc of docs) {
-      if (doc.attachedTo !== undefined) {
-        ids.add(doc.attachedTo)
+
+    let skip = 0
+    const result: FindResult<T> = []
+    while (true) {
+      const docs = await this.adapter.search(_class, query, options?.limit, skip)
+      if (docs.length === 0) {
+        return result
+      }
+      skip += docs.length
+      const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>(docs.map((p) => p.id))
+      for (const doc of docs) {
+        if (doc.attachedTo !== undefined) {
+          ids.add(doc.attachedTo)
+        }
+      }
+      const resultIds = getResultIds(ids, _id)
+      result.push(...await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options))
+      if (result.length > 0 && result.length >= (options?.limit ?? 0)) {
+        return result
       }
     }
-    const resultIds = getResultIds(ids, _id)
-    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>, parentDoc?: Doc): AnyAttribute[] {
@@ -162,7 +174,7 @@ export class FullTextIndex implements WithFind {
       }
     }
 
-    // We also neex to add all mixin attribues if parent is specified.
+    // We also need to add all mixin attribues if parent is specified.
     if (parentDoc !== undefined) {
       this.hierarchy
         .getDescendants(clazz)

@@ -18,7 +18,7 @@
   import Spinner from './Spinner.svelte'
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
-import { onMount } from 'svelte'
+  import { onMount } from 'svelte'
 
   export let label: IntlString
   export let primary: boolean = false

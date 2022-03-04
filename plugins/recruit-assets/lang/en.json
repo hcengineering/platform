@@ -49,7 +49,8 @@
     "PersonFirstNamePlaceholder": "John",
     "PersonLastNamePlaceholder": "Appleseed",
     "PersonLocationPlaceholder": "Location",
-    "ManageVacancyStatuses": "Manage vacancy statuses"
+    "ManageVacancyStatuses": "Manage vacancy statuses",
+    "EditVacancy": "Edit"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

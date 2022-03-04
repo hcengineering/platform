@@ -49,7 +49,8 @@
     "PersonFirstNamePlaceholder": "John",
     "PersonLastNamePlaceholder": "Appleseed",
     "PersonLocationPlaceholder": "Местоположение",
-    "ManageVacancyStatuses": "Управление статусами вакансии"
+    "ManageVacancyStatuses": "Управление статусами вакансии",
+    "EditVacancy": "Редактировать"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

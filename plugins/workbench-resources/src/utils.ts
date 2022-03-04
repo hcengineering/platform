@@ -14,9 +14,15 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Obj, Ref } from '@anticrm/core'
+import type { Class, Client, Obj, Ref, Space } from '@anticrm/core'
 import type { Asset } from '@anticrm/platform'
+import { NavigatorModel } from '@anticrm/workbench'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
+}
+export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
+  const spaceResult = model.spaces.map(x => x.spaceClass)
+  const result = (model.specials ?? []).map(it => it.spaceClass).filter(it => it !== undefined)
+  return spaceResult.concat(result as Array<Ref<Class<Space>>>)
 }
