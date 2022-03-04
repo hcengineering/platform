@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { Ref, SortingOrder, Space } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Scroller } from '@anticrm/ui'
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -28,6 +28,8 @@
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
   
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const query = createQuery()
   let spaces: Space[] = []
   let shownSpaces: Space[] = []
@@ -98,7 +100,7 @@
     {#if showDivider}<TreeSeparator />{/if}
 
     {#each model.spaces as m (m.label)}
-      <SpacesNav spaces={shownSpaces} {currentSpace} model={m} on:space/>
+      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space/>
     {/each}
     {#if model.specials}
       {#each bottomSpecials as special}
