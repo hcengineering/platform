@@ -76,8 +76,6 @@ export default mergeIds(taskId, task, {
     KanbanTemplateTitle: '' as IntlString,
     Rank: '' as IntlString,
     EditStates: '' as IntlString,
-    Archive: '' as IntlString,
-    Unarchive: '' as IntlString,
     MarkAsDone: '' as IntlString,
     MarkAsUndone: '' as IntlString,
     Kanban: '' as IntlString,

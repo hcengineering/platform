@@ -15,14 +15,10 @@
 //
 
 import { Class, Client, Doc, Ref } from '@anticrm/core'
-import login from '@anticrm/login'
-import { getMetadata, IntlString, Resources, translate } from '@anticrm/platform'
+import { IntlString, Resources, translate } from '@anticrm/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@anticrm/presentation'
-import { Issue, SpaceWithStates, Task, TodoItem } from '@anticrm/task'
-import task from './plugin'
+import { SpaceWithStates, Task, TodoItem } from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
-import view from '@anticrm/view'
-import workbench from '@anticrm/workbench'
 import CreateProject from './components/CreateProject.svelte'
 import CreateTask from './components/CreateTask.svelte'
 import EditIssue from './components/EditIssue.svelte'
@@ -43,6 +39,7 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
+import task from './plugin'
 
 async function createTask (object: Doc): Promise<void> {
   showPopup(CreateTask, { parent: object._id, space: object.space })
@@ -60,8 +57,8 @@ async function ArchiveSpace (object: SpaceWithStates): Promise<void> {
   showPopup(
     MessageBox,
     {
-      label: 'Archive',
-      message: `Do you want to archive ${object.name}?`
+      label: task.string.Archive,
+      message: task.string.ArchiveConfirm
     },
     undefined,
     (result: boolean) => {
@@ -79,8 +76,8 @@ async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
   showPopup(
     MessageBox,
     {
-      label: 'Unarchive',
-      message: `Do you want to unarchive ${object.name}?`
+      label: task.string.Unarchive,
+      message: task.string.UnarchiveConfirm
     },
     undefined,
     (result: boolean) => {

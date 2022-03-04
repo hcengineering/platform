@@ -16,7 +16,8 @@
         "METRICS_CONSOLE": "true", // Show metrics in console evert 30 seconds.,
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY":"minioadmin",
-        "MINIO_SECRET_KEY":"minioadmin"
+        "MINIO_SECRET_KEY":"minioadmin",
+        "SERVER_SECRET": "secret"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

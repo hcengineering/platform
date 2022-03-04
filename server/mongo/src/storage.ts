@@ -122,12 +122,22 @@ abstract class MongoAdapterBase extends TxProcessor {
     for (const key in lookup._id) {
       const as = parent !== undefined ? parent + key : key
       const value = lookup._id[key]
-      const domain = this.hierarchy.getDomain(value)
+
+      let _class: Ref<Class<Doc>>
+      let attr = 'attachedTo'
+
+      if (Array.isArray(value)) {
+        _class = value[0]
+        attr = value[1]
+      } else {
+        _class = value
+      }
+      const domain = this.hierarchy.getDomain(_class)
       if (domain !== DOMAIN_MODEL) {
         const step = {
           from: domain,
           localField: fullKey,
-          foreignField: 'attachedTo',
+          foreignField: attr,
           as: as.split('.').join('') + '_lookup'
         }
         result.push(step)
@@ -182,13 +192,22 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
     for (const key in lookup._id) {
       const value = lookup._id[key]
-      const domain = this.hierarchy.getDomain(value)
+      let _class: Ref<Class<Doc>>
+      let attr = 'attachedTo'
+
+      if (Array.isArray(value)) {
+        _class = value[0]
+        attr = value[1]
+      } else {
+        _class = value
+      }
+      const domain = this.hierarchy.getDomain(_class)
       const fullKey = parent !== undefined ? parent + key + '_lookup' : key + '_lookup'
       if (domain !== DOMAIN_MODEL) {
         const arr = object[fullKey]
         targetObject.$lookup[key] = arr
       } else {
-        const arr = await this.modelDb.findAll(value, { attachedTo: targetObject._id })
+        const arr = await this.modelDb.findAll(_class, { [attr]: targetObject._id })
         targetObject.$lookup[key] = arr
       }
     }
@@ -235,7 +254,10 @@ abstract class MongoAdapterBase extends TxProcessor {
       pipeline.push({ $limit: options.limit })
     }
     const domain = this.hierarchy.getDomain(clazz)
-    const cursor = this.db.collection(domain).aggregate(pipeline)
+    let cursor = this.db.collection(domain).aggregate(pipeline)
+    if (options?.projection !== undefined) {
+      cursor = cursor.project(options.projection)
+    }
     const result = (await cursor.toArray()) as FindResult<T>
     for (const row of result) {
       row.$lookup = {}
@@ -282,6 +304,10 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
     const domain = this.hierarchy.getDomain(_class)
     let cursor = this.db.collection(domain).find<T>(this.translateQuery(_class, query))
+
+    if (options?.projection !== undefined) {
+      cursor = cursor.project(options.projection)
+    }
 
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {

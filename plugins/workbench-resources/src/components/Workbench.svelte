@@ -15,11 +15,11 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import notification, { NotificationStatus } from '@anticrm/notification'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
-    AnyComponent,
-    closePanel,
-    closePopup,
+    AnyComponent, closePopup,
     closeTooltip,
     Component,
     getCurrentLocation,
@@ -41,8 +41,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import notification, { NotificationStatus } from '@anticrm/notification'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let client: Client
 
@@ -74,6 +72,7 @@
         specialComponent = getSpecialComponent(currentFolder)
         if (specialComponent !== undefined) {
           currentSpecial = currentFolder
+          currentSpace = undefined
           return
         }
       }

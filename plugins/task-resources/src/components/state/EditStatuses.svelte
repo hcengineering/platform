@@ -57,13 +57,13 @@
 
     if (objectsInThisState.length > 0) {
       showPopup(MessageBox, {
-        label: 'Can\'t delete status',
-        message: `There are ${objectsInThisState.length} objects in the given state. Move or delete them first.`
+        label: task.string.CantStatusDelete,
+        message: task.string.CantStatusDeleteError
       })
     } else {
       showPopup(MessageBox, {
-        label: 'Delete status',
-        message: 'Do you want to delete this status?'
+        label: task.string.StatusDelete,
+        message: task.string.StatusDeleteConfirm
       }, undefined, async (result) => {
         if (result && kanban !== undefined) {
           await client.updateDoc(kanban._class, kanban.space, kanban._id, { $pull: { states: state._id } })

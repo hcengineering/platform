@@ -65,6 +65,12 @@
     "SearchTask": "Поиск задачи...",
     "NoDoneState": "Не завершено",
     "ManageStatusesWithin": "Управление статусами для",
-    "ManageProjectStatues": "Управление статусами задачи"
+    "ManageProjectStatues": "Управление статусами задачи",
+    "UnarchiveConfirm": "Вы действительно хотите архивировать?",
+    "ArchiveConfirm": "Вы действительно хотите разархивировать?",
+    "StatusDelete": "Удалить статус",
+    "StatusDeleteConfirm": "Вы действительно хотите удалить этот статус?",
+    "CantStatusDelete": "Невозможно удалить статус",
+    "CantStatusDeleteError": "Есть объекты с данным статусом. Сначала переместите или удалите их. "
   }
 }

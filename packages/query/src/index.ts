@@ -379,7 +379,17 @@ export class LiveQuery extends TxProcessor implements Client {
   ): Promise<void> {
     for (const key in lookup._id) {
       const value = lookup._id[key]
-      const objects = await this.findAll(value, { attachedTo: doc._id })
+
+      let _class: Ref<Class<Doc>>
+      let attr = 'attachedTo'
+
+      if (Array.isArray(value)) {
+        _class = value[0]
+        attr = value[1]
+      } else {
+        _class = value
+      }
+      const objects = await this.findAll(_class, { [attr]: doc._id })
       ;(result as any)[key] = objects
     }
   }

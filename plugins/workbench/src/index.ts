@@ -16,7 +16,7 @@
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -60,6 +60,8 @@ export interface SpecialNavModel {
   component: AnyComponent
   position?: 'top'|'bottom' // undefined == 'top
   visibleIf?: Resource<(spaces: Space[]) => boolean>
+  // If defined, will be used to find spaces for visibleIf
+  spaceClass?: Ref<Class<Space>>
 }
 
 /**

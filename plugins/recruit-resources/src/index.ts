@@ -18,7 +18,7 @@ import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm
 import { ObjectSearchResult } from '@anticrm/presentation'
 import { Applicant } from '@anticrm/recruit'
 import task from '@anticrm/task'
-import { showPopup } from '@anticrm/ui'
+import { showPanel, showPopup } from '@anticrm/ui'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
@@ -32,11 +32,18 @@ import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import Vacancies from './components/Vacancies.svelte'
+import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
+import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import recruit from './plugin'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
+}
+
+async function editVacancy (object: Doc): Promise<void> {
+  showPanel(recruit.component.EditVacancy, object._id, object._class, 'right')
 }
 
 export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
@@ -92,7 +99,8 @@ export async function queryApplication (client: Client, search: string): Promise
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    CreateApplication: createApplication
+    CreateApplication: createApplication,
+    EditVacancy: editVacancy
   },
   validator: {
     ApplicantValidator: applicantValidator
@@ -110,7 +118,10 @@ export default async (): Promise<Resources> => ({
     Candidates,
     CreateCandidate,
     VacancyPresenter,
-    SkillsView
+    SkillsView,
+    Vacancies,
+    VacancyItemPresenter,
+    VacancyCountPresenter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)

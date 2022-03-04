@@ -12,31 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import core from '@anticrm/core'
   import type { Space } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { translate } from '@anticrm/platform'
-  import { Label, Icon } from '@anticrm/ui'
+  import { createQuery } from '@anticrm/presentation'
+  import { Icon, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
-  import { createQuery } from '@anticrm/presentation'
   import { NavigatorModel } from '@anticrm/workbench'
-
   import workbench from '../plugin'
+  import { getSpecialSpaceClass } from '../utils'
 
   export let model: NavigatorModel | undefined
-  
+
   const query = createQuery()
   let spaceSample: Space | undefined
   $: if (model) {
     query.query(
       core.class.Space,
       {
-        _class: { $in: model.spaces.map(x => x.spaceClass) },
+        _class: { $in: getSpecialSpaceClass(model) },
         archived: true
       },
-      (result) => { spaceSample = result[0] },
+      (result) => {
+        spaceSample = result[0]
+      },
       { limit: 1 }
     )
   }
@@ -44,12 +45,14 @@
   let spaceName = ''
   $: {
     const spaceClass = spaceSample?._class ?? ''
-    const spaceModel = model?.spaces.find(x => x.spaceClass == spaceClass)
+    const spaceModel = model?.spaces.find((x) => x.spaceClass === spaceClass)
 
     const label = spaceModel?.label
 
     if (label) {
-      void translate(label, {}).then((l) => { spaceName = l.toLowerCase() })
+      translate(label, {}).then((l) => {
+        spaceName = l.toLowerCase()
+      })
     }
   }
 </script>
@@ -59,17 +62,18 @@
     <div class="content-color mr-3"><Icon icon={view.icon.Archive} size={'medium'} /></div>
     <div class="fs-title"><Label label={workbench.string.Archived} params={{ object: spaceName }} /></div>
   </div>
-  {#if spaceSample !== undefined}
-  <Table
-    _class={spaceSample._class}
-    config={['name', 'company', 'location', 'modifiedOn']}
-    options={{}}
-    showNotification
-    baseMenuClass={core.class.Space}
-    query={{
-      _class: { $in: model?.spaces.map(x => x.spaceClass) ?? [] },
-      archived: true
-    }} />
+  {#if spaceSample !== undefined && model}
+    <Table
+      _class={spaceSample._class}
+      config={['', 'company', 'location', 'modifiedOn']}
+      options={{}}
+      showNotification
+      baseMenuClass={core.class.Space}
+      query={{
+        _class: { $in: getSpecialSpaceClass(model) },
+        archived: true
+      }}
+    />
   {/if}
 </div>
 
