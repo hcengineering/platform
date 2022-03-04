@@ -39,6 +39,9 @@
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     navigate({ path: [login.component.LoginApp] })
   }
+  function selectWorkspace (): void {
+    navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+  }
 </script>
 
 <div class="flex h-full">
@@ -53,6 +56,7 @@
     {/each}
     <div class="signout">
       <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut}/>
+      <CategoryElement icon={setting.icon.SelectWorkspace} label={setting.string.SelectWorkspace} on:click={selectWorkspace}/>
     </div>
   </div>    
 

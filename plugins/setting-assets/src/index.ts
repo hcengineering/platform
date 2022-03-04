@@ -25,7 +25,8 @@ loadMetadata(setting.icon, {
   Support: `${icons}#support`,
   Privacy: `${icons}#privacy`,
   Terms: `${icons}#terms`,
-  Signout: `${icons}#signout`
+  Signout: `${icons}#signout`,
+  SelectWorkspace: `${icons}#selectWorkspace`
 })
 
 addStringsLoader(settingId, async (lang: string) => await import(`../lang/${lang}.json`))

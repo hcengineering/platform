@@ -111,7 +111,8 @@ export default plugin(settingId, {
     EnterCurrentPassword: '' as IntlString,
     EnterNewPassword: '' as IntlString,
     RepeatNewPassword: '' as IntlString,
-    Signout: '' as IntlString
+    Signout: '' as IntlString,
+    SelectWorkspace: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,
@@ -121,6 +122,7 @@ export default plugin(settingId, {
     Support: '' as Asset,
     Privacy: '' as Asset,
     Terms: '' as Asset,
-    Signout: '' as Asset
+    Signout: '' as Asset,
+    SelectWorkspace: '' as Asset
   }
 })
