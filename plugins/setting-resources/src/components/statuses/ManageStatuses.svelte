@@ -19,7 +19,7 @@
   import { getClient, MessageBox } from '@anticrm/presentation'
   import { Label, Icon, showPopup, Component } from '@anticrm/ui'
   import type { KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
-  import setting from '@anticrm/setting'
+  import setting from '../../plugin'
   import task from '@anticrm/task'
 
   import Folders from './Folders.svelte'
@@ -40,8 +40,8 @@
     }
 
     showPopup(MessageBox, {
-      label: 'Delete status',
-      message: 'Do you want to delete this status?'
+      label: setting.string.DeleteStatus,
+      message: setting.string.DeleteStatusConfirm
     }, undefined, async (result) => {
       if (result && template !== undefined) {
         await client.updateDoc(template._class, template.space, template._id, { $pull: { states: state._id } })

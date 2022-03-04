@@ -35,6 +35,7 @@ import RolePresenter from './components/RolePresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import ColorsPopup from './components/ColorsPopup.svelte'
+import view from './plugin'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter, LoadingProps, getCollectionCounter } from './utils'
@@ -44,8 +45,8 @@ function Delete (object: Doc): void {
   showPopup(
     MessageBox,
     {
-      label: 'Delete object',
-      message: 'Do you want to delete this object?'
+      label: view.string.DeleteObject,
+      message: view.string.DeleteObjectConfirm
     },
     undefined,
     (result?: boolean) => {
