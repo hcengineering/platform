@@ -364,7 +364,7 @@ export class Hierarchy {
         const _cl = getClass(v as ToClassRefT<T, keyof T>)
         if (this.isMixin(_cl)) {
           const mval = (lookup as any)[k]
-          if (mval !== undefined) {
+          if (mval != null) {
             (lookup as any)[k] = this.as(mval, _cl)
           }
         }
