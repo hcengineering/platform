@@ -314,12 +314,20 @@ export async function createServerStorage (conf: DbConfiguration, options?: Serv
   const model = await txAdapter.getModel()
 
   for (const tx of model) {
-    hierarchy.tx(tx)
-    await triggers.tx(tx)
+    try {
+      hierarchy.tx(tx)
+      await triggers.tx(tx)
+    } catch (err: any) {
+      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    }
   }
 
   for (const tx of model) {
-    await modelDb.tx(tx)
+    try {
+      await modelDb.tx(tx)
+    } catch (err: any) {
+      console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+    }
   }
 
   for (const [, adapter] of adapters) {

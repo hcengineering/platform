@@ -30,34 +30,45 @@
   }
 
   let search: string = ''
+  let vquery: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
   let vacancyQuery: DocumentQuery<Doc> = {}
 
-  async function updateResultQuery (search: string): Promise<void> {
-    resultQuery = search === '' ? {} : { $search: search }
-  }
-
   let vacancies: Vacancy[] = []
   const query = createQuery()
+  let appQuery = false
 
   $: query.query(recruit.class.Vacancy, { archived: false }, (res) => {
     vacancies = res
   })
 
-  $: if (vacancies.length > 0) {
+  function lowerIncludes (a?: string, b: string): boolean {
+    return (a ?? '').toLowerCase().includes(b)
+  }
+
+  $: if (vacancies.length > 0 && !appQuery) {
     vacancyQuery = {
       _id: {
         $in: vacancies
-          .filter((it) => it.name.includes(search) || it.description.includes(search) || it.company?.includes(search) || ((applications?.get(it._id) ?? 0) > 0))
+          .filter(
+            (it) =>
+              lowerIncludes(it.name, vquery) ||
+              lowerIncludes(it.description, vquery) ||
+              lowerIncludes(it.company, vquery) ||
+              (applications?.get(it._id) ?? 0) > 0
+          )
           .map((it) => it._id)
       }
     }
   }
 
+  $: resultQuery = vquery === '' ? {} : { $search: vquery }
+
   let applications: Map<Ref<Vacancy>, number> | undefined
 
   const applicantQuery = createQuery()
   $: if (vacancies.length > 0) {
+    appQuery = true
     applicantQuery.query(
       recruit.class.Applicant,
       { ...(resultQuery as DocumentQuery<Applicant>), space: { $in: vacancies.map((it) => it._id) } },
@@ -69,6 +80,7 @@
         }
 
         applications = result
+        appQuery = false
       }
     )
   }
@@ -86,7 +98,7 @@
   <SearchEdit
     bind:value={search}
     on:change={() => {
-      updateResultQuery(search)
+      vquery = search
     }}
   />
   <Button label={recruit.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
