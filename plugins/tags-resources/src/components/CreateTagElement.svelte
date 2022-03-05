@@ -111,13 +111,13 @@
           focus
           placeholder={tags.string.TagName}
           placeholderParam={{ word: keyTitle }}
-          maxWidth="10rem"
+          maxWidth={'16rem'}
           bind:value={title}
         />
       </div>
 
       <div class="text-sm mt-4">
-        <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth="15rem" bind:value={description} />
+        <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth={'17.75rem'} bind:value={description} />
       </div>
 
       <div class="text-sm mt-4">

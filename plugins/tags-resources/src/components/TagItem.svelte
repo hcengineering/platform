@@ -56,16 +56,16 @@
 
 <style lang="scss">
   .tag-item {
-    margin: 0.25rem;
-    padding: 0.5rem;
+    margin: .25rem;
+    padding: .5rem;
 
-    border-radius: 0.5rem;
+    border-radius: .5rem;
 
     font-weight: 500;
-    font-size: 0.625rem;
+    font-size: .625rem;
 
     text-transform: uppercase;
-    color: #ffffff;
+    color: var(--theme-caption-color);
 
     display: flex;
     align-items: center;

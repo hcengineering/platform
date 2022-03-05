@@ -284,6 +284,7 @@ async function deleteRelatedDocuments (hierarchy: Hierarchy, object: Doc, client
 export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
   const color = getPlatformColorForText(id as string)
   return `
+    color: ${selected ? '#fff' : 'var(--theme-caption-color)'};
     background: ${color + (selected ? 'ff' : '33')};
     border: 1px solid ${color + (selected ? '0f' : '66')};
   `
