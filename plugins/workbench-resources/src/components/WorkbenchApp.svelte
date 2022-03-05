@@ -19,7 +19,7 @@ import { getMetadata, getResource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
 import core from '@anticrm/core'
 import { setCurrentAccount } from '@anticrm/core'
-import { navigate, Loading, fetchMetadataLocalStorage } from '@anticrm/ui'
+import { navigate, Loading, fetchMetadataLocalStorage, setMetadataLocalStorage } from '@anticrm/ui'
 
 import client from '@anticrm/client'
 import login from '@anticrm/login'
@@ -49,7 +49,12 @@ async function connect (): Promise<Client | undefined> {
     console.log('login: employee account', me)
     setCurrentAccount(me)
   } else {
-    console.log('WARNING: no employee account found.')
+    console.error('WARNING: no employee account found.')
+    setMetadataLocalStorage(login.metadata.LoginToken, null)
+    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+    setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    navigate({ path: [login.component.LoginApp] })
+    return
   }
 
   try {

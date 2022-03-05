@@ -50,7 +50,8 @@
     "PersonLastNamePlaceholder": "Appleseed",
     "PersonLocationPlaceholder": "Местоположение",
     "ManageVacancyStatuses": "Управление статусами вакансии",
-    "EditVacancy": "Редактировать"
+    "EditVacancy": "Редактировать",
+    "FullDescription": "Детальное описание"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

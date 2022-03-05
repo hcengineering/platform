@@ -72,18 +72,13 @@
     if (!opened) {
       opened = true
       showPopup(UsersPopup, { _class, title, caption, allowDeselect, selected: value, titleDeselect }, container, (result) => {
-        if (result === undefined) {
-          // Value is not changed.
-          opened = false
-          return
-        }
-        if (result != null) {
-          value = result._id
-          dispatch('change', value)
-        } else {
+        if (result === null) {
           value = null
           selected = undefined
           dispatch('change', null)
+        } else if (result !== undefined && result._id !== value) {
+          value = result._id
+          dispatch('change', value)
         }
         opened = false
       })
