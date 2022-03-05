@@ -337,7 +337,7 @@
       font-size: 0.625rem;
 
       text-transform: uppercase;
-      color: #ffffff;
+      color: var(--theme-caption-color);
 
       display: flex;
       align-items: center;
