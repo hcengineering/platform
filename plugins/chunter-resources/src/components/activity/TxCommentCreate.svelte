@@ -23,6 +23,7 @@
   import { createEventDispatcher } from 'svelte'
   import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
+  import { AttachmentRefInput } from '@anticrm/attachment-resources'
 
   export let tx: TxCreateDoc<Comment>
   export let value: Comment
@@ -34,20 +35,22 @@
   const editing = false
 
   async function onMessage (event: CustomEvent) {
+    const { message, attachments } = event.detail
     await client.updateCollection(tx.objectClass, tx.objectSpace, tx.objectId, value.attachedTo, value.attachedToClass, value.collection, {
-      message: event.detail
+      message,
+      attachments
     })
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, event.detail)
   
     dispatch('close', false)
   }
-  let refInput: ReferenceInput
+  let refInput: AttachmentRefInput
 </script>
 
 <div class:editing>
   {#if edit}
-    <ReferenceInput bind:this={refInput} content={value.message} on:message={onMessage} showSend={false}/>
+    <AttachmentRefInput bind:this={refInput} _class={value._class} objectId={value._id} space={value.space} content={value.message} on:message={onMessage} showSend={false} />
     <div class='flex-row-reverse gap-2 reverse'>
       <Button label={chunter.string.EditCancel} on:click={() => {
         dispatch('close', false)

@@ -20,7 +20,7 @@
   import attachment from '../plugin'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Class, Doc, Ref, Space } from '@anticrm/core'
+  import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
   import { Attachment } from '@anticrm/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import { IconClose } from '@anticrm/ui'
@@ -29,6 +29,12 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
+  export let content: string = ''
+  export let showSend = true
+  export function submit (): void {
+    refInput.submit()
+  }
+  let refInput: ReferenceInput
 
   let inputFile: HTMLInputElement
   let saved = false
@@ -36,26 +42,47 @@
 
   const client = getClient()
   const query = createQuery()
-  let attachments: Attachment[] = []
+  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
+  let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
+  let newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
+  let removedAttachments: Set<Attachment> = new Set<Attachment>()
 
   $: objectId && query.query(attachment.class.Attachment, {
     attachedTo: objectId
-  }, (res) => attachments = res)
+  }, (res) => {
+    originalAttachments = new Set(res.map((p) => p._id))
+    attachments = new Map(res.map((p) => [p._id, p]))
+  })
 
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file, { space, attachedTo: objectId })
       console.log('uploaded file uuid', uuid)
-      await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', {
+      const _id: Ref<Attachment> = generateId()
+      attachments.set(_id, {
+        _id,
+        _class: attachment.class.Attachment,
+        collection: 'attachments',
+        modifiedOn: 0,
+        modifiedBy: '' as Ref<Account>,
+        space,
+        attachedTo: objectId,
+        attachedToClass: _class,
         name: file.name,
         file: uuid,
         type: file.type,
         size: file.size,
         lastModified: file.lastModified
       })
+      newAttachments.add(_id)
+      attachments = attachments
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
+  }
+
+  async function saveAttachment (doc: Attachment) {
+    const res = await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
   function fileSelected () {
@@ -77,21 +104,44 @@
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
-    await client.removeCollection(attachment._class, attachment.space, attachment._id, attachment.attachedTo, attachment.attachedToClass, 'attachments')
-    await deleteFile(attachment.file)
+    removedAttachments.add(attachment)
+    attachments.delete(attachment._id)
+    attachments = attachments
+  }
+
+  async function deleteAttachment (attachment: Attachment): Promise<void> {
+    if (originalAttachments.has(attachment._id)) {
+      await client.removeCollection(attachment._class, attachment.space, attachment._id, attachment.attachedTo, attachment.attachedToClass, 'attachments')
+    } else {
+      await deleteFile(attachment.file)
+    }
   }
 
   onDestroy(() => {
     if (!saved) {
-      attachments.map((attachment) => {
-        removeAttachment(attachment)
+      newAttachments.forEach(async (p) => {
+        const attachment = attachments.get(p)
+        if (attachment !== undefined) {
+          await deleteAttachment(attachment)
+        }
       })
     }
   })
 
   async function onMessage (event: CustomEvent) {
     saved = true
-    dispatch('message', { message: event.detail, attachments: attachments.length })
+    const promises: Promise<any>[] = []
+    newAttachments.forEach((p) => {
+      const attachment = attachments.get(p)
+      if (attachment !== undefined) {
+        promises.push(saveAttachment(attachment))
+      }
+    })
+    removedAttachments.forEach((p) => {
+      promises.push(deleteAttachment(p))
+    })
+    await Promise.all(promises)
+    dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
 </script>
@@ -110,9 +160,9 @@
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
   >
-  {#if attachments.length}
+  {#if attachments.size}
     <div class='flex-row-center list'>
-      {#each attachments as attachment}
+      {#each Array.from(attachments.values()) as attachment}
         <div class='item flex'>
           <AttachmentPresenter value={attachment} />
           <div class='remove'>
@@ -122,7 +172,7 @@
       {/each}
     </div>
   {/if}
-  <ReferenceInput on:message={onMessage} withoutTopBorder={attachments.length > 0} on:attach={() => { inputFile.click() }} />
+  <ReferenceInput bind:this={refInput} {content} {showSend} on:message={onMessage} withoutTopBorder={attachments.size > 0} on:attach={() => { inputFile.click() }} />
 </div>
 
 <style lang="scss">

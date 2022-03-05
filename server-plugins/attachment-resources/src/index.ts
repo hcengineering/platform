@@ -41,6 +41,8 @@ const findCreateTx = async (id: Ref<Attachment>, findAll: TriggerControl['findAl
     'tx.objectId': id
   }))[0]
 
+  if (colTx === undefined) return
+
   return colTx.tx as TxCreateDoc<Attachment>
 }
 
