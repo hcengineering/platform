@@ -40,7 +40,7 @@
       if (!opened) {
         opened = true
         showPopup(StatesPopup, { space: state.space }, container, (result) => {
-          if (result) {
+          if (result && result._id !== value) {
             value = result._id
             onChange(value)
            }

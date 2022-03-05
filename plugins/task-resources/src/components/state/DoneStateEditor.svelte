@@ -49,10 +49,10 @@
     if (!opened) {
       opened = true
       showPopup(DoneStatesPopup, { space }, container, (result) => {
-        if (result) {
+        if (result && result._id !== value) {
           value = result._id
           onChange(value)
-        } else if (result === null) {
+        } else if (result === null && value !== null) {
           value = null
           onChange(value)
         }
