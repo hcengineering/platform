@@ -411,7 +411,7 @@
     </div>
     <div class="flex-col">
       <div class="fs-title">
-        <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} />
+        <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} focus />
       </div>
       <div class="fs-title mb-1">
         <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} maxWidth="10rem" bind:value={lastName} />

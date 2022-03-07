@@ -102,5 +102,6 @@
     options={opt}
     query={resultQuery}
     showNotification
+    highlightRows
   />
 </Scroller>

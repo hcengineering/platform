@@ -150,5 +150,6 @@
     background: var(--theme-bg-accent-color);
     border: 1px dashed var(--theme-zone-border-lite);
     border-radius: 0.75rem;
+    &.solid { border-style: solid; }
   }
 </style>
