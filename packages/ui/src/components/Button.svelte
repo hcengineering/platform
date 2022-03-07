@@ -63,7 +63,10 @@
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: .75rem;
 
-    .icon { margin-right: .375rem; }
+    .icon {
+      margin-right: .375rem;
+      pointer-events: none;
+    }
 
     &:hover {
       background-color: var(--theme-button-bg-hovered);
