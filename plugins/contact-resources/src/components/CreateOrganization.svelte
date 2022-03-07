@@ -69,7 +69,7 @@
     </div>
     <div class="flex-col">
       <div class="fs-title">
-        <EditBox placeholder={contact.string.OrganizationNamePlaceholder} maxWidth="11rem" bind:value={object.name} />
+        <EditBox placeholder={contact.string.OrganizationNamePlaceholder} maxWidth="11rem" bind:value={object.name} focus />
       </div>
     </div>
   </div>

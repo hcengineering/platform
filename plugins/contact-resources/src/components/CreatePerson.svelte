@@ -105,7 +105,7 @@
     </div>
     <div class="flex-col">
       <div class="fs-title">
-        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} />
+        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} focus />
       </div>
       <div class="fs-title mb-1">
         <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="12rem" bind:value={lastName} />

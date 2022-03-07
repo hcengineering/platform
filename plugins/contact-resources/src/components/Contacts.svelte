@@ -61,6 +61,7 @@
           options={descr.options}
           query={ resultQuery }
           showNotification
+          highlightRows
         />
       {/if}
     {/await}

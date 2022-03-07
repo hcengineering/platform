@@ -30,5 +30,5 @@
 </script>
 
 <Scroller>
-  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />
+  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification highlightRows />
 </Scroller>

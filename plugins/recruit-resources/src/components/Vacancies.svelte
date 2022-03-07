@@ -131,5 +131,6 @@
       archived: false
     }}
     showNotification
+    highlightRows
   />
 </Scroller>

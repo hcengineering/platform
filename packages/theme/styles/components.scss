@@ -393,7 +393,7 @@
     &:last-child { border-bottom: none; }
     &:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: visible; }
     &:hover, &.checking {
-      background-color: var(--theme-table-bg-hover);
+      // background-color: var(--theme-table-bg-hover);
       .antiTable-cells__checkCell { visibility: visible; }
       .antiTable-cells__notifyCell .notify-table-kind {
         width: 1rem;
@@ -406,5 +406,9 @@
       .antiTable-cells__checkCell { visibility: visible; }
       .antiTable-cells__firstCell-menuRow { visibility: visible; }
     }
+  }
+
+  &.highlightRows .antiTable-body__row {
+    &:hover, &.checking { background-color: var(--theme-table-bg-hover); }
   }
 }

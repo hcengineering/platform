@@ -28,6 +28,7 @@
   export let query: DocumentQuery<Doc>
   export let enableChecking: boolean = false
   export let showNotification: boolean = false
+  export let highlightRows: boolean = false
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
@@ -125,7 +126,7 @@
     <Loading />
   {/if}
 {:then model}
-  <table class="antiTable" class:metaColumn={enableChecking || showNotification}>
+  <table class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
     <thead class="scroller-thead">
       <tr class="scroller-thead__tr">
         {#if enableChecking || showNotification}
