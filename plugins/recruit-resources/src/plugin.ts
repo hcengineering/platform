@@ -24,7 +24,8 @@ export default mergeIds(recruitId, recruit, {
   status: {
     ApplicationExists: '' as StatusCode,
     CandidateRequired: '' as StatusCode,
-    VacancyRequired: '' as StatusCode
+    VacancyRequired: '' as StatusCode,
+    ReviewCategoryRequired: '' as StatusCode
   },
   string: {
     CreateVacancy: '' as IntlString,
@@ -51,6 +52,7 @@ export default mergeIds(recruitId, recruit, {
     Applications: '' as IntlString,
     ThisVacancyIsPrivate: '' as IntlString,
     Description: '' as IntlString,
+    Verdict: '' as IntlString,
     Company: '' as IntlString,
     Edit: '' as IntlString,
     Delete: '' as IntlString,
@@ -68,7 +70,31 @@ export default mergeIds(recruitId, recruit, {
     PersonLastNamePlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Title: '' as IntlString,
-    Vacancies: '' as IntlString
+    Vacancies: '' as IntlString,
+
+    Review: '' as IntlString,
+    ReviewCategory: '' as IntlString,
+    CreateReviewCategory: '' as IntlString,
+    ReviewCategoryName: '' as IntlString,
+    ReviewCategoryTitle: '' as IntlString,
+    ReviewCategoryPlaceholder: '' as IntlString,
+    ReviewCategoryDescription: '' as IntlString,
+    ThisReviewCategoryIsPrivate: '' as IntlString,
+    CreateReview: '' as IntlString,
+    SelectReviewCategory: '' as IntlString,
+    Reviews: '' as IntlString,
+    NoReviewForCandidate: '' as IntlString,
+    CreateAnReview: '' as IntlString,
+    CreateOpinion: '' as IntlString,
+    Opinion: '' as IntlString,
+    OpinionValue: '' as IntlString,
+    OpinionSave: '' as IntlString,
+    Opinions: '' as IntlString,
+    OpinionShortLabel: '' as IntlString,
+    ReviewShortLabel: '' as IntlString,
+    StartDate: '' as IntlString,
+    DueDate: '' as IntlString,
+    CandidateReviews: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -79,6 +105,7 @@ export default mergeIds(recruitId, recruit, {
   },
   component: {
     VacancyItemPresenter: '' as AnyComponent,
-    VacancyCountPresenter: '' as AnyComponent
+    VacancyCountPresenter: '' as AnyComponent,
+    OpinionsPresenter: '' as AnyComponent
   }
 })

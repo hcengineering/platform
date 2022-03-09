@@ -22,21 +22,21 @@
     {#if i === 0}
       <div class="mr-1"><IconAdd size={'small'} /></div>
     {/if}
-      {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-      {:else}
-        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-      {/if}
+    {#if typeof viewlet?.component === 'string'}
+      <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+    {:else}
+      <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+    {/if}
   {/each}
   {#each filterTx([tx, ...tx.txes], core.class.TxRemoveDoc) as ctx, i}
     {#if i === 0}
       <div class="mr-1"><IconDelete size={'small'} /></div>
     {/if}
-      {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-      {:else}
-        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-      {/if}
+    {#if typeof viewlet?.component === 'string'}
+      <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+    {:else}
+      <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+    {/if}
   {/each}
 </div>
 

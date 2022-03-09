@@ -15,12 +15,22 @@
 -->
 
 <script lang="ts">
-import { MessageViewer } from '@anticrm/presentation'
 
-export let value: string
+  import type { Review } from '@anticrm/recruit'
+  import recruit from '@anticrm/recruit'
+  import { Table } from '@anticrm/view-resources'
+
+  export let value: Review
+
 </script>
 
-<span class="lines-limit-2">
-  <MessageViewer message={value}/>
-</span>
-
+<Table 
+  _class={recruit.class.Opinion}
+  config={['', 'value', 'description']}
+  options={
+    {
+    }
+  }
+  query={ { attachedTo: value._id } }
+  loadingProps={{ length: value.opinions ?? 0 }}
+/>

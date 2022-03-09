@@ -51,10 +51,35 @@
     "PersonLocationPlaceholder": "Местоположение",
     "ManageVacancyStatuses": "Управление статусами вакансии",
     "EditVacancy": "Редактировать",
-    "FullDescription": "Детальное описание"
+    "FullDescription": "Детальное описание",
+    
+    "CreateReviewCategory": "Создать категорию оценки",
+    "ReviewCategoryName": "Имя категории*",
+    "ReviewCategoryPlaceholder": "Интервью",
+    "ReviewCategory": "Оценки",
+    "ReviewCategoryDescription": "Описание",
+    "ThisReviewCategoryIsPrivate": "Эта категория личная",
+    "CreateReview": "Запланировать оценку",
+    "SelectReviewCategory": "выбрать категорию",
+    "Reviews": "Оценки",
+    "Review": "Оценка",
+    "Opinions": "Мнения",
+    "Opinion": "Мнение",
+    "OpinionValue": "Оценка",
+    "OpinionShortLabel": "OPE",
+    "ReviewShortLabel": "RVE",
+    "StartDate": "Дата начала",
+    "DueDate": "Дата конца",
+    "ReviewCategoryTitle":"Категория",
+    "Verdict": "Вердикт",
+    "OpinionSave": "Сохранить",
+    "CandidateReviews": "Оценки кандидата",
+    "NoReviewForCandidate": "Нет оценок",
+    "CreateAnReview": "Добавить оценку"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",
-    "VacancyRequired": "Пожалуйста выберите вакансию"
+    "VacancyRequired": "Пожалуйста выберите вакансию",
+    "ReviewCategoryRequired": "Пожалуйста выберети кадегорию"
   }
 }

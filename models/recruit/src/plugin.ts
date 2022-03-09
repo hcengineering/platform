@@ -26,11 +26,13 @@ import { ObjectSearchFactory, ObjectSearchCategory } from '@anticrm/model-presen
 export default mergeIds(recruitId, recruit, {
   action: {
     CreateApplication: '' as Ref<Action>,
-    EditVacancy: '' as Ref<Action>
+    EditVacancy: '' as Ref<Action>,
+    CreateReview: '' as Ref<Action>
   },
   actionImpl: {
     CreateApplication: '' as Resource<(object: Doc) => Promise<void>>,
-    EditVacancy: '' as Resource<(object: Doc) => Promise<void>>
+    EditVacancy: '' as Resource<(object: Doc) => Promise<void>>,
+    CreateReview: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationShort: '' as IntlString,
@@ -47,7 +49,8 @@ export default mergeIds(recruitId, recruit, {
     EditVacancy: '' as IntlString
   },
   validator: {
-    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
+    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>,
+    ReviewValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   },
   component: {
     CreateVacancy: '' as AnyComponent,
@@ -62,10 +65,23 @@ export default mergeIds(recruitId, recruit, {
     Candidates: '' as AnyComponent,
     CreateCandidate: '' as AnyComponent,
     SkillsView: '' as AnyComponent,
-    Vacancies: '' as AnyComponent
+    Vacancies: '' as AnyComponent,
+
+    CreateReviewCategory: '' as AnyComponent,
+    EditReviewCategory: '' as AnyComponent,
+    CreateReview: '' as AnyComponent,
+    Reviews: '' as AnyComponent,
+    KanbanReviewCard: '' as AnyComponent,
+    EditReview: '' as AnyComponent,
+    ReviewPresenter: '' as AnyComponent,
+    Opinions: '' as AnyComponent,
+    OpinionPresenter: '' as AnyComponent
   },
   template: {
-    DefaultVacancy: '' as Ref<KanbanTemplate>
+    DefaultVacancy: '' as Ref<KanbanTemplate>,
+
+    Interview: '' as Ref<KanbanTemplate>,
+    Task: '' as Ref<KanbanTemplate>
   },
   completion: {
     ApplicationQuery: '' as Resource<ObjectSearchFactory>,

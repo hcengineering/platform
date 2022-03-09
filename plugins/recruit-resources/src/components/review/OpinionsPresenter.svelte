@@ -15,12 +15,18 @@
 -->
 
 <script lang="ts">
-import { MessageViewer } from '@anticrm/presentation'
+  import type { Review } from '@anticrm/recruit'
+  import { Icon, Tooltip } from '@anticrm/ui'
+  import OpinionsPopup from './OpinionsPopup.svelte'
+  import recruit from '../../plugin'
 
-export let value: string
+  export let value: Review
 </script>
 
-<span class="lines-limit-2">
-  <MessageViewer message={value}/>
-</span>
-
+{#if value.opinions && value.opinions > 0}
+  <Tooltip label={recruit.string.Opinions} component={OpinionsPopup} props={{ value }}>
+    <div class="sm-tool-icon">
+      <span class="icon"><Icon icon={recruit.icon.Opinion} size={'small'} /></span>&nbsp;{value.opinions}
+    </div>
+  </Tooltip>
+{/if}

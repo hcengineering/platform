@@ -13,26 +13,34 @@
 // limitations under the License.
 //
 
+import type { Class, Client } from '@anticrm/core'
 import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import type { Client } from '@anticrm/core'
 import { createKanbanTemplate } from '@anticrm/model-task'
-
+import task, { KanbanTemplate } from '@anticrm/task'
 import recruit from './plugin'
-import task from '@anticrm/task'
-import type { KanbanTemplate } from '@anticrm/task'
 
 export async function createDeps (client: Client): Promise<void> {
   const tx = new TxOperations(client, core.account.System)
 
-  await tx.createDoc(
-    task.class.Sequence,
-    task.space.Sequence,
-    {
-      attachedTo: recruit.class.Applicant,
-      sequence: 0
-    }
-  )
+  await createSequence(tx, recruit.class.Applicant)
+  await createSequence(tx, recruit.class.Review)
+  await createSequence(tx, recruit.class.Opinion)
+
   await createDefaultKanbanTemplate(tx)
+  await createReviewTemplates(tx)
+}
+
+export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>): Promise<void> {
+  if (await tx.findOne(task.class.Sequence, { attachedTo: _class }) === undefined) {
+    await tx.createDoc(
+      task.class.Sequence,
+      task.space.Sequence,
+      {
+        attachedTo: _class,
+        sequence: 0
+      }
+    )
+  }
 }
 
 const defaultKanban = {
@@ -59,3 +67,40 @@ export const createDefaultKanbanTemplate = async (client: TxOperations): Promise
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })
+
+export async function createReviewTemplates (tx: TxOperations): Promise<void> {
+  if (await tx.findOne(core.class.TxCreateDoc, { objectId: recruit.template.Interview }) === undefined) {
+    await createKanbanTemplate(tx, {
+      kanbanId: recruit.template.Interview,
+      space: recruit.space.ReviewTemplates as Ref<Doc> as Ref<Space>,
+      title: 'Interview',
+      states: [
+        { color: 9, title: 'Prepare' },
+        { color: 10, title: 'Appointment' },
+        { color: 1, title: 'Opinions' }
+      ],
+      doneStates: [
+        { isWon: true, title: 'Pass' },
+        { isWon: false, title: 'Failed' }
+      ]
+    })
+  }
+
+  if (await tx.findOne(core.class.TxCreateDoc, { objectId: recruit.template.Task }) === undefined) {
+    await createKanbanTemplate(tx, {
+      kanbanId: recruit.template.Task,
+      space: recruit.space.ReviewTemplates as Ref<Doc> as Ref<Space>,
+      title: 'Test task',
+      states: [
+        { color: 9, title: 'Prepare' },
+        { color: 10, title: 'Assigned' },
+        { color: 1, title: 'Review' },
+        { color: 4, title: 'Opinions' }
+      ],
+      doneStates: [
+        { isWon: true, title: 'Pass' },
+        { isWon: false, title: 'Failed' }
+      ]
+    })
+  }
+}
