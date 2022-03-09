@@ -17,27 +17,35 @@
   }
 </script>
 
-{#each filterTx([tx, ...tx.txes], core.class.TxCreateDoc) as ctx, i}
-  {#if i === 0}
-    <div class="mr-1"><IconAdd size={'small'} /></div>
-  {/if}
-  <div class="mr-1">
-    {#if typeof viewlet?.component === 'string'}
-      <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-    {:else}
-      <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+<div class="flex-row-center flex-grow flex-wrap content">
+  {#each filterTx([tx, ...tx.txes], core.class.TxCreateDoc) as ctx, i}
+    {#if i === 0}
+      <div class="mr-1"><IconAdd size={'small'} /></div>
     {/if}
-  </div>
-{/each}
-{#each filterTx([tx, ...tx.txes], core.class.TxRemoveDoc) as ctx, i}
-  {#if i === 0}
-    <div class="mr-1"><IconDelete size={'small'} /></div>
-  {/if}
-  <div class="mr-1">
-    {#if typeof viewlet?.component === 'string'}
-      <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
-    {:else}
-      <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+      {#if typeof viewlet?.component === 'string'}
+        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+      {:else}
+        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+      {/if}
+  {/each}
+  {#each filterTx([tx, ...tx.txes], core.class.TxRemoveDoc) as ctx, i}
+    {#if i === 0}
+      <div class="mr-1"><IconDelete size={'small'} /></div>
     {/if}
-  </div>
-{/each}
+      {#if typeof viewlet?.component === 'string'}
+        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+      {:else}
+        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+      {/if}
+  {/each}
+</div>
+
+<style lang="scss">
+  .content {
+    padding: 1rem;
+    color: var(--theme-caption-color);
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: 0.75rem;
+  }
+</style>

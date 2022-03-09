@@ -17,7 +17,7 @@
   import { translate } from '@anticrm/platform'
   import { KeyedAttribute } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import { CircleButton, IconAdd, IconClose, Label, showPopup, Tooltip } from '@anticrm/ui'
+  import { CircleButton, IconAdd, IconClose, Label, ShowMore, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
@@ -74,34 +74,36 @@
       </div>
     </div>
   {/if}
-  <div class:tags-container={showTitle} class:mt-4={showTitle}>
-    <div class="flex flex-reverse">
-      <div class="ml-4">
-        <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
-          <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
-        </Tooltip>
-      </div>
-      <div class="tag-items">
-        {#if items.length === 0}
+  <ShowMore ignore={!showTitle}>
+    <div class:tags-container={showTitle} class:mt-4={showTitle}>
+      <div class="flex flex-reverse">
+        <div class="ml-4">
+          <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
+            <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
+          </Tooltip>
+        </div>
+        <div class="tag-items" class:tag-items-scroll={!showTitle}>
+          {#if items.length === 0}
           {#if keyLabel}
-            <div class="flex flex-grow title-center">
-              <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
-            </div>
+          <div class="flex flex-grow title-center">
+            <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
+          </div>
           {/if}
-        {/if}
-        {#each items as tag}
+          {/if}
+          {#each items as tag}
           <TagItem
-            {tag}
-            element={elements.get(tag.tag)}
-            action={IconClose}
-            on:action={() => {
-              removeTag(tag._id)
-            }}
+          {tag}
+          element={elements.get(tag.tag)}
+          action={IconClose}
+          on:action={() => {
+            removeTag(tag._id)
+          }}
           />
-        {/each}
+          {/each}
+        </div>
       </div>
     </div>
-  </div>
+  </ShowMore>
 </div>
 
 <style lang="scss">
@@ -122,6 +124,8 @@
     flex-grow: 1;
     display: flex;
     flex-wrap: wrap;
+  }
+  .tag-items-scroll {
     overflow-y: scroll;
     max-height: 10rem;
   }

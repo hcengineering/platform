@@ -16,7 +16,8 @@ export type TxDisplayViewlet =
 async function createPseudoViewlet (
   client: TxOperations,
   dtx: DisplayTx,
-  label: IntlString
+  label: IntlString,
+  display: 'inline' | 'content' | 'emphasized' = 'inline'
 ): Promise<TxDisplayViewlet> {
   const doc = dtx.doc
   if (doc === undefined) {
@@ -36,7 +37,7 @@ async function createPseudoViewlet (
   const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
   if (presenter !== undefined) {
     return {
-      display: 'inline',
+      display,
       icon: docClass.icon ?? activity.icon.Activity,
       label: label,
       labelParams: { _class: trLabel, collection: dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : '' },
@@ -90,7 +91,7 @@ async function checkInlineViewlets (
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
   if (dtx.collectionAttribute !== undefined && dtx.txes.length > 0) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
-    viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated)
+    viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated, 'content')
   } else if (dtx.tx._class === core.class.TxCreateDoc) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)
