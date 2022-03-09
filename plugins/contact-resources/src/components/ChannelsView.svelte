@@ -103,20 +103,20 @@
   class="channels {length}"
   class:one={displayItems?.length === 1}
   class:reverse
-  class:small-gap={size === 'small'}
-  class:normal-gap={size !== 'small'}
 >
   {#each displayItems as item,i}
-    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-      <CircleButton
-        icon={item.icon}
-        {size}
-        primary={item.integration || item.notification}
-        on:click={() => {
-          dispatch('click', item)
-        }}
-      />
-    </Tooltip>
+    <div class='channel-item'>
+        <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
+          <CircleButton
+          icon={item.icon}
+          {size}
+          primary={item.integration || item.notification}
+          on:click={() => {
+            dispatch('click', item)
+          }}
+        />
+      </Tooltip>
+    </div>
   {/each}
 </div>
 <style lang="scss">
@@ -131,5 +131,9 @@
     &.reverse { grid-auto-flow: dense; }
     &.small-gap { gap: .25rem; }
     &.normal-gap { gap: .5rem; }
+
+    .channel-item {
+      margin: 0.125rem;
+    }
   }
 </style>

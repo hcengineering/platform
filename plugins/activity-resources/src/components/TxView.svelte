@@ -239,7 +239,7 @@
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
         <div class={viewlet.display}>
-          <ShowMore ignore={viewlet.display !== 'content' || edit}>
+          <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && tx.txes.length > 0}
               <div class="flex-row-center flex-grow flex-wrap">
                 <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
