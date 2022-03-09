@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { OK } from '@anticrm/platform'
+  import { getMetadata, OK } from '@anticrm/platform'
   import { PlatformEvent, addEventListener } from '@anticrm/platform'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { location } from '../../location'
+  import { getCurrentLocation, location, navigate } from '../../location'
 
   import { Theme } from '@anticrm/theme'
   import Component from '../Component.svelte'
@@ -16,12 +16,22 @@
   import ThemeSelector from './ThemeSelector.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
+  import uiPlugin from '../../plugin'
   
   let application: AnyComponent | undefined
 
   onDestroy(location.subscribe((loc) => {
     if (loc.path[0]) {
       application = loc.path[0] as AnyComponent
+    }
+
+    if (application === undefined) {
+      application = getMetadata(uiPlugin.metadata.DefaultApplication)
+      if (application !== undefined) {
+        const loc = getCurrentLocation()
+        loc.path = [application]
+        navigate(loc)
+      }
     }
   }))
 

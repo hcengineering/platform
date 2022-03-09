@@ -14,8 +14,9 @@
 // limitations under the License.
 //
 
-import type { IntlString, Plugin } from '@anticrm/platform'
+import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { AnyComponent } from './types'
 
 /**
  * @public
@@ -38,5 +39,8 @@ export default plugin(uiId, {
     None: '' as IntlString,
     English: '' as IntlString,
     Russian: '' as IntlString
+  },
+  metadata: {
+    DefaultApplication: '' as Metadata<AnyComponent>
   }
 })

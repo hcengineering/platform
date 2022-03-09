@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK } from '@anticrm/platform'
-
-  import { getWorkspaces, selectWorkspace } from '../utils'
+  import { OK, Severity, Status } from '@anticrm/platform'
   import { Button, getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
-
   import workbench from '@anticrm/workbench'
   import login from '../plugin'
+  import { getWorkspaces, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
+
+  export let navigateUrl: string | undefined = undefined
 
   let status = OK
 
@@ -35,7 +35,11 @@
       setMetadataLocalStorage(login.metadata.LoginToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      navigate({ path: [workbench.component.WorkbenchApp] })
+      if (navigateUrl !== undefined) {
+        navigate(JSON.parse(decodeURIComponent(navigateUrl)))
+      } else {
+        navigate({ path: [workbench.component.WorkbenchApp] })
+      }
     }
   }
 
