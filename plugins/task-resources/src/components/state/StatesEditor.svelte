@@ -77,7 +77,7 @@
 <div class="flex-col">
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.ActiveStates} />
-    <div on:click={onAdd}><CircleButton icon={IconAdd} size={'medium'} /></div>
+    <CircleButton icon={IconAdd} size={'medium'} on:click={onAdd}/>
   </div>
   <div class="overflow-y-auto mt-3">
     {#each states as state, i}
