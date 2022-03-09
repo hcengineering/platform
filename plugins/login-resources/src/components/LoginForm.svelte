@@ -22,6 +22,8 @@
 
   import login from '../plugin'
 
+  export let navigateUrl: string | undefined = undefined
+
   const fields = [
     { id: 'email', name: 'username', i18n: login.string.Email },
     {
@@ -54,6 +56,9 @@
         const loc = getCurrentLocation()
         loc.path[1] = 'selectWorkspace'
         loc.path.length = 2
+        if (navigateUrl !== undefined) {
+          loc.query = { ...loc.query, navigateUrl }
+        }
         navigate(loc)
       }
     }

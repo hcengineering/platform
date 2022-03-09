@@ -17,6 +17,7 @@ import { addLocation } from '@anticrm/platform'
 
 import login, { loginId } from '@anticrm/login'
 import workbench, { workbenchId } from '@anticrm/workbench'
+import uiPlugin from '@anticrm/ui'
 import { viewId } from '@anticrm/view'
 import { taskId } from '@anticrm/task'
 import { contactId } from '@anticrm/contact'
@@ -72,6 +73,8 @@ export async function configurePlatform() {
   setMetadata(login.metadata.FrontUrl, process.env.FRONT_URL)
   
   setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
+
+  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))

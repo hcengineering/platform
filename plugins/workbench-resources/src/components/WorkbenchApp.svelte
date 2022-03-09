@@ -19,7 +19,7 @@ import { getMetadata, getResource } from '@anticrm/platform'
 import type { Client } from '@anticrm/core'
 import core from '@anticrm/core'
 import { setCurrentAccount } from '@anticrm/core'
-import { navigate, Loading, fetchMetadataLocalStorage, setMetadataLocalStorage } from '@anticrm/ui'
+import { navigate, Loading, fetchMetadataLocalStorage, setMetadataLocalStorage, getCurrentLocation, locationToUrl } from '@anticrm/ui'
 
 import client from '@anticrm/client'
 import login from '@anticrm/login'
@@ -36,7 +36,7 @@ async function connect (): Promise<Client | undefined> {
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
   if (token === null || endpoint === null || email === null) {
-    navigate({ path: [login.component.LoginApp] })
+    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
     return
   }
 
@@ -53,7 +53,7 @@ async function connect (): Promise<Client | undefined> {
     setMetadataLocalStorage(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    navigate({ path: [login.component.LoginApp] })
+    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
     return
   }
 

@@ -26,11 +26,15 @@
 
   export let page: string = 'login'
 
+  let navigateUrl: string | undefined
+
   const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
 
   onDestroy(
     location.subscribe(async (loc) => {
       page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
+
+      navigateUrl = loc.query?.navigateUrl ?? undefined
     })
   )
 </script>
@@ -38,13 +42,13 @@
 <div class="container">
   <div class="panel">
     {#if page === 'login'}
-      <LoginForm />
+      <LoginForm {navigateUrl} />
     {:else if page === 'signup'}
       <SignupForm />
     {:else if page === 'createWorkspace'}
       <CreateWorkspaceForm />
     {:else if page === 'selectWorkspace'}
-      <SelectWorkspace />
+      <SelectWorkspace {navigateUrl} />
     {:else if page === 'join'}
       <Join />
     {/if}
