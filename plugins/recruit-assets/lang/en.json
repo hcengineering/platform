@@ -74,7 +74,9 @@
     "OpinionSave": "Save",
     "CandidateReviews": "All Candidate Reviews",
     "NoReviewForCandidate": "No reviews",
-    "CreateAnReview": "Create review"
+    "CreateAnReview": "Create review",
+    "CreateOpinion": "Create opinion",
+    "OpinionValuePlaceholder": "10/10"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

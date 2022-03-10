@@ -15,15 +15,15 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import type { Ref } from '@anticrm/core'
-  import { IconClose, Label, EditBox, ToggleWithLabel, Grid, Icon, Component } from '@anticrm/ui'
-  import { TextEditor } from '@anticrm/text-editor'
-  import { AttributesBar, getClient, createQuery } from '@anticrm/presentation'
-  import { ReviewCategory, Vacancy } from '@anticrm/recruit'
-  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
+  import type { Ref } from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
+  import { ReviewCategory } from '@anticrm/recruit'
+  import { TextEditor } from '@anticrm/text-editor'
+  import { Component, EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
   export let _id: Ref<ReviewCategory>
@@ -66,7 +66,7 @@
       <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
     </div>
     <div class="flex-row-center subtitle">
-      <AttributesBar {object} keys={['location', 'company']} />
+      <AttributesBar {object} keys={[]} />
     </div>
     <div class="flex-stretch tab-container">
       {#each tabs as tab, i}

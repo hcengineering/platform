@@ -37,8 +37,6 @@ export interface Vacancy extends SpaceWithStates {
 export interface ReviewCategory extends SpaceWithStates {
   fullDescription?: string
   attachments?: number
-  location?: string
-  company?: string
 }
 
 /**
@@ -77,6 +75,9 @@ export interface Review extends Task {
   comments?: number
   description: string
   verdict: string
+
+  location?: string
+  company?: string
 
   startDate: Timestamp | null
   dueDate: Timestamp | null

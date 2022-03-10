@@ -88,6 +88,7 @@ export default mergeIds(recruitId, recruit, {
     CreateOpinion: '' as IntlString,
     Opinion: '' as IntlString,
     OpinionValue: '' as IntlString,
+    OpinionValuePlaceholder: '' as IntlString,
     OpinionSave: '' as IntlString,
     Opinions: '' as IntlString,
     OpinionShortLabel: '' as IntlString,

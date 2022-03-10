@@ -74,6 +74,14 @@ export function createReviewModel (builder: Builder): void {
     },
     recruit.space.ReviewTemplates
   )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.ReviewCategory,
+    action: task.action.ArchiveSpace,
+    query: {
+      archived: false
+    }
+  })
 }
 function createStatusTableViewlet (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -91,8 +99,9 @@ function createStatusTableViewlet (builder: Builder): void {
     config: [
       '',
       '$lookup.attachedTo',
-      '$lookup.assignee',
-      'startDate',
+      // '$lookup.assignee',
+      // 'location',
+      'company',
       'dueDate',
       { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
       '$lookup.state',
@@ -135,8 +144,9 @@ function createTableViewlet (builder: Builder): void {
     config: [
       '',
       '$lookup.attachedTo',
-      '$lookup.assignee',
-      'startDate',
+      // '$lookup.assignee',
+      // 'location',
+      'company',
       'dueDate',
       { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
       '$lookup.state',

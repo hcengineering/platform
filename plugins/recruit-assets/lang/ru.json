@@ -75,7 +75,9 @@
     "OpinionSave": "Сохранить",
     "CandidateReviews": "Оценки кандидата",
     "NoReviewForCandidate": "Нет оценок",
-    "CreateAnReview": "Добавить оценку"
+    "CreateAnReview": "Добавить оценку",
+    "CreateOpinion": "Добавить мнение",
+    "OpinionValuePlaceholder": "10/10"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

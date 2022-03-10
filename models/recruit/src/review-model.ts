@@ -1,6 +1,6 @@
 import { Employee } from '@anticrm/contact'
-import { Domain, Ref, Timestamp } from '@anticrm/core'
-import { Collection, Model, Prop, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Domain, IndexKind, Ref, Timestamp } from '@anticrm/core'
+import { Collection, Index, Model, Prop, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -14,15 +14,6 @@ import recruit from './plugin'
 export class TReviewCategory extends TSpaceWithStates implements ReviewCategory {
   @Prop(TypeString(), recruit.string.FullDescription)
   fullDescription?: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
-  attachments?: number
-
-  @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
-  location?: string
-
-  @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
-  company?: string
 }
 
 @Model(recruit.class.Review, task.class.Task)
@@ -36,10 +27,20 @@ export class TReview extends TTask implements Review {
   declare assignee: Ref<Employee> | null
 
   @Prop(TypeMarkup(), recruit.string.Description)
+  @Index(IndexKind.FullText)
   description!: string
 
+  @Index(IndexKind.FullText)
   @Prop(TypeMarkup(), recruit.string.Verdict)
   verdict!: string
+
+  @Index(IndexKind.FullText)
+  @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
+  location?: string
+
+  @Index(IndexKind.FullText)
+  @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
+  company?: string
 
   @Prop(TypeDate(), recruit.string.StartDate)
   startDate!: Timestamp | null

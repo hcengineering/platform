@@ -14,21 +14,19 @@
 -->
 <script lang="ts">
   import type { Employee } from '@anticrm/contact'
-  import { Account, Client, Doc, generateId, Ref } from '@anticrm/core'
+  import { Account, generateId, Ref } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient } from '@anticrm/presentation'
   import type { Opinion, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextEditor } from '@anticrm/text-editor'
-  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import { EditBox, Grid, Label, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
   export let space: Ref<SpaceWithStates>
   export let review: Ref<Review>
   export let assignee: Ref<Employee>
-
-  export let preserveReview = false
 
   const status: Status = OK
 
@@ -76,37 +74,12 @@
       }
     )
   }
-
-  async function query (client: Client, pattern: string): Promise<Doc[]> {
-    const _class = recruit.class.Review
-    // Check number pattern
-
-    const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
-
-    const named = new Map((await client.findAll(_class, { $search: pattern }, { limit: 200, lookup: { attachedTo: recruit.class.Review } })).map(e => [e._id, e]))
-    const nids: number[] = []
-    if (sequence > 0) {
-      for (let n = 0; n < sequence; n++) {
-        const v = `${n}`
-        if (v.includes(pattern)) {
-          nids.push(n)
-        }
-      }
-      const numbered = await client.findAll(_class, { number: { $in: nids } }, { limit: 200, lookup: { attachedTo: recruit.class.Review } })
-      for (const d of numbered) {
-        if (!named.has(d._id)) {
-          named.set(d._id, d)
-        }
-      }
-    }
-    return Array.from(named.values())
-  }
 </script>
 
 <Card
   label={recruit.string.CreateOpinion}
   okAction={createOpinion}
-  canSave={(doc.description ?? '').trim().length > 0}
+  canSave={(doc.value ?? '').trim().length > 0}
   bind:space={doc.space}
   on:close={() => {
     dispatch('close')
@@ -114,9 +87,9 @@
 >
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
-    <EditBox bind:value={doc.value} label={recruit.string.OpinionValue} focus maxWidth={'10rem'}/>   
+    <EditBox bind:value={doc.value} label={recruit.string.OpinionValue} placeholder={recruit.string.OpinionValuePlaceholder} focus maxWidth={'10rem'}/>   
     <div class='mt-1 mb-1'>
-      Description:
+      <Label label={recruit.string.Description}/>:
     </div>
     <div class='description flex'>
       <StyledTextEditor bind:content={doc.description}/>
