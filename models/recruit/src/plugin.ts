@@ -27,12 +27,14 @@ export default mergeIds(recruitId, recruit, {
   action: {
     CreateApplication: '' as Ref<Action>,
     EditVacancy: '' as Ref<Action>,
-    CreateReview: '' as Ref<Action>
+    CreateReview: '' as Ref<Action>,
+    CreateOpinion: '' as Ref<Action>
   },
   actionImpl: {
     CreateApplication: '' as Resource<(object: Doc) => Promise<void>>,
     EditVacancy: '' as Resource<(object: Doc) => Promise<void>>,
-    CreateReview: '' as Resource<(object: Doc) => Promise<void>>
+    CreateReview: '' as Resource<(object: Doc) => Promise<void>>,
+    CreateOpinion: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationShort: '' as IntlString,

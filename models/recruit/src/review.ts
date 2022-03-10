@@ -111,6 +111,22 @@ function createStatusTableViewlet (builder: Builder): void {
       'modifiedOn'
     ]
   })
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: recruit.string.CreateOpinion,
+      icon: recruit.icon.Create,
+      action: recruit.actionImpl.CreateOpinion
+    },
+    recruit.action.CreateOpinion
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Review,
+    action: recruit.action.CreateOpinion
+  })
 }
 
 function createKanbanViewlet (builder: Builder): void {

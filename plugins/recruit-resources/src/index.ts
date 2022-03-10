@@ -31,6 +31,7 @@ import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
+import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReviewCategory from './components/review/CreateReviewCategory.svelte'
 import EditReview from './components/review/EditReview.svelte'
 import EditReviewCategory from './components/review/EditReviewCategory.svelte'
@@ -52,9 +53,12 @@ async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
 }
 
-
 async function editVacancy (object: Doc): Promise<void> {
   showPanel(recruit.component.EditVacancy, object._id, object._class, 'right')
+}
+
+async function createOpinion (object: Doc): Promise<void> {
+  showPopup(CreateOpinion, { space: object.space, review: object._id })
 }
 
 async function createReview (object: Doc): Promise<void> {
@@ -126,7 +130,8 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateApplication: createApplication,
     EditVacancy: editVacancy,
-    CreateReview: createReview
+    CreateReview: createReview,
+    CreateOpinion: createOpinion
   },
   validator: {
     ApplicantValidator: applicantValidator,
