@@ -51,10 +51,36 @@
     "PersonLocationPlaceholder": "Location",
     "ManageVacancyStatuses": "Manage vacancy statuses",
     "EditVacancy": "Edit",
-    "FullDescription": "Full description"
+    "FullDescription": "Full description",
+    "CreateReviewCategory": "Create review category",
+    "ReviewCategoryName": "Review category title*",
+    "ReviewCategoryPlaceholder": "Interview",
+    "ReviewCategory": "Reviews",
+    "ReviewCategoryDescription": "Description",
+    "ThisReviewCategoryIsPrivate": "This category is private",
+    "CreateReview": "Create review",
+    "SelectReviewCategory": "select category",
+    "Reviews": "Reviews",
+    "Review": "Review",
+    "Opinions": "Opinions",
+    "Opinion": "Opinion",
+    "OpinionValue": "Rating",
+    "OpinionShortLabel": "OPE",
+    "ReviewShortLabel": "RVE",
+    "StartDate": "Start date",
+    "DueDate": "Due date",
+    "ReviewCategoryTitle":"Category",
+    "Verdict": "Verdict",
+    "OpinionSave": "Save",
+    "CandidateReviews": "All Candidate Reviews",
+    "NoReviewForCandidate": "No reviews",
+    "CreateAnReview": "Create review",
+    "CreateOpinion": "Create opinion",
+    "OpinionValuePlaceholder": "10/10"
   },
   "status": {
     "CandidateRequired": "Please select candidate",
-    "VacancyRequired": "Please select vacancy"
+    "VacancyRequired": "Please select vacancy",
+    "ReviewCategoryRequired": "Please select review category"
   }
 }

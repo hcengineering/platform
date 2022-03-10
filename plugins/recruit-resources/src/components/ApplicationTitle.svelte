@@ -13,14 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-import { MessageViewer } from '@anticrm/presentation'
+  import { getClient } from '@anticrm/presentation'
+  import type { Applicant } from '@anticrm/recruit'
 
-export let value: string
+  export let value: Applicant
+
+  const client = getClient()
+  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 </script>
 
-<span class="lines-limit-2">
-  <MessageViewer message={value}/>
-</span>
-
+{#if value && shortLabel}
+  {shortLabel}-{value.number}
+{/if}

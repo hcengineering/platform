@@ -14,7 +14,7 @@
 //
 
 import type { Person } from '@anticrm/contact'
-import type { Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -34,6 +34,14 @@ export interface Vacancy extends SpaceWithStates {
 /**
  * @public
  */
+export interface ReviewCategory extends SpaceWithStates {
+  fullDescription?: string
+  attachments?: number
+}
+
+/**
+ * @public
+ */
 export interface Candidates extends Space {}
 
 /**
@@ -46,14 +54,47 @@ export interface Candidate extends Person {
   remote?: boolean
   source?: string
   skills?: number
+  reviews?: number
 }
 
 /**
  * @public
  */
 export interface Applicant extends Task {
+  attachedTo: Ref<Candidate>
   attachments?: number
   comments?: number
+}
+
+/**
+ * @public
+ */
+export interface Review extends Task {
+  attachedTo: Ref<Candidate>
+  attachments?: number
+  comments?: number
+  description: string
+  verdict: string
+
+  location?: string
+  company?: string
+
+  startDate: Timestamp | null
+  dueDate: Timestamp | null
+
+  opinions?: number
+}
+
+/**
+ * @public
+ */
+export interface Opinion extends AttachedDoc {
+  number: number
+  attachedTo: Ref<Review>
+  comments?: number
+  attachments?: number
+  description: string
+  value: string
 }
 
 /**
@@ -71,7 +112,10 @@ const recruit = plugin(recruitId, {
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
     Candidates: '' as Ref<Class<Candidates>>,
-    Vacancy: '' as Ref<Class<Vacancy>>
+    Vacancy: '' as Ref<Class<Vacancy>>,
+    ReviewCategory: '' as Ref<Class<ReviewCategory>>,
+    Review: '' as Ref<Class<Review>>,
+    Opinion: '' as Ref<Class<Opinion>>
   },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>
@@ -85,10 +129,13 @@ const recruit = plugin(recruitId, {
     Location: '' as Asset,
     Calendar: '' as Asset,
     Create: '' as Asset,
-    Application: '' as Asset
+    Application: '' as Asset,
+    Review: '' as Asset,
+    Opinion: '' as Asset
   },
   space: {
-    VacancyTemplates: '' as Ref<KanbanTemplateSpace>
+    VacancyTemplates: '' as Ref<KanbanTemplateSpace>,
+    ReviewTemplates: '' as Ref<KanbanTemplateSpace>
   }
 })
 

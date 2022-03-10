@@ -30,6 +30,15 @@ export type AnySvelteComponent = typeof SvelteComponent
 export type Component<C extends AnySvelteComponent> = Resource<C>
 export type AnyComponent = Resource<AnySvelteComponent>
 
+/**
+ * Allow to pass component with some predefined properties.
+ * @public
+ */
+export interface AnySvelteComponentWithProps {
+  component: AnySvelteComponent
+  props?: Record<string, any>
+}
+
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent

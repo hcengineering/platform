@@ -16,7 +16,7 @@
 import type { Client, Doc } from '@anticrm/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
-import { Applicant } from '@anticrm/recruit'
+import { Applicant, Review } from '@anticrm/recruit'
 import task from '@anticrm/task'
 import { showPanel, showPopup } from '@anticrm/ui'
 import ApplicationItem from './components/ApplicationItem.svelte'
@@ -30,6 +30,17 @@ import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
+import CreateReview from './components/review/CreateReview.svelte'
+import CreateOpinion from './components/review/CreateOpinion.svelte'
+import CreateReviewCategory from './components/review/CreateReviewCategory.svelte'
+import EditReview from './components/review/EditReview.svelte'
+import EditReviewCategory from './components/review/EditReviewCategory.svelte'
+import KanbanReviewCard from './components/review/KanbanReviewCard.svelte'
+import OpinionPresenter from './components/review/OpinionPresenter.svelte'
+import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
+import Opinions from './components/review/Opinions.svelte'
+import ReviewPresenter from './components/review/ReviewPresenter.svelte'
+import Reviews from './components/review/Reviews.svelte'
 import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
@@ -44,6 +55,14 @@ async function createApplication (object: Doc): Promise<void> {
 
 async function editVacancy (object: Doc): Promise<void> {
   showPanel(recruit.component.EditVacancy, object._id, object._class, 'right')
+}
+
+async function createOpinion (object: Doc): Promise<void> {
+  showPopup(CreateOpinion, { space: object.space, review: object._id })
+}
+
+async function createReview (object: Doc): Promise<void> {
+  showPopup(CreateReview, { application: object._id, preserveApplication: true })
 }
 
 export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
@@ -63,6 +82,16 @@ export async function applicantValidator (applicant: Applicant, client: Client):
   return OK
 }
 
+export async function reviewValidator (review: Review, client: Client): Promise<Status> {
+  if (review.attachedTo === undefined) {
+    return new Status(Severity.INFO, recruit.status.CandidateRequired, {})
+  }
+  if (review.space === undefined) {
+    return new Status(Severity.INFO, recruit.status.ReviewCategoryRequired, {})
+  }
+  return OK
+}
+
 export async function queryApplication (client: Client, search: string): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Applicant
   const cl = client.getHierarchy().getClass(_class)
@@ -72,7 +101,7 @@ export async function queryApplication (client: Client, search: string): Promise
 
   const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
-  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200 })).map(e => [e._id, e]))
+  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })).map(e => [e._id, e]))
   const nids: number[] = []
   if (sequence > 0) {
     for (let n = 0; n < sequence; n++) {
@@ -81,7 +110,7 @@ export async function queryApplication (client: Client, search: string): Promise
         nids.push(n)
       }
     }
-    const numbered = await client.findAll<Applicant>(_class, { number: { $in: nids } }, { limit: 200 })
+    const numbered = await client.findAll<Applicant>(_class, { number: { $in: nids } }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })
     for (const d of numbered) {
       if (!named.has(d._id)) {
         named.set(d._id, d)
@@ -92,7 +121,7 @@ export async function queryApplication (client: Client, search: string): Promise
   return Array.from(named.values()).map(e => ({
     doc: e,
     title: `${shortLabel}-${e.number}`,
-    icon: task.icon.Task,
+    icon: recruit.icon.Application,
     component: ApplicationItem
   }))
 }
@@ -100,10 +129,13 @@ export async function queryApplication (client: Client, search: string): Promise
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateApplication: createApplication,
-    EditVacancy: editVacancy
+    EditVacancy: editVacancy,
+    CreateReview: createReview,
+    CreateOpinion: createOpinion
   },
   validator: {
-    ApplicantValidator: applicantValidator
+    ApplicantValidator: applicantValidator,
+    ReviewValidator: reviewValidator
   },
   component: {
     CreateVacancy,
@@ -121,7 +153,18 @@ export default async (): Promise<Resources> => ({
     SkillsView,
     Vacancies,
     VacancyItemPresenter,
-    VacancyCountPresenter
+    VacancyCountPresenter,
+
+    CreateReviewCategory,
+    EditReviewCategory,
+    CreateReview,
+    ReviewPresenter,
+    EditReview,
+    KanbanReviewCard,
+    Reviews,
+    Opinions,
+    OpinionPresenter,
+    OpinionsPresenter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)

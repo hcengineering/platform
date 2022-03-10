@@ -23,6 +23,7 @@
 
   import recruit from '../plugin'
   import { Ref } from '@anticrm/core'
+  import Reviews from './review/Reviews.svelte'
 
   export let object: Applicant
   let candidate: Candidate
@@ -54,6 +55,9 @@
     <div class="card"><CandidateCard {candidate} on:click /></div>
     <div class="arrows"><ExpandRightDouble /></div>
     <div class="card"><VacancyCard {vacancy} /></div>
+  </div>
+  <div class='mt-6'>
+    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.CandidateReviews}  />
   </div>
 {/if}
 

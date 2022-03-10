@@ -60,7 +60,7 @@
       <StyledTextBox      
         bind:content={object.description}      
         placeholder={plugin.string.TaskDescriptionPlaceholder}      
-        on:blur={() => change('description', object.description)}
+        on:value={() => change('description', object.description)}
       />
     </div>
   </Grid>

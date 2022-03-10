@@ -22,8 +22,9 @@ import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
 import tags, { DOMAIN_TAGS, TagCategory, TagElement } from '@anticrm/model-tags'
 import { DOMAIN_TASK } from '@anticrm/model-task'
 import { Candidate } from '@anticrm/recruit'
-import recruit from './plugin'
 import { getCategories } from '@anticrm/skillset'
+import { createReviewTemplates, createSequence } from './creation'
+import recruit from './plugin'
 
 function toCandidateData (c: Pick<Candidate, 'onsite'|'title'|'remote'|'source'> | undefined): MixinData<Person, Candidate> {
   if (c === undefined) {
@@ -199,6 +200,10 @@ export const recruitOperation: MigrateOperation = {
         await tx.update(t, { category: category })
       }
     }
+
+    await createReviewTemplates(tx)
+    await createSequence(tx, recruit.class.Review)
+    await createSequence(tx, recruit.class.Opinion)
   }
 }
 async function migrateUpdateCandidateToPersonAndMixin (client: MigrationClient): Promise<void> {

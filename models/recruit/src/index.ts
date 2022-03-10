@@ -39,7 +39,9 @@ import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import { TOpinion, TReview, TReviewCategory } from './review-model'
 import recruit from './plugin'
+import { createReviewModel } from './review'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -92,6 +94,9 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel)
   skills?: number
+
+  @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
+  reviews?: number
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
@@ -112,7 +117,7 @@ export class TApplicant extends TTask implements Applicant {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant)
+  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReviewCategory, TReview, TOpinion)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -138,6 +143,13 @@ export function createModel (builder: Builder): void {
       hidden: false,
       navigatorModel: {
         spaces: [
+          {
+            label: recruit.string.ReviewCategory,
+            spaceClass: recruit.class.ReviewCategory,
+            addSpaceLabel: recruit.string.CreateReviewCategory,
+            createComponent: recruit.component.CreateReviewCategory,
+            component: recruit.component.EditReviewCategory
+          }
         ],
         specials: [
           {
@@ -384,6 +396,7 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
+  createReviewModel(builder)
 }
 
 export { createDeps } from './creation'
