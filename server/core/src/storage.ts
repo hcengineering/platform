@@ -160,15 +160,19 @@ class TServerStorage implements ServerStorage {
           const baseClass = this.hierarchy.getBaseClass(_class)
           if (baseClass !== _class) {
             // Mixin opeeration is required.
-            return [txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, {
+            const tx = txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, {
               $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-            })]
+            })
+            tx.modifiedOn = colTx.modifiedOn
+
+            return [tx]
           } else {
-            return [
-              txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
-                $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-              })
-            ]
+            const tx = txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
+              $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+            })
+            tx.modifiedOn = colTx.modifiedOn
+
+            return [tx]
           }
         }
       }
@@ -198,7 +202,7 @@ class TServerStorage implements ServerStorage {
     const _class = txClass(tx)
     const objClass = txObjectClass(tx)
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
-      if (tx.objectSpace !== core.space.DerivedTx) {
+      if (tx.space !== core.space.DerivedTx) {
         await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
       }
 
