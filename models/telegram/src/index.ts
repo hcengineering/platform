@@ -14,14 +14,20 @@
 // limitations under the License.
 //
 
-import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index } from '@anticrm/model'
+import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'
-import type { TelegramMessage, SharedTelegramMessage, SharedTelegramMessages } from '@anticrm/telegram'
+import type {
+  TelegramMessage,
+  NewTelegramMessage,
+  SharedTelegramMessage,
+  SharedTelegramMessages
+} from '@anticrm/telegram'
 import { Domain, IndexKind, Type } from '@anticrm/core'
 import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
+import attachment from '@anticrm/model-attachment'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
@@ -37,6 +43,22 @@ export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
 
   @Prop(TypeBoolean(), telegram.string.Incoming)
   incoming!: boolean
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
+}
+
+@Model(telegram.class.NewMessage, core.class.AttachedDoc, DOMAIN_TELEGRAM)
+export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMessage {
+  @Prop(TypeString(), telegram.string.Content)
+  @Index(IndexKind.FullText)
+  content!: string
+
+  @Prop(TypeString(), telegram.string.Status)
+  status!: 'new' | 'sent'
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number
 }
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
@@ -46,7 +68,7 @@ export class TSharedTelegramMessages extends TAttachedDoc implements SharedTeleg
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTelegramMessage, TSharedTelegramMessages)
+  builder.createModel(TTelegramMessage, TSharedTelegramMessages, TNewTelegramMessage)
 
   builder.createDoc(
     contact.class.ChannelProvider,

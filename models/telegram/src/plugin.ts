@@ -29,7 +29,8 @@ export default mergeIds(telegramId, telegram, {
     Incoming: '' as IntlString,
     Messages: '' as IntlString,
     Telegram: '' as IntlString,
-    TelegramIntegrationDesc: '' as IntlString
+    TelegramIntegrationDesc: '' as IntlString,
+    Status: '' as IntlString
   },
   ids: {
     TxSharedCreate: '' as Ref<TxViewlet>

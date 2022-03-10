@@ -61,6 +61,7 @@
     "@anticrm/server-core": "~0.6.1",
     "@anticrm/server-token": "~0.6.0",
     "@anticrm/model-attachment": "~0.6.0",
+    "@anticrm/model-contact": "~0.6.0",
     "@anticrm/mongo": "~0.6.0",
     "@anticrm/dev-storage": "~0.6.0",
     "@anticrm/server-attachment": "~0.6.0",

@@ -20,6 +20,7 @@
     "Incoming": "Входящее",
     "Messages": "Сообщения",
     "Telegram": "Telegram",
-    "TelegramIntegrationDesc": "Подключить Telegram"
+    "TelegramIntegrationDesc": "Подключить Telegram",
+    "Status": "Статус"
   }
 }

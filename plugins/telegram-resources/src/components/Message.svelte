@@ -14,17 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedTelegramMessage } from '@anticrm/telegram'
-  import { MessageViewer } from '@anticrm/presentation'
+  import { Attachment } from '@anticrm/attachment'
+  import { AttachmentList } from '@anticrm/attachment-resources'
   import { formatName } from '@anticrm/contact'
-  import { CheckBox } from '@anticrm/ui'
+  import { WithLookup } from '@anticrm/core'
+  import { MessageViewer } from '@anticrm/presentation'
+  import type { SharedTelegramMessage } from '@anticrm/telegram'
+  import { CheckBox, getPlatformColorForText } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getPlatformColorForText } from '@anticrm/ui'
 
-  export let message: SharedTelegramMessage
+  export let message: WithLookup<SharedTelegramMessage>
   export let showName: boolean = false
   export let selected: boolean = false
   export let selectable: boolean = false
+  $: attachments = message.$lookup?.attachments ? (message.$lookup.attachments as Attachment[]) : undefined
 
   const dispatch = createEventDispatcher()
 </script>
@@ -32,7 +35,7 @@
 <div
   class="flex-between"
   class:selectable
-  on:click|preventDefault={() => {
+  on:click={() => {
     dispatch('select', message)
   }}
 >
@@ -40,6 +43,9 @@
     <div class="message" class:outcoming={!message.incoming} class:selected>
       {#if showName}
         <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
+      {/if}
+      {#if attachments}
+        <AttachmentList {attachments} />
       {/if}
       <div class="flex">
         <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>

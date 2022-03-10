@@ -14,23 +14,59 @@
 // limitations under the License.
 //
 
-import { MongoClient } from 'mongodb'
-
-import { DOMAIN_TX } from '@anticrm/core'
+import { DOMAIN_TX, Ref } from '@anticrm/core'
+import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
+import contact, { DOMAIN_CHANNEL } from '@anticrm/model-contact'
 import { DOMAIN_TELEGRAM } from '@anticrm/model-telegram'
-import telegram from '@anticrm/telegram'
+import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@anticrm/telegram'
+import { Client } from 'minio'
+import { MongoClient } from 'mongodb'
 
 const LastMessages = 'last-msgs'
 
 /**
  * @public
  */
-export async function clearTelegramHistory (mongoUrl: string, workspace: string, tgDb: string): Promise<void> {
+export async function clearTelegramHistory (
+  mongoUrl: string,
+  workspace: string,
+  tgDb: string,
+  minio: Client
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
     const workspaceDB = client.db(workspace)
     const telegramDB = client.db(tgDb)
+
+    const sharedMessages = await workspaceDB
+      .collection(DOMAIN_TELEGRAM)
+      .find<SharedTelegramMessages>({
+      _class: telegram.class.SharedMessages
+    })
+      .toArray()
+    const sharedIds: Ref<SharedTelegramMessage>[] = []
+    for (const sharedMessage of sharedMessages) {
+      for (const message of sharedMessage.messages) {
+        sharedIds.push(message._id)
+      }
+    }
+    const files = await workspaceDB
+      .collection(DOMAIN_ATTACHMENT)
+      .find(
+        {
+          attachedToClass: telegram.class.Message,
+          attachedTo: { $nin: sharedIds }
+        },
+        {
+          projection: {
+            file: 1
+          }
+        }
+      )
+      .toArray()
+
+    const attachments = files.map((file) => file.file)
 
     console.log('clearing txes and messages...')
     await Promise.all([
@@ -39,7 +75,21 @@ export async function clearTelegramHistory (mongoUrl: string, workspace: string,
       }),
       workspaceDB.collection(DOMAIN_TELEGRAM).deleteMany({
         _class: telegram.class.Message
-      })
+      }),
+      workspaceDB.collection(DOMAIN_CHANNEL).updateMany(
+        {
+          provider: contact.channelProvider.Telegram
+        },
+        {
+          $set: {
+            items: 0
+          }
+        }
+      ),
+      workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
+        attachedToClass: telegram.class.Message
+      }),
+      minio.removeObjects(workspace, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')
