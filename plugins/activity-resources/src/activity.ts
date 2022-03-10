@@ -53,6 +53,7 @@ export interface DisplayTx {
 
   // A set of collapsed transactions.
   txes: DisplayTx[]
+  txDocIds?: Set<Ref<Doc>>
 
   // type check for createTx
   createTx?: TxCreateDoc<Doc>
@@ -314,6 +315,15 @@ class ActivityImpl implements Activity {
         if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
           // we have same keys,
           // Remember previous transactions
+          if (result.txDocIds === undefined) {
+            result.txDocIds = new Set()
+          }
+          if (prevTx.doc?._id !== undefined) {
+            result.txDocIds?.add(prevTx.doc._id)
+          }
+          if (result.doc?._id !== undefined) {
+            result.txDocIds?.add(result.doc._id)
+          }
           result.txes.push(...prevTx.txes, prevTx)
           return false
         }
@@ -343,7 +353,7 @@ function getCombineOpFromTx (result: DisplayTx): any {
   if (result.tx._class === core.class.TxMixin) {
     curUpdate = (result.tx as unknown as TxMixin<Doc, Doc>).attributes
   }
-  if (result.collectionAttribute !== undefined) {
+  if (curUpdate === undefined && result.collectionAttribute !== undefined) {
     curUpdate = result.collectionAttribute.attributeOf + '.' + result.collectionAttribute.name
   }
   return curUpdate
