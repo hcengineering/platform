@@ -217,7 +217,7 @@
               {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-            {#if tx.collectionAttribute !== undefined && tx.txes.length > 0}
+            {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <ShowMore ignore={edit}>
                 <div class="flex-row-center flex-grow flex-wrap">
                   <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
@@ -240,11 +240,11 @@
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
         <div class={viewlet.display}>
           <ShowMore ignore={edit}>
-            {#if tx.collectionAttribute !== undefined && tx.txes.length > 0}
+            {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap">
                 <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
               </div>
-            {:else} 
+            {:else}
               {#if typeof viewlet.component === 'string'}
                 <Component is={viewlet.component} {props} on:close={onCancelEdit} />
               {:else}
