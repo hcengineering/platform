@@ -14,117 +14,89 @@
 -->
 
 <script lang="ts">
-  import { Button, CircleButton, IconClose } from '@anticrm/ui'
+  import { Button, CircleButton, IconClose, ActionIcon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Avatar from './Avatar.svelte'
-  import ExpandDown from './icons/ExpandDown.svelte'
-  import ExpandUp from './icons/ExpandUp.svelte'
+  import MaximizeH from './icons/MaximizeH.svelte'
+  import MaximizeV from './icons/MaximizeV.svelte'
+  import MaximizeO from './icons/MaximizeO.svelte'
 
   export let file: string
   export let name: string
   export let contentType: string | undefined
 
   const dispatch = createEventDispatcher()
-
+  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-horizontal-fit'
 </script>
 
-<div class="pdfviewer-container">
-
-  <div class="flex-between header">
-    <!-- <div class="flex-center arrow-back">
-      <div class="icon"><IconArrowLeft size={'small'} /></div>
-    </div> -->
-    <div class="flex-row-center flex-grow">
-      <Avatar size={'medium'} />
-      <div class="flex-col user">
-        <div class="overflow-label name">{name}</div>
-        <!-- <div class="overflow-label description">Candidate</div> -->
-      </div>
+<div class="antiOverlay" on:click={() => { dispatch('close') }} />
+<div class="antiDialogs antiComponent pdfviewer-container">
+  <div class="ac-header short mirror">
+    <div class="ac-header__wrap-title">
+      <div class="ac-header__icon"><Avatar size={'medium'} /></div>
+      <span class="ac-header__title">{name}</span>
     </div>
-    <div class="flex-row-center">
-      <div class="tool" on:click={() => dispatch('close')}><IconClose fill={'black'} size={'small'} /></div>
-    </div>
+    <ActionIcon icon={IconClose} size={'medium'} action={() => dispatch('close')} />
   </div>
 
   {#if contentType && contentType.startsWith('image/') }
-    <img src={getFileUrl(file)} alt=''/>
+    <div class="pdfviewer-content">
+      <img class={imgView} src={getFileUrl(file)} alt="" />
+    </div>
   {:else}
-    <iframe class="flex-grow content" src={getFileUrl(file)} title=""/>
+    <iframe class="pdfviewer-content" src={getFileUrl(file)} title="" />
   {/if}
 
-  <div class="flex-between footer">
+  <div class="pdfviewer-footer">
     <div class="flex-row-reverse">
-      <a class="no-line ml-4" href={getFileUrl(file)} download={name}><Button label={presentation.string.Download} primary /></a>
-      <Button label={presentation.string.Delete} />
+      <a class="no-line ml-4" href={getFileUrl(file)} download={name}><Button label={presentation.string.Download} size={'small'} primary /></a>
+      <Button label={presentation.string.Delete} size={'small'} />
     </div>
-    <div class="flex-row-center">
-      <CircleButton icon={ExpandDown} />
-      <CircleButton icon={ExpandUp} />
-    </div>
+    {#if contentType && contentType.startsWith('image/') }
+      <div class="img-nav">
+        <CircleButton icon={MaximizeH} on:click={() => { imgView = 'img-horizontal-fit' }} selected={imgView === 'img-horizontal-fit'} />
+        <CircleButton icon={MaximizeV} on:click={() => { imgView = 'img-vertical-fit' }} selected={imgView === 'img-vertical-fit'} />
+        <CircleButton icon={MaximizeO} on:click={() => { imgView = 'img-original-fit' }} selected={imgView === 'img-original-fit'} />
+      </div>
+    {/if}
   </div>
 
 </div>
 
 <style lang="scss">
-  .pdfviewer-container {
+  .pdfviewer-container { left: 40%; }
+  .pdfviewer-content {
+    flex-grow: 1;
+    overflow: auto;
+    margin: 0 1.5rem;
+    border-style: none;
+    border-radius: .5rem;
+    background-color: var(--theme-menu-color);
+  }
+  .img-horizontal-fit, .img-vertical-fit, .img-original-fit {
+    margin: 0 auto;
+    width: auto;
+    height: auto;
+  }
+  .img-horizontal-fit { width: 100%; }
+  .img-vertical-fit { height: 100%; }
+  .pdfviewer-footer {
+    flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    width: 55rem;
-    height: 100%;
-    background-color: #F2F2F2;
-    border-radius: 1.25rem 1.875rem 1.875rem 1.25rem;
-
-    .header {
-      margin: 0 2rem 0 2.25rem;
-      height: 4.5rem;
-      min-height: 4.5rem;
-
-      // .arrow-back {
-      //   margin-right: 1rem;
-      //   width: 1.5rem;
-      //   height: 1.5rem;
-      //   cursor: pointer;
-      //   .icon {
-      //     color: #1F212B;
-      //     opacity: .4;
-      //   }
-      //   &:hover .icon { opacity: 1; }
-      // }
-
-      .user { margin-left: .75rem; }
-      .name {
-        font-weight: 500;
-        font-size: 1rem;
-        color: black;
-      }
-      // .description {
-      //   font-size: .75rem;
-      //   color: #1F212B;
-      //   opacity: .6;
-      // }
-      .tool {
-        margin-left: 0.75rem;
-        opacity: .4;
-        cursor: pointer;
-        &:hover { opacity: 1; }
-      }
-    }
-
-    .content {
-      margin: 0 .75rem;
-      background-color: #fff;
-      border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .72rem;
-    }
-
-    .footer {
-      flex-direction: row-reverse;
-      margin: 0 2.5rem 0 1.75rem;
-      height: 6rem;
-      min-height: 6rem;
-      color: #1F212B;
-    }
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding: 0 2.25rem;
+    height: 5.25rem;
+  }
+  .img-nav {
+    display: grid;
+    grid-template-columns: auto;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    gap: .5rem;
+    align-items: center;
   }
 </style>
