@@ -87,7 +87,7 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
-      showPopup(PDFViewer, { file: item.file, name: item.name }, 'right')
+      showPopup(PDFViewer, { file: item.file, name: item.name, contentType: item.type }, 'right')
     } else {
       inputFile.click()
     }
@@ -134,7 +134,7 @@
   >
     {#each images as image (image._id)}
       <div
-        class="item"
+        class="item flex-center"
         on:click={(ev) => {
           click(ev, image)
         }}
@@ -178,8 +178,8 @@
       cursor: pointer;
 
       img {
-        width: 5rem;
-        height: 5rem;
+        min-width: 5rem;
+        min-height: 5rem;
       }
     }
 

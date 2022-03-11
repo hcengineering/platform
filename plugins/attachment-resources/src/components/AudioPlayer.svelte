@@ -14,24 +14,14 @@
 -->
 
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import AttachmentPreview from './AttachmentPreview.svelte'
+  import type { Attachment } from '@anticrm/attachment'
+  import { getFileUrl } from '@anticrm/presentation'
+  import AttachmentPresenter from './AttachmentPresenter.svelte'
 
-  export let attachments: Attachment[] = []
+  export let value: Attachment
 </script>
 
-{#if attachments.length}
-  <div class='container'>
-    {#each attachments as attachment}
-      <div class='item'>
-        <AttachmentPreview value={attachment} />
-      </div>
-    {/each}
-  </div>
-{/if}
-
-<style lang="scss">
-  .item {
-    padding: 0.5rem;
-  }
-</style>
+<audio controls>
+  <source src={getFileUrl(value.file)} type={value.type}>
+  <AttachmentPresenter {value} />
+</audio>
