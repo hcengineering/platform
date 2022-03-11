@@ -38,5 +38,6 @@
 {/each}
 
 <style lang="scss">
+  .item { max-width: 30rem; }
   .item + .item { margin-top: 1.25rem; }
 </style>
