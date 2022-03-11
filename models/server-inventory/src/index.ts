@@ -19,6 +19,7 @@ import core from '@anticrm/core'
 import inventory from '@anticrm/inventory'
 import view from '@anticrm/view'
 import serverInventory from '@anticrm/server-inventory'
+import serverCore from '@anticrm/server-core'
 
 export function createModel (builder: Builder): void {
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.HTMLPresenter, {
@@ -27,5 +28,13 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.TextPresenter, {
     presenter: serverInventory.function.ProductTextPresenter
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverInventory.trigger.OnProductCreate
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverInventory.trigger.OnProductUpdate
   })
 }

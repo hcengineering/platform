@@ -29,6 +29,7 @@
     "@anticrm/core": "~0.6.11",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-core": "~0.6.0",
+    "@anticrm/server-notification": "~0.6.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/view": "~0.6.0",
     "@anticrm/login": "~0.6.1",

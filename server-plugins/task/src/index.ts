@@ -16,6 +16,7 @@
 import type { Resource, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Doc } from '@anticrm/core'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -26,6 +27,10 @@ export const serverTaskId = 'server-task' as Plugin
  * @public
  */
 export default plugin(serverTaskId, {
+  trigger: {
+    OnTaskCreate: '' as Resource<TriggerFunc>,
+    OnTaskUpdate: '' as Resource<TriggerFunc>
+  },
   function: {
     IssueHTMLPresenter: '' as Resource<(doc: Doc) => string>,
     IssueTextPresenter: '' as Resource<(doc: Doc) => string>
