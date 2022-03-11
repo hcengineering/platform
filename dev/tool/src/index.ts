@@ -199,9 +199,25 @@ program
   })
 
 program
-  .command('clear-telegram-history')
+  .command('clear-telegram-history <workspace>')
   .description('clear telegram history')
   .option('-w, --workspace <workspace>', 'target workspace')
+  .action(async (workspace: string, cmd) => {
+    return await withDatabase(mongodbUri, async (db) => {
+      const telegramDB = process.env.TELEGRAM_DATABASE
+      if (telegramDB === undefined) {
+        console.error('please provide TELEGRAM_DATABASE.')
+        process.exit(1)
+      }
+
+      console.log(`clearing ${workspace} history:`)
+      await clearTelegramHistory(mongodbUri, workspace, telegramDB, minio)
+    })
+  })
+
+program
+  .command('clear-telegram-all-history')
+  .description('clear telegram history')
   .action(async (cmd) => {
     return await withDatabase(mongodbUri, async (db) => {
       const telegramDB = process.env.TELEGRAM_DATABASE
@@ -211,12 +227,10 @@ program
       }
 
       const workspaces = await listWorkspaces(db)
-      const targetWorkspaces =
-        cmd.workspace !== undefined ? workspaces.filter((x) => x.workspace === cmd.workspace) : workspaces
 
-      for (const w of targetWorkspaces) {
+      for (const w of workspaces) {
         console.log(`clearing ${w.workspace} history:`)
-        await clearTelegramHistory(mongodbUri, w.workspace, telegramDB)
+        await clearTelegramHistory(mongodbUri, w.workspace, telegramDB, minio)
       }
     })
   })

@@ -22,16 +22,29 @@ import type { IntegrationType, Handler } from '@anticrm/setting'
 /**
  * @public
  */
-export interface TelegramMessage extends AttachedDoc {
+export interface BaseTelegramMessage extends Doc {
   content: string
+  attachments?: number
+}
+
+/**
+ * @public
+ */
+export interface TelegramMessage extends BaseTelegramMessage, AttachedDoc {
   incoming: boolean
 }
 
 /**
  * @public
  */
-export interface SharedTelegramMessage extends Doc {
-  content: string
+export interface NewTelegramMessage extends BaseTelegramMessage, AttachedDoc {
+  status: 'new' | 'sent'
+}
+
+/**
+ * @public
+ */
+export interface SharedTelegramMessage extends BaseTelegramMessage {
   incoming: boolean
   sender: string
 }
@@ -62,6 +75,7 @@ export default plugin(telegramId, {
   },
   class: {
     Message: '' as Ref<Class<TelegramMessage>>,
+    NewMessage: '' as Ref<Class<NewTelegramMessage>>,
     SharedMessage: '' as Ref<Class<SharedTelegramMessage>>,
     SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
   },

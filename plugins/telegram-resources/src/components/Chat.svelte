@@ -14,23 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment from '@anticrm/attachment'
+  import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
-  import login from '@anticrm/login'
-  import { getMetadata } from '@anticrm/platform'
+  import { generateId, getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
-  import type { SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { ReferenceInput } from '@anticrm/text-editor'
+  import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
   import { ActionIcon, Button, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let object: Contact
   let channel: Channel | undefined = undefined
+  let objectId: Ref<NewTelegramMessage> = generateId()
+
   const client = getClient()
   const notificationClient = NotificationClientImpl.getClient()
 
@@ -48,7 +49,6 @@
   let enabled: boolean
   let selected: Set<Ref<SharedTelegramMessage>> = new Set<Ref<SharedTelegramMessage>>()
   let selectable = false
-  const url = getMetadata(login.metadata.TelegramUrl) ?? ''
 
   const messagesQuery = createQuery()
   const accauntsQuery = createQuery()
@@ -67,7 +67,13 @@
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
       },
-      { sort: { modifiedOn: SortingOrder.Descending }, limit: 500 }
+      {
+        sort: { modifiedOn: SortingOrder.Descending },
+        limit: 500,
+        lookup: {
+          _id: { attachments: attachment.class.Attachment }
+        }
+      }
     )
   }
 
@@ -87,63 +93,24 @@
     }
   )
 
-  async function sendMsg (to: string, msg: string) {
-    const res = await fetch(url + '/send-msg', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        to,
-        msg
-      })
-    })
-    if (channel !== undefined) {
-      await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
-    }
-    return res
-  }
-
-  async function addContact (phone: string) {
-    const [lastName, firstName] = object.name.split(',')
-
-    return await fetch(url + '/add-contact', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(login.metadata.LoginToken),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        firstName: firstName ?? '',
-        lastName: lastName ?? '',
-        phone
-      })
-    })
-  }
-
   async function onMessage (event: CustomEvent) {
-    const to = channel?.value ?? ''
-    const sendRes = await sendMsg(to, event.detail)
+    if (channel === undefined) return
+    const { message, attachments } = event.detail
+    await client.createDoc(
+      telegram.class.NewMessage,
+      telegram.space.Telegram,
+      {
+        content: message,
+        status: 'new',
+        attachments,
+        attachedTo: channel._id,
+        attachedToClass: channel._class,
+        collection: 'newMessages'
+      },
+      objectId
+    )
 
-    if (sendRes.status !== 400 || !to.startsWith('+')) {
-      return
-    }
-
-    const err = await sendRes.json()
-    if (err.code !== 'CONTACT_IMPORT_REQUIRED') {
-      return
-    }
-
-    const addRes = await addContact(to)
-
-    if (Math.trunc(addRes.status / 100) !== 2) {
-      const { message } = await addRes.json().catch(() => ({ message: 'Unknown error' }))
-
-      throw Error(message)
-    }
-
-    await sendMsg(to, event.detail)
+    objectId = generateId()
   }
 
   function getName (message: TelegramMessage, accounts: EmployeeAccount[]): string {
@@ -240,7 +207,12 @@
       </div>
     </div>
   {:else if enabled}
-    <ReferenceInput on:message={onMessage} />
+    <AttachmentRefInput
+      space={telegram.space.Telegram}
+      _class={telegram.class.NewMessage}
+      {objectId}
+      on:message={onMessage}
+    />
   {:else}
     <div class="flex-center">
       <Button

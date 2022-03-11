@@ -20,6 +20,7 @@
     "Incoming": "Incoming",
     "Messages": "Messages",
     "Telegram": "Telegram",
-    "TelegramIntegrationDesc": "Use telegram integration"
+    "TelegramIntegrationDesc": "Use telegram integration",
+    "Status": "Status"
   }
 }
