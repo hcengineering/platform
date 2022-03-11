@@ -393,7 +393,6 @@
     &:last-child { border-bottom: none; }
     &:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: visible; }
     &:hover, &.checking {
-      // background-color: var(--theme-table-bg-hover);
       .antiTable-cells__checkCell { visibility: visible; }
       .antiTable-cells__notifyCell .notify-table-kind {
         width: 1rem;
@@ -412,3 +411,6 @@
     &:hover, &.checking { background-color: var(--theme-table-bg-hover); }
   }
 }
+
+// Hide row menu in Tooltip
+.popup-tooltip .antiTable .antiTable-body__row:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: hidden; }
