@@ -15,6 +15,7 @@
 -->
 
 <script lang="ts">
+  import { AttachmentDocList } from '@anticrm/attachment-resources'
   import type { Comment } from '@anticrm/chunter'
   import { formatName } from '@anticrm/contact'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
@@ -41,6 +42,7 @@
     </div>
     <ShowMore limit={126} fixed>
       <MessageViewer message={value.message}/>
+      <AttachmentDocList {value} />
     </ShowMore>
   </div>
 </div>
