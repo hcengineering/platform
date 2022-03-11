@@ -16,11 +16,28 @@
 
 import chunter, { Backlink } from '@anticrm/chunter'
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-import core, { Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import core, { AttachedDoc, Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxCUD, TxProcessor } from '@anticrm/core'
 import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
+import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
+
+const extractTx = (tx: Tx): Tx => {
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ctx = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+    if (ctx.tx._class === core.class.TxCreateDoc) {
+      const create = ctx.tx as TxCreateDoc<AttachedDoc>
+      create.attributes.attachedTo = ctx.objectId
+      create.attributes.attachedToClass = ctx.objectClass
+      create.attributes.collection = ctx.collection
+      return create
+    }
+    return ctx
+  }
+
+  return tx
+}
 
 /**
  * @public
@@ -53,6 +70,60 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   if (emailTx !== undefined) {
     result.push(emailTx)
   }
+  return result
+}
+
+/**
+ * @public
+ */
+export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = extractTx(tx)
+  if (![core.class.TxUpdateDoc, core.class.TxCreateDoc, core.class.TxMixin].includes(actualTx._class)) {
+    return []
+  }
+
+  const result: Tx[] = []
+
+  switch (actualTx._class) {
+    case core.class.TxCreateDoc: {
+      const createTx = actualTx as TxCreateDoc<Doc>
+      if (control.hierarchy.isDerived(createTx.objectClass, core.class.AttachedDoc)) {
+        const doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<AttachedDoc>)
+        const attachedTx = await getUpdateLastViewTx(control.findAll, doc.attachedTo, doc.attachedToClass, createTx.modifiedOn, createTx.modifiedBy)
+        if (attachedTx !== undefined) {
+          result.push(attachedTx)
+        }
+      } else {
+        const doc = TxProcessor.createDoc2Doc(createTx)
+        const tx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy)
+        if (tx !== undefined) {
+          result.push(tx)
+        }
+      }
+      break
+    }
+    case core.class.TxUpdateDoc:
+    case core.class.TxMixin: {
+      const tx = actualTx as TxCUD<Doc>
+      const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+      if (control.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
+        const attachedDoc = doc as AttachedDoc
+        const attachedTx = await getUpdateLastViewTx(control.findAll, attachedDoc.attachedTo, attachedDoc.attachedToClass, tx.modifiedOn, tx.modifiedBy)
+        if (attachedTx !== undefined) {
+          result.push(attachedTx)
+        }
+      } else {
+        const resTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy)
+        if (resTx !== undefined) {
+          result.push(resTx)
+        }
+      }
+      break
+    }
+    default:
+      break
+  }
+
   return result
 }
 
@@ -191,6 +262,7 @@ function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextP
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnBacklinkCreate
+    OnBacklinkCreate,
+    UpdateLastView
   }
 })

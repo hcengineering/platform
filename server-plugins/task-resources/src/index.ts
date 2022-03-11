@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import task, { Issue } from '@anticrm/task'
-import { Doc } from '@anticrm/core'
+import core, { Doc, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import workbench from '@anticrm/workbench'
+import { TriggerControl } from '@anticrm/server-core'
+import { getUpdateLastViewTx } from '@anticrm/server-notification'
+import task, { Issue, Task } from '@anticrm/task'
 import view from '@anticrm/view'
+import workbench from '@anticrm/workbench'
 
 /**
  * @public
@@ -37,8 +39,78 @@ export function issueTextPresenter (doc: Doc): string {
   return `Task-${issue.number}`
 }
 
+/**
+ * @public
+ */
+export async function OnTaskCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxCreateDoc) {
+    return []
+  }
+
+  const createTx = tx as TxCreateDoc<Task>
+
+  if (!control.hierarchy.isDerived(createTx.objectClass, task.class.Task)) {
+    return []
+  }
+
+  const doc = TxProcessor.createDoc2Doc(createTx)
+  const txes: Tx[] = []
+
+  const mainTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy)
+  if (mainTx !== undefined) {
+    txes.push(mainTx)
+  }
+  if (doc.assignee != null) {
+    const assignee = (await control.modelDb.findAll(core.class.Account, { emoloyee: doc.assignee }, { limit: 1 }))[0]
+    if (assignee !== undefined) {
+      const assigneeTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, assignee._id)
+      if (assigneeTx !== undefined) {
+        txes.push(assigneeTx)
+      }
+    }
+  }
+
+  return txes
+}
+
+/**
+ * @public
+ */
+export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxUpdateDoc) {
+    return []
+  }
+
+  const updateTx = tx as TxUpdateDoc<Task>
+
+  if (!control.hierarchy.isDerived(updateTx.objectClass, task.class.Task)) {
+    return []
+  }
+  const txes: Tx[] = []
+
+  const mainTx = await getUpdateLastViewTx(control.findAll, updateTx.objectId, updateTx.objectClass, updateTx.modifiedOn, updateTx.modifiedBy)
+  if (mainTx !== undefined) {
+    txes.push(mainTx)
+  }
+  if (updateTx.operations.assignee != null) {
+    const assignee = (await control.modelDb.findAll(core.class.Account, { emoloyee: updateTx.operations.assignee }, { limit: 1 }))[0]
+    if (assignee !== undefined) {
+      const assigneeTx = await getUpdateLastViewTx(control.findAll, updateTx.objectId, updateTx.objectClass, updateTx.modifiedOn, assignee._id)
+      if (assigneeTx !== undefined) {
+        txes.push(assigneeTx)
+      }
+    }
+  }
+
+  return txes
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  trigger: {
+    OnTaskCreate,
+    OnTaskUpdate
+  },
   function: {
     IssueHTMLPresenter: issueHTMLPresenter,
     IssueTextPresenter: issueTextPresenter

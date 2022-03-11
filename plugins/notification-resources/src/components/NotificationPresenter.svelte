@@ -24,7 +24,7 @@
   const lastViews = notificationClient.getLastViews()
 
   $: lastView = $lastViews.get(value._id)
-  $: hasNotification = lastView !== undefined && lastView < value.modifiedOn
+  $: hasNotification = lastView !== undefined && lastView !== -1 && lastView < value.modifiedOn
 </script>
 
 {#if hasNotification}

@@ -22,8 +22,8 @@
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
-  $: subscribed = $lastViews.has(value._id)
-
+  $: lastView = $lastViews.get(value._id)
+  $: subscribed = lastView !== undefined && lastView !== -1
 </script>
 
 {#if !subscribed}

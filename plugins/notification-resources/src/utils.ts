@@ -63,7 +63,7 @@ export class NotificationClientImpl implements NotificationClient {
     const user = getCurrentAccount()._id
     const lastView = time ?? new Date().getTime()
     const current = this.lastViews.get(_id)
-    if (current !== undefined) {
+    if (current !== undefined && current.lastView !== -1) {
       if (current.lastView < lastView || force) {
         const u = client.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
           lastView: lastView
@@ -89,7 +89,9 @@ export class NotificationClientImpl implements NotificationClient {
     const user = getCurrentAccount()._id
     const current = await client.findOne(notification.class.LastView, { attachedTo: _id, user })
     if (current !== undefined) {
-      await client.removeDoc(current._class, current.space, current._id)
+      await client.updateDoc(current._class, current.space, current._id, {
+        lastView: -1
+      })
     }
   }
 }
