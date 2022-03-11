@@ -285,6 +285,7 @@
     padding: .5rem 2.5rem;
     background-color: var(--theme-bg-color);
     border-top: 1px solid var(--theme-dialog-divider);
+    border-radius: 0 0 1.25rem 1.25rem;
   }
 
   .done-item {

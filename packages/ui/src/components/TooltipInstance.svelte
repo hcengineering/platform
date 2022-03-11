@@ -178,7 +178,6 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    max-width: 30rem;
     padding: 1rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-tooltip-color);
