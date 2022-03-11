@@ -60,14 +60,20 @@ async function getPlatformNotificationTx (ptx: TxCollectionCUD<Doc, Backlink>, c
   const attached = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
     employee: ptx.objectId as Ref<Employee>
   }, { limit: 1 }))[0]
-  if (attached === undefined) return undefined
+  if (attached === undefined) return
 
   const setting = (await control.findAll(notification.class.NotificationSetting, {
     provider: notification.ids.PlatformNotification,
     type: notification.ids.MentionNotification,
     space: attached._id as unknown as Ref<Space>
   }, { limit: 1 }))[0]
-  if (setting === undefined || !setting.enabled) return
+  if (setting === undefined) {
+    const provider = (await control.modelDb.findAll(notification.class.NotificationProvider, {
+      _id: notification.ids.PlatformNotification
+    }))[0]
+    if (provider === undefined) return
+    if (!provider.default) return
+  }
 
   const createTx: TxCreateDoc<Notification> = {
     objectClass: notification.class.Notification,
@@ -113,7 +119,13 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
     type: notification.ids.MentionNotification,
     space: attached._id as unknown as Ref<Space>
   }, { limit: 1 }))[0]
-  if (setting === undefined || !setting.enabled) return
+  if (setting === undefined) {
+    const provider = (await control.modelDb.findAll(notification.class.NotificationProvider, {
+      _id: notification.ids.PlatformNotification
+    }))[0]
+    if (provider === undefined) return
+    if (!provider.default) return
+  }
 
   const receiver = attached.email
   let doc: Doc | undefined

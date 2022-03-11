@@ -67,6 +67,7 @@ export interface NotificationType extends Doc {
  */
 export interface NotificationProvider extends Doc {
   label: IntlString
+  default: boolean
 }
 
 /**
