@@ -95,6 +95,14 @@
   }
 
   $: column = providers.length + 1
+
+  function getStatus (map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, type: Ref<NotificationType>, provider: Ref<NotificationProvider>): boolean {
+    const setting = getSetting(map, type, provider)
+    if (setting !== undefined) return setting.enabled
+    const prov = providers.find((p) => p._id === provider)
+    if (prov === undefined) return false
+    return prov.default
+  }
 </script>
 
 <div class="antiComponent">
@@ -109,7 +117,7 @@
           {#each types as type (type._id)}
             <Label label={type.label} />
             {#each providers as provider (provider._id)}
-              <ToggleWithLabel label={provider.label} on={getSetting(settings, type._id, provider._id)?.enabled} on:change={(e) => change(type._id, provider._id, e.detail)} />
+              <ToggleWithLabel label={provider.label} on={getStatus(settings, type._id, provider._id)} on:change={(e) => change(type._id, provider._id, e.detail)} />
             {/each}
           {/each}
         </Grid>

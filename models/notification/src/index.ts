@@ -71,6 +71,7 @@ export class TNotificationType extends TDoc implements NotificationType {
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationProvider extends TDoc implements NotificationProvider {
   label!: IntlString
+  default!: boolean
 }
 
 @Model(notification.class.NotificationSetting, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -88,11 +89,13 @@ export function createModel (builder: Builder): void {
   }, notification.ids.MentionNotification)
 
   builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
-    label: notification.string.PlatformNotification
+    label: notification.string.PlatformNotification,
+    default: true
   }, notification.ids.PlatformNotification)
 
   builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
-    label: notification.string.EmailNotification
+    label: notification.string.EmailNotification,
+    default: false
   }, notification.ids.EmailNotification)
 
   builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
