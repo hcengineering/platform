@@ -16,12 +16,41 @@
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { getFileUrl } from '@anticrm/presentation'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import { CircleButton, Progress } from '@anticrm/ui'
+  import Play from './icons/Play.svelte'
+  import Pause from './icons/Pause.svelte'
 
   export let value: Attachment
+
+  let time = 0
+	let duration = Number.POSITIVE_INFINITY
+	let paused = true
+
+  function buttonClick () {
+    paused = !paused
+  }
+
+  $: icon = !paused ? Pause : Play
 </script>
 
-<audio controls>
+<div class='container flex-between'>
+  <div>
+    <CircleButton size='x-large' on:click={buttonClick} {icon} />
+  </div>
+  <div class='w-full ml-4'>
+    <Progress bind:value={time} max={Number.isFinite(duration) ? duration : 100} editable />
+  </div>
+</div>
+<audio bind:duration bind:currentTime={time} bind:paused>
   <source src={getFileUrl(value.file)} type={value.type}>
-  <AttachmentPresenter {value} />
 </audio>
+
+<style lang="scss">
+  .container {
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: 0.75rem;
+    width: 20rem;
+    padding: 0.5rem;
+  }
+</style>
