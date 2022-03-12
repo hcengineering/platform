@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let attachments: Attachment[] = []
 </script>
@@ -24,24 +24,14 @@
   <div class='container'>
     {#each attachments as attachment}
       <div class='item'>
-        <AttachmentPresenter value={attachment} />
+        <AttachmentPreview value={attachment} />
       </div>
     {/each}
   </div>
 {/if}
 
 <style lang="scss">
-  .container {
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-
-    .item {
-      padding: 1rem;
-    }
-
-    .item + .item {
-      border-top: 1px solid var(--theme-bg-accent-color);
-    }
+  .item {
+    padding: 0.5rem;
   }
 </style>

@@ -14,18 +14,29 @@
 -->
 
 <script lang="ts">
+  import { getPlatformColor } from '../colors'
   export let value: number
   export let min: number = 0
   export let max: number = 100
-  export let color: string = '#50BCF9'
+  export let color: number = 5
+  export let editable = false
 
-  const proc: number = (max - min) / 100
+  $: proc = (max - min) / 100
   if (value > max) value = max
   if (value < min) value = min
+
+  function click (e: MouseEvent) {
+    const rect = (e.target as HTMLElement).getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const pos = x / rect.width
+    value = (max - min) * pos
+    console.log(`set value to ${value}`)
+    console.log(`max value ${max}`)
+  }
 </script>
 
-<div class="container">
-  <div class="bar" style="background-color: {color}; width: calc(100% * {Math.round((value - min) / proc)} / 100);"/>
+<div class="container" on:click={click} class:cursor-pointer={editable}>
+  <div class="bar" style="background-color: {getPlatformColor(color)}; width: calc(100% * {Math.round((value - min) / proc)} / 100);"/>
 </div>
 
 <style lang="scss">
@@ -33,7 +44,7 @@
     position: relative;
     width: 100%;
     height: .25rem;
-    background-color: var(--theme-button-bg-hovered);
+    background-color: var(--theme-bg-accent-hover);
     border-radius: .125rem;
 
     .bar {

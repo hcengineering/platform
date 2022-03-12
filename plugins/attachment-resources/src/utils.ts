@@ -67,3 +67,20 @@ export async function deleteFile (id: string): Promise<void> {
     throw new Error('Failed to delete file')
   }
 }
+
+export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+  if (type.startsWith('image/')) {
+    return 'image'
+  }
+  if (type.startsWith('audio/')) {
+    return 'audio'
+  }
+  if (type.startsWith('video/')) {
+    return 'video'
+  }
+  if (type.includes('application/pdf')) {
+    return 'pdf'
+  }
+
+  return 'other'
+}
