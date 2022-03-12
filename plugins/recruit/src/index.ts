@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Person } from '@anticrm/contact'
+import type { Employee, Person } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -83,6 +83,8 @@ export interface Review extends Task {
   dueDate: Timestamp | null
 
   opinions?: number
+
+  participants?: Ref<Employee>[]
 }
 
 /**

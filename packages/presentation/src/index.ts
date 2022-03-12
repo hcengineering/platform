@@ -23,6 +23,7 @@ export * from './types'
 
 export { default as UserBox } from './components/UserBox.svelte'
 export { default as UserInfo } from './components/UserInfo.svelte'
+export { default as UserBoxList } from './components/UserBoxList.svelte'
 export { default as Avatar } from './components/Avatar.svelte'
 export { default as EditableAvatar } from './components/EditableAvatar.svelte'
 export { default as MessageViewer } from './components/MessageViewer.svelte'

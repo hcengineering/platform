@@ -76,7 +76,10 @@
     "NoReviewForCandidate": "No reviews",
     "CreateAnReview": "Create review",
     "CreateOpinion": "Create opinion",
-    "OpinionValuePlaceholder": "10/10"
+    "OpinionValuePlaceholder": "10/10",
+    "Participants": "Participants",
+    "NoParticipants": "No participants added",
+    "PersonsLabel": "{name}"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

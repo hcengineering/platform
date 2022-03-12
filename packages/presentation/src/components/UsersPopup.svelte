@@ -33,12 +33,14 @@
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
 
+  export let ignoreUsers: Ref<Person>[] = []
+
   let search: string = ''
   let objects: Person[] = []
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { name: { $like: '%' + search + '%' } }, result => { objects = result }, { limit: 200 })
+  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } }, result => { objects = result }, { limit: 200 })
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 

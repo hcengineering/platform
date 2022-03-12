@@ -77,7 +77,10 @@
     "NoReviewForCandidate": "Нет оценок",
     "CreateAnReview": "Добавить оценку",
     "CreateOpinion": "Добавить мнение",
-    "OpinionValuePlaceholder": "10/10"
+    "OpinionValuePlaceholder": "10/10",
+    "Participants": "Участники",
+    "NoParticipants": "Участники не добавлены",
+    "PersonsLabel": "{name}"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

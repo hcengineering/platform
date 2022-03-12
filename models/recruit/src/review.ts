@@ -1,7 +1,5 @@
 import { Doc, FindOptions } from '@anticrm/core'
 import { Builder } from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task from '@anticrm/model-task'
@@ -93,21 +91,22 @@ function createStatusTableViewlet (builder: Builder): void {
         attachedTo: recruit.mixin.Candidate,
         state: task.class.State,
         assignee: contact.class.Employee,
-        doneState: task.class.DoneState
+        doneState: task.class.DoneState,
+        participants: contact.class.Employee
       }
     } as FindOptions<Doc>,
     config: [
       '',
       '$lookup.attachedTo',
-      // '$lookup.assignee',
+      { key: '$lookup.participants', presenter: recruit.component.PersonsPresenter, label: recruit.string.Participants, sortingKey: '$lookup.participants' },
       // 'location',
       'company',
       'dueDate',
       { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      // { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      // { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
   })
@@ -137,10 +136,12 @@ function createKanbanViewlet (builder: Builder): void {
     options: {
       lookup: {
         attachedTo: recruit.mixin.Candidate,
-        state: task.class.State
+        state: task.class.State,
+        assignee: contact.class.Employee,
+        participants: contact.class.Employee
       }
     } as FindOptions<Doc>,
-    config: ['$lookup.attachedTo', '$lookup.state']
+    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.participants', '$lookup.assignee']
   })
 }
 
@@ -154,21 +155,22 @@ function createTableViewlet (builder: Builder): void {
         attachedTo: recruit.mixin.Candidate,
         state: task.class.State,
         assignee: contact.class.Employee,
-        doneState: task.class.DoneState
+        doneState: task.class.DoneState,
+        participants: contact.class.Employee
       }
     } as FindOptions<Doc>,
     config: [
       '',
       '$lookup.attachedTo',
-      // '$lookup.assignee',
+      { key: '$lookup.participants', presenter: recruit.component.PersonsPresenter, label: recruit.string.Participants, sortingKey: '$lookup.participants' },
       // 'location',
       'company',
       'dueDate',
       { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      // { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      // { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
   })

@@ -414,3 +414,13 @@
 
 // Hide row menu in Tooltip
 .popup-tooltip .antiTable .antiTable-body__row:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: hidden; }
+
+// Basic component view.
+.antiComponentBox {
+  margin: 0.25rem;
+  padding: 0.5rem;
+  background-color: var(--theme-button-bg-focused);
+  border: 1px solid var(--theme-button-border-enabled);
+  border-radius: .75rem;
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, .2);
+}

@@ -617,6 +617,29 @@ export class LiveQuery extends TxProcessor implements Client {
             ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(lookup, { _id: ops[key] })
           }
         }
+      } else {
+        if (key === '$push') {
+          const pops = tx.operations[key] ?? {}
+          for (const pkey of Object.keys(pops)) {
+            if (q.options !== undefined) {
+              const lookup = (q.options.lookup as any)?.[pkey]
+              if (lookup !== undefined) {
+                ;(updatedDoc.$lookup as any)[pkey].push(await this.client.findOne(lookup, { _id: (pops as any)[pkey] as Ref<Doc> }))
+              }
+            }
+          }
+        } else if (key === '$pull') {
+          const pops = tx.operations[key] ?? {}
+          for (const pkey of Object.keys(pops)) {
+            if (q.options !== undefined) {
+              const lookup = (q.options.lookup as any)?.[pkey]
+              if (lookup !== undefined) {
+                const pid = (pops as any)[pkey] as Ref<Doc>
+                ;(updatedDoc.$lookup as any)[pkey] = ((updatedDoc.$lookup as any)[pkey]).filter((it: Doc) => it._id !== pid)
+              }
+            }
+          }
+        }
       }
     }
   }
