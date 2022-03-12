@@ -20,6 +20,7 @@ const autoprefixer = require('autoprefixer')
 const CompressionPlugin = require('compression-webpack-plugin')
 const DefinePlugin = require('webpack').DefinePlugin
 const { resolve } = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
@@ -43,8 +44,8 @@ module.exports = {
   },
   output: {
     path: __dirname + '/dist',
-    filename: '[name].js',
-    chunkFilename: '[name].[id][contenthash].js',
+    filename: '[name].[contenthash].js',
+    chunkFilename: '[name].[contenthash].js',
     publicPath: '/'
   },
   module: {
@@ -166,6 +167,7 @@ module.exports = {
   },
   mode,
   plugins: [
+    new HtmlWebpackPlugin(), 
     ...(prod ? [new CompressionPlugin()] : []),
     // new MiniCssExtractPlugin({
     //   filename: '[name].[id][contenthash].css'
