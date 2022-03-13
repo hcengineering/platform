@@ -10,7 +10,7 @@ test.describe('recruit tests', () => {
 
     await page.click('text=Candidates')
 
-    await page.click('button:has-text("Create")')
+    await page.click('button:has-text("Candidate")')
 
     const firstName = page.locator('[placeholder="John"]')
     await firstName.click()
@@ -65,7 +65,7 @@ test.describe('recruit tests', () => {
 
     await page.locator('text=Vacancies').click()
 
-    await page.click('button:has-text("Create")')
+    await page.click('button:has-text("Vacancy")')
     await page.fill('[placeholder="Software\\ Engineer"]', 'My vacancy')
     await page.click('text=Create Cancel >> button')
     await page.locator('text=My vacancy').click()
