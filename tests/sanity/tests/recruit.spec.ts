@@ -71,7 +71,7 @@ test.describe('recruit tests', () => {
     await page.locator('text=My vacancy').click()
 
     // Create Applicatio n1
-    await page.click('text=Create')
+    await page.click('text=Application')
     await page.click('text=Not selected')
     await page.click('button:has-text("Alex P.")')
     await page.click('text=Create Cancel >> button')
