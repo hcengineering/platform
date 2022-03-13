@@ -15,10 +15,11 @@
 
 <script lang="ts">
   import type { Ref,Space } from '@anticrm/core'
-  import core,{ WithLookup } from '@anticrm/core'
-  import presentation,{ createQuery,getClient } from '@anticrm/presentation'
+  import core, { WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
-  import { Button,Icon,SearchEdit,showPopup,Tooltip } from '@anticrm/ui'
+  import { Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { classIcon } from '../utils'
@@ -27,6 +28,7 @@
   export let spaceId: Ref<Space> | undefined
   // export let _class: Ref<Class<Doc>> | undefined
   export let createItemDialog: AnyComponent | undefined
+  export let createItemLabel: IntlString = presentation.string.Create
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
@@ -51,7 +53,6 @@
     search = ''
     dispatch('search', '')
   }
-
 </script>
 
 <div class="ac-header full">
@@ -62,7 +63,9 @@
         {#each viewlets as viewlet, i}
           <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
             <button class="ac-header__icon-button" class:selected={selectedViewlet === i} on:click={() => { selectedViewlet = i }}>
-              <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'}/>
+              {#if viewlet.$lookup?.descriptor?.icon}
+                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'} />
+              {/if}
             </button>
           </Tooltip>
         {/each}
@@ -72,7 +75,7 @@
       dispatch('search', search)
     }}/>
     {#if createItemDialog}
-      <Button label={presentation.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button icon={IconAdd} label={createItemLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
   {/if}
 </div>

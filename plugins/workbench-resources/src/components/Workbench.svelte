@@ -17,6 +17,7 @@
   import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent, closePopup,
@@ -55,6 +56,7 @@
   let currentApplication: Application | undefined
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
+  let createItemLabel: IntlString | undefined
   let navigatorModel: NavigatorModel | undefined
 
   onDestroy(
@@ -96,7 +98,8 @@
       const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
       const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
       currentView = view.view
-      createItemDialog = currentView.createItemDialog
+      createItemDialog = currentView.createItemDialog ?? undefined
+      createItemLabel = currentView.createItemLabel ?? undefined
 
       const loc = getCurrentLocation()
       loc.path[2] = spaceId
@@ -105,6 +108,7 @@
     } else {
       currentView = undefined
       createItemDialog = undefined
+      createItemLabel = undefined
     }
   }
   $: updateSpace(currentSpace)
@@ -192,6 +196,7 @@
     currentSpecial = undefined
     currentView = undefined
     createItemDialog = undefined
+    createItemLabel = undefined
 
     const loc = getCurrentLocation()
     loc.path[1] = app._id
@@ -292,7 +297,7 @@
       {:else if specialComponent}
         <Component is={specialComponent} props={{ model: navigatorModel }} />
       {:else}
-        <SpaceView {currentSpace} {currentView} {createItemDialog} />
+        <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}
     </div>
     <!-- <div class="aside"><Chat thread/></div> -->

@@ -20,7 +20,7 @@
     "PersonsFolder": "Persons folder",
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
-    "Create": "Contact",
+    "ContactCreateLabel": "Contact",
     "SearchEmployee": "Search for employee...",
     "SearchPerson": "Search for person...",
     "SearchOrganization": "Search for organization...",

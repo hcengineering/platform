@@ -26,11 +26,11 @@ export default mergeIds(inventoryId, inventory, {
   string: {
     Categories: '' as IntlString,
     Category: '' as IntlString,
-    CreateCategoryShort: '' as IntlString,
+    CategoryCreateLabel: '' as IntlString,
     CreateCategory: '' as IntlString,
     CreateSubcategory: '' as IntlString,
     Inventory: '' as IntlString,
-    CreateProductShort: '' as IntlString,
+    ProductCreateLabel: '' as IntlString,
     CreateProduct: '' as IntlString,
     Products: '' as IntlString,
     Product: '' as IntlString,

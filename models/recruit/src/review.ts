@@ -13,7 +13,8 @@ export function createReviewModel (builder: Builder): void {
   builder.mixin(recruit.class.ReviewCategory, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: recruit.class.Review,
-      createItemDialog: recruit.component.CreateReview
+      createItemDialog: recruit.component.CreateReview,
+      createItemLabel: recruit.string.ReviewCreateLabel
     }
   })
 

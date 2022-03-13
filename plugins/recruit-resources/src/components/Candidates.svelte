@@ -19,7 +19,7 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Component, Icon, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Component, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -69,7 +69,7 @@
   <SearchEdit bind:value={search} on:change={() => {
     updateResultQuery(search, documentIds)
   }} />
-  <Button label={recruit.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: recruit.mixin.Candidate, category }} on:change={(evt) => updateCategory(evt.detail) }/>

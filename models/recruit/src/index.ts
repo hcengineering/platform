@@ -122,7 +122,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: recruit.class.Applicant,
-      createItemDialog: recruit.component.CreateApplication
+      createItemDialog: recruit.component.CreateApplication,
+      createItemLabel: recruit.string.ApplicationCreateLabel
     }
   })
 
@@ -157,6 +158,7 @@ export function createModel (builder: Builder): void {
             component: recruit.component.Vacancies,
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
+            createItemLabel: recruit.string.VacancyCreateLabel,
             position: 'bottom'
           },
           {
@@ -164,6 +166,7 @@ export function createModel (builder: Builder): void {
             component: recruit.component.Candidates,
             icon: contact.icon.Person,
             label: recruit.string.Candidates,
+            createItemLabel: recruit.string.CandidateCreateLabel,
             position: 'bottom'
           },
           {
@@ -180,6 +183,7 @@ export function createModel (builder: Builder): void {
             component: recruit.component.SkillsView,
             icon: tags.icon.Tags,
             label: recruit.string.SkillsLabel,
+            createItemLabel: recruit.string.SkillCreateLabel,
             position: 'bottom'
           }
         ]

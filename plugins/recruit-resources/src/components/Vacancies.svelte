@@ -16,7 +16,7 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Applicant, Vacancy } from '@anticrm/recruit'
-  import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup, IconAdd } from '@anticrm/ui'
   import SearchEdit from '@anticrm/ui/src/components/SearchEdit.svelte'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -101,7 +101,7 @@
       vquery = search
     }}
   />
-  <Button label={recruit.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 <Scroller>
   <Table

@@ -6,11 +6,11 @@
   "string": {
     "Categories": "Категории",
     "Category": "Категория",
-    "CreateCategoryShort": "Категория",
+    "CategoryCreateLabel": "Категорию",
     "CreateCategory": "Создать категорию",
     "CreateSubcategory": "Создать подкатегорию",
     "Inventory": "Инвентарь",
-    "CreateProductShort": "Продукт",
+    "ProductCreateLabel": "Продукт",
     "CreateProduct": "Создать продукт",
     "Products": "Продукты",
     "Product": "Продукт",

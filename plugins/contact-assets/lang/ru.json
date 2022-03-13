@@ -20,7 +20,7 @@
     "PersonsFolder": "Папка с людьми",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
-    "Create": "Контакт",
+    "ContactCreateLabel": "Контакт",
     "SearchEmployee": "Поиск сотрудника...",
     "SearchPerson": "Поиск персоны...",
     "SearchOrganization": "Поиск организации...",

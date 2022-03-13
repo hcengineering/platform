@@ -15,6 +15,7 @@
 
 <script lang="ts">
   import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import type { AnyComponent } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
@@ -26,6 +27,7 @@
   export let currentSpace: Ref<Space> | undefined
   export let currentView: ViewConfiguration | undefined
   export let createItemDialog: AnyComponent | undefined
+  export let createItemLabel: IntlString | undefined
 
   let search: string = ''
   let viewlet: WithLookup<Viewlet> | undefined = undefined
@@ -52,7 +54,7 @@
   $: update(currentView?.class, currentSpace)
 </script>
 
-<SpaceHeader spaceId={space} {_class} {viewlets} {createItemDialog} bind:search={search} bind:viewlet={viewlet} />
+<SpaceHeader spaceId={space} {_class} {viewlets} {createItemDialog} {createItemLabel} bind:search={search} bind:viewlet={viewlet} />
 {#if _class && space}
   <SpaceContent {space} {_class} {search} {viewlet} />
 {/if}

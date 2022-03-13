@@ -6,11 +6,11 @@
   "string": {
     "Categories": "Categories",
     "Category": "Category",
-    "CreateCategoryShort": "Category",
+    "CategoryCreateLabel": "Category",
     "CreateCategory": "Create category",
     "CreateSubcategory": "Create subcategory",
     "Inventory": "Inventory",
-    "CreateProductShort": "Product",
+    "ProductCreateLabel": "Product",
     "CreateProduct": "Create product",
     "Products": "Products",
     "Product": "Product",

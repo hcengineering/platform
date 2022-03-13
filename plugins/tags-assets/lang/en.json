@@ -12,7 +12,7 @@
     "AddNowTooltip": "Create {word}",
     "AddTag": "Create {word}",
     "EditTag": "Edit {word}",
-    "CreateItemLabel": "Create",
+    "TagCreateLabel": "Tag",
     "CancelLabel": "Cancel",
     "SearchCreate": "Search/Name ...",
     "NoItems": "There is no {word} added ...",

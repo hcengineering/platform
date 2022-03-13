@@ -49,7 +49,7 @@
     <SearchEdit bind:value={search} on:change={() => {
       updateResultQuery(search)
     }}/>
-    <Button icon={IconAdd} label={contact.string.Create} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+    <Button icon={IconAdd} label={contact.string.ContactCreateLabel} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
   </div>
 
   <Scroller>

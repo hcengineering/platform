@@ -27,6 +27,7 @@ export default mergeIds(leadId, lead, {
     More: '' as IntlString,
     SelectFunnel: '' as IntlString,
     CreateLead: '' as IntlString,
+    LeadCreateLabel: '' as IntlString,
     Customer: '' as IntlString,
     SelectCustomer: '' as IntlString,
     Customers: '' as IntlString,

@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -24,6 +24,7 @@
 
   export let title: IntlString = tags.string.Tags
   export let item: IntlString = tags.string.Tag
+  export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
 
   let keyTitle: string
@@ -64,7 +65,7 @@
       updateResultQuery(search, category)
     }}
   />
-  <Button label={tags.string.CreateItemLabel} primary={true} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={сreateItemLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
 <CategoryBar
