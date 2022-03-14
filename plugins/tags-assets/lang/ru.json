@@ -12,7 +12,7 @@
     "AddNowTooltip": "Создать {word}",
     "AddTag": "Создать {word}",
     "EditTag": "Редактировать {word}",
-    "CreateItemLabel": "Создать",
+    "TagCreateLabel": "Тег",
     "CancelLabel": "Отмена",
     "SearchCreate": "Название...",
     "NoItems": "Отсутсвует добавленный {word}",

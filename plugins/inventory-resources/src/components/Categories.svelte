@@ -43,7 +43,7 @@
     updateResultQuery(search)
   }}/>
   <Button
-    label={inventory.string.CreateCategoryShort}
+    label={inventory.string.CategoryCreateLabel}
     icon={IconAdd}
     primary={true}
     size={'small'}

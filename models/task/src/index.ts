@@ -248,7 +248,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(task.class.Project, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: task.class.Issue,
-      createItemDialog: task.component.CreateTask
+      createItemDialog: task.component.CreateTask,
+      createItemLabel: task.string.TaskCreateLabel
     }
   })
 

@@ -70,7 +70,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: lead.class.Lead,
-      createItemDialog: lead.component.CreateLead
+      createItemDialog: lead.component.CreateLead,
+      createItemLabel: lead.string.LeadCreateLabel
     }
   })
 

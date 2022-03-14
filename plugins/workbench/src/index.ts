@@ -70,6 +70,7 @@ export interface SpecialNavModel {
 export interface ViewConfiguration {
   class: Ref<Class<Doc>> // show object of this class
   createItemDialog?: AnyComponent
+  createItemLabel?: IntlString
 }
 
 /**

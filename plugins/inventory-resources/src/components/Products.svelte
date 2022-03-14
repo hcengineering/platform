@@ -50,7 +50,7 @@
     }}
   />
   <Button
-    label={inventory.string.CreateProductShort}
+    label={inventory.string.ProductCreateLabel}
     icon={IconAdd}
     primary={true}
     size={'small'}
