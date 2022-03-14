@@ -159,7 +159,13 @@ abstract class MongoAdapterBase extends TxProcessor {
     const domain = this.hierarchy.getDomain(_class)
     if (domain !== DOMAIN_MODEL) {
       const arr = object[fullKey]
-      targetObject.$lookup[key] = arr?.[0]
+      if (arr !== undefined && Array.isArray(arr)) {
+        if (arr.length === 1) {
+          targetObject.$lookup[key] = arr[0]
+        } else if (arr.length > 1) {
+          targetObject.$lookup[key] = arr
+        }
+      }
     } else {
       targetObject.$lookup[key] = this.modelDb.getObject(targetObject[key])
     }

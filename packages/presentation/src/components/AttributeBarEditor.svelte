@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@anticrm/core'
+  import type { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
   import { CircleButton, Label } from '@anticrm/ui'
@@ -38,13 +38,18 @@
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
 
-  let editor: Promise<AnySvelteComponent> | undefined
+  let editor: Promise<void | AnySvelteComponent> | undefined
 
-  $: if (typeClassId !== undefined) {
-    const typeClass = hierarchy.getClass(typeClassId)
-    const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
-    editor = getResource(editorMixin.editor)
+  function update (attribute: AnyAttribute, typeClassId?: Ref<Class<Doc>>): void {
+    if (typeClassId !== undefined) {
+      const typeClass = hierarchy.getClass(typeClassId)
+      const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
+      editor = getResource(editorMixin.editor).catch((cause) => {
+        console.error('failed to find editor for', _class, attribute, typeClassId)
+      })
+    }
   }
+  $: update(attribute, typeClassId)
 
   function onChange (value: any) {
     const doc = object as Doc

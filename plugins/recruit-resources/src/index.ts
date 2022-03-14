@@ -48,6 +48,7 @@ import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import recruit from './plugin'
+import PersonsPresenter from './components/review/PersonsPresenter.svelte'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
@@ -164,7 +165,8 @@ export default async (): Promise<Resources> => ({
     Reviews,
     Opinions,
     OpinionPresenter,
-    OpinionsPresenter
+    OpinionsPresenter,
+    PersonsPresenter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, UserBoxList } from '@anticrm/presentation'
   import type { Candidate, Review, ReviewCategory } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { EditBox, Grid, Label } from '@anticrm/ui'
@@ -48,7 +48,9 @@
   const client = getClient()
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['location', 'company', 'number', 'comments', 'startDate', 'description'] })
+    dispatch('open', {
+      ignoreKeys: ['location', 'company', 'number', 'comments', 'startDate', 'description', 'verdict']
+    })
   })
 </script>
 
@@ -59,27 +61,44 @@
     <div class="card"><ReviewCategoryCard category={reviewCategory} /></div>
   </div>
 
-  <div class="mt-4 mb-1">
-    <Grid column={1}>
+  <div class="mt-6 mb-2">
+    <Grid column={2}>
       <EditBox
-      label={recruit.string.Company}
-      bind:value={object.company}
-      icon={contact.icon.Company}
-      placeholder={recruit.string.Company}
-      maxWidth="39rem"
-      focus
-      on:change={() => client.update(object, { company: object.company })}
+        label={recruit.string.Company}
+        bind:value={object.company}
+        icon={contact.icon.Company}
+        placeholder={recruit.string.Company}
+        maxWidth="39rem"
+        focus
+        on:change={() => client.update(object, { company: object.company })}
       />
       <EditBox
-      label={recruit.string.Location}
-      bind:value={object.location}
-      icon={recruit.icon.Location}
-      placeholder={recruit.string.Location}
-      maxWidth="39rem"
-      focus
-      on:change={() => client.update(object, { location: object.location })}
+        label={recruit.string.Location}
+        bind:value={object.location}
+        icon={recruit.icon.Location}
+        placeholder={recruit.string.Location}
+        maxWidth="39rem"
+        focus
+        on:change={() => client.update(object, { location: object.location })}
       />
     </Grid>
+    <div class="flex-row">
+      <div class="mt-4 mb-2">
+        <Label label={recruit.string.Participants} />
+      </div>
+      <UserBoxList
+        _class={contact.class.Employee}
+        items={object.participants}
+        title={recruit.string.Participants}
+        on:open={(evt) => {
+          client.update(object, { $push: { participants: evt.detail._id } })
+        }}
+        on:delete={(evt) => {
+          client.update(object, { $pull: { participants: evt.detail._id } })
+        }}
+        noItems={recruit.string.NoParticipants}
+      />
+    </div>
   </div>
 
   <div class="mt-4 mb-1">

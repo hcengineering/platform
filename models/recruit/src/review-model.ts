@@ -56,6 +56,9 @@ export class TReview extends TTask implements Review {
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
+
+  @Prop(Collection(contact.class.Employee), recruit.string.Participants)
+  participants!: Ref<Employee>[]
 }
 
 @Model(recruit.class.Opinion, core.class.AttachedDoc, 'recruit' as Domain)

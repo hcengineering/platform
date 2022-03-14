@@ -15,12 +15,13 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import { formatName } from '@anticrm/contact'
+  import { Employee, formatName, Person } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import { ActionIcon, IconMoreH, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import PersonsPresenter from './PersonsPresenter.svelte'
   import ReviewPresenter from './ReviewPresenter.svelte'
 
   export let object: WithLookup<Review>
@@ -28,6 +29,14 @@
 
   function showCandidate () {
     showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
+  }
+  function getPersons (object: WithLookup<Review>): Person[] {
+    const r = (object.$lookup?.participants as unknown as Employee[] ?? [])
+    const assignee = object.$lookup?.assignee as Employee
+    if (assignee != null && r.findIndex(it => it._id === assignee._id) === -1) {
+      return [...r, assignee]
+    }
+    return r
   }
 </script>
 
@@ -56,7 +65,9 @@
         <div class="step-lr75"><CommentsPresenter value={object} /></div>
       {/if}
     </div>
-    <Avatar size={'x-small'} />
+    {#if object.$lookup?.participants || object.$lookup?.assignee}
+      <PersonsPresenter value={getPersons(object)}></PersonsPresenter>
+    {/if}
   </div>
 </div>
 

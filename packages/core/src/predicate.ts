@@ -41,6 +41,12 @@ const predicates: Record<string, PredicateFactory> = {
     }
     return (docs) => execPredicate(docs, propertyKey, (value) => o.includes(value))
   },
+  $nin: (o, propertyKey) => {
+    if (!Array.isArray(o)) {
+      throw new Error('$nin predicate requires array')
+    }
+    return (docs) => execPredicate(docs, propertyKey, (value) => !o.includes(value))
+  },
 
   $like: (query: string, propertyKey: string): Predicate => {
     const searchString = query.split('%').map(it => escapeLikeForRegexp(it)).join('.*')

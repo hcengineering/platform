@@ -339,6 +339,12 @@ function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefin
           result.push(id)
         }
       }
+    } else if (_id.$nin !== undefined) {
+      for (const id of Array.from(ids.values())) {
+        if (!_id.$nin.includes(id)) {
+          result.push(id)
+        }
+      }
     }
   } else {
     result = Array.from(ids)
