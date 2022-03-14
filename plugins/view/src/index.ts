@@ -124,6 +124,9 @@ export interface BuildModelKey {
 
   label?: IntlString
   sortingKey?: string
+
+  // On client sorting function
+  sortingFunction?: (a: Doc, b: Doc) => number
 }
 
 /**

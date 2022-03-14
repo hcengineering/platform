@@ -45,6 +45,8 @@
 
   const q = createQuery()
 
+  $: sortingFunction = (config.find(it => (typeof it !== 'string') && it.sortingKey === sortKey) as BuildModelKey)?.sortingFunction
+
   async function update (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -58,6 +60,10 @@
       query,
       (result) => {
         objects = result
+        if (sortingFunction !== undefined) {
+          const sf = sortingFunction
+          objects.sort((a, b) => -1 * sortOrder * sf(a, b))
+        }
         loading = false
       },
       { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
