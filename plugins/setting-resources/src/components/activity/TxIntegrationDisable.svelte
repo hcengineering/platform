@@ -22,7 +22,6 @@
 
   export let tx: TxUpdateDoc<Integration>
   export let doc: Integration
-  $: console.log(doc)
 
   const client = getClient()
 
