@@ -52,7 +52,7 @@
   <div class="pdfviewer-footer">
     <div class="flex-row-reverse">
       <a class="no-line ml-4" href={getFileUrl(file)} download={name}><Button label={presentation.string.Download} size={'small'} primary /></a>
-      <Button label={presentation.string.Delete} size={'small'} />
+      <Button label={presentation.string.Close} size={'small'} on:click={() => { dispatch('close') }} />
     </div>
     {#if contentType && contentType.startsWith('image/') }
       <div class="img-nav">
