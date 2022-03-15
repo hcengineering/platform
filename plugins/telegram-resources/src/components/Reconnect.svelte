@@ -21,7 +21,7 @@
   import telegram from '../plugin'
   import { getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
-import { getCurrentAccount, Ref, Space } from '@anticrm/core';
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
 
   const dispatch = createEventDispatcher()
 
