@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Applicant, Vacancy } from '@anticrm/recruit'
   import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup, IconAdd } from '@anticrm/ui'
@@ -42,7 +42,7 @@
     vacancies = res
   })
 
-  function lowerIncludes (a?: string, b: string): boolean {
+  function lowerIncludes (a: string | undefined, b: string): boolean {
     return (a ?? '').toLowerCase().includes(b)
   }
 
@@ -63,8 +63,8 @@
   }
 
   $: resultQuery = vquery === '' ? {} : { $search: vquery }
-
-  let applications: Map<Ref<Vacancy>, number> | undefined
+  type ApplicationInfo = { count: number, modifiedOn: number }
+  let applications: Map<Ref<Vacancy>, ApplicationInfo> | undefined
 
   const applicantQuery = createQuery()
   $: if (vacancies.length > 0) {
@@ -73,10 +73,13 @@
       recruit.class.Applicant,
       { ...(resultQuery as DocumentQuery<Applicant>), space: { $in: vacancies.map((it) => it._id) } },
       (res) => {
-        const result = new Map<Ref<Vacancy>, number>()
+        const result = new Map<Ref<Vacancy>, ApplicationInfo>()
 
         for (const d of res) {
-          result.set(d.space, (result.get(d.space) ?? 0) + 1)
+          const v = result.get(d.space) ?? { count: 0, modifiedOn: 0 }
+          v.count++
+          v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
+          result.set(d.space, v)
         }
 
         applications = result
@@ -88,6 +91,8 @@
   function showCreateDialog (ev: Event) {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
   }
+  const applicationSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0)) ?? 0
+  const modifiedSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0)) ?? 0
 </script>
 
 <div class="ac-header full">
@@ -118,12 +123,21 @@
         key: '',
         presenter: recruit.component.VacancyCountPresenter,
         label: recruit.string.Applications,
-        props: { applications, resultQuery }
+        props: { applications, resultQuery },
+        sortingKey: '@applications',
+        sortingFunction: applicationSorting
       },
       'company',
       'location',
       'description',
-      'modifiedOn'
+      {
+        key: '',
+        presenter: recruit.component.VacancyModifiedPresenter,
+        label: core.string.Modified,
+        props: { applications },
+        sortingKey: 'modifiedOn',
+        sortingFunction: modifiedSorting
+      }
     ]}
     options={{}}
     query={{

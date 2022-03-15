@@ -116,6 +116,7 @@ export default mergeIds(recruitId, recruit, {
     VacancyItemPresenter: '' as AnyComponent,
     VacancyCountPresenter: '' as AnyComponent,
     OpinionsPresenter: '' as AnyComponent,
-    PersonsPresenter: '' as AnyComponent
+    PersonsPresenter: '' as AnyComponent,
+    VacancyModifiedPresenter: '' as AnyComponent
   }
 })

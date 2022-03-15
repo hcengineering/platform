@@ -47,6 +47,7 @@ import Vacancies from './components/Vacancies.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
+import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import recruit from './plugin'
 import PersonsPresenter from './components/review/PersonsPresenter.svelte'
 
@@ -155,6 +156,7 @@ export default async (): Promise<Resources> => ({
     Vacancies,
     VacancyItemPresenter,
     VacancyCountPresenter,
+    VacancyModifiedPresenter,
 
     CreateReviewCategory,
     EditReviewCategory,

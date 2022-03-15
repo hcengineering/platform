@@ -14,21 +14,12 @@
 -->
 
 <script lang="ts">
-import { Doc, DocumentQuery, Ref } from '@anticrm/core'
+import { Ref } from '@anticrm/core'
 import { Vacancy } from '@anticrm/recruit'
-import { Icon, Tooltip } from '@anticrm/ui'
-import recruit from '../plugin'
-import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
+import { TimeSince } from '@anticrm/ui'
 
 export let value: Vacancy
 export let applications: Map<Ref<Vacancy>, {count: number, modifiedOn: number}> | undefined
-export let resultQuery: DocumentQuery<Doc>
 </script>
 
-{#if (applications?.get(value._id)?.count ?? 0) > 0}
-  <Tooltip label={recruit.string.Applications} component={VacancyApplicationsPopup} props={{ value: value._id, resultQuery }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{(applications?.get(value._id)?.count ?? 0)}
-    </div>
-  </Tooltip>
-{/if}
+<TimeSince value={Math.max(applications?.get(value._id)?.modifiedOn ?? 0, value.modifiedOn)}/>
