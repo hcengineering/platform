@@ -50,6 +50,7 @@ import {
 import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverContactId } from '@anticrm/server-contact'
 import { serverNotificationId } from '@anticrm/server-notification'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
@@ -115,6 +116,7 @@ export class ElasticTool {
     addLocation(serverInventoryId, () => import(/* webpackChunkName: "server-inventory" */ '@anticrm/server-inventory-resources'))
     addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
+    addLocation(serverSettingId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-setting-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }

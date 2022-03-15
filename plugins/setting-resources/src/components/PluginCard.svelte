@@ -18,7 +18,7 @@
   import { getResource } from '@anticrm/platform'
   import { showPopup } from '@anticrm/ui'
   import type { Integration, IntegrationType } from '@anticrm/setting'
-  import setting from '@anticrm/setting'
+  import setting from '../plugin'
   import { getClient } from '@anticrm/presentation'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
 
@@ -27,12 +27,27 @@
   const accountId = getCurrentAccount()._id
   const client = getClient()
   const onDisconnectP = getResource(integrationType.onDisconnect)
+  const space = accountId as string as Ref<Space>
 
   async function close(res: any): Promise<void> {
     if (res?.value) {
-      await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
+      await client.createDoc(setting.class.Integration, space, {
         type: integrationType._id,
-        value: res.value
+        value: res.value,
+        disabled: false
+      })
+    }
+  }
+
+  async function reconnect (res: any): Promise<void> {
+    if (res?.value) {
+      const current = await client.findOne(setting.class.Integration, {
+        space,
+        type: integrationType._id
+      })
+      if (current === undefined) return
+      await client.update(current, {
+        disabled: false
       })
     }
   }
@@ -57,7 +72,19 @@
   <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod temp</div>
   <div class="footer">
     {#if integration}
-      <Button label={setting.string.Disconnect} on:click={disconnect} />
+      {#if integration.disabled && integrationType.reconnectComponent}
+        <Button
+          label={setting.string.Reconnect}
+          primary
+          on:click={(e) => {
+            if (integrationType.reconnectComponent) {
+              showPopup(integrationType.reconnectComponent, {}, e.target, reconnect)
+            }
+          }}
+        />
+      {:else}
+        <Button label={setting.string.Disconnect} on:click={disconnect} />
+      {/if}
     {:else}
       <Button
         label={setting.string.Add}

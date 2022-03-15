@@ -1,5 +1,6 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021, 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,16 +14,14 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import setting, { settingId } from '@anticrm/setting'
+import { Builder } from '@anticrm/model'
 
-export default mergeIds(settingId, setting, {
-  string: {
-    IntegrationDisabled: '' as IntlString,
-    IntegrationWith: '' as IntlString,
-    Reconnect: '' as IntlString,
-    DeleteStatus: '' as IntlString,
-    DeleteStatusConfirm: '' as IntlString
-  }
-})
+import serverCore from '@anticrm/server-core'
+import core from '@anticrm/core'
+import serverSetting from '@anticrm/server-setting'
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverSetting.trigger.OnIntegrationDisable
+  })
+}

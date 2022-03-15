@@ -18,6 +18,7 @@ import { getMetadata, Resources } from '@anticrm/platform'
 import login from '@anticrm/login'
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
+import Reconnect from './components/Reconnect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 
@@ -25,6 +26,7 @@ export default async (): Promise<Resources> => ({
   component: {
     Chat,
     Connect,
+    Reconnect,
     IconTelegram
   },
   activity: {

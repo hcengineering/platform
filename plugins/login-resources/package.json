@@ -33,7 +33,6 @@
     "@anticrm/platform": "~0.6.5",
     "svelte": "^3.37.0",
     "@anticrm/login": "~0.6.1",
-    "@anticrm/account": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/workbench": "~0.6.1"
   }

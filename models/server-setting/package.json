@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/model-setting",
+  "name": "@anticrm/model-server-setting",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -27,15 +27,8 @@
   "dependencies": {
     "@anticrm/core": "~0.6.11",
     "@anticrm/model": "~0.6.0",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/setting": "~0.6.0",
-    "@anticrm/setting-resources": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/model-core": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0",
-    "@anticrm/model-workbench": "~0.6.1",
-    "@anticrm/task": "~0.6.0",
-    "@anticrm/activity": "~0.6.0"
+    "@anticrm/server-setting": "~0.6.0",
+    "@anticrm/server-core": "~0.6.0"
   }
 }

@@ -97,6 +97,8 @@
     "@anticrm/server-contact-resources": "~0.6.0",
     "@anticrm/server-notification": "~0.6.0",
     "@anticrm/server-notification-resources": "~0.6.0",
+    "@anticrm/server-setting": "~0.6.0",
+    "@anticrm/server-setting-resources": "~0.6.0",
     "@anticrm/templates": "~0.6.0",
     "@anticrm/templates-assets": "~0.6.0",
     "@anticrm/templates-resources": "~0.6.0",

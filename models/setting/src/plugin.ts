@@ -13,16 +13,19 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
+import { Ref } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
-import setting, { settingId } from '@anticrm/setting'
+import { settingId } from '@anticrm/setting'
+import setting from '@anticrm/setting-resources/src/plugin'
+import type { TxViewlet } from '@anticrm/activity'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(settingId, setting, {
-  string: {
-    IntegrationDisabled: '' as IntlString,
-    IntegrationWith: '' as IntlString,
-    Reconnect: '' as IntlString,
-    DeleteStatus: '' as IntlString,
-    DeleteStatusConfirm: '' as IntlString
+  activity: {
+    TxIntegrationDisable: '' as AnyComponent,
+    TxIntegrationDisableReconnect: '' as AnyComponent
+  },
+  ids: {
+    TxIntegrationDisable: '' as Ref<TxViewlet>
   }
 })

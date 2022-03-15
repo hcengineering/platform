@@ -155,7 +155,8 @@
     if (res?.value) {
       await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
         type: telegram.integrationType.Telegram,
-        value: res.value
+        value: res.value,
+        disabled: false
       })
     }
   }

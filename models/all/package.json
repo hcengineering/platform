@@ -46,6 +46,7 @@
     "@anticrm/model-server-attachment": "~0.6.0",
     "@anticrm/model-server-contact": "~0.6.0",
     "@anticrm/model-server-notification": "~0.6.0",
+    "@anticrm/model-server-setting": "~0.6.0",
     "@anticrm/model-server-chunter": "~0.6.0",
     "@anticrm/model-server-task": "~0.6.0",
     "@anticrm/model-server-recruit": "~0.6.0",

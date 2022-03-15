@@ -13,16 +13,19 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import setting, { settingId } from '@anticrm/setting'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import setting from '@anticrm/setting'
+import { DOMAIN_SETTING } from '.'
 
-export default mergeIds(settingId, setting, {
-  string: {
-    IntegrationDisabled: '' as IntlString,
-    IntegrationWith: '' as IntlString,
-    Reconnect: '' as IntlString,
-    DeleteStatus: '' as IntlString,
-    DeleteStatusConfirm: '' as IntlString
+export const settingOperation: MigrateOperation = {
+  async migrate (client: MigrationClient): Promise<void> {
+    await client.update(DOMAIN_SETTING, {
+      _class: setting.class.Integration,
+      disabled: { $exists: false }
+    }, {
+      disabled: false
+    })
+  },
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
   }
-})
+}
