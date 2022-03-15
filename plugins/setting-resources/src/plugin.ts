@@ -21,7 +21,6 @@ export default mergeIds(settingId, setting, {
   string: {
     IntegrationDisabled: '' as IntlString,
     IntegrationWith: '' as IntlString,
-    Reconnect: '' as IntlString,
     DeleteStatus: '' as IntlString,
     DeleteStatusConfirm: '' as IntlString
   }

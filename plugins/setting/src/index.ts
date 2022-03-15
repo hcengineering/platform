@@ -114,7 +114,8 @@ export default plugin(settingId, {
     EnterNewPassword: '' as IntlString,
     RepeatNewPassword: '' as IntlString,
     Signout: '' as IntlString,
-    SelectWorkspace: '' as IntlString
+    SelectWorkspace: '' as IntlString,
+    Reconnect: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,
