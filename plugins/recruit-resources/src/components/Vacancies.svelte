@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import contact from '@anticrm/contact'
+  import core, { Doc, DocumentQuery, Lookup, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Applicant, Vacancy } from '@anticrm/recruit'
   import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup, IconAdd } from '@anticrm/ui'
@@ -88,6 +89,10 @@
     )
   }
 
+  const lookup = {
+    company: contact.class.Organization
+  } as Lookup<Doc>
+
   function showCreateDialog (ev: Event) {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
   }
@@ -127,7 +132,7 @@
         sortingKey: '@applications',
         sortingFunction: applicationSorting
       },
-      'company',
+      '$lookup.company',
       'location',
       'description',
       {
@@ -139,7 +144,9 @@
         sortingFunction: modifiedSorting
       }
     ]}
-    options={{}}
+    options={{
+      lookup
+    }}
     query={{
       ...vacancyQuery,
       archived: false

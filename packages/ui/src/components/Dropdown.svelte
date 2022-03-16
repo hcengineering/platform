@@ -24,13 +24,10 @@
   import DropdownPopup from './DropdownPopup.svelte'
   import Add from './icons/Add.svelte'
 
-  import tesla from '../../img/tesla.svg'
-  import google from '../../img/google.svg'
-
   export let icon: Asset | AnySvelteComponent = Add
   export let label: IntlString
-  export let placeholder: string
-  export let items: ListItem[] = [{ item: tesla, label: 'Tesla' }, { item: google, label: 'Google' }]
+  export let placeholder: IntlString
+  export let items: ListItem[] = []
   export let selected: ListItem | undefined = undefined
   export let show: boolean = false
 
@@ -51,7 +48,7 @@
     btn.focus()
     if (!opened) {
       opened = true
-      showPopup(DropdownPopup, { title: label, items }, container, (result) => {
+      showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
         if (result) selected = result
         opened = false
       })
@@ -59,8 +56,8 @@
   }}
 >
   <div class="flex-center focused-button btn" class:selected bind:this={btn} tabindex={0} on:focus={() => container.click()}>
-    {#if selected}
-      <img src={selected.item} alt={selected.label} />
+    {#if selected && selected.image}
+      <img src={selected.image} alt={selected.label} />
     {:else}
       {#if typeof (icon) === 'string'}
         <Icon {icon} size={'small'} />
@@ -73,7 +70,7 @@
   <div class="selectUser">
     <div class="title"><Label {label} /></div>
     <div class="caption-color" class:empty={selected ? false : true}>
-      {#if selected}{selected.label}{:else}{placeholder}{/if}
+      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
     </div>
   </div>
 </div>

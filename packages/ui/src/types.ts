@@ -77,8 +77,9 @@ export interface LabelAndProps {
 }
 
 export interface ListItem {
-  item: any | undefined
+  _id: string
   label: string
+  image?: string
 }
 
 export interface DropdownTextItem {

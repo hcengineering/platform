@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
+  import { Organization } from '@anticrm/contact'
   import core, { Ref } from '@anticrm/core'
-  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
-  import { Component, Dropdown, EditBox, Grid } from '@anticrm/ui'
+  import { getClient,SpaceCreateCard } from '@anticrm/presentation'
+  import task, { createKanban,KanbanTemplate } from '@anticrm/task'
+  import { Component,EditBox,Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import Company from './icons/Company.svelte'
+  import CompanyDropdown from './CompanyDropdown.svelte'
   import Vacancy from './icons/Vacancy.svelte'
 
   const dispatch = createEventDispatcher()
@@ -28,6 +29,7 @@
   let name: string = ''
   const description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
+  let company: Ref<Organization> | undefined
 
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
@@ -45,6 +47,7 @@
       description,
       private: false,
       archived: false,
+      company,
       members: []
     })
 
@@ -60,7 +63,7 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder={recruit.string.VacancyPlaceholder} maxWidth={'16rem'} focus/>
-    <Dropdown icon={Company} label={recruit.string.Company} placeholder={'Company'} />
+    <CompanyDropdown bind:value={company} />
 
     <Component is={task.component.KanbanTemplateSelector} props={{
       folders: [recruit.space.VacancyTemplates],

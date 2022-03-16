@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@anticrm/contact'
+import type { Employee, Organization } from '@anticrm/contact'
 import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@anticrm/core'
 import {
   Builder,
@@ -60,9 +60,8 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Index(IndexKind.FullText)
   location?: string
 
-  @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
-  @Index(IndexKind.FullText)
-  company?: string
+  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
+  company?: Ref<Organization>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number

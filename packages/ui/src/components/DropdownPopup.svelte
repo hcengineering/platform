@@ -13,16 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
 
   import Label from './Label.svelte'
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
-  import type { ListItem } from '../types'
+  import type { AnySvelteComponent, ListItem } from '../types'
   import plugin from '../plugin'
+  import Icon from './Icon.svelte'
 
   export let title: IntlString | undefined = undefined
+  export let icon: Asset | AnySvelteComponent
   export let caption: IntlString = plugin.string.Suggested
   export let items: ListItem[]
   export let header: boolean = true
@@ -52,8 +54,16 @@
     <div class="ap-box">
       {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
         <button class="ap-menuItem" on:click={() => { dispatch('close', item) }}>
-          <div class="flex-center img">
-            <img src={item.item} alt={item.label} />
+          <div class="flex-center img" class:image={item.image}>
+            {#if item.image}
+              <img src={item.image} alt={item.label} />
+            {:else}
+              {#if typeof (icon) === 'string'}
+                <Icon {icon} size={'small'} />
+              {:else}
+                <svelte:component this={icon} size={'small'} />
+              {/if}
+            {/if}
           </div>
           <div class="flex-grow caption-color">{item.label}</div>
         </button>
@@ -66,12 +76,18 @@
 <style lang="scss">
   .img {
     margin-right: .75rem;
+    flex-shrink: 0;
     width: 2.25rem;
     height: 2.25rem;
     color: var(--theme-caption-color);
+    background-color: transparent;
+    border: 1px solid var(--theme-card-divider);
     border-radius: .5rem;
+    outline: none;
     overflow: hidden;
-
+  }
+  .image {
+    border-color: transparent;
     img { max-width: fit-content; }
   }
 </style>
