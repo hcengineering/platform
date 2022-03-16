@@ -28,12 +28,12 @@
   const dispatch = createEventDispatcher()
 
   const getNow = (): Date => {
-    let tempDate = new Date(Date.now())
+    const tempDate = new Date(Date.now())
     return new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate())
   }
-  let today: Date = getNow()
+  const today: Date = getNow()
   let todayString: string
-  async function todayStr() {
+  async function todayStr () {
     todayString = await translate(ui.string.Today, {})
   }
   todayStr()

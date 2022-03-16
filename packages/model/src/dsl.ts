@@ -14,7 +14,7 @@
 //
 
 import core, {
-  Account, ArrOf as TypeArrOf, AttachedDoc, Attribute, Class, Classifier, ClassifierKind, Collection as TypeCollection, Data, Doc, Domain, generateId, IndexKind, Interface, Mixin as IMixin, MixinUpdate, Obj, PropertyType, Ref, RefTo, Space, Tx, TxCreateDoc, TxFactory, TxProcessor, Type
+  Account, ArrOf as TypeArrOf, AttachedDoc, Attribute, Class, Classifier, ClassifierKind, Collection as TypeCollection, Data, Doc, Domain, generateId, IndexKind, Interface, Markup, Mixin as IMixin, MixinUpdate, Obj, PropertyType, Ref, RefTo, Space, Timestamp, Tx, TxCreateDoc, TxFactory, TxProcessor, Type, TypeDate as TypeDateType
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
@@ -331,36 +331,43 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
-export function TypeNumber (): Type<string> {
+export function TypeNumber (): Type<number> {
   return { _class: core.class.TypeNumber, label: 'TypeNumber' as IntlString }
 }
 
 /**
  * @public
  */
-export function TypeMarkup (): Type<string> {
+export function TypeMarkup (): Type<Markup> {
   return { _class: core.class.TypeMarkup, label: 'TypeMarkup' as IntlString }
 }
 
 /**
  * @public
  */
-export function TypeBoolean (): Type<string> {
+export function TypeIntlString (): Type<IntlString> {
+  return { _class: core.class.TypeIntlString, label: 'TypeIntlString' as IntlString }
+}
+
+/**
+ * @public
+ */
+export function TypeBoolean (): Type<boolean> {
   return { _class: core.class.TypeBoolean, label: 'TypeBoolean' as IntlString }
 }
 
 /**
  * @public
  */
-export function TypeTimestamp (): Type<string> {
+export function TypeTimestamp (): Type<Timestamp> {
   return { _class: core.class.TypeTimestamp, label: 'TypeTimestamp' as IntlString }
 }
 
 /**
  * @public
  */
-export function TypeDate (): Type<string> {
-  return { _class: core.class.TypeDate, label: 'TypeDate' as IntlString }
+export function TypeDate (withTime?: boolean): TypeDateType {
+  return { _class: core.class.TypeDate, label: 'TypeDate' as IntlString, withTime }
 }
 
 /**

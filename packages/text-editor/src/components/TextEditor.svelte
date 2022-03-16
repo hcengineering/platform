@@ -53,6 +53,15 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
+  let needFocus = false
+  export function focus (): void {
+    needFocus = true
+  }
+
+  $: if (editor && needFocus) {
+    editor.commands.focus()
+    needFocus = false
+  }
 
   const Handle = Extension.create({
     addKeyboardShortcuts () {
@@ -97,6 +106,9 @@
         },
         onBlur: () => {
           dispatch('blur', editor.getHTML())
+        },
+        onFocus: () => {
+          dispatch('focus', editor.getHTML())
         },
         onUpdate: () => {
           content = editor.getHTML()

@@ -65,8 +65,12 @@
   {#if spaceSample !== undefined && model}
     <Table
       _class={spaceSample._class}
-      config={['', 'company', 'location', 'modifiedOn']}
-      options={{}}
+      config={['', '$lookup._class.label', 'modifiedOn']}
+      options={{
+        lookup: {
+          _class: core.class.Class
+        }
+      }}
       showNotification
       baseMenuClass={core.class.Space}
       query={{

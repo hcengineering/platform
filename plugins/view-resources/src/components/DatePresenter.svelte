@@ -15,16 +15,18 @@
 -->
 
 <script lang="ts">
+  import { TypeDate } from '@anticrm/core'
   import { DatePresenter } from '@anticrm/ui'
 
   export let value: number | Date | undefined
+  export let attributeType: TypeDate | undefined
   
   $: date = value ? new Date(value) : undefined
 </script>
 
 <div class="antiSelect">
   {#if date}
-    <DatePresenter value={date} />
+    <DatePresenter value={date} withTime={attributeType?.withTime ?? false} />
   {:else}
     No date
   {/if}

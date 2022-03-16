@@ -10,6 +10,7 @@
     "Name": "Name",
     "Description": "Description",
     "Private": "Private",
-    "Archived": "Archived"
+    "Archived": "Archived",
+    "ClassLabel": "Label"
   }
 }

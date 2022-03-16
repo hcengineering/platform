@@ -98,12 +98,14 @@ async function getAttributePresenter (
   const resultKey = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey = attribute.type._class === core.class.ArrOf ? resultKey + '.length' : resultKey
   const presenter = await getResource(presenterMixin.presenter)
+
   return {
     key: preserveKey.key,
     sortingKey,
     _class: attrClass,
     label: preserveKey.label ?? attribute.label,
     presenter,
+    props: { attributeType: attribute.type },
     icon: presenterMixin.icon,
     attribute
   }
@@ -215,7 +217,7 @@ export async function getActions (
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
   const hierarchy = client.getHierarchy()
-  const promises: Promise<any>[] = []
+  const promises: Array<Promise<any>> = []
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
     promises.push(client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err)))
@@ -261,7 +263,7 @@ function getParentClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Ref<Cla
   return result
 }
 
-function getMixins (hierarchy: Hierarchy, _class: Ref<Class<Doc>>, object: Doc): Ref<Mixin<Doc>>[] {
+function getMixins (hierarchy: Hierarchy, _class: Ref<Class<Doc>>, object: Doc): Array<Ref<Mixin<Doc>>> {
   const parentClass = getParentClass(hierarchy, _class)
   const descendants = hierarchy.getDescendants(parentClass)
   return descendants.filter(

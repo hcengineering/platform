@@ -70,13 +70,11 @@
 }
 
 
+
 /* Cards */
 .antiCard {
   display: flex;
   flex-direction: column;
-  width: 21.25rem;
-  min-width: 21.25rem;
-  max-width: 21.25rem;
   background-color: var(--theme-card-bg);
   border-radius: 1.25rem;
   box-shadow: var(--theme-card-shadow);

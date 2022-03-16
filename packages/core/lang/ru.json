@@ -10,6 +10,7 @@
     "Name": "Название",
     "Description": "Описание",
     "Private": "Личный",
-    "Archived": "Архивный"
+    "Archived": "Архивный",
+    "ClassLabel": "Тип"
   }
 }

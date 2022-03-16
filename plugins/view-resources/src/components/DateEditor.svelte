@@ -15,6 +15,7 @@
 -->
 
 <script lang="ts">
+  import { TypeDate } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { DatePopup, showPopup } from '@anticrm/ui'
   import DatePresenter from './DatePresenter.svelte'
@@ -22,6 +23,9 @@
   export let value: number | Date | undefined
   export let label: IntlString
   export let onChange: (value: any) => void
+
+  export let attributeType: TypeDate | undefined
+
   $: date = value ? new Date(value) : new Date()
   let container: HTMLElement
   let opened: boolean = false
@@ -31,8 +35,8 @@
   on:click|preventDefault={() => {
     if (!opened) {
       opened = true
-      showPopup(DatePopup, { selected: date, title: label }, container, (result) => {
-        if (result) { 
+      showPopup(DatePopup, { value: date, title: label, withTime: attributeType?.withTime ?? false }, container, (result) => {
+        if (result) {
           value = result.getTime()
           onChange(value)
          }
@@ -40,5 +44,5 @@
       })
     }
   }} >
-  <DatePresenter {value} />
+  <DatePresenter {value} {attributeType} />
 </div>

@@ -37,7 +37,7 @@
 
   function show () {
     closeTooltip()
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'right')
   }
 </script>
 

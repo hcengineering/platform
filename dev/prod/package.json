@@ -119,6 +119,9 @@
     "@anticrm/server-recruit": "~0.6.0",
     "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/server-task": "~0.6.0",
-    "@anticrm/server-task-resources": "~0.6.0"
+    "@anticrm/server-task-resources": "~0.6.0",
+    "@anticrm/calendar": "~0.6.0",
+    "@anticrm/calendar-assets": "~0.6.0",
+    "@anticrm/calendar-resources": "~0.6.0"
   }
 }

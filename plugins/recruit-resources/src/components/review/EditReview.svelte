@@ -14,117 +14,111 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { createQuery, getClient, UserBoxList } from '@anticrm/presentation'
-  import type { Candidate, Review, ReviewCategory } from '@anticrm/recruit'
+  import calendar from '@anticrm/calendar'
+  import contact, { Contact } from '@anticrm/contact'
+  import { OrganizationSelector } from '@anticrm/contact-resources'
+  import { getClient, UserBox, UserBoxList, UserInfo } from '@anticrm/presentation'
+  import type { Review } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, Label } from '@anticrm/ui'
+  import { Grid, Label, showPanel, StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
-  import CandidateCard from '../CandidateCard.svelte'
-  import ExpandRightDouble from '../icons/ExpandRightDouble.svelte'
-  import ReviewCategoryCard from './ReviewCategoryCard.svelte'
+  import view from '@anticrm/view'
 
   export let object: Review
-  let candidate: Candidate
-
-  let reviewCategory: ReviewCategory
-
-  const candidateQuery = createQuery()
-  $: if (object !== undefined) {
-    candidateQuery.query(recruit.mixin.Candidate, { _id: object.attachedTo }, (result) => {
-      candidate = result[0]
-    })
-  }
-
-  const reviewCategoryQuery = createQuery()
-  $: if (candidate !== undefined) {
-    reviewCategoryQuery.query(recruit.class.ReviewCategory, { _id: object.space }, (result) => {
-      reviewCategory = result[0]
-    })
-  }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   onMount(() => {
     dispatch('open', {
-      ignoreKeys: ['location', 'company', 'number', 'comments', 'startDate', 'description', 'verdict']
+      ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict']
     })
   })
+
+  let candidate: Contact | undefined = undefined
+
+  async function updateSelected (object: Review) {
+    candidate = await client.findOne<Contact>(object.attachedToClass, { _id: object.attachedTo })
+  }
+
+  $: updateSelected(object)
 </script>
 
-{#if object !== undefined && candidate !== undefined}
-  <div class="flex-between">
-    <div class="card"><CandidateCard {candidate} /></div>
-    <div class="arrows"><ExpandRightDouble /></div>
-    <div class="card"><ReviewCategoryCard category={reviewCategory} /></div>
-  </div>
-
-  <div class="mt-6 mb-2">
-    <Grid column={2}>
-      <EditBox
-        label={recruit.string.Company}
-        bind:value={object.company}
-        icon={contact.icon.Company}
-        placeholder={recruit.string.Company}
-        maxWidth="39rem"
-        focus
-        on:change={() => client.update(object, { company: object.company })}
+{#if object !== undefined}
+  <div class="mb-2">
+    <div class="mb-2">
+      <Grid column={2}>
+        <StylishEdit
+          label={calendar.string.Title}
+          bind:value={object.title}
+          on:change={() => client.update(object, { title: object.title })}
+        />
+        <div class="antiComponentBox over-underline" on:click={() => {
+          if (candidate !== undefined) {
+            showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+          }
+        }}>
+          <UserBox
+            readonly
+            _class={contact.class.Person}
+            title={recruit.string.Candidate}
+            caption={recruit.string.Candidates}
+            value={object.attachedTo}
+          />
+        </div>
+      </Grid>
+    </div>
+    <div class="mt-2 mb-2">
+      <StyledTextBox
+        label={recruit.string.Description}
+        emphasized
+        content={object.description}
+        on:value={(evt) => {
+          console.log(evt.detail)
+          client.update(object, { description: evt.detail })
+        }}
       />
-      <EditBox
-        label={recruit.string.Location}
+    </div>
+
+    <Grid column={2}>
+      <StylishEdit
+        label={calendar.string.Location}
         bind:value={object.location}
-        icon={recruit.icon.Location}
-        placeholder={recruit.string.Location}
-        maxWidth="39rem"
-        focus
         on:change={() => client.update(object, { location: object.location })}
       />
+      <div class="antiComponentBox">
+        <OrganizationSelector
+          bind:value={object.company}
+          label={recruit.string.Company}
+          on:change={() => client.update(object, { company: object.company })}
+        />
+      </div>
     </Grid>
     <div class="flex-row">
       <div class="mt-4 mb-2">
-        <Label label={recruit.string.Participants} />
+        <Label label={calendar.string.Participants} />
       </div>
       <UserBoxList
         _class={contact.class.Employee}
         items={object.participants}
-        title={recruit.string.Participants}
+        title={calendar.string.Participants}
         on:open={(evt) => {
           client.update(object, { $push: { participants: evt.detail._id } })
         }}
         on:delete={(evt) => {
           client.update(object, { $pull: { participants: evt.detail._id } })
         }}
-        noItems={recruit.string.NoParticipants}
+        noItems={calendar.string.NoParticipants}
       />
     </div>
   </div>
 
-  <div class="mt-4 mb-1">
-    <Label label={recruit.string.Description} />
-  </div>
-  <div class="description flex">
-    <StyledTextBox
-      content={object.description}
-      on:value={(evt) => {
-        console.log(evt.detail)
-        client.update(object, { description: evt.detail })
-      }}
-    />
-  </div>
-
-  <div class="mt-4 mb-1">
-    <Label label={recruit.string.Verdict} />
-  </div>
-  <div class="description flex">
-    <StyledTextBox
-      content={object.verdict}
-      on:value={(evt) => {
-        client.update(object, { verdict: evt.detail })
-      }}
-    />
-  </div>
+  <StylishEdit
+    label={recruit.string.Verdict}
+    bind:value={object.verdict}
+    on:change={() => client.update(object, { verdict: object.verdict })}
+  />
 {/if}
 
 <style lang="scss">
@@ -138,8 +132,6 @@
 
   .description {
     height: 10rem;
-    padding: 1rem;
-    border: 1px solid var(--theme-menu-divider);
-    border-radius: 8px;
+    margin-bottom: 1rem;
   }
 </style>

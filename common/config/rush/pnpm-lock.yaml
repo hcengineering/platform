@@ -13,6 +13,9 @@ specifiers:
   '@rush-temp/attachment': file:./projects/attachment.tgz
   '@rush-temp/attachment-assets': file:./projects/attachment-assets.tgz
   '@rush-temp/attachment-resources': file:./projects/attachment-resources.tgz
+  '@rush-temp/calendar': file:./projects/calendar.tgz
+  '@rush-temp/calendar-assets': file:./projects/calendar-assets.tgz
+  '@rush-temp/calendar-resources': file:./projects/calendar-resources.tgz
   '@rush-temp/chunter': file:./projects/chunter.tgz
   '@rush-temp/chunter-assets': file:./projects/chunter-assets.tgz
   '@rush-temp/chunter-resources': file:./projects/chunter-resources.tgz
@@ -50,6 +53,7 @@ specifiers:
   '@rush-temp/model-activity': file:./projects/model-activity.tgz
   '@rush-temp/model-all': file:./projects/model-all.tgz
   '@rush-temp/model-attachment': file:./projects/model-attachment.tgz
+  '@rush-temp/model-calendar': file:./projects/model-calendar.tgz
   '@rush-temp/model-chunter': file:./projects/model-chunter.tgz
   '@rush-temp/model-contact': file:./projects/model-contact.tgz
   '@rush-temp/model-core': file:./projects/model-core.tgz
@@ -167,7 +171,6 @@ specifiers:
   '@types/koa__cors': ^3.0.3
   '@types/mime-types': ~2.1.1
   '@types/minio': ~7.0.11
-  '@types/node': ~16.11.12
   '@types/pdfkit': ~0.12.3
   '@types/prosemirror-model': ~1.16.0
   '@types/request': ~2.48.8
@@ -257,6 +260,9 @@ dependencies:
   '@rush-temp/attachment': file:projects/attachment.tgz
   '@rush-temp/attachment-assets': file:projects/attachment-assets.tgz_typescript@4.5.4
   '@rush-temp/attachment-resources': file:projects/attachment-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/calendar': file:projects/calendar.tgz
+  '@rush-temp/calendar-assets': file:projects/calendar-assets.tgz_typescript@4.5.4
+  '@rush-temp/calendar-resources': file:projects/calendar-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/chunter': file:projects/chunter.tgz
   '@rush-temp/chunter-assets': file:projects/chunter-assets.tgz_typescript@4.5.4
   '@rush-temp/chunter-resources': file:projects/chunter-resources.tgz_096c09b0b673a57c275d9767a12070b1
@@ -269,11 +275,11 @@ dependencies:
   '@rush-temp/core': file:projects/core.tgz
   '@rush-temp/dev-account': file:projects/dev-account.tgz
   '@rush-temp/dev-client-resources': file:projects/dev-client-resources.tgz
-  '@rush-temp/dev-server': file:projects/dev-server.tgz_@types+node@16.11.14
+  '@rush-temp/dev-server': file:projects/dev-server.tgz
   '@rush-temp/dev-storage': file:projects/dev-storage.tgz
   '@rush-temp/devmodel': file:projects/devmodel.tgz_typescript@4.5.4
   '@rush-temp/devmodel-resources': file:projects/devmodel-resources.tgz_6cae74ea501386c76c405ad0408e0339
-  '@rush-temp/elastic': file:projects/elastic.tgz_@types+node@16.11.14
+  '@rush-temp/elastic': file:projects/elastic.tgz
   '@rush-temp/front': file:projects/front.tgz
   '@rush-temp/generator': file:projects/generator.tgz
   '@rush-temp/gmail': file:projects/gmail.tgz
@@ -294,6 +300,7 @@ dependencies:
   '@rush-temp/model-activity': file:projects/model-activity.tgz_typescript@4.5.4
   '@rush-temp/model-all': file:projects/model-all.tgz_typescript@4.5.4
   '@rush-temp/model-attachment': file:projects/model-attachment.tgz_typescript@4.5.4
+  '@rush-temp/model-calendar': file:projects/model-calendar.tgz_typescript@4.5.4
   '@rush-temp/model-chunter': file:projects/model-chunter.tgz_typescript@4.5.4
   '@rush-temp/model-contact': file:projects/model-contact.tgz_typescript@4.5.4
   '@rush-temp/model-core': file:projects/model-core.tgz_typescript@4.5.4
@@ -411,7 +418,6 @@ dependencies:
   '@types/koa__cors': 3.1.0
   '@types/mime-types': 2.1.1
   '@types/minio': 7.0.11
-  '@types/node': 16.11.14
   '@types/pdfkit': 0.12.3
   '@types/prosemirror-model': 1.16.0
   '@types/request': 2.48.8
@@ -478,7 +484,7 @@ dependencies:
   svgo-loader: 3.0.0
   toposort: 2.0.2
   ts-loader: 9.2.6_typescript@4.5.4+webpack@5.65.0
-  ts-node: 10.5.0_5d12c2add188ff0e728b4ade3dacd39b
+  ts-node: 10.5.0_typescript@4.5.4
   typescript: 4.5.4
   uuid: 8.3.2
   webpack: 5.65.0_9def3870c80213359789f9191dbd286a
@@ -8563,7 +8569,7 @@ packages:
     dependencies:
       import-cwd: 3.0.0
       lilconfig: 2.0.4
-      ts-node: 10.5.0_5d12c2add188ff0e728b4ade3dacd39b
+      ts-node: 10.5.0_typescript@4.5.4
       yaml: 1.10.2
     dev: false
 
@@ -10452,6 +10458,36 @@ packages:
       yn: 3.1.1
     dev: false
 
+  /ts-node/10.5.0_typescript@4.5.4:
+    resolution: {integrity: sha512-6kEJKwVxAJ35W4akuiysfKwKmjkbYxwQMTBaAxo9KKAx/Yd26mPUyhGz3ji+EsJoAgrLqVsYHNuuYwQe22lbtw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.7.0
+      '@tsconfig/node10': 1.0.8
+      '@tsconfig/node12': 1.0.9
+      '@tsconfig/node14': 1.0.1
+      '@tsconfig/node16': 1.0.2
+      acorn: 8.6.0
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 4.5.4
+      v8-compile-cache-lib: 3.0.0
+      yn: 3.1.1
+    dev: false
+
   /tsconfig-paths/3.12.0:
     resolution: {integrity: sha512-e5adrnOYT6zqVnWqZu7i/BQ3BnhzvGbjEjejFXO20lKIKpwTaupkCPgEfv4GZK1IBciJUEhYs3J3p75FdaTFVg==}
     dependencies:
@@ -11416,6 +11452,83 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/calendar-assets.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-muyoJ0EuKPUpsAEL1bLgdR90OqIoohgdfUFDwyWP1qmtAe9k1my76bJSIiU1JSfybyssHYiR8jpM/SuIonWg3Q==, tarball: file:projects/calendar-assets.tgz}
+    id: file:projects/calendar-assets.tgz
+    name: '@rush-temp/calendar-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/calendar-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-UZIMmHCGB+XoLDkyP1A/+ot4oc0POAPYCVOtiPI3vQtVWuTIPquMM4pPX3HxkvfpWqblXburuJx3j18rfA5Mgw==, tarball: file:projects/calendar-resources.tgz}
+    id: file:projects/calendar-resources.tgz
+    name: '@rush-temp/calendar-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
+      sass: 1.45.0
+      svelte: 3.44.3
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/calendar.tgz:
+    resolution: {integrity: sha512-mN4GfaHpyGzuLV59eFw3c3R6p2r4ewEumsIhzyifgeXaXSD9Bnm06LG5LvFgF5G5TmDquUFcIq88w3Zzd20cQA==, tarball: file:projects/calendar.tgz}
+    name: '@rush-temp/calendar'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   file:projects/chunter-assets.tgz_typescript@4.5.4:
     resolution: {integrity: sha512-2EQgdQ62vXKYpX9iOtOaCRt1GZliFiJpPPBZbOMHjaeWLye+/zYXlffkBbjVUSfR894cBlrtZBVRapjJU2T3uA==, tarball: file:projects/chunter-assets.tgz}
     id: file:projects/chunter-assets.tgz
@@ -11713,9 +11826,8 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/dev-server.tgz_@types+node@16.11.14:
+  file:projects/dev-server.tgz:
     resolution: {integrity: sha512-pv0DpcojPAreq3xXTnbl3Rj2UwEy97zRPmXU2lJsM0pKc6dVpmicD+/Bq4laIWx5qhvzfLurbwjBV4/0mLeuYw==, tarball: file:projects/dev-server.tgz}
-    id: file:projects/dev-server.tgz
     name: '@rush-temp/dev-server'
     version: 0.0.0
     dependencies:
@@ -11730,7 +11842,7 @@ packages:
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       jwt-simple: 0.5.6
       prettier: 2.5.1
-      ts-node: 10.5.0_5d12c2add188ff0e728b4ade3dacd39b
+      ts-node: 10.5.0_typescript@4.5.4
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@swc/core'
@@ -11815,9 +11927,8 @@ packages:
       - typescript
     dev: false
 
-  file:projects/elastic.tgz_@types+node@16.11.14:
+  file:projects/elastic.tgz:
     resolution: {integrity: sha512-CF8tie/n08Slnvw40pFZnaS4j/2JPQzs2xAxakNqpokb5x3ci9e0z2gzXNB6otQElk1NxW69QDHqNme+jHqWPA==, tarball: file:projects/elastic.tgz}
-    id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
     dependencies:
@@ -11832,7 +11943,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.5.1
-      ts-node: 10.5.0_5d12c2add188ff0e728b4ade3dacd39b
+      ts-node: 10.5.0_typescript@4.5.4
       typescript: 4.5.4
     transitivePeerDependencies:
       - '@swc/core'
@@ -12305,7 +12416,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-Jll+Wp4p6/OjdvtbTqAGKbMUkOoAai5Se2+CSIOteRB6dDTgtlwy95fzQv2o5RHIBBiQXLQ2Csb8KgAluzTJ6w==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-LprNHSPgySvlj/zl9bkeSZ7Uh1wWyPPkQBW6knjBBD3cizpFpxPGBrSQnhDe/RP0uj6azKRYWWUcAPFOYe4TvQ==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -12333,6 +12444,27 @@ packages:
     resolution: {integrity: sha512-YUEYyzil/b39lk6n4A1Ac48dWrGV1UdDFJ1tqSMGjz9oOgpqLc+EjyZZR3htaltpIa2/LhwHRpV6A8w3WrSuig==, tarball: file:projects/model-attachment.tgz}
     id: file:projects/model-attachment.tgz
     name: '@rush-temp/model-attachment'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-calendar.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-sI97CjbxdgK1qWGDrBViWm65NY+vwFzt1s94cGheRJP8CL/GqJNuaSyrJv0pqjfZgK6Z3IkcUq2ZUSSHwD+1gQ==, tarball: file:projects/model-calendar.tgz}
+    id: file:projects/model-calendar.tgz
+    name: '@rush-temp/model-calendar'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -12540,7 +12672,7 @@ packages:
     dev: false
 
   file:projects/model-recruit.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-t2mSCyFnB+YfsxFuAu0J8hNVhM+GP5SjiVevMe8tft+dCyyLeMpAJxTdEKkvRx6jV6yyxyPUmqZMAQCmm/pvuA==, tarball: file:projects/model-recruit.tgz}
+    resolution: {integrity: sha512-TtzOJVyFh5KY3RmQUTUUqeemhDDo/14R1RRrbQ7FoYun9yl+lv5b00OUuIbZ4rtYSJQLhiJaXFbZbxHl6pr3mA==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -13235,7 +13367,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-R0Y2btm9DPFvRRGYAGC6ilCIcE5t+p2trcdARVBxyi+tH4XwcXZSt0NJJe+57vpiwkCV8hYPa2fI+Eul1wdrpQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-mxkGGtPp108JHMkmnEgKKPNVrihu3xVv1wZqY/HTWhZ+v8Ct5RG92+Yg6NBhEsLmqCBBPTAHY/JapGi1oF9bWg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -13329,7 +13461,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-EexKsB2ZRQ/VxlTABy5b5g3MLR51+549IMWW4g6+Xb/ZR6MZKCT6ocWPRgULW64EO3CTOJ37nIlXijj6Z/fPKw==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-nvxkMBBQ9fPzCtIIQbUOlLaV+4wulVAKLg2iBOR5RuEiKZK/kwItpbzv0u6mS5Vb7/yFRp0GsRM+G7rv1tiGfg==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -13366,7 +13498,7 @@ packages:
     dev: false
 
   file:projects/recruit.tgz:
-    resolution: {integrity: sha512-wAgHbMEy+KVBNhYTiPdcBnN0O7BAsfxLMxK/gcjM1pkqeLbCzJ/SpRNMFpC2K0/TU+qsPqCzK3zx0VSvFXH05A==, tarball: file:projects/recruit.tgz}
+    resolution: {integrity: sha512-VAcfan3RLB0bq8DYryIS1waf0EiSSjbd1mdyq0IqMvlp9b8OBUGf0mOCfHDhkno9C4nf9fN8kCUDk9y82LfjZg==, tarball: file:projects/recruit.tgz}
     name: '@rush-temp/recruit'
     version: 0.0.0
     dependencies:

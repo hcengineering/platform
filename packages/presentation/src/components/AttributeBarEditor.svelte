@@ -76,6 +76,7 @@
                 placeholder={attribute?.label}
                 {maxWidth}
                 value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+                attributeType={attribute.type}
                 space={object.space}
                 {onChange}
                 {focus}
@@ -94,6 +95,7 @@
             placeholder={attribute?.label}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            attributeType={attribute.type}
             space={object.space}
             {onChange}
             {focus}
@@ -105,6 +107,7 @@
         this={instance}
         {maxWidth}
         value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+        attributeType={attribute.type}
         space={object.space}
         {onChange}
         {focus}

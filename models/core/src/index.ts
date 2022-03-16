@@ -28,7 +28,7 @@ import {
   TRefTo,
   TType,
   TTypeBoolean,
-  TTypeDate, TTypeMarkup, TTypeNumber, TTypeString, TTypeTimestamp,
+  TTypeDate, TTypeIntlString, TTypeMarkup, TTypeNumber, TTypeString, TTypeTimestamp,
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
@@ -80,6 +80,7 @@ export function createModel (builder: Builder): void {
     TTypeDate,
     TArrOf,
     TVersion,
-    TTypeNumber
+    TTypeNumber,
+    TTypeIntlString
   )
 }

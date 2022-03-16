@@ -35,6 +35,7 @@
   export let show: boolean = false
   export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
 
@@ -69,7 +70,7 @@
 <div class="antiSelect" bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
-    if (!opened) {
+    if (!opened && !readonly) {
       opened = true
       showPopup(UsersPopup, { _class, title, caption, allowDeselect, selected: value, titleDeselect }, container, (result) => {
         if (result === null) {

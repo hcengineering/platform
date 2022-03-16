@@ -22,7 +22,7 @@
   export let withTime: boolean = false
 
   const { currentLanguage } = getContext('lang')
-  let inter: boolean = (currentLanguage === 'ru') ?? false
+  const inter: boolean = (currentLanguage === 'ru') ?? false
 
   const zeroLead = (n: number): string => {
     if (n < 10) return '0' + n.toString()

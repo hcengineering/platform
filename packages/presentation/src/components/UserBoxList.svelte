@@ -78,7 +78,7 @@
             </div>
           {/if}
           {#each persons as person}
-            <div class="antiComponentBox flex-center">
+            <div class="antiComponentBox flex-center margin_025 antiComponentBoxFocused">
               <UserInfo value={person} size={'medium'} />
               <div class="ml-1">
                 <ActionIcon icon={IconClose} size={'small'} action={() => removePerson(person)} />
@@ -103,5 +103,8 @@
     flex-grow: 1;
     display: flex;
     flex-wrap: wrap;  
+  }
+  .margin_025 {
+    margin: 0.25rem;
   }
 </style>

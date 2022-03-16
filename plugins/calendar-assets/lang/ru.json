@@ -1,0 +1,17 @@
+{
+  "string": {
+    "ApplicationLabelCalendar": "Календарь",
+    "Calendars": "Календари",
+    "Participants": "Участники",
+    "NoParticipants": "Участники не добавлены",
+    "PersonsLabel": "{name}",
+    "AddDescription": "Добавить описание",
+    "Date": "Дата",
+    "DueTo": "Дата конца",
+    "Description": "Описание",
+    "Title": "Название",
+    "Location": "Местоположение",
+    "Company": "Компания",
+    "CreateCalendar": "Новый Калеедарь"
+  }
+}

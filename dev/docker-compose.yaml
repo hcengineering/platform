@@ -82,7 +82,7 @@ services:
       - mongodb
       - elastic
       - minio
-      - apm-server
+      # - apm-server
     ports:
       - 3333:3333
     environment:
@@ -94,41 +94,41 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin  
-      - APM_SERVER_URL=http://apm-server:8200
-  apm-server:
-    image: docker.elastic.co/apm/apm-server:7.14.2
-    depends_on:
-      - "elastic"
-      - "kibana"
-    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
-    cap_drop: ["ALL"]
-    ports:
-      - 8200:8200
-    command: |
-       apm-server -e
-         -E apm-server.rum.enabled=true
-         -E setup.kibana.host=kibana:5601
-         -E setup.template.settings.index.number_of_replicas=0
-         -E apm-server.kibana.enabled=true
-         -E apm-server.kibana.host=kibana:5601
-         -E output.elasticsearch.hosts=["elastic:9200"]
-    healthcheck:
-      interval: 10s
-      retries: 12
-      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:8200/  
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.14.2
-    depends_on:
-      - "elastic"
-    environment:
-      ELASTICSEARCH_URL: http://elastic:9200
-      ELASTICSEARCH_HOSTS: http://elastic:9200
-    ports:
-      - 5601:5601
-    healthcheck:
-      interval: 10s
-      retries: 20
-      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:5601/api/status
+      # - APM_SERVER_URL=http://apm-server:8200
+  # apm-server:
+  #   image: docker.elastic.co/apm/apm-server:7.14.2
+  #   depends_on:
+  #     - "elastic"
+  #     - "kibana"
+  #   cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+  #   cap_drop: ["ALL"]
+  #   ports:
+  #     - 8200:8200
+  #   command: |
+  #      apm-server -e
+  #        -E apm-server.rum.enabled=true
+  #        -E setup.kibana.host=kibana:5601
+  #        -E setup.template.settings.index.number_of_replicas=0
+  #        -E apm-server.kibana.enabled=true
+  #        -E apm-server.kibana.host=kibana:5601
+  #        -E output.elasticsearch.hosts=["elastic:9200"]
+  #   healthcheck:
+  #     interval: 10s
+  #     retries: 12
+  #     test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:8200/  
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.14.2
+  #   depends_on:
+  #     - "elastic"
+  #   environment:
+  #     ELASTICSEARCH_URL: http://elastic:9200
+  #     ELASTICSEARCH_HOSTS: http://elastic:9200
+  #   ports:
+  #     - 5601:5601
+  #   healthcheck:
+  #     interval: 10s
+  #     retries: 20
+  #     test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:5601/api/status
 
 volumes:
   db:

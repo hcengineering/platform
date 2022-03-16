@@ -1,67 +1,38 @@
-import { Employee, Organization } from '@anticrm/contact'
-import { Domain, IndexKind, Ref, Timestamp } from '@anticrm/core'
-import { Collection, Index, Model, Prop, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Organization } from '@anticrm/contact'
+import { Domain, IndexKind, Ref } from '@anticrm/core'
+import { Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
+import calendar, { TEvent } from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
+import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
+import task from '@anticrm/model-task'
 import { Candidate, Opinion, Review, ReviewCategory } from '@anticrm/recruit'
 import recruit from './plugin'
 
-@Model(recruit.class.ReviewCategory, task.class.SpaceWithStates)
+@Model(recruit.class.ReviewCategory, core.class.Space)
 @UX(recruit.string.ReviewCategory, recruit.icon.Review)
-export class TReviewCategory extends TSpaceWithStates implements ReviewCategory {
+export class TReviewCategory extends TSpace implements ReviewCategory {
   @Prop(TypeString(), recruit.string.FullDescription)
   fullDescription?: string
+}
+
+@Model(recruit.class.Review, calendar.class.Event)
+@UX(recruit.string.Review, recruit.icon.Review, recruit.string.ReviewShortLabel, 'number')
+export class TReview extends TEvent implements Review {
+  // We need to declare, to provide property with label
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
+  declare attachedTo: Ref<Candidate>
+
+  @Prop(TypeString(), recruit.string.Verdict)
+  @Index(IndexKind.FullText)
+  verdict!: string
 
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
   company?: Ref<Organization>
-}
-
-@Model(recruit.class.Review, task.class.Task)
-@UX(recruit.string.Review, recruit.icon.Review, recruit.string.ReviewShortLabel, 'number')
-export class TReview extends TTask implements Review {
-  // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.class.Applicant), recruit.string.Candidate)
-  declare attachedTo: Ref<Candidate>
-
-  @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
-  declare assignee: Ref<Employee> | null
-
-  @Prop(TypeMarkup(), recruit.string.Description)
-  @Index(IndexKind.FullText)
-  description!: string
-
-  @Index(IndexKind.FullText)
-  @Prop(TypeMarkup(), recruit.string.Verdict)
-  verdict!: string
-
-  @Index(IndexKind.FullText)
-  @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
-  location?: string
-
-  @Index(IndexKind.FullText)
-  @Prop(TypeString(), recruit.string.Company, contact.icon.Company)
-  company?: string
-
-  @Prop(TypeDate(), recruit.string.StartDate)
-  startDate!: Timestamp | null
-
-  @Prop(TypeDate(), recruit.string.DueDate)
-  dueDate!: Timestamp | null
 
   @Prop(Collection(recruit.class.Opinion), recruit.string.Opinions)
   opinions?: number
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
-  attachments?: number
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
-
-  @Prop(Collection(contact.class.Employee), recruit.string.Participants)
-  participants!: Ref<Employee>[]
 }
 
 @Model(recruit.class.Opinion, core.class.AttachedDoc, 'recruit' as Domain)

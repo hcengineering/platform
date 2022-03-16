@@ -31,6 +31,7 @@
     "@anticrm/contact": "~0.6.5",
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/task": "~0.6.0",
+    "@anticrm/calendar": "~0.6.0",
     "@anticrm/ui": "~0.6.0"
   }
 }

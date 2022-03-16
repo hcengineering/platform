@@ -34,6 +34,11 @@ export type Timestamp = number
 /**
  * @public
  */
+export type Markup = string
+
+/**
+ * @public
+ */
 export interface Obj {
   _class: Ref<Class<this>>
 }
@@ -159,6 +164,15 @@ export type Data<T extends Doc> = Omit<T, keyof Doc>
 export type AttachedData<T extends AttachedDoc> = Omit<T, keyof AttachedDoc>
 
 // T Y P E S
+
+/**
+ * @public
+ */
+
+export interface TypeDate extends Type<Date> {
+  // If not set to true, will be false
+  withTime?: boolean
+}
 
 /**
  * @public
