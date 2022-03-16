@@ -1116,5 +1116,20 @@
       "projectFolder": "server-plugins/task-resources",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/server-setting",
+      "projectFolder": "server-plugins/setting",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-setting",
+      "projectFolder": "models/server-setting",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-setting-resources",
+      "projectFolder": "server-plugins/setting-resources",
+      "shouldPublish": true
+    },
   ]
 }

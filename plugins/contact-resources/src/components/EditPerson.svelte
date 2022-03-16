@@ -58,7 +58,7 @@
   const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => {
+  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space>, disabled: false }, (res) => {
     integrations = new Set(res.map((p) => p.type))
   })
 

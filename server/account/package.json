@@ -30,7 +30,6 @@
   "dependencies": {
     "mongodb": "^4.1.1",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/model-all": "~0.6.0",
     "minio": "^7.0.19",
     "@anticrm/core": "~0.6.14",
     "@anticrm/contact": "~0.6.2",

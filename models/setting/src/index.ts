@@ -16,10 +16,11 @@
 import { Builder, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
 import core, { TDoc } from '@anticrm/model-core'
-import setting from '@anticrm/setting'
+import setting from './plugin'
 import type { Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
 import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
+import activity from '@anticrm/activity'
 
 import workbench from '@anticrm/model-workbench'
 import { AnyComponent } from '@anticrm/ui'
@@ -29,6 +30,7 @@ export const DOMAIN_SETTING = 'setting' as Domain
 @Model(setting.class.Integration, core.class.Doc, DOMAIN_SETTING)
 export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
+  disabled!: boolean
   value!: string
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
@@ -45,6 +47,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   description!: IntlString
   icon!: AnyComponent
   createComponent!: AnyComponent
+  reconnectComponent?: AnyComponent
   onDisconnect!: Handler
 }
 
@@ -120,4 +123,18 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.SettingApp
   )
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: setting.class.Integration,
+    icon: setting.icon.Integrations,
+    txClass: core.class.TxUpdateDoc,
+    label: setting.string.IntegrationWith,
+    labelComponent: setting.activity.TxIntegrationDisable,
+    component: setting.activity.TxIntegrationDisableReconnect,
+    display: 'emphasized',
+    editable: false,
+    hideOnRemove: true
+  }, setting.ids.TxIntegrationDisable)
 }
+
+export { settingOperation } from './migration'

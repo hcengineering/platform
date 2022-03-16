@@ -32,6 +32,7 @@ export interface IntegrationType extends Doc {
   icon: AnyComponent
   createComponent: AnyComponent
   onDisconnect: Handler
+  reconnectComponent?: AnyComponent
 }
 
 /**
@@ -39,6 +40,7 @@ export interface IntegrationType extends Doc {
  */
 export interface Integration extends Doc {
   type: Ref<IntegrationType>
+  disabled: boolean
   value: string
 }
 
@@ -112,7 +114,8 @@ export default plugin(settingId, {
     EnterNewPassword: '' as IntlString,
     RepeatNewPassword: '' as IntlString,
     Signout: '' as IntlString,
-    SelectWorkspace: '' as IntlString
+    SelectWorkspace: '' as IntlString,
+    Reconnect: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

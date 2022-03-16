@@ -25,6 +25,9 @@
     "Settings": "Настройки",
     "SelectWorkspace": "Выбрать пространство",
     "DeleteStatus": "Удаление статуса",
-    "DeleteStatusConfirm": "Вы действительно хотите удалить этот статус?"
+    "DeleteStatusConfirm": "Вы действительно хотите удалить этот статус?",
+    "Reconnect": "Переподключить",
+    "IntegrationDisabled": " была отключена",
+    "IntegrationWith": "Интеграция с "
   }
 }

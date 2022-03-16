@@ -13,15 +13,20 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import setting, { settingId } from '@anticrm/setting'
+import type { Plugin, Resource } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import type { TriggerFunc } from '@anticrm/server-core'
 
-export default mergeIds(settingId, setting, {
-  string: {
-    IntegrationDisabled: '' as IntlString,
-    IntegrationWith: '' as IntlString,
-    DeleteStatus: '' as IntlString,
-    DeleteStatusConfirm: '' as IntlString
+/**
+ * @public
+ */
+export const serverSettingId = 'server-setting' as Plugin
+
+/**
+ * @public
+ */
+export default plugin(serverSettingId, {
+  trigger: {
+    OnIntegrationDisable: '' as Resource<TriggerFunc>
   }
 })

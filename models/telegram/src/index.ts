@@ -91,6 +91,7 @@ export function createModel (builder: Builder): void {
       description: telegram.string.TelegramIntegrationDesc,
       icon: telegram.component.IconTelegram,
       createComponent: telegram.component.Connect,
+      reconnectComponent: telegram.component.Reconnect,
       onDisconnect: telegram.handler.DisconnectHandler
     },
     telegram.integrationType.Telegram

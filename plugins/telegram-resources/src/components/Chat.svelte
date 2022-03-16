@@ -20,13 +20,14 @@
   import { generateId, getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
+  import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
   import { ActionIcon, Button, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
+import Reconnect from './Reconnect.svelte';
 
   export let object: Contact
   let channel: Channel | undefined = undefined
@@ -46,7 +47,7 @@
 
   let messages: TelegramMessage[] = []
   let accounts: EmployeeAccount[] = []
-  let enabled: boolean
+  let integration: Integration | undefined
   let selected: Set<Ref<SharedTelegramMessage>> = new Set<Ref<SharedTelegramMessage>>()
   let selectable = false
 
@@ -89,7 +90,7 @@
     setting.class.Integration,
     { type: telegram.integrationType.Telegram, space: accountId as string as Ref<Space> },
     (res) => {
-      enabled = res.length > 0
+      integration = res[0]
     }
   )
 
@@ -155,7 +156,16 @@
     if (res?.value) {
       await client.createDoc(setting.class.Integration, accountId as string as Ref<Space>, {
         type: telegram.integrationType.Telegram,
-        value: res.value
+        value: res.value,
+        disabled: false
+      })
+    }
+  }
+
+  async function onReconnect (res: any): Promise<void> {
+    if (res?.value && integration !== undefined) {
+      await client.update(integration, {
+        disabled: false
       })
     }
   }
@@ -206,14 +216,7 @@
         </div>
       </div>
     </div>
-  {:else if enabled}
-    <AttachmentRefInput
-      space={telegram.space.Telegram}
-      _class={telegram.class.NewMessage}
-      {objectId}
-      on:message={onMessage}
-    />
-  {:else}
+  {:else if integration === undefined}
     <div class="flex-center">
       <Button
         label={telegram.string.Connect}
@@ -223,6 +226,23 @@
         }}
       />
     </div>
+  {:else if integration.disabled}
+    <div class="flex-center">
+      <Button
+        label={setting.string.Reconnect}
+        primary
+        on:click={(e) => {
+          showPopup(Reconnect, {}, e.target, onReconnect)
+        }}
+      />
+    </div>
+  {:else}
+    <AttachmentRefInput
+      space={telegram.space.Telegram}
+      _class={telegram.class.NewMessage}
+      {objectId}
+      on:message={onMessage}
+    />
   {/if}
 </div>
 

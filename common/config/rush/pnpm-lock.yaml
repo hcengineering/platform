@@ -69,6 +69,7 @@ specifiers:
   '@rush-temp/model-server-lead': file:./projects/model-server-lead.tgz
   '@rush-temp/model-server-notification': file:./projects/model-server-notification.tgz
   '@rush-temp/model-server-recruit': file:./projects/model-server-recruit.tgz
+  '@rush-temp/model-server-setting': file:./projects/model-server-setting.tgz
   '@rush-temp/model-server-task': file:./projects/model-server-task.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
   '@rush-temp/model-tags': file:./projects/model-tags.tgz
@@ -109,6 +110,8 @@ specifiers:
   '@rush-temp/server-notification-resources': file:./projects/server-notification-resources.tgz
   '@rush-temp/server-recruit': file:./projects/server-recruit.tgz
   '@rush-temp/server-recruit-resources': file:./projects/server-recruit-resources.tgz
+  '@rush-temp/server-setting': file:./projects/server-setting.tgz
+  '@rush-temp/server-setting-resources': file:./projects/server-setting-resources.tgz
   '@rush-temp/server-task': file:./projects/server-task.tgz
   '@rush-temp/server-task-resources': file:./projects/server-task-resources.tgz
   '@rush-temp/server-token': file:./projects/server-token.tgz
@@ -192,6 +195,7 @@ specifiers:
   fast-equals: ^2.0.3
   file-loader: ^6.2.0
   filesize: ^8.0.3
+  html-webpack-plugin: ~5.5.0
   intl-messageformat: ^9.7.1
   jpeg-js: ~0.4.3
   just-clone: ^3.2.1
@@ -297,6 +301,7 @@ dependencies:
   '@rush-temp/model-server-lead': file:projects/model-server-lead.tgz_typescript@4.5.4
   '@rush-temp/model-server-notification': file:projects/model-server-notification.tgz_typescript@4.5.4
   '@rush-temp/model-server-recruit': file:projects/model-server-recruit.tgz_typescript@4.5.4
+  '@rush-temp/model-server-setting': file:projects/model-server-setting.tgz_typescript@4.5.4
   '@rush-temp/model-server-task': file:projects/model-server-task.tgz_typescript@4.5.4
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.5.4
   '@rush-temp/model-tags': file:projects/model-tags.tgz_typescript@4.5.4
@@ -337,6 +342,8 @@ dependencies:
   '@rush-temp/server-notification-resources': file:projects/server-notification-resources.tgz
   '@rush-temp/server-recruit': file:projects/server-recruit.tgz
   '@rush-temp/server-recruit-resources': file:projects/server-recruit-resources.tgz
+  '@rush-temp/server-setting': file:projects/server-setting.tgz
+  '@rush-temp/server-setting-resources': file:projects/server-setting-resources.tgz
   '@rush-temp/server-task': file:projects/server-task.tgz
   '@rush-temp/server-task-resources': file:projects/server-task-resources.tgz
   '@rush-temp/server-token': file:projects/server-token.tgz
@@ -420,6 +427,7 @@ dependencies:
   fast-equals: 2.0.4
   file-loader: 6.2.0_webpack@5.65.0
   filesize: 8.0.6
+  html-webpack-plugin: 5.5.0_webpack@5.65.0
   intl-messageformat: 9.10.0
   jpeg-js: 0.4.3
   just-clone: 3.2.1
@@ -12890,6 +12898,27 @@ packages:
       - typescript
     dev: false
 
+  file:projects/model-server-setting.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-sSatGVzTXWASCQIHUz7og+pZXUuv1qUk/6ZeznxaNTVTv3iq4R/mhNSga3xdKh4WFVygaVTkTSnVCMvjBBkVSQ==, tarball: file:projects/model-server-setting.tgz}
+    id: file:projects/model-server-setting.tgz
+    name: '@rush-temp/model-server-setting'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/model-server-task.tgz_typescript@4.5.4:
     resolution: {integrity: sha512-UGeEby4x4ZUjOO3ECPvg3wVKQUAXjNMw8zQFiQmCemiMQk+6NNvGhwkHgV674dt5rGDCNBjKJfFaShTj7jcDlw==, tarball: file:projects/model-server-task.tgz}
     id: file:projects/model-server-task.tgz
@@ -13826,6 +13855,47 @@ packages:
   file:projects/server-recruit.tgz:
     resolution: {integrity: sha512-UrQBEwX6cZgSk+HMfhJort5tzGaCe1cv0Thg3sITzNaB4yb3FExUTeVphI16hgh6Hcv/2m53zsdcNscnpoTROg==, tarball: file:projects/server-recruit.tgz}
     name: '@rush-temp/server-recruit'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-setting-resources.tgz:
+    resolution: {integrity: sha512-Jf0YabfPXMgfmjSd1jNibkwSR4FoVIxxCfeU+g6CGrCJ6NE1XgCrWgZXrRiIkGEHx14C+zQhE6IIFYKhB0LTXA==, tarball: file:projects/server-setting-resources.tgz}
+    name: '@rush-temp/server-setting-resources'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-setting.tgz:
+    resolution: {integrity: sha512-J5y5nrM9SJ9USgO3kHR0T0AwN3QP/1mtFFTPPwpykXzgy5y2UqauOhavQsboVs4I4iqkiqW388pzAAjiY3Uugg==, tarball: file:projects/server-setting.tgz}
+    name: '@rush-temp/server-setting'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8

@@ -20,6 +20,7 @@ import { clientId } from '@anticrm/client'
 import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverContactId } from '@anticrm/server-contact'
 import { serverNotificationId } from '@anticrm/server-notification'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
@@ -40,6 +41,7 @@ export function configurePlatformDev() {
     addLocation(serverAttachmentId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-attachment-resources'))
     addLocation(serverContactId, () => import(/* webpackChunkName: "server-contact" */ '@anticrm/server-contact-resources'))
     addLocation(serverNotificationId, () => import(/* webpackChunkName: "server-notification" */ '@anticrm/server-notification-resources'))
+    addLocation(serverSettingId, () => import(/* webpackChunkName: "server-setting" */ '@anticrm/server-setting-resources'))
     addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/server-chunter-resources'))
     addLocation(serverInventoryId, () => import(/* webpackChunkName: "server-inventory" */ '@anticrm/server-inventory-resources'))
     addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))

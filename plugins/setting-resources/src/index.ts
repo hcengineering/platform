@@ -23,8 +23,14 @@ import Support from './components/Support.svelte'
 import Privacy from './components/Privacy.svelte'
 import Terms from './components/Terms.svelte'
 import Settings from './components/Settings.svelte'
+import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
+import TxIntegrationDisableReconnect from './components/activity/TxIntegrationDisableReconnect.svelte'
 
 export default async (): Promise<Resources> => ({
+  activity: {
+    TxIntegrationDisable,
+    TxIntegrationDisableReconnect
+  },
   component: {
     Settings,
     Profile,

@@ -15,7 +15,6 @@
 
 import { Status, OK, unknownError, getMetadata, serialize, unknownStatus } from '@anticrm/platform'
 import type { Request, Response } from '@anticrm/platform'
-import type { Workspace } from '@anticrm/account'
 
 import login from '@anticrm/login'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
@@ -24,6 +23,10 @@ export interface LoginInfo {
   token: string
   endpoint: string
   email: string
+}
+
+export interface Workspace {
+  workspace: string
 }
 
 /**
@@ -165,10 +168,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     if (endpoint !== undefined) {
       return [
         {
-          _id: '' as any,
-          workspace: 'DEV WORKSPACE',
-          organisation: '',
-          accounts: []
+          workspace: 'DEV WORKSPACE'
         }
       ]
     }

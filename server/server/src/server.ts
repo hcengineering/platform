@@ -26,6 +26,7 @@ import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverContactId } from '@anticrm/server-contact'
 import { serverNotificationId } from '@anticrm/server-notification'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
@@ -61,6 +62,7 @@ export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfi
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
   addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
+  addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))
   addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
   addLocation(serverInventoryId, () => import('@anticrm/server-inventory-resources'))
   addLocation(serverLeadId, () => import('@anticrm/server-lead-resources'))

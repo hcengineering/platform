@@ -65,6 +65,7 @@ export default plugin(telegramId, {
   component: {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
+    Reconnect: '' as AnyComponent,
     IconTelegram: '' as AnyComponent
   },
   integrationType: {
