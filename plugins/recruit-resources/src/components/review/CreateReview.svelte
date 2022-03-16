@@ -155,6 +155,6 @@
       allowDeselect
       titleDeselect={recruit.string.UnAssignRecruiter}
     />
-    <DatePicker title={recruit.string.StartDate} bind:value={startDate} bind:range={dueDate} />
+    <DatePicker title={recruit.string.Period} bind:value={startDate} bind:range={dueDate} />
   </Grid>
 </Card>
