@@ -52,6 +52,46 @@ async function migrateClass<T extends Doc> (
   )
 }
 
+async function createDefaultProject (tx: TxOperations): Promise<void> {
+  const createTx = await tx.findOne(core.class.TxCreateDoc, {
+    objectId: task.space.TasksPublic
+  })
+  if (createTx === undefined) {
+    await tx.createDoc(
+      task.class.Project,
+      core.space.Space,
+      {
+        name: 'public',
+        description: 'Public tasks',
+        private: false,
+        archived: false,
+        members: []
+      },
+      task.space.TasksPublic
+    )
+  }
+}
+
+async function createDefaultSequence (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: task.space.Sequence
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Sequences',
+        description: 'Internal space to store sequence numbers',
+        members: [],
+        private: false,
+        archived: false
+      },
+      task.space.Sequence
+    )
+  }
+}
+
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // Since we should not have Task class instances, we convert them all to Issue.
@@ -138,6 +178,8 @@ export const taskOperation: MigrateOperation = {
     }
 
     const tx = new TxOperations(client, core.account.System)
+    await createDefaultSequence(tx)
+    await createDefaultProject(tx)
 
     // To not depend on ui package let's use inlined ones one time
     const colors = new Map([

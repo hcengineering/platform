@@ -40,7 +40,7 @@
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(recruit.class.Vacancy, core.space.Model, {
+    const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, {
       name,
       description,
       private: false,

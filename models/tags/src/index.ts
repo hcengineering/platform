@@ -84,19 +84,6 @@ export class TTagCategory extends TDoc implements TagCategory {
 export function createModel (builder: Builder): void {
   builder.createModel(TTagElement, TTagReference, TTagCategory)
 
-  builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Tags',
-      description: 'Space for all tags',
-      private: true,
-      archived: false,
-      members: []
-    },
-    tags.space.Tags
-  )
-
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributeEditor, {
     editor: tags.component.Tags
   })

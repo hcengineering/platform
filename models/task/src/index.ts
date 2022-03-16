@@ -331,19 +331,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    task.class.Project,
-    core.space.Model,
-    {
-      name: 'public',
-      description: 'Public tasks',
-      private: false,
-      archived: false,
-      members: []
-    },
-    task.space.TasksPublic
-  )
-
-  builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
     {
@@ -431,19 +418,6 @@ export function createModel (builder: Builder): void {
       component: task.component.KanbanView
     },
     task.viewlet.Kanban
-  )
-
-  builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Sequences',
-      description: 'Internal space to store sequence numbers',
-      members: [],
-      private: false,
-      archived: false
-    },
-    task.space.Sequence
   )
 
   builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {

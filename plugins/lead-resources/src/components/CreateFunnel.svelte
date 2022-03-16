@@ -40,7 +40,7 @@
 
     const id = await client.createDoc(
       lead.class.Funnel,
-      core.space.Model,
+      core.space.Space,
       {
         name,
         description,

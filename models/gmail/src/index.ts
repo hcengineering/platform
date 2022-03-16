@@ -133,19 +133,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Gmail',
-      description: 'Space for all gmail messages',
-      private: false,
-      archived: false,
-      members: []
-    },
-    gmail.space.Gmail
-  )
-
-  builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,
     {
@@ -159,3 +146,5 @@ export function createModel (builder: Builder): void {
     gmail.ids.TxSharedCreate
   )
 }
+
+export { gmailOperation } from './migration'

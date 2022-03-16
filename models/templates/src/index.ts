@@ -38,19 +38,6 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
 export function createModel (builder: Builder): void {
   builder.createModel(TMessageTemplate)
 
-  builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Templates',
-      description: 'Space for all templates',
-      private: true,
-      archived: false,
-      members: []
-    },
-    templates.space.Templates
-  )
-
   builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
     name: 'message-templates',
     label: templates.string.Templates,
@@ -66,3 +53,5 @@ export function createModel (builder: Builder): void {
     order: 1500
   }, templates.ids.TemplatePopupAction)
 }
+
+export { templatesOperation } from './migration'

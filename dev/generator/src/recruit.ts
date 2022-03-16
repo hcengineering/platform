@@ -97,7 +97,7 @@ async function genVacansyApplicants (
 
   // Update or create candidate
   await ctx.with('update', {}, (ctx) =>
-    findOrUpdate(ctx, client, core.space.Model, recruit.class.Vacancy, vacancyId, vacancy)
+    findOrUpdate(ctx, client, core.space.Space, recruit.class.Vacancy, vacancyId, vacancy)
   )
 
   console.log('Vacandy generated', vacancy.name)

@@ -40,7 +40,7 @@
 
     const id = await client.createDoc(
       task.class.Project,
-      core.space.Model,
+      core.space.Space,
       {
         name,
         description,

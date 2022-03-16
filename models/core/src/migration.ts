@@ -13,17 +13,58 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@anticrm/core'
+import { DOMAIN_TX, TxOperations } from '@anticrm/core'
 import {
   MigrateOperation,
   MigrationClient,
   MigrationUpgradeClient
 } from '@anticrm/model'
-
 import core from './component'
 
+async function migrateSpaces (client: MigrationUpgradeClient): Promise<void> {
+  const currentSpaces = (await client.findAll(core.class.Space, {})).map((s) => s._id)
+  const descendants = client.getHierarchy().getDescendants(core.class.Space)
+  const removedSpaces = (await client.findAll(core.class.TxRemoveDoc, { objectClass: { $in: descendants } })).map((s) => s.objectId)
+  let createTxes = await client.findAll(core.class.TxCreateDoc, {
+    objectClass: { $in: descendants },
+    objectId: { $nin: [...currentSpaces, ...removedSpaces] }
+  })
+
+  // TXes already stored, avoid dublicate id error
+  createTxes = createTxes.map((p) => {
+    return {
+      ...p,
+      space: core.space.DerivedTx
+    }
+  })
+  await Promise.all(createTxes.map(async (tx) => await client.tx(tx)))
+  let updateTxes = await client.findAll(core.class.TxUpdateDoc, {
+    objectClass: { $in: descendants },
+    objectId: { $nin: [...currentSpaces, ...removedSpaces] }
+  })
+  // TXes already stored, avoid dublicate id error
+  updateTxes = updateTxes.map((p) => {
+    return {
+      ...p,
+      space: core.space.DerivedTx
+    }
+  })
+  await Promise.all(updateTxes.map(async (tx) => await client.tx(tx)))
+}
+
 export const coreOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await client.update(DOMAIN_TX, {
+      objectSpace: core.space.Model,
+      objectClass: {
+        $in: ['core:class:Space', 'contact:class:Organizations', 'contact:class:Persons',
+          'chunter:class:Channel', 'task:class:SpaceWithStates', 'task:class:Project', 'recruit:class:ReviewCategory',
+          'recruit:class:Candidates', 'recruit:class:Vacancy', 'lead:class:Funnel']
+      }
+    }, {
+      objectSpace: core.space.Space
+    })
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const targetSpaces = (await client.findAll(core.class.Space, {}))
       .filter((space) => space.archived == null)
@@ -32,5 +73,7 @@ export const coreOperation: MigrateOperation = {
     await Promise.all(targetSpaces.map(
       (space) => new TxOperations(client, space.modifiedBy).updateDoc(space._class, space.space, space._id, { archived: false })
     )).catch((e) => console.error(e))
+
+    await migrateSpaces(client)
   }
 }

@@ -32,7 +32,7 @@
   const client = getClient()
 
   function createChannel() {
-    client.createDoc(chunter.class.Channel, core.space.Model, {
+    client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
       description,
       private: false,
