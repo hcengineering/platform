@@ -145,17 +145,16 @@
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
     {#if !preserveCandidate}
-    <UserBox _class={contact.class.Person} title={recruit.string.Candidate} caption={recruit.string.Candidates} bind:value={doc.attachedTo} />
-  {/if}
-  <UserBox
-    _class={contact.class.Employee}
-    title={recruit.string.AssignRecruiter}
-    caption={recruit.string.Recruiters}
-    bind:value={doc.assignee}
-    allowDeselect
-    titleDeselect={recruit.string.UnAssignRecruiter}
-  />
-  <DatePicker title={recruit.string.StartDate} bind:selected={startDate}/>
-  <DatePicker title={recruit.string.DueDate} bind:selected={dueDate}/>
+      <UserBox _class={contact.class.Person} title={recruit.string.Candidate} caption={recruit.string.Candidates} bind:value={doc.attachedTo} />
+    {/if}
+    <UserBox
+      _class={contact.class.Employee}
+      title={recruit.string.AssignRecruiter}
+      caption={recruit.string.Recruiters}
+      bind:value={doc.assignee}
+      allowDeselect
+      titleDeselect={recruit.string.UnAssignRecruiter}
+    />
+    <DatePicker title={recruit.string.StartDate} bind:value={startDate} bind:range={dueDate} />
   </Grid>
 </Card>

@@ -78,6 +78,6 @@
       maxWidth={'16rem'}
       focus
     />
-    <DatePicker title={plugin.string.TodoDueDate} bind:selected={dueTo} />
+    <DatePicker title={plugin.string.TodoDueDate} bind:value={dueTo} />
   </Grid>
 </Card>

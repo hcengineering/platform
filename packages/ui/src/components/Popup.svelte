@@ -18,6 +18,6 @@
 </script>
 
 {#each $modal as popup, i}
-  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} zIndex={(i + 1) * 500} top={$modal.length - 1 === i} close={popup.close}/>
+  <PopupInstance is={popup.is} props={popup.props} element={popup.element} onClose={popup.onClose} onUpdate={popup.onUpdate} zIndex={(i + 1) * 500} top={$modal.length - 1 === i} close={popup.close}/>
 {/each}
 

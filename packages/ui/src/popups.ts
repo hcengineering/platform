@@ -8,6 +8,7 @@ interface CompAndProps {
   props: any
   element?: PopupAlignment
   onClose?: (result: any) => void
+  onUpdate?: (result: any) => void
   close: () => void
 }
 
@@ -23,7 +24,8 @@ export function showPopup (
   component: AnySvelteComponent | AnyComponent,
   props: any,
   element?: PopupAlignment,
-  onClose?: (result: any) => void
+  onClose?: (result: any) => void,
+  onUpdate?: (result: any) => void
 ): () => void {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
@@ -36,9 +38,9 @@ export function showPopup (
     })
   }
   if (typeof component === 'string') {
-    getResource(component).then((resolved) => addPopup({ id, is: resolved, props, element, onClose, close: closePopupOp })).catch((err) => console.log(err))
+    getResource(component).then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp })).catch((err) => console.log(err))
   } else {
-    addPopup({ id, is: component, props, element, onClose, close: closePopupOp })
+    addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp })
   }
   return closePopupOp
 }

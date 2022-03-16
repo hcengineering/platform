@@ -37,6 +37,8 @@ export default plugin(uiId, {
     Suggested: '' as IntlString,
     TimeTooltip: '' as IntlString,
     None: '' as IntlString,
+    NotSelected: '' as IntlString,
+    Today: '' as IntlString,
     English: '' as IntlString,
     Russian: '' as IntlString
   },

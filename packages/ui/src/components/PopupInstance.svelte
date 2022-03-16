@@ -22,6 +22,7 @@
   export let props: object
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
+  export let onUpdate: ((result: any) => void) | undefined
   export let zIndex: number
   export let top: boolean
   export let close: () => void
@@ -30,7 +31,12 @@
   let componentInstance: any
   let show: boolean = false
 
-  function _close (result: any) {
+  function _update (result: any): void {
+    if (onUpdate !== undefined) onUpdate(result)
+    fitPopup()
+  }
+
+  function _close (result: any): void {
     if (onClose !== undefined) onClose(result)
     close()
   }
@@ -104,7 +110,7 @@
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={fitPopup} on:close={ (ev) => _close(ev.detail) } />
+  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
 </div>
 <div class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
