@@ -17,7 +17,7 @@
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
-    "@types/node": "^16.4.10",
+    "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",

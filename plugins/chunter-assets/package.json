@@ -24,10 +24,10 @@
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.41.1",
-    "@types/node": "^16.4.10"
+    "@types/node": "~16.11.12"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/chunter": "~0.6.0"
+    "@anticrm/chunter": "~0.6.1"
   }
 }

@@ -18,16 +18,16 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
+    "cross-env": "~7.0.3",
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
-    "@types/node": "^16.4.10",
+    "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^7.32.0",
-    "esbuild": "^0.12.24",
+    "esbuild": "^0.12.26",
     "@types/koa-bodyparser": "^4.3.3",
     "@types/koa-router": "^7.4.4",
     "@types/koa": "^2.13.4",
@@ -35,7 +35,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
-    "ts-node": "^10.2.1",
+    "ts-node": "~10.5.0",
     "@rushstack/heft": "^0.41.1",
     "typescript": "^4.3.5"
   },

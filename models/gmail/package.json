@@ -27,7 +27,7 @@
   "dependencies": {
     "@anticrm/activity": "~0.6.0",
     "@anticrm/model": "~0.6.0",
-    "@anticrm/core": "~0.6.0",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-contact": "~0.6.1",

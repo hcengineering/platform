@@ -25,11 +25,11 @@
     "@rushstack/heft": "^0.41.1"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/model": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/server-inventory": "~0.6.0",
-    "@anticrm/server-core": "~0.6.0",
+    "@anticrm/server-core": "~0.6.1",
     "@anticrm/inventory": "~0.6.0",
     "@anticrm/view": "~0.6.0"
   }

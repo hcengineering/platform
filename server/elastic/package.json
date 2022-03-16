@@ -20,7 +20,7 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^7.32.0",
-    "ts-node": "^10.2.1",
+    "ts-node": "~10.5.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
@@ -28,9 +28,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/server-core": "~0.6.0",
+    "@anticrm/server-core": "~0.6.1",
     "@elastic/elasticsearch": "^7.14.0"
   }
 }

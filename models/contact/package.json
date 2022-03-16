@@ -27,15 +27,15 @@
   "dependencies": {
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/model-workbench": "~0.6.0",
+    "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-presentation": "~0.6.0",
     "@anticrm/model": "~0.6.0",
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/contact": "~0.6.2",
+    "@anticrm/contact": "~0.6.5",
     "@anticrm/contact-resources": "~0.6.0"
   }
 }
