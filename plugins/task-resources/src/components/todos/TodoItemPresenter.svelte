@@ -20,7 +20,7 @@
   import EditTodo from './EditTodo.svelte'
 
   export let value: TodoItem
-
+  export let inline: boolean = false
 
   function show (elm: EventTarget | null) {
     closeTooltip()
@@ -28,6 +28,11 @@
   }
 </script>
 
-<div class="sm-tool-icon" on:click={(evt) => show(evt.target)}>
-  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span>{value.name}
-</div>
+{#if value}
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={(ev) => show(ev.target)}>
+    <div class="icon">
+      <Icon icon={task.icon.Task} size={'small'} />
+    </div>
+    <span class="label">{value.name}</span>
+  </div>
+{/if}

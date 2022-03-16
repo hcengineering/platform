@@ -22,6 +22,7 @@
   import view from '@anticrm/view'
 
   export let value: Applicant
+  export let inline: boolean = false
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
@@ -32,7 +33,10 @@
 </script>
 
 {#if value && shortLabel}
-  <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+    <div class="icon">
+      <Icon icon={recruit.icon.Application} size={'small'} />
+    </div>
+    <span class="label nowrap">{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span>
   </div>
 {/if}

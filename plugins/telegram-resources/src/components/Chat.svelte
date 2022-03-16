@@ -251,7 +251,7 @@ import Reconnect from './Reconnect.svelte';
     margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--theme-caption-color);
+    color: var(--primary-button-color);
     background-color: var(--primary-button-enabled);
     border-radius: 50%;
   }

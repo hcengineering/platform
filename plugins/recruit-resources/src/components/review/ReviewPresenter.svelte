@@ -22,6 +22,7 @@
   import view from '@anticrm/view'
 
   export let value: Review
+  export let inline: boolean = false
 
   const client = getClient()
   let shortLabel = ''
@@ -41,7 +42,10 @@
 </script>
 
 {#if value && shortLabel}
-  <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{shortLabel}-{value.number}
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+    <div class="icon">
+      <Icon icon={recruit.icon.Application} size={'small'} />
+    </div>
+    <span class="label nowrap">{shortLabel}-{value.number}</span>
   </div>
 {/if}

@@ -19,6 +19,7 @@
   import recruit from '../plugin'
 
   export let value: Vacancy
+  export let inline: boolean = false
   export let action: (item: Ref<Vacancy>) => void
 
   function editVacancy ():void {
@@ -27,20 +28,13 @@
 </script>
 
 {#if value}
-  <div class="sm-tool-icon vacancy-item over-underline" on:click={() => (action(value._id))}>
-    <span class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></span>&nbsp;{value.name}
-    <div class='action ml-4'>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={() => (action(value._id))}>
+    <div class="icon">
+      <Icon icon={recruit.icon.Vacancy} size={'small'} />
+    </div>
+    <span class="label">{value.name}</span>
+    <div class="action">
       <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy}/>
     </div>
   </div>
 {/if}
-<style type='scss'>
-  .vacancy-item {
-    &:hover .action {
-      visibility: visible;
-    }
-    .action {
-      visibility: hidden;
-    }
-  }
-</style>
