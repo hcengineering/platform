@@ -41,6 +41,10 @@ async function migrateSpaces (client: MigrationUpgradeClient): Promise<void> {
   let updateTxes = await client.findAll(core.class.TxUpdateDoc, {
     objectClass: { $in: descendants },
     objectId: { $nin: [...currentSpaces, ...removedSpaces] }
+  }, {
+    sort: {
+      modifiedOn: 1
+    }
   })
   // TXes already stored, avoid dublicate id error
   updateTxes = updateTxes.map((p) => {
@@ -49,7 +53,9 @@ async function migrateSpaces (client: MigrationUpgradeClient): Promise<void> {
       space: core.space.DerivedTx
     }
   })
-  await Promise.all(updateTxes.map(async (tx) => await client.tx(tx)))
+  for (const tx of updateTxes) {
+    await client.tx(tx)
+  }
 }
 
 export const coreOperation: MigrateOperation = {
