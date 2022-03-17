@@ -1,4 +1,4 @@
-import { Employee } from '@anticrm/contact'
+import { Employee, Organization } from '@anticrm/contact'
 import { Domain, IndexKind, Ref, Timestamp } from '@anticrm/core'
 import { Collection, Index, Model, Prop, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -14,6 +14,9 @@ import recruit from './plugin'
 export class TReviewCategory extends TSpaceWithStates implements ReviewCategory {
   @Prop(TypeString(), recruit.string.FullDescription)
   fullDescription?: string
+
+  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
+  company?: Ref<Organization>
 }
 
 @Model(recruit.class.Review, task.class.Task)

@@ -86,7 +86,6 @@ async function genVacansyApplicants (
     description: faker.lorem.sentences(2),
     fullDescription: faker.lorem.sentences(10),
     location: faker.address.city(),
-    company: faker.company.companyName(),
     members: accountIds,
     private: false,
     archived: false

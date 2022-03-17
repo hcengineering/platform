@@ -237,7 +237,6 @@ async function createUpdateVacancy (client: TxOperations, statuses: any): Promis
     description: '',
     fullDescription: '',
     location: '',
-    company: '',
     members: [],
     archived: false,
     private: false

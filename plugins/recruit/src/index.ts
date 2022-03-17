@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee, Person } from '@anticrm/contact'
+import type { Employee, Organization, Person } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -28,7 +28,7 @@ export interface Vacancy extends SpaceWithStates {
   attachments?: number
   dueTo?: Timestamp
   location?: string
-  company?: string
+  company?: Ref<Organization>
 }
 
 /**
@@ -37,6 +37,7 @@ export interface Vacancy extends SpaceWithStates {
 export interface ReviewCategory extends SpaceWithStates {
   fullDescription?: string
   attachments?: number
+  company?: Ref<Organization>
 }
 
 /**
