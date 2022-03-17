@@ -28,10 +28,15 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{encodeURIComponent([recruit.component.EditVacancy, value._id, value._class].join('|'))}"
+    on:click={show}
+  >
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
     <span class="label">{value.name}</span>
-  </div>
+  </a>
 {/if}

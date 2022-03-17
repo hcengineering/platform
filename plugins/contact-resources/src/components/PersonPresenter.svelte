@@ -29,10 +29,15 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={onClick}>
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{encodeURIComponent([view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value)].join('|'))}"
+    on:click={onClick}
+  >
     <div class="icon">
       <Avatar size={'x-small'} avatar={value.avatar} />
     </div>
     <span class="label">{formatName(value.name)}</span>
-  </div>
+  </a>
 {/if}

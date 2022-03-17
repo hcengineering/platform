@@ -20,14 +20,23 @@
   import lead from '../plugin'
 
   export let value: Lead
+  export let inline: boolean = false
 
-  function show () {
+  async function show () {
     showPanel(view.component.EditDoc, value._id, value._class, 'full')
   }
 </script>
 
 {#if value}
-  <div class="sm-tool-icon" on:click={show}>
-    <span class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></span>{value.title}
-  </div>
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
+    on:click={show}
+  >
+    <div class="icon">
+      <Icon icon={lead.icon.Lead} size={'small'} />
+    </div>
+    <span class="label">{value.title}</span>
+  </a>
 {/if}
