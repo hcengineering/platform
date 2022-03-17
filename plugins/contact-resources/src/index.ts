@@ -35,8 +35,10 @@ import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
+import OrganizationEditor from './components/OrganizationEditor.svelte'
+import OrganizationSelector from './components/OrganizationSelector.svelte'
 
-export { Channels, ChannelsEditor, ContactPresenter, ChannelsView }
+export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector }
 
 async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
   return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({
@@ -51,6 +53,7 @@ async function queryContact (_class: Ref<Class<Contact>>, client: Client, search
 
 export default async (): Promise<Resources> => ({
   component: {
+    OrganizationEditor,
     ContactPresenter,
     PersonPresenter,
     OrganizationPresenter,

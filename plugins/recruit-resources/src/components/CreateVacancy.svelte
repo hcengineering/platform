@@ -21,7 +21,7 @@
   import { Component,EditBox,Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import CompanyDropdown from './CompanyDropdown.svelte'
+  import { OrganizationSelector } from '@anticrm/contact-resources'
   import Vacancy from './icons/Vacancy.svelte'
 
   const dispatch = createEventDispatcher()
@@ -63,7 +63,7 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder={recruit.string.VacancyPlaceholder} maxWidth={'16rem'} focus/>
-    <CompanyDropdown bind:value={company} />
+    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
 
     <Component is={task.component.KanbanTemplateSelector} props={{
       folders: [recruit.space.VacancyTemplates],

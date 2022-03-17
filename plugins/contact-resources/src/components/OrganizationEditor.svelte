@@ -14,15 +14,18 @@
 -->
 
 <script lang="ts">
-  import contact,{ Organization } from '@anticrm/contact'
+  import { Organization } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Dropdown } from '@anticrm/ui'
+  import { DropdownPopup, Label, showPopup } from '@anticrm/ui'
   import { ListItem } from '@anticrm/ui/src/types'
-  import recruit from '../plugin'
+  import contact from '../plugin'
   import Company from './icons/Company.svelte'
 
   export let value: Ref<Organization> | undefined
+  export let label: IntlString = contact.string.Organization
+  export let onChange: (value: any) => void
 
   const query = createQuery()
 
@@ -42,15 +45,34 @@
   let items: ListItem[] = []
   let selected: ListItem | undefined
 
-  $: setValue(selected)
-
-  function setValue (selected: ListItem | undefined): void {
+  function setValue (res: ListItem | undefined): void {
+    selected = res
     if (selected === undefined) {
       value = undefined
     } else {
       value = selected._id as Ref<Organization>
     }
+    onChange(value)
   }
+
+  let opened: boolean = false
+  const icon = Company
+  let container: HTMLElement
+
 </script>
 
-<Dropdown icon={Company} label={recruit.string.Company} placeholder={recruit.string.Company} {items} bind:selected />
+<div class="caption-color cursor-pointer" bind:this={container} class:empty={selected === undefined} on:click|preventDefault={() => {
+  if (!opened) {
+    opened = true
+    showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
+      if (result) setValue(result)
+      opened = false
+    })
+  }
+}}>
+  {#if selected}{selected.label}{:else}<Label {label} />{/if}
+</div>
+
+<style lang="scss">
+  .empty { color: var(--theme-content-trans-color); }
+</style>

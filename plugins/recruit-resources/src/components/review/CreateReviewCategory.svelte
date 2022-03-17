@@ -19,10 +19,10 @@
   import task,{ createKanban,KanbanTemplate } from '@anticrm/task'
   import { Component,EditBox,Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import CompanyDropdown from '../CompanyDropdown.svelte'
   import recruit from '../../plugin'
   import Review from '../icons/Review.svelte'
   import { Organization } from '@anticrm/contact'
+  import { OrganizationSelector } from '@anticrm/contact-resources'
 
   const dispatch = createEventDispatcher()
 
@@ -63,7 +63,7 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.ReviewCategoryName} bind:value={name} icon={Review} placeholder={recruit.string.ReviewCategoryPlaceholder} maxWidth={'16rem'} focus/>
-    <CompanyDropdown bind:value={company} />
+    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
 
     <Component is={task.component.KanbanTemplateSelector} props={{
       folders: [recruit.space.ReviewTemplates],
