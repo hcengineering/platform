@@ -29,7 +29,7 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { ...(spaceQuery ?? {}) }, result => { objects = result })
+  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, result => { objects = result })
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
