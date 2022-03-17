@@ -199,7 +199,10 @@ p:last-child { margin-block-end: 0; }
     line-clamp: 2;  
     user-select: none;
 
-    &.nowrap { white-space: nowrap; }
+    &.nowrap {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
   .action {
     visibility: hidden;
