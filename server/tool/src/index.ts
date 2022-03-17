@@ -126,6 +126,7 @@ export async function upgradeModel (
   dbName: string
 ): Promise<void> {
   const { mongodbUri, txes } = prepareTools()
+
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }

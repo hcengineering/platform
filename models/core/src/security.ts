@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 
-import { Account, Arr, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
+import { Account, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
 import { Index, Model, Prop, TypeBoolean, TypeString } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
 
+export const DOMAIN_SPACE = 'space' as Domain
+
 // S P A C E
 
-@Model(core.class.Space, core.class.Doc, DOMAIN_MODEL)
+@Model(core.class.Space, core.class.Doc, DOMAIN_SPACE)
 export class TSpace extends TDoc implements Space {
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)

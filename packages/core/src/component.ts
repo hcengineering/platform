@@ -58,7 +58,8 @@ export default plugin(coreId, {
   space: {
     Tx: '' as Ref<Space>,
     DerivedTx: '' as Ref<Space>,
-    Model: '' as Ref<Space>
+    Model: '' as Ref<Space>,
+    Space: '' as Ref<Space>
   },
   account: {
     System: '' as Ref<Account>

@@ -224,19 +224,6 @@ export function createModel (builder: Builder): void {
     contact.channelProvider.Facebook
   )
 
-  builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Employees',
-      description: 'Employees',
-      private: false,
-      archived: false,
-      members: []
-    },
-    contact.space.Employee
-  )
-
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter
   })

@@ -246,7 +246,7 @@ async function createUpdateVacancy (client: TxOperations, statuses: any): Promis
 
   console.log('Creating vacancy', vacancy.name)
   // Update or create candidate
-  await findOrUpdate(client, core.space.Model, recruit.class.Vacancy, vacancyId, vacancy)
+  await findOrUpdate(client, core.space.Space, recruit.class.Vacancy, vacancyId, vacancy)
 
   const states = await createUpdateSpaceKanban(vacancyId, client, statuses)
 

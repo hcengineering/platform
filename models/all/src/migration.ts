@@ -13,22 +13,29 @@
 // limitations under the License.
 //
 
-import { MigrateOperation } from '@anticrm/model'
-
 // Import migrate operations.
-import { coreOperation } from '@anticrm/model-core'
-import { taskOperation } from '@anticrm/model-task'
+import { MigrateOperation } from '@anticrm/model'
 import { attachmentOperation } from '@anticrm/model-attachment'
+import { chunterOperation } from '@anticrm/model-chunter'
+import { contactOperation } from '@anticrm/model-contact'
+import { coreOperation } from '@anticrm/model-core'
+import { gmailOperation } from '@anticrm/model-gmail'
 import { leadOperation } from '@anticrm/model-lead'
 import { notificationOperation } from '@anticrm/model-notification'
 import { settingOperation } from '@anticrm/model-setting'
 import { recruitOperation } from '@anticrm/model-recruit'
-import { viewOperation } from '@anticrm/model-view'
-import { contactOperation } from '@anticrm/model-contact'
 import { tagsOperation } from '@anticrm/model-tags'
+import { taskOperation } from '@anticrm/model-task'
+import { telegramOperation } from '@anticrm/model-telegram'
+import { templatesOperation } from '@anticrm/model-templates'
+import { viewOperation } from '@anticrm/model-view'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
+  chunterOperation,
+  gmailOperation,
+  templatesOperation,
+  telegramOperation,
   taskOperation,
   attachmentOperation,
   leadOperation,

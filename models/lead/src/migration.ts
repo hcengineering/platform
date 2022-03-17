@@ -29,6 +29,26 @@ function logInfo (msg: string, result: MigrationResult): void {
   }
 }
 
+async function createSpace (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: lead.space.DefaultFunnel
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      lead.class.Funnel,
+      core.space.Space,
+      {
+        name: 'Funnel',
+        description: 'Default funnel',
+        private: false,
+        archived: false,
+        members: []
+      },
+      lead.space.DefaultFunnel
+    )
+  }
+}
+
 export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // Update done states for tasks
@@ -52,6 +72,7 @@ export const leadOperation: MigrateOperation = {
     console.log('Lead: Performing model upgrades')
 
     const ops = new TxOperations(client, core.account.System)
+    await createSpace(ops)
 
     const leads = await client.findAll(lead.class.Lead, {})
     for (const lead of leads) {

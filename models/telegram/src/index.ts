@@ -98,19 +98,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    core.class.Space,
-    core.space.Model,
-    {
-      name: 'Telegram',
-      description: 'Space for all telegram messages',
-      private: false,
-      archived: false,
-      members: []
-    },
-    telegram.space.Telegram
-  )
-
-  builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,
     {
@@ -124,3 +111,5 @@ export function createModel (builder: Builder): void {
     telegram.ids.TxSharedCreate
   )
 }
+
+export { telegramOperation } from './migration'

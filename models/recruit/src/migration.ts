@@ -161,6 +161,8 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
 
+    await createSpace(tx)
+
     await createOrUpdate(
       tx,
       tags.class.TagCategory,
@@ -206,6 +208,27 @@ export const recruitOperation: MigrateOperation = {
     await createSequence(tx, recruit.class.Opinion)
   }
 }
+
+async function createSpace (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: recruit.space.CandidatesPublic
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      recruit.class.Candidates,
+      core.space.Space,
+      {
+        name: 'public',
+        description: 'Public Candidates',
+        private: false,
+        members: [],
+        archived: false
+      },
+      recruit.space.CandidatesPublic
+    )
+  }
+}
+
 async function migrateUpdateCandidateToPersonAndMixin (client: MigrationClient): Promise<void> {
   const updateCandidates = await client.find(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,

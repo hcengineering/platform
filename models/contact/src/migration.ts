@@ -15,7 +15,7 @@
 //
 
 import { Channel, ChannelProvider, Contact } from '@anticrm/contact'
-import { Class, DOMAIN_TX, generateId, Ref, SortingOrder, TxCreateDoc, TxCUD, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
+import { Class, DOMAIN_TX, generateId, Ref, SortingOrder, TxCreateDoc, TxCUD, TxOperations, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import contact, { DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
@@ -207,6 +207,26 @@ async function migrateChannelsDomain (client: MigrationClient): Promise<void> {
   await client.move(DOMAIN_CONTACT, { _class: contact.class.Channel }, DOMAIN_CHANNEL)
 }
 
+async function createSpace (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(core.class.Space, {
+    _id: contact.space.Employee
+  })
+  if (current === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Employees',
+        description: 'Employees',
+        private: false,
+        archived: false,
+        members: []
+      },
+      contact.space.Employee
+    )
+  }
+}
+
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     const classes = [contact.class.Contact, contact.class.Person, contact.class.Employee, contact.class.Organization]
@@ -214,5 +234,7 @@ export const contactOperation: MigrateOperation = {
     await migrateChannelsDomain(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
+    await createSpace(tx)
   }
 }

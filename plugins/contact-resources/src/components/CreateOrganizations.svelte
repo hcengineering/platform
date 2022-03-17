@@ -32,7 +32,7 @@
   const client = getClient()
 
   function createChannel () {
-    client.createDoc(contact.class.Organizations, core.space.Model, {
+    client.createDoc(contact.class.Organizations, core.space.Space, {
       name,
       description,
       private: false,

@@ -104,18 +104,6 @@ export function createModel (builder: Builder): void {
     },
     lead.app.Lead
   )
-  builder.createDoc(
-    lead.class.Funnel,
-    core.space.Model,
-    {
-      name: 'Funnel',
-      description: 'Default funnel',
-      private: false,
-      archived: false,
-      members: []
-    },
-    lead.space.DefaultFunnel
-  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.mixin.Customer,

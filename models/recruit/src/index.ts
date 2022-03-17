@@ -191,18 +191,6 @@ export function createModel (builder: Builder): void {
     },
     recruit.app.Recruit
   )
-  builder.createDoc(
-    recruit.class.Candidates,
-    core.space.Model,
-    {
-      name: 'public',
-      description: 'Public Candidates',
-      private: false,
-      members: [],
-      archived: false
-    },
-    recruit.space.CandidatesPublic
-  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.mixin.Candidate,
