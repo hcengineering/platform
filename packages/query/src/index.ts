@@ -617,9 +617,17 @@ export class LiveQuery extends TxProcessor implements Client {
             const lookupClass = getLookupClass(lookup)
             const nestedLookup = getNestedLookup(lookup)
             if (Array.isArray(ops[key])) {
-              (updatedDoc.$lookup as any)[key] = await this.client.findAll(lookupClass, { _id: { $in: ops[key] } }, { lookup: nestedLookup })
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findAll(
+                lookupClass,
+                { _id: { $in: ops[key] } },
+                { lookup: nestedLookup }
+              )
             } else {
-              (updatedDoc.$lookup as any)[key] = await this.client.findOne(lookupClass, { _id: ops[key] }, { lookup: nestedLookup })
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(
+                lookupClass,
+                { _id: ops[key] },
+                { lookup: nestedLookup }
+              )
             }
           }
         }
@@ -637,10 +645,16 @@ export class LiveQuery extends TxProcessor implements Client {
                   pp[pkey] = []
                 }
                 if (Array.isArray((pops as any)[pkey])) {
-                  const pushData = await this.client.findAll(lookupClass, { _id: { $in: (pops as any)[pkey] } }, { lookup: nestedLookup })
-                  ;pp[pkey].push(...pushData)
+                  const pushData = await this.client.findAll(
+                    lookupClass,
+                    { _id: { $in: (pops as any)[pkey] } },
+                    { lookup: nestedLookup }
+                  )
+                  pp[pkey].push(...pushData)
                 } else {
-                  pp[pkey].push(await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup }))
+                  pp[pkey].push(
+                    await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup })
+                  )
                 }
               }
             }
@@ -657,9 +671,9 @@ export class LiveQuery extends TxProcessor implements Client {
                   pp[pkey] = []
                 }
                 if (Array.isArray(pid)) {
-                  pp[pkey] = (pp[pkey]).filter((it: Doc) => !pid.includes(it._id))
+                  pp[pkey] = pp[pkey].filter((it: Doc) => !pid.includes(it._id))
                 } else {
-                  pp[pkey] = (pp[pkey]).filter((it: Doc) => it._id !== pid)
+                  pp[pkey] = pp[pkey].filter((it: Doc) => it._id !== pid)
                 }
               }
             }
