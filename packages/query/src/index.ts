@@ -632,11 +632,15 @@ export class LiveQuery extends TxProcessor implements Client {
               if (lookup !== undefined) {
                 const lookupClass = getLookupClass(lookup)
                 const nestedLookup = getNestedLookup(lookup)
+                const pp = updatedDoc.$lookup as any
+                if (pp[pkey] === undefined) {
+                  pp[pkey] = []
+                }
                 if (Array.isArray((pops as any)[pkey])) {
                   const pushData = await this.client.findAll(lookupClass, { _id: { $in: (pops as any)[pkey] } }, { lookup: nestedLookup })
-                  ;(updatedDoc.$lookup as any)[pkey].push(...pushData)
+                  ;pp[pkey].push(...pushData)
                 } else {
-                  (updatedDoc.$lookup as any)[pkey].push(await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup }))
+                  pp[pkey].push(await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup }))
                 }
               }
             }
@@ -648,10 +652,14 @@ export class LiveQuery extends TxProcessor implements Client {
               const lookup = (q.options.lookup as any)?.[pkey]
               if (lookup !== undefined) {
                 const pid = (pops as any)[pkey]
+                const pp = updatedDoc.$lookup as any
+                if (pp[pkey] === undefined) {
+                  pp[pkey] = []
+                }
                 if (Array.isArray(pid)) {
-                  (updatedDoc.$lookup as any)[pkey] = ((updatedDoc.$lookup as any)[pkey]).filter((it: Doc) => !pid.includes(it._id))
+                  pp[pkey] = (pp[pkey]).filter((it: Doc) => !pid.includes(it._id))
                 } else {
-                  (updatedDoc.$lookup as any)[pkey] = ((updatedDoc.$lookup as any)[pkey]).filter((it: Doc) => it._id !== pid)
+                  pp[pkey] = (pp[pkey]).filter((it: Doc) => it._id !== pid)
                 }
               }
             }
