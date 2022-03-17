@@ -58,7 +58,7 @@
   {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool divide">
       <div class="ac-header__wrap-title">
-        <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
+        <div class="flex-center icon"><IconActivity size={'small'} /></div>
         <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
     </div>
@@ -90,7 +90,7 @@
     <div class="scroller-back">
       <div class="ac-header short mirror-tool">
         <div class="ac-header__wrap-title">
-          <div class="ac-header__icon flex-center icon"><IconActivity size={'small'} /></div>
+          <div class="flex-center icon"><IconActivity size={'small'} /></div>
           <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
         </div>
       </div>

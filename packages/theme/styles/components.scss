@@ -424,3 +424,106 @@
   border-radius: .75rem;
   box-shadow: 0px 3px 3px rgba(0, 0, 0, .2);
 }
+
+/* Select */
+.antiSelect {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+  cursor: pointer;
+
+  .button {
+    width: 2.25rem;
+    height: 2.25rem;
+    background-color: transparent;
+    border: 1px solid var(--theme-card-divider);
+
+    &.circle { border-radius: 50%; }
+    &.round-2 { border-radius: .5rem; }
+  
+    & > .icon { color: var(--theme-content-trans-color); }
+    &.selected {
+      background-color: var(--theme-button-bg-focused);
+      border: none;
+    }
+    &:focus {
+      border: 1px solid var(--primary-button-focused-border);
+      box-shadow: 0 0 0 3px var(--primary-button-outline);
+      & > .icon { color: var(--theme-caption-color); }
+    }
+  }
+  &:hover .button {
+    background-color: var(--theme-button-bg-pressed);
+    border: 1px solid var(--theme-bg-accent-color);
+    & > .icon { color: var(--theme-caption-color); }
+  }
+  
+  .label, .result {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: none;
+    min-width: 0;  
+  }
+  .label {
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--theme-content-accent-color);
+  }
+  .result {
+    &.selected { color: var(--theme-caption-color); }
+    &.not-selected { color: var(--theme-content-dark-color); }
+    &.highlight {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  }
+
+  .group {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin-left: .75rem;
+    min-height: 0;
+  }
+  .wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    min-width: 0;
+
+    &::after, &::before {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-button-enabled);
+    }
+    &::before {
+      top: -2px;
+      left: -4px;
+      clip-path: path('M0,6v-6h6v1h-5v5z');
+    }
+    &::after {
+      bottom: -2px;
+      right: -4px;
+      clip-path: path('M0,6h6v-6h-1v5h-5z');
+    }
+    &.wraped::before, &.wraped::after { content: ''; }
+  }
+
+  .divider {
+    margin: 0 .125rem;
+    font-weight: 500;
+    font-size: .75em;
+    color: var(--theme-content-dark-color);
+
+    &.inter { font-size: 1em; }
+    &.max {
+      margin: 0 .5rem;
+      font-size: .75rem;
+      color: var(--theme-content-trans-color);
+    }
+  }
+}

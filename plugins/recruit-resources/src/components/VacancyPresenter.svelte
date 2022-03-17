@@ -20,6 +20,7 @@
   import { showPanel } from '@anticrm/ui/src/panelup'
 
   export let value: Vacancy
+  export let inline: boolean = false
 
   function show () {
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
@@ -27,7 +28,10 @@
 </script>
 
 {#if value}
-  <div class="sm-tool-icon over-underline" on:click={show}>
-    <span class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></span>&nbsp;{value.name}
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+    <div class="icon">
+      <Icon icon={recruit.icon.Vacancy} size={'small'} />
+    </div>
+    <span class="label">{value.name}</span>
   </div>
 {/if}

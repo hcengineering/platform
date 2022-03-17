@@ -12,6 +12,8 @@
     "Suggested": "Предложено",
     "TimeTooltip": "{value}",
     "None": "Нет",
+    "NotSelected": "Не выбрано",
+    "Today": "Сегодня",
     "English": "Английский",
     "Russian": "Русский"
   }

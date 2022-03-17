@@ -100,6 +100,7 @@ export default mergeIds(recruitId, recruit, {
     ReviewShortLabel: '' as IntlString,
     StartDate: '' as IntlString,
     DueDate: '' as IntlString,
+    Period: '' as IntlString,
     CandidateReviews: '' as IntlString,
     Participants: '' as IntlString,
     NoParticipants: '' as IntlString,

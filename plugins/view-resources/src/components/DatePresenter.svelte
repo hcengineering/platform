@@ -15,13 +15,16 @@
 -->
 
 <script lang="ts">
+  import { DatePresenter } from '@anticrm/ui'
+
   export let value: number | Date | undefined
+  
   $: date = value ? new Date(value) : undefined
 </script>
 
-<div class=".caption-color">
+<div class="antiSelect">
   {#if date}
-    {date.getMonth() + 1} / {date.getDate()} / {date.getFullYear()}
+    <DatePresenter value={date} />
   {:else}
     No date
   {/if}

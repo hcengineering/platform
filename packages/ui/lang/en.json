@@ -12,6 +12,8 @@
     "Suggested": "Suggested",
     "TimeTooltip": "{value}",
     "None": "None",
+    "NotSelected": "Not selected",
+    "Today": "Today",
     "English": "English",
     "Russian": "Russian"
   }

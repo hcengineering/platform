@@ -13,64 +13,83 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
-  import Label from './Label.svelte'
   import Calendar from './icons/Calendar.svelte'
   import Close from './icons/Close.svelte'
-  import { DatePopup, showPopup } from '..'
+  import ui, { Label, DatePopup, DatePresenter, showPopup } from '..'
 
   export let title: IntlString
-  export let selected: Date = new Date(Date.now())
+  export let value: Date | null | undefined = null
+  export let range: Date | null | undefined = undefined
+  export let bigDay: boolean = false
   export let show: boolean = false
-  let container: HTMLElement
 
+  const dispatch = createEventDispatcher()
+
+  let opened: boolean = false
+  let secondSelect: boolean = false
+  let container: HTMLElement
+  let btn: HTMLElement
+
+  onMount(() => {
+    if (btn && show) {
+      btn.click()
+      show = false
+    }
+  })
+
+  const splitRes = (result: any): void => {
+    if (result !== undefined) {
+      if (result[0] !== value) value = result[0]
+      if (result[1] !== range) range = result[1]
+      dispatch('change', [value, range])
+    }
+  }
+  const onClosePopup = (result: any): void => {
+    splitRes(result)
+    opened = false
+    secondSelect = false
+  }
+  const onUpdatePopup = (result: any): void => {
+    secondSelect = true
+    splitRes(result)
+  }
 </script>
 
-<div class="flex-row-center">
+<div class="antiSelect"
+  bind:this={container}
+  on:click|preventDefault={() => {
+    btn.focus()
+    if (!opened) {
+      opened = true
+      showPopup(DatePopup, { title, value, range }, container, onClosePopup, onUpdatePopup)
+    }
+  }}
+>
   <button
-    bind:this={container}
-    class="focused-button btn"
-    class:selected={show}
-    on:click|preventDefault={() => {
-      show = true
-      showPopup(DatePopup, { selected, title }, container, (result) => {
-        if (result) {
-          selected = result
-        }
-        show = false
-      })
-    }}
+    bind:this={btn}
+    class="button round-2"
+    class:selected={value}
   >
     <div class="icon">
       {#if show}<Close size={'small'} />{:else}<Calendar size={'medium'} />{/if}
     </div>
   </button>
 
-  <div class="selectDate">
-    <div class="label"><Label label={title} /></div>
-    <div class="date">
-      {selected.getMonth() + 1} / {selected.getDate()} / {selected.getFullYear()}
-    </div>
+  <div class="group">
+    <span class="label"><Label label={title} /></span>
+    {#if value !== undefined}
+      <div class="flex-row-center">
+        <DatePresenter {value} {bigDay} wraped={opened && !secondSelect} />
+        {#if range !== undefined}
+          <span class="divider max"> &mdash; </span>
+          <DatePresenter value={range} {bigDay} wraped={opened && secondSelect} />
+        {/if}
+      </div>
+    {:else}
+      <span class="result not-selected"><Label label={ui.string.NotSelected} /></span>
+    {/if}
   </div>
 </div>
-
-<style lang="scss">
-  .btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: .5rem;
-    border: none;
-  }
-
-  .selectDate {
-    margin-left: .75rem;
-    .label {
-      font-size: .75rem;
-      font-weight: 500;
-      color: var(--theme-content-accent-color);
-    }
-    .date {
-      color: var(--theme-caption-color);
-    }
-  }
-</style>

@@ -66,7 +66,7 @@
   }
 </script>
 
-<div class="flex-row-center container" bind:this={container}
+<div class="antiSelect" bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
     if (!opened) {
@@ -85,36 +85,14 @@
     }
   }}
 >
-  <button class="focused-button btn" class:selected bind:this={btn}>
+  <button class="button circle" class:selected={value} bind:this={btn}>
     <Avatar avatar={selected ? selected.avatar : undefined} size={'medium'} />
   </button>
 
-  <div class="selectUser">
-    <div class="title"><Label label={title} /></div>
-    <div class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
+  <div class="group">
+    <span class="label"><Label label={title} /></span>
+    <span class="result" class:selected={value} class:not-selected={!value}>
       {#if selected}{getName(selected)}{:else}<Label label={presentation.string.NotSelected} />{/if}
-    </div>
+    </span>
   </div>
 </div>
-
-<style lang="scss">
-  .container { cursor: pointer; }
-  .btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    background-color: transparent;
-    border: 1px solid var(--theme-card-divider);
-    border-radius: 50%;
-  }
-  .selected { border: none; }
-
-  .selectUser {
-    margin-left: .75rem;
-    min-width: 0;
-    .title {
-      font-size: .75rem;
-      font-weight: 500;
-      color: var(--theme-content-accent-color);
-    }
-  }
-</style>
