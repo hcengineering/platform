@@ -15,13 +15,13 @@
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
-    "@types/node": "^16.4.10",
+    "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^7.32.0",
-    "@types/ws": "^7.4.7",
+    "@types/ws": "^8.2.1",
     "@rushstack/heft": "^0.41.1",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -29,9 +29,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "ws": "^8.0.0",
+    "ws": "^8.2.0",
     "@anticrm/platform": "~0.6.5",
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/server-core": "~0.6.1",
     "@anticrm/server-token": "~0.6.0"
   }

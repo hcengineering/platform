@@ -27,12 +27,12 @@
   "dependencies": {
     "@anticrm/activity": "~0.6.0",
     "@anticrm/model": "~0.6.0",
-    "@anticrm/core": "~0.6.0",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-contact": "~0.6.1",
-    "@anticrm/telegram": "~0.6.0",
+    "@anticrm/telegram": "~0.6.2",
     "@anticrm/telegram-resources": "~0.6.0",
     "@anticrm/setting": "~0.6.0",
     "@anticrm/ui": "~0.6.0"

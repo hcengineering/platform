@@ -39,8 +39,8 @@
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/activity-resources": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
-    "@anticrm/contact": "~0.6.0",
+    "@anticrm/contact": "~0.6.5",
     "just-clone": "^3.2.1",
-    "@anticrm/core": "~0.6.11"
+    "@anticrm/core": "~0.6.16"
   }
 }

@@ -14,7 +14,7 @@
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
-    "@types/node": "^16.4.10",
+    "@types/node": "~16.11.12",
     "@types/minio": "~7.0.11",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
@@ -28,7 +28,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.5",
     "minio": "~7.0.26",
     "jwt-simple": "~0.5.6"

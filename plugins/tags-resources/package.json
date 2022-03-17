@@ -36,7 +36,7 @@
     "@anticrm/tags": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
-    "@anticrm/core": "~0.6.11",
+    "@anticrm/core": "~0.6.16",
     "@anticrm/view-resources": "~0.6.0"
   }
 }
