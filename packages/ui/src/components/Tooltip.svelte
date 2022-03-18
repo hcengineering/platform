@@ -22,6 +22,7 @@
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined
   export let anchor: HTMLElement | undefined = undefined
+  export let fill = false
 
   let triggerHTML: HTMLElement
   let shown: boolean = false
@@ -29,7 +30,7 @@
 </script>
 
 <div
-  class="tooltip-trigger"
+  class="tooltip-trigger" class:fill={fill}
   name={`tooltip-${label}`}
   bind:this={triggerHTML}
   on:mousemove={() => {
@@ -42,5 +43,9 @@
 <style lang="scss">
   .tooltip-trigger {
     width: fit-content;
-  }
+    &.fill {
+      width: 100%;
+      height: 100%;
+    }
+  }  
 </style>

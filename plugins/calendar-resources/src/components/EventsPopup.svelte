@@ -16,23 +16,23 @@
 <script lang="ts">
 
   import type { Event } from '@anticrm/calendar'
-  import core from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
-  import calendar from '../plugin'
 
   export let value: Event[]
+
+  export let _class: Ref<Class<Doc>>
+  export let query: DocumentQuery<Event> = {}
+  export let options: FindOptions<Event> | undefined = undefined
+  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
+  export let config: string[]
 </script>
 
 <Table 
-  _class={calendar.class.Event}
-  config={['', 'title', '$lookup.space.name', 'date', 'dueDate', 'modifiedOn']}
-  options={
-    {
-      lookup: {
-        space: core.class.Space
-      }
-    }
-  }
-  query={ { _id: { $in: value.map(it => it._id) } } }
+  _class={_class}
+  config={config}
+  {baseMenuClass}
+  options={ options }
+  query={ { ...query, _id: { $in: value.map(it => it._id) } } }
   loadingProps={{ length: value.length ?? 0 }}
 />
