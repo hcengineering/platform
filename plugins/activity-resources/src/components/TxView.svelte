@@ -181,11 +181,11 @@
                   {/if}
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
                     </div>
                   {/if}
                 {/if}
@@ -206,11 +206,11 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
                     </div>
                   {/if}
                 {/if}
