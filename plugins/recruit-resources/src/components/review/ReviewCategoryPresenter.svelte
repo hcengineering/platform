@@ -23,7 +23,7 @@
   export let inline: boolean = false
 
   function show () {
-    // showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
+    showPanel(recruit.component.EditReviewCategory, value._id, value._class, 'right')
   }
 </script>
 

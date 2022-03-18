@@ -13,10 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Space } from '@anticrm/core'
   import core from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
   import { Icon, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
@@ -25,46 +22,16 @@
   import { getSpecialSpaceClass } from '../utils'
 
   export let model: NavigatorModel | undefined
-
-  const query = createQuery()
-  let spaceSample: Space | undefined
-  $: if (model) {
-    query.query(
-      core.class.Space,
-      {
-        _class: { $in: getSpecialSpaceClass(model) },
-        archived: true
-      },
-      (result) => {
-        spaceSample = result[0]
-      },
-      { limit: 1 }
-    )
-  }
-
-  let spaceName = ''
-  $: {
-    const spaceClass = spaceSample?._class ?? ''
-    const spaceModel = model?.spaces.find((x) => x.spaceClass === spaceClass)
-
-    const label = spaceModel?.label
-
-    if (label) {
-      translate(label, {}).then((l) => {
-        spaceName = l.toLowerCase()
-      })
-    }
-  }
 </script>
 
 <div class="flex-col h-full">
   <div class="flex-row-center header">
     <div class="content-color mr-3"><Icon icon={view.icon.Archive} size={'medium'} /></div>
-    <div class="fs-title"><Label label={workbench.string.Archived} params={{ object: spaceName }} /></div>
+    <div class="fs-title"><Label label={workbench.string.Archived}/></div>
   </div>
-  {#if spaceSample !== undefined && model}
+  {#if model}
     <Table
-      _class={spaceSample._class}
+      _class={core.class.Space}
       config={['', '$lookup._class.label', 'modifiedOn']}
       options={{
         lookup: {

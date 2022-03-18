@@ -114,6 +114,7 @@ export default mergeIds(recruitId, recruit, {
     VacancyItemPresenter: '' as AnyComponent,
     VacancyCountPresenter: '' as AnyComponent,
     OpinionsPresenter: '' as AnyComponent,
-    VacancyModifiedPresenter: '' as AnyComponent
+    VacancyModifiedPresenter: '' as AnyComponent,
+    EditReviewCategory: '' as AnyComponent
   }
 })
