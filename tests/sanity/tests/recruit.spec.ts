@@ -53,7 +53,7 @@ test.describe('recruit tests', () => {
     await page.click('text=Create Cancel >> button')
 
     await page.click('text=APP-4')
-    await page.click('text=Assigned recruiter Not selected >> span')
+    await page.click('text=Assigned recruiter Not selected')
     await page.click('button:has-text("Rosamund Chen")')
   })
 
