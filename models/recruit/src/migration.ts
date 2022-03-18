@@ -163,6 +163,8 @@ export const recruitOperation: MigrateOperation = {
 
     await createSpace(tx)
 
+    await migrateCompany(tx)
+
     await createOrUpdate(
       tx,
       tags.class.TagCategory,
@@ -206,6 +208,33 @@ export const recruitOperation: MigrateOperation = {
     await createReviewTemplates(tx)
     await createSequence(tx, recruit.class.Review)
     await createSequence(tx, recruit.class.Opinion)
+  }
+}
+
+async function migrateCompany (tx: TxOperations): Promise<void> {
+  await migrateVacancyCompany(tx)
+}
+
+async function migrateVacancyCompany (tx: TxOperations): Promise<void> {
+  const vacancies = await tx.findAll(recruit.class.Vacancy, {})
+  for (const vacancy of vacancies) {
+    if (vacancy.company === undefined) continue
+    const current = await tx.findOne(contact.class.Organization, { _id: vacancy.company })
+    if (current !== undefined) continue
+    const same = await tx.findOne(contact.class.Organization, { name: vacancy.company })
+    if (same !== undefined) {
+      await tx.update(vacancy, {
+        company: same._id
+      })
+    } else {
+      const id = await tx.createDoc(contact.class.Organization, contact.space.Contacts, {
+        name: vacancy.company,
+        city: ''
+      })
+      await tx.update(vacancy, {
+        company: id
+      })
+    }
   }
 }
 
