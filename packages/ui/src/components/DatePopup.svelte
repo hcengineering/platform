@@ -56,7 +56,6 @@
   let monthYear: string
   let days: Array<ICell> = []
   let result: TSelectDate = value
-  const str: IntlString = '' as IntlString
   let prevDiv: HTMLElement
   let nextDiv: HTMLElement
   let hourDiv: HTMLElement
@@ -107,7 +106,6 @@
       let newNumber: number = ((isHour && number > 2) || (!isHour && number > 5))
                                 ? keyNumber
                                 : number * 10 + keyNumber
-      // console.log('keyN:', keyNumber, ' - N:', number, ' - newN:', newNumber)
       
       if (isHour) {
         if (newNumber > 23) newNumber = 23
