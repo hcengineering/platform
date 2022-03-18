@@ -20,7 +20,6 @@
   import { createEventDispatcher } from 'svelte'
   import ui, { Label, Button } from '..'
   import type { TSelectDate, TCellStyle, ICell } from '../types'
-import Button from './Button.svelte';
 
   export let title: IntlString
   export let value: TSelectDate
@@ -105,7 +104,10 @@ import Button from './Button.svelte';
     if (ev.key >= '0' && ev.key <= '9') {
       const keyNumber: number = parseInt(ev.key, 10)
       let number: number = isHour ? view.getHours() : view.getMinutes()
-      let newNumber: number = (number > 9) ? keyNumber : number * 10 + keyNumber
+      let newNumber: number = ((isHour && number > 2) || (!isHour && number > 5))
+                                ? keyNumber
+                                : number * 10 + keyNumber
+      // console.log('keyN:', keyNumber, ' - N:', number, ' - newN:', newNumber)
       
       if (isHour) {
         if (newNumber > 23) newNumber = 23
