@@ -33,10 +33,15 @@
 </script>
 
 {#if value && shortLabel}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={show}>
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
+    on:click={show}
+  >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />
     </div>
     <span class="label nowrap">{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span>
-  </div>
+  </a>
 {/if}

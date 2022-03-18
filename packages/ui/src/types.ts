@@ -88,7 +88,7 @@ export interface DropdownTextItem {
 }
 
 export type TSelectDate = Date | null | undefined
-export type TCellStyle = 'not-selected' | 'selected' | 'selected-start' | 'selected-end'
+export type TCellStyle = 'not-selected' | 'selected'
 export interface ICell {
   dayOfWeek: number
   style: TCellStyle

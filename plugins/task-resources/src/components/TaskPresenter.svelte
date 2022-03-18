@@ -21,6 +21,7 @@
   import task from '../plugin'
 
   export let value: Issue
+  export let inline: boolean = false
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
@@ -30,6 +31,16 @@
   }
 </script>
 
-<div class="sm-tool-icon" on:click={show}>
-  <span class="icon"><Icon icon={task.icon.Task} size={'small'} /></span>{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
-</div>
+{#if value && shortLabel}
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
+    on:click={show}
+  >
+    <div class="icon">
+      <Icon icon={task.icon.Task} size={'small'} />
+    </div>
+    <span class="label nowrap">{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span>
+  </a>
+{/if}

@@ -22,16 +22,22 @@
 
   export let title: IntlString
   export let value: Date | null | undefined = null
-  export let range: Date | null | undefined = undefined
+  export let withTime: boolean = false
   export let bigDay: boolean = false
   export let show: boolean = false
 
   const dispatch = createEventDispatcher()
 
   let opened: boolean = false
-  let secondSelect: boolean = false
   let container: HTMLElement
   let btn: HTMLElement
+
+  const changeValue = (result: any): void => {
+    if (result !== undefined) {
+      value = result
+      dispatch('change', result)
+    }
+  }
 
   onMount(() => {
     if (btn && show) {
@@ -39,23 +45,6 @@
       show = false
     }
   })
-
-  const splitRes = (result: any): void => {
-    if (result !== undefined) {
-      if (result[0] !== value) value = result[0]
-      if (result[1] !== range) range = result[1]
-      dispatch('change', [value, range])
-    }
-  }
-  const onClosePopup = (result: any): void => {
-    splitRes(result)
-    opened = false
-    secondSelect = false
-  }
-  const onUpdatePopup = (result: any): void => {
-    secondSelect = true
-    splitRes(result)
-  }
 </script>
 
 <div class="antiSelect"
@@ -64,7 +53,10 @@
     btn.focus()
     if (!opened) {
       opened = true
-      showPopup(DatePopup, { title, value, range }, container, onClosePopup, onUpdatePopup)
+      showPopup(DatePopup, { title, value, withTime }, container, (ev) => {
+        changeValue(ev)
+        opened = false
+      }, changeValue)
     }
   }}
 >
@@ -81,13 +73,7 @@
   <div class="group">
     <span class="label"><Label label={title} /></span>
     {#if value !== undefined}
-      <div class="flex-row-center">
-        <DatePresenter {value} {bigDay} wraped={opened && !secondSelect} />
-        {#if range !== undefined}
-          <span class="divider max"> &mdash; </span>
-          <DatePresenter value={range} {bigDay} wraped={opened && secondSelect} />
-        {/if}
-      </div>
+      <DatePresenter {value} withTime={withTime} {bigDay} wraped={opened} />
     {:else}
       <span class="result not-selected"><Label label={ui.string.NotSelected} /></span>
     {/if}
