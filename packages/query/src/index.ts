@@ -247,7 +247,7 @@ export class LiveQuery extends TxProcessor implements Client {
         const updatedDoc = q.result[pos]
         if (updatedDoc.modifiedOn > tx.modifiedOn) return
         if (updatedDoc.modifiedOn === tx.modifiedOn) {
-          const current = await this.findOne(q._class, { _id: updatedDoc._id })
+          const current = await this.findOne(q._class, { _id: updatedDoc._id }, q.options)
           if (current !== undefined) {
             q.result[pos] = current
           } else {
@@ -614,7 +614,21 @@ export class LiveQuery extends TxProcessor implements Client {
         if (q.options !== undefined) {
           const lookup = (q.options.lookup as any)?.[key]
           if (lookup !== undefined) {
-            ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(lookup, { _id: ops[key] })
+            const lookupClass = getLookupClass(lookup)
+            const nestedLookup = getNestedLookup(lookup)
+            if (Array.isArray(ops[key])) {
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findAll(
+                lookupClass,
+                { _id: { $in: ops[key] } },
+                { lookup: nestedLookup }
+              )
+            } else {
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(
+                lookupClass,
+                { _id: ops[key] },
+                { lookup: nestedLookup }
+              )
+            }
           }
         }
       } else {
@@ -624,7 +638,24 @@ export class LiveQuery extends TxProcessor implements Client {
             if (q.options !== undefined) {
               const lookup = (q.options.lookup as any)?.[pkey]
               if (lookup !== undefined) {
-                ;(updatedDoc.$lookup as any)[pkey].push(await this.client.findOne(lookup, { _id: (pops as any)[pkey] as Ref<Doc> }))
+                const lookupClass = getLookupClass(lookup)
+                const nestedLookup = getNestedLookup(lookup)
+                const pp = updatedDoc.$lookup as any
+                if (pp[pkey] === undefined) {
+                  pp[pkey] = []
+                }
+                if (Array.isArray((pops as any)[pkey])) {
+                  const pushData = await this.client.findAll(
+                    lookupClass,
+                    { _id: { $in: (pops as any)[pkey] } },
+                    { lookup: nestedLookup }
+                  )
+                  pp[pkey].push(...pushData)
+                } else {
+                  pp[pkey].push(
+                    await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup })
+                  )
+                }
               }
             }
           }
@@ -634,8 +665,16 @@ export class LiveQuery extends TxProcessor implements Client {
             if (q.options !== undefined) {
               const lookup = (q.options.lookup as any)?.[pkey]
               if (lookup !== undefined) {
-                const pid = (pops as any)[pkey] as Ref<Doc>
-                ;(updatedDoc.$lookup as any)[pkey] = ((updatedDoc.$lookup as any)[pkey]).filter((it: Doc) => it._id !== pid)
+                const pid = (pops as any)[pkey]
+                const pp = updatedDoc.$lookup as any
+                if (pp[pkey] === undefined) {
+                  pp[pkey] = []
+                }
+                if (Array.isArray(pid)) {
+                  pp[pkey] = pp[pkey].filter((it: Doc) => !pid.includes(it._id))
+                } else {
+                  pp[pkey] = pp[pkey].filter((it: Doc) => it._id !== pid)
+                }
               }
             }
           }
@@ -679,4 +718,12 @@ export class LiveQuery extends TxProcessor implements Client {
       q.callback(this.clone(q.result))
     }
   }
+}
+
+function getNestedLookup (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc>]): Lookup<Doc> | undefined {
+  return Array.isArray(lookup) ? lookup[1] : undefined
+}
+
+function getLookupClass (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc>]): Ref<Class<Doc>> {
+  return Array.isArray(lookup) ? lookup[0] : lookup
 }
