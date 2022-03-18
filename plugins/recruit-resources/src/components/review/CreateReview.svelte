@@ -76,10 +76,6 @@
   })
 
   async function createReview () {
-    const state = await client.findOne(task.class.State, { space: doc.space })
-    if (state === undefined) {
-      throw new Error('create application: state not found')
-    }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Review })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
