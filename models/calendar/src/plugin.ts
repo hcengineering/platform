@@ -15,17 +15,22 @@
 
 import { calendarId } from '@anticrm/calendar'
 import calendar from '@anticrm/calendar-resources/src/plugin'
+import { Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {
-    CreateCalendar: '' as AnyComponent
+    CreateCalendar: '' as AnyComponent,
+    CalendarView: '' as AnyComponent
   },
   string: {
-    ApplicationLabelCalendar: '' as IntlString
+    ApplicationLabelCalendar: '' as IntlString,
+    Event: '' as IntlString
   },
-  space: {
+  viewlet: {
+    Calendar: '' as Ref<ViewletDescriptor>
   }
 })

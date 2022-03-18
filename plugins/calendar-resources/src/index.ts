@@ -16,9 +16,11 @@
 import { Resources } from '@anticrm/platform'
 
 import PersonsPresenter from './components/PersonsPresenter.svelte'
+import CalendarView from './components/CalendarView.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    PersonsPresenter
+    PersonsPresenter,
+    CalendarView
   }
 })

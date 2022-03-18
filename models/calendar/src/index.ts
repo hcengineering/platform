@@ -25,6 +25,7 @@ import core, { TAttachedDoc } from '@anticrm/model-core'
 import { TSpaceWithStates } from '@anticrm/model-task'
 import workbench from '@anticrm/model-workbench'
 import calendar from './plugin'
+import view from '@anticrm/model-view'
 
 export * from '@anticrm/calendar'
 
@@ -35,6 +36,7 @@ export const DOMAIN_CALENDAR = 'calendar' as Domain
 export class TCalendar extends TSpaceWithStates implements Calendar {}
 
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
+@UX(calendar.string.Event, calendar.icon.Calendar)
 export class TEvent extends TAttachedDoc implements Event {
   @Prop(TypeString(), calendar.string.Title)
   @Index(IndexKind.FullText)
@@ -85,6 +87,22 @@ export function createModel (builder: Builder): void {
       ]
     }
   }, calendar.app.Calendar)
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: calendar.string.Calendar,
+      icon: calendar.icon.Calendar,
+      component: calendar.component.CalendarView
+    },
+    calendar.viewlet.Calendar
+  )
+
+  // Use generic child presenter
+  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.ObjectPresenter
+  })
 }
 
 export default calendar

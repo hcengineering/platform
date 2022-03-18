@@ -16,6 +16,8 @@
     "NotSelected": "Not selected",
     "Today": "Today",
     "English": "English",
-    "Russian": "Russian"
+    "Russian": "Russian",
+    "CalendarLeft": "<",
+    "CalendarRight": ">"
   }
 }

@@ -12,6 +12,14 @@
     "Title": "Title",
     "Location": "Location",
     "Company": "Company",
-    "CreateCalendar": "Create Calendar"
+    "CreateCalendar": "Create Calendar",
+    "Calendar": "Calendar",
+    "Events": "Events",
+    "Event": "Event",
+    "ModeDay": "Day",
+    "ModeWeek": "Week",
+    "ModeMonth": "Month",
+    "ModeYear": "Year",
+    "Today": "Today"
   }
 }
