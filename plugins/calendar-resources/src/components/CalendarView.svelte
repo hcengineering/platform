@@ -16,7 +16,7 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import ui, { Button, IconBack, IconForward, MonthCalendar, ScrollBox, YearCalendar } from '@anticrm/ui'
+  import { Button, IconBack, IconForward, MonthCalendar, ScrollBox, YearCalendar } from '@anticrm/ui'
   import calendar from '../plugin'
   import Day from './Day.svelte'
 
@@ -37,7 +37,8 @@
   const sortOrder = SortingOrder.Descending
 
   let loading = false
-  $: resultQuery = search === '' ? { space, ...query, date: { $gt: value.getTime() - 1, $lt: value.getTime() + 1 } } : { $search: search, space, ...query }
+  let resultQuery: DocumentQuery<Event>
+  $: resultQuery = search === '' ? { ...query, space } : { ...query, $search: search, space }
 
   let objects: Event[] = []
 
@@ -61,11 +62,18 @@
       { sort: { [sortKey]: sortOrder }, ...options }
     )
   }
-  $: update(_class, query, sortKey, sortOrder, options)
+  $: update(_class, resultQuery, sortKey, sortOrder, options)
+
+  function areDatesLess (firstDate: Date, secondDate: Date): boolean {
+    return (
+      firstDate.getFullYear() <= secondDate.getFullYear() &&
+      firstDate.getMonth() <= secondDate.getMonth() &&
+      firstDate.getDate() <= secondDate.getDate()
+    )
+  }
 
   function findEvents (events: Event[], date: Date): Event[] {
-    const t = date.getTime()
-    return events.filter((it) => it.date <= t && t <= (it.dueDate ?? it.date))
+    return events.filter((it) => areDatesLess(new Date(it.date), date) && areDatesLess(date, new Date(it.dueDate ?? it.date)))
   }
 
   interface ShiftType {
@@ -83,7 +91,6 @@
   }
   let date = new Date()
   function inc (val: number): void {
-    console.log('INC', val)
     if (val === 0) {
       shifts = {
         yearShift: 0,

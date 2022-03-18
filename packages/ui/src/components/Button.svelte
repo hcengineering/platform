@@ -20,7 +20,7 @@
   import Icon from './Icon.svelte'
   import { onMount } from 'svelte'
 
-  export let label: IntlString | undefined
+  export let label: IntlString | undefined = undefined
   export let primary: boolean = false
   export let size: 'small' | 'medium' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
