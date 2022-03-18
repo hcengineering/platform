@@ -81,6 +81,20 @@ export function createReviewModel (builder: Builder): void {
       archived: false
     }
   })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: recruit.class.Review,
+    descriptor: calendar.viewlet.Calendar,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    options: {
+      lookup: {
+        attachedTo: recruit.mixin.Candidate,
+        participants: contact.class.Employee,
+        company: contact.class.Organization
+      }
+    } as FindOptions<Doc>,
+    config: []
+  })
 }
 
 function createTableViewlet (builder: Builder): void {

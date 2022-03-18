@@ -12,6 +12,14 @@
     "Title": "Название",
     "Location": "Местоположение",
     "Company": "Компания",
-    "CreateCalendar": "Новый Калеедарь"
+    "CreateCalendar": "Новый Калеедарь",
+    "Calendar": "Календарь",
+    "Events": "События",
+    "Event": "Событие",
+    "ModeDay": "День",
+    "ModeWeek": "Неделя",
+    "ModeMonth": "Месяц",
+    "ModeYear": "Год",
+    "Today": "Сегодня"
   }
 }

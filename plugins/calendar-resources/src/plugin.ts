@@ -14,11 +14,17 @@
 //
 
 import calendar, { calendarId } from '@anticrm/calendar'
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 
 export default mergeIds(calendarId, calendar, {
   component: {
   },
   string: {
+    Events: '' as IntlString,
+    ModeDay: '' as IntlString,
+    ModeWeek: '' as IntlString,
+    ModeMonth: '' as IntlString,
+    ModeYear: '' as IntlString,
+    Today: '' as IntlString
   }
 })
