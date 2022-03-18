@@ -19,13 +19,19 @@
   export let value: TSelectDate
   export let bigDay: boolean = false
   export let wraped: boolean = false
+  export let withTime: boolean = false
 
   const { currentLanguage } = getContext('lang')
   let inter: boolean = (currentLanguage === 'ru') ?? false
+
+  const zeroLead = (n: number): string => {
+    if (n < 10) return '0' + n.toString()
+    return n.toString()
+  }
 </script>
 
 {#if value !== undefined}
-  <div class="wrap" class:wraped>
+  <div class="antiWrapper" class:wraped>
     <span class="result" class:selected={value !== null} class:not-selected={value === null} class:highlight={inter && bigDay}>
       {#if value === null}--{:else}{inter ? value.getDate() : value.getMonth() + 1}{/if}
     </span>
@@ -37,5 +43,15 @@
     <span class="result" class:selected={value !== null} class:not-selected={value === null}>
       {#if value === null}--{:else}{value.getFullYear()}{/if}
     </span>
+    {#if withTime}
+      <span class="divider max"> &mdash; </span>
+      <span class="result" class:selected={value !== null} class:not-selected={value === null} class:highlight={!inter && bigDay}>
+        {#if value === null}--{:else}{zeroLead(value.getHours())}{/if}
+      </span>
+      <span class="divider">:</span>
+      <span class="result" class:selected={value !== null} class:not-selected={value === null}>
+        {#if value === null}--{:else}{zeroLead(value.getMinutes())}{/if}
+      </span>
+    {/if}
   </div>
 {/if}

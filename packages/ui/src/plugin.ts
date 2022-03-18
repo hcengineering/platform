@@ -26,6 +26,7 @@ export const uiId = 'ui' as Plugin
 export default plugin(uiId, {
   string: {
     EditBoxPlaceholder: '' as IntlString,
+    Ok: '' as IntlString,
     Cancel: '' as IntlString,
     Minutes: '' as IntlString,
     Hours: '' as IntlString,

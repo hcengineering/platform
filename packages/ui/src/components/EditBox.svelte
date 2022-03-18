@@ -75,7 +75,7 @@
         <Icon {icon} size={'small'}/>
       </div>
     {/if}
-    <div class="wrap">
+    <div class="antiWrapper focusWI">
       {#if format === 'password'}
         <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {:else if format === 'number'}
@@ -92,28 +92,6 @@
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .wrap {
-    position: relative;
-
-    &::after, &::before {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background-color: var(--primary-button-enabled);
-    }
-    &::before {
-      top: -2px;
-      left: -4px;
-      clip-path: path('M0,6v-6h6v1h-5v5z');
-    }
-    &::after {
-      bottom: -2px;
-      right: -4px;
-      clip-path: path('M0,6h6v-6h-1v5h-5z');
-    }
-    &:focus-within::before, &:focus-within::after { content: ''; }
   }
 
   .label {

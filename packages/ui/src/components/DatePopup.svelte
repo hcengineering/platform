@@ -18,12 +18,13 @@
   import Back from './icons/Back.svelte'
   import Forward from './icons/Forward.svelte'
   import { createEventDispatcher } from 'svelte'
-  import ui, { Label } from '..'
+  import ui, { Label, Button } from '..'
   import type { TSelectDate, TCellStyle, ICell } from '../types'
+import Button from './Button.svelte';
 
   export let title: IntlString
-  export let value: TSelectDate = null
-  export let range: TSelectDate = undefined
+  export let value: TSelectDate
+  export let withTime: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -55,8 +56,13 @@
   ]
   let monthYear: string
   let days: Array<ICell> = []
-  let firstClick: boolean = true
-  let result: Array<TSelectDate> = [value, range]
+  let result: TSelectDate = value
+  const str: IntlString = '' as IntlString
+  let prevDiv: HTMLElement
+  let nextDiv: HTMLElement
+  let hourDiv: HTMLElement
+  let minDiv: HTMLElement
+  let okDiv: HTMLButtonElement
 
   const daysInMonth = (date: Date): number => {
     return 33 - new Date(date.getFullYear(), date.getMonth(), 33).getDate()
@@ -69,12 +75,7 @@
     return false
   }
   const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && compareDates(value, date)) return 'selected-start'
-    else if (value && value < date && range) {
-      if (range && compareDates(range, date)) return 'selected-end'
-      else if (date < range) return 'selected'
-      else return 'not-selected'
-    }
+    if (value !== undefined && value !== null && compareDates(value, date)) return 'selected'
     return 'not-selected'
   }
   
@@ -94,14 +95,54 @@
 
   $: monthYear = months[view.getMonth()] + ' ' + view.getFullYear()
   $: if (value) renderCellStyles()
-  $: if (range) renderCellStyles()
+
+  const zeroLead = (n: number): string => {
+    if (n < 10) return '0' + n.toString()
+    return n.toString()
+  }
+
+  const keyPress = (ev: KeyboardEvent, isHour: boolean): void => {
+    if (ev.key >= '0' && ev.key <= '9') {
+      const keyNumber: number = parseInt(ev.key, 10)
+      let number: number = isHour ? view.getHours() : view.getMinutes()
+      let newNumber: number = (number > 9) ? keyNumber : number * 10 + keyNumber
+      
+      if (isHour) {
+        if (newNumber > 23) newNumber = 23
+        view.setHours(newNumber)
+      } else {
+        if (newNumber > 59) newNumber = 59
+        view.setMinutes(newNumber)
+      }
+      view = view
+      value = view
+      if (isHour && newNumber > 9) minDiv.focus()
+      if (!isHour && newNumber > 9) okDiv.focus()
+    }
+  }
+
+  const keyDown = (ev: KeyboardEvent, isHour: boolean): void => {
+    if (ev.key === 'Backspace') {
+      console.log('BACKSPACE')
+      if (isHour) view.setHours(0)
+      else view.setMinutes(0)
+      view = view
+      value = view
+    }
+  }
+  const navKey = (ev: KeyboardEvent): void => {
+    if (ev.code === 'ArrowLeft') prevDiv.click()
+    if (ev.code === 'ArrowRight') nextDiv.click()
+  }
 </script>
 
+<svelte:window on:keydown={navKey} />
 <div class="popup">
   <div class="flex-col caption-color">
     <div class="title"><Label label={title} /></div>
     <div class="flex-between nav">
       <button
+        bind:this={prevDiv}
         class="focused-button arrow"
         on:click|preventDefault={() => {
           view.setMonth(view.getMonth() - 1)
@@ -112,6 +153,7 @@
         {monthYear}
       </div>
       <button
+        bind:this={nextDiv}
         class="focused-button arrow"
         on:click|preventDefault={() => {
           view.setMonth(view.getMonth() + 1)
@@ -136,26 +178,45 @@
         data-today={day.today ? todayString : ''}
         style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
         on:click={() => {
-          if (firstClick) {
-            result[0] = new Date(view.getFullYear(), view.getMonth(), i + 1)
-            value = result[0]
-            firstClick = false
-            if (result[1] === undefined) dispatch('close', result)
-            else dispatch('update', result)
-          } else {
-            result[1] = new Date(view.getFullYear(), view.getMonth(), i + 1)
-            if (result[0] && result[1] && result[0].getTime() > result[1].getTime())
-              [result[0], result[1]] = [result[1], result[0]]
-            value = result[0]
-            range = result[1]
-            dispatch('close', result)
-          }
+          result = new Date(view.getFullYear(), view.getMonth(), i + 1, view.getHours(), view.getMinutes())
+          view = value = result
+          if (withTime) {
+            dispatch('update', result)
+            hourDiv.focus()
+          } else dispatch('close', result)
         }}
       >
         {i + 1}
       </div>
     {/each}
   </div>
+  {#if withTime}
+    <div class="calendar-divider" />
+    <div class="flex-row-center flex-reverse">
+      <div class="ml-2">
+        <Button bind:input={okDiv} label={ui.string.Ok} size={'small'} primary on:click={() => { dispatch('close', view) }} />
+      </div>
+      <div class="time-container">
+        <button
+          bind:this={hourDiv}
+          class="time-digit antiWrapper focus hours"
+          on:keypress={(ev) => { keyPress(ev, true) }}
+          on:keydown={(ev) => { keyDown(ev, true) }}
+        >
+          {zeroLead(view.getHours())}
+        </button>
+        <div class="time-divider">:</div>
+        <button
+          bind:this={minDiv}
+          class="time-digit antiWrapper focus minutes"
+          on:keypress={(ev) => { keyPress(ev, false) }}
+          on:keydown={(ev) => { keyDown(ev, false) }}
+        >
+          {zeroLead(view.getMinutes())}
+        </button>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -215,15 +276,9 @@
       cursor: pointer;
 
       &.selected {
-        background-color: var(--primary-button-disabled);
-        border-color: transparent;
-        color: var(--theme-content-accent-color);
-
-        &-start, &-end {
-          background-color: var(--primary-button-enabled);
-          border-color: var(--primary-button-focused-border);
-          color: var(--primary-button-color);
-        }
+        background-color: var(--primary-button-enabled);
+        border-color: var(--primary-button-focused-border);
+        color: var(--primary-button-color);
       }
       &.today {
         position: relative;
@@ -244,5 +299,37 @@
         }
       }
     }
+  }
+
+  .calendar-divider {
+    flex-shrink: 0;
+    margin: .5rem 0;
+    height: 1px;
+    background-color: var(--theme-menu-divider);
+  }
+  .time-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    min-width: 0;
+    height: 100%;
+    border: 1px solid var(--theme-button-border-enabled);
+    border-radius: .75rem;
+  }
+  .time-digit, .time-divider {
+    font-weight: 500;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+  .time-divider {
+    margin: 0 .5rem;
+    font-size: 1rem;
+    color: var(--theme-content-dark-color);
+  }
+  .time-digit {
+    padding: 0;
+    font-weight: 600;
+    color: var(--theme-caption-color);
   }
 </style>

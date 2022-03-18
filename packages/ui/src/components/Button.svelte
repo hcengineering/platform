@@ -30,7 +30,8 @@
   export let width: string | undefined = undefined
   export let focus: boolean = false
 
-  let input: HTMLButtonElement
+  export let input: HTMLButtonElement
+  
   onMount(() => {
     if (focus) {
       input.focus()
