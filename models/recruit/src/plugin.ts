@@ -71,7 +71,6 @@ export default mergeIds(recruitId, recruit, {
     Vacancies: '' as AnyComponent,
 
     CreateReviewCategory: '' as AnyComponent,
-    EditReviewCategory: '' as AnyComponent,
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
     KanbanReviewCard: '' as AnyComponent,

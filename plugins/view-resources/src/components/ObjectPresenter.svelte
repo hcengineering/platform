@@ -14,13 +14,15 @@
 -->
 
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
+  import type { Class, Doc, Ref, Type } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '../utils'
 
   export let objectId: Ref<Doc>
   export let _class: Ref<Class<Doc>>
+  export let value: Doc | undefined
+  export let attributeType: Type<any>
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -28,7 +30,11 @@
   const docQuery = createQuery()
   let doc: Doc | undefined
 
-  $: docQuery.query(_class, { _id: objectId }, (r) => { doc = r.shift() })
+  $: if (value === undefined) {
+    docQuery.query(_class, { _id: objectId }, (r) => { doc = r.shift() })
+  } else {
+    doc = value
+  }
 
   $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then(p => {
@@ -38,5 +44,5 @@
 </script>
 
 {#if presenter}  
-  <svelte:component this={presenter.presenter} value={doc} inline />
+  <svelte:component this={presenter.presenter} value={doc} {attributeType} inline />
 {/if}
