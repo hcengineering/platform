@@ -14,44 +14,32 @@
 -->
 
 <script lang="ts">
-  import core, { Ref } from '@anticrm/core'
-  import { getClient,SpaceCreateCard } from '@anticrm/presentation'
-  import task,{ createKanban,KanbanTemplate } from '@anticrm/task'
-  import { Component,EditBox,Grid } from '@anticrm/ui'
+  import core from '@anticrm/core'
+  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
+  import { EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
   import Review from '../icons/Review.svelte'
-  import { Organization } from '@anticrm/contact'
-  import { OrganizationSelector } from '@anticrm/contact-resources'
 
   const dispatch = createEventDispatcher()
 
   let name: string = ''
   const description: string = ''
-  let templateId: Ref<KanbanTemplate> | undefined
-  let company: Ref<Organization> | undefined
 
   export function canClose (): boolean {
-    return name === '' && templateId !== undefined
+    return name === ''
   }
 
   const client = getClient()
 
   async function createReviewCategory () {
-    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
-      throw Error(`Failed to find target kanban template: ${templateId}`)
-    }
-
-    const id = await client.createDoc(recruit.class.ReviewCategory, core.space.Space, {
+    await client.createDoc(recruit.class.ReviewCategory, core.space.Space, {
       name,
       description,
       private: false,
       archived: false,
-      company,
       members: []
     })
-
-    await createKanban(client, id, templateId)
   }
 </script>
 
@@ -63,13 +51,5 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.ReviewCategoryName} bind:value={name} icon={Review} placeholder={recruit.string.ReviewCategoryPlaceholder} maxWidth={'16rem'} focus/>
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
-
-    <Component is={task.component.KanbanTemplateSelector} props={{
-      folders: [recruit.space.ReviewTemplates],
-      template: templateId
-    }} on:change={(evt) => {
-      templateId = evt.detail
-    }}/>
   </Grid>
 </SpaceCreateCard>

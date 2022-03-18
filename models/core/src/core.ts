@@ -24,7 +24,7 @@ import {
   Timestamp,
   Type, Version
 } from '@anticrm/core'
-import { Index, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 
@@ -70,7 +70,10 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)
 export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind
+
+  @Prop(TypeIntlString(), core.string.ClassLabel)
   label!: IntlString
+
   extends!: Ref<Class<Obj>>
   domain!: Domain
 }
@@ -100,6 +103,9 @@ export class TType extends TObj implements Type<any> {
 
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
+
+@Model(core.class.TypeIntlString, core.class.Type)
+export class TTypeIntlString extends TType {}
 
 @Model(core.class.TypeNumber, core.class.Type)
 export class TTypeNumber extends TType {}

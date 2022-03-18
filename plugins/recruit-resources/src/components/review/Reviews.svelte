@@ -43,21 +43,19 @@
       config={[
         '',
         { key: '$lookup.space.name', label: recruit.string.ReviewCategoryTitle },
-        'dueDate',
+        'verdict',
         {
           key: '',
           presenter: recruit.component.OpinionsPresenter,
           label: recruit.string.Opinions,
           sortingKey: 'opinions'
         },
-        '$lookup.state',
-        '$lookup.doneState'
+        'date',
+        'dueDate'
       ]}
       options={{
         lookup: {
-          state: task.class.State,
-          space: core.class.Space,
-          doneState: task.class.DoneState
+          space: core.class.Space
         }
       }}
       query={{ attachedTo: objectId }}

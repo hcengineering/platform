@@ -63,7 +63,7 @@
     "ReviewCategory": "Оценки",
     "ReviewCategoryDescription": "Описание",
     "ThisReviewCategoryIsPrivate": "Эта категория личная",
-    "CreateReview": "Запланировать оценку",
+    "CreateReview": "Запланировать {label}",
     "SelectReviewCategory": "выбрать категорию",
     "Reviews": "Оценки",
     "Review": "Оценка",
@@ -85,7 +85,8 @@
     "OpinionValuePlaceholder": "10/10",
     "Participants": "Участники",
     "NoParticipants": "Участники не добавлены",
-    "PersonsLabel": "{name}"
+    "PersonsLabel": "{name}",
+    "AddDescription": "Add description"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

@@ -35,6 +35,7 @@ import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
 import { tagsId } from '@anticrm/tags'
+import { calendarId } from '@anticrm/calendar'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -54,6 +55,7 @@ import '@anticrm/inventory-assets'
 import '@anticrm/templates-assets'
 import '@anticrm/notification-assets'
 import '@anticrm/tags-assets'
+import '@anticrm/calendar-assets'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
@@ -95,4 +97,5 @@ export async function configurePlatform() {
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@anticrm/tags-resources'))
+  addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
 }

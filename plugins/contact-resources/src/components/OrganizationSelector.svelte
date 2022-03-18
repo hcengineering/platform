@@ -20,6 +20,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { Dropdown } from '@anticrm/ui'
   import { ListItem } from '@anticrm/ui/src/types'
+  import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
 
@@ -27,6 +28,7 @@
   export let label: IntlString = contact.string.Organization
 
   const query = createQuery()
+  const dispatch = createEventDispatcher()
 
   query.query(contact.class.Organization, {}, (res) => {
     items = res.map((org) => {
@@ -52,6 +54,7 @@
     } else {
       value = selected._id as Ref<Organization>
     }
+    dispatch('change', value)
   }
 </script>
 

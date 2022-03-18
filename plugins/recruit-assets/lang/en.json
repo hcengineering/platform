@@ -62,7 +62,7 @@
     "ReviewCategory": "Reviews",
     "ReviewCategoryDescription": "Description",
     "ThisReviewCategoryIsPrivate": "This category is private",
-    "CreateReview": "Create review",
+    "CreateReview": "Schedule {label}",
     "SelectReviewCategory": "select category",
     "Reviews": "Reviews",
     "Review": "Review",
@@ -84,7 +84,8 @@
     "OpinionValuePlaceholder": "10/10",
     "Participants": "Participants",
     "NoParticipants": "No participants added",
-    "PersonsLabel": "{name}"
+    "PersonsLabel": "{name}",
+    "AddDescription": "Add description"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

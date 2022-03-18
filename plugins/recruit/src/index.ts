@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { Employee, Organization, Person } from '@anticrm/contact'
+import { Calendar, Event } from '@anticrm/calendar'
+import type { Organization, Person } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -34,10 +35,10 @@ export interface Vacancy extends SpaceWithStates {
 /**
  * @public
  */
-export interface ReviewCategory extends SpaceWithStates {
+export interface ReviewCategory extends Calendar {
   fullDescription?: string
   attachments?: number
-  company?: Ref<Organization>
+  comments?: number
 }
 
 /**
@@ -70,22 +71,14 @@ export interface Applicant extends Task {
 /**
  * @public
  */
-export interface Review extends Task {
+export interface Review extends Event {
   attachedTo: Ref<Candidate>
-  attachments?: number
-  comments?: number
-  description: string
+
   verdict: string
 
-  location?: string
-  company?: string
-
-  startDate: Timestamp | null
-  dueDate: Timestamp | null
+  company?: Ref<Organization>
 
   opinions?: number
-
-  participants?: Ref<Employee>[]
 }
 
 /**

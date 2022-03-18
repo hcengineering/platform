@@ -27,11 +27,15 @@
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
+  export let showButtons = true
 
   let textEditor: TextEditor
 
   export function submit (): void {
     textEditor.submit()
+  }
+  export function focus (): void {
+    textEditor.focus()
   }
 </script>
 
@@ -50,27 +54,36 @@
             textEditor.clear()
           }}
           on:blur
+          on:focus
           supportSubmit={false}
         />
       </ScrollBox>
     </div>
   </div>
-  <div class="buttons">
+  <div class="buttons" class:shown={showButtons}>
     <div class="tool"><TextStyle size={'large'} /></div>
-    <div class="tool"><Emoji size={'large'}/></div>
-    <div class="tool"><GIF size={'large'}/></div>
+    <div class="tool"><Emoji size={'large'} /></div>
+    <div class="tool"><GIF size={'large'} /></div>
     <div class="flex-grow">
       <slot />
     </div>
   </div>
 </div>
 
-<style lang="scss">  
+<style lang="scss">
   .ref-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
+
+    .buttons {
+      visibility: hidden;
+    }
+    
+    .shown {
+      visibility: visible;
+    }
 
     .textInput {
       flex-grow: 1;

@@ -303,6 +303,10 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.VacancyPresenter
   })
 
+  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: recruit.component.ReviewCategoryPresenter
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectValidator, {
     validator: recruit.validator.ApplicantValidator
   })
@@ -360,6 +364,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Vacancy,
+    action: task.action.UnarchiveSpace,
+    query: {
+      archived: true
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.ReviewCategory,
     action: task.action.UnarchiveSpace,
     query: {
       archived: true

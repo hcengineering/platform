@@ -35,7 +35,6 @@ import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReviewCategory from './components/review/CreateReviewCategory.svelte'
 import EditReview from './components/review/EditReview.svelte'
 import EditReviewCategory from './components/review/EditReviewCategory.svelte'
-import KanbanReviewCard from './components/review/KanbanReviewCard.svelte'
 import OpinionPresenter from './components/review/OpinionPresenter.svelte'
 import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
 import Opinions from './components/review/Opinions.svelte'
@@ -48,8 +47,8 @@ import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
+import ReviewCategoryPresenter from './components/review/ReviewCategoryPresenter.svelte'
 import recruit from './plugin'
-import PersonsPresenter from './components/review/PersonsPresenter.svelte'
 
 async function createApplication (object: Doc): Promise<void> {
   showPopup(CreateApplication, { candidate: object._id, preserveCandidate: true })
@@ -163,12 +162,11 @@ export default async (): Promise<Resources> => ({
     CreateReview,
     ReviewPresenter,
     EditReview,
-    KanbanReviewCard,
     Reviews,
     Opinions,
     OpinionPresenter,
     OpinionsPresenter,
-    PersonsPresenter
+    ReviewCategoryPresenter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)

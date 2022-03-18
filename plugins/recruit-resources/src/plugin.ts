@@ -101,9 +101,7 @@ export default mergeIds(recruitId, recruit, {
     StartDate: '' as IntlString,
     DueDate: '' as IntlString,
     CandidateReviews: '' as IntlString,
-    Participants: '' as IntlString,
-    NoParticipants: '' as IntlString,
-    PersonsLabel: '' as IntlString
+    AddDescription: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -116,7 +114,6 @@ export default mergeIds(recruitId, recruit, {
     VacancyItemPresenter: '' as AnyComponent,
     VacancyCountPresenter: '' as AnyComponent,
     OpinionsPresenter: '' as AnyComponent,
-    PersonsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent
   }
 })

@@ -1131,5 +1131,25 @@
       "projectFolder": "server-plugins/setting-resources",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/calendar",
+      "projectFolder": "plugins/calendar",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/calendar-assets",
+      "projectFolder": "plugins/calendar-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/calendar-resources",
+      "projectFolder": "plugins/calendar-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-calendar",
+      "projectFolder": "models/calendar",
+      "shouldPublish": true
+    },
   ]
 }

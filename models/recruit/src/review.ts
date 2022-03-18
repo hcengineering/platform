@@ -6,6 +6,7 @@ import task from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import recruit from './plugin'
+import calendar from '@anticrm/model-calendar'
 
 export function createReviewModel (builder: Builder): void {
   builder.mixin(recruit.class.ReviewCategory, core.class.Class, workbench.mixin.SpaceView, {
@@ -21,11 +22,21 @@ export function createReviewModel (builder: Builder): void {
   })
 
   createTableViewlet(builder)
-  createKanbanViewlet(builder)
-  createStatusTableViewlet(builder)
 
-  builder.mixin(recruit.class.Review, core.class.Class, task.mixin.KanbanCard, {
-    card: recruit.component.KanbanReviewCard
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: recruit.string.CreateOpinion,
+      icon: recruit.icon.Create,
+      action: recruit.actionImpl.CreateOpinion
+    },
+    recruit.action.CreateOpinion
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: recruit.class.Review,
+    action: recruit.action.CreateOpinion
   })
 
   builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectEditor, {
@@ -63,86 +74,12 @@ export function createReviewModel (builder: Builder): void {
     action: recruit.action.CreateReview
   })
 
-  builder.createDoc(
-    task.class.KanbanTemplateSpace,
-    core.space.Model,
-    {
-      name: recruit.string.ReviewCategory,
-      description: task.string.ManageStatusesWithin,
-      icon: recruit.component.TemplatesIcon
-    },
-    recruit.space.ReviewTemplates
-  )
-
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.ReviewCategory,
     action: task.action.ArchiveSpace,
     query: {
       archived: false
     }
-  })
-}
-function createStatusTableViewlet (builder: Builder): void {
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Review,
-    descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        state: task.class.State,
-        assignee: contact.class.Employee,
-        doneState: task.class.DoneState,
-        participants: contact.class.Employee
-      }
-    } as FindOptions<Doc>,
-    config: [
-      '',
-      '$lookup.attachedTo',
-      { key: '$lookup.participants', presenter: recruit.component.PersonsPresenter, label: recruit.string.Participants, sortingKey: '$lookup.participants' },
-      // 'location',
-      'company',
-      'dueDate',
-      { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
-      '$lookup.state',
-      '$lookup.doneState',
-      // { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
-      // { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
-      'modifiedOn'
-    ]
-  })
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: recruit.string.CreateOpinion,
-      icon: recruit.icon.Create,
-      action: recruit.actionImpl.CreateOpinion
-    },
-    recruit.action.CreateOpinion
-  )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Review,
-    action: recruit.action.CreateOpinion
-  })
-}
-
-function createKanbanViewlet (builder: Builder): void {
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Review,
-    descriptor: task.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        state: task.class.State,
-        assignee: contact.class.Employee,
-        participants: contact.class.Employee
-      }
-    } as FindOptions<Doc>,
-    config: ['$lookup.attachedTo', '$lookup.state', '$lookup.participants', '$lookup.assignee']
   })
 }
 
@@ -154,22 +91,20 @@ function createTableViewlet (builder: Builder): void {
     options: {
       lookup: {
         attachedTo: recruit.mixin.Candidate,
-        state: task.class.State,
-        assignee: contact.class.Employee,
-        doneState: task.class.DoneState,
-        participants: contact.class.Employee
+        participants: contact.class.Employee,
+        company: contact.class.Organization
       }
     } as FindOptions<Doc>,
     config: [
       '',
+      'title',
       '$lookup.attachedTo',
-      { key: '$lookup.participants', presenter: recruit.component.PersonsPresenter, label: recruit.string.Participants, sortingKey: '$lookup.participants' },
-      // 'location',
-      'company',
-      'dueDate',
+      'verdict',
       { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
-      '$lookup.state',
-      '$lookup.doneState',
+      { key: '$lookup.participants', presenter: calendar.component.PersonsPresenter, label: calendar.string.Participants, sortingKey: '$lookup.participants' },
+      '$lookup.company',
+      'date',
+      'dueDate',
       // { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
       // { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'

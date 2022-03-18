@@ -23,6 +23,7 @@ import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
 import Table from './components/Table.svelte'
@@ -80,6 +81,7 @@ export default async (): Promise<Resources> => ({
     RolePresenter,
     ObjectPresenter,
     EditDoc,
-    HTMLPresenter
+    HTMLPresenter,
+    IntlStringPresenter
   }
 })

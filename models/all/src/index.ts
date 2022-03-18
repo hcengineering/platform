@@ -47,6 +47,7 @@ import { createModel as viewModel } from '@anticrm/model-view'
 import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as notificationModel } from '@anticrm/model-notification'
 import { createModel as tagsModel } from '@anticrm/model-tags'
+import { createModel as calendarModel } from '@anticrm/model-calendar'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -77,6 +78,7 @@ const builders = [
   serverNotificationModel,
   serveSettingModel,
   tagsModel,
+  calendarModel,
   serverChunterModel,
   serverInventoryModel,
   serverLeadModel,

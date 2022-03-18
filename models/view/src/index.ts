@@ -142,6 +142,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringPresenter
   })
 
+  builder.mixin(core.class.TypeIntlString, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.IntlStringPresenter
+  })
+
   builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributeEditor, {
     editor: view.component.NumberEditor
   })

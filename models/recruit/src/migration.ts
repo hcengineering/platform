@@ -17,6 +17,7 @@ import { Person } from '@anticrm/contact'
 import core, { AttachedDoc, Class, Doc, DocumentQuery, DOMAIN_TX, MixinData, Ref, TxCollectionCUD, TxCreateDoc, TxMixin, TxOperations, TxUpdateDoc } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
+import { DOMAIN_CALENDAR } from '@anticrm/model-calendar'
 import { DOMAIN_COMMENT } from '@anticrm/model-chunter'
 import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
 import tags, { DOMAIN_TAGS, TagCategory, TagElement } from '@anticrm/model-tags'
@@ -157,6 +158,25 @@ export const recruitOperation: MigrateOperation = {
         })
       }
     }
+
+    // Migrate reviews
+
+    await client.update(DOMAIN_TASK, {
+      _class: recruit.class.Review
+    }, {
+      $rename: {
+        startDate: 'date'
+      }
+    })
+
+    await client.update(DOMAIN_TASK, {
+      _class: recruit.class.Review,
+      title: { $exists: false }
+    }, {
+      title: ''
+    })
+
+    await client.move(DOMAIN_TASK, { _class: recruit.class.Review }, DOMAIN_CALENDAR)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

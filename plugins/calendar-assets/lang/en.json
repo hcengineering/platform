@@ -1,0 +1,17 @@
+{
+  "string": {
+    "ApplicationLabelCalendar": "Calendar",
+    "Calendars": "Calendars",
+    "Participants": "Participants",
+    "NoParticipants": "No participants added",
+    "PersonsLabel": "{name}",
+    "AddDescription": "Add description",
+    "Date": "Date",
+    "DueTo": "Due date",
+    "Description": "Description",
+    "Title": "Title",
+    "Location": "Location",
+    "Company": "Company",
+    "CreateCalendar": "Create Calendar"
+  }
+}

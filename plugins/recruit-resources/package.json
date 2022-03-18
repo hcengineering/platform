@@ -55,6 +55,7 @@
     "@anticrm/contact-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "@anticrm/notification": "~0.6.0",
-    "@anticrm/tags": "~0.6.0"
+    "@anticrm/tags": "~0.6.0",
+    "@anticrm/calendar": "~0.6.0"
   }
 }
