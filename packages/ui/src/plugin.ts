@@ -41,9 +41,7 @@ export default plugin(uiId, {
     NotSelected: '' as IntlString,
     Today: '' as IntlString,
     English: '' as IntlString,
-    Russian: '' as IntlString,
-    CalendarLeft: '' as IntlString,
-    CalendarRight: '' as IntlString
+    Russian: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>

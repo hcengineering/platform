@@ -16,7 +16,7 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import ui, { Button, MonthCalendar, ScrollBox, YearCalendar } from '@anticrm/ui'
+  import ui, { Button, IconBack, IconForward, MonthCalendar, ScrollBox, YearCalendar } from '@anticrm/ui'
   import calendar from '../plugin'
   import Day from './Day.svelte'
 
@@ -197,9 +197,9 @@
     }}
   />  
   <div class="flex ml-4 gap-1">
-    <Button size={'small'} label={ui.string.CalendarLeft} on:click={() => { inc(-1) } }/>
+    <Button icon={IconBack} size={'small'}  on:click={() => { inc(-1) } }/>
     <Button size={'small'} label={calendar.string.Today} on:click={() => { inc(0) }}/>
-    <Button size={'small'} label={ui.string.CalendarRight} on:click={() => { inc(1) }}/>
+    <Button icon={IconForward} size={'small'} on:click={() => { inc(1) }}/>
   </div>
 </div>
 
