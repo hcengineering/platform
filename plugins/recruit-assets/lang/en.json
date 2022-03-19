@@ -63,6 +63,7 @@
     "ReviewCategoryDescription": "Description",
     "ThisReviewCategoryIsPrivate": "This category is private",
     "CreateReview": "Schedule",
+    "CreateReviewParams": "Schedule {label}",
     "SelectReviewCategory": "select category",
     "Reviews": "Reviews",
     "Review": "Review",

@@ -86,6 +86,7 @@ export default mergeIds(recruitId, recruit, {
     ReviewCategoryDescription: '' as IntlString,
     ThisReviewCategoryIsPrivate: '' as IntlString,
     CreateReview: '' as IntlString,
+    CreateReviewParams: '' as IntlString,
     SelectReviewCategory: '' as IntlString,
     Reviews: '' as IntlString,
     NoReviewForCandidate: '' as IntlString,
