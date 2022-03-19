@@ -21,7 +21,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
-  export let icon: Asset
+  export let icon: Asset | undefined 
   export let title: string
   export let notifications = 0
   export let actions: () => Promise<Action[]> = async () => []

@@ -14,19 +14,19 @@
 -->
 
 <script lang="ts">
-  import type { Ref,Space } from '@anticrm/core'
+  import type { Class, Doc, Ref,Space } from '@anticrm/core'
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import type { AnyComponent } from '@anticrm/ui'
+  import { AnyComponent, showPanel } from '@anticrm/ui'
   import { Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
-  import { Viewlet } from '@anticrm/view'
+  import view, { Viewlet } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Space> | undefined
-  // export let _class: Ref<Class<Doc>> | undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString = presentation.string.Create
   export let search: string
@@ -34,6 +34,7 @@
   export let viewlets: WithLookup<Viewlet>[] = []
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const query = createQuery()
   let space: Space | undefined
   const dispatch = createEventDispatcher()
@@ -53,11 +54,24 @@
     search = ''
     dispatch('search', '')
   }
+
+  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
+    return editorMixin.editor
+  }
+
+  async function onSpaceEdit (): Promise<void> {
+    if (space === undefined) return
+    const editor = await getEditor(space._class)
+    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'right')
+  }
 </script>
 
 <div class="ac-header full">
   {#if space}
-    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
+    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} on:click={onSpaceEdit} />
     {#if viewlets.length > 1}
       <div class="flex">
         {#each viewlets as viewlet, i}
