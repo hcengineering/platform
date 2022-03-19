@@ -133,7 +133,7 @@
 
 <Card
   size={'medium'}
-  label={recruit.string.CreateReview}
+  label={recruit.string.CreateReviewParams}
   labelProps={{ label: spaceLabel }}
   okAction={createReview}
   canSave={status.severity === Severity.OK && title.trim().length > 0}
