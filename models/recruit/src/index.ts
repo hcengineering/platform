@@ -147,8 +147,7 @@ export function createModel (builder: Builder): void {
             label: recruit.string.ReviewCategory,
             spaceClass: recruit.class.ReviewCategory,
             addSpaceLabel: recruit.string.CreateReviewCategory,
-            createComponent: recruit.component.CreateReviewCategory,
-            component: recruit.component.EditReviewCategory
+            createComponent: recruit.component.CreateReviewCategory
           }
         ],
         specials: [
@@ -293,6 +292,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditApplication
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectEditor, {
+    editor: recruit.component.EditVacancy
+  })
+
+  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.ObjectEditor, {
+    editor: recruit.component.EditReviewCategory
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {

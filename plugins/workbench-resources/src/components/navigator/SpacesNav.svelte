@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@anticrm/core'
+  import type { Class,Doc,Ref,Space } from '@anticrm/core'
   import core from '@anticrm/core'
-  import { getResource, IntlString } from '@anticrm/platform'
+  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Action, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
+  import { Action,AnyComponent,IconAdd,IconEdit,showPanel,showPopup } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -44,8 +45,17 @@
     label: plugin.string.Open,
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      showPanel(model.component ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
+      const editor = await getEditor(model.spaceClass)
+      showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
     }
+  }
+
+  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
+    const hierarchy = client.getHierarchy()
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
+    return editorMixin.editor
   }
 
   function selectSpace (id: Ref<Space>) {
