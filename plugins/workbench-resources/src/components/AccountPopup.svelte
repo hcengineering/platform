@@ -56,6 +56,7 @@
     setMetadataLocalStorage(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
     navigate({ path: [login.component.LoginApp] })
   }
 

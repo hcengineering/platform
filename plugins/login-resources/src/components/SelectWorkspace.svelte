@@ -35,6 +35,7 @@
       setMetadataLocalStorage(login.metadata.LoginToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+      setMetadataLocalStorage(login.metadata.CurrentWorkspace, workspace)
       if (navigateUrl !== undefined) {
         navigate(JSON.parse(decodeURIComponent(navigateUrl)))
       } else {

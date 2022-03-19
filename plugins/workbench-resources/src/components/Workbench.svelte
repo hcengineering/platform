@@ -18,7 +18,7 @@
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { IntlString } from '@anticrm/platform'
-  import { Avatar, createQuery, setClient } from '@anticrm/presentation'
+  import { Avatar, createQuery, getClient, setClient } from '@anticrm/presentation'
   import {
     AnyComponent, closePopup,
     closeTooltip,

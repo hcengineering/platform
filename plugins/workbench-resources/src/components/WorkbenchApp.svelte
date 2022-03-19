@@ -53,6 +53,7 @@ async function connect (): Promise<Client | undefined> {
     setMetadataLocalStorage(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
     navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
     return
   }
@@ -81,6 +82,9 @@ async function connect (): Promise<Client | undefined> {
       return undefined
     }
   }
+
+  // Update window title
+  document.title = [(fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)), 'Platform'].filter(it => it).join(' - ')
 
   return instance
 }

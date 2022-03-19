@@ -43,6 +43,7 @@
         setMetadataLocalStorage(login.metadata.LoginToken, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+        setMetadataLocalStorage(login.metadata.CurrentWorkspace, object.workspace)
         showPopup(InviteLink, {}, undefined, () => {
           navigate({ path: [workbench.component.WorkbenchApp] })
         })
