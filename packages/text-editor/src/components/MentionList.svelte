@@ -83,23 +83,32 @@
     const rect = clientRect()
     const docW = document.body.clientWidth
     let tempStyle = ''
-    if (rect.top < 292) // 20rem - 1.75rem
+    if (rect.top < 292) { // 20rem - 1.75rem
       tempStyle = `top: calc(${rect.bottom}px + .75rem); max-heigth: calc(100vh - ${rect.bottom}px - 1.75rem); `
-    else tempStyle = `bottom: calc(100vh - ${rect.top}px + .75rem); max-heigth: calc(${rect.top}px - 1.75rem); `
-    if (docW - rect.left > 452) // 30rem - 1.75rem
+    } else {
+      tempStyle = `bottom: calc(100vh - ${rect.top}px + .75rem); max-heigth: calc(${rect.top}px - 1.75rem); `
+    }
+    if (docW - rect.left > 452) { // 30rem - 1.75rem
       tempStyle += `left: ${rect.left}px;`
-    else tempStyle += `right: calc(100vw - ${rect.right}px);`
+    } else {
+      tempStyle += `right: calc(100vw - ${rect.right}px);`
+    }
     style = tempStyle
   }
 
   let style = 'visibility: hidden'
   $: if (popup) updateStyle()
 
-  async function updateItems (category: ObjectSearchCategory, query: string): Promise<void> {
-    const f = await getResource(category.query)
-    items = await f(client, query)
-    if (selected > items.length) {
-      selected = 0
+  async function updateItems (updateCategory: ObjectSearchCategory, query: string): Promise<void> {
+    const f = await getResource(updateCategory.query)
+
+    const result = await f(client, query)
+    // We need to sure, results we return is for proper category.
+    if (updateCategory._id === category._id) {
+      items = result
+      if (selected > items.length) {
+        selected = 0
+      }
     }
   }
   $: updateItems(category, query)
