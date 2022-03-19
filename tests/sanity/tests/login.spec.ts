@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {
+    page.on('pageerror', exception => {
+      console.log(`Uncaught exception: "${exception}"`)
+    })
+
     // Create user and workspace
     await page.goto('http://localhost:8083/login%3Acomponent%3ALoginApp/login')
 
