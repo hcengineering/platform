@@ -93,7 +93,16 @@ export function createReviewModel (builder: Builder): void {
         company: contact.class.Organization
       }
     } as FindOptions<Doc>,
-    config: []
+    config: [
+      '',
+      'title',
+      '$lookup.attachedTo',
+      'verdict',
+      { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
+      { key: '$lookup.participants', presenter: calendar.component.PersonsPresenter, label: calendar.string.Participants, sortingKey: '$lookup.participants' },
+      '$lookup.company',
+      'modifiedOn'
+    ]
   })
 }
 
@@ -119,8 +128,6 @@ function createTableViewlet (builder: Builder): void {
       '$lookup.company',
       'date',
       'dueDate',
-      // { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
-      // { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
   })

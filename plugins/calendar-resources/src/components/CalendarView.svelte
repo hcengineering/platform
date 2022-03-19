@@ -211,18 +211,20 @@
 </div>
 
 
+{#if mode === CalendarMode.Year}
 <ScrollBox bothScroll>
-  {#if mode === CalendarMode.Year}
     <YearCalendar {mondayStart} cellHeight={'2.5rem'} bind:value={value} currentDate={currentDate(date, shifts)}>
       <svelte:fragment slot="cell" let:date>
-        <Day events={findEvents(objects, date)} {date} />
+        <Day events={findEvents(objects, date)} {date} {_class} {baseMenuClass} {options} {config} query={resultQuery} />
       </svelte:fragment>
     </YearCalendar>
+  </ScrollBox>
   {:else if mode === CalendarMode.Month}
-    <MonthCalendar {mondayStart} cellHeight={'5rem'} bind:value={value} currentDate={currentDate(date, shifts)}>
-      <svelte:fragment slot="cell" let:date={date}>        
-        <Day events={findEvents(objects, date)} {date} size={'huge'}/>
-      </svelte:fragment>
-    </MonthCalendar>  
+    <div class='flex flex-grow'>
+      <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:value={value} currentDate={currentDate(date, shifts)}>
+        <svelte:fragment slot="cell" let:date={date}>        
+          <Day events={findEvents(objects, date)} {date} size={'huge'} {_class} {baseMenuClass} {options} {config} query={resultQuery}/>
+        </svelte:fragment>
+      </MonthCalendar>  
+    </div>
   {/if}
-</ScrollBox>

@@ -31,7 +31,7 @@
   const todayDate = new Date()
 </script>
 
-<div class="month-calendar">
+<div class="month-calendar flex-grow">
   <div class="days-of-week-header">
     {#each [...Array(7).keys()] as dayOfWeek}
       <div class="day-name">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), weekFormat)}</div>
@@ -52,7 +52,7 @@
                 currentDate.getMonth()}
               on:click={() => onSelect(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
             >
-              {#if !$$slots.cell || weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !== currentDate.getMonth()}
+              {#if !$$slots.cell }
                 {weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getDate()}
               {:else}
                 <slot name="cell" date={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)} />
@@ -89,8 +89,8 @@
     color: var(--primary-button-color);
   }
   .cell {
-    height: 100%;
-    width: 100%;
+    height: calc(100% - 5px);
+    width: calc(100% - 5px);
     border-radius: 0.5rem;
     border: 1px solid transparent;
   }
