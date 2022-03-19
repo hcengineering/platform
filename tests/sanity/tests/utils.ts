@@ -1,6 +1,11 @@
 import { Page } from '@playwright/test'
 
 export async function openWorkbench (page: Page): Promise<void> {
+  page.on('pageerror', exception => {
+    console.log('Uncaught exception:')
+    console.log(exception.message)
+  })
+
   await page.goto('http://localhost:8083/login%3Acomponent%3ALoginApp/login')
 
   await page.evaluate(() => {

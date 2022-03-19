@@ -18,10 +18,11 @@
   import { ChannelsView } from '@anticrm/contact-resources'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
-  import { Component, showPanel } from '@anticrm/ui'
+  import { Component, Label, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import chunter from '@anticrm/chunter'
   import attachment from '@anticrm/attachment'
+  import recruit from '../plugin'
 
   export let candidate: Candidate
 
@@ -39,7 +40,7 @@
 </script>
 
 <div class="flex-col h-full card-container">
-  <div class="label">CANDIDATE</div>
+  <div class="label uppercase"><Label label={recruit.string.Candidate} /></div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
     <div class="name lines-limit-2 over-underline" on:click={() => {

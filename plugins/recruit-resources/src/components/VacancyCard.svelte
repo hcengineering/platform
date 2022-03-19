@@ -15,16 +15,32 @@
 
 <script lang="ts">
   import type { Vacancy } from '@anticrm/recruit'
-  import { closePanel, closePopup, closeTooltip, getCurrentLocation, navigate } from '@anticrm/ui'
-  import Company from './icons/Company.svelte'
+  import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@anticrm/ui'
+  import VacancyIcon from './icons/Vacancy.svelte'
+  import contact, { Organization } from '@anticrm/contact'
+  import recruit from '../plugin'
+  import { getClient } from '@anticrm/presentation'
+  import { Ref } from '@anticrm/core'
 
   export let vacancy: Vacancy
+  let company: Organization | undefined
+
+  $: getOrganization(vacancy?.company)
+  const client = getClient()
+
+  async function getOrganization (_id: Ref<Organization> | undefined): Promise<void> {
+    if (_id === undefined) {
+      company = undefined
+    } else {
+      company = await client.findOne(contact.class.Organization, { _id })
+    }
+  }
 </script>
 
 <div class="flex-col h-full card-container">
-  <div class="label">VACANCY</div>
+  <div class="label uppercase"><Label label={recruit.string.Vacancy} /></div>
   <div class="flex-center logo">
-    <Company size={'large'} />
+    <VacancyIcon size={'large'} />
   </div>
   {#if vacancy}
     <div class="name lines-limit-2 over-underline" on:click={() => {
@@ -36,6 +52,9 @@
       loc.path.length = 3
       navigate(loc)
     }}>{vacancy.name}</div>
+    {#if company}
+      <span class="label">{company.name}</span>
+    {/if}
     <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
   {/if}
 </div>
