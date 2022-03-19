@@ -17,18 +17,6 @@ import type { Plugin, Asset, Metadata } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 
-// /**
-//  * @public
-//  */
-// export interface LoginInfo {
-//   email: string
-//   workspace: string
-//   server: string
-//   port: string
-//   token: string
-//   secondFactorEnabled: boolean
-// }
-
 /**
  * @public
  */
@@ -44,6 +32,7 @@ export default plugin(loginId, {
     LoginToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
+    CurrentWorkspace: '' as Metadata<string>,
     OverrideLoginToken: '' as Metadata<string>, // debug purposes
     OverrideEndpoint: '' as Metadata<string>
   },
