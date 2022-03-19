@@ -25,7 +25,7 @@
   export let vacancy: Vacancy
   let company: Organization | undefined
 
-  $: getOrganization(vacancy.company)
+  $: getOrganization(vacancy?.company)
   const client = getClient()
 
   async function getOrganization (_id: Ref<Organization> | undefined): Promise<void> {

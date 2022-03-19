@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test'
 test.describe('login test', () => {
   test('check login', async ({ page }) => {
     page.on('pageerror', exception => {
-      console.log(`Uncaught exception: "${exception}"`)
+      console.log('Uncaught exception:')
+      console.log(exception.message)
     })
 
     // Create user and workspace
