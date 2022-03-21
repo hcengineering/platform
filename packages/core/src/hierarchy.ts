@@ -357,7 +357,7 @@ export class Hierarchy {
           }
         }
       }
-      for (const [k, v] of Object.entries(lu)) {
+      for (const [k, v] of Object.entries(lu ?? {})) {
         if (k === '_id') {
           continue
         }
