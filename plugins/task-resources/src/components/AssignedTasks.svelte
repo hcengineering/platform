@@ -19,7 +19,7 @@
   import { Class, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { LostState, Task } from '@anticrm/task'
+  import { DoneState, Task } from '@anticrm/task'
   import { Component, Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import task from '../plugin'
@@ -36,23 +36,23 @@
   let category: Ref<TagCategory> | undefined = undefined
 
   let documentIds: Ref<Task>[] = []
-  async function updateResultQuery (search: string, documentIds: Ref<Task>[], lostStates: LostState[]): Promise<void> {
+  function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: DoneState[]): void {
     resultQuery = search === '' ? { } : { $search: search }
     resultQuery.assignee = currentUser.employee
-    resultQuery.doneState = { $nin: lostStates.map(it => it._id) }
+    resultQuery.doneState = { $nin: doneStates.map(it => it._id) }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
     }
   }
 
-  let lostStates: LostState[] = []
+  let doneStates: DoneState[] = []
 
-  const lostStatesStateQuery = createQuery()
-  lostStatesStateQuery.query(
-    task.class.LostState,
+  const doneStateQuery = createQuery()
+  doneStateQuery.query(
+    task.class.DoneState,
     {
     },
-    (res) => (lostStates = res)
+    (res) => (doneStates = res)
   )
 
   // Find all tags for object classe with matched elements
@@ -62,7 +62,7 @@
     documentIds = Array.from(new Set<Ref<Task>>(result.filter(it => client.getHierarchy().isDerived(it.attachedToClass, _class)).map((it) => it.attachedTo as Ref<Task>)).values())
   })
 
-  $: updateResultQuery(search, documentIds, lostStates)
+  $: updateResultQuery(search, documentIds, doneStates)
 
   function updateCategory (detail: { category: Ref<TagCategory> | null; elements: TagElement[] }) {
     category = detail.category ?? undefined
@@ -87,7 +87,7 @@
   <SearchEdit
     bind:value={search}
     on:change={() => {
-      updateResultQuery(search, documentIds, lostStates)
+      updateResultQuery(search, documentIds, doneStates)
     }}
   />
 </div>

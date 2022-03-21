@@ -47,6 +47,7 @@
 
   $: sortingFunction = (config.find(it => (typeof it !== 'string') && it.sortingKey === sortKey) as BuildModelKey)?.sortingFunction
 
+  let qindex = 0
   async function update (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -54,11 +55,15 @@
     sortOrder: SortingOrder,
     options?: FindOptions<Doc>
   ) {
+    const c = ++qindex
     loading = true
     q.query(
       _class,
       query,
       (result) => {
+        if (c !== qindex) {
+          return // our data is invalid.
+        }
         objects = result
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
