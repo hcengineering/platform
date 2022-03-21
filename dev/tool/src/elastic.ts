@@ -56,6 +56,7 @@ import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTagsId } from '@anticrm/server-tags'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -118,6 +119,7 @@ export class ElasticTool {
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
     addLocation(serverSettingId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-setting-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
+    addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 

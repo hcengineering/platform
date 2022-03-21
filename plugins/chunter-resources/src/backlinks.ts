@@ -102,13 +102,3 @@ export async function updateBacklinks (client: TxOperations, backlinkId: Ref<Doc
     await client.addCollection(chunter.class.Backlink, chunter.space.Backlinks, attachedTo, attachedToClass, collection, adata)
   }
 }
-
-export async function collectBacklinks (doc: Doc, client: TxOperations): Promise<Doc[]> {
-  if (!client.getHierarchy().isDerived(doc._class, chunter.class.Comment)) {
-    return []
-  }
-
-  const comment = doc as Comment
-  const result = await client.findAll(chunter.class.Backlink, { backlinkId: comment.attachedTo, backlinkClass: comment.attachedToClass, attachedDocId: comment._id })
-  return result
-}

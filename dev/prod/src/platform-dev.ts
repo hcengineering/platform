@@ -26,6 +26,7 @@ import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTagsId } from '@anticrm/server-tags'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -47,6 +48,7 @@ export function configurePlatformDev() {
     addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
+    addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()
 }

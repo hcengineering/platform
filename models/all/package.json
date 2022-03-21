@@ -49,6 +49,7 @@
     "@anticrm/model-server-setting": "~0.6.0",
     "@anticrm/model-server-chunter": "~0.6.0",
     "@anticrm/model-server-task": "~0.6.0",
+    "@anticrm/model-server-tags": "~0.6.0",
     "@anticrm/model-server-recruit": "~0.6.0",
     "@anticrm/model-server-lead": "~0.6.0",
     "@anticrm/model-server-inventory": "~0.6.0",

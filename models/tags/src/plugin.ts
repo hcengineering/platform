@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Doc, Ref, TxOperations } from '@anticrm/core'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
+import { Ref } from '@anticrm/core'
+import { IntlString, mergeIds } from '@anticrm/platform'
 import { TagCategory, tagsId } from '@anticrm/tags'
 import tags from '@anticrm/tags-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
@@ -41,9 +41,6 @@ export default mergeIds(tagsId, tags, {
     CategoryTargetClass: '' as IntlString,
     CategoryTagsLabel: '' as IntlString,
     DefaultLabel: '' as IntlString
-  },
-  dd: {
-    DeleteTagElement: '' as Resource<(doc: Doc, client: TxOperations) => Promise<Doc[]>>
   },
   category: {
     Category: '' as Ref<TagCategory>

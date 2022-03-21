@@ -16,10 +16,10 @@
 
 import { Model, Builder } from '@anticrm/model'
 import type { Resource } from '@anticrm/platform'
-import { TDoc } from '@anticrm/model-core'
+import { TClass, TDoc } from '@anticrm/model-core'
 
-import type { Trigger, TriggerFunc } from '@anticrm/server-core'
-import core, { DOMAIN_MODEL } from '@anticrm/core'
+import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@anticrm/server-core'
+import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
 import serverCore from '@anticrm/server-core'
 
 @Model(serverCore.class.Trigger, core.class.Doc, DOMAIN_MODEL)
@@ -27,6 +27,11 @@ export class TTrigger extends TDoc implements Trigger {
   trigger!: Resource<TriggerFunc>
 }
 
+@Model(serverCore.mixin.ObjectDDParticipant, core.class.Class)
+export class TObjectDDParticipant extends TClass implements ObjectDDParticipant {
+  collectDocs!: Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTrigger)
+  builder.createModel(TTrigger, TObjectDDParticipant)
 }

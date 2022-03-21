@@ -34,7 +34,7 @@ import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
 import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
-import type { Action, ActionTarget, BuildModelOptions, ObjectDDParticipant } from '@anticrm/view'
+import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 import plugin from './plugin'
 
@@ -220,66 +220,9 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   const promises: Array<Promise<any>> = []
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
-    promises.push(client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err)))
+    await client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
   } else {
-    promises.push(client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err)))
-  }
-  promises.push(deleteClassCollections(client, object._class, object))
-  const mixins = getMixins(hierarchy, object._class, object)
-  for (const mixin of mixins) {
-    promises.push(deleteClassCollections(client, mixin, object))
-  }
-
-  promises.push(deleteRelatedDocuments(hierarchy, object, client))
-  await Promise.all(promises)
-}
-
-async function deleteClassCollections (client: TxOperations, _class: Ref<Class<Doc>>, object: Doc): Promise<void> {
-  const hierarchy = client.getHierarchy()
-  const attributes = hierarchy.getAllAttributes(_class)
-  for (const [name, attribute] of attributes) {
-    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
-      const collection = attribute.type as Collection<AttachedDoc>
-      const allAttached = await client.findAll(collection.of, { attachedTo: object._id })
-      for (const attached of allAttached) {
-        await deleteObject(client, attached).catch(err => console.log('failed to delete', name, err))
-      }
-    }
-  }
-}
-
-function getParentClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Ref<Class<Doc>> {
-  const baseDomain = hierarchy.getDomain(_class)
-  const ancestors = hierarchy.getAncestors(_class)
-  let result: Ref<Class<Doc>> = _class
-  for (const ancestor of ancestors) {
-    try {
-      const domain = hierarchy.getClass(ancestor).domain
-      if (domain === baseDomain) {
-        result = ancestor
-      }
-    } catch {}
-  }
-  return result
-}
-
-function getMixins (hierarchy: Hierarchy, _class: Ref<Class<Doc>>, object: Doc): Array<Ref<Mixin<Doc>>> {
-  const parentClass = getParentClass(hierarchy, _class)
-  const descendants = hierarchy.getDescendants(parentClass)
-  return descendants.filter(
-    (m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m)
-  )
-}
-
-async function deleteRelatedDocuments (hierarchy: Hierarchy, object: Doc, client: TxOperations): Promise<void> {
-  const objectClass = hierarchy.getClass(object._class)
-  if (hierarchy.hasMixin(objectClass, view.mixin.ObjectDDParticipant)) {
-    const removeParticipand: ObjectDDParticipant = hierarchy.as(objectClass, view.mixin.ObjectDDParticipant)
-    const collector = await getResource(removeParticipand.collectDocs)
-    const docs = await collector(object, client)
-    for (const d of docs) {
-      await deleteObject(client, d)
-    }
+    await client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
   }
 }
 

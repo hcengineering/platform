@@ -1151,5 +1151,20 @@
       "projectFolder": "models/calendar",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/server-tags",
+      "projectFolder": "server-plugins/tags",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-tags",
+      "projectFolder": "models/server-tags",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-tags-resources",
+      "projectFolder": "server-plugins/tags-resources",
+      "shouldPublish": true
+    },
   ]
 }
