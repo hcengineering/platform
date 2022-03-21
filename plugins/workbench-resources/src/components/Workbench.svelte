@@ -31,7 +31,7 @@
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
-  import type { Application, NavigatorModel, ViewConfiguration } from '@anticrm/workbench'
+  import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
@@ -51,7 +51,7 @@
   let currentApp: Ref<Application> | undefined
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
-  let specialComponent: AnyComponent | undefined
+  let specialComponent: SpecialNavModel | undefined
 
   let currentApplication: Application | undefined
   let currentView: ViewConfiguration | undefined
@@ -134,9 +134,8 @@
     navigate(loc)
   }
 
-  function getSpecialComponent (id: string): AnyComponent | undefined {
-    const special = navigatorModel?.specials?.find((x) => x.id === id)
-    return special?.component
+  function getSpecialComponent (id: string): SpecialNavModel | undefined {
+    return navigatorModel?.specials?.find((x) => x.id === id)
   }
 
   let apps: Application[] = []
@@ -295,7 +294,7 @@
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} />
       {:else if specialComponent}
-        <Component is={specialComponent} props={{ model: navigatorModel }} />
+        <Component is={specialComponent.component} props={{ model: navigatorModel, ...specialComponent.componentProps }} />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}

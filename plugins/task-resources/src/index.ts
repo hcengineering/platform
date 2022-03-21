@@ -39,6 +39,7 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
+import AssignedTasks from './components/AssignedTasks.svelte'
 import task from './plugin'
 
 async function createTask (object: Doc): Promise<void> {
@@ -145,7 +146,8 @@ export default async (): Promise<Resources> => ({
     TaskHeader,
     DoneStateEditor,
     KanbanTemplateEditor,
-    KanbanTemplateSelector
+    KanbanTemplateSelector,
+    AssignedTasks
   },
   actionImpl: {
     CreateTask: createTask,

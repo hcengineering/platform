@@ -66,7 +66,6 @@ export default mergeIds(taskId, task, {
     Todo: '' as IntlString,
     TaskDone: '' as IntlString,
     TaskDueTo: '' as IntlString,
-    Task: '' as IntlString,
     TaskParent: '' as IntlString,
     IssueName: '' as IntlString,
     TaskComments: '' as IntlString,

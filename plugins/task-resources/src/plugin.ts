@@ -68,12 +68,17 @@ export default mergeIds(taskId, task, {
     CantStatusDelete: '' as IntlString,
     CantStatusDeleteError: '' as IntlString,
     Archive: '' as IntlString,
-    Unarchive: '' as IntlString
+    Unarchive: '' as IntlString,
+
+    Tasks: '' as IntlString,
+    Assigned: '' as IntlString,
+    Task: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
   },
   component: {
-    TodoStatePresenter: '' as AnyComponent
+    TodoStatePresenter: '' as AnyComponent,
+    AssignedTasks: '' as AnyComponent
   }
 })
