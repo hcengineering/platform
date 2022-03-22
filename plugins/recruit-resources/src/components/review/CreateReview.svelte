@@ -172,7 +172,9 @@
     />
     <Grid column={2}>
       <StylishEdit bind:value={location} label={recruit.string.Location} />
-      <OrganizationSelector bind:value={company} label={recruit.string.Company} />
+      <div class="antiComponentBox">
+        <OrganizationSelector bind:value={company} label={recruit.string.Company} />
+      </div>
     </Grid>
     <div class="antiComponentBox">
       <DatePicker title={recruit.string.StartDate} bind:value={startDate} withTime />
