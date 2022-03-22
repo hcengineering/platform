@@ -14,9 +14,9 @@
 //
 
 import core, { createClient, Doc, generateId, Ref, SortingOrder, Space, Tx, TxCreateDoc, TxOperations, WithLookup } from '@anticrm/core'
-import { AttachedComment, test, genMinModel } from './minmodel'
 import { LiveQuery } from '..'
 import { connect } from './connection'
+import { AttachedComment, genMinModel, ParticipantsHolder, test } from './minmodel'
 
 interface Channel extends Space {
   x: number
@@ -743,4 +743,42 @@ describe('query', () => {
   //   }
   //   await pp
   // })
+
+  it('update-array-value', async () => {
+    const { liveQuery, factory } = await getClient()
+
+    const spaces = await liveQuery.findAll(core.class.Space, {})
+    await factory.createDoc(test.class.ParticipantsHolder, spaces[0]._id, {
+      participants: ['a' as Ref<Doc>]
+    })
+    const a2 = await factory.createDoc(test.class.ParticipantsHolder, spaces[0]._id, {
+      participants: ['b' as Ref<Doc>]
+    })
+
+    const holderBefore = await liveQuery.findAll(test.class.ParticipantsHolder, { participants: 'a' as Ref<Doc> })
+    expect(holderBefore.length).toEqual(1)
+
+    let attempt = 0
+    const pp = new Promise((resolve) => {
+      liveQuery.query<Space>(
+        test.class.ParticipantsHolder,
+        { participants: 'a' as Ref<Doc> },
+        (result) => {
+          if (attempt > 0) {
+            expect(result.length).toEqual(2)
+            if (attempt === holderBefore.length) resolve(null)
+          }
+        },
+        { sort: { private: SortingOrder.Ascending } }
+      )
+    })
+
+    attempt++
+    await factory.updateDoc<ParticipantsHolder>(test.class.ParticipantsHolder, spaces[0]._id, a2, {
+      $push: {
+        participants: 'a' as Ref<Doc>
+      }
+    })
+    await pp
+  })
 })

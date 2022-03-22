@@ -41,7 +41,8 @@ import workbench from '@anticrm/model-workbench'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import { TOpinion, TReview, TReviewCategory } from './review-model'
 import recruit from './plugin'
-import { createReviewModel } from './review'
+import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
+import calendar from '@anticrm/model-calendar'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -192,7 +193,18 @@ export function createModel (builder: Builder): void {
             componentProps: {
               labelTasks: recruit.string.Applications,
               _class: recruit.class.Applicant
+            }
+          },
+          {
+            id: 'upcoming',
+            component: calendar.component.UpcomingEvents,
+            componentProps: {
+              _class: recruit.class.Review,
+              options: reviewTableOptions,
+              config: reviewTableConfig
             },
+            icon: calendar.icon.Calendar,
+            label: calendar.string.UpcomingEvents,
             position: 'top'
           }
         ]

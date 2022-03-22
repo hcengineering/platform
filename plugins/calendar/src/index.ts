@@ -69,7 +69,9 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<Doc>
   },
   component: {
-    PersonsPresenter: '' as AnyComponent
+    PersonsPresenter: '' as AnyComponent,
+    UpcomingEvents: '' as AnyComponent,
+    DateTimePresenter: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,

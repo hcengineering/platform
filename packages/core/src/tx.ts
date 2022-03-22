@@ -116,7 +116,7 @@ export interface MoveDescriptor<X extends PropertyType> {
  * @public
  */
 export type ArrayAsElementPosition<T extends object> = {
-  [P in keyof T]: T[P] extends Arr<infer X> ? X | Position<X> : never
+  [P in keyof T]-?: T[P] extends Arr<infer X> ? X | Position<X> : never
 }
 
 /**

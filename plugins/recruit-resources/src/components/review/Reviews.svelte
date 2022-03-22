@@ -16,7 +16,7 @@
   import type { Doc, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
-  import task from '@anticrm/task'
+  import calendar from '@anticrm/calendar'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../../plugin'
@@ -50,8 +50,7 @@
           label: recruit.string.Opinions,
           sortingKey: 'opinions'
         },
-        'date',
-        'dueDate'
+        { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' },
       ]}
       options={{
         lookup: {

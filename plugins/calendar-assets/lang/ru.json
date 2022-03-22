@@ -20,6 +20,8 @@
     "ModeWeek": "Неделя",
     "ModeMonth": "Месяц",
     "ModeYear": "Год",
-    "Today": "Сегодня"
+    "Today": "Сегодня",
+    "UpcomingEvents": "Предстоящие события",
+    "TableView": "Таблица"
   }
 }
