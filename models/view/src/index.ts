@@ -25,7 +25,6 @@ import type {
   AttributeEditor,
   AttributePresenter,
   IgnoreActions,
-  ObjectDDParticipant,
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
@@ -37,7 +36,6 @@ import type {
 } from '@anticrm/view'
 import view from './plugin'
 
-export { ObjectDDParticipant } from '@anticrm/view'
 export { viewOperation } from './migration'
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
@@ -68,10 +66,6 @@ export class TObjectValidator extends TClass implements ObjectValidator {
 @Mixin(view.mixin.ObjectFactory, core.class.Class)
 export class TObjectFactory extends TClass implements ObjectFactory {
   component!: AnyComponent
-}
-@Mixin(view.mixin.ObjectDDParticipant, core.class.Class)
-export class TObjectDDParticipant extends TClass implements ObjectDDParticipant {
-  collectDocs!: Resource<(doc: Doc) => Promise<Doc[]>>
 }
 
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
@@ -128,7 +122,6 @@ export function createModel (builder: Builder): void {
     TObjectValidator,
     TObjectFactory,
     TObjectEditorHeader,
-    TObjectDDParticipant,
     THTMLPresenter,
     TTextPresenter,
     TIgnoreActions

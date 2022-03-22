@@ -15,14 +15,14 @@
 import { Class, Doc, Domain, IndexKind, Ref } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import view, { ObjectDDParticipant } from '@anticrm/model-view'
+import view from '@anticrm/model-view'
 import { Asset, IntlString } from '@anticrm/platform'
 import type { TagCategory, TagElement, TagReference } from '@anticrm/tags'
 import tags from './plugin'
 
+export { TagCategory, TagElement, TagReference } from '@anticrm/tags'
 export { tagsOperation } from './migration'
 export { tags as default }
-export { TagElement, TagReference, TagCategory } from '@anticrm/tags'
 
 export const DOMAIN_TAGS = 'tags' as Domain
 
@@ -93,8 +93,5 @@ export function createModel (builder: Builder): void {
   })
   builder.mixin(tags.class.TagElement, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tags.component.TagElementPresenter
-  })
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(tags.class.TagElement, core.class.Class, view.mixin.ObjectDDParticipant, {
-    collectDocs: tags.dd.DeleteTagElement
   })
 }

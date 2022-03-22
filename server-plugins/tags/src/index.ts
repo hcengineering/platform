@@ -13,22 +13,20 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
+import { Class, Doc, Hierarchy, Ref, FindResult, FindOptions, DocumentQuery } from '@anticrm/core'
 import type { Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
  * @public
  */
-export const serverChunterId = 'server-chunter' as Plugin
+export const serverTagsId = 'server-tags' as Plugin
 
 /**
  * @public
  */
-export default plugin(serverChunterId, {
+export default plugin(serverTagsId, {
   function: {
-    CommentRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>,
-    ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
+    TagElementRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
   }
 })

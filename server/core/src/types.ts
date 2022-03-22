@@ -15,7 +15,7 @@
 //
 
 import type { Client as MinioClient } from 'minio'
-import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext, ModelDb } from '@anticrm/core'
+import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext, ModelDb, Obj } from '@anticrm/core'
 import { TxFactory, Hierarchy } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 
@@ -82,4 +82,13 @@ export type FullTextAdapterFactory = (url: string, workspace: string) => Promise
  */
 export interface WithFind {
   findAll: <T extends Doc> (ctx: MeasureContext, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+}
+
+/**
+ * Allow to contribute and find all derived objects for document.
+ * @public
+ */
+export interface ObjectDDParticipant extends Class<Obj> {
+  // Collect more items to be deleted if parent document is deleted.
+  collectDocs: Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
 }

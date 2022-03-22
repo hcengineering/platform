@@ -14,21 +14,19 @@
 //
 
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
-import type { Plugin, Resource } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import tags, { TagElement } from '@anticrm/tags'
 
 /**
  * @public
  */
-export const serverChunterId = 'server-chunter' as Plugin
+export async function TagElementRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+  if (hiearachy.isDerived(doc._class, tags.class.TagElement)) return []
+  return await findAll(tags.class.TagReference, { tag: doc._id as Ref<TagElement> })
+}
 
-/**
- * @public
- */
-export default plugin(serverChunterId, {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export default async () => ({
   function: {
-    CommentRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>,
-    ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
+    TagElementRemove
   }
 })

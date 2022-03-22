@@ -18,7 +18,7 @@ import type { Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 import type { Ref, Class } from '@anticrm/core'
-import type { Trigger } from './types'
+import type { ObjectDDParticipant, Trigger } from './types'
 
 /**
  * @public
@@ -31,6 +31,9 @@ export const serverCoreId = 'server-core' as Plugin
 const serverCore = plugin(serverCoreId, {
   class: {
     Trigger: '' as Ref<Class<Trigger>>
+  },
+  mixin: {
+    ObjectDDParticipant: '' as Ref<ObjectDDParticipant>
   }
 })
 

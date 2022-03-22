@@ -17,6 +17,8 @@
 import core, {
   AttachedDoc,
   Class,
+  ClassifierKind,
+  Collection,
   Doc,
   DocumentQuery,
   Domain,
@@ -25,21 +27,28 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
-  MeasureContext, ModelDb,
+  MeasureContext, Mixin, ModelDb,
   Ref,
   ServerStorage,
   Storage,
   Tx,
   TxBulkWrite,
   TxCollectionCUD,
+  TxCreateDoc,
   TxCUD,
   TxFactory,
-  TxResult
+  TxMixin,
+  TxProcessor,
+  TxRemoveDoc,
+  TxResult,
+  TxUpdateDoc
 } from '@anticrm/core'
+import { getResource } from '@anticrm/platform'
 import type { Client as MinioClient } from 'minio'
 import { FullTextIndex } from './fulltext'
+import serverCore from './plugin'
 import { Triggers } from './triggers'
-import type { FullTextAdapter, FullTextAdapterFactory } from './types'
+import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } from './types'
 
 /**
  * @public
@@ -197,6 +206,133 @@ class TServerStorage implements ServerStorage {
     })
   }
 
+  getParentClass (_class: Ref<Class<Doc>>): Ref<Class<Doc>> {
+    const baseDomain = this.hierarchy.getDomain(_class)
+    const ancestors = this.hierarchy.getAncestors(_class)
+    let result: Ref<Class<Doc>> = _class
+    for (const ancestor of ancestors) {
+      try {
+        const domain = this.hierarchy.getClass(ancestor).domain
+        if (domain === baseDomain) {
+          result = ancestor
+        }
+      } catch {}
+    }
+    return result
+  }
+
+  getMixins (_class: Ref<Class<Doc>>, object: Doc): Array<Ref<Mixin<Doc>>> {
+    const parentClass = this.getParentClass(_class)
+    const descendants = this.hierarchy.getDescendants(parentClass)
+    return descendants.filter(
+      (m) => this.hierarchy.getClass(m).kind === ClassifierKind.MIXIN && this.hierarchy.hasMixin(object, m)
+    )
+  }
+
+  async buildRemovedDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
+    const txes = await this.findAll(ctx, core.class.TxCUD, { objectId: tx.objectId }, { sort: { modifiedOn: 1 } })
+    let doc: Doc
+    let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
+    if (createTx === undefined) {
+      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<Doc, AttachedDoc>[]
+      createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
+    }
+    if (createTx === undefined) return
+    doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+    for (const tx of txes) {
+      if (tx._class === core.class.TxUpdateDoc) {
+        doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
+      } else if (tx._class === core.class.TxMixin) {
+        const mixinTx = tx as TxMixin<Doc, Doc>
+        doc = TxProcessor.updateMixin4Doc(doc, mixinTx.mixin, mixinTx.attributes)
+      }
+    }
+
+    return doc
+  }
+
+  extractTx (tx: Tx): Tx {
+    if (tx._class === core.class.TxCollectionCUD) {
+      const ctx = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+      return ctx.tx
+    }
+
+    return tx
+  }
+
+  async processRemove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+    const actualTx = this.extractTx(tx)
+    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
+    const rtx = actualTx as TxRemoveDoc<Doc>
+    const result: Tx[] = []
+    const object = await this.buildRemovedDoc(ctx, rtx)
+    if (object === undefined) return []
+    result.push(...await this.deleteClassCollections(ctx, object._class, rtx.objectId))
+    const mixins = this.getMixins(object._class, object)
+    for (const mixin of mixins) {
+      result.push(...await this.deleteClassCollections(ctx, mixin, rtx.objectId))
+    }
+    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    return result
+  }
+
+  async deleteClassCollections (ctx: MeasureContext, _class: Ref<Class<Doc>>, objectId: Ref<Doc>): Promise<Tx[]> {
+    const attributes = this.hierarchy.getAllAttributes(_class)
+    const result: Tx[] = []
+    for (const attribute of attributes) {
+      if (this.hierarchy.isDerived(attribute[1].type._class, core.class.Collection)) {
+        const collection = attribute[1].type as Collection<AttachedDoc>
+        const allAttached = await this.findAll(ctx, collection.of, { attachedTo: objectId })
+        for (const attached of allAttached) {
+          result.push(...await this.deleteObject(ctx, attached))
+        }
+      }
+    }
+    return result
+  }
+
+  async deleteObject (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+    const result: Tx[] = []
+    const factory = new TxFactory(core.account.System)
+    if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
+      const adoc = object as AttachedDoc
+      const nestedTx = factory.createTxRemoveDoc(object._class, object.space, adoc._id) as TxRemoveDoc<AttachedDoc>
+      const tx = factory.createTxCollectionCUD(
+        adoc.attachedToClass,
+        adoc.attachedTo,
+        object.space,
+        adoc.collection,
+        nestedTx
+      )
+      result.push(tx)
+    } else {
+      result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
+    }
+    result.push(...await this.deleteClassCollections(ctx, object._class, object._id))
+    const mixins = this.getMixins(object._class, object)
+    for (const mixin of mixins) {
+      result.push(...await this.deleteClassCollections(ctx, mixin, object._id))
+    }
+    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    return result
+  }
+
+  async deleteRelatedDocuments (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+    const result: Tx[] = []
+    const objectClass = this.hierarchy.getClass(object._class)
+    if (this.hierarchy.hasMixin(objectClass, serverCore.mixin.ObjectDDParticipant)) {
+      const removeParticipand: ObjectDDParticipant = this.hierarchy.as(objectClass, serverCore.mixin.ObjectDDParticipant)
+      const collector = await getResource(removeParticipand.collectDocs)
+      const docs = await collector(object, this.hierarchy, async (_class, query, options) => {
+        return await this.findAll(ctx, _class, query, options)
+      })
+      for (const d of docs) {
+        result.push(...await this.deleteObject(ctx, d))
+      }
+    }
+    return result
+  }
+
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
@@ -227,6 +363,7 @@ class TServerStorage implements ServerStorage {
       // invoke triggers and store derived objects
       derived = [
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
+        ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, tx))),
         ...(await ctx.with('process-triggers', {}, (ctx) =>
           this.triggers.apply(tx.modifiedBy, tx, {
             fx: triggerFx.fx,

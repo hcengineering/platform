@@ -16,8 +16,8 @@
 import type { TxViewlet } from '@anticrm/activity'
 import { Channel, chunterId } from '@anticrm/chunter'
 import chunter from '@anticrm/chunter-resources/src/plugin'
-import type { Doc, Ref, TxOperations } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { Ref } from '@anticrm/core'
+import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import type { ViewletDescriptor } from '@anticrm/view'
@@ -53,8 +53,5 @@ export default mergeIds(chunterId, chunter, {
   space: {
     General: '' as Ref<Channel>,
     Random: '' as Ref<Channel>
-  },
-  action: {
-    CommentRemove: '' as Resource<(doc: Doc, client: TxOperations) => Promise<Doc[]>>
   }
 })

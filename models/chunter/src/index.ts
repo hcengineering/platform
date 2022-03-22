@@ -18,12 +18,11 @@ import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
 import type { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
+import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import { ObjectDDParticipant } from '@anticrm/view'
 import chunter from './plugin'
-import attachment from '@anticrm/model-attachment'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -102,10 +101,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter
-  })
-
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, view.mixin.ObjectDDParticipant, {
-    collectDocs: chunter.action.CommentRemove
   })
 
   builder.createDoc(activity.class.TxViewlet, core.space.Model, {

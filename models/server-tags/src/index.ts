@@ -13,24 +13,14 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
-
 import core, { Class, Doc } from '@anticrm/core'
-import chunter from '@anticrm/chunter'
-import view from '@anticrm/view'
+import { Builder } from '@anticrm/model'
 import serverCore, { ObjectDDParticipant } from '@anticrm/server-core'
-import serverChunter from '@anticrm/server-chunter'
+import serverTags from '@anticrm/server-tags'
+import tags from '@anticrm/tags'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.HTMLPresenter, {
-    presenter: serverChunter.function.ChannelHTMLPresenter
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.TextPresenter, {
-    presenter: serverChunter.function.ChannelTextPresenter
-  })
-
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
-    collectDocs: serverChunter.function.CommentRemove
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(tags.class.TagElement, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
+    collectDocs: serverTags.function.TagElementRemove
   })
 }

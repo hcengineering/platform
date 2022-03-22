@@ -32,6 +32,7 @@ import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTagsId } from '@anticrm/server-tags'
 
 import { metricsContext } from './metrics'
 
@@ -68,6 +69,7 @@ export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfi
   addLocation(serverLeadId, () => import('@anticrm/server-lead-resources'))
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
   addLocation(serverTaskId, () => import('@anticrm/server-task-resources'))
+  addLocation(serverTagsId, () => import('@anticrm/server-tags-resources'))
 
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {

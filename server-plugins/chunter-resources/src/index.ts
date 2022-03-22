@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import chunter, { Channel } from '@anticrm/chunter'
-import { Doc } from '@anticrm/core'
+import chunter, { Comment, Channel } from '@anticrm/chunter'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import workbench from '@anticrm/workbench'
@@ -36,9 +36,23 @@ export function channelTextPresenter (doc: Doc): string {
   return `${channel.name}`
 }
 
+/**
+ * @public
+ */
+export async function CommentRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+  if (!hiearachy.isDerived(doc._class, chunter.class.Comment)) {
+    return []
+  }
+
+  const comment = doc as Comment
+  const result = await findAll(chunter.class.Backlink, { backlinkId: comment.attachedTo, backlinkClass: comment.attachedToClass, attachedDocId: comment._id })
+  return result
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
+    CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter
   }
