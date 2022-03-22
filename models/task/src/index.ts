@@ -84,6 +84,7 @@ export class TLostState extends TDoneState implements LostState {}
  * No domain is specified, since pure Tasks could not exists
  */
 @Model(task.class.Task, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
+@UX(task.string.Task, task.icon.Task, task.string.Task)
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), task.string.TaskState)
   state!: Ref<State>
@@ -279,6 +280,15 @@ export function createModel (builder: Builder): void {
             addSpaceLabel: task.string.CreateProject,
             createComponent: task.component.CreateProject
           }
+        ],
+        specials: [
+          {
+            id: 'assigned',
+            label: task.string.Assigned,
+            icon: task.icon.Task,
+            component: task.component.AssignedTasks,
+            position: 'top'
+          }
         ]
       }
     },
@@ -300,6 +310,10 @@ export function createModel (builder: Builder): void {
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
+  })
+
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.ObjectPresenter
   })
 
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.AttributePresenter, {

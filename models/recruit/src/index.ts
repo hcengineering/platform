@@ -183,6 +183,17 @@ export function createModel (builder: Builder): void {
             label: recruit.string.SkillsLabel,
             createItemLabel: recruit.string.SkillCreateLabel,
             position: 'bottom'
+          },
+          {
+            id: 'assigned',
+            label: task.string.Assigned,
+            icon: task.icon.Task,
+            component: task.component.AssignedTasks,
+            componentProps: {
+              labelTasks: recruit.string.Applications,
+              _class: recruit.class.Applicant
+            },
+            position: 'top'
           }
         ]
       }
@@ -206,8 +217,16 @@ export function createModel (builder: Builder): void {
       '',
       'title',
       'city',
-      { presenter: recruit.component.ApplicationsPresenter, label: recruit.string.ApplicationsShort, sortingKey: 'applications' },
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: recruit.component.ApplicationsPresenter,
+        label: recruit.string.ApplicationsShort,
+        sortingKey: 'applications'
+      },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
@@ -244,7 +263,11 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
@@ -279,7 +302,11 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
@@ -399,8 +426,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Vacancy,
     action: recruit.action.EditVacancy,
-    query: {
-    }
+    query: {}
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
