@@ -49,7 +49,8 @@ export type DocumentQuery<T extends Doc> = {
 /**
  * @public
  */
-export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null | undefined ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+
 /**
  * @public
  */
@@ -65,7 +66,7 @@ export type RefKeys<T extends Doc> = Pick<T, KeysByType<T, NullableRef>>
 /**
  * @public
  */
-export type NullableRef = Ref<Doc> | null
+export type NullableRef = Ref<Doc> | null | undefined
 
 /**
  * @public
@@ -123,7 +124,7 @@ export enum SortingOrder {
  * @public
  */
 export type RefsAsDocs<T> = {
-  [P in keyof T]: T[P] extends Ref<infer X> | null ? (T extends X ? X : X | WithLookup<X>) : AttachedDoc[]
+  [P in keyof T]: T[P] extends Ref<infer X> | null | undefined ? (T extends X ? X : X | WithLookup<X>) : AttachedDoc[]
 }
 
 /**

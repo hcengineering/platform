@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import core, { Doc, DocumentQuery, Lookup, Ref } from '@anticrm/core'
+  import core, { Doc, DocumentQuery, Lookup, Ref, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Applicant, Vacancy } from '@anticrm/recruit'
   import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup, IconAdd } from '@anticrm/ui'
@@ -35,16 +35,20 @@
   let resultQuery: DocumentQuery<Doc> = {}
   let vacancyQuery: DocumentQuery<Doc> = {}
 
-  let vacancies: Vacancy[] = []
+  let vacancies: WithLookup<Vacancy>[] = []
   const query = createQuery()
   let appQuery = false
 
+  const lookup: Lookup<Vacancy> = {
+    company: contact.class.Organization
+  }
+
   $: query.query(recruit.class.Vacancy, { archived: false }, (res) => {
     vacancies = res
-  })
+  }, { lookup })
 
   function lowerIncludes (a: string | undefined, b: string): boolean {
-    return (a ?? '').toLowerCase().includes(b)
+    return (a ?? '').toLowerCase().includes(b.toLowerCase())
   }
 
   $: if (vacancies.length > 0 && !appQuery) {
@@ -55,7 +59,7 @@
             (it) =>
               lowerIncludes(it.name, vquery) ||
               lowerIncludes(it.description, vquery) ||
-              lowerIncludes(it.company, vquery) ||
+              lowerIncludes(it.$lookup?.company?.name, vquery) ||
               (applications?.get(it._id) ?? 0) > 0
           )
           .map((it) => it._id)
@@ -88,10 +92,6 @@
       }
     )
   }
-
-  const lookup = {
-    company: contact.class.Organization
-  } as Lookup<Doc>
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
