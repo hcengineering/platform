@@ -20,6 +20,11 @@
     "ModeWeek": "Неделя",
     "ModeMonth": "Месяц",
     "ModeYear": "Год",
-    "Today": "Сегодня"
+    "Today": "Сегодня",
+    "UpcomingEvents": "Предстоящие события",
+    "TableView": "Таблица",
+    "DueMinutes": "{minutes, plural, =0 {меньше минуты} =1 {минута} other {# минут}}",
+    "DueHours": "{hours, plural, =0 {меньше часа} =1 {1 час} other {# часы}}",
+    "DueDays": "{days, plural, =0 {сегодня} =1 {1 день} other {# дня}}"
   }
 }

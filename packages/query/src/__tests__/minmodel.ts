@@ -58,9 +58,17 @@ export const test = plugin('test' as Plugin, {
     TestMixin: '' as Ref<Mixin<TestMixin>>
   },
   class: {
-    TestComment: '' as Ref<Class<AttachedComment>>
+    TestComment: '' as Ref<Class<AttachedComment>>,
+    ParticipantsHolder: '' as Ref<Class<ParticipantsHolder>>
   }
 })
+
+/**
+ * @public
+ */
+export interface ParticipantsHolder extends Doc {
+  participants?: Ref<Doc>[]
+}
 
 const DOMAIN_TEST: Domain = 'test' as Domain
 
@@ -89,6 +97,8 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(createClass(test.mixin.TestMixin, { label: 'TestMixin' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
 
   txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS, domain: DOMAIN_TEST }))
+
+  txes.push(createClass(test.class.ParticipantsHolder, { label: 'ParticipantsHolder' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_TEST }))
 
   const u1 = 'User1' as Ref<Account>
   const u2 = 'User2' as Ref<Account>

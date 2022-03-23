@@ -14,9 +14,9 @@
 //
 
 import core, { createClient, Doc, generateId, Ref, SortingOrder, Space, Tx, TxCreateDoc, TxOperations, WithLookup } from '@anticrm/core'
-import { AttachedComment, test, genMinModel } from './minmodel'
 import { LiveQuery } from '..'
 import { connect } from './connection'
+import { AttachedComment, genMinModel, ParticipantsHolder, test } from './minmodel'
 
 interface Channel extends Space {
   x: number
@@ -49,12 +49,12 @@ describe('query', () => {
       }
     }
 
-    await new Promise((resolve) => {
+    const result = await new Promise((resolve) => {
       liveQuery.query<Space>(core.class.Space, { private: false }, (result) => {
-        expect(result).toHaveLength(expectedLength)
-        resolve(null)
+        resolve(result)
       })
     })
+    expect(result).toHaveLength(expectedLength)
   })
 
   it('query should be live', async () => {
@@ -743,4 +743,51 @@ describe('query', () => {
   //   }
   //   await pp
   // })
+
+  it('update-array-value', async () => {
+    const { liveQuery, factory } = await getClient()
+
+    const spaces = await liveQuery.findAll(core.class.Space, {})
+    await factory.createDoc(test.class.ParticipantsHolder, spaces[0]._id, {
+      participants: ['a' as Ref<Doc>]
+    })
+    const a2 = await factory.createDoc(test.class.ParticipantsHolder, spaces[0]._id, {
+      participants: ['b' as Ref<Doc>]
+    })
+
+    const holderBefore = await liveQuery.findAll(test.class.ParticipantsHolder, { participants: 'a' as Ref<Doc> })
+    expect(holderBefore.length).toEqual(1)
+
+    let attempt = 0
+    let resolvePpv: (value: Doc[] | PromiseLike<Doc[]>) => void
+
+    const resolveP = new Promise<Doc[]>((resolve) => {
+      resolvePpv = resolve
+    })
+    const pp = await new Promise((resolve) => {
+      liveQuery.query<Space>(
+        test.class.ParticipantsHolder,
+        { participants: 'a' as Ref<Doc> },
+        (result) => {
+          if (attempt > 0) {
+            resolvePpv(result)
+          } else {
+            resolve(null)
+          }
+        },
+        { sort: { private: SortingOrder.Ascending } }
+      )
+    })
+
+    await pp // We have first value returned
+
+    attempt++
+    await factory.updateDoc<ParticipantsHolder>(test.class.ParticipantsHolder, spaces[0]._id, a2, {
+      $push: {
+        participants: 'a' as Ref<Doc>
+      }
+    })
+    const result = await resolveP
+    expect(result.length).toEqual(2)
+  })
 })

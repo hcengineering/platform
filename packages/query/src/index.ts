@@ -338,9 +338,19 @@ export class LiveQuery extends TxProcessor implements Client {
       return false
     }
 
+    const doc: Doc = {
+      _id: tx.objectId,
+      _class: tx.objectClass,
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn,
+      space: tx.objectSpace
+    }
+
+    TxProcessor.updateDoc2Doc(doc, tx)
+
     for (const key in q.query) {
       const value = (q.query as any)[key]
-      const res = findProperty([tx.operations as unknown as Doc], key, value)
+      const res = findProperty([doc], key, value)
       if (res.length === 1) {
         return true
       }

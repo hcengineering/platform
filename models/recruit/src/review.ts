@@ -1,12 +1,38 @@
-import { Doc, FindOptions } from '@anticrm/core'
+import { FindOptions } from '@anticrm/core'
 import { Builder } from '@anticrm/model'
+import calendar from '@anticrm/model-calendar'
 import contact from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
+import { Review } from '@anticrm/recruit'
+import { BuildModelKey } from '@anticrm/view'
 import recruit from './plugin'
-import calendar from '@anticrm/model-calendar'
+
+export const reviewTableOptions: FindOptions<Review> = {
+  lookup: {
+    attachedTo: recruit.mixin.Candidate,
+    participants: contact.class.Employee,
+    company: contact.class.Organization
+  }
+}
+export const reviewTableConfig: (BuildModelKey | string)[] = [
+  '',
+  'title',
+  '$lookup.attachedTo',
+  // 'verdict',
+  { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
+  {
+    key: '$lookup.participants',
+    presenter: calendar.component.PersonsPresenter,
+    label: calendar.string.Participants,
+    sortingKey: '$lookup.participants'
+  },
+  '$lookup.company',
+  { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' },
+  'modifiedOn'
+]
 
 export function createReviewModel (builder: Builder): void {
   builder.mixin(recruit.class.ReviewCategory, core.class.Class, workbench.mixin.SpaceView, {
@@ -82,27 +108,20 @@ export function createReviewModel (builder: Builder): void {
     }
   })
 
+  const reviewOptions: FindOptions<Review> = {
+    lookup: {
+      attachedTo: recruit.mixin.Candidate,
+      participants: contact.class.Employee,
+      company: contact.class.Organization
+    }
+  }
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Review,
     descriptor: calendar.viewlet.Calendar,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        participants: contact.class.Employee,
-        company: contact.class.Organization
-      }
-    } as FindOptions<Doc>,
-    config: [
-      '',
-      'title',
-      '$lookup.attachedTo',
-      'verdict',
-      { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
-      { key: '$lookup.participants', presenter: calendar.component.PersonsPresenter, label: calendar.string.Participants, sortingKey: '$lookup.participants' },
-      '$lookup.company',
-      'modifiedOn'
-    ]
+    options: reviewOptions,
+    config: reviewTableConfig
   })
 }
 
@@ -111,25 +130,8 @@ function createTableViewlet (builder: Builder): void {
     attachTo: recruit.class.Review,
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        attachedTo: recruit.mixin.Candidate,
-        participants: contact.class.Employee,
-        company: contact.class.Organization
-      }
-    } as FindOptions<Doc>,
-    config: [
-      '',
-      'title',
-      '$lookup.attachedTo',
-      'verdict',
-      { key: '', presenter: recruit.component.OpinionsPresenter, label: recruit.string.Opinions, sortingKey: 'opinions' },
-      { key: '$lookup.participants', presenter: calendar.component.PersonsPresenter, label: calendar.string.Participants, sortingKey: '$lookup.participants' },
-      '$lookup.company',
-      'date',
-      'dueDate',
-      'modifiedOn'
-    ]
+    options: reviewTableOptions,
+    config: reviewTableConfig
   })
 
   builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.AttributeEditor, {

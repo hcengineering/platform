@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Contact, Organization, Person } from '@anticrm/contact'
+  import type { Contact, EmployeeAccount, Organization, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { OrganizationSelector } from '@anticrm/contact-resources'
-  import { Account, Class, Client, Doc, generateId, Ref } from '@anticrm/core'
+  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
   import type { Candidate, Review } from '@anticrm/recruit'
@@ -31,6 +31,8 @@
   export let candidate: Ref<Person>
 
   export let preserveCandidate = false
+
+  const currentUser = getCurrentAccount() as EmployeeAccount
 
   let status: Status = OK
 
@@ -56,7 +58,8 @@
     description,
     company,
     verdict: '',
-    title
+    title,
+    participants: [currentUser.employee]
   }
 
   const dispatch = createEventDispatcher()

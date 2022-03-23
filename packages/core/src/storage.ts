@@ -32,7 +32,7 @@ export type QuerySelector<T> = {
 /**
  * @public
  */
-export type ObjQueryType<T> = T | QuerySelector<T>
+export type ObjQueryType<T> = (T extends Array<infer U> ? U | U[] : T) | QuerySelector<T>
 
 /**
  * @public
@@ -50,23 +50,26 @@ export type DocumentQuery<T extends Doc> = {
  * @public
  */
 export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null | undefined ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
-
+/**
+ * @public
+ */
+export type ToClassRefTA<T extends object, P extends keyof T> = T[P] extends Array<Ref<infer X>> | null | undefined ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
 /**
  * @public
  */
 export type ToClassRef<T extends object> = {
-  [P in keyof T]?: ToClassRefT<T, P>
+  [P in keyof T]?: ToClassRefT<T, P> | ToClassRefTA<T, P>
 }
 
 /**
  * @public
  */
-export type RefKeys<T extends Doc> = Pick<T, KeysByType<T, NullableRef>>
+export type NullableRef = Ref<Doc> | Array<Ref<Doc>> | null | undefined
 
 /**
  * @public
  */
-export type NullableRef = Ref<Doc> | null | undefined
+export type RefKeys<T extends Doc> = Pick<T, KeysByType<T, NullableRef>>
 
 /**
  * @public

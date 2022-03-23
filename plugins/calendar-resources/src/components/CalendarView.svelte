@@ -38,7 +38,8 @@
 
   let loading = false
   let resultQuery: DocumentQuery<Event>
-  $: resultQuery = search === '' ? { ...query, space } : { ...query, $search: search, space }
+  $: spaceOpt = (space ? { space } : {})
+  $: resultQuery = search === '' ? { ...query, ...spaceOpt } : { ...query, $search: search, ...spaceOpt }
 
   let objects: Event[] = []
 
@@ -73,14 +74,16 @@
   }
 
   function findEvents (events: Event[], date: Date): Event[] {
-    return events.filter((it) => areDatesLess(new Date(it.date), date) && areDatesLess(date, new Date(it.dueDate ?? it.date)))
+    return events.filter(
+      (it) => areDatesLess(new Date(it.date), date) && areDatesLess(date, new Date(it.dueDate ?? it.date))
+    )
   }
 
   interface ShiftType {
     yearShift: number
     monthShift: number
     dayShift: number
-    weekShift:number
+    weekShift: number
   }
 
   let shifts: ShiftType = {
@@ -134,7 +137,12 @@
     return res
   }
 
-  enum CalendarMode { Day, Week, Month, Year }
+  enum CalendarMode {
+    Day,
+    Week,
+    Month,
+    Year
+  }
 
   let mode: CalendarMode = CalendarMode.Year
 
@@ -156,7 +164,7 @@
   }
 </script>
 
-<div class='fs-title ml-2 mb-2 flex-row-center'>
+<div class="fs-title ml-2 mb-2 flex-row-center">
   {label(currentDate(date, shifts), mode)}
 </div>
 
@@ -202,29 +210,63 @@
       }
       mode = CalendarMode.Year
     }}
-  />  
+  />
   <div class="flex ml-4 gap-1">
-    <Button icon={IconBack} size={'small'}  on:click={() => { inc(-1) } }/>
-    <Button size={'small'} label={calendar.string.Today} on:click={() => { inc(0) }}/>
-    <Button icon={IconForward} size={'small'} on:click={() => { inc(1) }}/>
+    <Button
+      icon={IconBack}
+      size={'small'}
+      on:click={() => {
+        inc(-1)
+      }}
+    />
+    <Button
+      size={'small'}
+      label={calendar.string.Today}
+      on:click={() => {
+        inc(0)
+      }}
+    />
+    <Button
+      icon={IconForward}
+      size={'small'}
+      on:click={() => {
+        inc(1)
+      }}
+    />
   </div>
 </div>
 
-
 {#if mode === CalendarMode.Year}
-<ScrollBox bothScroll>
-    <YearCalendar {mondayStart} cellHeight={'2.5rem'} bind:value={value} currentDate={currentDate(date, shifts)}>
+  <ScrollBox bothScroll>
+    <YearCalendar {mondayStart} cellHeight={'2.5rem'} bind:value currentDate={currentDate(date, shifts)}>
       <svelte:fragment slot="cell" let:date>
-        <Day events={findEvents(objects, date)} {date} {_class} {baseMenuClass} {options} {config} query={resultQuery} />
+        <Day
+          events={findEvents(objects, date)}
+          {date}
+          {_class}
+          {baseMenuClass}
+          {options}
+          {config}
+          query={resultQuery}
+        />
       </svelte:fragment>
     </YearCalendar>
   </ScrollBox>
-  {:else if mode === CalendarMode.Month}
-    <div class='flex flex-grow'>
-      <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:value={value} currentDate={currentDate(date, shifts)}>
-        <svelte:fragment slot="cell" let:date={date}>        
-          <Day events={findEvents(objects, date)} {date} size={'huge'} {_class} {baseMenuClass} {options} {config} query={resultQuery}/>
-        </svelte:fragment>
-      </MonthCalendar>  
-    </div>
-  {/if}
+{:else if mode === CalendarMode.Month}
+  <div class="flex flex-grow">
+    <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:value currentDate={currentDate(date, shifts)}>
+      <svelte:fragment slot="cell" let:date>
+        <Day
+          events={findEvents(objects, date)}
+          {date}
+          size={'huge'}
+          {_class}
+          {baseMenuClass}
+          {options}
+          {config}
+          query={resultQuery}
+        />
+      </svelte:fragment>
+    </MonthCalendar>
+  </div>
+{/if}
