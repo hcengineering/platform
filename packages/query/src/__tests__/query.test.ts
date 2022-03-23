@@ -49,12 +49,12 @@ describe('query', () => {
       }
     }
 
-    await new Promise((resolve) => {
+    const result = await new Promise((resolve) => {
       liveQuery.query<Space>(core.class.Space, { private: false }, (result) => {
-        expect(result).toHaveLength(expectedLength)
-        resolve(null)
+        resolve(result)
       })
     })
+    expect(result).toHaveLength(expectedLength)
   })
 
   it('query should be live', async () => {
@@ -759,19 +759,27 @@ describe('query', () => {
     expect(holderBefore.length).toEqual(1)
 
     let attempt = 0
-    const pp = new Promise((resolve) => {
+    let resolvePpv: (value: Doc[] | PromiseLike<Doc[]>) => void
+
+    const resolveP = new Promise<Doc[]>((resolve) => {
+      resolvePpv = resolve
+    })
+    const pp = await new Promise((resolve) => {
       liveQuery.query<Space>(
         test.class.ParticipantsHolder,
         { participants: 'a' as Ref<Doc> },
         (result) => {
           if (attempt > 0) {
-            expect(result.length).toEqual(2)
-            if (attempt === holderBefore.length) resolve(null)
+            resolvePpv(result)
+          } else {
+            resolve(null)
           }
         },
         { sort: { private: SortingOrder.Ascending } }
       )
     })
+
+    await pp // We have first value returned
 
     attempt++
     await factory.updateDoc<ParticipantsHolder>(test.class.ParticipantsHolder, spaces[0]._id, a2, {
@@ -779,6 +787,7 @@ describe('query', () => {
         participants: 'a' as Ref<Doc>
       }
     })
-    await pp
+    const result = await resolveP
+    expect(result.length).toEqual(2)
   })
 })
