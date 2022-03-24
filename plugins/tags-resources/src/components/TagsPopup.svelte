@@ -65,7 +65,7 @@
   <div class="ap-header">
     <EditWithIcon icon={IconSearch} bind:value={search} placeholder={tags.string.SearchCreate} focus>
       <svelte:fragment slot="extra">
-        <div class="ml-27" bind:this={anchor}>
+        <div id='new-tag' class="ml-27" bind:this={anchor}>
           <ActionIcon
             label={tags.string.AddNowTooltip}
             labelProps={{ word: title }}

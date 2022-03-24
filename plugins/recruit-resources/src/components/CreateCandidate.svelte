@@ -23,15 +23,13 @@
     Data,
     Doc,
     FindResult,
-    generateId,
-    Hierarchy,
-    MixinData,
+    generateId, MixinData,
     Ref,
     TxProcessor
   } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
-  import presentation, {
+  import {
     Card,
     createQuery,
     EditableAvatar,
@@ -271,7 +269,7 @@
       const categoriesMap = new Map(Array.from(categories.map((it) => [it._id, it])))
 
       const newSkills: TagReference[] = []
-      
+  
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {
         const title = s.trim().toLowerCase()

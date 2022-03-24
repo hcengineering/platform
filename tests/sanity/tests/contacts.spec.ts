@@ -1,31 +1,49 @@
-import { test, expect } from '@playwright/test'
-import { openWorkbench } from './utils'
+import { expect, test } from '@playwright/test'
+import { generateId, openWorkbench } from './utils'
 
 test.describe('contact tests', () => {
-  test('create-contact', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     // Create user and workspace
     await openWorkbench(page)
-
+  })
+  test('create-contact', async ({ page }) => {
+    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
     await page.click('button:has-text("Contact")')
 
     await (await page.locator('.ap-menuItem')).locator('text=Person').click()
 
+    const first = 'Elton-' + generateId(5)
+    const last = 'John-' + generateId(5)
+
     const firstName = page.locator('[placeholder="John"]')
     await firstName.click()
-    await firstName.fill('Elton')
+    await firstName.fill(first)
 
     const lastName = page.locator('[placeholder="Appleseed"]')
     await lastName.click()
-    await lastName.fill('John')
+    await lastName.fill(last)
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
   })
-  test('contact-search', async ({ page }) => {
-    // Create user and workspace
-    await openWorkbench(page)
+  test('create-organization', async ({ page }) => {
+    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
+    await page.click('button:has-text("Contact")')
+
+    await (await page.locator('.ap-menuItem')).locator('text=Organization').click()
+
+    const orgName = 'Organization' + generateId(5)
+
+    const firstName = page.locator('[placeholder="Apple"]')
+    await firstName.click()
+    await firstName.fill(orgName)
+
+    await page.locator('.antiCard').locator('button:has-text("Create")').click()
+    await expect(page.locator(`text=${orgName}`)).toBeVisible()
+  })
+  test('contact-search', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
     await expect(page.locator('text=Marina M.')).toBeVisible()
@@ -42,5 +60,36 @@ test.describe('contact tests', () => {
 
     await expect(page.locator('text=Rosamund Chen')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
+  })
+
+  test('delete-contact', async ({ page }) => {
+    // Create a new context with the saved storage state.
+    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
+
+    await page.click('button:has-text("Contact")')
+
+    await (await page.locator('.ap-menuItem')).locator('text=Person').click()
+
+    const first = 'Elton-' + generateId(5)
+    const last = 'John-' + generateId(5)
+
+    const firstName = page.locator('[placeholder="John"]')
+    await firstName.click()
+    await firstName.fill(first)
+
+    const lastName = page.locator('[placeholder="Appleseed"]')
+    await lastName.click()
+    await lastName.fill(last)
+
+    await page.locator('.antiCard').locator('button:has-text("Create")').click()
+
+    // Click #context-menu svg
+    await page.hover(`td:has-text("${first} ${last}")`)
+    await page.click('#context-menu')
+    await page.click('text="Delete"')
+    // Click text=Ok
+    await page.click('text=Ok')
+
+    await expect(page.locator(`td:has-text("${first} ${last}")`)).toHaveCount(0)
   })
 })

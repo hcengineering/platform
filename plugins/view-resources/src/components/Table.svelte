@@ -218,7 +218,7 @@
                       value={getValue(object, attribute.key)}
                       {...attribute.props}
                     />
-                    <div class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
+                    <div id='context-menu' class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
                       <MoreV size={'small'} />
                     </div>
                   </div>

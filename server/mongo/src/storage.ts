@@ -53,18 +53,20 @@ abstract class MongoAdapterBase extends TxProcessor {
     const translated: any = {}
     for (const key in query) {
       const value = (query as any)[key]
+
+      const tkey = this.checkMixinKey(key, clazz)
       if (value !== null && typeof value === 'object') {
         const keys = Object.keys(value)
         if (keys[0] === '$like') {
           const pattern = value.$like as string
-          translated[key] = {
+          translated[tkey] = {
             $regex: `^${pattern.split('%').map(it => escapeLikeForRegexp(it)).join('.*')}$`,
             $options: 'i'
           }
           continue
         }
       }
-      translated[key] = value
+      translated[tkey] = value
     }
     const baseClass = this.hierarchy.getBaseClass(clazz)
     const classes = this.hierarchy.getDescendants(baseClass)

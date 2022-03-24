@@ -30,6 +30,10 @@
   const query = createQuery()
   const dispatch = createEventDispatcher()
 
+  let items: ListItem[] = []
+  let selected: ListItem | undefined
+  let resolved = false
+
   query.query(contact.class.Organization, {}, (res) => {
     items = res.map((org) => {
       return {
@@ -41,12 +45,13 @@
     if (value !== undefined) {
       selected = items.find((p) => p._id === value)
     }
+    resolved = true
   })
 
-  let items: ListItem[] = []
-  let selected: ListItem | undefined
 
-  $: setValue(selected)
+  $: if (resolved) {
+    setValue(selected)
+  }
 
   function setValue (selected: ListItem | undefined): void {
     if (selected === undefined) {

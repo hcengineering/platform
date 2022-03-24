@@ -262,7 +262,7 @@
           notify={hasNotification}
         />
         <div class="flex-center">
-          <div
+          <div id="profile-button"
             class="cursor-pointer"
             on:click|stopPropagation={(el) => {
               showPopup(AccountPopup, {}, 'account')

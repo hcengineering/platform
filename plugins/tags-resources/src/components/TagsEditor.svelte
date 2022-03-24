@@ -77,7 +77,7 @@
   <ShowMore ignore={!showTitle}>
     <div class:tags-container={showTitle} class:mt-4={showTitle}>
       <div class="flex flex-reverse">
-        <div class="ml-4">
+        <div id='add-tag' class="ml-4">
           <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
             <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
           </Tooltip>
