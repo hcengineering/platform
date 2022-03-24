@@ -64,7 +64,7 @@
   {:else}
     {#await actions() then actionItems}
       {#if actionItems.length === 1}
-        <div class="an-element__tool">
+        <div id={_id} class="an-element__tool">
           <ActionIcon
             label={actionItems[0].label}
             icon={actionItems[0].icon}

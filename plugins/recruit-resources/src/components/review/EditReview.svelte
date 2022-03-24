@@ -17,13 +17,13 @@
   import calendar from '@anticrm/calendar'
   import contact, { Contact } from '@anticrm/contact'
   import { OrganizationSelector } from '@anticrm/contact-resources'
-  import { getClient, UserBox, UserBoxList, UserInfo } from '@anticrm/presentation'
+  import { getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Grid, Label, showPanel, StylishEdit } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
-  import view from '@anticrm/view'
 
   export let object: Review
 
@@ -80,21 +80,6 @@
         }}
       />
     </div>
-
-    <Grid column={2}>
-      <StylishEdit
-        label={calendar.string.Location}
-        bind:value={object.location}
-        on:change={() => client.update(object, { location: object.location })}
-      />
-      <div class="antiComponentBox">
-        <OrganizationSelector
-          bind:value={object.company}
-          label={recruit.string.Company}
-          on:change={() => client.update(object, { company: object.company })}
-        />
-      </div>
-    </Grid>
     <div class="flex-row">
       <div class="mt-4 mb-2">
         <Label label={calendar.string.Participants} />

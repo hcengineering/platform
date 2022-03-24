@@ -57,7 +57,7 @@
   async function createTask () {
     const state = await client.findOne(task.class.State, { space: _space })
     if (state === undefined) {
-      throw new Error('create application: state not found')
+      throw new Error('create task: state not found')
     }
   
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: task.class.Issue })

@@ -66,7 +66,7 @@
 
   <div class="ac-body columns">
     <div class="ac-column">
-      <div class="flex-between trans-title mb-3">
+      <div id='create-template' class="flex-between trans-title mb-3">
         <Label label={templatesPlugin.string.TemplatesHeader} />
         <CircleButton icon={IconAdd} on:click={addTemplate} />
       </div>

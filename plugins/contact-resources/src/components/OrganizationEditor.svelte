@@ -60,7 +60,6 @@
   let container: HTMLElement
 
 </script>
-
 <div class="caption-color cursor-pointer" bind:this={container} class:empty={selected === undefined} on:click|preventDefault={() => {
   if (!opened) {
     opened = true

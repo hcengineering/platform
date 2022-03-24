@@ -1,0 +1,26 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:8083",
+      "localStorage": [
+        {
+          "name": "login:metadata:LoginEmail",
+          "value": "user1"
+        },
+        {
+          "name": "login:metadata:LoginToken",
+          "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIxIiwid29ya3NwYWNlIjoic2FuaXR5LXdzIn0.hfUCqePHO-WNps2by4B-CYGKIpDpLG0WVCUUtU-SVI4"
+        },
+        {
+          "name": "login:metadata:CurrentWorkspace",
+          "value": "sanity-ws"
+        },
+        {
+          "name": "login:metadata:LoginEndpoint",
+          "value": "ws://localhost:3334"
+        }
+      ]
+    }
+  ]
+}

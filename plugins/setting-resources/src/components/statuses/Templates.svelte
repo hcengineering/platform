@@ -90,11 +90,11 @@
   }
 </script>
 
-<div class="flex-between trans-title mb-3">
+<div id='create-template' class="flex-between trans-title mb-3">
   <Label label={setting.string.Templates}/>
   <CircleButton icon={IconAdd} size="medium" on:click={createTemplate} />
 </div>
-<div class="flex-col overflow-y-auto">
+<div id='templates' class="flex-col overflow-y-auto">
   {#each templates as t (t._id)}
     <div class="ac-column__list-item" class:selected={t._id === template?._id} on:click={() => select(t)}>
       <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
