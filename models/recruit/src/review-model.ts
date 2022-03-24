@@ -24,6 +24,9 @@ export class TReview extends TEvent implements Review {
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
   declare attachedTo: Ref<Candidate>
 
+  @Prop(TypeString(), recruit.string.Review)
+  number!: number
+
   @Prop(TypeString(), recruit.string.Verdict)
   @Index(IndexKind.FullText)
   verdict!: string

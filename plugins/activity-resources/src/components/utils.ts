@@ -50,6 +50,16 @@ export function getDTxProps (dtx: DisplayTx): any {
   return { tx: dtx.tx, value: dtx.doc, dtx }
 }
 
+function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxDisplayViewlet | undefined {
+  let key: string
+  if (dtx.mixinTx?.mixin !== undefined && dtx.tx._id === dtx.mixinTx._id) {
+    key = activityKey(dtx.mixinTx.mixin, dtx.tx._class)
+  } else {
+    key = activityKey(dtx.tx.objectClass, dtx.tx._class)
+  }
+  return viewlets.get(key)
+}
+
 export async function updateViewlet (
   client: TxOperations,
   viewlets: Map<ActivityKey, TxViewlet>,
@@ -61,8 +71,7 @@ export async function updateViewlet (
     props: any
     modelIcon: Asset | undefined
   }> {
-  const key = activityKey(dtx.tx.objectClass, dtx.tx._class)
-  let viewlet: TxDisplayViewlet = viewlets.get(key)
+  let viewlet = getViewlet(viewlets, dtx)
 
   const props = getDTxProps(dtx)
   let model: AttributeModel[] = []

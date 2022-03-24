@@ -34,6 +34,7 @@
     "@anticrm/calendar": "~0.6.0",
     "@anticrm/calendar-resources": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
+    "@anticrm/notification": "~0.6.0",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-workbench": "~0.6.1",

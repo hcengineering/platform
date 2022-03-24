@@ -47,6 +47,7 @@ interface ClassTxes {
   kind: ClassifierKind
   shortLabel?: IntlString
   sortingKey?: string
+  hidden?: boolean
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -124,6 +125,17 @@ export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset)
 export function Hidden () {
   return function (target: any, propertyKey: string): void {
     setAttr(target, propertyKey, 'hidden', true)
+  }
+}
+
+/**
+ * @public
+ * @returns
+ */
+export function HiddenClass<T extends Obj> () {
+  return function classDecorator<C extends new () => T> (constructor: C): void {
+    const txes = getTxes(constructor.prototype)
+    txes.hidden = true
   }
 }
 
@@ -236,6 +248,7 @@ function _generateTx (tx: ClassTxes): Tx[] {
       ...(tx.kind === ClassifierKind.INTERFACE ? { extends: tx.implements } : { extends: tx.extends, implements: tx.implements }),
       label: tx.label,
       icon: tx.icon,
+      hidden: tx.hidden,
       shortLabel: tx.shortLabel,
       sortingKey: tx.sortingKey
     },

@@ -90,11 +90,11 @@
   const dispatch = createEventDispatcher()
 
   function getMixins (): Mixin<Doc>[] {
-    const descendants = hierarchy.getDescendants(parentClass)
+    const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
     const mixins = descendants.filter(
-      (m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m)
+      (m) => m.kind === ClassifierKind.MIXIN && m.hidden !== true && hierarchy.hasMixin(object, m._id)
     )
-    return mixins.map((m) => hierarchy.getClass(m) as Mixin<Doc>)
+    return mixins
   }
 
   function filterKeys (keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {

@@ -13,18 +13,20 @@
 // limitations under the License.
 //
 
-import { Calendar, Event } from '@anticrm/calendar'
+import { Calendar, Event, Reminder } from '@anticrm/calendar'
 import { Employee } from '@anticrm/contact'
 import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, HiddenClass, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
+import activity from '@anticrm/activity'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import { TSpaceWithStates } from '@anticrm/model-task'
 import workbench from '@anticrm/model-workbench'
 import calendar from './plugin'
+import notification from '@anticrm/notification'
 import view from '@anticrm/model-view'
 
 export * from '@anticrm/calendar'
@@ -41,9 +43,6 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(TypeString(), calendar.string.Title)
   @Index(IndexKind.FullText)
   title!: string
-
-  @Prop(TypeString(), calendar.string.EventNumber)
-  number!: number
 
   @Prop(TypeMarkup(), calendar.string.Description)
   @Index(IndexKind.FullText)
@@ -69,8 +68,20 @@ export class TEvent extends TAttachedDoc implements Event {
   participants!: Ref<Employee>[]
 }
 
+@Mixin(calendar.mixin.Reminder, calendar.class.Event)
+@UX(calendar.string.Reminder, calendar.icon.Calendar)
+@HiddenClass()
+export class TReminder extends TEvent implements Reminder {
+  @Prop(TypeDate(true), calendar.string.Shift)
+  shift!: Timestamp
+
+  @Prop(TypeString(), calendar.string.State)
+  @Index(IndexKind.Indexed)
+  state!: 'active' | 'done'
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TCalendar, TEvent)
+  builder.createModel(TCalendar, TEvent, TReminder)
 
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: calendar.string.ApplicationLabelCalendar,
@@ -88,6 +99,21 @@ export function createModel (builder: Builder): void {
     }
   }, calendar.app.Calendar)
 
+  builder.createDoc(notification.class.NotificationType, core.space.Model, {
+    label: calendar.string.Reminder
+  }, calendar.ids.ReminderNotification)
+
+  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
+    objectClass: calendar.mixin.Reminder,
+    icon: calendar.icon.Reminder,
+    txClass: core.class.TxMixin,
+    label: calendar.string.CreatedReminder,
+    component: calendar.activity.ReminderViewlet,
+    display: 'emphasized',
+    editable: false,
+    hideOnRemove: true
+  }, calendar.ids.ReminderViewlet)
+
   builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,
@@ -98,6 +124,30 @@ export function createModel (builder: Builder): void {
     },
     calendar.viewlet.Calendar
   )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: calendar.string.SetReminder,
+      icon: calendar.icon.Reminder,
+      action: calendar.actionImpl.SaveEventReminder
+    },
+    calendar.action.SaveEventReminder
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: calendar.class.Event,
+    action: calendar.action.SaveEventReminder
+  })
+
+  builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: calendar.component.ReminderPresenter
+  })
+
+  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectEditor, {
+    editor: calendar.component.EditEvent
+  })
 
   // Use generic child presenter
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.AttributePresenter, {

@@ -25,7 +25,7 @@
   import presentation from '..'
 
   export let spaceClass: Ref<Class<Space>> | undefined = undefined
-  export let space: Ref<Space>
+  export let space: Ref<Space> | undefined = undefined
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let spaceLabel: IntlString | undefined = undefined
   export let spacePlaceholder: IntlString | undefined = undefined
@@ -51,7 +51,7 @@
     {/if}
   </div>
   <div class="antiCard-content"><slot /></div>
-  {#if spaceClass && spaceLabel && spacePlaceholder}
+  {#if spaceClass && spaceLabel && spacePlaceholder && space}
     <div class="antiCard-pool">
       <div class="antiCard-pool__separator" />
       <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />

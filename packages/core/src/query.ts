@@ -1,5 +1,6 @@
 import { DocumentQuery } from '.'
-import { Doc } from './classes'
+import { Class, Doc, Ref } from './classes'
+import { Hierarchy } from './hierarchy'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
 import { SortingOrder, SortingQuery } from './storage'
@@ -71,15 +72,31 @@ function getValue (key: string, obj: any): any {
 /**
  * @public
  */
-export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>): Doc[] {
+export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>, clazz: Ref<Class<T>>, hierarchy: Hierarchy): Doc[] {
   let result = [...docs]
   for (const key in query) {
     if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
     const value = (query as any)[key]
-    result = findProperty(result, key, value)
+    const tkey = checkMixinKey(key, clazz, hierarchy)
+    result = findProperty(result, tkey, value)
     if (result.length === 0) {
       break
     }
   }
   return result
+}
+
+function checkMixinKey<T extends Doc> (key: string, clazz: Ref<Class<T>>, hierarchy: Hierarchy): string {
+  if (!key.includes('.')) {
+    try {
+      const attr = hierarchy.getAttribute(clazz, key)
+      if (hierarchy.isMixin(attr.attributeOf)) {
+        // It is mixin
+        key = attr.attributeOf + '.' + key
+      }
+    } catch (err: any) {
+      // ignore, if
+    }
+  }
+  return key
 }

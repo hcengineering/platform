@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import type {
+import {
   AttachedDoc,
   Class,
   Data,
   Doc,
   DocumentUpdate,
+  DOMAIN_TX,
+  IndexKind,
   Mixin,
   MixinUpdate,
   PropertyType,
@@ -34,8 +36,7 @@ import type {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@anticrm/core'
-import { DOMAIN_TX } from '@anticrm/core'
-import { Model } from '@anticrm/model'
+import { Index, Model } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
 
@@ -48,7 +49,9 @@ export class TTx extends TDoc implements Tx {
 
 @Model(core.class.TxCUD, core.class.Tx)
 export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
+  @Index(IndexKind.Indexed)
   objectId!: Ref<T>
+
   objectClass!: Ref<Class<T>>
 }
 

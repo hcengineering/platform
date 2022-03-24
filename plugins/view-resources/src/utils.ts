@@ -186,7 +186,7 @@ function filterActions (
       continue
     }
     if (target.query !== undefined) {
-      const r = matchQuery([doc], target.query)
+      const r = matchQuery([doc], target.query, doc._class, hierarchy)
       if (r.length === 0) {
         continue
       }

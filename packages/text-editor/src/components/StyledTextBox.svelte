@@ -57,6 +57,10 @@
       }}
       on:blur={() => {
         focused = false
+        if (alwaysEdit) {
+          dispatch('value', rawValue)
+          content = rawValue
+        }
       }}
       on:value={(evt) => {
         rawValue = evt.detail

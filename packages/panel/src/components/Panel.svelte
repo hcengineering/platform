@@ -17,6 +17,7 @@
   import activity from '@anticrm/activity'
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
+  import calendar from '@anticrm/calendar'
   import type { Asset } from '@anticrm/platform'
   import { ActionIcon,AnyComponent,AnySvelteComponent,Component,Icon,IconClose,IconExpand,IconMoreH,Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -43,7 +44,12 @@
             {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
           </div>
         </div>
-        <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+        <div class="flex">
+          <Component is={calendar.component.DocReminder} props={{ value: object }} />
+          <div class="ml-2">
+            <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+          </div>
+        </div>
       </div>
       {#if $$slots.subtitle}
         <div class="ac-subtitle">

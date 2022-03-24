@@ -140,7 +140,7 @@ export abstract class MemDb extends TxProcessor {
       result = this.getObjectsByClass(baseClass)
     }
 
-    result = matchQuery(result, query)
+    result = matchQuery(result, query, _class, this.hierarchy)
 
     if (baseClass !== _class) {
       // We need to filter instances without mixin was set
