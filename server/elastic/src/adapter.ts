@@ -27,14 +27,13 @@ class ElasticAdapter implements FullTextAdapter {
 
   async search (_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, size: number | undefined, from: number | undefined): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
-    const search = query.$search.replace(/[\\/+\-=&><!()|{}^"~*&:[\]]/g, '\\$&')
-
     const request: any = {
       bool: {
         must: [
           {
-            multi_match: {
-              query: search
+            query_string: {
+              query: query.$search,
+              default_operator: 'and'
             }
           }
         ],
