@@ -13,21 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact,{ Employee } from '@anticrm/contact'
-  import { Class,Doc,Ref } from '@anticrm/core'
+  import contact,{ Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Class,Doc,getCurrentAccount,Ref } from '@anticrm/core'
   import { Card,getClient,UserBoxList } from '@anticrm/presentation'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { DatePicker,Grid,StylishEdit } from '@anticrm/ui'
+  import { TimeShiftPicker,Grid,StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
+  export let title: string = ''
 
-  let title: string = ''
-  let description: string = ''
-  let startDate: Date = new Date()
-  let participants: Ref<Employee>[] = []
+  let shift = 30 * 60 * 1000
+  const currentUser = getCurrentAccount() as EmployeeAccount
+  let participants: Ref<Employee>[] = [currentUser.employee]
   const space = calendar.space.PersonalEvents
 
   const dispatch = createEventDispatcher()
@@ -38,12 +37,13 @@
   }
 
   async function saveReminder () {
+    const date = new Date().getTime() + shift
     const _id = await client.createDoc(calendar.class.Event, space, {
       attachedTo,
       attachedToClass,
       collection: 'reminders',
-      date: startDate.getTime(),
-      description,
+      date,
+      description: '',
       participants,
       title
     })
@@ -56,10 +56,9 @@
 </script>
 
 <Card
-  size={'medium'}
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
-  canSave={title.trim().length > 0 && startDate.getTime() > 0 && participants.length > 0}
+  canSave={title.trim().length > 0 && participants.length > 0}
   {space}
   on:close={() => {
     dispatch('close')
@@ -67,16 +66,8 @@
 >
   <Grid column={1} rowGap={1.75}>
     <StylishEdit bind:value={title} label={calendar.string.Title} />
-    <StyledTextBox
-      emphasized
-      showButtons={false}
-      alwaysEdit
-      bind:content={description}
-      label={calendar.string.Description}
-      placeholder={calendar.string.Description}
-    />
     <div class="antiComponentBox">
-      <DatePicker title={calendar.string.Date} bind:value={startDate} withTime />
+      <TimeShiftPicker title={calendar.string.Date} bind:value={shift} direction='after' />
     </div>
     <UserBoxList
       _class={contact.class.Employee}

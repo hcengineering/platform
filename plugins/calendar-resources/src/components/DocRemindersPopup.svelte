@@ -15,19 +15,31 @@
 
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentAccount, Lookup } from '@anticrm/core'
+  import { Class,Doc,getCurrentAccount,Ref } from '@anticrm/core'
+  import { Button,showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import calendar from '../plugin'
+  import CreateReminder from './CreateReminder.svelte'
+
+  export let attachedTo: Ref<Doc>
+  export let attachedToClass: Ref<Class<Doc>>
+  export let title: string | undefined
+
+  function click (ev: Event): void {
+    showPopup(CreateReminder, { attachedTo, attachedToClass, title }, ev.target as HTMLElement)
+  }
 
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
 <div class='antiPopup'>
+  <Button label={calendar.string.CreateReminder} primary on:click={(e) => click(e)} />
+  <div class="ap-space" />
   <Table
     _class={calendar.mixin.Reminder}
     config={['']}
-    options={{}}
-    query={ { state: 'active', participants: currentUser.employee } }
+    options={ {} }
+    query={ { attachedTo, state: 'active', participants: currentUser.employee } }
     />
 </div>
 

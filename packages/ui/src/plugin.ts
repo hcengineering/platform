@@ -41,7 +41,13 @@ export default plugin(uiId, {
     NotSelected: '' as IntlString,
     Today: '' as IntlString,
     English: '' as IntlString,
-    Russian: '' as IntlString
+    Russian: '' as IntlString,
+    MinutesBefore: '' as IntlString,
+    HoursBefore: '' as IntlString,
+    DaysBefore: '' as IntlString,
+    MinutesAfter: '' as IntlString,
+    HoursAfter: '' as IntlString,
+    DaysAfter: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>

@@ -27,7 +27,7 @@
     "DueHours": "{hours, plural, =0 {меньше часа} =1 {1 час} other {# часы}}",
     "DueDays": "{days, plural, =0 {сегодня} =1 {1 день} other {# дня}}",
     "Reminder": "Напоминание",
-    "SetReminder": "Установить напоминание",
+    "RemindMeAt": "Напомнить мне",
     "ReminderTime": "Время напоминания",
     "EditReminder": "Редактировать напоминание",
     "CreateReminder": "Создать напоминание",

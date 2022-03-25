@@ -45,7 +45,7 @@
           </div>
         </div>
         <div class="flex">
-          <Component is={calendar.component.DocReminder} props={{ value: object }} />
+          <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
           <div class="ml-2">
             <Component is={notification.component.LastViewEditor} props={{ value: object }} />
           </div>

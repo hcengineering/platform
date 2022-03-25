@@ -13,21 +13,21 @@
 // limitations under the License.
 //
 
+import activity from '@anticrm/activity'
 import { Calendar, Event, Reminder } from '@anticrm/calendar'
 import { Employee } from '@anticrm/contact'
 import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Collection, HiddenClass, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
-import activity from '@anticrm/activity'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import { TSpaceWithStates } from '@anticrm/model-task'
-import workbench from '@anticrm/model-workbench'
-import calendar from './plugin'
-import notification from '@anticrm/notification'
 import view from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import notification from '@anticrm/notification'
+import calendar from './plugin'
 
 export * from '@anticrm/calendar'
 
@@ -70,7 +70,6 @@ export class TEvent extends TAttachedDoc implements Event {
 
 @Mixin(calendar.mixin.Reminder, calendar.class.Event)
 @UX(calendar.string.Reminder, calendar.icon.Calendar)
-@HiddenClass()
 export class TReminder extends TEvent implements Reminder {
   @Prop(TypeDate(true), calendar.string.Shift)
   shift!: Timestamp
@@ -129,7 +128,7 @@ export function createModel (builder: Builder): void {
     view.class.Action,
     core.space.Model,
     {
-      label: calendar.string.SetReminder,
+      label: calendar.string.RemindMeAt,
       icon: calendar.icon.Reminder,
       action: calendar.actionImpl.SaveEventReminder
     },

@@ -53,7 +53,6 @@
 </script>
 
 <Card
-  size={'medium'}
   label={calendar.string.EditReminder}
   okAction={saveReminder}
   okLabel={presentation.string.Save}

@@ -28,7 +28,8 @@
 
   onMount(() => {
     dispatch('open', {
-      ignoreKeys: ['comments', 'title', 'description']
+      ignoreKeys: ['comments', 'title', 'description'],
+      ignoreMixins: [calendar.mixin.Reminder]
     })
   })
 </script>

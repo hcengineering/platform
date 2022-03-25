@@ -13,15 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
+  import { EmployeeAccount } from '@anticrm/contact'
+  import { Doc,getCurrentAccount } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { ActionIcon,showPopup } from '@anticrm/ui'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
-  import RemindersPopup from './RemindersPopup.svelte'
+  import DocRemindersPopup from './DocRemindersPopup.svelte'
   import SaveEventReminder from './SaveEventReminder.svelte'
 
   export let value: Doc
+  export let title: string | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -32,18 +34,19 @@
     if (isEvent) {
       showPopup(SaveEventReminder, { objectId: value._id, objectClass: value._class }, ev.target as HTMLElement)
     } else {
-      const current = await client.findOne(calendar.mixin.Reminder, { attachedTo: value._id, state: 'active' })
+      const currentUser = getCurrentAccount() as EmployeeAccount
+      const current = await client.findOne(calendar.mixin.Reminder, { attachedTo: value._id, state: 'active', participants: currentUser.employee })
       if (current === undefined) {
-        showPopup(CreateReminder, { attachedTo: value._id, attachedToClass: value._class }, ev.target as HTMLElement)
+        showPopup(CreateReminder, { attachedTo: value._id, attachedToClass: value._class, title }, ev.target as HTMLElement)
       } else {
-        showPopup(RemindersPopup, { attachedTo: value._id, attachedToClass: value._class }, ev.target as HTMLElement )
+        showPopup(DocRemindersPopup, { attachedTo: value._id, attachedToClass: value._class }, ev.target as HTMLElement )
       }
     }
   }
 </script>
 
 {#if isEvent}
-  <ActionIcon size='medium' label={calendar.string.SetReminder} icon={calendar.icon.Reminder} action={(e) => click(e)} />
+  <ActionIcon size='medium' label={calendar.string.RemindMeAt} icon={calendar.icon.Reminder} action={(e) => click(e)} />
 {:else}
   <ActionIcon size='medium' label={calendar.string.Reminders} icon={calendar.icon.Reminder} action={(e) => click(e)} />
 {/if}

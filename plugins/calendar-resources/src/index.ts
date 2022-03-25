@@ -25,6 +25,7 @@ import UpcomingEvents from './components/UpcomingEvents.svelte'
 import ReminderPresenter from './components/ReminderPresenter.svelte'
 import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import EditEvent from './components/EditEvent.svelte'
+import RemindersPopup from './components/RemindersPopup.svelte'
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
@@ -38,7 +39,8 @@ export default async (): Promise<Resources> => ({
     CalendarView,
     UpcomingEvents,
     DateTimePresenter,
-    DocReminder
+    DocReminder,
+    RemindersPopup
   },
   activity: {
     ReminderViewlet

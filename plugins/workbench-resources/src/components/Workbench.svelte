@@ -33,6 +33,7 @@
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
+  import calendar from '@anticrm/calendar'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import ActivityStatus from './ActivityStatus.svelte'
@@ -252,6 +253,15 @@
         }}
       />
       <div class="flex-row" style="margin-bottom: 2rem;">
+        <AppItem
+          icon={calendar.icon.Reminder}
+          label={calendar.string.Reminders}
+          selected={false}
+          action={async () => {
+            showPopup(calendar.component.RemindersPopup, {}, 'account')
+          }}
+          notify={false}
+        />
         <AppItem
           icon={notification.icon.Notifications}
           label={notification.string.Notifications}

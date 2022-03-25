@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class,Ref } from '@anticrm/core'
+  import { Class,Ref, Timestamp } from '@anticrm/core'
   import presentation, { Card,createQuery,getClient } from '@anticrm/presentation'
-  import { DatePicker,Grid } from '@anticrm/ui'
+  import { Grid, TimeShiftPicker } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -24,20 +24,11 @@
   export let objectClass: Ref<Class<Event>>
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createQuery()
   query.query(objectClass, { _id: objectId }, (res) => {
     event = res[0]
-    if (event !== undefined) {
-      if (hierarchy.hasMixin(event, calendar.mixin.Reminder)) {
-        const reminder = hierarchy.as(event, calendar.mixin.Reminder)
-        startDate = new Date(event.date + reminder.shift)
-      } else {
-        startDate = new Date(event.date)
-      }
-    }
   })
-  let startDate: Date = new Date()
+  let shift: Timestamp = -30 * 60 * 1000
   let event: Event | undefined
 
   const dispatch = createEventDispatcher()
@@ -48,7 +39,6 @@
 
   async function saveReminder () {
     if (event === undefined) return
-    const shift = startDate.getTime() - event.date
     await client.updateMixin(event._id, event._class, event.space, calendar.mixin.Reminder, {
       shift,
       state: 'active'
@@ -57,8 +47,7 @@
 </script>
 
 <Card
-  size={'medium'}
-  label={calendar.string.SetReminder}
+  label={calendar.string.RemindMeAt}
   okLabel={presentation.string.Save}
   canSave={event !== undefined}
   okAction={saveReminder}
@@ -68,7 +57,7 @@
 >
   <Grid column={1} rowGap={1.75}>
     <div class="antiComponentBox">
-      <DatePicker title={calendar.string.Date} bind:value={startDate} withTime />
+      <TimeShiftPicker title={calendar.string.RemindMeAt} bind:value={shift} />
     </div>
   </Grid>
 </Card>

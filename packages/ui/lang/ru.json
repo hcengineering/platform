@@ -17,7 +17,11 @@
     "Today": "Сегодня",
     "English": "Английский",
     "Russian": "Русский",
-    "CalendarLeft": "<",
-    "CalendarRight": ">"
+    "MinutesBefore": "{minutes, plural, =1 {за минуту} other {за # минут}}",
+    "HoursBefore": "{hours, plural, =1 {за час} other {за # часа}}",
+    "DaysBefore": "{days, plural, =1 {за день} =3 {за # дня} other {за # дней}}",
+    "MinutesAfter": "{minutes, plural, =1 {через минуту} other {через # минут}}",
+    "HoursAfter": "{hours, plural, =1 {через час} other {через # часа}}",
+    "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}"
   }
 }

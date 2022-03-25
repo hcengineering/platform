@@ -32,7 +32,8 @@
 
   onMount(() => {
     dispatch('open', {
-      ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict']
+      ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict'],
+      ignoreMixins: [calendar.mixin.Reminder]
     })
   })
 
