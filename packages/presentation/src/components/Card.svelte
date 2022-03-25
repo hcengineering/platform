@@ -51,7 +51,7 @@
     {/if}
   </div>
   <div class="antiCard-content"><slot /></div>
-  {#if spaceClass && spaceLabel && spacePlaceholder && space}
+  {#if spaceClass && spaceLabel && spacePlaceholder}
     <div class="antiCard-pool">
       <div class="antiCard-pool__separator" />
       <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
