@@ -13,24 +13,40 @@
 // limitations under the License.
 //
 
+import { TxViewlet } from '@anticrm/activity'
 import { calendarId } from '@anticrm/calendar'
 import calendar from '@anticrm/calendar-resources/src/plugin'
-import { Ref } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
+import { Doc, Ref } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import { ViewletDescriptor } from '@anticrm/view'
+import { Action, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {
     CreateCalendar: '' as AnyComponent,
-    CalendarView: '' as AnyComponent
+    CalendarView: '' as AnyComponent,
+    EditEvent: '' as AnyComponent,
+    ReminderPresenter: '' as AnyComponent
+  },
+  action: {
+    SaveEventReminder: '' as Ref<Action>
+  },
+  actionImpl: {
+    SaveEventReminder: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationLabelCalendar: '' as IntlString,
-    Event: '' as IntlString
+    Event: '' as IntlString,
+    Reminder: '' as IntlString,
+    Shift: '' as IntlString,
+    State: '' as IntlString,
+    CreatedReminder: '' as IntlString
   },
   viewlet: {
     Calendar: '' as Ref<ViewletDescriptor>
+  },
+  ids: {
+    ReminderViewlet: '' as Ref<TxViewlet>
   }
 })

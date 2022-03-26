@@ -25,7 +25,7 @@
   import presentation from '..'
 
   export let spaceClass: Ref<Class<Space>> | undefined = undefined
-  export let space: Ref<Space>
+  export let space: Ref<Space> | undefined = undefined
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let spaceLabel: IntlString | undefined = undefined
   export let spacePlaceholder: IntlString | undefined = undefined

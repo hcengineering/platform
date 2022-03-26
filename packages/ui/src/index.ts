@@ -66,6 +66,7 @@ export { default as DropdownPopup } from './components/DropdownPopup.svelte'
 export { default as DropdownLabels } from './components/DropdownLabels.svelte'
 export { default as ShowMore } from './components/ShowMore.svelte'
 export { default as Menu } from './components/Menu.svelte'
+export { default as TimeShiftPicker } from './components/TimeShiftPicker.svelte'
 export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
 export { default as Scroller } from './components/Scroller.svelte'
 

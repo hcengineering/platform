@@ -19,6 +19,7 @@ import calendar, { calendarId } from '@anticrm/calendar'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(calendar.icon, {
   Calendar: `${icons}#calendar`,
+  Reminder: `${icons}#reminder`,
   Location: `${icons}#location`
 })
 

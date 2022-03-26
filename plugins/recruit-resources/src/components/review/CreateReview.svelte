@@ -107,6 +107,7 @@
       description,
       verdict: '',
       title,
+      participants: doc.participants,
       company,
       location
     })

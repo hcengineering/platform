@@ -26,7 +26,7 @@
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let label: IntlString
   export let placeholder: IntlString
-  export let value: Ref<Space>
+  export let value: Ref<Space> | undefined
   export let show: boolean = false
 
   let selected: Space | undefined
@@ -34,8 +34,8 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Space>) {
-    selected = await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value })
+  async function updateSelected (value: Ref<Space> | undefined) {
+    selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
   }
 
   $: updateSelected(value)

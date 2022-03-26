@@ -12,10 +12,11 @@
 // limitations under the License.
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { NotificationType } from '@anticrm/notification'
 
 /**
  * @public
@@ -27,7 +28,6 @@ export interface Calendar extends Space {}
  */
 export interface Event extends AttachedDoc {
   title: string
-  number: number
   description: Markup
 
   location?: string
@@ -47,6 +47,14 @@ export interface Event extends AttachedDoc {
 /**
  * @public
  */
+export interface Reminder extends Event {
+  shift: Timestamp
+  state: 'active' | 'done'
+}
+
+/**
+ * @public
+ */
 export const calendarId = 'calendar' as Plugin
 
 /**
@@ -57,9 +65,13 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<Class<Calendar>>,
     Event: '' as Ref<Class<Event>>
   },
+  mixin: {
+    Reminder: '' as Ref<Mixin<Reminder>>
+  },
   icon: {
     Calendar: '' as Asset,
-    Location: '' as Asset
+    Location: '' as Asset,
+    Reminder: '' as Asset
   },
   space: {
     // Space for all personal events.
@@ -71,7 +83,9 @@ const calendarPlugin = plugin(calendarId, {
   component: {
     PersonsPresenter: '' as AnyComponent,
     UpcomingEvents: '' as AnyComponent,
-    DateTimePresenter: '' as AnyComponent
+    DateTimePresenter: '' as AnyComponent,
+    DocReminder: '' as AnyComponent,
+    RemindersPopup: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
@@ -86,6 +100,9 @@ const calendarPlugin = plugin(calendarId, {
     NoParticipants: '' as IntlString,
     PersonsLabel: '' as IntlString,
     EventNumber: '' as IntlString
+  },
+  ids: {
+    ReminderNotification: '' as Ref<NotificationType>
   }
 })
 

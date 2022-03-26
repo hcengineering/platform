@@ -39,6 +39,7 @@
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/activity": "~0.6.0",
+    "@anticrm/calendar": "~0.6.0",
     "@anticrm/notification": "~0.6.0"
   }
 }

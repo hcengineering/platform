@@ -82,19 +82,18 @@
   $: if (object && prevSelected !== object._class) {
     prevSelected = object._class
     selectedClass = Hierarchy.mixinOrClass(object)
-  
+
     parentClass = getParentClass(object._class)
-    mixins = getMixins()
+    getMixins()
   }
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (): Mixin<Doc>[] {
-    const descendants = hierarchy.getDescendants(parentClass)
-    const mixins = descendants.filter(
-      (m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m)
+  function getMixins (): void {
+    const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
+    mixins = descendants.filter(
+      (m) => m.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m._id) && !ignoreMixins.has(m._id)
     )
-    return mixins.map((m) => hierarchy.getClass(m) as Mixin<Doc>)
   }
 
   function filterKeys (keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
@@ -112,6 +111,7 @@
   }
 
   let ignoreKeys: string[] = []
+  let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
     const filtredKeys = getFiltredKeys(
@@ -160,6 +160,7 @@
     }
     mainEditor = editor
     updateKeys()
+    getMixins()
   }
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
@@ -263,7 +264,9 @@
           props={{ object }}
           on:open={(ev) => {
             ignoreKeys = ev.detail.ignoreKeys
+            ignoreMixins = new Set(ev.detail.ignoreMixins)
             updateKeys()
+            getMixins()
           }}
           on:click={(ev) => {
             fullSize = true

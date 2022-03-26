@@ -25,6 +25,13 @@
     "TableView": "Table",
     "DueMinutes": "{minutes, plural, =0 {less than a minute} =1 {a minute} other {# minutes}}",
     "DueHours": "{hours, plural, =0 {less than an hour} =1 {1 hour} other {# hours}}",
-    "DueDays": "{days, plural, =0 {today} =1 {1 day} other {# days}}"
+    "DueDays": "{days, plural, =0 {today} =1 {1 day} other {# days}}",
+    "Reminder": "Reminder",
+    "ReminderTime": "Reminder time",
+    "RemindMeAt": "Remind me at",
+    "EditReminder": "Edit reminder",
+    "CreateReminder": "Create reminder",
+    "CreatedReminder": "Created a reminder",
+    "Reminders": "Reminders"
   }
 }

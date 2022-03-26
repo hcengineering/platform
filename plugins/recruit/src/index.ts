@@ -73,6 +73,7 @@ export interface Applicant extends Task {
  */
 export interface Review extends Event {
   attachedTo: Ref<Candidate>
+  number: number
 
   verdict: string
 

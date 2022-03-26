@@ -25,6 +25,13 @@
     "TableView": "Таблица",
     "DueMinutes": "{minutes, plural, =0 {меньше минуты} =1 {минута} other {# минут}}",
     "DueHours": "{hours, plural, =0 {меньше часа} =1 {1 час} other {# часы}}",
-    "DueDays": "{days, plural, =0 {сегодня} =1 {1 день} other {# дня}}"
+    "DueDays": "{days, plural, =0 {сегодня} =1 {1 день} other {# дня}}",
+    "Reminder": "Напоминание",
+    "RemindMeAt": "Напомнить мне",
+    "ReminderTime": "Время напоминания",
+    "EditReminder": "Редактировать напоминание",
+    "CreateReminder": "Создать напоминание",
+    "CreatedReminder": "Создал напоминание",
+    "Reminders": "Напоминания"
   }
 }

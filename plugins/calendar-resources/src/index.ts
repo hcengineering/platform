@@ -13,18 +13,39 @@
 // limitations under the License.
 //
 
+import { Doc } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-
-import PersonsPresenter from './components/PersonsPresenter.svelte'
+import { showPopup } from '@anticrm/ui'
 import CalendarView from './components/CalendarView.svelte'
-import UpcomingEvents from './components/UpcomingEvents.svelte'
+import SaveEventReminder from './components/SaveEventReminder.svelte'
 import DateTimePresenter from './components/DateTimePresenter.svelte'
+import DocReminder from './components/DocReminder.svelte'
+import PersonsPresenter from './components/PersonsPresenter.svelte'
+import UpcomingEvents from './components/UpcomingEvents.svelte'
+import ReminderPresenter from './components/ReminderPresenter.svelte'
+import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
+import EditEvent from './components/EditEvent.svelte'
+import RemindersPopup from './components/RemindersPopup.svelte'
+
+async function saveEventReminder (object: Doc): Promise<void> {
+  showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
+}
 
 export default async (): Promise<Resources> => ({
   component: {
+    EditEvent,
+    ReminderPresenter,
     PersonsPresenter,
     CalendarView,
     UpcomingEvents,
-    DateTimePresenter
+    DateTimePresenter,
+    DocReminder,
+    RemindersPopup
+  },
+  activity: {
+    ReminderViewlet
+  },
+  actionImpl: {
+    SaveEventReminder: saveEventReminder
   }
 })

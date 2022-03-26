@@ -15,12 +15,21 @@
 
 import calendar, { calendarId } from '@anticrm/calendar'
 import { IntlString, mergeIds } from '@anticrm/platform'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(calendarId, calendar, {
   component: {
   },
+  activity: {
+    ReminderViewlet: '' as AnyComponent
+  },
   string: {
     Events: '' as IntlString,
+    RemindMeAt: '' as IntlString,
+    CreateReminder: '' as IntlString,
+    EditReminder: '' as IntlString,
+    ReminderTime: '' as IntlString,
+    Reminders: '' as IntlString,
     ModeDay: '' as IntlString,
     ModeWeek: '' as IntlString,
     ModeMonth: '' as IntlString,
