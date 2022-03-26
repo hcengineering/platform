@@ -18,20 +18,23 @@
 
   export let value: number
   export let direction: 'before' | 'after'
+  export let minutes: number[] = [5, 15, 30]
+  export let hours: number[] = [1, 2, 4]
+  export let days: number[] = [1, 3, 7, 30]
   const dispatch = createEventDispatcher()
 
   $: base = direction === 'before' ? -1 : 1
-  $: minutes = 60 * 1000 * base
-  $: hours = 60 * minutes
-  $: days = 24 * hours
-  $: values = [5 * minutes, 15 * minutes, 30 * minutes, 1 * hours, 2 * hours, 4 * hours, 1 * days, 3 * days, 7 * days, 30 * days]
+  const MINUTE = 60 * 1000
+  const HOUR = 60 * MINUTE
+  const DAY = 24 * HOUR
+  $: values = [...minutes.map((m) => m * MINUTE), ...hours.map((m) => m * HOUR), ...days.map((m) => m * DAY)]
 
 </script>
 
 <div class="antiPopup">
   {#each values as value}
     <div class="ap-menuItem">
-      <TimeShiftPresenter {value} on:click={() => { dispatch('close', value) }} />
+      <TimeShiftPresenter value={value * base} on:click={() => { dispatch('close', value) }} />
     </div>
   {/each}
 </div>
