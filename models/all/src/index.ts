@@ -49,6 +49,9 @@ import { createModel as workbenchModel } from '@anticrm/model-workbench'
 import { createModel as notificationModel } from '@anticrm/model-notification'
 import { createModel as tagsModel } from '@anticrm/model-tags'
 import { createModel as calendarModel } from '@anticrm/model-calendar'
+import { createModel as serverCalendarModel } from '@anticrm/model-server-calendar'
+import { createModel as serverGmailModel } from '@anticrm/model-server-gmail'
+import { createModel as serverTelegramModel } from '@anticrm/model-server-telegram'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -86,6 +89,9 @@ const builders = [
   serverTagsModel,
   serverTaskModel,
   serverRecruitModel,
+  serverCalendarModel,
+  serverGmailModel,
+  serverTelegramModel,
   createDemo
 ]
 

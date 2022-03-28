@@ -1166,5 +1166,50 @@
       "projectFolder": "server-plugins/tags-resources",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/server-calendar",
+      "projectFolder": "server-plugins/calendar",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-calendar",
+      "projectFolder": "models/server-calendar",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-calendar-resources",
+      "projectFolder": "server-plugins/calendar-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-gmail",
+      "projectFolder": "server-plugins/gmail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-gmail",
+      "projectFolder": "models/server-gmail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-gmail-resources",
+      "projectFolder": "server-plugins/gmail-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-telegram",
+      "projectFolder": "server-plugins/telegram",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-telegram",
+      "projectFolder": "models/server-telegram",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-telegram-resources",
+      "projectFolder": "server-plugins/telegram-resources",
+      "shouldPublish": true
+    },
   ]
 }
