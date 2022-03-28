@@ -79,13 +79,23 @@
       avatar: uuid
     })
   }
+
+  async function removeAvatar (): Promise<void> {
+    const deleteFile = await getResource(attachment.helper.DeleteFile)
+    if (object.avatar != null) {
+      await client.updateDoc(object._class, object.space, object._id, {
+        avatar: null
+      })
+      await deleteFile(object.avatar)
+    }
+  }
 </script>
 
 {#if object !== undefined}
   <div class="flex-row-streach flex-grow">
     <div class="mr-8">
       {#if editable}
-        <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} />
+        <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
       {:else}
         <Avatar avatar={object.avatar} size={'x-large'} />
       {/if}

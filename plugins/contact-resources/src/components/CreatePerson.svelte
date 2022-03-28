@@ -50,14 +50,19 @@
     avatar = file
   }
 
-  async function createPerson () {
-    const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarProp = avatar !== undefined ? { avatar: await uploadFile(avatar) } : {}
+  function removeAvatar (): void {
+    avatar = undefined
+  }
 
+  async function createPerson () {
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
-      city: object.city,
-      ...avatarProp
+      city: object.city
+    }
+
+    if (avatar !== undefined) {
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+      person.avatar = await uploadFile(avatar)
     }
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
@@ -101,7 +106,7 @@
   {/if}
   <div class="flex-row-center">
     <div class="mr-4">
-      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
+      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} on:remove={removeAvatar} />
     </div>
     <div class="flex-col">
       <div class="fs-title">

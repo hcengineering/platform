@@ -63,6 +63,17 @@
       avatar: uuid
     })
   }
+
+  async function removeAvatar (): Promise<void> {
+    if (employee === undefined) return
+    const deleteFile = await getResource(attachment.helper.DeleteFile)
+    if (employee.avatar != null) {
+      await client.updateDoc(employee._class, employee.space, employee._id, {
+        avatar: null
+      })
+      await deleteFile(employee.avatar)
+    }
+  }
 </script>
 
 <div class="antiComponent">
@@ -73,7 +84,7 @@
   {#if employee}
     <div class="ac-body columns p-10">
       <div class="mr-8">
-        <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} />
+        <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
       </div>
       <div class="flex-grow flex-col">
         <div class="flex-col">

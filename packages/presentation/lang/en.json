@@ -8,6 +8,8 @@
     "Close": "Close",
     "NotSelected": "Not selected",
     "Deselect": "Deselect",
-    "AddSocialLinks": "Add social links"
+    "AddSocialLinks": "Add social links",
+    "Change": "Change",
+    "Remove": "Remove"
   }
 }

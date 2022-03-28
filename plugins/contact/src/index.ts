@@ -51,7 +51,7 @@ export interface Channel extends AttachedDoc {
  */
 export interface Contact extends Doc {
   name: string
-  avatar?: string
+  avatar?: string | null
   attachments?: number
   comments?: number
   channels?: number

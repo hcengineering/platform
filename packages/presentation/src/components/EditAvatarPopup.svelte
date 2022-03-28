@@ -19,27 +19,57 @@
   import imageCropper from '@anticrm/image-cropper'
   import plugin from '../plugin'
 
-  export let file: File
+  export let file: Blob
+  let inputRef: HTMLInputElement
+  const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
 
   const dispatch = createEventDispatcher()
   const CropperP = getResource(imageCropper.component.Cropper)
   let cropper: any
+
+  function onSelect (e: any) {
+    const newFile = e.target?.files[0] as File | undefined
+    if (newFile === undefined || !targetMimes.includes(newFile.type)) {
+      return
+    }
+    file = newFile
+
+    e.target.value = null
+  }
 
   async function onCrop () {
     const res = await cropper.crop()
 
     dispatch('close', res)
   }
+
+  async function remove () {
+    dispatch('close', null)
+  }
+
+
+  function selectAnother () {
+    inputRef.click()
+  }
 </script>
 
+<input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')}/>
 <div class="overlay" on:click={() => { dispatch('close') }} />
 <div class="root">
   {#await CropperP then Cropper}
     <div class="cropper">
       <Cropper bind:this={cropper} image={file} />
     </div>
-    <div class="footer ml-6 mr-6 mt-4 mb-4">
-      <Button label={plugin.string.Save} primary on:click={onCrop} />
+    <div class="footer">
+      <div>
+        <Button label={plugin.string.Save} primary on:click={onCrop} />
+      </div>
+      <div class="ml-4 mr-4">
+        <Button label={plugin.string.Change} on:click={selectAnother} />
+      </div>
+      <div>
+        <Button label={plugin.string.Remove} on:click={remove} />
+      </div>
     </div>
   {/await}
 </div>
@@ -85,5 +115,6 @@
   .footer {
     display: flex;
     flex-direction: row-reverse;
+    padding: 1rem 1.5rem;
   }
 </style>

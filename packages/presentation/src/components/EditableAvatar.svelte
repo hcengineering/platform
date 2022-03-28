@@ -15,13 +15,13 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  
   import { showPopup } from '@anticrm/ui'
 
   import Avatar from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
+  import { getFileUrl } from '../utils'
 
-  export let avatar: string | undefined = undefined
+  export let avatar: string | null | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
   export let direct: Blob | undefined = undefined
 
@@ -29,8 +29,28 @@
 
   let inputRef: HTMLInputElement
   const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
-  function onClick () {
-    inputRef.click()
+  async function onClick () {
+    let file: Blob
+    if (direct !== undefined) {
+      file = direct
+    } else if (avatar != null) {
+      const url = getFileUrl(avatar)
+      file = await (await fetch(url)).blob()
+    } else {
+      return inputRef.click()
+    }
+    showPopup(EditAvatarPopup, { file }, undefined, (blob) => {
+      if (blob === undefined) {
+        return
+      }
+      if (blob === null) {
+        direct = undefined
+        dispatch('remove')
+      } else {
+        direct = blob
+        dispatch('done', { file: new File([blob], 'avatar') })
+      }
+    })
   }
 
 
@@ -44,9 +64,13 @@
       if (blob === undefined) {
         return
       }
-
-      direct = blob
-      dispatch('done', { file: new File([blob], file.name) })
+      if (blob === null) {
+        direct = undefined
+        dispatch('remove')
+      } else {
+        direct = blob
+        dispatch('done', { file: new File([blob], file.name) })
+      }
     })
     e.target.value = null
   }
