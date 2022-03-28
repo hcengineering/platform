@@ -137,6 +137,7 @@ export class LiveQuery extends TxProcessor implements Client {
       })
 
     return () => {
+      q.callback = () => {}
       this.queries.splice(this.queries.indexOf(q), 1)
     }
   }
