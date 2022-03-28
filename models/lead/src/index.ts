@@ -128,7 +128,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
-    descriptor: view.viewlet.Table,
+    descriptor: task.viewlet.StatusTable,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: leadLookup

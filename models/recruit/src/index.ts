@@ -264,7 +264,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
-    descriptor: view.viewlet.Table,
+    descriptor: task.viewlet.StatusTable,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: applicantTableLookup
@@ -302,30 +302,6 @@ export function createModel (builder: Builder): void {
       lookup: applicantKanbanLookup
     } as FindOptions<Doc>, // TODO: fix
     config: []
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Applicant,
-    descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: applicantTableLookup
-    } as FindOptions<Doc>, // TODO: fix
-    config: [
-      '',
-      '$lookup.attachedTo',
-      '$lookup.assignee',
-      '$lookup.state',
-      '$lookup.doneState',
-      {
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
-      'modifiedOn',
-      '$lookup.attachedTo.$lookup.channels'
-    ]
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {

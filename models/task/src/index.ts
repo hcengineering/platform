@@ -297,7 +297,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
-    descriptor: view.viewlet.Table,
+    descriptor: task.viewlet.StatusTable,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: { assignee: contact.class.Employee }
