@@ -334,9 +334,12 @@ export function createModel (builder: Builder): void {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {
-        assignee: contact.class.Employee
+        assignee: contact.class.Employee,
+        _id: {
+          todoItems: task.class.TodoItem
+        }
       }
-    } as FindOptions<Doc>, // TODO: fix
+    } as FindOptions<Doc>,
     config: []
   })
 

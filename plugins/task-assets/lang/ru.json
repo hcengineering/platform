@@ -74,6 +74,7 @@
     "CantStatusDelete": "Невозможно удалить статус",
     "CantStatusDeleteError": "Есть объекты с данным статусом. Сначала переместите или удалите их. ",
     "Tasks": "Задачи",
-    "Assigned": "Назначения"
+    "Assigned": "Назначения",
+    "TodoItems": "Todos"
   }
 }

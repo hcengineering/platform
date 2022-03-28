@@ -14,6 +14,7 @@
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/tool staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/tool",
     "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws:/localhost:3333 TELEGRAM_DATABASE=telegram-service ELASTIC_URL=http://localhost:9200 REKONI_URL=http://localhost:4004 ts-node ./src/index.ts",
+    "upgrade": "rushx run-local upgrade",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
   },

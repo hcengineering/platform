@@ -24,15 +24,18 @@
   export let item: TodoItem
 
   let name: string = ''
-  let dueTo: Date | undefined
+  let dueTo: Date | undefined | null = null
 
   let _itemId: Ref<TodoItem>
 
   $: if (_itemId !== item._id) {
     _itemId = item._id
     name = item.name
-    dueTo = new Date(item.dueTo ?? 0)
-    console.log('AHTUNG', item, dueTo)
+    if (item.dueTo != null) {
+      dueTo = new Date(item.dueTo)
+    } else {
+      dueTo = null
+    }
   }
 
   const dispatch = createEventDispatcher()

@@ -17,12 +17,13 @@
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { formatName } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { Avatar } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
-  import { ActionIcon, Component, IconMoreH, showPanel } from '@anticrm/ui'
+  import task, { TodoItem } from '@anticrm/task'
+  import { ActionIcon, Component, IconMoreH, showPanel, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
-  import notification from '@anticrm/notification'
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
@@ -30,6 +31,9 @@
   function showCandidate () {
     showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
   }
+
+  $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
+  $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
@@ -38,7 +42,7 @@
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-grow flex-col min-w-0 ml-2">
         <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
-          {formatName(object.$lookup?.attachedTo?.name)}
+          {formatName(object.$lookup?.attachedTo?.name ?? '')}
         </div>
         <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
@@ -54,6 +58,13 @@
     <div class="flex-row-center">
       <div class="sm-tool-icon step-lr75">
         <ApplicationPresenter value={object} />
+        {#if todoItems.length > 0}
+          <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
+            <div class="ml-2">
+              ( {doneTasks?.length}/ {todoItems.length} )
+            </div>
+          </Tooltip>
+        {/if}
       </div>
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>

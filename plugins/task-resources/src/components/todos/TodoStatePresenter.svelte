@@ -15,17 +15,15 @@
 -->
 
 <script lang="ts">
-  import type { TodoItem } from '@anticrm/task'
-  import { Label } from '@anticrm/ui'
+  import { getPlatformColor, Label } from '@anticrm/ui'
   import task from '../../plugin'
-  export let value: TodoItem
+  export let value: boolean
 
-  $: color = value.done ? '#60B96E' : '#6F7BC5'
-  $: text = value.done ? task.string.DoneState : task.string.UndoneState
+  $: color = value ? getPlatformColor(2) : getPlatformColor(10)
+  $: text = value ? task.string.DoneState : task.string.UndoneState
 
 </script>
-
-{#if value }
+{#if value !== undefined }
   <div class="overflow-label state-container" style="background-color: {color};">    
     <Label label={text}/>
   </div>

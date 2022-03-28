@@ -37,6 +37,7 @@ import TaskItem from './components/TaskItem.svelte'
 import TaskPresenter from './components/TaskPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TodoItemPresenter from './components/todos/TodoItemPresenter.svelte'
+import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import AssignedTasks from './components/AssignedTasks.svelte'
@@ -147,7 +148,8 @@ export default async (): Promise<Resources> => ({
     DoneStateEditor,
     KanbanTemplateEditor,
     KanbanTemplateSelector,
-    AssignedTasks
+    AssignedTasks,
+    TodoItemsPopup
   },
   actionImpl: {
     CreateTask: createTask,

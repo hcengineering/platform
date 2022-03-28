@@ -13,33 +13,52 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
+  import { CommentsPresenter } from '@anticrm/chunter-resources'
   import type { WithLookup } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { Avatar } from '@anticrm/presentation'
-  import type { Issue } from '@anticrm/task'
-  import { ActionIcon, Component, IconMoreH, showPopup } from '@anticrm/ui'
+  import type { Issue, TodoItem } from '@anticrm/task'
+  import { ActionIcon, Component, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
-  import notification from '@anticrm/notification' 
 
   export let object: WithLookup<Issue>
   export let draggable: boolean
 
   const showMenu = (ev?: Event): void => {
-    showPopup(ContextMenu, { object }, ev ? ev.target as HTMLElement : null)
+    showPopup(ContextMenu, { object }, ev ? (ev.target as HTMLElement) : null)
   }
+
+  $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
+  $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
 <div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
   <div class="flex-between mb-2">
-    <TaskPresenter value={object} />
+    <div class="flex">
+      <TaskPresenter value={object} />
+      {#if todoItems.length > 0}
+        <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
+          <div class="ml-2">
+            ( {doneTasks?.length}/ {todoItems.length} )
+          </div>
+        </Tooltip>
+      {/if}
+    </div>
     <div class="flex-row-center">
       <div class="mr-2">
         <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
       </div>
-      <ActionIcon label={task.string.More} action={(evt) => { showMenu(evt) }} icon={IconMoreH} size={'small'} />
+      <ActionIcon
+        label={task.string.More}
+        action={(evt) => {
+          showMenu(evt)
+        }}
+        icon={IconMoreH}
+        size={'small'}
+      />
     </div>
   </div>
   <div class="caption-color mb-3 lines-limit-4">{object.name}</div>
@@ -54,7 +73,7 @@
       {/if}
     </div>
     <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
-</div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -62,10 +81,12 @@
     display: flex;
     flex-direction: column;
     padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, .06);
-    border-radius: .75rem;
+    background-color: rgba(222, 222, 240, 0.06);
+    border-radius: 0.75rem;
     user-select: none;
 
-    &.draggable { cursor: grab; }
+    &.draggable {
+      cursor: grab;
+    }
   }
 </style>
