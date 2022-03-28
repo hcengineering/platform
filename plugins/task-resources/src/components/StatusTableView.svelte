@@ -16,14 +16,14 @@
 <script lang="ts">
   import { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import task, { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
+  import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
   import { ScrollBox } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import { Table } from '@anticrm/view-resources'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
-  import plugin from '../plugin'
+  import task from '../plugin'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -37,6 +37,7 @@
   let resConfig = config
   let query = {}
   let doneStates: DoneState[] = []
+  let withoutDone: boolean = false
 
   function updateConfig (): void {
     if (state !== undefined) {
@@ -73,16 +74,26 @@
       result.doneState = {
         $in: Array.from(selectedDoneStates)
       }
+    } else if (withoutDone) {
+      result.doneState = null
     }
     query = result
   }
 
   function doneStateClick (id: Ref<DoneState>): void {
+    withoutDone = false
     if (selectedDoneStates.has(id)) {
       selectedDoneStates.delete(id)
     } else {
       selectedDoneStates.add(id)
     }
+    selectedDoneStates = selectedDoneStates
+    updateQuery(search, selectedDoneStates)
+  }
+
+  function noDoneClick (): void {
+    withoutDone = !withoutDone
+    selectedDoneStates.clear()
     selectedDoneStates = selectedDoneStates
     updateQuery(search, selectedDoneStates)
   }
@@ -98,11 +109,12 @@
       on:click={() => {
         doneStatusesView = false
         state = undefined
+        withoutDone = false
         selectedDoneStates.clear()
         updateQuery(search, selectedDoneStates)
       }}
     >
-      <Label label={plugin.string.AllStates} />
+      <Label label={task.string.AllStates} />
     </div>
     <div
       class="button flex-center ml-3"
@@ -114,7 +126,7 @@
         updateQuery(search, selectedDoneStates)
       }}
     >
-      <Label label={plugin.string.DoneStates} />
+      <Label label={task.string.DoneStates} />
     </div>
   </div>
   <div class="flex-row-center caption-color states">
@@ -139,6 +151,15 @@
           </span>
         </div>
       {/each}
+      <div
+        class="doneState withoutDone flex-row-center"
+        class:disable={!withoutDone}
+        on:click={() => {
+          noDoneClick()
+        }}
+      >
+        <Label label={task.string.NoDoneState}/>
+      </div>
     {:else}
       <StatesBar bind:state {space} on:change={() => updateQuery(search, selectedDoneStates)} />
     {/if}
@@ -192,6 +213,7 @@
 
     &.won { background-color: #60b96e; }
     &.lost { background-color: #f06c63; }
+    &.withoutDone { background-color: var(--theme-bg-focused-color); }
     &.disable { background-color: var(--theme-button-bg-enabled); }
   }
   .doneState + .doneState { margin-left: .75rem; }
