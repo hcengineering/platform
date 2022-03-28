@@ -33,6 +33,9 @@ import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
 import { serverTagsId } from '@anticrm/server-tags'
+import { serverCalendarId } from '@anticrm/server-calendar'
+import { serverGmailId } from '@anticrm/server-gmail'
+import { serverTelegramId } from '@anticrm/server-telegram'
 
 import { metricsContext } from './metrics'
 
@@ -70,6 +73,9 @@ export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfi
   addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
   addLocation(serverTaskId, () => import('@anticrm/server-task-resources'))
   addLocation(serverTagsId, () => import('@anticrm/server-tags-resources'))
+  addLocation(serverCalendarId, () => import('@anticrm/server-calendar-resources'))
+  addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
+  addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
   return startJsonRpc(metricsContext, (workspace: string) => {
     const conf: DbConfiguration = {

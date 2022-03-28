@@ -57,6 +57,9 @@ import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
 import { serverTagsId } from '@anticrm/server-tags'
+import { serverCalendarId } from '@anticrm/server-calendar'
+import { serverGmailId } from '@anticrm/server-gmail'
+import { serverTelegramId } from '@anticrm/server-telegram'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
@@ -120,6 +123,9 @@ export class ElasticTool {
     addLocation(serverSettingId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-setting-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
     addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
+    addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
+    addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
+    addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 

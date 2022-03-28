@@ -93,6 +93,12 @@
     "@anticrm/server-task-resources": "~0.6.0",
     "@anticrm/server-tags": "~0.6.0",
     "@anticrm/server-tags-resources": "~0.6.0",
+    "@anticrm/server-calendar": "~0.6.0",
+    "@anticrm/server-calendar-resources": "~0.6.0",
+    "@anticrm/server-gmail": "~0.6.0",
+    "@anticrm/server-gmail-resources": "~0.6.0",
+    "@anticrm/server-telegram": "~0.6.0",
+    "@anticrm/server-telegram-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "request": "~2.88.2",
     "@anticrm/tags": "~0.6.0"
