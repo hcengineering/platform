@@ -11,9 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 const DAYS_IN_WEEK = 7
 const MILLISECONDS_IN_DAY = 86400000
+const MILLISECONDS_IN_MINUTE = 60000
 
 export function firstDay (date: Date, mondayStart: boolean): Date {
   const firstDayOfMonth = new Date(date)
@@ -40,8 +40,8 @@ export function getWeekDayName (weekDay: Date, weekFormat: 'narrow' | 'short' | 
   }).format(weekDay)
 }
 
-export function day (firstDay: Date, offset: number): Date {
-  return new Date(firstDay.getTime() + offset * MILLISECONDS_IN_DAY)
+export function day (firstDay: Date, offset: number, minutes?: number): Date {
+  return new Date(firstDay.getTime() + offset * MILLISECONDS_IN_DAY + (minutes ?? 0) * MILLISECONDS_IN_MINUTE)
 }
 
 export function weekday (firstDay: Date, w: number, d: number): Date {
@@ -66,4 +66,17 @@ export function isWeekend (date: Date): boolean {
 export function getMonthName (date: Date): string {
   const locale = new Intl.NumberFormat().resolvedOptions().locale
   return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+}
+export function getMonday (d: Date, mondayStart: boolean): Date {
+  d = new Date(d)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
+  return new Date(d.setDate(diff))
+}
+
+export function addZero (value: number): string {
+  if (value < 10) {
+    return `0${value}`
+  }
+  return `${value}`
 }

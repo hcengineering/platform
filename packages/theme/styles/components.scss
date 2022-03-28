@@ -407,6 +407,10 @@
     }
   }
 
+  .antiTable-body__border {
+    border: 1px solid var(--theme-button-border-hovered);
+  }   
+
   &.highlightRows .antiTable-body__row {
     &:hover, &.checking { background-color: var(--theme-table-bg-hover); }
   }
