@@ -151,32 +151,20 @@
     visibileNav = !visibileNav
     closeTooltip()
   }
-  let account: EmployeeAccount | undefined
+  const account = getCurrentAccount() as EmployeeAccount
   let employee: Employee | undefined
-  const accountQ = createQuery()
   const employeeQ = createQuery()
-  $: accountQ.query(
-    contact.class.EmployeeAccount,
+
+  employeeQ.query(
+    contact.class.Employee,
     {
-      _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+      _id: account.employee
     },
     (res) => {
-      account = res[0]
+      employee = res[0]
     },
     { limit: 1 }
   )
-
-  $: account &&
-    employeeQ.query(
-      contact.class.Employee,
-      {
-        _id: account.employee
-      },
-      (res) => {
-        employee = res[0]
-      },
-      { limit: 1 }
-    )
 
   let isNavigate: boolean = false
   $: isNavigate = !!navigatorModel
@@ -210,7 +198,7 @@
   $: notificationQuery.query(
     notification.class.Notification,
     {
-      attachedTo: (getCurrentAccount() as EmployeeAccount).employee,
+      attachedTo: account.employee,
       status: NotificationStatus.New
     },
     (res) => {

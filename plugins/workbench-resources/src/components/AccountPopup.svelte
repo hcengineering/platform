@@ -26,17 +26,11 @@
     return await client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } })
   }
 
-  let account: EmployeeAccount | undefined
+  const account = getCurrentAccount() as EmployeeAccount
   let employee: Employee | undefined
-  const accountQ = createQuery()
   const employeeQ = createQuery()
-  $: accountQ.query(contact.class.EmployeeAccount, {
-    _id: getCurrentAccount()._id as Ref<EmployeeAccount>
-  }, (res) => {
-    account = res[0]
-  }, { limit: 1 })
 
-  $: account && employeeQ.query(contact.class.Employee, {
+  employeeQ.query(contact.class.Employee, {
     _id: account.employee
   }, (res) => {
     employee = res[0]
