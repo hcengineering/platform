@@ -69,10 +69,9 @@
       {#if show}<Close size={'small'} />{:else}<Calendar size={'medium'} />{/if}
     </div>
   </button>
-
   <div class="group">
     <span class="label"><Label label={title} /></span>
-    {#if value !== undefined}
+    {#if value != null}
       <DatePresenter {value} withTime={withTime} {bigDay} wraped={opened} />
     {:else}
       <span class="result not-selected"><Label label={ui.string.NotSelected} /></span>

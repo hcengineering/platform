@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
-  import { tooltipstore as tooltip, closeTooltip } from '..'
+  import { tooltipstore as tooltip, closeTooltip, Component } from '..'
   import type { TooltipAligment } from '..'
   import Label from './Label.svelte'
 
@@ -163,7 +163,11 @@
     {#if $tooltip.label}<div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
       </div>{/if}
-    <svelte:component this={$tooltip.component} {...$tooltip.props} />
+      {#if typeof $tooltip.component === 'string'}
+        <Component is={$tooltip.component} props={$tooltip.props}/>
+      {:else}
+        <svelte:component this={$tooltip.component} {...$tooltip.props} />
+      {/if}
   </div>
   <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
 {:else if $tooltip.label}

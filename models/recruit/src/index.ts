@@ -288,7 +288,10 @@ export function createModel (builder: Builder): void {
 
   const applicantKanbanLookup: Lookup<Applicant> = {
     attachedTo: recruit.mixin.Candidate,
-    assignee: contact.class.Employee
+    assignee: contact.class.Employee,
+    _id: {
+      todoItems: task.class.TodoItem
+    }
   }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

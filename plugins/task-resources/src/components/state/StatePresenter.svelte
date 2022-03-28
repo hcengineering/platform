@@ -19,7 +19,6 @@
 
   export let value: State
 </script>
-
 {#if value}
   <div class="overflow-label state-container" style="background-color: {getPlatformColor(value.color)}">
     {value.title}

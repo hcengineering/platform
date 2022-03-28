@@ -74,6 +74,7 @@
     "CantStatusDelete": "Can't delete status",
     "CantStatusDeleteError": "There are objects in the given state. Move or delete them first.",
     "Tasks": "Tasks",
-    "Assigned": "Assigned to me"
+    "Assigned": "Assigned to me",
+    "TodoItems": "Todos"
   }
 }

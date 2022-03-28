@@ -227,7 +227,11 @@ const task = plugin(taskId, {
   },
   component: {
     KanbanTemplateEditor: '' as AnyComponent,
-    KanbanTemplateSelector: '' as AnyComponent
+    KanbanTemplateSelector: '' as AnyComponent,
+    TodoItemsPopup: '' as AnyComponent
+  },
+  string: {
+    TodoItems: '' as IntlString
   }
 })
 
