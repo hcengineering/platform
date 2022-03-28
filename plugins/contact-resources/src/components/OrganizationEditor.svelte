@@ -34,7 +34,7 @@
       return {
         _id: org._id,
         label: org.name,
-        image: org.avatar
+        image: org.avatar === null ? undefined : org.avatar
       }
     })
     if (value !== undefined) {
