@@ -31,39 +31,23 @@
   import { ChannelsEditor } from '@anticrm/contact-resources'
   const client = getClient()
 
-  let account: EmployeeAccount | undefined
   let employee: Employee | undefined
   let firstName: string
   let lastName: string
-  const accountQ = createQuery()
   const employeeQ = createQuery()
-  $: accountQ.query(
-    contact.class.EmployeeAccount,
+
+  employeeQ.query(
+    contact.class.Employee,
     {
-      _id: getCurrentAccount()._id as Ref<EmployeeAccount>
+      _id: (getCurrentAccount() as EmployeeAccount).employee
     },
     (res) => {
-      account = res[0]
+      employee = res[0]
+      firstName = getFirstName(employee.name)
+      lastName = getLastName(employee.name)
     },
     { limit: 1 }
   )
-
-  $: account && updateQuery(account.employee)
-
-  function updateQuery (id: Ref<Employee>): void {
-    employeeQ.query(
-      contact.class.Employee,
-      {
-        _id: id
-      },
-      (res) => {
-        employee = res[0]
-        firstName = getFirstName(employee.name)
-        lastName = getLastName(employee.name)
-      },
-      { limit: 1 }
-    )
-  }
 
   async function onAvatarDone (e: any) {
     if (employee === undefined) return

@@ -27,7 +27,7 @@
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
-import Reconnect from './Reconnect.svelte';
+  import Reconnect from './Reconnect.svelte'
 
   export let object: Contact
   let channel: Channel | undefined = undefined
