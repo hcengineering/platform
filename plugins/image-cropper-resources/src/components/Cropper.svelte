@@ -16,13 +16,13 @@
 import Cropper from 'cropperjs'
 import smartcrop from 'smartcrop'
 
-export let image: File
+export let image: Blob
 export let cropSize = 1200
 
 let imgRef: HTMLImageElement
 let cropper: Cropper | undefined
 
-async function init () {
+async function init (image: Blob) {
   const bitmap = await createImageBitmap(image)
   const canvas = document.createElement('canvas')
   canvas.height = bitmap.height
@@ -42,6 +42,10 @@ async function init () {
 
   const initialArea = (await smartcrop.crop(canvas, { width: 100, height: 100 })).topCrop
 
+  if (cropper !== undefined) {
+    cropper.destroy()
+    cropper = undefined
+  }
   const cropperInst = new Cropper(imgRef, {
     aspectRatio: 1,
     viewMode: 1,
@@ -82,7 +86,7 @@ export async function crop () {
 
 <div class="w-full h-full flex">
   <img class="image" bind:this={imgRef} alt="img"/>
-  {#await init()}
+  {#await init(image)}
     Waiting...
   {/await}
 </div>

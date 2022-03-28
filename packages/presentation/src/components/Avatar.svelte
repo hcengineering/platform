@@ -18,7 +18,7 @@
 
   import { getBlobURL, getFileUrl } from '../utils'
 
-  export let avatar: string | undefined = undefined
+  export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
@@ -27,7 +27,7 @@
     getBlobURL(direct).then((blobURL) => {
       url = blobURL
     })
-  } else if (avatar !== undefined) {
+  } else if (avatar !== undefined && avatar !== null) {
     url = getFileUrl(avatar)
   } else {
     url = undefined

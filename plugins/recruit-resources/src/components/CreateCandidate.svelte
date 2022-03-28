@@ -113,12 +113,13 @@
   })
 
   async function createCandidate () {
-    const uploadFile = await getResource(attachment.helper.UploadFile)
-    const avatarProp = avatar !== undefined ? { avatar: await uploadFile(avatar) } : {}
     const candidate: Data<Person> = {
       name: combineName(firstName, lastName),
-      city: object.city,
-      ...avatarProp
+      city: object.city
+    }
+    if (avatar !== undefined) {
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+      candidate.avatar = await uploadFile(avatar)
     }
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
@@ -381,6 +382,10 @@
   $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
     matches = p
   })
+
+  function removeAvatar (): void {
+    avatar = undefined
+  }
 </script>
 
 <Card
@@ -405,7 +410,7 @@
   {/if}
   <div class="flex-row-center">
     <div class="mr-4">
-      <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:done={onAvatarDone} />
+      <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
       <div class="fs-title">
