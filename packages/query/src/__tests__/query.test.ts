@@ -386,7 +386,7 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toEqual(futureSpace)
+              expect((comment as WithLookup<AttachedComment>).$lookup?.space?._id).toEqual(futureSpace._id)
               resolve(null)
             } else {
               expect((comment as WithLookup<AttachedComment>).$lookup?.space).toBeUndefined()
@@ -433,7 +433,7 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toEqual(futureSpace)
+              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(futureSpace._id)
               resolve(null)
             } else {
               expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
