@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
+  import { Class, Ref } from '@anticrm/core'
   import { AttributeEditor, getClient } from '@anticrm/presentation'
   import type { DoneState, State } from '@anticrm/task'
   import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor } from '@anticrm/ui'
@@ -69,17 +69,17 @@
     await client.updateDoc(state._class, state.space, state._id, { color })
   }
 
-  async function onAdd () {
-    dispatch('add')
+  async function onAdd (_class: Ref<Class<State | DoneState>>) {
+    dispatch('add', _class)
   }
 </script>
 
-<div class="flex-col">
+<div>
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.ActiveStates} />
-    <CircleButton icon={IconAdd} size={'medium'} on:click={onAdd}/>
+    <CircleButton icon={IconAdd} size={'medium'} on:click={() => { onAdd(task.class.State) }}/>
   </div>
-  <div class="overflow-y-auto mt-3">
+  <div class="mt-3">
     {#each states as state, i}
       {#if state}
         <div bind:this={elements[i]} class="flex-between states" draggable={true}
@@ -116,33 +116,53 @@
     {/each}
   </div>
 </div>
-<div class="flex-col mt-9">
-  <div class="flex-no-shrink trans-title uppercase">
+<div class="mt-9">
+  <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesWon} />
+    <CircleButton icon={IconAdd} size={'medium'} on:click={() => { onAdd(task.class.WonState) }}/>
   </div>
-  <div class="overflow-y-auto mt-4">
+  <div class="mt-4">
     {#each wonStates as state}
       {#if state}
         <div class="states flex-row-center">
           <div class="bar"/>
           <div class="color" style="background-color: #a5d179"/>
           <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
+          {#if wonStates.length > 1}
+            <div class="tool hover-trans"
+              on:click={(ev) => {
+                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
+              }}
+            >
+              <IconMoreH size={'medium'} />
+            </div>
+          {/if}
         </div>
       {/if}
     {/each}
   </div>
 </div>
-<div class="flex-col mt-9">
-  <div class="flex-no-shrink trans-title uppercase">
+<div class="mt-9">
+  <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.DoneStatesLost} />
+    <CircleButton icon={IconAdd} size={'medium'} on:click={() => { onAdd(task.class.LostState) }}/>
   </div>
-  <div class="overflow-y-auto mt-4">
+  <div class="mt-4">
     {#each lostStates as state}
       {#if state}
         <div class="states flex-row-center">
           <div class="bar"/>
           <div class="color" style="background-color: #f28469"/>
           <div class="flex-grow caption-color"><AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title"/></div>
+          {#if lostStates.length > 1}
+            <div class="tool hover-trans"
+              on:click={(ev) => {
+                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
+              }}
+            >
+              <IconMoreH size={'medium'} />
+            </div>
+          {/if}
         </div>
       {/if}
     {/each}

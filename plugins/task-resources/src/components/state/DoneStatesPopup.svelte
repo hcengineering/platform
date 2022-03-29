@@ -33,6 +33,7 @@
     },
     {
       sort: {
+        _class: SortingOrder.Descending,
         rank: SortingOrder.Ascending
       }
     }
