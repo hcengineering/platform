@@ -22,7 +22,7 @@
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { DatePicker, Grid, Status as StatusControl, StylishEdit } from '@anticrm/ui'
+  import { DatePicker, Grid, Status as StatusControl, StylishEdit, EditBox, Row } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
@@ -133,6 +133,12 @@
   }
 
   $: validate(doc, doc._class)
+  const updateStart = (result: any): void => {
+    if (result.detail !== undefined) {
+      dueDate = result.detail
+      dueDate = dueDate
+    }
+  }
 </script>
 
 <Card
@@ -152,39 +158,31 @@
 >
   <StatusControl slot="error" {status} />
 
-  <Grid column={1} rowGap={1.75}>
-    <Grid column={!preserveCandidate ? 2 : 1}>
-      <StylishEdit bind:value={title} label={recruit.string.Title} />
-      {#if !preserveCandidate}
-        <div class="antiComponentBox">
-          <UserBox
-            _class={contact.class.Person}
-            title={recruit.string.Candidate}
-            caption={recruit.string.Candidates}
-            bind:value={doc.attachedTo}
-          />
-        </div>
-      {/if}
-    </Grid>
-    <StyledTextBox
-      emphasized
-      showButtons={false}
-      bind:content={description}
-      label={recruit.string.Description}
-      alwaysEdit
-      placeholder={recruit.string.AddDescription}
-    />
-    <Grid column={2}>
-      <StylishEdit bind:value={location} label={recruit.string.Location} />
-      <div class="antiComponentBox">
-        <OrganizationSelector bind:value={company} label={recruit.string.Company} />
-      </div>
-    </Grid>
-    <div class="antiComponentBox">
-      <DatePicker title={recruit.string.StartDate} bind:value={startDate} withTime />
-    </div>
-    <div class="antiComponentBox">
-      <DatePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
-    </div>
+  <Grid column={2} rowGap={1.75}>
+    <EditBox label={recruit.string.Title} icon={recruit.icon.Review} bind:value={title} maxWidth={'13rem'} />
+    {#if !preserveCandidate}
+      <UserBox
+        _class={contact.class.Person}
+        title={recruit.string.Candidate}
+        caption={recruit.string.Candidates}
+        bind:value={doc.attachedTo}
+      />
+    {:else}
+      <div></div>
+    {/if}
+    <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
+    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
+    <DatePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
+    <DatePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
+    <Row>
+      <StyledTextBox
+        emphasized
+        showButtons={false}
+        bind:content={description}
+        label={recruit.string.Description}
+        alwaysEdit
+        placeholder={recruit.string.AddDescription}
+      />
+    </Row>
   </Grid>
 </Card>

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TSelectDate } from '../types'
+  import type { TSelectDate } from './internal/DateUtils'
   import DatePresenter from './DatePresenter.svelte'
 
   export let value: TSelectDate

@@ -11,9 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-const DAYS_IN_WEEK = 7
-const MILLISECONDS_IN_DAY = 86400000
+export const DAYS_IN_WEEK = 7
+export const MILLISECONDS_IN_DAY = 86400000
 
 export function firstDay (date: Date, mondayStart: boolean): Date {
   const firstDayOfMonth = new Date(date)
@@ -31,6 +30,15 @@ export function firstDay (date: Date, mondayStart: boolean): Date {
   result.setSeconds(0)
   result.setMilliseconds(0)
   return result
+}
+
+export function getWeek (date: Date): number {
+  const onejan = new Date(date.getFullYear(), 0, 1)
+  return Math.ceil((((date.getTime() - onejan.getTime()) / MILLISECONDS_IN_DAY) + onejan.getDay() + 1) / DAYS_IN_WEEK)
+}
+
+export function daysInMonth (date: Date): number {
+  return 33 - new Date(date.getFullYear(), date.getMonth(), 33).getDate()
 }
 
 export function getWeekDayName (weekDay: Date, weekFormat: 'narrow' | 'short' | 'long' | undefined = 'short'): string {
@@ -66,4 +74,13 @@ export function isWeekend (date: Date): boolean {
 export function getMonthName (date: Date): string {
   const locale = new Intl.NumberFormat().resolvedOptions().locale
   return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+}
+
+export type TSelectDate = Date | null | undefined
+export type TCellStyle = 'not-selected' | 'selected'
+export interface ICell {
+  dayOfWeek: number
+  style: TCellStyle
+  focused: boolean
+  today?: boolean
 }

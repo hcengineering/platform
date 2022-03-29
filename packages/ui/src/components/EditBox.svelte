@@ -75,7 +75,7 @@
         <Icon {icon} size={'small'}/>
       </div>
     {/if}
-    <div class="antiWrapper focusWI">
+    <div class="antiWrapper conners focusWI">
       {#if format === 'password'}
         <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
       {:else if format === 'number'}

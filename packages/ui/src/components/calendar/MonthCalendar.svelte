@@ -66,8 +66,11 @@
 </div>
 
 <style lang="scss">
-  .day-name,
-  .selected-month-controller {
+  .month-calendar {
+    user-select: none;
+    cursor: default;
+  }
+  .day-name {
     display: flex;
     justify-content: center;
   }
@@ -98,14 +101,9 @@
     border: 1px solid var(--primary-button-focused-border);
     background-color: var(--primary-button-enabled);
     color: var(--primary-button-color);
+    cursor: pointer;
   }
   .wrongMonth {
     color: var(--grayscale-grey-03);
-  }
-  .month-name {
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0 5px;
-    color: var(--theme-content-dark-color);
   }
 </style>

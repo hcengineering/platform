@@ -24,7 +24,7 @@
   $: todos = (value.$lookup?.todoItems as TodoItem[]) ?? []
 </script>
 
-<div class="applications-container">
+<div class="flex-col">
   {#if todos.length > 0}
     <Table
       _class={task.class.TodoItem}
@@ -38,17 +38,3 @@
     />
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-</style>
