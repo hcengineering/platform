@@ -20,25 +20,6 @@ import attachment from './plugin'
 
 export const attachmentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    console.log('Attachments: Upgrading attachments.')
-    // Replace attachment class
-    const attachResult = await client.update(DOMAIN_ATTACHMENT, { _class: 'chunter:class:Attachment' as Ref<Class<Doc>> }, { _class: attachment.class.Attachment as Ref<Class<Doc>> })
-    if (attachResult.updated > 0) {
-      console.log(`Attachments: Update ${attachResult.updated} Attachment objects`)
-    }
-
-    // Update transactions.
-    const txResult = await client.update<TxCUD<Doc>>(DOMAIN_TX, { objectClass: 'chunter:class:Attachment' as Ref<Class<Doc>> }, { objectClass: attachment.class.Attachment as Ref<Class<Doc>> })
-
-    if (txResult.updated > 0) {
-      console.log(`Attachments: Update ${txResult.updated} Transactions`)
-    }
-
-    const txResult2 = await client.update<TxCUD<Doc>>(DOMAIN_TX, { 'tx.objectClass': 'chunter:class:Attachment' as Ref<Class<Doc>> }, { 'tx.objectClass': attachment.class.Attachment as Ref<Class<Doc>> })
-
-    if (txResult2.updated > 0) {
-      console.log(`Attachments: Update ${txResult.updated} Transactions`)
-    }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
   }
