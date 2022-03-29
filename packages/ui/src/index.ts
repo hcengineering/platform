@@ -120,3 +120,4 @@ export * from './colors'
 
 export { default as MonthCalendar } from './components/calendar/MonthCalendar.svelte'
 export { default as YearCalendar } from './components/calendar/YearCalendar.svelte'
+export { default as WeekCalendar } from './components/calendar/WeekCalendar.svelte'

@@ -3,7 +3,6 @@
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
-  "template": "@anticrm/platform-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "echo 'no build for ui'",
