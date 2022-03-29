@@ -14,12 +14,10 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { MILLISECONDS_IN_DAY, DAYS_IN_WEEK } from './internal/DateUtils'
-  import { Scroller } from '../..'
 
-  export let value: Date
+  export let value: number
 
   const dispatch = createEventDispatcher()
 
@@ -42,7 +40,7 @@
 
 <div class="scrollbox">
   {#each actions as action}
-    <button class="ap-menuItem no-word-wrap" on:click={() => { dispatch('update', new Date(value.getTime() + action.value)) }}>
+    <button class="ap-menuItem no-word-wrap" on:click={() => { dispatch('update', new Date(value + action.value)) }}>
       {action.label}
     </button>
   {/each}

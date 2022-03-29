@@ -18,7 +18,7 @@
   import { Label, DatePresenter } from '../..'
 
   export let title: IntlString
-  export let value: Date | null | undefined = null
+  export let value: number | null | undefined = null
   export let withTime: boolean = false
 
   const dispatch = createEventDispatcher()

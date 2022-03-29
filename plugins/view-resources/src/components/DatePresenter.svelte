@@ -18,16 +18,8 @@
   // import { TypeDate } from '@anticrm/core'
   import { DatePresenter } from '@anticrm/ui'
 
-  export let value: number | Date | undefined
+  export let value: number | null | undefined
   // export let attributeType: TypeDate | undefined
-  
-  $: date = value ? new Date(value) : undefined
 </script>
 
-<div class="antiSelect">
-  {#if date}
-    <DatePresenter value={date} editable />
-  {:else}
-    No date
-  {/if}
-</div>
+<DatePresenter {value} />

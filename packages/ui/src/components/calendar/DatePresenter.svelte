@@ -20,13 +20,14 @@
   import DPClock from './icons/DPClock.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
 
-  export let value: Date | null | undefined
+  export let value: number | null | undefined
   export let withDate: boolean = true
   export let withTime: boolean = false
   export let editable: boolean = false
 
   const INPUT_WIDTH_INCREMENT = 2
   const dispatch = createEventDispatcher()
+
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
   interface IEdits {
     id: TEdits
@@ -37,6 +38,7 @@
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today: Date = new Date(Date.now())
+  let currentDate: Date = new Date(value ?? Date.now())
 
   let selected: TEdits = 'day'
   let dateDiv: HTMLElement
@@ -99,21 +101,22 @@
     }
   }
 
-  const dateToNum = (): void => edits.forEach(edit => edit.numeric = getValue(value, edit.id))
-  const numToEdits = (): void => {
+  const dateToEdits = (): void => {
     edits.forEach(edit => {
-      if (value) edit.value = edit.numeric.toString().padStart(edit.id === 'year' ? 4 : 2, '0')
+      edit.numeric = getValue(currentDate, edit.id)
+      if (value !== undefined && value !== null) edit.value = edit.numeric.toString().padStart(edit.id === 'year' ? 4 : 2, '0')
       else edit.value = (edit.id === 'year') ? '----' : '--'
-      if (edit.el) edit.el.value = edit.value
+      if (edit.el) {
+        edit.el.value = edit.value
+        computeSize(edit.el, edit.id)
+      }
     })
   }
-  const checkEdits = (): void => {
-    edits.forEach((elem, i) => { if (elem.el) computeSize(elem.el, elem.id) })
-  }
-  const dateToEdits = (): void => {
-    dateToNum()
-    numToEdits()
-    checkEdits()
+  const saveDate = (): void => {
+    value = currentDate.getTime()
+    dateToEdits()
+    $tooltip.props = { value }
+    dispatch('change', value)
   }
   $: if (value) dateToEdits()
   
@@ -125,15 +128,14 @@
       edits[getIndex(ed)].el?.select()
     } else {
       target.classList.remove('wrong-input')
-      if (val > getMaxValue(value ?? today, ed)) {
-        setValue(getMaxValue(value ?? today, ed), value ?? today, ed)
+      if (val > getMaxValue(currentDate ?? today, ed)) {
+        setValue(getMaxValue(currentDate ?? today, ed), currentDate ?? today, ed)
         target.classList.add('wrong-input')
         edits[getIndex(ed)].el?.select()
       } else {
-        value = setValue(val, value ?? today, ed)
-        $tooltip.props = { value }
-        dispatch('change', value)
-        if (ed === 'day' && val > daysInMonth(value ?? today) / 10) edits[1].el?.select()
+        currentDate = setValue(val, currentDate ?? today, ed)
+        saveDate()
+        if (ed === 'day' && val > daysInMonth(currentDate ?? today) / 10) edits[1].el?.select()
         else if (ed === 'month' && val > 1) edits[2].el?.select()
         else if (ed === 'year' && val > 1900 && withTime) edits[3].el?.select()
         else if (ed === 'hour' && val > 2) edits[4].el?.select()
@@ -155,29 +157,25 @@
       let val = (ev.code === 'ArrowUp')
               ? edits[index].numeric + 1
               : edits[index].numeric - 1
-      if (value) {
+      if (currentDate) {
         target.classList.remove('wrong-input')
-        value = setValue(val, value, ed)
-        dateToEdits()
-        $tooltip.props = { value }
-        dispatch('change', value)
+        currentDate = setValue(val, currentDate, ed)
+        saveDate()
       }
     }
   }
 
   const updateFromTooltip = (result: any): void => {
     if (result.detail !== undefined) {
-      value = result.detail
-      dateToEdits()
-      $tooltip.props = { value }
-      dispatch('change', value)
+      currentDate = new Date(result.detail)
+      saveDate()
     }
   }
   const hoverEdits = (ev: MouseEvent, t: 'date' | 'time'): void => {
     if (!dateShow) showTooltip(undefined,
                                t === 'date' ? dateBox : timeBox,
                                undefined, t === 'date' ? DatePopup : TimePopup,
-                               { value: value ?? today },
+                               { value: currentDate ?? today },
                                undefined,
                                updateFromTooltip)
     // $tooltip.props = { value }
@@ -193,7 +191,7 @@
   // onDestroy(() => { closeTooltip() })
 </script>
 
-{#if value !== undefined}
+{#if currentDate !== undefined}
   <div bind:this={dateContainer} class="datetime-presenter-container">
     {#if editable}
       <div bind:this={dateDiv} class="flex-row-center flex-no-shrink flex-nowrap">
@@ -262,18 +260,18 @@
       <div class="flex-col">
         <div bind:this={dateDiv} class="datetime-presenter readable">
           <div class="preview-icon"><DPCalendar size={'full'} /></div>
-          {value?.getDate().toString().padStart(2, '0')}
+          {currentDate.getDate().toString().padStart(2, '0')}
           <div class="symbol">.</div>
-          {value?.getMonth().toString().padStart(2, '0')}
+          {currentDate.getMonth().toString().padStart(2, '0')}
           <div class="symbol">.</div>
-          {value?.getFullYear()}
+          {currentDate.getFullYear()}
         </div>
         {#if withTime}
           <div bind:this={timeDiv} class="datetime-presenter readable">
             <div class="preview-icon"><DPClock size={'full'} /></div>
-            {value?.getHours().toString().padStart(2, '0')}
+            {currentDate.getHours().toString().padStart(2, '0')}
             <div class="symbol">:</div>
-            {value?.getMinutes().toString().padStart(2, '0')}
+            {currentDate.getMinutes().toString().padStart(2, '0')}
           </div>
         {/if}
       </div>

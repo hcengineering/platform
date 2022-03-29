@@ -19,16 +19,16 @@
   import type { TCellStyle, ICell } from './internal/DateUtils'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
 
-  export let value: Date | null | undefined
+  export let value: number | null | undefined
   export let mondayStart: boolean = true
   export let editable: boolean = false
 
   const dispatch = createEventDispatcher()
-  let currentDate: Date = value ?? new Date()
+  let currentDate: Date = new Date(value ?? Date.now())
   let days: Array<ICell> = []
   let scrollDiv: HTMLElement
 
-  $: if (value) currentDate = value
+  $: if (value) currentDate = new Date(value)
   $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
 
   const getNow = (): Date => {
@@ -41,7 +41,7 @@
 
 
   const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && areDatesEqual(value, date)) return 'selected'
+    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
     return 'not-selected'
   }
   
@@ -65,7 +65,7 @@
   }
 
   afterUpdate(() => {
-    if (value) currentDate = value
+    if (value) currentDate = new Date(value)
   })
   onMount(() => {
     if (scrollDiv) scrollDiv.addEventListener('wheel', scrolling)
@@ -78,13 +78,13 @@
 <div bind:this={scrollDiv} class="convert-scroller">
   <div class="popup">
     <div class="flex-center monthYear">
-      {#if value}
-        {getMonthName(value)}
-        <span class="ml-1">{value.getFullYear()}</span>
+      {#if currentDate}
+        {getMonthName(currentDate)}
+        <span class="ml-1">{currentDate.getFullYear()}</span>
       {/if}
     </div>
 
-    {#if value}
+    {#if currentDate}
       <div class="calendar" class:no-editable={!editable}>
         {#each [...Array(7).keys()] as dayOfWeek}
           <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
@@ -97,8 +97,8 @@
             data-today={day.today ? todayString : ''}
             style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
             on:click|stopPropagation={() => {
-              if (value) value.setDate(i + 1)
-              value = value
+              if (currentDate) currentDate.setDate(i + 1)
+              value = currentDate.getTime()
               dispatch('update', value)
             }}
           >

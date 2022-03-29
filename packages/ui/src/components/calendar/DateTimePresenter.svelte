@@ -15,7 +15,7 @@
 <script lang="ts">
   import DatePresenter from './DatePresenter.svelte'
 
-  export let value: Date | null | undefined
+  export let value: number | null | undefined
 </script>
 
 <DatePresenter {value} withTime />

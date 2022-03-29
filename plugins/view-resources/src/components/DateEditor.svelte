@@ -16,15 +16,13 @@
 
 <script lang="ts">
   // import { TypeDate } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import DatePresenter from './DatePresenter.svelte'
+  // import { IntlString } from '@anticrm/platform'
+  import { DatePresenter } from '@anticrm/ui'
 
-  export let value: number | Date | undefined
+  export let value: number | null | undefined
   // export let label: IntlString
   export let onChange: (value: any) => void
-
   // export let attributeType: TypeDate | undefined
-  // $: date = value ? new Date(value) : new Date()
 </script>
 
-<DatePresenter {value} on:change={onChange} />
+<DatePresenter {value} on:change={onChange} editable />
