@@ -77,7 +77,8 @@ export default mergeIds(recruitId, recruit, {
     EditReview: '' as AnyComponent,
     ReviewPresenter: '' as AnyComponent,
     Opinions: '' as AnyComponent,
-    OpinionPresenter: '' as AnyComponent
+    OpinionPresenter: '' as AnyComponent,
+    ApplicationsView: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
