@@ -13,18 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc, DOMAIN_TX, TxCUD } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import notification from './plugin'
 
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    const txes = await client.find<TxCUD<Doc>>(DOMAIN_TX, {
-      objectClass: notification.class.LastView
-    })
-    await Promise.all(txes.map(async (tx) => {
-      await client.delete(DOMAIN_TX, tx._id)
-    }))
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
   }

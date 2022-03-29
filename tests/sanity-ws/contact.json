@@ -7,7 +7,7 @@
     "modifiedOn": 1643184924040,
     "name": "Chen,Rosamund",
     "city": "Mountain View",
-    "channels": []
+    "channels": 0
   },
   {
     "_id": "61f1031cff96c329e8f3d68c",
@@ -17,12 +17,7 @@
     "modifiedOn": 1643184924079,
     "name": "P.,Andrey",
     "city": "Monte Carlo",
-    "channels": [
-      {
-        "provider": "contact:channelProvider:Email",
-        "value": "andrey@hc.engineering"
-      }
-    ],
+    "channels": 1,
     "recruit:mixin:Candidate": {
       "title": "Chief Architect"
     }
@@ -35,12 +30,7 @@
     "modifiedOn": 1643186365949,
     "name": "M.,Marina",
     "city": "Los Angeles",
-    "channels": [
-      {
-        "provider": "contact:channelProvider:Email",
-        "value": "marina@hc.engineering"
-      }
-    ],
+    "channels": 1,
     "recruit:mixin:Candidate": {
       "title": "Chief Designer",
       "applications": 1
@@ -55,12 +45,7 @@
     "modifiedOn": 1643186502419,
     "name": "P.,Alex",
     "city": "Krasnodar, Russia",
-    "channels": [
-      {
-        "provider": "contact:channelProvider:Email",
-        "value": "alex@hc.engineering"
-      }
-    ],
+    "channels": 1,
     "recruit:mixin:Candidate": {
       "title": "Frontend Engineer",
       "applications": 1
@@ -78,7 +63,7 @@
     "modifiedOn": 1643186559576,
     "name": "Appleseed,John",
     "city": "",
-    "channels": [],
+    "channels": 0,
     "backlinks": 2
   },
   {
@@ -89,7 +74,7 @@
     "modifiedOn": 1643185270660,
     "name": "Delete1,Person",
     "city": null,
-    "channels": null
+    "channels": 0
   },
   {
     "_id": "61f1047e25355d019917dbd6",
@@ -97,7 +82,8 @@
     "space": "contact:space:Contacts",
     "modifiedBy": "61f1031c1badffab2bb33861",
     "modifiedOn": 1643185278589,
-    "name": "Apple"
+    "name": "Apple",
+    "channels": 0
   },
   {
     "_id": "61f1048a25355d019917dbd8",
@@ -105,7 +91,8 @@
     "space": "contact:space:Contacts",
     "modifiedBy": "61f1031c1badffab2bb33861",
     "modifiedOn": 1643185290358,
-    "name": "DeleteOrg"
+    "name": "DeleteOrg",
+    "channels": 0
   },
   {
     "_id": "61f104ba25355d019917dbf8",
@@ -115,7 +102,7 @@
     "modifiedOn": 1643186485137,
     "name": "Multiseed,John",
     "city": null,
-    "channels": null,
+    "channels": 0,
     "recruit:mixin:Candidate": {
       "onsite": null,
       "remote": null,
