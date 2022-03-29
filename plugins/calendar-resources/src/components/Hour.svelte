@@ -16,40 +16,47 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Tooltip } from '@anticrm/ui'
+import { addZero } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'
 
   export let events: Event[]
   export let date: Date
-  export let size: 'small' | 'huge' = 'small'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
   export let config: string[]
+
+  $: sorted = Array.from(events).sort((a, b) => a.date - b.date)
+
+  function from (eDate: number, date: Date): string {
+    const dd = new Date(Math.max(eDate, date.getTime()))
+    return `${addZero(date.getHours())}:${addZero(dd.getMinutes())}`
+  }
+
+  function to (dueDate: number, date:Date): string {
+    return `${addZero(date.getHours())}:${addZero(Math.min(59, Math.floor((dueDate - date.getTime()) / 60000)))}`
+  }
 </script>
 
 {#if events.length > 0}
   <Tooltip
-    fill={size === 'huge'}
+    fill={true}
     label={calendar.string.Events}
     component={EventsPopup}
     props={{ value: events, _class, query, options, baseMenuClass, config }}
   >
-    {#if size === 'huge'}
-      <div class="cell" class:huge={size === 'huge'}>
-        <div class="flex flex-reverse fs-title flex-grow">
-          {date.getDate()}
-        </div>
-      </div>
-      <div class="cell" class:huge={size === 'huge'}>
-        <div class="flex-col flex-grow">
-          {#each events.slice(0, 4) as e, ei}
+      <div class="cell">
+        <div class="flex flex-col flex-grow">
+          {#each sorted.slice(0, 4) as e, ei}
             <div class="overflow-label flex flex-between">
               {e.title}
               <div>
-                {new Date(e.date).getHours()}:{new Date(e.date).getMinutes()}
+                {from(e.date, date)}
+                -
+                {to(e.dueDate ?? e.date, date)}
               </div>
             </div>
           {/each}
@@ -57,46 +64,20 @@
             And {events.length - 4} more
           {/if}
         </div>
-      </div>
-    {:else}
-      <div class="cell">
-        {date.getDate()}
-        <div class="marker" />
-      </div>
-    {/if}
+      </div>  
   </Tooltip>
-{:else if size === 'huge'}
-  <!-- <div class="cell" class:huge={size === 'huge'}> -->
-    <div class="flex flex-reverse fs-title flex-grow title">
-      {date.getDate()}
-    </div>
-  <!-- </div> -->
-{:else}
-  <div class="cell">
-    {date.getDate()}
-  </div>
 {/if}
 
 <style lang="scss">
   .cell {
+    padding: 0.5rem;
     display: flex;
+    width: 100%;
+    height: 100%;
     justify-content: center;
-
-    .marker {
-      position: relative;
-      top: -0.25rem;
-      width: 0.25rem;
-      height: 0.25rem;
-      border-radius: 50%;
-      background-color: var(--highlight-red);
-    }
-    &.huge {
-      padding: 0.25rem;
-    }
+    background-color: var(--theme-dialog-accent);
   }
   .title {
-    margin-top: 0.25rem;
-    margin-right: 0.25rem;
     align-self: flex-start;
   }
 </style>

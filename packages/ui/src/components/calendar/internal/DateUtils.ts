@@ -13,6 +13,7 @@
 
 export const DAYS_IN_WEEK = 7
 export const MILLISECONDS_IN_DAY = 86400000
+export const MILLISECONDS_IN_MINUTE = 60000
 
 export function firstDay (date: Date, mondayStart: boolean): Date {
   const firstDayOfMonth = new Date(date)
@@ -48,8 +49,8 @@ export function getWeekDayName (weekDay: Date, weekFormat: 'narrow' | 'short' | 
   }).format(weekDay)
 }
 
-export function day (firstDay: Date, offset: number): Date {
-  return new Date(firstDay.getTime() + offset * MILLISECONDS_IN_DAY)
+export function day (firstDay: Date, offset: number, minutes?: number): Date {
+  return new Date(firstDay.getTime() + offset * MILLISECONDS_IN_DAY + (minutes ?? 0) * MILLISECONDS_IN_MINUTE)
 }
 
 export function weekday (firstDay: Date, w: number, d: number): Date {
@@ -83,4 +84,18 @@ export interface ICell {
   style: TCellStyle
   focused: boolean
   today?: boolean
+}
+
+export function getMonday (d: Date, mondayStart: boolean): Date {
+  d = new Date(d)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
+  return new Date(d.setDate(diff))
+}
+
+export function addZero (value: number): string {
+  if (value < 10) {
+    return `0${value}`
+  }
+  return `${value}`
 }

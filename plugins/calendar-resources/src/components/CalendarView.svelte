@@ -16,9 +16,11 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Button, IconBack, IconForward, MonthCalendar, ScrollBox, YearCalendar } from '@anticrm/ui'
+  import { Button, IconBack, IconForward, MonthCalendar, ScrollBox, WeekCalendar, YearCalendar } from '@anticrm/ui'
+  import Scroller from '@anticrm/ui/src/components/Scroller.svelte'
   import calendar from '../plugin'
   import Day from './Day.svelte'
+  import Hour from './Hour.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -38,7 +40,7 @@
 
   let loading = false
   let resultQuery: DocumentQuery<Event>
-  $: spaceOpt = (space ? { space } : {})
+  $: spaceOpt = space ? { space } : {}
   $: resultQuery = search === '' ? { ...query, ...spaceOpt } : { ...query, $search: search, ...spaceOpt }
 
   let objects: Event[] = []
@@ -73,10 +75,46 @@
     )
   }
 
-  function findEvents (events: Event[], date: Date): Event[] {
-    return events.filter(
-      (it) => areDatesLess(new Date(it.date), date) && areDatesLess(date, new Date(it.dueDate ?? it.date))
+  function isSameDay (firstDate: Date, secondDate: Date): boolean {
+    return (
+      firstDate.getFullYear() === secondDate.getFullYear() &&
+      firstDate.getMonth() === secondDate.getMonth() &&
+      firstDate.getDate() === secondDate.getDate()
     )
+  }
+
+  function findEvents (events: Event[], date: Date, minutes = false): Event[] {
+    return events.filter((it) => {
+      const d1 = new Date(it.date)
+      const d2 = new Date(it.dueDate ?? it.date)
+      const inDays = areDatesLess(d1, date) && areDatesLess(date, d2)
+
+      if (minutes) {
+        if (isSameDay(d1, date)) {
+          return (date.getTime() < d1.getTime() && d1.getTime() < date.getTime() + 3600 * 1000) ||
+                  (d1.getTime() < date.getTime() && date.getTime() <= d2.getTime())
+        }
+
+        if (isSameDay(d2, date)) {
+          return (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 3600000) ||
+                  (date.getTime() < d2.getTime() && d1.getTime() < date.getTime())
+        }
+
+        // Somethere in middle
+        return inDays
+      }
+      return inDays
+    })
+  }
+
+  function findDayEvents (events: Event[], date: Date): Event[] {
+    return events.filter((it) => {
+      const d1 = new Date(it.date)
+      const d2 = new Date(it.dueDate ?? it.date)
+      const inDays = areDatesLess(d1, date) && areDatesLess(date, d2)
+
+      return inDays && !isSameDay(d1, date) && !isSameDay(d2, date)
+    })
   }
 
   interface ShiftType {
@@ -128,6 +166,12 @@
       month: 'long'
     }).format(date)
   }
+  function getWeekName (date: Date): string {
+    const onejan = new Date(date.getFullYear(), 0, 1)
+    const week = Math.ceil(((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7)
+
+    return `W${week}`
+  }
 
   function currentDate (date: Date, shifts: ShiftType): Date {
     const res = new Date(date)
@@ -152,7 +196,7 @@
         return `${date.getDate()} ${getMonthName(date)} ${date.getFullYear()}`
       }
       case CalendarMode.Week: {
-        return `${getMonthName(date)} ${date.getFullYear()}`
+        return `${getWeekName(date)} ${getMonthName(date)} ${date.getFullYear()}`
       }
       case CalendarMode.Month: {
         return `${getMonthName(date)} ${date.getFullYear()}`
@@ -175,14 +219,14 @@
     on:click={() => {
       mode = CalendarMode.Day
     }}
-  />
+  /> -->
   <Button
     size={'small'}
     label={calendar.string.ModeWeek}
     on:click={() => {
       mode = CalendarMode.Week
     }}
-  /> -->
+  />
   <Button
     size={'small'}
     label={calendar.string.ModeMonth}
@@ -238,7 +282,15 @@
 
 {#if mode === CalendarMode.Year}
   <ScrollBox bothScroll>
-    <YearCalendar {mondayStart} cellHeight={'2.5rem'} bind:value currentDate={currentDate(date, shifts)}>
+    <YearCalendar
+      {mondayStart}
+      cellHeight={'2.5rem'}
+      bind:value
+      currentDate={currentDate(date, shifts)}
+      on:change={(evt) => {
+        date = evt.detail
+      }}
+    >
       <svelte:fragment slot="cell" let:date>
         <Day
           events={findEvents(objects, date)}
@@ -254,7 +306,15 @@
   </ScrollBox>
 {:else if mode === CalendarMode.Month}
   <div class="flex flex-grow">
-    <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:value currentDate={currentDate(date, shifts)}>
+    <MonthCalendar
+      {mondayStart}
+      cellHeight={'8.5rem'}
+      bind:value
+      currentDate={currentDate(date, shifts)}
+      on:change={(evt) => {
+        date = evt.detail
+      }}
+    >
       <svelte:fragment slot="cell" let:date>
         <Day
           events={findEvents(objects, date)}
@@ -269,4 +329,37 @@
       </svelte:fragment>
     </MonthCalendar>
   </div>
+{:else if mode === CalendarMode.Week}
+  <Scroller>
+    <WeekCalendar
+      {mondayStart}
+      cellHeight={'4.5rem'}
+      bind:value
+      currentDate={currentDate(date, shifts)}
+      on:change={(evt) => {
+        date = evt.detail
+      }}
+    >
+      <svelte:fragment slot="cell" let:date>
+        <Hour
+          events={findEvents(objects, date, true)}
+          {date}
+          {_class}
+          {baseMenuClass}
+          {options}
+          {config}
+          query={resultQuery}
+        />
+      </svelte:fragment>
+
+      <svelte:fragment slot="header" let:date let:days>
+        <tr class="antiTable-body__row">
+          <td class="whitespace-nowrap">All day</td>
+          {#each [...Array(days).keys()] as day}
+            <td class="antiTable-body__border" />
+          {/each}
+        </tr>
+      </svelte:fragment>
+    </WeekCalendar>
+  </Scroller>
 {/if}

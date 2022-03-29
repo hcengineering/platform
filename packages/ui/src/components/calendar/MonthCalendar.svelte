@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script type="ts">
+  import { createEventDispatcher } from 'svelte'
   import { areDatesEqual, day, firstDay, getWeekDayName, isWeekend, weekday } from './internal/DateUtils'
 
   export let mondayStart = true
@@ -22,10 +23,13 @@
   export let currentDate: Date = new Date()
   export let displayedWeeksCount = 6
 
+  const dispatch = createEventDispatcher()
+
   $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
 
   function onSelect (date: Date) {
     value = date
+    dispatch('change', value)
   }
 
   const todayDate = new Date()

@@ -39,8 +39,8 @@
   {#each [...Array(12).keys()] as m}
     <div class="antiComponentBox mt-2 mb-2 ml-2 mr-2 flex-grow" style={`min-width: ${minWidth};`}>
       {getMonthName(month(value, m))}
-      <MonthCalendar {cellHeight} weekFormat="narrow" bind:value currentDate={month(currentDate, m)} {mondayStart}>
-        <!-- eslint-disable-next-line no-undef -->
+      <MonthCalendar {cellHeight} weekFormat="narrow" bind:value currentDate={month(currentDate, m)} {mondayStart} on:change>
+        <!----> eslint-disable-next-line no-undef -->
         <svelte:fragment slot="cell" let:date={date}>
           <slot name="cell" date={date} />
         </svelte:fragment>
