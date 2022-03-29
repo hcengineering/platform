@@ -13,10 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DOMAIN_TX, Ref, TxCUD } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { DOMAIN_ATTACHMENT } from './index'
-import attachment from './plugin'
 
 export const attachmentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
