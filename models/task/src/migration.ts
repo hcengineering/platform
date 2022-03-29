@@ -13,17 +13,11 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Doc, Domain, DOMAIN_TX, Ref, TxCollectionCUD, TxCreateDoc, TxCUD, TxOperations, TxResult } from '@anticrm/core'
+import { TxOperations } from '@anticrm/core'
 import {
-  MigrateOperation,
-  MigrateUpdate,
-  MigrationClient,
-  MigrationResult,
-  MigrationUpgradeClient
+  MigrateOperation, MigrationClient, MigrationUpgradeClient
 } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import type { State, StateTemplate, Issue } from '@anticrm/task'
-import { DOMAIN_TASK, DOMAIN_STATE, DOMAIN_KANBAN } from '.'
 import task from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
