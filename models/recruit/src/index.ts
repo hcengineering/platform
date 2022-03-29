@@ -30,6 +30,7 @@ import {
   UX
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
+import calendar from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TSpace } from '@anticrm/model-core'
@@ -39,10 +40,9 @@ import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
-import { TOpinion, TReview, TReviewCategory } from './review-model'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
-import calendar from '@anticrm/model-calendar'
+import { TOpinion, TReview, TReviewCategory } from './review-model'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -106,6 +106,10 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
   declare attachedTo: Ref<Candidate>
 
+  // We need to declare, to provide property with label
+  @Prop(TypeRef(recruit.class.Vacancy), recruit.string.Vacancy)
+  declare space: Ref<Vacancy>
+
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
@@ -158,6 +162,14 @@ export function createModel (builder: Builder): void {
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
             createItemLabel: recruit.string.VacancyCreateLabel,
+            position: 'bottom'
+          },
+          {
+            id: 'applicants',
+            component: recruit.component.ApplicationsView,
+            icon: recruit.icon.Application,
+            label: recruit.string.Applications,
+            createItemLabel: recruit.string.ApplicationCreateLabel,
             position: 'bottom'
           },
           {
