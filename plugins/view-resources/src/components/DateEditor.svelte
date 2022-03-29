@@ -15,34 +15,14 @@
 -->
 
 <script lang="ts">
-  import { TypeDate } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { DatePopup, showPopup } from '@anticrm/ui'
-  import DatePresenter from './DatePresenter.svelte'
+  // import { TypeDate } from '@anticrm/core'
+  // import { IntlString } from '@anticrm/platform'
+  import { DatePresenter } from '@anticrm/ui'
 
-  export let value: number | Date | undefined
-  export let label: IntlString
+  export let value: number | null | undefined
+  // export let label: IntlString
   export let onChange: (value: any) => void
-
-  export let attributeType: TypeDate | undefined
-
-  $: date = value ? new Date(value) : new Date()
-  let container: HTMLElement
-  let opened: boolean = false
+  // export let attributeType: TypeDate | undefined
 </script>
 
-<div class="flex-row-center" bind:this={container}
-  on:click|preventDefault={() => {
-    if (!opened) {
-      opened = true
-      showPopup(DatePopup, { value: date, title: label, withTime: attributeType?.withTime ?? false }, container, (result) => {
-        if (result) {
-          value = result.getTime()
-          onChange(value)
-         }
-        opened = false
-      })
-    }
-  }} >
-  <DatePresenter {value} {attributeType} />
-</div>
+<DatePresenter {value} on:change={onChange} editable />

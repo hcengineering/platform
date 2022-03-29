@@ -131,15 +131,12 @@
       pointer-events: none;
       user-select: none;
     }
-    .emphasized .emphasized-focus + .label {
-      top: 0.5rem;
-    }
   }
   .emphasized {
     padding: 1rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 0.75rem;
+    border-radius: .5rem;
     &.emphasized-focus {
       background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);
@@ -149,9 +146,5 @@
     overflow: auto;
     flex-grow: 1;
     line-height: 150%;
-
-    .nolabel {
-      padding-top: 0;
-    }
   }
 </style>

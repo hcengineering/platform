@@ -37,6 +37,6 @@
         </Tooltip>
       {/await}
     </div>
-    <DateTimePresenter value={new Date(value.date + value.shift)} />
+    <DateTimePresenter value={value.date + value.shift} />
   {/if}
 </div>

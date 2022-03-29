@@ -142,17 +142,17 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Review")
     await page.click('button:has-text("Review")')
     // Click [placeholder="\ "]
-    await page.click('[placeholder="\\ "]')
+    await page.click('[placeholder="placeholder"]')
     // Fill [placeholder="\ "]
-    await page.fill('[placeholder="\\ "]', 'Meet PEterson')
+    await page.fill('[placeholder="placeholder"]', 'Meet PEterson')
     // Click text=Location Company Company >> [placeholder="\ "]
-    await page.click('text=Location Company Company >> [placeholder="\\ "]')
+    await page.click('text=placeholder Location >> [placeholder="placeholder"]')
     // Fill text=Location Company Company >> [placeholder="\ "]
-    await page.fill('text=Location Company Company >> [placeholder="\\ "]', 'NSK')
+    await page.fill('text=placeholder Location >> [placeholder="placeholder"]', 'NSK')
     // Click text=Company Company >> div
-    await page.click('text=Company Company >> div')
+    // await page.click('text=Company Company >> div')
     // Click button:has-text("Apple")
-    await page.click('button:has-text("Apple")')
+    // await page.click('button:has-text("Apple")')
     // Click text=Candidate Not selected >> span
     await page.click('text=Candidate Not selected >> span')
     // Click button:has-text("Andrey P.")

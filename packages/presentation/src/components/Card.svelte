@@ -41,7 +41,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard" class:w-2125rem={size === 'small'} class:w-4125rem={size === 'medium'} on:submit|preventDefault={ () => {} }>
+<form class="antiCard" class:w-85={size === 'small'} class:w-165={size === 'medium'} on:submit|preventDefault={ () => {} }>
   <div class="antiCard-header">
     <div class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></div>
     {#if $$slots.error}

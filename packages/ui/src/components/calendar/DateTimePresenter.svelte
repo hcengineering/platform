@@ -13,12 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TSelectDate } from '../types'
   import DatePresenter from './DatePresenter.svelte'
 
-  export let value: TSelectDate
-  export let bigDay: boolean = false
-  export let wraped: boolean = false
+  export let value: number | null | undefined
 </script>
 
-<DatePresenter {value} {bigDay} {wraped} withTime />
+<DatePresenter {value} withTime />

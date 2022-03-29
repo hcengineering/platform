@@ -16,7 +16,7 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Tooltip } from '@anticrm/ui'
-import { addZero } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
+  import { addZero } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'
 

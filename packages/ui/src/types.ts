@@ -74,6 +74,7 @@ export interface LabelAndProps {
   component?: AnySvelteComponent | AnyComponent
   props?: any
   anchor: HTMLElement | undefined
+  onUpdate?: (result: any) => void
 }
 
 export interface ListItem {
@@ -85,12 +86,4 @@ export interface ListItem {
 export interface DropdownTextItem {
   id: string
   label: string
-}
-
-export type TSelectDate = Date | null | undefined
-export type TCellStyle = 'not-selected' | 'selected'
-export interface ICell {
-  dayOfWeek: number
-  style: TCellStyle
-  today?: boolean
 }

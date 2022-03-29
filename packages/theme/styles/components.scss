@@ -466,25 +466,16 @@
     & > .icon { color: var(--theme-caption-color); }
   }
   
-  .label, .result {
+  .label {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+
     min-width: 0;  
-  }
-  .label {
     font-size: .75rem;
     font-weight: 500;
     color: var(--theme-content-accent-color);
-  }
-  .result {
-    &.selected { color: var(--theme-caption-color); }
-    &.not-selected { color: var(--theme-content-dark-color); }
-    &.highlight {
-      font-weight: 500;
-      font-size: 1rem;
-    }
   }
 
   .group {
@@ -493,20 +484,6 @@
     flex-wrap: nowrap;
     margin-left: .75rem;
     min-height: 0;
-  }
-
-  .divider {
-    margin: 0 .125rem;
-    font-weight: 500;
-    font-size: .75em;
-    color: var(--theme-content-dark-color);
-
-    &.inter { font-size: 1em; }
-    &.max {
-      margin: 0 .5rem;
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
   }
 }
 
@@ -518,23 +495,48 @@
   flex-wrap: nowrap;
   min-width: 0;
 
-  &::after, &::before {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background-color: var(--primary-button-enabled);
-  }
-  &::before {
-    top: -2px;
-    left: -4px;
-    clip-path: path('M0,6v-6h6v1h-5v5z');
-  }
-  &::after {
-    bottom: -2px;
-    right: -4px;
-    clip-path: path('M0,6h6v-6h-1v5h-5z');
+  &.conners {
+    &::after, &::before {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-button-enabled);
+    }
+    &::before {
+      top: -2px;
+      left: -4px;
+      clip-path: path('M0,6v-6h6v1h-5v5z');
+    }
+    &::after {
+      bottom: -2px;
+      right: -4px;
+      clip-path: path('M0,6h6v-6h-1v5h-5z');
+    }
   }
   &.wraped::before, &.wraped::after { content: ''; }
   &.focusWI:focus-within::before, &.focusWI:focus-within::after { content: ''; }
   &.focus:focus::before, &.focus:focus::after { content: ''; }
+
+  .result {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: none;
+    min-width: 0;  
+
+    &.selected { color: var(--theme-caption-color); }
+    &.not-selected { color: var(--theme-content-dark-color); }
+    &.highlight {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  }
+
+  .divider {
+    font-weight: 500;
+    font-size: .75em;
+    color: var(--theme-content-dark-color);
+
+    &.inter { font-size: 1em; }
+  }
 }

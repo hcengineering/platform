@@ -21,7 +21,7 @@
   import setting from '../../plugin'
 
   export let tx: TxUpdateDoc<Integration>
-  export let doc: Integration
+  // export let doc: Integration
 
   const client = getClient()
 

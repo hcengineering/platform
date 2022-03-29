@@ -106,18 +106,3 @@
     on:change={() => client.update(object, { verdict: object.verdict })}
   />
 {/if}
-
-<style lang="scss">
-  .card {
-    align-self: stretch;
-    width: calc(50% - 3.5rem);
-  }
-  .arrows {
-    width: 4rem;
-  }
-
-  .description {
-    height: 10rem;
-    margin-bottom: 1rem;
-  }
-</style>

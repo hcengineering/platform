@@ -54,15 +54,5 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     border-collapse: collapse;
-    .row {
-      display: table-row;
-    }
-    .th {
-      display: table-cell;
-    }
-    .calendar {
-      display: table-cell;
-      padding: 0.3em;
-    }
   }
 </style>

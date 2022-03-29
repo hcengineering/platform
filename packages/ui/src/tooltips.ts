@@ -8,7 +8,8 @@ export const tooltipstore = writable<LabelAndProps>({
   direction: undefined,
   component: undefined,
   props: undefined,
-  anchor: undefined
+  anchor: undefined,
+  onUpdate: undefined
 })
 
 export function showTooltip (
@@ -17,7 +18,8 @@ export function showTooltip (
   direction?: TooltipAligment,
   component?: AnySvelteComponent | AnyComponent,
   props?: any,
-  anchor?: HTMLElement
+  anchor?: HTMLElement,
+  onUpdate?: (result: any) => void
 ): void {
   tooltipstore.set({
     label: label,
@@ -25,7 +27,8 @@ export function showTooltip (
     direction: direction,
     component: component,
     props: props,
-    anchor: anchor
+    anchor: anchor,
+    onUpdate: onUpdate
   })
 }
 
@@ -36,6 +39,7 @@ export function closeTooltip (): void {
     direction: undefined,
     component: undefined,
     props: undefined,
-    anchor: undefined
+    anchor: undefined,
+    onUpdate: undefined
   })
 }

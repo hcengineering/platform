@@ -22,6 +22,7 @@
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined
   export let anchor: HTMLElement | undefined = undefined
+  export let onUpdate: ((result: any) => void) | undefined = undefined
   export let fill = false
 
   let triggerHTML: HTMLElement
@@ -34,7 +35,7 @@
   name={`tooltip-${label}`}
   bind:this={triggerHTML}
   on:mousemove={() => {
-    if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor)
+    if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor, onUpdate)
   }}
 >
   <slot />
