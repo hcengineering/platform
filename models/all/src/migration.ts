@@ -29,6 +29,7 @@ import { taskOperation } from '@anticrm/model-task'
 import { telegramOperation } from '@anticrm/model-telegram'
 import { templatesOperation } from '@anticrm/model-templates'
 import { viewOperation } from '@anticrm/model-view'
+import { spuristoOperation } from '@anticrm/model-spuristo'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -44,5 +45,6 @@ export const migrateOperations: MigrateOperation[] = [
   contactOperation,
   tagsOperation,
   notificationOperation,
-  settingOperation
+  settingOperation,
+  spuristoOperation
 ]

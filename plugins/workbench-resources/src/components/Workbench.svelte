@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import calendar from '@anticrm/calendar'
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { IntlString } from '@anticrm/platform'
-  import { Avatar, createQuery, getClient, setClient } from '@anticrm/presentation'
+  import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent, closePopup,
     closeTooltip,
@@ -33,7 +34,6 @@
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
-  import calendar from '@anticrm/calendar'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import ActivityStatus from './ActivityStatus.svelte'

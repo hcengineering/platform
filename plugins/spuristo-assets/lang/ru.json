@@ -1,0 +1,21 @@
+{
+  "string": {
+    "SpurentiApplication": "Spurento",
+    "More": "More",
+    "Delete": "Delete",
+    "Open": "Open",
+    "Members": "Members",
+    "Inbox": "Inbox",
+    "MyIssues": "My issues",
+    "Issues": "Issues",
+    "Views": "Views",
+    "Active": "Active",
+    "Backlog": "Backlog",
+    "Board": "Board",
+    "Projects": "Projects",
+    "CreateTeam": "Create team"
+  },
+  "status": {
+   
+  }
+}

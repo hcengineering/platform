@@ -15,7 +15,7 @@
 //
 
 import { Class, Ref } from '@anticrm/core'
-import type { IntlString, Plugin } from '@anticrm/platform'
+import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { ObjectSearchCategory } from '.'
 
@@ -40,5 +40,8 @@ export default plugin(presentationId, {
     AddSocialLinks: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString
+  },
+  metadata: {
+    RequiredVersion: '' as Metadata<string>
   }
 })

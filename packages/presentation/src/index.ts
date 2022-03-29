@@ -41,3 +41,4 @@ addStringsLoader(presentationId, async (lang: string) => {
 })
 
 export { default } from './plugin'
+export { connect, versionError } from './connect'

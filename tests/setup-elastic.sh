@@ -1,5 +1,5 @@
 res=''
-echo "Warting Elastic to up and running with attachment processor..."
+echo "Warning Elastic to up and running with attachment processor..."
 while true
 do
   res=$(curl -s -XPUT "localhost:9201/_ingest/pipeline/attachment?pretty" -H 'Content-Type: application/json' -d'

@@ -29,7 +29,6 @@ export default mergeIds(calendarId, calendar, {
     CreateReminder: '' as IntlString,
     EditReminder: '' as IntlString,
     ReminderTime: '' as IntlString,
-    Reminders: '' as IntlString,
     ModeDay: '' as IntlString,
     ModeWeek: '' as IntlString,
     ModeMonth: '' as IntlString,

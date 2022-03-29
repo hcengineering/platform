@@ -1211,5 +1211,26 @@
       "projectFolder": "server-plugins/telegram-resources",
       "shouldPublish": true
     },
+
+    {
+      "packageName": "@anticrm/spuristo",
+      "projectFolder": "plugins/spuristo",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/spuristo-assets",
+      "projectFolder": "plugins/spuristo-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/spuristo-resources",
+      "projectFolder": "plugins/spuristo-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-spuristo",
+      "projectFolder": "models/spuristo",
+      "shouldPublish": true
+    },
   ]
 }

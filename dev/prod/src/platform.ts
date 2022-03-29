@@ -36,6 +36,7 @@ import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
 import { tagsId } from '@anticrm/tags'
 import { calendarId } from '@anticrm/calendar'
+import { spuristoId } from '@anticrm/spuristo'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -56,6 +57,8 @@ import '@anticrm/templates-assets'
 import '@anticrm/notification-assets'
 import '@anticrm/tags-assets'
 import '@anticrm/calendar-assets'
+import '@anticrm/spuristo-assets'
+import presentation from '@anticrm/presentation'
 
 import { setMetadata } from '@anticrm/platform'
 export async function configurePlatform() {  
@@ -67,7 +70,7 @@ export async function configurePlatform() {
   
   if( config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
-    setMetadata(workbench.metadata.RequiredVersion, config.MODEL_VERSION)
+    setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
   setMetadata(login.metadata.TelegramUrl, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
@@ -98,4 +101,6 @@ export async function configurePlatform() {
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@anticrm/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
+
+  addLocation(spuristoId, () => import(/* webpackChunkName: "spuristo" */ '@anticrm/spuristo-resources'))
 }

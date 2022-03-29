@@ -52,6 +52,7 @@ import { createModel as calendarModel } from '@anticrm/model-calendar'
 import { createModel as serverCalendarModel } from '@anticrm/model-server-calendar'
 import { createModel as serverGmailModel } from '@anticrm/model-server-gmail'
 import { createModel as serverTelegramModel } from '@anticrm/model-server-telegram'
+import { createModel as spuristoModel } from '@anticrm/model-spuristo'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -92,6 +93,7 @@ const builders = [
   serverCalendarModel,
   serverGmailModel,
   serverTelegramModel,
+  spuristoModel,
   createDemo
 ]
 
