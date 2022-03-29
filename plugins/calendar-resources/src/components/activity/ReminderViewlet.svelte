@@ -37,7 +37,7 @@
   {#await getEvent(tx.objectId) then event}
     {#if event}
       <span class="over-underline caption-color" on:click={() => { click(event) }}>{event.title}</span>&nbsp
-      <DateTimePresenter value={new Date(event.date)} />
+      <DateTimePresenter value={event.date} />
     {/if}
   {/await}
 </div>

@@ -47,7 +47,7 @@
 
 <div class="antiSelect">
   {#if date}
-    <DatePresenter value={date} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
+    <DatePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
     {#if interval > 0}
     {#await formatDueDate(interval) then t}
         <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         

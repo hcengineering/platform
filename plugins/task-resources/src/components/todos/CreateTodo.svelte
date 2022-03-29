@@ -27,7 +27,7 @@
 
   let name: string
   const done = false
-  let dueTo: Date
+  let dueTo: number
 
   $: _space = space
 
@@ -48,7 +48,7 @@
       {
         name,
         done,
-        dueTo: dueTo?.getTime() ?? undefined
+        dueTo: dueTo ?? undefined
       }
     )
   }

@@ -38,8 +38,8 @@
 
   let title: string = ''
   let description: string = ''
-  let startDate: Date = new Date()
-  let dueDate: Date = new Date()
+  let startDate: number = Date.now()
+  let dueDate: number = Date.now()
   let location: string = ''
   let company: Ref<Organization> | undefined = undefined
 
@@ -102,8 +102,8 @@
 
     await client.addCollection(recruit.class.Review, doc.space, doc.attachedTo, doc.attachedToClass, 'reviews', {
       number: (incResult as any).object.sequence,
-      date: startDate?.getTime() ?? null,
-      dueDate: dueDate?.getTime() ?? null,
+      date: startDate ?? null,
+      dueDate: dueDate ?? null,
       description,
       verdict: '',
       title,

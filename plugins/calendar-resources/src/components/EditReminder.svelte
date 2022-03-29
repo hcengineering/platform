@@ -26,7 +26,7 @@
 
   let title: string = value.title
   let description: string = value.description
-  let startDate: Date = new Date(value.date)
+  let startDate: number = value.date
   let participants: Ref<Employee>[] = value.participants ?? []
   const space = calendar.space.PersonalEvents
 
@@ -39,7 +39,7 @@
 
   async function saveReminder () {
     await client.updateDoc(value._class, value.space, value._id, {
-      date: startDate.getTime(),
+      date: startDate,
       description,
       participants,
       title
@@ -56,7 +56,7 @@
   label={calendar.string.EditReminder}
   okAction={saveReminder}
   okLabel={presentation.string.Save}
-  canSave={title.trim().length > 0 && startDate.getTime() > 0 && participants.length > 0}
+  canSave={title.trim().length > 0 && startDate > 0 && participants.length > 0}
   {space}
   on:close={() => {
     dispatch('close')

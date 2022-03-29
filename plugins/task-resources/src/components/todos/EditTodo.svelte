@@ -24,7 +24,7 @@
   export let item: TodoItem
 
   let name: string = ''
-  let dueTo: Date | undefined | null = null
+  let dueTo: number | null | undefined = null
 
   let _itemId: Ref<TodoItem>
 
@@ -32,7 +32,7 @@
     _itemId = item._id
     name = item.name
     if (item.dueTo != null) {
-      dueTo = new Date(item.dueTo)
+      dueTo = item.dueTo
     } else {
       dueTo = null
     }
@@ -51,7 +51,7 @@
       ops.name = name
     }
     if (item.dueTo !== dueTo) {
-      ops.dueTo = (dueTo?.getTime() ?? null) as unknown as Timestamp
+      ops.dueTo = (dueTo ?? null) as unknown as Timestamp
     }
 
     if (Object.keys(ops).length === 0) {
