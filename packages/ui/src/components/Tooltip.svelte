@@ -22,7 +22,7 @@
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined
   export let anchor: HTMLElement | undefined = undefined
-  export let onUpdate: ((result: any) => void) | undefined
+  export let onUpdate: ((result: any) => void) | undefined = undefined
   export let fill = false
 
   let triggerHTML: HTMLElement

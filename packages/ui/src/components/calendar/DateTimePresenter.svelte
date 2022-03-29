@@ -17,8 +17,6 @@
   import DatePresenter from './DatePresenter.svelte'
 
   export let value: TSelectDate
-  export let bigDay: boolean = false
-  export let wraped: boolean = false
 </script>
 
-<DatePresenter {value} {bigDay} {wraped} withTime />
+<DatePresenter {value} withTime />
