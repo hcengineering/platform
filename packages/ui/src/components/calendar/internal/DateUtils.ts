@@ -77,7 +77,6 @@ export function getMonthName (date: Date): string {
   return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
 }
 
-export type TSelectDate = Date | null | undefined
 export type TCellStyle = 'not-selected' | 'selected'
 export interface ICell {
   dayOfWeek: number

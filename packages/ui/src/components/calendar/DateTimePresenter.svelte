@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TSelectDate } from './internal/DateUtils'
   import DatePresenter from './DatePresenter.svelte'
 
-  export let value: TSelectDate
+  export let value: Date | null | undefined
 </script>
 
 <DatePresenter {value} withTime />

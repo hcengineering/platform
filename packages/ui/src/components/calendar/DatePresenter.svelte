@@ -14,14 +14,13 @@
 -->
 <script lang="ts">
   import { onMount, createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
-  import type { TSelectDate } from './internal/DateUtils'
   import { daysInMonth } from './internal/DateUtils'
   import { TimePopup, tooltipstore as tooltip, showTooltip } from '../..'
   import DatePopup from './DatePopup.svelte'
   import DPClock from './icons/DPClock.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
 
-  export let value: TSelectDate
+  export let value: Date | null | undefined
   export let withDate: boolean = true
   export let withTime: boolean = false
   export let editable: boolean = false
@@ -61,7 +60,7 @@
                            { id: 'year', numeric: 0, value: '0' }, { id: 'hour', numeric: 0, value: '0' },
                            { id: 'min', numeric: 0, value: '0' }]
 
-  const getValue = (date: TSelectDate = today, id: TEdits): number => {
+  const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
       case 'day': return date ? date.getDate() : today.getDate()
       case 'month': return date ? date.getMonth() + 1 : today.getMonth() + 1

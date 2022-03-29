@@ -16,10 +16,10 @@
   import { translate } from '@anticrm/platform'
   import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import ui from '../..'
-  import type { TSelectDate, TCellStyle, ICell } from './internal/DateUtils'
+  import type { TCellStyle, ICell } from './internal/DateUtils'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
 
-  export let value: TSelectDate
+  export let value: Date | null | undefined
   export let mondayStart: boolean = true
   export let editable: boolean = false
 
