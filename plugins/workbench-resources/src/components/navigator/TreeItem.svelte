@@ -26,9 +26,10 @@
   export let notifications = 0
   export let actions: () => Promise<Action[]> = async () => []
   export let selected: boolean = false
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed on:click={() => { dispatch('click') }}/>
+<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} collapsed {indent} on:click={() => { dispatch('click') }}/>

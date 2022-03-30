@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentAccount, Ref } from '@anticrm/core'
+  import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'

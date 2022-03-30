@@ -265,35 +265,35 @@ export function createModel (builder: Builder): void {
     task.viewlet.StatusTable
   )
 
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: task.string.ApplicationLabelTask,
-      icon: task.icon.Task,
-      hidden: false,
-      navigatorModel: {
-        spaces: [
-          {
-            label: task.string.Projects,
-            spaceClass: task.class.Project,
-            addSpaceLabel: task.string.CreateProject,
-            createComponent: task.component.CreateProject
-          }
-        ],
-        specials: [
-          {
-            id: 'assigned',
-            label: task.string.Assigned,
-            icon: task.icon.Task,
-            component: task.component.AssignedTasks,
-            position: 'top'
-          }
-        ]
-      }
-    },
-    task.app.Tasks
-  )
+  // builder.createDoc(
+  //   workbench.class.Application,
+  //   core.space.Model,
+  //   {
+  //     label: task.string.ApplicationLabelTask,
+  //     icon: task.icon.Task,
+  //     hidden: false,
+  //     navigatorModel: {
+  //       spaces: [
+  //         {
+  //           label: task.string.Projects,
+  //           spaceClass: task.class.Project,
+  //           addSpaceLabel: task.string.CreateProject,
+  //           createComponent: task.component.CreateProject
+  //         }
+  //       ],
+  //       specials: [
+  //         {
+  //           id: 'assigned',
+  //           label: task.string.Assigned,
+  //           icon: task.icon.Task,
+  //           component: task.component.AssignedTasks,
+  //           position: 'top'
+  //         }
+  //       ]
+  //     }
+  //   },
+  //   task.app.Tasks
+  // )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,

@@ -31,11 +31,12 @@
   export let collapsed = false
   export let selected = false
   export let actions: () => Promise<Action[]> = async () => []
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  async function onMenuClick (ev: MouseEvent) {
+  async function onMenuClick(ev: MouseEvent) {
     showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
@@ -43,19 +44,37 @@
   }
 </script>
 
-<div class="antiNav-element" class:selected class:hovered
+<div
+  class="antiNav-element"
+  class:selected
+  class:hovered
+  class:ml-2={indent === 'ml-2'}
+  class:ml-4={indent === 'ml-4'}
+  class:ml-8={indent === 'ml-8'}
   on:click|stopPropagation={() => {
     if (node && !icon) collapsed = !collapsed
     dispatch('click')
   }}
 >
-  <div class="an-element__icon" class:sub={!node}>
-    {#if icon}
-      <Icon {icon} size={'small'} />
-    {:else if collapsed}<Collapsed size={'small'} />{:else}<Expanded size={'small'} />{/if}
-  </div>
   <span class="an-element__label" class:title={node}>
-    {#if label}<Label {label} />{:else}{title}{/if}
+    <div class="flex-row-center">
+      {#if icon}
+        <div class="an-element__icon" class:sub={!node}>
+          <Icon {icon} size={'small'} />
+        </div>
+      {/if}
+      {#if label}<Label {label} />{:else}{title}{/if}
+
+      {#if !icon}
+        <div class="ml-2" class:sub={!node}>
+          {#if collapsed}
+            <Collapsed size={'small'} />
+          {:else}
+            <Expanded size={'small'} />
+          {/if}
+        </div>
+      {/if}
+    </div>
   </span>
   {#if node === false}
     <div class="an-element__tool" on:click|stopPropagation={onMenuClick}>

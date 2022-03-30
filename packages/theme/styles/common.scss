@@ -56,7 +56,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  margin: 0 1rem;
+  padding: 0.25rem;
   height: 2.25rem;
   border-radius: .5rem;
   user-select: none;
@@ -65,8 +65,7 @@
   .an-element__icon {
     min-width: 1rem;
     color: var(--theme-content-trans-color);
-    margin: 0 1.125rem 0 .625rem;
-    &.sub { margin: 0 .5rem 0 2.75rem }
+    margin: 0 1.125rem 0 0;
   }
   .an-element__label {
     flex-grow: 1;

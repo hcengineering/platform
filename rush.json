@@ -1211,5 +1211,26 @@
       "projectFolder": "server-plugins/telegram-resources",
       "shouldPublish": true
     },
+
+    {
+      "packageName": "@anticrm/tracker",
+      "projectFolder": "plugins/tracker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/tracker-assets",
+      "projectFolder": "plugins/tracker-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/tracker-resources",
+      "projectFolder": "plugins/tracker-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-tracker",
+      "projectFolder": "models/tracker",
+      "shouldPublish": true
+    },
   ]
 }

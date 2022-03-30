@@ -23,6 +23,7 @@
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
   import notification from '@anticrm/notification'
+import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -44,6 +45,8 @@
   let objects: Doc[]
 
   const q = createQuery()
+
+  const dispatch = createEventDispatcher()
 
   $: sortingFunction = (config.find(it => (typeof it !== 'string') && it.sortingKey === sortKey) as BuildModelKey)?.sortingFunction
 
@@ -69,6 +72,7 @@
           const sf = sortingFunction
           objects.sort((a, b) => -1 * sortOrder * sf(a, b))
         }
+        dispatch('content', objects)
         loading = false
       },
       { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }

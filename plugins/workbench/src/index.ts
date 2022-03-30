@@ -14,7 +14,7 @@
 //
 
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
-import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -29,6 +29,9 @@ export interface Application extends Doc {
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
   component?: AnyComponent
+
+  navHeaderComponent?: AnyComponent
+  navFooterComponent?: AnyComponent
 }
 
 /**
@@ -39,6 +42,9 @@ export interface SpacesNavModel {
   spaceClass: Ref<Class<Space>>
   addSpaceLabel: IntlString
   createComponent: AnyComponent
+
+  // Child special items.
+  specials?: SpecialNavModel[]
 }
 
 /**
@@ -55,7 +61,7 @@ export interface NavigatorModel {
 export interface SpecialNavModel {
   id: string // Uniq id
   label: IntlString
-  icon: Asset
+  icon?: Asset
   component: AnyComponent
   componentProps?: Record<string, string>
   position?: 'top'|'bottom' // undefined == 'top
@@ -94,8 +100,5 @@ export default plugin(workbenchId, {
   },
   component: {
     WorkbenchApp: '' as AnyComponent
-  },
-  metadata: {
-    RequiredVersion: '' as Metadata<string>
   }
 })

@@ -15,13 +15,20 @@
 
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { Label } from '@anticrm/ui'
+  import { fetchMetadataLocalStorage, Label } from '@anticrm/ui'
+  import login from '@anticrm/login'
 
   export let label: IntlString
   // export let action: () => Promise<void> | void
 </script>
 
 <div class="antiNav-header">
-  <span class="fs-title overflow-label"><Label {label}></Label></span>
+  <div class='flex-row'>
+
+    <span class="fs-title overflow-label"><Label {label}></Label></span>
+    <div>
+      {fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)}
+    </div>
+  </div>
   <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->
 </div>
