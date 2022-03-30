@@ -23,7 +23,7 @@
   import { AnySvelteComponent, getPlatformColor, Grid } from '@anticrm/ui'
   import { Loading, ScrollBox } from '@anticrm/ui'
   import KanbanPanel from './KanbanPanel.svelte'
-import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte'
 
   export let kanban: Kanban
   let wonStates: WonState[] = []

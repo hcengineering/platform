@@ -22,7 +22,7 @@
   import { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
   import { Button,Icon,IconAdd,Label,Scroller,SearchEdit,showPopup } from '@anticrm/ui'
-import { BuildModelKey } from '@anticrm/view';
+  import { BuildModelKey } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
