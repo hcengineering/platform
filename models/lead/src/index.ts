@@ -123,7 +123,8 @@ export function createModel (builder: Builder): void {
   const leadLookup: Lookup<Lead> =
   {
     attachedTo: [lead.mixin.Customer, { _id: { channels: contact.class.Channel } }],
-    state: task.class.State
+    state: task.class.State,
+    doneState: task.class.DoneState
   }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -137,6 +138,7 @@ export function createModel (builder: Builder): void {
       '',
       '$lookup.attachedTo',
       '$lookup.state',
+      '$lookup.doneState',
       { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',

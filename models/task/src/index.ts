@@ -300,12 +300,18 @@ export function createModel (builder: Builder): void {
     descriptor: task.viewlet.StatusTable,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { assignee: contact.class.Employee }
+      lookup: {
+        assignee: contact.class.Employee,
+        state: task.class.State,
+        doneState: task.class.DoneState
+      }
     } as FindOptions<Doc>,
     config: [
       '',
       'name',
       '$lookup.assignee',
+      '$lookup.state',
+      '$lookup.doneState',
       { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'

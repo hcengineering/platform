@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script type="ts">
+import { dataset_dev } from 'svelte/internal';
+
   import MonthCalendar from './MonthCalendar.svelte'
 
   /**
@@ -30,6 +32,7 @@
   }
   function month (date: Date, m: number): Date {
     date = new Date(date)
+    date.setDate(1)
     date.setMonth(m)
     return date
   }
