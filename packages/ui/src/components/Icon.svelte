@@ -14,7 +14,7 @@
 -->
 <script lang="ts">  
   import { Asset, getMetadata } from '@anticrm/platform'
-  import { AnySvelteComponent } from '../types';
+  import { AnySvelteComponent } from '../types'
 
   export let icon: Asset | AnySvelteComponent
   export let size: 'x-small' | 'small' | 'medium' | 'large' | 'full'

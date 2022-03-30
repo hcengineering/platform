@@ -1,24 +1,23 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, State, DoneState } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
-
+  import { Class,Ref,SortingOrder } from '@anticrm/core'
+  import { createQuery,getClient } from '@anticrm/presentation'
+  import type { DoneState,Kanban,State } from '@anticrm/task'
+  import task,{ calcRank } from '@anticrm/task'
   import StatesEditor from '../state/StatesEditor.svelte'
 
   export let kanban: Kanban
@@ -32,6 +31,7 @@
   $: lostStates = doneStates.filter((x) => x._class === task.class.LostState)
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
   $: statesQ.query(task.class.State, { space: kanban.space }, result => { states = result}, {
@@ -65,19 +65,25 @@
     )
   }
 
-  async function onAdd () {
+  async function onAdd (_class: Ref<Class<State | DoneState>>) {
     const lastOne = await client.findOne(
-      task.class.State,
+      _class,
       { space: kanban.space },
       { sort: { rank: SortingOrder.Descending } }
     )
-
-    await client.createDoc(task.class.State, kanban.space, {
-      title: 'New State',
-      color: 9,
-      rank: calcRank(lastOne, undefined)
-    })
+    if (hierarchy.isDerived(_class, task.class.DoneState)) {
+      await client.createDoc(_class, kanban.space, {
+        title: 'New Done State',
+        rank: calcRank(lastOne, undefined)
+      })
+    } else {
+      await client.createDoc(task.class.State, kanban.space, {
+        title: 'New State',
+        color: 9,
+        rank: calcRank(lastOne, undefined)
+      })
+    }
   }
 </script>
 
-<StatesEditor {states} {wonStates} {lostStates} on:add={onAdd} on:delete on:move={onMove}/>
+<StatesEditor {states} {wonStates} {lostStates} on:add={(e) => { onAdd(e.detail) }} on:delete on:move={onMove}/>

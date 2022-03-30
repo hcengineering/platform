@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
   import { ScrollBox } from '@anticrm/ui'
@@ -57,7 +57,13 @@
     {
       space
     },
-    (res) => (doneStates = res)
+    (res) => (doneStates = res),
+    {
+      sort: {
+        _class: SortingOrder.Descending,
+        rank: SortingOrder.Descending
+      }
+    }
   )
 
   async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
@@ -129,11 +135,20 @@
       <Label label={task.string.DoneStates} />
     </div>
   </div>
-  <div class="flex-row-center caption-color states">
+  <div class="flex-row-center caption-color states" class:antiStatesBar={doneStatusesView}>
     {#if doneStatusesView}
+      <div
+          class="doneState withoutDone flex-center whitespace-nowrap"
+          class:disable={!withoutDone}
+          on:click={() => {
+            noDoneClick()
+          }}
+        >
+        <Label label={task.string.NoDoneState}/>
+      </div>
       {#each doneStates as state}
         <div
-          class="doneState flex-row-center"
+          class="doneState flex-center whitespace-nowrap"
           class:won={state._class === task.class.WonState}
           class:lost={state._class === task.class.LostState}
           class:disable={!selectedDoneStates.has(state._id)}
@@ -151,15 +166,6 @@
           </span>
         </div>
       {/each}
-      <div
-        class="doneState withoutDone flex-row-center"
-        class:disable={!withoutDone}
-        on:click={() => {
-          noDoneClick()
-        }}
-      >
-        <Label label={task.string.NoDoneState}/>
-      </div>
     {:else}
       <StatesBar bind:state {space} on:change={() => updateQuery(search, selectedDoneStates)} />
     {/if}

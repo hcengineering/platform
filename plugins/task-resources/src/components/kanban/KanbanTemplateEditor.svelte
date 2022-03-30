@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, SortingOrder } from '@anticrm/core'
+  import { Ref, Space, SortingOrder, Class } from '@anticrm/core'
   import core from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate } from '@anticrm/task'
+  import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate, DoneState } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
 
   import StatesEditor from '../state/StatesEditor.svelte'
@@ -34,6 +34,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
   $: statesQ.query(task.class.StateTemplate, { attachedTo: kanban._id }, result => { states = result }, {
@@ -71,28 +72,44 @@
     )
   }
 
-  async function onAdd () {
+  async function onAdd (_class: Ref<Class<State | DoneState>>) {
     const lastOne = await client.findOne(
       task.class.StateTemplate,
       { attachedTo: kanban._id },
       { sort: { rank: SortingOrder.Descending } }
     )
 
-    await client.addCollection(
-      task.class.StateTemplate,
-      kanban.space,
-      kanban._id,
-      kanban._class,
-      'statesC',
-      {
-        title: 'New State',
-        color: 9,
-        rank: calcRank(lastOne, undefined)
-      }
-    )
+    if (hierarchy.isDerived(_class, task.class.DoneState)) {
+      const targetClass = _class === task.class.WonState ? task.class.WonStateTemplate : task.class.LostStateTemplate
+      await client.addCollection(
+        targetClass,
+        kanban.space,
+        kanban._id,
+        kanban._class,
+        'doneStatesC',
+        {
+          title: 'New Done State',
+          rank: calcRank(lastOne, undefined)
+        }
+      )
+    } else {
+      await client.addCollection( 
+        task.class.StateTemplate,
+        kanban.space,
+        kanban._id,
+        kanban._class,
+        'statesC',
+        {
+          title: 'New State',
+          color: 9,
+          rank: calcRank(lastOne, undefined)
+        }
+      )
+    }
+
   }
 
-  function onDelete ({ detail: { state } }: { detail: { state: State }}) {
+  function onDelete ({ detail: { state } }: { detail: { state: State | DoneState }}) {
     if (space === undefined) {
       return
     }
@@ -101,4 +118,4 @@
   }
 </script>
 
-<StatesEditor {states} {wonStates} {lostStates} on:add={onAdd} on:delete={onDelete} on:move={onMove}/>
+<StatesEditor {states} {wonStates} {lostStates} on:add={(e) => { onAdd(e.detail) }} on:delete={onDelete} on:move={onMove}/>

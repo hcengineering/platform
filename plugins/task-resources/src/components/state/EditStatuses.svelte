@@ -15,10 +15,10 @@
 -->
 
 <script lang="ts">
-  import type { Class, Obj, Ref } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, Obj, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
+  import type { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task from '../../plugin'
   import KanbanEditor from '../kanban/KanbanEditor.svelte'
   import { Icon, IconClose, Label, showPopup, ActionIcon, ScrollBox } from '@anticrm/ui'
@@ -33,6 +33,7 @@
   let spaceInstance: SpaceWithStates | undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   const kanbanQ = createQuery()
@@ -44,7 +45,7 @@
   const spaceI = createQuery()
   $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, result => { spaceInstance = result.shift() })
 
-  async function deleteState ({ state }: { state: State }) {
+  async function deleteState ({ state }: { state: State | DoneState }) {
     if (spaceInstance === undefined) {
       return
     }
@@ -53,7 +54,14 @@
     const spaceView = client.getHierarchy().as(spaceClassInstance, workbench.mixin.SpaceView)
     const containingClass = spaceView.view.class
 
-    const objectsInThisState = await client.findAll(containingClass, { state: state._id })
+    let query: DocumentQuery<Doc>
+    if (hierarchy.isDerived(state._class, task.class.DoneState)) {
+      query = { doneState: state._id }
+    } else {
+      query = { state: state._id }
+    }
+
+    const objectsInThisState = await client.findAll(containingClass, query)
 
     if (objectsInThisState.length > 0) {
       showPopup(MessageBox, {
@@ -66,7 +74,6 @@
         message: task.string.StatusDeleteConfirm
       }, undefined, async (result) => {
         if (result && kanban !== undefined) {
-          await client.updateDoc(kanban._class, kanban.space, kanban._id, { $pull: { states: state._id } })
           client.removeDoc(state._class, state.space, state._id)
         }
       })

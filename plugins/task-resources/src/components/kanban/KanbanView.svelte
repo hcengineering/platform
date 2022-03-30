@@ -15,14 +15,13 @@
 -->
 
 <script lang="ts">
-  import { AttachedDoc, Class, Doc, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import core from '@anticrm/core'
+  import core,{ AttachedDoc,Class,Doc,DocumentUpdate,FindOptions,Ref,SortingOrder } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import task, { DoneState, LostState, WonState, DocWithRank, calcRank } from '@anticrm/task'
-  import { AnySvelteComponent, getPlatformColor } from '@anticrm/ui'
-  import { Loading, ScrollBox } from '@anticrm/ui'
+  import { createQuery,getClient } from '@anticrm/presentation'
+  import type { Kanban,SpaceWithStates,State } from '@anticrm/task'
+  import task,{ calcRank,DocWithRank,DoneState } from '@anticrm/task'
+  import { AnySvelteComponent,getPlatformColor,Loading,ScrollBox } from '@anticrm/ui'
+  import KanbanDragDone from './KanbanDragDone.svelte'
   import KanbanPanel from './KanbanPanel.svelte'
   // import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
 
@@ -39,8 +38,6 @@
   let states: State[] = []
 
   let objects: Item[] = []
-  let wonState: WonState | undefined
-  let lostState: LostState | undefined
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
@@ -52,17 +49,6 @@
         rank: SortingOrder.Ascending
       }
     })
-  }
-
-  const doneStatesQ = createQuery()
-  $: if (kanban !== undefined) {
-    doneStatesQ.query(
-      task.class.DoneState,
-      { space: kanban.space, ...search !== '' ? {$search: search} : {} },
-      (result) => {
-        wonState = result.find((x) => x._class === task.class.WonState)
-        lostState = result.find((x) => x._class === task.class.LostState)
-      })
   }
 
   const objsQ = createQuery()
@@ -164,14 +150,12 @@
     return await getResource(presenterMixin.card)
   }
 
-  const onDone = (state: DoneState) => async () => {
+  async function onDone (state: DoneState): Promise<void> {
     isDragging = false
-    hoveredDoneState = undefined
     await updateItem(dragCard, { doneState: state._id })
   }
 
   let isDragging = false
-  let hoveredDoneState: Ref<DoneState> | undefined
 </script>
 
 {#await cardPresenter(_class)}
@@ -227,37 +211,8 @@
       </div>
     </ScrollBox>
   </div>
-  {#if isDragging && wonState !== undefined && lostState !== undefined}
-    <div class="done-panel">
-      <div
-        class="flex-grow flex-center done-item" 
-        class:hovered={hoveredDoneState === wonState._id}
-        on:dragenter={() => {
-          hoveredDoneState = wonState?._id
-        }}
-        on:dragleave={() => {
-          hoveredDoneState = undefined
-        }}
-        on:dragover|preventDefault={() => {}}
-        on:drop={onDone(wonState)}>
-        <div class="done-icon won mr-2"/>
-        {wonState.title}
-      </div>
-      <div
-        class="flex-grow flex-center done-item"
-        class:hovered={hoveredDoneState === lostState._id}
-        on:dragenter={() => {
-          hoveredDoneState = lostState?._id
-        }}
-        on:dragleave={() => {
-          hoveredDoneState = undefined
-        }}
-        on:dragover|preventDefault={() => {}}
-        on:drop={onDone(lostState)}>
-        <div class="done-icon lost mr-2"/>
-        {lostState.title}
-      </div>
-    </div>
+  {#if isDragging}
+    <KanbanDragDone {kanban} on:done={(e) => { onDone(e.detail) }} />
   {/if}
 </div>
 {/await}
@@ -271,42 +226,6 @@
     display: flex;
     margin: 0 2.5rem;
     height: 100%;
-  }
-
-  .done-panel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: stretch;
-    padding: .5rem 2.5rem;
-    background-color: var(--theme-bg-color);
-    border-top: 1px solid var(--theme-dialog-divider);
-    border-radius: 0 0 1.25rem 1.25rem;
-  }
-
-  .done-item {
-    height: 3rem;
-    color: var(--theme-caption-color);
-    border: 1px dashed transparent;
-    border-radius: .75rem;
-
-    &.hovered {
-      background-color: var(--theme-button-bg-enabled);
-      border-color: var(--theme-dialog-divider);
-    }
-  }
-
-  .done-icon {
-    width: .5rem;
-    height: .5rem;
-    border-radius: 50%;
-
-    &.won { background-color: #27B166; }
-    &.lost { background-color: #F96E50; }
   }
 
   .scrollable {
