@@ -95,18 +95,18 @@
   <Scroller>
     {#if model.specials}
       {#each topSpecials as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} />
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
       {/each}
     {/if}
 
     {#if showDivider}<TreeSeparator />{/if}
 
     {#each model.spaces as m (m.label)}
-      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space/>
+      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space {currentSpecial}/>
     {/each}
     {#if model.specials}
       {#each bottomSpecials as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} />
+        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
       {/each}
     {/if}
     <div class="antiNav-space" />

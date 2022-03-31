@@ -18,13 +18,15 @@
   import type { Action } from '@anticrm/ui'
   import TreeElement from './TreeElement.svelte'
 
-  export let label: IntlString
+  export let title: string | undefined = undefined
+  export let label: IntlString | undefined = undefined
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications = 0
   export let collapsed = false
+  export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
 </script>
 
-<TreeElement {label} {notifications} {collapsed} {actions} node>
+<TreeElement {title} {label} {notifications} {collapsed} {actions} node {indent}>
   <slot/>
 </TreeElement>

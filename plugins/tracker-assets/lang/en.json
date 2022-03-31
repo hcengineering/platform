@@ -1,0 +1,46 @@
+{
+  "string": {
+    "TrackerApplication": "Tracker",
+    "Teams": "Your teams",
+    "More": "More",
+    "Delete": "Delete",
+    "Open": "Open",
+    "Members": "Members",
+    "Inbox": "Inbox",
+    "MyIssues": "My issues",
+    "Issues": "Issues",
+    "Views": "Views",
+    "Active": "Active",
+    "Backlog": "Backlog",
+    "Board": "Board",
+    "Projects": "Projects",
+    "CreateTeam": "Create team",
+    "NewIssue": "New issue",
+
+    "Title": "Title",
+    "Description": "",
+    "Status": "",
+    "Priority": "",
+    "Number": "",
+    "Assignee": "",
+    "Parent": "",
+    "BlockedBy": "",
+    "RelatedTo": "",
+    "Comments": "",
+    "Attachments": "",
+    "Labels": "",
+    "Space": "",
+    "DueDate": "",
+    "Team": "",
+    "Issue": "",
+    "Document": "",
+    "DocumentIcon": "",
+    "DocumentColor": "",
+    "Rank": "",
+    "IssueTitlePlaceholder": "Issue title",
+    "IssueDescriptionPlaceholder": "Add description"
+  },
+  "status": {
+   
+  }
+}

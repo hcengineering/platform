@@ -14,84 +14,13 @@
 -->
 
 <script lang="ts">
-
-import { getMetadata, getResource } from '@anticrm/platform'
-import type { Client } from '@anticrm/core'
-import core from '@anticrm/core'
-import { setCurrentAccount } from '@anticrm/core'
-import { navigate, Loading, fetchMetadataLocalStorage, setMetadataLocalStorage, getCurrentLocation, locationToUrl } from '@anticrm/ui'
-
-import client from '@anticrm/client'
-import login from '@anticrm/login'
-import contact from '@anticrm/contact'
-
+import { connect, versionError } from '@anticrm/presentation'
+import { Loading } from '@anticrm/ui'
 import Workbench from './Workbench.svelte'
-import workbench from '../plugin'
-
-let versionError: string | undefined = ''
-
-async function connect (): Promise<Client | undefined> {
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
-
-  if (token === null || endpoint === null || email === null) {
-    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
-    return
-  }
-
-  const getClient = await getResource(client.function.GetClient)
-  const instance = await getClient(token, endpoint)
-  console.log('logging in as', email)
-
-  const me = await instance.findOne(contact.class.EmployeeAccount, { email })
-  if (me !== undefined) {
-    console.log('login: employee account', me)
-    setCurrentAccount(me)
-  } else {
-    console.error('WARNING: no employee account found.')
-    setMetadataLocalStorage(login.metadata.LoginToken, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
-    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
-    return
-  }
-
-  try {
-    console.log('checking model version')
-    const version = await instance.findOne(core.class.Version, {})
-    console.log('Model version', version)
-
-    const requirdVersion = getMetadata(workbench.metadata.RequiredVersion)
-    if (requirdVersion !== undefined) {
-      console.log('checking min model version', requirdVersion)
-      const versionStr = `${version?.major}.${version?.minor}.${version?.patch}`
-
-      if (version === undefined || requirdVersion !== versionStr) {
-        versionError = `${versionStr} => ${requirdVersion}`
-        return undefined
-      }
-    }
-  } catch (err: any) {
-    console.log(err)
-    const requirdVersion = getMetadata(workbench.metadata.RequiredVersion)
-    console.log('checking min model version', requirdVersion)
-    if (requirdVersion !== undefined) {
-      versionError = `'unknown' => ${requirdVersion}`
-      return undefined
-    }
-  }
-
-  // Update window title
-  document.title = [(fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)), 'Platform'].filter(it => it).join(' - ')
-
-  return instance
-}
 
 </script>
 
-{#await connect()}
+{#await connect('Platform')}
   <Loading/>
 {:then client}
   {#if !client && versionError}
@@ -99,7 +28,7 @@ async function connect (): Promise<Client | undefined> {
       <h1>Server is under maintenance.</h1>
       {versionError}
     </div>
-  {:else}
+  {:else if client}
     <Workbench {client}/>
   {/if}
 {:catch error}
