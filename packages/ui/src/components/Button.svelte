@@ -21,12 +21,11 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
-  export let primary: boolean = false
-  export let size: 'small' | 'medium' = 'medium'
+  export let kind: 'primary' | 'secondary' | 'transparent' | 'dangerous' = 'secondary'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
   export let loading: boolean = false
-  export let transparent: boolean = false
   export let width: string | undefined = undefined
   export let focus: boolean = false
 
@@ -40,7 +39,7 @@
   })
 </script>
 
-<button bind:this={input} class="button {size}" class:transparent class:primary disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button bind:this={input} class="button {kind} {size}" disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
   {#if icon && !loading}
     <div class="icon">
       <Icon {icon} size={'small'}/>
@@ -56,84 +55,70 @@
 </button>
 
 <style lang="scss">
-  .small { height: 2.5rem; }
-  .medium { height: 3rem; }
+  .small { height: 1.5rem; }
+  .medium { height: 2rem; }
+  .large { height: 2.75rem; }
+
   .button {
-    padding: 0 1.5rem;
+    padding: 0 .5rem;
     font-weight: 600;
-    background-color: var(--theme-button-bg-enabled);
-    color: var(--theme-caption-color);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
+    min-width: 1.5rem;
+    color: var(--accent-color);
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    transition-property: border, background-color, color, box-shadow;
+    transition-duration: .15s;
+
+    &:hover, &:focus, &:active {
+      color: var(--caption-color);
+      transition-duration: 0;
+    }
+    &:disabled {
+      color: rgb(var(--accent-color) / 40%);
+      cursor: not-allowed;
+    }
 
     .icon {
       margin-right: .375rem;
       pointer-events: none;
     }
 
-    &:hover {
-      background-color: var(--theme-button-bg-hovered);
-      border-color: var(--theme-button-border-hovered);
-    }
-    &:focus {
-      background-color: var(--theme-button-bg-focused);
-      border-color: var(--theme-button-border-focused);
-    }
-    &:active {
-      background-color: var(--theme-button-bg-pressed);
-      border-color: var(--theme-button-border-pressed);
-    }
-    &:disabled {
-      background-color: var(--theme-button-bg-disabled);
-      border-color: var(--theme-button-border-disabled);
-      color: rgb(var(--theme-caption-color) / 40%);
-      cursor: not-allowed;
-    }
-  }
+    &.secondary {
+      background-color: var(--button-bg-color);
+      border-color: var(--button-border-color);
+      box-shadow: var(--button-shadow);
 
-  .transparent {
-    padding: 0 1.25rem;
-    border-radius: .5rem;
-    color: var(--theme-caption-color);
-    background-color: transparent;
-    border-color: var(--theme-card-divider);
-    backdrop-filter: blur(20px);
+      &:hover, &:focus, &:active {
+        background-color: var(--button-bg-hover);
+        border-color: var(--button-border-hover);
+      }
+      &:disabled {
+        background-color: #30323655;
+        border-color: #3c3f4455;
+      }
+    }
+    &.primary {
+      padding: 0 1rem;
+      color: var(--white-color);
+      background-color: var(--primary-bg-color);
+      border-color: var(--primary-bg-color);
+      box-shadow: var(--primary-shadow);
 
-    &:hover, &:focus, &:active, &:disabled {
-      background-color: transparent;
-      border-color: var(--theme-card-divider);
+      &:hover { background-color: var(--primary-bg-hover); }
+      &:disabled {
+        background-color: #5e6ad255;
+        border-color: #5e6ad255;
+      }
     }
-    &:disabled { color: var(--theme-content-dark-color); }
-  }
 
-  .primary {
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
-    border-color: var(--primary-button-border);
+    &.dangerous {
+      color: var(--white-color);
+      background-color: var(--dangerous-bg-color);
+      border-color: var(--dangerous-bg-color);
 
-    &:hover {
-      background-color: var(--primary-button-hovered);
-      border-color: var(--primary-button-border);
+      &:hover { background-color: var(--dangerous-bg-hover); }
+      &:focus { box-shadow: var(--dangerous-shadow); }
     }
-    &:focus {
-      background-color: var(--primary-button-focused);
-      border: 1px solid var(--primary-button-focused-border);
-      box-shadow: 0 0 0 3px var(--primary-button-outline);
-    }
-    &:active {
-      background-color: var(--primary-button-pressed);
-      border-color: var(--primary-button-border);
-      box-shadow: none;
-    }
-    &:disabled {
-      color: var(--theme-content-dark-color);
-      background-color: var(--primary-button-disabled);
-      border-color: var(--primary-button-border);
-      cursor: not-allowed;
-    }
-  }
-  .transparent.primary:disabled {
-    background-color: var(--theme-button-trans-primary-disabled);
-    border-color: transparent;
   }
 </style>

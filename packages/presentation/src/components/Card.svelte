@@ -58,7 +58,7 @@
     </div>
   {/if}
   <div class="antiCard-footer">
-    <Button disabled={!canSave} label={okLabel} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={cancelLabel} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={okLabel} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={cancelLabel} on:click={() => { dispatch('close') }} />
   </div>
 </form>

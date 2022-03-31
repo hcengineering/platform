@@ -22,7 +22,6 @@
   min-width: 5rem;
   width: 5rem;
   height: 100%;
-  border-radius: 1.25rem;
 }
 .antiPanel-navigator,
 .antiPanel-component {
@@ -30,11 +29,11 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: 1.25rem;
   overflow: hidden;
 
-  &.indent { margin-right: 1rem; }
-  &.filled { background-color: var(--theme-bg-color); }
+  &.filled { background-color: var(--body-accent); }
+  &.border-left { border-left: 1px solid var(--divider-color); }
+  &.border-right { border-right: 1px solid var(--divider-color); }
 }
 .antiPanel-navigator {
   min-width: 18rem;
@@ -75,10 +74,10 @@
     overflow: hidden;
     user-select: none;
     font-weight: 400;
-    color: var(--theme-content-color);
+    color: var(--accent-color);
     &.title {
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--accent-color);
     }
   }
   .an-element__tool {
@@ -89,17 +88,14 @@
     margin-right: .75rem;
     font-weight: 600;
     font-size: .75rem;
-    color: var(--theme-caption-color);
+    color: var(--accent-color);
   }
 
-  &:hover, &.hovered {
-    background-color: var(--theme-button-bg-enabled);
-    .an-element__tool { visibility: visible; }
+  &:hover, &.hovered, &.selected {
+    background-color: var(--menu-bg-select);
+    .an-element__icon { color: var(--menu-icon-hover); }
   }
-  &.selected {
-    background-color: var(--theme-menu-selection);
-    &:hover { background-color: var(--theme-button-bg-enabled); }
-  }
+  &:hover .an-element__tool, &.hovered .an-element__tool { visibility: visible; }
 
   &__dropbox {
     height: auto;
@@ -108,9 +104,9 @@
 }
 .antiNav-divider {
   flex-shrink: 0;
-  margin: 1.5rem 0;
+  margin: .5rem 0;
   height: 1px;
-  background-color: var(--theme-menu-divider);
+  // background-color: var(--divider-color);
 }
 .antiNav-scroll {
   flex-grow: 1;

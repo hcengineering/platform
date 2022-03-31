@@ -18,20 +18,20 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   max-width: 30rem;
-  background-color: var(--theme-button-bg-focused);
-  border: 1px solid var(--theme-button-border-enabled);
-  border-radius: .75rem;
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+  background: var(--popup-bg-color);
+  border-radius: .25rem;
+  box-shadow: var(--popup-shadow);
   user-select: none;
 
   .ap-space {
     flex-shrink: 0;
-    height: .5rem;
+    height: .25rem;
   }
   .ap-scroll {
     flex-grow: 1;
-    margin: 0 .25rem;
+    margin: 0;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -44,19 +44,19 @@
   .ap-box {
     display: flex;
     flex-direction: column;
-    padding: 0 .25rem;
+    padding: 0;
     height: 100%;
   }
   .ap-menuItem {
     justify-content: start;
-    padding: .5rem;
-    color: var(--theme-content-color);
-    border-radius: .5rem;
+    padding: 0 .5rem;
+    height: 2rem;
+    color: var(--caption-color);
     text-align: left;
     cursor: pointer;
 
     &.ap-woScroll { margin: 0 .5rem; }
-    &.selected { background-color: var(--theme-button-bg-hovered); }
+    &.selected { background: var(--popup-bg-hover); }
     &.empty {
       display: flex;
       justify-content: center;
@@ -71,15 +71,7 @@
     }
     &.withCheck { justify-content: space-between; }
 
-    &:hover {
-      color: var(--theme-caption-color);
-      background-color: var(--theme-button-bg-hovered);
-    }
-    &:focus {
-      color: var(--theme-content-accent-color);
-      background-color: var(--theme-button-bg-pressed);
-      z-index: 1;
-    }
+    &:hover, &:focus { background-color: var(--popup-bg-hover); }
 
     &.redlight {
       color: var(--highlight-red);

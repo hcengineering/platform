@@ -48,15 +48,15 @@
     <div class="buttons flex">
       <Button
         label={login.string.Copy}
-        size="small"
+        size={'small'}
         on:click={() => {
           copy(link)
         }}
       />
       <Button
         label={login.string.Close}
-        size="small"
-        primary
+        size={'small'}
+        kind={'primary'}
         on:click={() => {
           dispatch('close')
         }}

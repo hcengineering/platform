@@ -43,7 +43,7 @@
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
     <div class="footer">
-      <Button label={okLabel} primary />
+      <Button label={okLabel} kind={'primary'} />
       <Button label={ui.string.Cancel} on:click={() => { dispatch('close') }} />
     </div>
   </form>

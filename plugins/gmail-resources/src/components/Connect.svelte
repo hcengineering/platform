@@ -59,7 +59,7 @@
   <div class="content">
     <Label label={gmail.string.RedirectGoogle} />
     <div class="footer">
-      <Button label={gmail.string.Connect} primary disabled={connecting} on:click={sendRequest} />
+      <Button label={gmail.string.Connect} kind={'primary'} disabled={connecting} on:click={sendRequest} />
     </div>
   </div>
 </div>

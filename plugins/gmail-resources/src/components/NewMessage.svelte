@@ -139,7 +139,7 @@
     <div class="mr-2">
       <ActionIcon icon={IconAttachment} size={'small'} action={() => {inputFile.click()}} />
     </div>
-    <Button label={plugin.string.Send} size={'small'} primary on:click={sendMsg} />
+    <Button label={plugin.string.Send} size={'small'} kind={'primary'} on:click={sendMsg} />
   </div>
 </div>
 <div class="flex-col clear-mins right-content"

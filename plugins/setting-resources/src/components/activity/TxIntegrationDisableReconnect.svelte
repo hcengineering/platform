@@ -47,7 +47,7 @@
 <div class='flex-center'>
   <Button
     label={setting.string.Reconnect}
-    primary
+    kind={'primary'}
     on:click={(e) => {
       if (type?.reconnectComponent) {
         showPopup(type.reconnectComponent, {}, e.target, reconnect)

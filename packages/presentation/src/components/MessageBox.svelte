@@ -29,8 +29,8 @@
   <div class="overflow-label fs-title mb-4"><Label {label} /></div>
   <div class="message"><Label label={message} /></div>
   <div class="footer">
-    <Button focus label={presentation.string.Ok} size={'small'} transparent primary on:click={() => dispatch('close', true)} />
-    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => dispatch('close', false)} />
+    <Button focus label={presentation.string.Ok} size={'small'} kind={'primary'} on:click={() => dispatch('close', true)} />
+    <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
   </div>
 </div>
 

@@ -82,7 +82,7 @@
         <Button
           {label}
           {disabled}
-          primary
+          kind={'primary'}
           on:click={() => {
             save()
           }}

@@ -107,7 +107,6 @@
     <Button
       label={tags.string.CancelLabel}
       size={'small'}
-      transparent
       on:click={() => {
         dispatch('close')
       }}

@@ -335,7 +335,7 @@
         {/if}
       </div>
     {/if}
-    <div class="antiPanel-component indent antiComponent" class:filled={isNavigate}>
+    <div class="antiPanel-component antiComponent border-left">
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} props={{ currentSpace }}/>
       {:else if specialComponent}
@@ -357,6 +357,5 @@
   .workbench-container {
     display: flex;
     height: 100%;
-    padding-bottom: 1.25rem;
   }
 </style>

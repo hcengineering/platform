@@ -133,7 +133,7 @@
           <Button
             label={gmail.string.PublishSelected}
             size={'small'}
-            primary
+            kind={'primary'}
             disabled={!selected.size}
             on:click={share}
           />
@@ -150,7 +150,7 @@
       <Button
         label={gmail.string.CreateMessage}
         size={'small'}
-        primary
+        kind={'primary'}
         on:click={() => {
           newMessage = true
         }}
@@ -169,7 +169,7 @@
     <div class="flex-center">
       <Button
         label={gmail.string.Connect}
-        primary
+        kind={'primary'}
         size={'small'}
         on:click={(e) => {
           showPopup(Connect, {}, e.target)

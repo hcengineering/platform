@@ -120,7 +120,7 @@
     <div class="form-row send">
       <Button
         label={action.i18n}
-        primary
+        kind={'primary'}
         width="100%"
         loading={inAction}
         disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}

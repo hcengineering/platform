@@ -77,7 +77,7 @@
       {/each}
       {#if !workspaces.length}
         <div class="form-row send">
-          <Button label={login.string.CreateWorkspace} primary width="100%" on:click={createWorkspace} />
+          <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
         </div>
       {/if}
     </div>

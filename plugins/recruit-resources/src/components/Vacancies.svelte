@@ -111,7 +111,7 @@
       vquery = search
     }}
   />
-  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 <Scroller>
   <Table

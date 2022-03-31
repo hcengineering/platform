@@ -52,6 +52,38 @@
 
 /* Dark Theme */
 .theme-dark {
+  --body-color: #1f2023;
+  --body-accent: #222326;
+  --tooltip-bg-color: #27282b;
+  --tooltip-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
+
+  --content-color: #8a8f98;
+  --accent-color: #d7d8db;
+  --caption-color: #f7f8f8;
+  --white-color: #fff;
+
+  --divider-color: #303236;
+  --menu-bg-select: #2d2f36;
+  --menu-icon-hover: #f3f3f8;
+  --popup-bg-color: linear-gradient(136.61deg, var(--tooltip-bg-color) 13.72%, #2d2e31 74.3%);
+  --popup-bg-hover: #37383b;
+  --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;
+  --card-bg-color: linear-gradient(136.61deg, var(--menu-bg-select) 13.72%, #2d2e31 74.3%);
+
+  --button-bg-color: #303236;
+  --button-bg-hover: #37383b;
+  --button-border-color: #3c3f44;
+  --button-border-hover: #45484e;
+  --button-shadow: rgb(0 0 0 / 25%) 0px 1px 1px;
+  --primary-bg-color: #5e6ad2;
+  --primary-bg-hover: #717ce1;
+  --primary-toggle-hover: #828fff;
+  --primary-edit-border-color: #6499ff;
+  --primary-shadow: rgb(0 0 0 / 25%) 0px 1px 2px;
+  --dangerous-bg-color: #eb5757;
+  --dangerous-bg-hover: #ff6464;
+  --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px
+
   --theme-bg-color: #18181e;
   --theme-bg-selection: #282830;
   --theme-menu-color: #111117;
@@ -216,6 +248,29 @@
 
 /* Light Theme */
 .theme-light {
+  --body-color: #fff;
+  --body-accent: #eee; // HZ
+  --content-color: #6b6f76;
+  --accent-color: #3c4149;
+  --caption-color: #282a30;
+  --white-color: #fff;
+
+  --menu-bg-select: #f0f3f9;
+  --menu-icon-hover: #282a30;
+  --divider-color: #00000010;
+
+  --button-bg-color: #fff;
+  --button-bg-hover: #f4f5f8;
+  --button-border-color: #dfe1e4;
+  --button-border-hover: #c9cbcd;
+  --button-shadow: rgb(0 0 0 / 7%) 0px 1px 1px;
+  --primary-bg-color: #6e79d6;
+  --primary-bg-hover: #5c67c7;
+  --primary-shadow: rgb(0 0 0 / 7%) 0px 1px 2px;
+  --dangerous-bg-color: #eb5757;
+  --dangerous-bg-hover: #d44e4e;
+  --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px
+
   --theme-bg-color: #FFFFFF;
   --theme-bg-selection: #F1F1F4;
   --theme-menu-color: #E7E7E7;

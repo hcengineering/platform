@@ -89,7 +89,7 @@
       dispatch('search', search)
     }}/>
     {#if createItemDialog}
-      <Button icon={IconAdd} label={createItemLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
   {/if}
 </div>

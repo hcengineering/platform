@@ -208,11 +208,11 @@
   }
 </script>
 
-<div class="fs-title ml-2 mb-2 flex-row-center">
+<div class="fs-title ml-10 mb-2 flex-row-center">
   {label(currentDate(date, shifts), mode)}
 </div>
 
-<div class="flex gap-2 mb-4">
+<div class="flex gap-2 mb-4 ml-10">
   <!-- <Button
     size={'small'}
     label={calendar.string.ModeDay}
@@ -255,7 +255,7 @@
       mode = CalendarMode.Year
     }}
   />
-  <div class="flex ml-4 gap-1">
+  <div class="flex ml-4 gap-2">
     <Button
       icon={IconBack}
       size={'small'}

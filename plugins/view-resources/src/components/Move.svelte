@@ -115,8 +115,7 @@
       label={view.string.Move}
       size={'small'}
       disabled={object.space === currentSpace?._id || status !== OK}
-      transparent
-      primary
+      kind={'primary'}
       on:click={() => {
         move(object)
       }}
@@ -124,7 +123,6 @@
     <Button
       size={'small'}
       label={view.string.Cancel}
-      transparent
       on:click={() => {
         dispatch('close')
       }}

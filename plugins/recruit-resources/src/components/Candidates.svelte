@@ -69,7 +69,7 @@
   <SearchEdit bind:value={search} on:change={() => {
     updateResultQuery(search, documentIds)
   }} />
-  <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: recruit.mixin.Candidate, category }} on:change={(evt) => updateCategory(evt.detail) }/>

@@ -75,15 +75,13 @@
         <Icon {icon} size={'small'}/>
       </div>
     {/if}
-    <div class="antiWrapper conners focusWI">
-      {#if format === 'password'}
-        <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
-      {:else if format === 'number'}
-        <input bind:this={input} type='number' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
-      {:else}
-        <input bind:this={input} type='text' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
-      {/if}
-    </div>
+    {#if format === 'password'}
+      <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+    {:else if format === 'number'}
+      <input bind:this={input} type='number' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+    {:else}
+      <input bind:this={input} type='text' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+    {/if}
   </div>
 </div>
 
@@ -107,11 +105,11 @@
     margin: 0;
     padding: 0;
     min-width: 0;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
     border: none;
     border-radius: 2px;
 
-    &::placeholder { color: var(--theme-content-dark-color); }
+    &::placeholder { color: var(--content-color); }
 
     &::-webkit-contacts-auto-fill-button,
     &::-webkit-credentials-auto-fill-button {

@@ -99,11 +99,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       color: var(--theme-content-trans-color);
       background-color: transparent;
-      border-radius: 0.5rem;
+      border-radius: .25rem;
       cursor: pointer;
 
       &:hover {
@@ -111,7 +111,7 @@
       }
       &.selected {
         color: var(--theme-content-accent-color);
-        background-color: var(--theme-button-bg-enabled);
+        background-color: var(--menu-bg-select);
         cursor: default;
         &:hover {
           color: var(--theme-caption-color);
@@ -191,6 +191,7 @@
     flex-direction: column;
     align-items: flex-start;
     height: 100%;
+    background-color: var(--body-color);
 
     &.columns {
       flex-direction: row;

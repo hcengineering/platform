@@ -143,7 +143,7 @@
       <EditBox label={telegram.string.Phone} maxWidth="10rem" placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
     {/if}
     <div class="footer">
-      <Button {label} primary {disabled} on:click={click} />
+      <Button {label} kind={'primary'} {disabled} on:click={click} />
       {#if requested || secondFactor}
         <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>
       {/if}
