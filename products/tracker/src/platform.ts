@@ -20,21 +20,17 @@ import workbench, { workbenchId } from '@anticrm/workbench'
 import uiPlugin from '@anticrm/ui'
 import { viewId } from '@anticrm/view'
 import { taskId } from '@anticrm/task'
-import { contactId } from '@anticrm/contact'
+import contact, { contactId } from '@anticrm/contact'
 import { chunterId } from '@anticrm/chunter'
-import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
 import { attachmentId } from '@anticrm/attachment'
-import { leadId } from '@anticrm/lead'
-import { clientId } from '@anticrm/client'
+import client, { clientId } from '@anticrm/client'
 import { gmailId } from '@anticrm/gmail'
 import { imageCropperId } from '@anticrm/image-cropper'
-import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
-import { tagsId } from '@anticrm/tags'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
 import rekoni from '@anticrm/rekoni'
@@ -45,25 +41,19 @@ import '@anticrm/view-assets'
 import '@anticrm/chunter-assets'
 import '@anticrm/attachment-assets'
 import '@anticrm/contact-assets'
-import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
 import '@anticrm/setting-assets'
 import '@anticrm/telegram-assets'
-import '@anticrm/lead-assets'
 import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
-import '@anticrm/inventory-assets'
 import '@anticrm/templates-assets'
 import '@anticrm/notification-assets'
-import '@anticrm/tags-assets'
-import '@anticrm/calendar-assets'
 import '@anticrm/tracker-assets'
 import presentation, { presentationId } from '@anticrm/presentation'
 import { coreId } from '@anticrm/core'
 import { textEditorId } from '@anticrm/text-editor'
 
 import { setMetadata } from '@anticrm/platform'
-
 
 export async function configurePlatform() {  
   const config = await (await fetch('/config.json')).json()
@@ -84,6 +74,7 @@ export async function configurePlatform() {
   setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
+  setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts] )
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
@@ -96,21 +87,18 @@ export async function configurePlatform() {
   addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@anticrm/task-resources'))
   addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
   addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
-  addLocation(recruitId, () => import(/* webpackChunkName: "recruit" */ '@anticrm/recruit-resources'))
   addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
   addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
-  addLocation(leadId, () => import(/* webpackChunkName: "lead" */ '@anticrm/lead-resources'))
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
   addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@anticrm/gmail-resources'))
   addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
-  addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
-  addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@anticrm/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))
+  setMetadata(workbench.metadata.PlatformTitle, 'Tracker')
 
-  setMetadata(workbench.metadata.PlatformTitle, 'Platform')
+  setMetadata(client.metadata.FilterModel, true)
 }

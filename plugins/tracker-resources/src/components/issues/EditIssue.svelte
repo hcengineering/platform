@@ -56,7 +56,7 @@
       on:change={() => change('title', object.title) }
     />
     <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}
-    on:change={() => change('description', object.description) }/>
+    on:value={(evt) => change('description', evt.detail) }/>
     <UserBox
       _class={contact.class.Employee}
       title={tracker.string.Assignee}

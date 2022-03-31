@@ -13,14 +13,15 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref } from './classes'
+import { Plugin } from '@anticrm/platform'
+import type { Class, Doc, PluginConfiguration, Ref } from './classes'
 import { DOMAIN_MODEL } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
 import { SortingOrder } from './storage'
-import type { Tx } from './tx'
+import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
 
 /**
  * @public
@@ -52,12 +53,19 @@ export interface ClientConnection extends Storage {
 class ClientImpl implements Client {
   notify?: (tx: Tx) => void
 
-  constructor (private readonly hierarchy: Hierarchy, private readonly model: ModelDb, private readonly conn: ClientConnection) {
+  constructor (
+    private readonly hierarchy: Hierarchy,
+    private readonly model: ModelDb,
+    private readonly conn: ClientConnection
+  ) {}
+
+  getHierarchy (): Hierarchy {
+    return this.hierarchy
   }
 
-  getHierarchy (): Hierarchy { return this.hierarchy }
-
-  getModel (): ModelDb { return this.model }
+  getModel (): ModelDb {
+    return this.model
+  }
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -65,14 +73,15 @@ class ClientImpl implements Client {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
-    let result = (domain === DOMAIN_MODEL)
-      ? await this.model.findAll(_class, query, options)
-      : await this.conn.findAll(_class, query, options)
+    let result =
+      domain === DOMAIN_MODEL
+        ? await this.model.findAll(_class, query, options)
+        : await this.conn.findAll(_class, query, options)
 
     // In case of mixin we need to create mixin proxies.
 
     // Update mixins & lookups
-    result = result.map(v => {
+    result = result.map((v) => {
       return this.hierarchy.updateLookupMixin(_class, v, options)
     })
     return result
@@ -115,7 +124,9 @@ class ClientImpl implements Client {
  * @public
  */
 export async function createClient (
-  connect: (txHandler: TxHander) => Promise<ClientConnection>
+  connect: (txHandler: TxHander) => Promise<ClientConnection>,
+  // If set will build model with only allowed plugins.
+  allowedPlugins?: Plugin[]
 ): Promise<Client> {
   let client: ClientImpl | null = null
   let txBuffer: Tx[] | undefined = []
@@ -133,14 +144,57 @@ export async function createClient (
   }
 
   const conn = await connect(txHander)
-  const atxes = await conn.findAll(core.class.Tx, { objectSpace: core.space.Model }, { sort: { _id: SortingOrder.Ascending } })
+  const atxes = await conn.findAll(
+    core.class.Tx,
+    { objectSpace: core.space.Model },
+    { sort: { _id: SortingOrder.Ascending } }
+  )
 
-  const systemTr: Tx[] = []
+  let systemTx: Tx[] = []
   const userTx: Tx[] = []
 
-  atxes.forEach(tx => ((tx.modifiedBy === core.account.System) ? systemTr : userTx).push(tx))
+  atxes.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTx : userTx).push(tx))
 
-  const txes = systemTr.concat(userTx)
+  if (allowedPlugins !== undefined) {
+    // Filter system transactions
+    const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+    for (const t of systemTx) {
+      if (t._class === core.class.TxCreateDoc) {
+        const ct = t as TxCreateDoc<Doc>
+        if (ct.objectClass === core.class.PluginConfiguration) {
+          configs.set(ct.objectId as Ref<PluginConfiguration>,
+            TxProcessor.createDoc2Doc(ct) as PluginConfiguration
+          )
+        }
+      } else if (t._class === core.class.TxUpdateDoc) {
+        const ut = t as TxUpdateDoc<Doc>
+        if (ut.objectClass === core.class.PluginConfiguration) {
+          const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
+          if (c !== undefined) {
+            TxProcessor.updateDoc2Doc(c, ut)
+          }
+        }
+      }
+    }
+
+    const excludedPlugins = Array.from(configs.values()).filter(it => !allowedPlugins.includes(it.pluginId as Plugin))
+
+    for (const a of excludedPlugins) {
+      for (const c of configs.values()) {
+        if (a.pluginId === c.pluginId) {
+          const excluded = new Set<Ref<Tx>>()
+          for (const id of c.transactions) {
+            excluded.add(id as Ref<Tx>)
+          }
+          const exclude = systemTx.filter(t => excluded.has(t._id))
+          console.log('exclude plugin', c.pluginId, exclude.length)
+          systemTx = systemTx.filter(t => !excluded.has(t._id))
+        }
+      }
+    }
+  }
+
+  const txes = systemTx.concat(userTx)
 
   const txMap = new Map<Ref<Tx>, Ref<Tx>>()
   for (const tx of txes) txMap.set(tx._id, tx._id)

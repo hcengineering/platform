@@ -16,29 +16,27 @@
 
 import { addStringsLoader } from '@anticrm/platform'
 import { presentationId } from './plugin'
-export { presentationId }
-export * from './utils'
 export * from './attributes'
-export * from './types'
-
-export { default as UserBox } from './components/UserBox.svelte'
-export { default as UserInfo } from './components/UserInfo.svelte'
-export { default as UserBoxList } from './components/UserBoxList.svelte'
-export { default as Avatar } from './components/Avatar.svelte'
-export { default as EditableAvatar } from './components/EditableAvatar.svelte'
-export { default as MessageViewer } from './components/MessageViewer.svelte'
-export { default as AttributesBar } from './components/AttributesBar.svelte'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'
 export { default as AttributeEditor } from './components/AttributeEditor.svelte'
+export { default as AttributesBar } from './components/AttributesBar.svelte'
+export { default as Avatar } from './components/Avatar.svelte'
 export { default as Card } from './components/Card.svelte'
-export { default as PDFViewer } from './components/PDFViewer.svelte'
+export { default as EditableAvatar } from './components/EditableAvatar.svelte'
 export { default as MessageBox } from './components/MessageBox.svelte'
+export { default as MessageViewer } from './components/MessageViewer.svelte'
+export { default as PDFViewer } from './components/PDFViewer.svelte'
 export { default as SpaceCreateCard } from './components/SpaceCreateCard.svelte'
 export { default as SpaceSelect } from './components/SpaceSelect.svelte'
+export { default as UserBox } from './components/UserBox.svelte'
+export { default as UserBoxList } from './components/UserBoxList.svelte'
+export { default as UserInfo } from './components/UserInfo.svelte'
+export { connect, versionError } from './connect'
+export { default } from './plugin'
+export * from './types'
+export * from './utils'
+export { presentationId }
 
 addStringsLoader(presentationId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })
-
-export { default } from './plugin'
-export { connect, versionError } from './connect'

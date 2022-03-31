@@ -14,13 +14,16 @@
 -->
 
 <script lang="ts">
+import { getMetadata } from '@anticrm/platform'
+
 import { connect, versionError } from '@anticrm/presentation'
 import { Loading } from '@anticrm/ui'
 import Workbench from './Workbench.svelte'
+import workbench from '../plugin'
 
 </script>
 
-{#await connect('Platform')}
+{#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
   <Loading/>
 {:then client}
   {#if !client && versionError}

@@ -18,7 +18,7 @@
   import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { IntlString } from '@anticrm/platform'
+  import { getMetadata, IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent, closePopup,
@@ -178,8 +178,10 @@
 
   let apps: Application[] = []
 
+  const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+
   const query = createQuery()
-  $: query.query(workbench.class.Application, { hidden: false }, (result) => {
+  $: query.query(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } }, (result) => {
     apps = result
   })
 

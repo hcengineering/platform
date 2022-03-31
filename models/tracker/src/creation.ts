@@ -24,7 +24,12 @@ export async function createDeps (client: Client): Promise<void> {
     _id: tracker.team.DefaultTeam
   })
 
-  if (current === undefined) {
+  const currentDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: tracker.team.DefaultTeam
+  })
+
+  // Create new if not deleted by customers.
+  if (current === undefined && currentDeleted === undefined) {
     await tx.createDoc<Team>(
       tracker.class.Team,
       core.space.Space,

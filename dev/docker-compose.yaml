@@ -76,6 +76,26 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+  tracker-front:
+    image: hardcoreeng/tracker-front
+    links:
+      - mongodb
+      - minio
+      - elastic
+      - transactor
+    ports:
+      - 8084:8080
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_SECRET=secret
+      - ACCOUNTS_URL=http://localhost:3000
+      - FRONT_URL=http://localhost:8084
+      - UPLOAD_URL=/files
+      - TRANSACTOR_URL=ws://localhost:3333
+      - ELASTIC_URL=http://elastic:9200
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
   transactor:
     image: hardcoreeng/transactor
     links:

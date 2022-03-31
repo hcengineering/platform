@@ -148,6 +148,15 @@ export interface Class<T extends Obj> extends Classifier {
 
 /**
  * @public
+ * Define a set of plugin to model document bindings.
+ */
+export interface PluginConfiguration extends Doc {
+  pluginId: string
+  transactions: Ref<Doc>[]
+}
+
+/**
+ * @public
  */
 export type Mixin<T extends Doc> = Class<T>
 

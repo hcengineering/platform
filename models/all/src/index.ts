@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Data, Version } from '@anticrm/core'
+import core, { coreId, Data, PluginConfiguration, Ref, Tx, Version } from '@anticrm/core'
 import jsonVersion from './version.json'
 
 import { Builder } from '@anticrm/model'
@@ -58,47 +58,62 @@ export const version: Data<Version> = jsonVersion as Data<Version>
 
 const builder = new Builder()
 
-const builders = [
-  coreModel,
-  activityModel,
-  attachmentModel,
-  viewModel,
-  workbenchModel,
-  contactModel,
-  chunterModel,
-  taskModel,
-  recruitModel,
-  settingModel,
-  telegramModel,
-  leadModel,
-  gmailModel,
-  inventoryModel,
-  presentationModel,
-  templatesModel,
-  textEditorModel,
-  notificationModel,
-  serverCoreModel,
-  serverAttachmentModel,
-  serverContactModel,
-  serverNotificationModel,
-  serveSettingModel,
-  tagsModel,
-  calendarModel,
-  serverChunterModel,
-  serverInventoryModel,
-  serverLeadModel,
-  serverTagsModel,
-  serverTaskModel,
-  serverRecruitModel,
-  serverCalendarModel,
-  serverGmailModel,
-  serverTelegramModel,
-  trackerModel,
-  createDemo
+const builders: [(b: Builder) => void, string][] = [
+  [coreModel, coreId],
+  [activityModel, 'activity'],
+  [attachmentModel, 'attachment'],
+  [viewModel, 'view'],
+  [workbenchModel, 'workbench'],
+  [contactModel, 'contact'],
+  [chunterModel, 'chunter'],
+  [taskModel, 'task'],
+  [recruitModel, 'recruit'],
+  [settingModel, 'setting'],
+  [telegramModel, 'telegram'],
+  [leadModel, 'lead'],
+  [gmailModel, 'gmail'],
+  [inventoryModel, 'inventory'],
+  [presentationModel, 'presentation'],
+  [templatesModel, 'templates'],
+  [textEditorModel, 'text-editor'],
+  [notificationModel, 'notification'],
+
+  [serverCoreModel, 'server-core'],
+  [serverAttachmentModel, 'server-attachment'],
+  [serverContactModel, 'server-contact'],
+  [serverNotificationModel, 'server-notification'],
+  [serveSettingModel, 'server-setting'],
+  [tagsModel, 'tags'],
+  [calendarModel, 'calendar'],
+  [serverChunterModel, 'server-chunter'],
+  [serverInventoryModel, 'server-inventory'],
+  [serverLeadModel, 'server-lead'],
+  [serverTagsModel, 'server-tags'],
+  [serverTaskModel, 'server-task'],
+  [serverRecruitModel, 'server-recruit'],
+  [serverCalendarModel, 'server-calendar'],
+  [serverGmailModel, 'server-gmail'],
+  [serverTelegramModel, 'server-telegram'],
+  [trackerModel, 'tracker'],
+  [createDemo, 'demo']
 ]
 
-for (const b of builders) {
+for (const [b, id] of builders) {
+  const txes: Tx[] = []
+  builder.onTx = (tx) => {
+    txes.push(tx)
+  }
   b(builder)
+  builder.createDoc(
+    core.class.PluginConfiguration,
+    core.space.Model,
+    {
+      pluginId: id,
+      transactions: txes.map((it) => it._id)
+    },
+    ('plugin-configuration-' + id) as Ref<PluginConfiguration>
+  )
+  builder.onTx = undefined
 }
 
 builder.createDoc(core.class.Version, core.space.Model, version, core.version.Model)

@@ -20,6 +20,7 @@ import {
   ClassifierKind, Collection, Doc,
   Domain, DOMAIN_MODEL, IndexKind, Interface, Mixin,
   Obj,
+  PluginConfiguration,
   Ref, RefTo, Space,
   Timestamp,
   Type, Version
@@ -142,4 +143,10 @@ export class TVersion extends TDoc implements Version {
   major!: number
   minor!: number
   patch!: number
+}
+
+@Model(core.class.PluginConfiguration, core.class.Doc, DOMAIN_MODEL)
+export class TPluginConfiguration extends TDoc implements PluginConfiguration {
+  pluginId!: string;
+  transactions!: Ref<Doc>[]
 }

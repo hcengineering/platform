@@ -75,7 +75,6 @@ function getValue (key: string, obj: any): any {
 export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>, clazz: Ref<Class<T>>, hierarchy: Hierarchy): Doc[] {
   let result = [...docs]
   for (const key in query) {
-    if (key === '_id' && ((query._id as any)?.$like === undefined || query._id === undefined)) continue
     const value = (query as any)[key]
     const tkey = checkMixinKey(key, clazz, hierarchy)
     result = findProperty(result, tkey, value)

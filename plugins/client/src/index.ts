@@ -58,7 +58,8 @@ export default plugin(clientId,
   {
     metadata: {
       ClientHook: '' as Metadata<Resource<ClientHook>>,
-      ClientSocketFactory: '' as Metadata<ClientSocketFactory>
+      ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
+      FilterModel: '' as Metadata<boolean>
     },
     function: {
       GetClient: '' as Resource<ClientFactory>
