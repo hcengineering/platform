@@ -69,6 +69,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
@@ -99,6 +100,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
@@ -132,6 +134,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
@@ -165,6 +168,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
@@ -210,6 +214,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
@@ -222,9 +227,9 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
       - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle
+        run: node common/scripts/install-run-rush.js bundle --verbose
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
+        run: node common/scripts/install-run-rush.js docker:build --verbose
       - name: Prepare server
         run: |
           cd ./tests
@@ -266,6 +271,7 @@ jobs:
             packages
             plugins
             pods
+            products
             server
             server-plugins
             templates
