@@ -1237,5 +1237,26 @@
       "projectFolder": "models/tracker",
       "shouldPublish": true
     },
+
+    {
+      "packageName": "@anticrm/board",
+      "projectFolder": "plugins/board",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/board-assets",
+      "projectFolder": "plugins/board-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/board-resources",
+      "projectFolder": "plugins/board-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-board",
+      "projectFolder": "models/board",
+      "shouldPublish": true
+    }
   ]
 }

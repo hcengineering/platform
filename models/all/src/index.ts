@@ -53,6 +53,7 @@ import { createModel as serverCalendarModel } from '@anticrm/model-server-calend
 import { createModel as serverGmailModel } from '@anticrm/model-server-gmail'
 import { createModel as serverTelegramModel } from '@anticrm/model-server-telegram'
 import { createModel as trackerModel } from '@anticrm/model-tracker'
+import { createModel as boardModel } from '@anticrm/model-board'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -95,7 +96,8 @@ const builders: [(b: Builder) => void, string][] = [
   [serverGmailModel, 'server-gmail'],
   [serverTelegramModel, 'server-telegram'],
   [trackerModel, 'tracker'],
-  [createDemo, 'demo']
+  [createDemo, 'demo'],
+  [boardModel, 'board']
 ]
 
 for (const [b, id] of builders) {

@@ -135,6 +135,9 @@
     "@anticrm/tracker": "~0.6.0",
     "@anticrm/tracker-assets": "~0.6.0",
     "@anticrm/tracker-resources": "~0.6.0",
-    "@anticrm/text-editor": "~0.6.0"
+    "@anticrm/text-editor": "~0.6.0",
+    "@anticrm/board": "~0.6.0",
+    "@anticrm/board-assets": "~0.6.0",
+    "@anticrm/board-resources": "~0.6.0"
   }
 }
