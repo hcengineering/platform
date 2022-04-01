@@ -25,6 +25,7 @@
     closeTooltip,
     Component, getCurrentLocation,
     location,
+    Location,
     navigate,
     PanelInstance,
     Popup,
@@ -60,6 +61,8 @@
   let createItemLabel: IntlString | undefined
   let navigatorModel: NavigatorModel | undefined
 
+  let asideId: string | undefined
+
   onDestroy(
     location.subscribe(async (loc) => {
       closeTooltip()
@@ -89,22 +92,14 @@
     if (spaceId === currentSpace) {
       // Check if we need update location.
       const loc = getCurrentLocation()
-      if (loc.path[3] !== spaceSpecial) {
+      if (spaceSpecial !== currentSpecial && spaceSpecial !== asideId) {
         if (spaceSpecial !== undefined) {
-          loc.path[3] = spaceSpecial
-          loc.path.length = 4
-        } else {
-          loc.path.length = 3
-        }
-        if (spaceSpecial !== undefined) {
-          loc.path[3] = spaceSpecial
-          loc.path.length = 4
-          specialComponent = getSpecialComponent(spaceSpecial)
-          currentSpecial = spaceSpecial
+          setSpaceSpecial(loc, spaceSpecial)
         } else {
           loc.path.length = 3
           spaceSpecial = undefined
           currentSpecial = undefined
+          asideId = undefined
         }
         navigate(loc)
       }
@@ -129,16 +124,30 @@
       loc.path[2] = spaceId
       loc.path.length = 3
       if (spaceSpecial !== undefined) {
-        loc.path[3] = spaceSpecial
-        currentSpecial = spaceSpecial
-        loc.path.length = 4
-        specialComponent = getSpecialComponent(spaceSpecial)
+        setSpaceSpecial(loc, spaceSpecial)
       }
       navigate(loc)
     } else {
+      asideId = undefined
       currentView = undefined
       createItemDialog = undefined
       createItemLabel = undefined
+    }
+  }
+
+  function setSpaceSpecial (loc: Location, spaceSpecial: string): void {
+    loc.path[3] = spaceSpecial
+    loc.path.length = 4
+    specialComponent = getSpecialComponent(spaceSpecial)
+    if (specialComponent !== undefined) {
+      currentSpecial = spaceSpecial
+      asideId = undefined
+    } else if (navigatorModel?.aside !== undefined) {
+      asideId = spaceSpecial
+    } else {
+      loc.path.length = 3
+      currentSpecial = undefined
+      asideId = undefined
     }
   }
 
@@ -245,6 +254,13 @@
       limit: 1
     }
   )
+
+  function closeAside () {
+    const loc = getCurrentLocation()
+    loc.path.length = 3
+    navigate(loc)
+    asideId = undefined
+  }
 </script>
 
 {#if client}
@@ -344,7 +360,9 @@
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}
     </div>
-    <!-- <div class="aside"><Chat thread/></div> -->
+    {#if asideId && navigatorModel?.aside !== undefined}
+      <div class="antiPanel-component indent antiComponent filled"><Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} /></div>
+    {/if}
   </div>
   <PanelInstance />
   <Popup />

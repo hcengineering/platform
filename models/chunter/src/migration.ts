@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { Client } from '@anticrm/core'
+import { Message } from '@anticrm/chunter'
+import type { Client, Ref } from '@anticrm/core'
 import core, { TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import chunter from './plugin'
@@ -55,6 +56,19 @@ export async function createRandom (tx: TxOperations): Promise<void> {
   }
 }
 
+export async function setCreate (client: TxOperations): Promise<void> {
+  const messages = (await client.findAll(chunter.class.Message, { })).filter((m) => m.createBy === undefined).map((m) => m._id)
+  if (messages.length === 0) return
+  const txes = await client.findAll(core.class.TxCreateDoc, { objectId: { $in: messages } })
+  const promises = txes.map(async (tx) => {
+    await client.updateDoc<Message>(chunter.class.Message, tx.objectSpace, tx.objectId as Ref<Message>, {
+      createBy: tx.modifiedBy,
+      createOn: tx.modifiedOn
+    })
+  })
+  await Promise.all(promises)
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
   },
@@ -62,5 +76,6 @@ export const chunterOperation: MigrateOperation = {
     const tx = new TxOperations(client, core.account.System)
     await createGeneral(tx)
     await createRandom(tx)
+    await setCreate(tx)
   }
 }

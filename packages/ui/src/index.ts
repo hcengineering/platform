@@ -20,7 +20,7 @@ import { readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
-export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment, AnySvelteComponentWithProps } from './types'
+export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment, AnySvelteComponentWithProps, Location } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 

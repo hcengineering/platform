@@ -32,6 +32,10 @@ export default mergeIds(chunterId, chunter, {
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
-    In: '' as IntlString
+    In: '' as IntlString,
+    Replies: '' as IntlString,
+    Thread: '' as IntlString,
+    RepliesCount: '' as IntlString,
+    LastReply: '' as IntlString
   }
 })

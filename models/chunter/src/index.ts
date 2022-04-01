@@ -15,14 +15,15 @@
 
 import activity from '@anticrm/activity'
 import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
-import type { Class, Doc, Domain, Ref } from '@anticrm/core'
+import type { Account, Class, Doc, Domain, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeMarkup, UX } from '@anticrm/model'
+import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
+import contact, { Employee } from '@anticrm/contact'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -39,6 +40,18 @@ export class TMessage extends TDoc implements Message {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
+  replies?: Ref<Employee>[]
+
+  @Prop(TypeTimestamp(), chunter.string.LastReply)
+  lastReply?: Timestamp
+
+  @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
+  createBy!: Ref<Account>
+
+  @Prop(TypeTimestamp(), chunter.string.Create)
+  createOn!: Timestamp
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
@@ -95,7 +108,8 @@ export function createModel (builder: Builder): void {
           addSpaceLabel: chunter.string.CreateChannel,
           createComponent: chunter.component.CreateChannel
         }
-      ]
+      ],
+      aside: chunter.component.ThreadView
     }
   }, chunter.app.Chunter)
 

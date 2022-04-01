@@ -84,7 +84,7 @@
           </Tooltip>
         {/each}
       </div>
-    {/if}      
+    {/if}
     <SearchEdit bind:value={search} on:change={() => {
       dispatch('search', search)
     }}/>
