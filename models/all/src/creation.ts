@@ -18,10 +18,12 @@ import { createDeps as createTaskDeps } from '@anticrm/model-task'
 import { createDeps as createLeadDeps } from '@anticrm/model-lead'
 import { createDeps as createRecruitDeps } from '@anticrm/model-recruit'
 import { createDeps as createDemoDeps } from '@anticrm/model-demo'
+import { createDeps as createTrackerDeps } from '@anticrm/model-tracker'
 
 export async function createDeps (client: Client): Promise<void> {
   await createTaskDeps(client)
   await createLeadDeps(client)
   await createRecruitDeps(client)
   await createDemoDeps(client)
+  await createTrackerDeps(client)
 }

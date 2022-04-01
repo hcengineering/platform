@@ -52,6 +52,14 @@ export function addLocation<R extends Resources> (
   locations.set(plugin, module)
 }
 
+/**
+ * @public
+ * return list of registred plugins.
+ */
+export function getPlugins (): Plugin[] {
+  return Array.from(locations.keys())
+}
+
 function getLocation (plugin: Plugin): PluginLoader<Resources> {
   const location = locations.get(plugin)
   if (location === undefined) {

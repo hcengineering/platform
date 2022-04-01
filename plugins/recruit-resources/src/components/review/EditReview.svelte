@@ -76,7 +76,6 @@
         emphasized
         content={object.description}
         on:value={(evt) => {
-          console.log(evt.detail)
           client.update(object, { description: evt.detail })
         }}
       />

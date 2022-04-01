@@ -14,7 +14,7 @@
 //
 
 import { SvelteComponent } from 'svelte'
-import { addStringsLoader } from '@anticrm/platform'
+import { addLocation, addStringsLoader } from '@anticrm/platform'
 import { uiId } from './plugin'
 import { readable } from 'svelte/store'
 
@@ -115,6 +115,8 @@ export const ticker = readable(Date.now(), (set) => {
 addStringsLoader(uiId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })
+
+addLocation(uiId, async () => ({ default: async () => ({}) }))
 
 export { default } from './plugin'
 export * from './colors'

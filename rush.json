@@ -487,9 +487,14 @@
       "shouldPublish": true
     },
     {
-      "packageName": "prod",
+      "packageName": "@anticrm/prod",
       "projectFolder": "dev/prod",
-      "shouldPublish": true
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@anticrm/prod-tracker",
+      "projectFolder": "products/tracker",
+      "shouldPublish": false
     },
     {
       "packageName": "@anticrm/server-core",

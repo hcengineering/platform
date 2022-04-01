@@ -35,7 +35,6 @@ export default async () => {
           await createDeps(client)
         }
         // Check if we had dev hook for client.
-        // Check if we had dev hook for client.
         const hook = getMetadata(clientPlugin.metadata.ClientHook)
         if (hook !== undefined) {
           const hookProc = await getResource(hook)

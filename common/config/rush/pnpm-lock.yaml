@@ -80,12 +80,12 @@ specifiers:
   '@rush-temp/model-server-task': file:./projects/model-server-task.tgz
   '@rush-temp/model-server-telegram': file:./projects/model-server-telegram.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
-  '@rush-temp/model-tracker': file:./projects/model-tracker.tgz
   '@rush-temp/model-tags': file:./projects/model-tags.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
   '@rush-temp/model-telegram': file:./projects/model-telegram.tgz
   '@rush-temp/model-templates': file:./projects/model-templates.tgz
   '@rush-temp/model-text-editor': file:./projects/model-text-editor.tgz
+  '@rush-temp/model-tracker': file:./projects/model-tracker.tgz
   '@rush-temp/model-view': file:./projects/model-view.tgz
   '@rush-temp/model-workbench': file:./projects/model-workbench.tgz
   '@rush-temp/mongo': file:./projects/mongo.tgz
@@ -98,6 +98,7 @@ specifiers:
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
+  '@rush-temp/prod-tracker': file:./projects/prod-tracker.tgz
   '@rush-temp/query': file:./projects/query.tgz
   '@rush-temp/recruit': file:./projects/recruit.tgz
   '@rush-temp/recruit-assets': file:./projects/recruit-assets.tgz
@@ -137,9 +138,6 @@ specifiers:
   '@rush-temp/setting': file:./projects/setting.tgz
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
   '@rush-temp/setting-resources': file:./projects/setting-resources.tgz
-  '@rush-temp/tracker': file:./projects/tracker.tgz
-  '@rush-temp/tracker-assets': file:./projects/tracker-assets.tgz
-  '@rush-temp/tracker-resources': file:./projects/tracker-resources.tgz
   '@rush-temp/tags': file:./projects/tags.tgz
   '@rush-temp/tags-assets': file:./projects/tags-assets.tgz
   '@rush-temp/tags-resources': file:./projects/tags-resources.tgz
@@ -156,6 +154,9 @@ specifiers:
   '@rush-temp/text-editor': file:./projects/text-editor.tgz
   '@rush-temp/theme': file:./projects/theme.tgz
   '@rush-temp/tool': file:./projects/tool.tgz
+  '@rush-temp/tracker': file:./projects/tracker.tgz
+  '@rush-temp/tracker-assets': file:./projects/tracker-assets.tgz
+  '@rush-temp/tracker-resources': file:./projects/tracker-resources.tgz
   '@rush-temp/ui': file:./projects/ui.tgz
   '@rush-temp/view': file:./projects/view.tgz
   '@rush-temp/view-assets': file:./projects/view-assets.tgz
@@ -343,12 +344,12 @@ dependencies:
   '@rush-temp/model-server-task': file:projects/model-server-task.tgz_typescript@4.5.4
   '@rush-temp/model-server-telegram': file:projects/model-server-telegram.tgz_typescript@4.5.4
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.5.4
-  '@rush-temp/model-tracker': file:projects/model-tracker.tgz_typescript@4.5.4
   '@rush-temp/model-tags': file:projects/model-tags.tgz_typescript@4.5.4
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.5.4
   '@rush-temp/model-telegram': file:projects/model-telegram.tgz_typescript@4.5.4
   '@rush-temp/model-templates': file:projects/model-templates.tgz_typescript@4.5.4
   '@rush-temp/model-text-editor': file:projects/model-text-editor.tgz_typescript@4.5.4
+  '@rush-temp/model-tracker': file:projects/model-tracker.tgz_typescript@4.5.4
   '@rush-temp/model-view': file:projects/model-view.tgz_typescript@4.5.4
   '@rush-temp/model-workbench': file:projects/model-workbench.tgz_typescript@4.5.4
   '@rush-temp/mongo': file:projects/mongo.tgz
@@ -361,6 +362,7 @@ dependencies:
   '@rush-temp/pod-account': file:projects/pod-account.tgz
   '@rush-temp/presentation': file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/prod': file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e
+  '@rush-temp/prod-tracker': file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e
   '@rush-temp/query': file:projects/query.tgz
   '@rush-temp/recruit': file:projects/recruit.tgz
   '@rush-temp/recruit-assets': file:projects/recruit-assets.tgz_typescript@4.5.4
@@ -400,9 +402,6 @@ dependencies:
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz_typescript@4.5.4
   '@rush-temp/setting-resources': file:projects/setting-resources.tgz_096c09b0b673a57c275d9767a12070b1
-  '@rush-temp/tracker': file:projects/tracker.tgz
-  '@rush-temp/tracker-assets': file:projects/tracker-assets.tgz_typescript@4.5.4
-  '@rush-temp/tracker-resources': file:projects/tracker-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/tags': file:projects/tags.tgz
   '@rush-temp/tags-assets': file:projects/tags-assets.tgz
   '@rush-temp/tags-resources': file:projects/tags-resources.tgz_096c09b0b673a57c275d9767a12070b1
@@ -419,6 +418,9 @@ dependencies:
   '@rush-temp/text-editor': file:projects/text-editor.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/theme': file:projects/theme.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/tool': file:projects/tool.tgz
+  '@rush-temp/tracker': file:projects/tracker.tgz
+  '@rush-temp/tracker-assets': file:projects/tracker-assets.tgz_typescript@4.5.4
+  '@rush-temp/tracker-resources': file:projects/tracker-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/ui': file:projects/ui.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/view': file:projects/view.tgz
   '@rush-temp/view-assets': file:projects/view-assets.tgz_typescript@4.5.4
@@ -12448,7 +12450,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-LFMD9UgTqaXrqIVbVyZudBvzL8xL6KphHnShut9no15Y5ZozOYv9hksYqBU959YFHClTkUI22XzwaFUPTSideA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-lWOQv1FZnBGezRQTGOgS5vsZet1ex1Rlq1zid1v6aWHhmU8dZ6bt/msHNig4h1ugHZRGm5MOzhvLvtem5pvYUA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -13059,27 +13061,6 @@ packages:
       - typescript
     dev: false
 
-  file:projects/model-tracker.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-PWxsEQ61Fe/moBL+dROHGw2bQRaaJBL/N7HozRZPxXoRfXkH/DwNMvH/UofBL4mIFVs8FfQU03FaFnNdahgNZw==, tarball: file:projects/model-tracker.tgz}
-    id: file:projects/model-tracker.tgz
-    name: '@rush-temp/model-tracker'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.8
-      '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
-      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.2.0_eslint@7.32.0
-      prettier: 2.5.1
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
   file:projects/model-tags.tgz_typescript@4.5.4:
     resolution: {integrity: sha512-tRhFRRosgUsAll6FSrGLSKycNeDNbH8M2JTvhOrMOQjsVafRvCz+oM+/sHg+tln4CSFTxU/+9cjPfHfQNx5fVA==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
@@ -13169,6 +13150,27 @@ packages:
     resolution: {integrity: sha512-1q/kZE27/nLicAJHvV81+tzAXqpgWdGbvRwj0ibgAHemXEBVfkRmUchHkrzFsXTptNjZsN+7FtrveZ9GbaUlHg==, tarball: file:projects/model-text-editor.tgz}
     id: file:projects/model-text-editor.tgz
     name: '@rush-temp/model-text-editor'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-tracker.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-Cvk6XIrF0NOsFKh1T81iJVUELDVRZGmGgZk0PSNRf0h8YQ5NUSDwtVhlfcFYgMkjgwGLG3B/SgTR+0AM8moL6g==, tarball: file:projects/model-tracker.tgz}
+    id: file:projects/model-tracker.tgz
+    name: '@rush-temp/model-tracker'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.41.8
@@ -13503,8 +13505,54 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e:
+    resolution: {integrity: sha512-ml5yu/H4Tqliw+NJQ3SJtajDjqJe+bMRtmG/yU0C7Yktuiz1KefgUnIzftkpLoVx1tFQhs9hLkIG2dYLp0GgPg==, tarball: file:projects/prod-tracker.tgz}
+    id: file:projects/prod-tracker.tgz
+    name: '@rush-temp/prod-tracker'
+    version: 0.0.0
+    dependencies:
+      '@types/node': 16.11.14
+      autoprefixer: 10.4.0_postcss@8.4.5
+      compression-webpack-plugin: 9.0.1_webpack@5.65.0
+      cross-env: 7.0.3
+      css-loader: 5.2.7_webpack@5.65.0
+      dotenv-webpack: 7.0.3_webpack@5.65.0
+      file-loader: 6.2.0_webpack@5.65.0
+      html-webpack-plugin: 5.5.0_webpack@5.65.0
+      mini-css-extract-plugin: 2.4.5_webpack@5.65.0
+      postcss: 8.4.5
+      postcss-load-config: 3.1.0_ts-node@10.5.0
+      postcss-loader: 6.2.1_postcss@8.4.5+webpack@5.65.0
+      sass-loader: 12.4.0_sass@1.45.0+webpack@5.65.0
+      style-loader: 3.3.1_webpack@5.65.0
+      svelte: 3.44.3
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svgo-loader: 3.0.0
+      ts-loader: 9.2.6_typescript@4.5.4+webpack@5.65.0
+      webpack: 5.65.0_9def3870c80213359789f9191dbd286a
+      webpack-bundle-analyzer: 4.5.0
+      webpack-cli: 4.9.1_4f2dbb6d08811eb2952e58098bb53992
+      webpack-dev-server: 4.7.4_webpack-cli@4.9.1+webpack@5.65.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@webpack-cli/generators'
+      - '@webpack-cli/migrate'
+      - acorn
+      - bufferutil
+      - debug
+      - esbuild
+      - fibers
+      - node-sass
+      - sass
+      - supports-color
+      - ts-node
+      - typescript
+      - uglify-js
+      - utf-8-validate
+    dev: false
+
   file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-lAhrU2LvSbV+Hg0ug0LHYTe3RMC8MgyyuFOFXQNMwXftXqQfXkgciBMjWh+g9PB/aXcJwSLm3scgACCtGG0wWw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-nDyFjQ3sOea0YCtOVvhhquRWOZi521nMCYd2ClE8AEtL5d7gIAkCgqVROEpOVVuNppMm0f+m77pmeg409J+Cgw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -14424,84 +14472,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/tracker-assets.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-sTaCJb1JkS7lN4xuyIFPuQwlafQHtMB7yZ3lrWTX/MgMwxr4UWHnZODK631lGxhio4MlMgXX0KYqiDwfxnQJqg==, tarball: file:projects/tracker-assets.tgz}
-    id: file:projects/tracker-assets.tgz
-    name: '@rush-temp/tracker-assets'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.8
-      '@types/heft-jest': 1.0.2
-      '@types/node': 16.11.14
-      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
-      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.2.0_eslint@7.32.0
-      prettier: 2.5.1
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-    dev: false
-
-  file:projects/tracker-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-IwrLGQsCGO7NtMvEY2i7mA81An6fhYDq8Y4aKYZKSX/ptG85/xCJ+YayjxbX70iUoogHJfgYGPTklPJjBAXIKg==, tarball: file:projects/tracker-resources.tgz}
-    id: file:projects/tracker-resources.tgz
-    name: '@rush-temp/tracker-resources'
-    version: 0.0.0
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
-      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.2.0_eslint@7.32.0
-      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
-      lexorank: 1.0.4
-      prettier: 2.5.1
-      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
-      sass: 1.45.0
-      svelte: 3.44.3
-      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
-      svelte-loader: 3.1.2_svelte@3.44.3
-      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
-      typescript: 4.5.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - node-sass
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-    dev: false
-
-  file:projects/tracker.tgz:
-    resolution: {integrity: sha512-4BE4OCd7TawHUfz5pI8hYADlDGMLsNrczRPbsuEy1hrA+4BSTkjn5rDDSZ3iu9TLtB3TV3anvbjiZhZOrbiDyw==, tarball: file:projects/tracker.tgz}
-    name: '@rush-temp/tracker'
-    version: 0.0.0
-    dependencies:
-      '@rushstack/heft': 0.41.8
-      '@types/heft-jest': 1.0.2
-      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
-      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.2.0_eslint@7.32.0
-      prettier: 2.5.1
-      typescript: 4.5.4
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   file:projects/tags-assets.tgz:
     resolution: {integrity: sha512-c3kDt2CRIqT3lDJNJPawZ+M3j979cOkF1mYeRKUOsNQ1Zs9wnqXjxDxe1ZECpOAUbWXNhKj/Mru0XfEyaCxHQA==, tarball: file:projects/tags-assets.tgz}
     name: '@rush-temp/tags-assets'
@@ -14955,6 +14925,84 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+    dev: false
+
+  file:projects/tracker-assets.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-xhITadwF6UhanMThCsimB4+Cy5yh34Ig86wYOtV/8EZUJqrrfOSsIUQdXyvhx5E+JLWvE0K8E7CV8SdBCN3mUA==, tarball: file:projects/tracker-assets.tgz}
+    id: file:projects/tracker-assets.tgz
+    name: '@rush-temp/tracker-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/tracker-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-tMI7AyIGVwPUgsQTjkViq/8wuEVgtl8748Vl34qS0BOuKGvJJzRFwYzpEG+l8OUiqW71PuotxgSQWDQi2xWgpw==, tarball: file:projects/tracker-resources.tgz}
+    id: file:projects/tracker-resources.tgz
+    name: '@rush-temp/tracker-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.44.3
+      lexorank: 1.0.4
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.44.3
+      sass: 1.45.0
+      svelte: 3.44.3
+      svelte-check: 2.3.0_4374c622c67ed7479ff0e44c29d09bce
+      svelte-loader: 3.1.2_svelte@3.44.3
+      svelte-preprocess: 4.10.3_14d64cad431e31f100de7363af24a44f
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/tracker.tgz:
+    resolution: {integrity: sha512-UcgyfcNVHNOiPO9WiY3Runp1GMqtJJqdHIff7nT7tJqAvl3Vns5nASmjrED129zW6bvVQJmgcMSJbyN0E3EAeQ==, tarball: file:projects/tracker.tgz}
+    name: '@rush-temp/tracker'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   file:projects/ui.tgz_096c09b0b673a57c275d9767a12070b1:

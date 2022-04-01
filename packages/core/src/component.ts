@@ -15,7 +15,7 @@
 import type { IntlString, Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Mixin, Version } from '.'
-import type { Account, ArrOf, AnyAttribute, AttachedDoc, Class, Doc, Interface, Obj, PropertyType, Ref, Space, Timestamp, Type, Collection, RefTo } from './classes'
+import type { Account, AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Interface, Obj, PluginConfiguration, PropertyType, Ref, RefTo, Space, Timestamp, Type } from './classes'
 import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 
 /**
@@ -54,7 +54,8 @@ export default plugin(coreId, {
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Collection: '' as Ref<Class<Collection<AttachedDoc>>>,
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>,
-    Version: '' as Ref<Class<Version>>
+    Version: '' as Ref<Class<Version>>,
+    PluginConfiguration: '' as Ref<Class<PluginConfiguration>>
   },
   space: {
     Tx: '' as Ref<Space>,
