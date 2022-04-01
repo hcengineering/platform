@@ -102,7 +102,6 @@
     "@anticrm/calendar-assets": "~0.6.0",
     "@anticrm/calendar-resources": "~0.6.0",
     "@anticrm/core": "~0.6.16",
-    "@anticrm/rekoni": "~0.6.0",
     "@anticrm/server-chunter": "~0.6.0",
     "@anticrm/server-chunter-resources": "~0.6.0",
     "@anticrm/server-task": "~0.6.0",

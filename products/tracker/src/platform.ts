@@ -33,7 +33,6 @@ import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
-import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -71,8 +70,6 @@ export async function configurePlatform() {
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   setMetadata(login.metadata.FrontUrl, process.env.FRONT_URL)
   
-  setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
-
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
   setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts] )
 
