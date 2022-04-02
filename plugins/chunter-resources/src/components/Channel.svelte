@@ -36,6 +36,7 @@
     if (space === undefined) {
       query.unsubscribe()
       messages = []
+      return
     }
     query.query(chunter.class.Message, {
       space
