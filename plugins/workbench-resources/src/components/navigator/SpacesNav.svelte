@@ -85,7 +85,7 @@
 <TreeNode label={model.label} actions={async () => [addSpace]} indent={'ml-2'}>
   {#each spaces as space (space._id)}
     {#if model.specials}
-      <TreeNode title={space.name} indent={'ml-2'}>
+      <TreeNode title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
         {#each model.specials as special}
           <SpecialElement
             indent={'ml-4'}

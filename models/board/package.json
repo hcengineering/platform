@@ -1,0 +1,46 @@
+{
+  "name": "@anticrm/model-board",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "heft build",
+    "build:watch": "tsc",
+    "lint:fix": "eslint --fix src",
+    "lint": "eslint src",
+    "format": "prettier --write src && eslint --fix src"
+  },
+  "devDependencies": {
+    "@anticrm/model-rig": "~0.6.0",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint": "^7.32.0",
+    "@types/heft-jest": "^1.0.2",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "prettier": "^2.4.1",
+    "@rushstack/heft": "^0.41.1"
+  },
+  "dependencies": {
+    "@anticrm/core": "~0.6.16",
+    "@anticrm/model": "~0.6.0",
+    "@anticrm/ui": "~0.6.0",
+    "@anticrm/contact": "~0.6.5",
+    "@anticrm/platform": "~0.6.5",
+    "@anticrm/model-core": "~0.6.0",
+    "@anticrm/model-view": "~0.6.0",
+    "@anticrm/model-workbench": "~0.6.1",
+    "@anticrm/model-contact": "~0.6.1",
+    "@anticrm/model-chunter": "~0.6.0",
+    "@anticrm/model-attachment": "~0.6.0",
+    "@anticrm/board": "~0.6.0",
+    "@anticrm/board-resources": "~0.6.0",
+    "@anticrm/view": "~0.6.0",
+    "@anticrm/task": "~0.6.0",
+    "@anticrm/model-task": "~0.6.0",
+    "@anticrm/workbench": "~0.6.1"
+  }
+}
