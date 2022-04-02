@@ -33,7 +33,7 @@
 </script>
 
 <div class='antiPopup'>
-  <Button label={calendar.string.CreateReminder} primary on:click={(e) => click(e)} />
+  <Button label={calendar.string.CreateReminder} kind={'primary'} on:click={(e) => click(e)} />
   <div class="ap-space" />
   <Table
     _class={calendar.mixin.Reminder}

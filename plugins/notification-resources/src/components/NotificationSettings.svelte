@@ -125,7 +125,7 @@
       <div class="flex-row-reverse">
         <Button
         label={presentation.string.Save}
-        primary
+        kind={'primary'}
         on:click={() => {
           save()
         }}

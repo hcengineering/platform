@@ -75,7 +75,7 @@ test.describe('contact tests', () => {
     // Click #create-template div
     await page.click('#create-template div')
     const tid = 'template-' + generateId()
-    const t = page.locator('#templates >> .container:has-text("New Template")').last()
+    const t = page.locator('#templates div:has-text("New Template")').first()
     await t.click()
     await t.locator('input').fill(tid)
     // await page.locator(`#templates >> .container:has-text("${tid}")`).type('Enter')
@@ -83,16 +83,16 @@ test.describe('contact tests', () => {
     // Click text=Active statuses >> div
     await page.click('text=Active statuses >> div')
 
-    const s1 = page.locator('.container:has-text("New State")').first()
+    const s1 = page.locator('.states:has-text("New State")').first()
     await s1.click()
     await s1.locator('input').fill('State1')
 
     await page.click('text=Active statuses >> div')
-    const s2 = page.locator('.container:has-text("New State")').first()
+    const s2 = page.locator('.states:has-text("New State")').first()
     await s2.click()
     await s2.locator('input').fill('State2')
     await page.click('text=Active statuses >> div')
-    const s3 = page.locator('.container:has-text("New State")').first()
+    const s3 = page.locator('.states:has-text("New State")').first()
     await s3.click()
     await s3.locator('input').fill('State3')
   })

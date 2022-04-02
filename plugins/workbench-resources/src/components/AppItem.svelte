@@ -63,7 +63,7 @@
     }
 
     &.selected {
-      background-color: var(--theme-menu-selection);
+      background-color: var(--menu-bg-select);
       .icon-container { color: var(--theme-caption-color); }
     }
   }

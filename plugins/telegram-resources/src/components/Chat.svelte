@@ -209,7 +209,7 @@
           <Button
             label={telegram.string.PublishSelected}
             size={'small'}
-            primary
+            kind={'primary'}
             disabled={!selected.size}
             on:click={share}
           />
@@ -220,7 +220,7 @@
     <div class="flex-center">
       <Button
         label={telegram.string.Connect}
-        primary
+        kind={'primary'}
         on:click={(e) => {
           showPopup(Connect, {}, e.target, onConnectClose)
         }}
@@ -230,7 +230,7 @@
     <div class="flex-center">
       <Button
         label={setting.string.Reconnect}
-        primary
+        kind={'primary'}
         on:click={(e) => {
           showPopup(Reconnect, {}, e.target, onReconnect)
         }}

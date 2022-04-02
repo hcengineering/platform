@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Ref, Space } from '@anticrm/core'
-  import ui, { ActionIcon, Button, IconEdit, IconSearch, showPopup } from '@anticrm/ui'
+  import { Button, IconSearch, showPopup } from '@anticrm/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
   export let currentSpace: Ref<Space>
@@ -10,17 +10,15 @@
   }
 </script>
 
-<div class="flex-between mt-4 mb-4">
-  <div class="flex-grow">
+<div class="antiNav-subheader gap-2">
+  <div class="flex-grow text-md">
     <Button
-      icon={IconEdit}
+      icon={tracker.icon.NewIssue}
       label={tracker.string.NewIssue}
+      justify={'left'}
       width={'100%'}
-      size={'small'}
-      on:click={(evt) => newIssue(evt.currentTarget)}
+      on:click={() => newIssue(null)}
     />
   </div>
-  <div class="ml-2">
-    <ActionIcon icon={IconSearch} label={ui.string.Search} action={async () => {}} size={'large'} />
-  </div>
+  <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />
 </div>

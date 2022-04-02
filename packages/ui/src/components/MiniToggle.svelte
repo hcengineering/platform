@@ -14,20 +14,27 @@
 -->
 
 <script lang="ts">
+  import type { IntlString } from '@anticrm/platform'
+  import Label from './Label.svelte'
+
+  export let label: IntlString
   export let on: boolean = false
 </script>
 
-<label class="toggle">
-  <input class="chBox" type="checkbox" bind:checked={on} on:change>
-  <span class="toggle-switch"></span>
-</label>
+<div class="flex-row-center">
+  <label class="mini-toggle">
+    <input class="chBox" type="checkbox" bind:checked={on} on:change>
+    <span class="toggle-switch"></span>
+  </label>
+  <span class="mini-toggle-label" on:click={() => { on = !on }}><Label {label} /></span>
+</div>
 
 <style lang="scss">
-  .toggle {
+  .mini-toggle {
     display: inline-block;
-    width: 2rem;
-    min-width: 2rem;
-    height: 1.5rem;
+    width: 22px;
+    height: 14px;
+    min-width: 22px;
     // line-height: 1.75rem;
     vertical-align: middle;
     font-size: inherit;
@@ -46,7 +53,7 @@
         background-color: var(--primary-bg-color);
         &:hover { background-color: var(--primary-toggle-hover); }
         &:before {
-          left: .75rem;
+          left: 9px;
           background: var(--white-color);
         }
       }
@@ -61,24 +68,31 @@
     .toggle-switch {
       position: relative;
       display: inline-block;
-      width: 2rem;
-      height: 1.5rem;
+      width: 22px;
+      height: 14px;
       border-radius: 4.5rem;
       background-color: var(--button-border-color);
       transition: left .2s, background-color .2s;
       &:before {
         content: '';
         position: absolute;
-        top: .25rem;
-        left: .25rem;
+        top: 2px;
+        left: 3px;
         display: inline-block;
-        width: 1rem;
-        height: 1rem;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
-        background: var(--body-color);
-        box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
-        transition: .15s;
+        background: var(--tooltip-bg-color);
+        // box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
+        transition: all .1s ease-out;
       }
+    }
+
+    &-label {
+      margin-left: .375rem;
+      font-size: .75rem;
+      color: var(--content-color);
+      cursor: pointer;
     }
   }
 </style>

@@ -14,7 +14,19 @@
     "Backlog": "Backlog",
     "Board": "Board",
     "Projects": "Projects",
-    "CreateTeam": "Create team"
+    "CreateTeam": "Create team",
+    "SaveIssue": "Save issue",
+    "CreateMore": "Create more",
+    "Todo": "Todo",
+    "InProgress": "In Progress",
+    "Done": "Done",
+    "Canceled": "Canceled",
+    "SetStatus": "Set status...",
+    "NoPriority": "No priority",
+    "Urgent": "Urgent",
+    "High": "High",
+    "Medium": "Medium",
+    "Low": "Low"
   },
   "status": {
    

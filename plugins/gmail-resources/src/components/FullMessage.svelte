@@ -63,7 +63,7 @@
     <Button
       label={gmail.string.Reply}
       size={'small'}
-      primary
+      kind={'primary'}
       on:click={() => {
         newMessage = true
       }}

@@ -45,8 +45,7 @@
   <Button
     label={inventory.string.CategoryCreateLabel}
     icon={IconAdd}
-    primary={true}
-    size={'small'}
+    kind={'primary'}
     on:click={(ev) => showCreateDialog(ev)}
   />
 </div>

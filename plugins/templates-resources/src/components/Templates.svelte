@@ -115,7 +115,7 @@
             }}>
             <div class="flex flex-reverse flex-grow">
               <div class="ml-2">
-                <Button disabled={newTemplate.title.trim().length === 0 } primary label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
+                <Button disabled={newTemplate.title.trim().length === 0 } kind={'primary'} label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
               </div>
               <Button
                 label={templatesPlugin.string.Cancel}
@@ -133,7 +133,7 @@
             <MessageViewer message={newTemplate.message}/>
           </div>
           <div class="flex flex-reverse">
-            <Button primary label={templatesPlugin.string.EditTemplate} on:click={() => { mode = Mode.Edit }} />
+            <Button kind={'primary'} label={templatesPlugin.string.EditTemplate} on:click={() => { mode = Mode.Edit }} />
           </div>
         {/if}
       {/if}

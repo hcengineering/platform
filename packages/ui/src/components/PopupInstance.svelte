@@ -60,9 +60,9 @@
           const rectPopup = modalHTML.getBoundingClientRect()
           // Vertical
           if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-            modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+            modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
           } else if (rectPopup.height + 28 < rect.top) {
-            modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
+            modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + 1px)`
           } else {
             modalHTML.style.top = modalHTML.style.bottom = '1rem'
           }
@@ -91,7 +91,7 @@
           modalHTML.style.right = '0'
         }
       } else {
-        modalHTML.style.top = '50%'
+        modalHTML.style.top = '25%'
         modalHTML.style.left = '50%'
         modalHTML.style.transform = 'translate(-50%, -50%)'
         show = true
@@ -112,7 +112,7 @@
 <div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
 </div>
-<div class="modal-overlay" class:show style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
+<div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
 <style lang="scss">
   .popup {
@@ -128,7 +128,6 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    &.show { background: rgba(0, 0, 0, .5); }
+    height: 100vh;
   }
 </style>

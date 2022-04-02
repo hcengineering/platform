@@ -13,13 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import Collapsed from '../icons/Collapsed.svelte'
-  import Expanded from '../icons/Expanded.svelte'
-
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
   import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreV } from '@anticrm/ui'
+  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreH, IconMoreV } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -28,6 +25,7 @@
   export let title: string | undefined = undefined
   export let notifications = 0
   export let node = false
+  export let parent = false
   export let collapsed = false
   export let selected = false
   export let actions: () => Promise<Action[]> = async () => []
@@ -51,27 +49,28 @@
   class:ml-2={indent === 'ml-2'}
   class:ml-4={indent === 'ml-4'}
   class:ml-8={indent === 'ml-8'}
+  class:parent
+  class:collapsed
+  class:child={!node}
   on:click|stopPropagation={() => {
-    if (node && !icon) collapsed = !collapsed
+    collapsed = !collapsed
     dispatch('click')
   }}
 >
   <span class="an-element__label" class:title={node}>
     <div class="flex-row-center">
-      {#if icon}
-        <div class="an-element__icon" class:sub={!node}>
+      {#if icon && !parent}
+        <div class="an-element__icon">
           <Icon {icon} size={'small'} />
         </div>
       {/if}
       {#if label}<Label {label} />{:else}{title}{/if}
 
-      {#if !icon}
-        <div class="ml-2" class:sub={!node}>
-          {#if collapsed}
-            <Collapsed size={'small'} />
-          {:else}
-            <Expanded size={'small'} />
-          {/if}
+      {#if node}
+        <div class="an-element__icon-arrow {parent ? 'small' : 'medium'}" class:collapsed>
+          <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,0L6,3L0,6Z" />
+          </svg>
         </div>
       {/if}
     </div>
@@ -104,6 +103,6 @@
     <div class="an-element__counter">{notifications}</div>
   {/if}
 </div>
-{#if node && !icon && !collapsed}
+{#if node && !collapsed}
   <div class="antiNav-element__dropbox"><slot /></div>
 {/if}

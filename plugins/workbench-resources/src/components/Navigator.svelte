@@ -45,7 +45,6 @@
       { sort: { name: SortingOrder.Ascending } })
   }
 
-  let showDivider: Boolean = false
   let specTopCount: number
   let specBottomCount: number
   let spModelCount: number
@@ -67,7 +66,6 @@
     }
     if (model.spaces) spModelCount = model.spaces.length
     shownSpaces = spaces.filter(sp => !sp.archived)
-    showDivider = !!((specTopCount > 0 && specBottomCount + spModelCount > 0))
   }
 
   $: if (model) update(model, spaces)
@@ -97,18 +95,19 @@
       {#each topSpecials as special}
         <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
       {/each}
+    {#if topSpecials.length > 0 && bottomSpecials.length > 0}
+      <TreeSeparator />
     {/if}
-
-    {#if showDivider}<TreeSeparator />{/if}
-
-    {#each model.spaces as m (m.label)}
-      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space {currentSpecial}/>
-    {/each}
-    {#if model.specials}
       {#each bottomSpecials as special}
         <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
       {/each}
     {/if}
+
+    {#if topSpecials.length > 0 || bottomSpecials.length > 0}<TreeSeparator />{/if}
+
+    {#each model.spaces as m (m.label)}
+      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space {currentSpecial}/>
+    {/each}
     <div class="antiNav-space" />
   </Scroller>
 {/if}

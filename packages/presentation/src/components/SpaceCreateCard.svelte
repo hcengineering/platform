@@ -39,7 +39,7 @@
   </div>
   <div class="antiCard-content"><slot /></div>
   <div class="antiCard-footer">
-    <Button disabled={!canSave} label={presentation.string.Create} size={'small'} transparent primary on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={presentation.string.Cancel} size={'small'} transparent on:click={() => { dispatch('close') }} />
+    <Button disabled={!canSave} label={presentation.string.Create} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
+    <Button label={presentation.string.Cancel} on:click={() => { dispatch('close') }} />
   </div>
 </form>

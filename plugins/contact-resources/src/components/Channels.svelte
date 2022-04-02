@@ -30,7 +30,7 @@
 </script>
 
 {#if channels?.length === 0}
-  <div id="channels-edit">
+  <div id="channels-edit" class="flex-row-center">
     <CircleButton
       icon={IconAdd}
       size={'small'}

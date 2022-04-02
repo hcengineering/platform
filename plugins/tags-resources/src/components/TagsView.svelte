@@ -65,7 +65,7 @@
       updateResultQuery(search, category)
     }}
   />
-  <Button icon={IconAdd} label={сreateItemLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
 <CategoryBar

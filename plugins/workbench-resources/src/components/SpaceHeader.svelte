@@ -69,7 +69,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header divide full">
   {#if space}
     <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} on:click={onSpaceEdit} />
     {#if viewlets.length > 1}
@@ -89,7 +89,7 @@
       dispatch('search', search)
     }}/>
     {#if createItemDialog}
-      <Button icon={IconAdd} label={createItemLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)}/>
     {/if}
   {/if}
 </div>

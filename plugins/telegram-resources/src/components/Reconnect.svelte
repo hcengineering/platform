@@ -158,7 +158,7 @@
       {/await}
     {/if}
     <div class="footer">
-      <Button {label} primary {disabled} on:click={click} />
+      <Button {label} kind={'primary'} {disabled} on:click={click} />
       {#if requested || secondFactor}
         <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>
       {/if}

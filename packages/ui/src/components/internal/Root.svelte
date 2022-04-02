@@ -95,6 +95,7 @@
       min-width: 1200px;
       font-size: 12px;
       line-height: 150%;
+      background-color: var(--divider-color);
 
       .status-info {
         flex-grow: 1;

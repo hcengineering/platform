@@ -75,7 +75,7 @@
   </div>
 
   <SearchEdit bind:value={search} on:change={() => { updateResultQuery(search) }} />
-  <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} primary size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
 </div>
 
 <Scroller>

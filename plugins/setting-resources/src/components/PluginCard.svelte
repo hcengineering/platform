@@ -75,7 +75,7 @@
       {#if integration.disabled && integrationType.reconnectComponent}
         <Button
           label={setting.string.Reconnect}
-          primary
+          kind={'primary'}
           on:click={(e) => {
             if (integrationType.reconnectComponent) {
               showPopup(integrationType.reconnectComponent, {}, e.target, reconnect)
@@ -88,7 +88,7 @@
     {:else}
       <Button
         label={setting.string.Add}
-        primary
+        kind={'primary'}
         on:click={(e) => {
           showPopup(integrationType.createComponent, {}, e.target, close)
         }}
