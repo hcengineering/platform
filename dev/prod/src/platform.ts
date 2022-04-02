@@ -37,6 +37,7 @@ import { notificationId } from '@anticrm/notification'
 import { tagsId } from '@anticrm/tags'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
+import { boardId } from '@anticrm/board'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -58,15 +59,19 @@ import '@anticrm/notification-assets'
 import '@anticrm/tags-assets'
 import '@anticrm/calendar-assets'
 import '@anticrm/tracker-assets'
-import presentation from '@anticrm/presentation'
+import '@anticrm/board-assets'
+import presentation, { presentationId } from '@anticrm/presentation'
+import { coreId } from '@anticrm/core'
+import { textEditorId } from '@anticrm/text-editor'
 
 import { setMetadata } from '@anticrm/platform'
+
+
 export async function configurePlatform() {  
   const config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.UploadUrl,  config.UPLOAD_URL)       
-
   
   if( config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
@@ -80,6 +85,10 @@ export async function configurePlatform() {
   setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
+
+  addLocation(coreId, async () => ({ default: async () => ({}) }))
+  addLocation(presentationId, async () => ({ default: async () => ({}) }))
+  addLocation(textEditorId, async () => ({ default: async () => ({}) }))
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
@@ -103,4 +112,7 @@ export async function configurePlatform() {
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))
+  addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@anticrm/board-resources'))
+
+  setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }

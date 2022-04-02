@@ -14,7 +14,7 @@
 //
 
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
-import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -101,5 +101,9 @@ export default plugin(workbenchId, {
   },
   component: {
     WorkbenchApp: '' as AnyComponent
+  },
+  metadata: {
+    PlatformTitle: '' as Metadata<string>,
+    ExcludedApplications: '' as Metadata<Ref<Application>[]>
   }
 })

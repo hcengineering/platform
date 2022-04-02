@@ -15,7 +15,12 @@
 -->
 
 <script lang="ts">
+  import type { Type } from '@anticrm/core'
+
   export let value: string
+  
+  // eslint-disable-next-line
+  export let attributeType: Type<any>
 </script>
 
 <span class="lines-limit-2">{value}</span>

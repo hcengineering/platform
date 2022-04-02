@@ -15,6 +15,12 @@
   export let showButtons = true
 
   let rawValue: string
+  let oldContent = ''
+
+  $: if (oldContent !== content) {
+    oldContent = content
+    rawValue = content
+  }
 
   const Mode = {
     View: 1,

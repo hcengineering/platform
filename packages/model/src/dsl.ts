@@ -249,7 +249,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
  */
 export class Builder {
   private readonly txes: Tx[] = []
-  // private readonly hierarchy = new Hierarchy()
+
+  onTx?: (tx: Tx) => void
 
   createModel (...classes: Array<new () => Obj>): void {
     const txes = classes.map((ctor) => getTxes(ctor.prototype))
@@ -263,6 +264,7 @@ export class Builder {
 
     for (const tx of generated) {
       this.txes.push(tx)
+      this.onTx?.(tx)
       // this.hierarchy.tx(tx)
     }
   }
@@ -302,6 +304,7 @@ export class Builder {
       tx.modifiedBy = modifiedBy
     }
     this.txes.push(tx)
+    this.onTx?.(tx)
     return TxProcessor.createDoc2Doc(tx)
   }
 
@@ -311,7 +314,9 @@ export class Builder {
     mixin: Ref<IMixin<M>>,
     attributes: MixinUpdate<D, M>
   ): void {
-    this.txes.push(txFactory.createTxMixin(objectId, objectClass, core.space.Model, mixin, attributes))
+    const tx = txFactory.createTxMixin(objectId, objectClass, core.space.Model, mixin, attributes)
+    this.txes.push(tx)
+    this.onTx?.(tx)
   }
 
   getTxes (): Tx[] {

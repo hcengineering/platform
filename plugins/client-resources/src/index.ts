@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { createClient, Client, TxHander } from '@anticrm/core'
-
-import { connect } from './connection'
 import clientPlugin from '@anticrm/client'
-import { getMetadata, getResource } from '@anticrm/platform'
+import { Client, createClient, TxHander } from '@anticrm/core'
+import { getMetadata, getPlugins, getResource } from '@anticrm/platform'
+import { connect } from './connection'
+
 export { connect }
 
 /*!
@@ -38,11 +38,12 @@ export default async () => {
           client = undefined
         }
         if (client === undefined) {
+          const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
           client = await createClient((handler: TxHander) => {
             const url = new URL(`/${token}`, endpoint)
             console.log('connecting to', url.href)
             return connect(url.href, handler)
-          })
+          }, filterModel ? getPlugins() : undefined)
           _token = token
 
           // Check if we had dev hook for client.

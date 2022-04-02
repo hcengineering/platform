@@ -71,3 +71,4 @@ common/autoinstallers/*/.npmrc
 bundle.js
 dist
 tsconfig.tsbuildinfo
+ingest-attachment-*.zip

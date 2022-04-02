@@ -30,6 +30,7 @@ import { telegramOperation } from '@anticrm/model-telegram'
 import { templatesOperation } from '@anticrm/model-templates'
 import { viewOperation } from '@anticrm/model-view'
 import { trackerOperation } from '@anticrm/model-tracker'
+import { boardOperation } from '@anticrm/model-board'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -46,5 +47,6 @@ export const migrateOperations: MigrateOperation[] = [
   tagsOperation,
   notificationOperation,
   settingOperation,
-  trackerOperation
+  trackerOperation,
+  boardOperation
 ]

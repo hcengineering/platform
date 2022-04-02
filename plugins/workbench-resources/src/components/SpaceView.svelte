@@ -53,7 +53,6 @@
 
   $: update(currentView?.class, currentSpace)
 </script>
-
 <SpaceHeader spaceId={space} {viewlets} {createItemDialog} {createItemLabel} bind:search={search} bind:viewlet={viewlet} />
 {#if _class && space}
   <SpaceContent {space} {_class} {search} {viewlet} />

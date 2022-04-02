@@ -1,0 +1,5 @@
+{
+  "ACCOUNTS_URL":"/account",
+  "UPLOAD_URL":"/files",
+  "MODEL_VERSION": null
+}

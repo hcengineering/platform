@@ -1,0 +1,5 @@
+{
+  "ACCOUNTS_URL":"http://localhost:3000",
+  "UPLOAD_URL":"/files",
+  "REKONI_URL": "http://localhost:4004"
+}

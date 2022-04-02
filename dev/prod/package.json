@@ -1,5 +1,5 @@
 {
-  "name": "prod",
+  "name": "@anticrm/prod",
   "version": "1.0.1",
   "license": "EPL-2.0",
   "scripts": {
@@ -134,6 +134,10 @@
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/tracker": "~0.6.0",
     "@anticrm/tracker-assets": "~0.6.0",
-    "@anticrm/tracker-resources": "~0.6.0"
+    "@anticrm/tracker-resources": "~0.6.0",
+    "@anticrm/text-editor": "~0.6.0",
+    "@anticrm/board": "~0.6.0",
+    "@anticrm/board-assets": "~0.6.0",
+    "@anticrm/board-resources": "~0.6.0"
   }
 }

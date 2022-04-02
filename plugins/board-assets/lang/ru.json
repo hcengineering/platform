@@ -1,0 +1,28 @@
+{
+  "string": {
+    "CreateBoard": "Create board",
+    "CreateCard": "Create card",
+    "CardName": "Card name",
+    "Cards": "Cards",
+    "SelectBoard": "Select board",
+    "More": "More...",
+    "Title": "Title",
+    "ManageBoardStatuses": "Manage board statuses",
+    "BoardName": "Board",
+    "MakePrivate": "Make",
+    "MakePrivateDescription": "",
+    "CardCreateLabel": "Create card",
+    "CardPlaceholder": "Card placeholder",
+    "Board": "Board",
+    "Boards": "Boards",
+    "MyBoards": "My boards",
+    "BoardApplication": "Boards",
+    "Card": "Card",
+    "Assignee": "Assignee",
+    "Description": "Description",
+    "Location": "Location",
+    "Members": "Members",
+    "BoardCreateLabel": "Board",
+    "Settings": "Settings"
+  }
+}

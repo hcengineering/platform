@@ -18,15 +18,15 @@ import { addStringsLoader } from '@anticrm/platform'
 import { textEditorId } from './plugin'
 
 export * from '@anticrm/presentation/src/types'
-export * from './types'
-
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
-export { default as TextEditor } from './components/TextEditor.svelte'
-export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
+export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
+export { default as TextEditor } from './components/TextEditor.svelte'
+export { default } from './plugin'
+export * from './types'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
 })
 
-export { default } from './plugin'
+export { textEditorId }

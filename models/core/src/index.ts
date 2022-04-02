@@ -25,6 +25,7 @@ import {
   TInterface,
   TMixin,
   TObj,
+  TPluginConfiguration,
   TRefTo,
   TType,
   TTypeBoolean,
@@ -81,6 +82,7 @@ export function createModel (builder: Builder): void {
     TArrOf,
     TVersion,
     TTypeNumber,
-    TTypeIntlString
+    TTypeIntlString,
+    TPluginConfiguration
   )
 }
