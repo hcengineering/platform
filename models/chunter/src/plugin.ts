@@ -25,7 +25,8 @@ import type { ViewletDescriptor } from '@anticrm/view'
 export default mergeIds(chunterId, chunter, {
   component: {
     CommentPresenter: '' as AnyComponent,
-    ChannelPresenter: '' as AnyComponent
+    ChannelPresenter: '' as AnyComponent,
+    ThreadView: '' as AnyComponent
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,
@@ -35,7 +36,9 @@ export default mergeIds(chunterId, chunter, {
     Comment: '' as IntlString,
     Message: '' as IntlString,
     Reference: '' as IntlString,
-    Chat: '' as IntlString
+    Chat: '' as IntlString,
+    CreateBy: '' as IntlString,
+    Create: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

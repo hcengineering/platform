@@ -15,56 +15,24 @@
 
 <script lang="ts">
   import type { IntlString } from "@anticrm/platform"
+  import { Label } from "@anticrm/ui"
 
   export let title: IntlString
   export let line: boolean = false
+  export let params: any = undefined
+
 </script>
 
-<div class="flex-center container" class:line={line}>
-  <div class="title">{title}</div>
+<div class="w-full flex-center whitespace-nowrap mb-4">
+  <Label label={title} {params} />
+  <div class="ml-4" class:line={line} ></div>
 </div>
 
 <style lang="scss">
-  .container {
+  .line {
+    position: relative;
     width: 100%;
-    height: 1.75rem;
-    margin-bottom: 2rem;
-
-    .title {
-      position: relative;
-      padding: .375rem .75rem;
-      font-weight: 600;
-      font-size: .75rem;
-      letter-spacing: .5;
-      text-transform: uppercase;
-      color: var(--theme-content-trans-color);
-      z-index: 1;
-
-      &::before {
-        position: absolute;
-        content: '';
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: 1.25rem;
-        background-color: var(--theme-chat-divider);
-        z-index: -1;
-      }
-    }
-
-    &.line {
-      position: relative;
-      width: 100%;
-      &::before {
-        position: absolute;
-        content: '';
-        top: 50%;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background-color: var(--theme-chat-divider);
-      }
-    }
+    height: 1px;
+    background-color: var(--theme-chat-divider);
   }
 </style>

@@ -20,6 +20,10 @@
     "Message": "Message",
     "Reference": "Reference",
     "Chat": "Chat",
-    "In": "In"
+    "In": "In",
+    "Replies": "Replies",
+    "LastReply": "Last reply",
+    "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
+    "Thread": "Thread"
   }
 }

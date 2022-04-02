@@ -23,6 +23,7 @@ import CommentInput from './components/CommentInput.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
+import ThreadView from './components/ThreadView.svelte'
 
 export { CommentsPresenter }
 
@@ -33,7 +34,8 @@ export default async (): Promise<Resources> => ({
     ChannelView,
     CommentPresenter,
     CommentsPresenter,
-    ChannelPresenter
+    ChannelPresenter,
+    ThreadView
   },
   activity: {
     TxCommentCreate,

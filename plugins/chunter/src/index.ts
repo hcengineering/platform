@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
+import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Employee } from '@anticrm/contact'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
@@ -29,6 +30,10 @@ export interface Channel extends Space {}
 export interface Message extends Doc {
   content: string
   attachments?: number
+  replies?: Ref<Employee>[]
+  lastReply?: Timestamp
+  createBy: Ref<Account>
+  createOn: Timestamp
 }
 
 /**

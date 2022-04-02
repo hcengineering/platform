@@ -14,26 +14,43 @@
 -->
 
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
   import type { Message } from '@anticrm/chunter'
-  import attachment from '@anticrm/attachment'
+  import contact,{ Employee } from '@anticrm/contact'
+  import { Ref,Space } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
   import chunter from '../plugin'
-
-  import { default as MessageComponent } from './Message.svelte'
+  import MessageComponent from './Message.svelte'
 
   export let space: Ref<Space> | undefined
 
   let messages: Message[] | undefined
+  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
   const query = createQuery()
+  const employeeQuery = createQuery()
 
-  $: query.query(chunter.class.Message, { space }, result => { messages = result }, { lookup: { _id: { attachments: attachment.class.Attachment } }})
+  employeeQuery.query(contact.class.Employee, { }, (res) => employees = new Map(res.map((r) => { return [r._id, r] })))
+
+  $: updateQuery(space)
+
+  function updateQuery (space: Ref<Space> | undefined) {
+    if (space === undefined) {
+      query.unsubscribe()
+      messages = []
+      return
+    }
+    query.query(chunter.class.Message, {
+      space
+    }, (res) => {
+      messages = res
+    })
+  }
+
 </script>
 
 <div class="flex-col container">
   {#if messages}
     {#each messages as message}
-      <MessageComponent {message}/>
+      <MessageComponent {message} {employees} on:openThread />
     {/each}
   {/if}
 </div>

@@ -14,35 +14,49 @@
 -->
 
 <script lang="ts">
-  import { generateId, Ref, Space } from '@anticrm/core'
-  import chunter from '../plugin'
-  import { getClient } from '@anticrm/presentation'
-
-  import Channel from './Channel.svelte'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
+  import { Message } from '@anticrm/chunter'
+  import { generateId,getCurrentAccount,Ref,Space, TxFactory } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import { getCurrentLocation,navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
+  import chunter from '../plugin'
+  import Channel from './Channel.svelte'
 
   export let space: Ref<Space>
 
   const client = getClient()
   const _class = chunter.class.Message
-  let _id = generateId()
+  let _id = generateId() as Ref<Message>
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
-    await client.createDoc(_class, space, {
+    const me = getCurrentAccount()._id
+    const txFactory = new TxFactory(me)
+    const tx = txFactory.createTxCreateDoc<Message>(_class, space, {
       content: message,
+      createOn: 0,
+      createBy: me,
       attachments
     }, _id)
-  
+    tx.attributes.createOn = tx.modifiedOn
+    await client.tx(tx)
+
     // Create an backlink to document
     await createBacklinks(client, space, chunter.class.Channel, _id, message)
     _id = generateId()
   }
+
+  function openThread (_id: Ref<Message>) {
+    const loc = getCurrentLocation()
+    loc.path[3] = _id
+    navigate(loc)
+  }
+
 </script>
 
 <div class="msg-board">
-  <Channel {space} />
+  <Channel {space} on:openThread={(e) => { openThread(e.detail) }} />
 </div>
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage}/>

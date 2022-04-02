@@ -54,6 +54,7 @@ export interface SpacesNavModel {
 export interface NavigatorModel {
   spaces: SpacesNavModel[]
   specials?: SpecialNavModel[]
+  aside?: AnyComponent
 }
 
 /**

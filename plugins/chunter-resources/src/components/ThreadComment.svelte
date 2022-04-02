@@ -15,35 +15,29 @@
 
 <script lang="ts">
   import { AttachmentDocList } from '@anticrm/attachment-resources'
-  import type { Message } from '@anticrm/chunter'
+  import type { Comment } from '@anticrm/chunter'
   import contact,{ Employee,EmployeeAccount,formatName } from '@anticrm/contact'
   import { Account,Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
   import { getActions } from '@anticrm/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
-  import Thread from './icons/Thread.svelte'
   import Reactions from './Reactions.svelte'
-  import Replies from './Replies.svelte'
 
-  export let message: Message
+  export let comment: Comment
   export let employees: Map<Ref<Employee>, Employee>
-  export let thread: boolean = false
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   let reactions: boolean = false
 
   const showMenu = async (ev: Event): Promise<void> => {
-    const actions = await getActions(client, message, chunter.class.Message)
-    if (actions.length === 0) return
+    const actions = await getActions(client, comment, chunter.class.Comment)
     showPopup(
       Menu,
       {
@@ -53,7 +47,7 @@
             icon: a.icon,
             action: async () => {
               const impl = await getResource(a.action)
-              await impl(message)
+              await impl(comment)
             }
           }))
         ]
@@ -67,37 +61,27 @@
     if (account === undefined) return
     return employees.get(account.employee)
   }
-
-  function openThread () {
-    dispatch('openThread', message._id)
-  }
 </script>
 
 <div class="container">
-  {#await getEmployee(message.createBy) then employee}
+  {#await getEmployee(comment.modifiedBy) then employee}
     <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
     <div class="message">
       <div class="header">
         {#if employee}{formatName(employee.name)}{/if}
-        <span>{getTime(message.createOn)}</span>
+        <span>{getTime(comment.modifiedOn)}</span>
       </div>
-      <div class="text"><MessageViewer message={message.content}/></div>
-      {#if message.attachments}<div class="attachments"><AttachmentDocList value={message} /></div>{/if}
-      {#if (reactions || message.replies)}
-        <div class="footer flex-col">
-          <div>{#if reactions}<Reactions/>{/if}</div>
-          {#if !thread}
-            <div>{#if message.replies}<Replies replies={message.replies} lastReply={message.lastReply} on:click={openThread} />{/if}</div>
-          {/if}
+      <div class="text"><MessageViewer message={comment.message}/></div>
+      {#if comment.attachments}<div class="attachments"><AttachmentDocList value={comment} /></div>{/if}
+      {#if reactions}
+        <div class="footer">
+          <div><Reactions/></div>
         </div>
       {/if}
     </div>
   {/await}
   <div class="buttons">
     <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} action={(e) => { showMenu(e) }}/></div>
-    {#if !thread}
-      <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread}/></div>
-    {/if}
     <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'}/></div>
@@ -141,12 +125,15 @@
         margin-top: 1rem;
       }
       .footer {
-        align-items: flex-start;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 2rem;
         margin-top: .5rem;
         user-select: none;
 
         div + div {
-          margin-top: 0.5rem;
+          margin-left: 1rem;
         }
       }
     }
