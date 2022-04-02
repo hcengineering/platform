@@ -79,7 +79,7 @@
           {/if}
           {#each persons as person}
             <div class="antiComponentBox flex-center margin_025 antiComponentBoxFocused">
-              <UserInfo value={person} size={'medium'} />
+              <UserInfo value={person} size={'x-small'} />
               <div class="ml-1">
                 <ActionIcon icon={IconClose} size={'small'} action={() => removePerson(person)} />
               </div>

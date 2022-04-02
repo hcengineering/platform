@@ -14,6 +14,70 @@
 //
 
 /* Popups */
+.selectPopup {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: min-content;
+  max-width: 45rem;
+  max-height: 20rem;
+  background: var(--popup-bg-color);
+  border-radius: .5rem;
+  box-shadow: var(--popup-shadow);
+  will-change: transform;
+  
+  .header {
+    border-bottom: 1px solid var(--popup-divider);
+
+    input {
+      margin: 0;
+      padding: .625rem .75rem;
+      color: #d6d6d6;
+      border: none;
+      caret-color: var(--caret-color);
+    }
+  }
+
+  .scroll {
+    flex-grow: 1;
+    min-height: 0;
+    height: max-content;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { width: 0; }
+    .box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+
+  .menu-item {
+    flex-shrink: 0;
+    justify-content: start;
+    padding: 0 .75rem;
+    height: 2rem;
+    text-align: left;
+    color: var(--caption-color);
+    cursor: pointer;
+
+    .icon {
+      margin-right: .75rem;
+      width: 1rem;
+      height: 1rem;
+    }
+    .label {
+      flex-grow: 1;
+      min-width: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    &:hover { background-color: var(--popup-bg-hover); }
+  }
+}
+
 .antiPopup {
   display: flex;
   flex-direction: column;

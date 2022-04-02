@@ -13,17 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset, IntlString } from '@anticrm/platform'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import { EditBox, Grid, Status as StatusControl, Button, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
-import Card from './Card.svelte';
+  import Card from './Card.svelte'
+  import SelectPopup from './SelectPopup.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
@@ -85,37 +87,84 @@ import Card from './Card.svelte';
 
     await client.createDoc(tracker.class.Issue, _space, value, taskId)
   }
+
+  interface IPair {
+    icon: Asset
+    label: IntlString
+  }
+  const statuses: Array<IPair> =
+    [{ icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
+     { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
+     { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
+     { icon: tracker.icon.StatusDone, label: tracker.string.Done },
+     { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }]
+  let selectStatus: IPair = statuses[0]
+  const priorities: Array<IPair> =
+    [{ icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
+     { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
+     { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
+     { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
+     { icon: tracker.icon.PriorityLow, label: tracker.string.Low }]
+  let selectPriority: IPair = priorities[0]
 </script>
 
+<!-- canSave: object.title.length > 0 && _space != null -->
 <Card
   label={tracker.string.NewIssue}
   okAction={createIssue}
-  canSave={object.title.length > 0 && _space != null}
+  icon={tracker.icon.Home}
+  canSave={true}
+  okLabel={tracker.string.SaveIssue}
   spaceClass={tracker.class.Team}
   spaceLabel={tracker.string.Team}
   spacePlaceholder={tracker.string.SelectTeam}
+  createMore={false}
   bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}
 >
-  <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={tracker.string.Title}
-      bind:value={object.title}
-      placeholder={tracker.string.IssueTitlePlaceholder}
-      maxWidth={'16rem'}
-      focus
+  <EditBox
+    bind:value={object.title}
+    placeholder={tracker.string.IssueTitlePlaceholder}
+    maxWidth={'37.5rem'}
+    kind={'large-style'}
+    focus
+  />
+  <!-- <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}/> -->
+  <!-- <UserBox
+    _class={contact.class.Employee}
+    title={tracker.string.Assignee}
+    caption={tracker.string.Assignee}
+    bind:value={assignee}
+    allowDeselect
+    titleDeselect={tracker.string.TaskUnAssign}
+  /> -->
+  <div style="height: 30px"></div>
+  <div slot="pool" class="flex-row-center text-sm gap-1-5">
+    <Button
+      label={selectStatus.label}
+      icon={selectStatus.icon}
+      width={'min-content'}
+      size={'small'}
+      kind={'no-border'}
+      on:click={(ev) => {
+        showPopup(SelectPopup, { value: statuses, placeholder: tracker.string.SetStatus, searchable: true }, ev.currentTarget, (result) => {
+          if (result !== undefined) { selectStatus = result }
+        })
+      }}
     />
-    <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}/>
-    <UserBox
-      _class={contact.class.Employee}
-      title={tracker.string.Assignee}
-      caption={tracker.string.Assignee}
-      bind:value={assignee}
-      allowDeselect
-      titleDeselect={tracker.string.TaskUnAssign}
+    <Button
+      label={selectPriority.label}
+      icon={selectPriority.icon}
+      width={'min-content'}
+      size={'small'}
+      kind={'no-border'}
+      on:click={(ev) => {
+        showPopup(SelectPopup, { value: priorities, placeholder: tracker.string.SetStatus }, ev.currentTarget, (result) => {
+          if (result !== undefined) { selectPriority = result }
+        })
+      }}
     />
-  </Grid>
+  </div>
 </Card>

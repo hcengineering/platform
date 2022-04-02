@@ -264,8 +264,8 @@
   </svg>
   <div class="workbench-container">
     <div class="antiPanel-application" on:click={toggleNav}>
-      <div class="flex-col">        
-        <ActivityStatus status="active" />        
+      <div class="flex-col mt-1">        
+        <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}
           label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
@@ -315,7 +315,7 @@
       </div>
     </div>
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="antiPanel-navigator filled indent">
+      <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
         {#if currentApplication}          
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}

@@ -69,7 +69,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header divide full">
   {#if space}
     <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} on:click={onSpaceEdit} />
     {#if viewlets.length > 1}

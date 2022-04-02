@@ -21,12 +21,14 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
-  export let kind: 'primary' | 'secondary' | 'transparent' | 'dangerous' = 'secondary'
-  export let size: 'small' | 'medium' | 'large' = 'medium'
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous' = 'secondary'
+  export let size: 'small' | 'medium' | 'large' | 'large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
+  export let resetIconSize: boolean = false
   export let focus: boolean = false
 
   export let input: HTMLButtonElement | undefined = undefined
@@ -39,9 +41,20 @@
   })
 </script>
 
-<button bind:this={input} class="button {kind} {size}" disabled={disabled || loading} style={width ? 'width: ' + width : ''} on:click>
+<button
+  bind:this={input}
+  class="button {kind} {size} jf-{justify}"
+  class:only-icon={label === undefined}
+  disabled={disabled || loading}
+  style={width ? 'width: ' + width : ''}
+  on:click
+>
   {#if icon && !loading}
-    <div class="icon">
+    <div class="btn-icon"
+      class:mr-1={label && kind === 'no-border'}
+      class:mr-2={label && kind !== 'no-border'}
+      class:resetIconSize
+    >
       <Icon {icon} size={'small'}/>
     </div>
   {/if}
@@ -55,14 +68,32 @@
 </button>
 
 <style lang="scss">
-  .small { height: 1.5rem; }
-  .medium { height: 2rem; }
-  .large { height: 2.75rem; }
+  .small {
+    height: 1.5rem;
+    line-height: 1.5rem;
+    &.only-icon { width: 1.5rem; }
+  }
+  .medium {
+    height: 1.75rem;
+    &.only-icon { width: 1.75rem; }
+  }
+  .large {
+    height: 2rem;
+    &.only-icon { width: 2rem; }
+  }
+  .x-large {
+    height: 2.75rem;
+    &.only-icon { width: 2.75rem; }
+  }
 
   .button {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
     padding: 0 .5rem;
-    font-weight: 600;
+    font-weight: 500;
     min-width: 1.5rem;
+    white-space: nowrap;
     color: var(--accent-color);
     background-color: transparent;
     border: 1px solid transparent;
@@ -70,26 +101,32 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
 
-    &:hover, &:focus, &:active {
+    .btn-icon {
+      color: var(--content-color);
+      transition: color .15s;
+      pointer-events: none;
+    }
+    &:hover {
       color: var(--caption-color);
       transition-duration: 0;
+      
+      .btn-icon { color: var(--caption-color); }
     }
     &:disabled {
       color: rgb(var(--accent-color) / 40%);
       cursor: not-allowed;
     }
 
-    .icon {
-      margin-right: .375rem;
-      pointer-events: none;
-    }
+    &.jf-left { justify-content: flex-start; }
+    &.jf-center { justify-content: center; }
+    &.only-icon { padding: 0; }
 
     &.secondary {
       background-color: var(--button-bg-color);
       border-color: var(--button-border-color);
       box-shadow: var(--button-shadow);
 
-      &:hover, &:focus, &:active {
+      &:hover {
         background-color: var(--button-bg-hover);
         border-color: var(--button-border-hover);
       }
@@ -98,6 +135,28 @@
         border-color: #3c3f4455;
       }
     }
+    &.no-border {
+      font-weight: 400;
+      color: var(--content-color);
+      background-color: var(--button-bg-color);
+      box-shadow: var(--button-shadow);
+
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+
+        .btn-icon { color: var(--accent-color); }
+      }
+      &:disabled {
+        background-color: #30323655;
+        cursor: default;
+        &:hover {
+          color: var(--content-color);
+          .btn-icon { color: var(--content-color); }
+        }
+      }
+    }
+    &.transparent:hover { background-color: var(--button-bg-hover); }
     &.primary {
       padding: 0 1rem;
       color: var(--white-color);
@@ -105,6 +164,7 @@
       border-color: var(--primary-bg-color);
       box-shadow: var(--primary-shadow);
 
+      .btn-icon { color: var(--caption-color); }
       &:hover { background-color: var(--primary-bg-hover); }
       &:disabled {
         background-color: #5e6ad255;
@@ -120,5 +180,7 @@
       &:hover { background-color: var(--dangerous-bg-hover); }
       &:focus { box-shadow: var(--dangerous-shadow); }
     }
+
+    .resetIconSize { font-size: 16px; }
   }
 </style>

@@ -23,8 +23,8 @@
   right: 1rem;
 
   height: calc(100% - 32px - 1.25rem);
-  background: var(--theme-bg-color);
-  border-radius: 1.25rem;
+  background: var(--popup-bg-color);
+  border-radius: .5rem;
 
   &.fullSize {
     flex-direction: row;
@@ -64,20 +64,18 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background: #000;
-  opacity: .5;
+  height: 100vh;
+  background-color: var(--card-overlay-color);
+  pointer-events: all;
 }
-
-
 
 /* Cards */
 .antiCard {
   display: flex;
   flex-direction: column;
-  background: var(--card-bg-color);
+  background: var(--popup-bg-color);
   border-radius: .5rem;
-  box-shadow: var(--popup-shadow);
+  box-shadow: var(--card-shadow);
 
   .antiCard-header {
     position: relative;
@@ -95,7 +93,7 @@
       min-width: 0;
       font-weight: 500;
       font-size: 1rem;
-      color: var(--theme-caption-color);
+      color: var(--accent-color);
     }
     &__error {
       min-width: 0;
@@ -120,6 +118,7 @@
   }
 
   .antiCard-pool {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     margin: 0 1rem .75rem;
@@ -144,5 +143,45 @@
     padding: 1.5rem 1rem 1rem;
     height: 4.5rem;
     border-radius: 0 0 .5rem .5rem;
+  }
+
+  &.dialog {
+    width: 40rem;
+    height: max-content;
+    max-width: 40rem;
+
+    .antiCard-header {
+      padding: .75rem .75rem .375rem;
+
+      &__title-wrap {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+      }
+
+      &__divider, &__title {
+        margin-left: .375rem;
+        font-weight: 400;
+        font-size: .8125rem;
+      }
+      &__divider { color: var(--content-color); }
+      &__title { color: var(--accent-color); }
+    }
+    .antiCard-content { margin: 0 1.125rem; }
+    .antiCard-pool {
+      flex-direction: row;
+      margin: .375rem .75rem .75rem;
+    }
+    .antiCard-footer {
+      direction: ltr;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .75rem;
+      height: auto;
+      border-top: 1px solid var(--button-bg-color);
+
+      &.reverse { flex-direction: row-reverse; }
+    }
   }
 }

@@ -30,7 +30,11 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="antiNav-element" class:selected class:ml-2={indent === 'ml-2'} class:ml-4={indent === 'ml-4'} class:ml-8={indent === 'ml-8'}
+  class="antiNav-element"
+  class:selected
+  class:ml-2={indent === 'ml-2'}
+  class:ml-4={indent === 'ml-4'}
+  class:ml-8={indent === 'ml-8'}
   on:click|stopPropagation={() => {
     dispatch('click')
   }}

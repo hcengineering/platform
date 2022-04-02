@@ -14,19 +14,21 @@
 -->
 
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
   import TreeElement from './TreeElement.svelte'
 
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
+  export let icon: Asset | undefined = undefined
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications = 0
+  export let parent = false
   export let collapsed = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
 </script>
 
-<TreeElement {title} {label} {notifications} {collapsed} {actions} node {indent}>
+<TreeElement {title} {label} {icon} {notifications} {collapsed} {actions} node {parent} {indent}>
   <slot/>
 </TreeElement>

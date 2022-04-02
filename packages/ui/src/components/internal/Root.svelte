@@ -95,8 +95,7 @@
       min-width: 1200px;
       font-size: 12px;
       line-height: 150%;
-      background-color: var(--body-color);
-      box-shadow: rgb(0 0 0 / 15%) 0px 1px 1px;
+      background-color: var(--divider-color);
 
       .status-info {
         flex-grow: 1;

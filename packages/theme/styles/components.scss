@@ -20,9 +20,9 @@
   height: 100%;
 
   .ac-header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
+    padding: 0 1.5rem 0 2.25rem;
+    height: 3.5rem;
+    min-height: 3.5rem;
 
     &.short {
       display: flex;
@@ -47,7 +47,7 @@
       }
     }
     &.divide {
-      border-bottom: 1px solid var(--theme-menu-divider);
+      border-bottom: 1px solid var(--divider-color);
     }
 
     .ac-header__wrap-description,

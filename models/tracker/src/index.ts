@@ -156,21 +156,21 @@ export function createModel (builder: Builder): void {
             id: 'inbox',
             position: 'top',
             label: tracker.string.Inbox,
-            icon: tracker.icon.TrackerApplication,
+            icon: tracker.icon.Inbox,
             component: tracker.component.Inbox
           },
           {
             id: 'my-issues',
             position: 'top',
             label: tracker.string.MyIssues,
-            icon: tracker.icon.TrackerApplication,
+            icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
           },
           {
             id: 'views',
             position: 'top',
             label: tracker.string.Views,
-            icon: tracker.icon.TrackerApplication,
+            icon: tracker.icon.Views,
             component: tracker.component.Views
           }
         ],
@@ -178,14 +178,14 @@ export function createModel (builder: Builder): void {
           {
             label: tracker.string.Teams,
             spaceClass: tracker.class.Team,
-            // icon: tracker.icon.TrackerApplication,
             addSpaceLabel: tracker.string.CreateTeam,
             createComponent: tracker.component.CreateTeam,
+            icon: tracker.icon.Home,
             specials: [
               {
                 id: 'issues',
                 label: tracker.string.Issues,
-                icon: tracker.icon.TrackerApplication,
+                icon: tracker.icon.Issues,
                 component: tracker.component.Issues
               },
               {
@@ -209,7 +209,7 @@ export function createModel (builder: Builder): void {
               {
                 id: 'projects',
                 label: tracker.string.Projects,
-                icon: tracker.icon.TrackerApplication,
+                icon: tracker.icon.Projects,
                 component: tracker.component.Projects
               }
             ]

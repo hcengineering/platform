@@ -55,7 +55,7 @@
     <div class="ap-box">
       {#each objects as person}
         <button class="ap-menuItem withCheck" on:click={() => { dispatch('close', person) }}>
-          <UserInfo size={'medium'} value={person} />
+          <UserInfo size={'x-small'} value={person} />
           {#if allowDeselect && person._id === selected}
             <div class="ap-check">
               <ActionIcon direction={'top'} label={titleDeselect ?? presentation.string.Deselect} icon={IconBlueCheck} action={() => { dispatch('close', null) }} size={'small'} />

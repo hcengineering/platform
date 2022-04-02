@@ -140,6 +140,25 @@ export default plugin(trackerId, {
     Project: '' as Asset,
     Issue: '' as Asset,
     Team: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    Inbox: '' as Asset,
+    MyIssues: '' as Asset,
+    Views: '' as Asset,
+    Issues: '' as Asset,
+    Projects: '' as Asset,
+    NewIssue: '' as Asset,
+    Magnifier: '' as Asset,
+    Home: '' as Asset,
+
+    StatusBacklog: '' as Asset,
+    StatusTodo: '' as Asset,
+    StatusInProgress: '' as Asset,
+    StatusDone: '' as Asset,
+    StatusCanceled: '' as Asset,
+    PriorityNoPriority: '' as Asset,
+    PriorityUrgent: '' as Asset,
+    PriorityHigh: '' as Asset,
+    PriorityMedium: '' as Asset,
+    PriorityLow: '' as Asset
   }
 })

@@ -19,8 +19,8 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  min-width: 5rem;
-  width: 5rem;
+  min-width: 4rem;
+  width: 4rem;
   height: 100%;
 }
 .antiPanel-navigator,
@@ -51,20 +51,27 @@
   padding: 0 1.75rem;
   height: 4rem;
 }
+.antiNav-subheader {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  margin: .5rem .75rem .75rem;
+}
 .antiNav-element {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 0.25rem;
-  height: 2.25rem;
-  border-radius: .5rem;
+  margin: 1px 1rem;
+  padding: .25rem;
+  height: 1.75rem;
+  border-radius: .25rem;
   user-select: none;
   cursor: pointer;
 
   .an-element__icon {
     min-width: 1rem;
-    color: var(--theme-content-trans-color);
-    margin: 0 1.125rem 0 0;
+    color: var(--content-color);
+    margin: 0 .625rem 0 .375rem;
   }
   .an-element__label {
     flex-grow: 1;
@@ -80,12 +87,29 @@
       color: var(--accent-color);
     }
   }
+  .an-element__icon-arrow {
+    margin-left: .5rem;
+    opacity: 0;
+    transform-origin: 35% center;
+    transform: rotate(90deg);
+    transition: transform .2s ease;
+
+    &.collapsed { transform: rotate(0deg); }
+    &.small {
+      width: .325rem;
+      height: .325rem;
+    }
+    &.medium {
+      width: .375rem;
+      height: .375rem;
+    }
+  }
   .an-element__tool {
-    margin-right: .75rem;
+    margin-left: .75rem;
     visibility: hidden;
   }
   .an-element__counter {
-    margin-right: .75rem;
+    margin-left: .75rem;
     font-weight: 600;
     font-size: .75rem;
     color: var(--accent-color);
@@ -94,8 +118,24 @@
   &:hover, &.hovered, &.selected {
     background-color: var(--menu-bg-select);
     .an-element__icon { color: var(--menu-icon-hover); }
+    .an-element__icon-arrow { opacity: 1; }
   }
   &:hover .an-element__tool, &.hovered .an-element__tool { visibility: visible; }
+
+  &:not(.collapsed) .an-element__icon-arrow { opacity: 1; }
+  &.parent {
+    margin: .5rem 1rem 1px;
+    padding: 0 .5rem;
+    height: 1.5rem;
+    font-size: .75rem;
+    line-height: 1.5rem;
+
+    .an-element__icon-arrow { opacity: 0; }
+    .an-element__label { color: var(--content-color); }
+    &.collapsed .an-element__icon-arrow,
+    &:hover .an-element__icon-arrow { opacity: 1; }
+  }
+  &.child { padding: 0 .25rem 0 1.5rem; }
 
   &__dropbox {
     height: auto;
@@ -104,7 +144,7 @@
 }
 .antiNav-divider {
   flex-shrink: 0;
-  margin: .5rem 0;
+  margin: .25rem 0;
   height: 1px;
   // background-color: var(--divider-color);
 }

@@ -29,6 +29,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text'| 'password' | 'number' = 'text'
+  export let kind: 'editbox' | 'large-style' = 'editbox'
   export let focus: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -66,10 +67,10 @@
   })
 </script>
 
-<div class="container" on:click={() => { input.focus() }}>
-  <div class="hidden-text" bind:this={text}></div>
+<div class="editbox-container" on:click={() => { input.focus() }}>
+  <div class="hidden-text {kind}" bind:this={text}></div>
   {#if label}<div class="label"><Label label={label}/></div>{/if}
-  <div class="flex-row-center">
+  <div class="{kind} flex-row-center clear-mins">
     {#if icon}
       <div class="content-trans-color mr-1">
         <Icon {icon} size={'small'}/>
@@ -86,39 +87,42 @@
 </div>
 
 <style lang="scss">
-  .container {
+  .editbox-container {
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
-  }
 
-  .label {
-    margin-bottom: .25rem;
-    font-size: .75rem;
-    font-weight: 500;
-    color: var(--theme-content-accent-color);
-    pointer-events: none;
-    user-select: none;
-  }
-
-  input {
-    margin: 0;
-    padding: 0;
-    min-width: 0;
-    color: var(--caption-color);
-    border: none;
-    border-radius: 2px;
-
-    &::placeholder { color: var(--content-color); }
-
-    &::-webkit-contacts-auto-fill-button,
-    &::-webkit-credentials-auto-fill-button {
-      visibility: hidden;
-      display: none !important;
+    .label {
+      margin-bottom: .25rem;
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--theme-content-accent-color);
       pointer-events: none;
-      height: 0;
-      width: 0;
+      user-select: none;
+    }
+
+    .large-style {
+      font-weight: 500;
+      font-size: 1.125rem;
+    }
+
+    input {
       margin: 0;
+      padding: 0;
+      min-width: 0;
+      color: var(--caption-color);
+      border: none;
+      border-radius: 2px;
+
+      &::-webkit-contacts-auto-fill-button,
+      &::-webkit-credentials-auto-fill-button {
+        visibility: hidden;
+        display: none !important;
+        pointer-events: none;
+        height: 0;
+        width: 0;
+        margin: 0;
+      }
     }
   }
 </style>

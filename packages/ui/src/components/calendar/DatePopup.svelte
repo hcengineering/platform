@@ -61,7 +61,7 @@
   $: if (currentDate) renderCellStyles()
 
   const scrolling = (ev: Event): void => {
-    console.log('!!! Scrolling:', ev)
+    // console.log('!!! Scrolling:', ev)
   }
 
   afterUpdate(() => {
