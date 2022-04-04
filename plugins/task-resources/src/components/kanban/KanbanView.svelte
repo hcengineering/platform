@@ -221,15 +221,15 @@
   .kanban-container {
     position: relative;
     height: 100%;
+    background: var(--board-bg-color);
   }
   .kanban-content {
     display: flex;
-    margin: 0 2.5rem;
+    margin: 1.5rem 2rem;
     height: 100%;
   }
 
   .scrollable {
     height: 100%;
-    margin-bottom: .25rem;
   }
 </style>

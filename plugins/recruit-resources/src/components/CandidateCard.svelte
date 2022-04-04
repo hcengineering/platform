@@ -63,9 +63,11 @@
 <style lang="scss">
   .card-container {
     padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--board-card-bg-color);
+    border-radius: .25rem;
+
+    &:hover { background-color: var(--board-card-bg-hover); }
 
     .label {
       margin-bottom: 1.75rem;

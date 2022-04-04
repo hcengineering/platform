@@ -49,21 +49,20 @@
     align-items: stretch;
     width: 20rem;
     height: 100%;
-    background-color: var(--theme-bg-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: .25rem;
 
     .header {
       display: flex;
       flex-direction: column;
-      margin: 0 .75rem;
       height: 4rem;
       min-height: 4rem;
       user-select: none;
 
       .bar {
         height: .375rem;
-        border-radius: 1px;
+        border-radius: .25rem;
       }
       .label {
         padding: 0 .5rem 0 1rem;

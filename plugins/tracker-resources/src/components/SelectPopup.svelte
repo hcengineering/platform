@@ -22,8 +22,8 @@
   import { Icon, Label } from '@anticrm/ui'
   import tracker from '../plugin'
 
-  export let _class: Ref<Class<Space>>
-  export let spaceQuery: DocumentQuery<Space> | undefined
+  // export let _class: Ref<Class<Space>>
+  // export let spaceQuery: DocumentQuery<Space> | undefined
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false

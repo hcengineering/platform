@@ -16,6 +16,7 @@
 
 <script lang="ts">
   import { afterUpdate } from 'svelte'
+  import { fade } from 'svelte/transition'
   import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
 
   export let is: AnyComponent | AnySvelteComponent
@@ -109,7 +110,7 @@
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
-<div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
+<div class="popup" transition:fade={{ duration: 150 }} bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
 </div>
 <div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
@@ -129,5 +130,6 @@
     left: 0;
     width: 100%;
     height: 100vh;
+    transition: background-color .5s ease;
   }
 </style>

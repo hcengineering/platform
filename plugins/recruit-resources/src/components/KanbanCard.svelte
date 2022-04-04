@@ -81,11 +81,13 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, 0.06);
-    border-radius: 0.75rem;
+    padding: .5rem 1rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--board-card-bg-color);
+    border-radius: .25rem;
     user-select: none;
 
+    &:hover { background-color: var(--board-card-bg-hover); }
     &.draggable {
       cursor: grab;
     }
