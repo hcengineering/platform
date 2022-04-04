@@ -110,7 +110,7 @@
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
-<div class="popup" transition:fade={{ duration: 150 }} bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
+<div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
 </div>
 <div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
