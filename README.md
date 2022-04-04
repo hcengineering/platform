@@ -52,7 +52,7 @@ Following URL http://localhost:8081/login:component:LoginApp will lead us to app
 
 ## Live updates
 
-It setup is configured, but projects structure is updated it might be needed to relink and rebuild projects.
+If setup is configured, but projects structure is updated it might be needed to relink and rebuild projects.
 
 ```bash
 rush update
