@@ -24,7 +24,7 @@
   export let isNew: boolean = false
 </script>
 
-<div class="w-full text-sm flex-center whitespace-nowrap mb-4" class:flex-reverse={reverse} class:new={isNew} >
+<div class="w-full text-sm flex-center whitespace-nowrap mb-6" class:flex-reverse={reverse} class:new={isNew} >
   <Label label={title} {params} />
   <div class:ml-4={!reverse} class:mr-4={reverse} class:line={line} ></div>
 </div>

@@ -14,13 +14,11 @@
 -->
 
 <script lang="ts">
-import { Attachment } from '@anticrm/attachment';
-
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
-import AttachmentList from '@anticrm/attachment-resources/src/components/AttachmentList.svelte';
+  import { Attachment } from '@anticrm/attachment'
+  import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Message } from '@anticrm/chunter'
-  import contact,{ Employee,EmployeeAccount,formatName } from '@anticrm/contact'
-  import { Account,Ref, WithLookup } from '@anticrm/core'
+  import { Employee,EmployeeAccount,formatName } from '@anticrm/contact'
+  import { Ref,WithLookup } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
