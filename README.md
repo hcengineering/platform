@@ -50,9 +50,9 @@ rushx run-local assign-workspace user1 ws1 # Assign worksapce to user
 
 Following URL http://localhost:8081/login:component:LoginApp will lead us to app.
 
-## Live updates
+## Update project structure and database
 
-If setup is configured, but projects structure is updated it might be needed to relink and rebuild projects.
+If projects structure is updated it might be needed to relink and rebuild projects.
 
 ```bash
 rush update
