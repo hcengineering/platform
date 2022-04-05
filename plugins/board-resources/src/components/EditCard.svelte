@@ -104,7 +104,7 @@
       </div>
       <div class="right-pane"><CardActions value={object} /></div>
     </div>
-    <Component is={activity.component.Activity} props={{ object, fullSize: false }}>
+    <Component is={activity.component.Activity} props={{ object, transparent: true }}>
       <slot />
     </Component>
   </div>
@@ -117,6 +117,7 @@
     flex-direction: column;
     padding: 20px;
     width: 650px;
+    height: 100%;
   }
   .title {
     font-size: 20px;
