@@ -109,14 +109,3 @@
     </div>
   </Panel>
 {/if}
-
-<style lang="scss">
-  .description {
-    display: flex;
-    padding: 1rem;
-    height: 12rem;
-    border-radius: 0.25rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-  }
-</style>

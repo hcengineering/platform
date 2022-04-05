@@ -16,6 +16,7 @@
 
 <script lang="ts">
   import { afterUpdate } from 'svelte'
+  import { fade } from 'svelte/transition'
   import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
 
   export let is: AnyComponent | AnySvelteComponent
@@ -129,5 +130,6 @@
     left: 0;
     width: 100%;
     height: 100vh;
+    transition: background-color .5s ease;
   }
 </style>
