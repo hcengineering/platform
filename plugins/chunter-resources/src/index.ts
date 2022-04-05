@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import chunter, { Comment, Message } from '@anticrm/chunter'
+import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
@@ -26,6 +28,37 @@ import CreateChannel from './components/CreateChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 
 export { CommentsPresenter }
+
+async function MarkUnread (object: Message): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  await client.updateLastView(object.space, chunter.class.Channel, object.createOn - 1, true)
+}
+
+async function MarkCommentUnread (object: Comment): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  const value =  object.modifiedOn - 1
+  await client.updateLastView(object.attachedTo, object.attachedToClass, value, true)
+}
+
+async function SubscribeMessage (object: Message): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  await client.updateLastView(object._id, object._class, undefined, true)
+}
+
+async function SubscribeComment (object: Comment): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  await client.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
+}
+
+async function UnsubscribeMessage (object: Message): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  await client.unsubscribe(object._id)
+}
+
+async function UnsubscribeComment (object: Comment): Promise<void> {
+  const client = NotificationClientImpl.getClient()
+  await client.unsubscribe(object.attachedTo)
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -41,5 +74,13 @@ export default async (): Promise<Resources> => ({
     TxCommentCreate,
     TxBacklinkCreate,
     TxBacklinkReference
+  },
+  actionImpl: {
+    MarkUnread,
+    MarkCommentUnread,
+    SubscribeMessage,
+    SubscribeComment,
+    UnsubscribeMessage,
+    UnsubscribeComment
   }
 })

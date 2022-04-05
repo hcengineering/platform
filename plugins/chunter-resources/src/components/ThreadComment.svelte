@@ -19,9 +19,11 @@
   import type { Comment } from '@anticrm/chunter'
   import { Employee,EmployeeAccount,formatName } from '@anticrm/contact'
   import { Ref,WithLookup } from '@anticrm/core'
+import { NotificationClientImpl } from '@anticrm/notification-resources';
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
+import { Action } from '@anticrm/view';
   import { getActions } from '@anticrm/view-resources'
   import chunter from '../plugin'
   import { getTime } from '../utils'
@@ -39,8 +41,21 @@
 
   let reactions: boolean = false
 
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+  $: subscribed = ($lastViews.get(comment.attachedTo) ?? -1) > -1
+  $: subscribeAction = subscribed ? {
+    label: chunter.string.TurnOffReplies,
+    action: chunter.actionImpl.UnsubscribeComment
+  } as Action : {
+    label: chunter.string.GetNewReplies,
+    action: chunter.actionImpl.SubscribeComment
+  } as Action
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, comment, chunter.class.Comment)
+    actions.push(subscribeAction)
+    console.log(actions)
     showPopup(
       Menu,
       {

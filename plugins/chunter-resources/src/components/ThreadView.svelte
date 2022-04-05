@@ -16,8 +16,8 @@
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { Comment,Message } from '@anticrm/chunter'
-  import contact,{ Employee,EmployeeAccount } from '@anticrm/contact'
-  import core,{ generateId,getCurrentAccount,Ref,Space,TxFactory } from '@anticrm/core'
+  import contact,{ Employee } from '@anticrm/contact'
+  import core,{ Doc,generateId,getCurrentAccount,Ref,Space,TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery,getClient } from '@anticrm/presentation'
   import { IconClose,Label } from '@anticrm/ui'
@@ -109,7 +109,7 @@
 
   function newMessagesStart (comments: Comment[]): number {
     const lastView = $lastViews.get(_id)
-    if (lastView === undefined) return -1
+    if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
       if (comment.modifiedOn > lastView) return index
@@ -117,6 +117,13 @@
     return -1
   }
 
+  $: markUnread($lastViews)
+  function markUnread (lastViews: Map<Ref<Doc>, number>) {
+    const newPos = newMessagesStart(comments)
+    if (newPos < newMessagesPos || newMessagesPos === -1) {
+      newMessagesPos = newPos
+    }
+  }
   let newMessagesPos: number = -1
 </script>
 

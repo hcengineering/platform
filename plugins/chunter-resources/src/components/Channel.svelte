@@ -72,12 +72,21 @@
   function newMessagesStart (messages: Message[]): number {
     if (space === undefined) return -1
     const lastView = $lastViews.get(space)
-    if (lastView === undefined) return -1
+    if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
       if (message.createOn > lastView) return index
     }
     return -1
+  }
+
+  $: markUnread($lastViews)
+  function markUnread (lastViews: Map<Ref<Doc>, number>) {
+    if (messages === undefined) return
+    const newPos = newMessagesStart(messages)
+    if (newPos < newMessagesPos || newMessagesPos === -1) {
+      newMessagesPos = newPos
+    }
   }
 
   let newMessagesPos: number = -1

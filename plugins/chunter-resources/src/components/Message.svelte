@@ -19,9 +19,11 @@
   import type { Message } from '@anticrm/chunter'
   import { Employee,EmployeeAccount,formatName } from '@anticrm/contact'
   import { Ref,WithLookup } from '@anticrm/core'
+import { NotificationClientImpl } from '@anticrm/notification-resources';
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
+import { Action } from '@anticrm/view';
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
@@ -45,9 +47,20 @@
 
   let reactions: boolean = false
 
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+  $: subscribed = ($lastViews.get(message._id) ?? -1) > -1
+  $: subscribeAction = subscribed ? {
+    label: chunter.string.TurnOffReplies,
+    action: chunter.actionImpl.UnsubscribeMessage
+  } as Action : {
+    label: chunter.string.GetNewReplies,
+    action: chunter.actionImpl.SubscribeMessage
+  } as Action
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
-    if (actions.length === 0) return
+    actions.push(subscribeAction)
     showPopup(
       Menu,
       {

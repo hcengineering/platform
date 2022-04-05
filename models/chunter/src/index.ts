@@ -96,6 +96,39 @@ export function createModel (builder: Builder): void {
     config: {}
   })
 
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: chunter.string.MarkUnread,
+      action: chunter.actionImpl.MarkUnread
+    },
+    chunter.action.MarkUnread
+  )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: chunter.string.MarkUnread,
+      action: chunter.actionImpl.MarkCommentUnread
+    },
+    chunter.action.MarkCommentUnread
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: chunter.class.Message,
+    action: chunter.action.MarkUnread
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: chunter.class.Comment,
+    action: chunter.action.MarkCommentUnread,
+    query: {
+      attachedToClass: chunter.class.Message
+    }
+  })
+
   builder.createDoc(workbench.class.Application, core.space.Model, {
     label: chunter.string.ApplicationLabelChunter,
     icon: chunter.icon.Chunter,

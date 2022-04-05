@@ -14,7 +14,8 @@
 //
 
 import chunter, { chunterId } from '@anticrm/chunter'
-import type { IntlString } from '@anticrm/platform'
+import { Doc } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 
@@ -22,6 +23,12 @@ export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
     ChannelView: '' as AnyComponent
+  },
+  actionImpl: {
+    SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
+    SubscribeComment: '' as Resource<(object: Doc) => Promise<void>>,
+    UnsubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
+    UnsubscribeComment: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     Channel: '' as IntlString,
@@ -37,6 +44,8 @@ export default mergeIds(chunterId, chunter, {
     Thread: '' as IntlString,
     RepliesCount: '' as IntlString,
     LastReply: '' as IntlString,
-    New: '' as IntlString
+    New: '' as IntlString,
+    GetNewReplies: '' as IntlString,
+    TurnOffReplies: '' as IntlString
   }
 })
