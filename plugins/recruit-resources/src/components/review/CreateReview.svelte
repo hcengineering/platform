@@ -134,10 +134,7 @@
 
   $: validate(doc, doc._class)
   const updateStart = (result: any): void => {
-    if (result.detail !== undefined) {
-      dueDate = result.detail
-      dueDate = dueDate
-    }
+    if (result.detail !== undefined) dueDate = result.detail
   }
 </script>
 
