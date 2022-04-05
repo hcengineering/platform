@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue, Team } from '@anticrm/tracker'
-  import { Icon, showPopup } from '@anticrm/ui'
+  import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
 
   export let value: Issue
@@ -27,7 +27,7 @@
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   function show (evt: Event) {
-    showPopup(tracker.component.EditIssue, { object: value }, evt.currentTarget)
+    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>
 

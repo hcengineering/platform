@@ -34,6 +34,8 @@
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let rightSection: AnyComponent | undefined = undefined
+  export let position: PopupAlignment | undefined = undefined
+
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
@@ -244,6 +246,7 @@
     {rightSection}
     {fullSize}
     {object}
+    {position}
     on:close={() => {
       dispatch('close')
     }}

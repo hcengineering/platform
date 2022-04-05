@@ -15,21 +15,44 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { getClient, UserBox } from '@anticrm/presentation'
-  import type { Issue } from '@anticrm/tracker'
+  import { Class, Ref } from '@anticrm/core'
+  import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import type { Issue, Team } from '@anticrm/tracker'
+  import { AnyComponent, Button, EditBox, Grid, IconDown, IconUp } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
-  import Card from '../Card.svelte'
+  // import Card from '../Card.svelte'
+  import { Panel } from '@anticrm/ui'
+  import IssuePresenter from './IssuePresenter.svelte'
 
-  export let object: Issue
+  export let _id: Ref<Issue>
+  export let _class: Ref<Class<Issue>>
+  export let rightSection: AnyComponent | undefined = undefined
 
+  let object: Issue | undefined
+
+  let currentTeam: Team | undefined
+
+  const query = createQuery()
+  $: _id &&
+    _class &&
+    query.query(_class, { _id }, async (result) => {
+      object = result[0]
+    })
+  
+  $: if (object !== undefined) {
+    client.findOne(tracker.class.Team, { _id: object.space }).then((r) => {
+      currentTeam = r
+    })
+  }
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   function change (field: string, value: any) {
-    client.update(object, { [field]: value })
+    if (object !== undefined) {
+      client.update(object, { [field]: value })
+    }
   }
 
   onMount(() => {
@@ -37,44 +60,62 @@
   })
 </script>
 
-<Card
-  label={tracker.string.NewIssue}
-  okAction={() => {}}
-  canSave={true}
-  on:close={() => {
-    dispatch('close')
-  }}
->
 {#if object !== undefined}
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={tracker.string.Title}
-      bind:value={object.title}
-      placeholder={tracker.string.IssueTitlePlaceholder}
-      maxWidth={'16rem'}
-      focus
-      on:change={() => change('title', object.title) }
-    />
-    <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}
-    on:value={(evt) => change('description', evt.detail) }/>
-    <UserBox
-      _class={contact.class.Employee}
-      title={tracker.string.Assignee}
-      caption={tracker.string.Assignee}
-      bind:value={object.assignee}
-      allowDeselect
-      titleDeselect={tracker.string.TaskUnAssign}
-      on:change={() => change('assignee', object.assignee) }
-    />
-  </Grid>
+  <Panel
+    reverseCommands={true}
+    useOverlay={false}
+    rightSection={rightSection !== undefined}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <svelte:fragment slot="subtitle">
+      {#if currentTeam}
+        <IssuePresenter value={object} {currentTeam} />
+      {/if}
+    </svelte:fragment>
+    <svelte:fragment slot="actions">
+      <div class="tool flex gap-1">
+        <Button icon={IconDown}/>
+        <Button icon={IconUp}/>
+      </div>
+    </svelte:fragment>
+    <div class="p-10">
+      <Grid column={1} rowGap={1.5}>
+        <EditBox
+          label={tracker.string.Title}
+          bind:value={object.title}
+          placeholder={tracker.string.IssueTitlePlaceholder}
+          maxWidth={'16rem'}
+          focus
+          on:change={() => change('title', object?.title)}
+        />
+        <StyledTextBox
+          alwaysEdit
+          bind:content={object.description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+          on:value={(evt) => change('description', evt.detail)}
+        />
+        <UserBox
+          _class={contact.class.Employee}
+          title={tracker.string.Assignee}
+          caption={tracker.string.Assignee}
+          bind:value={object.assignee}
+          allowDeselect
+          titleDeselect={tracker.string.TaskUnAssign}
+          on:change={() => change('assignee', object?.assignee)}
+        />
+      </Grid>
+    </div>
+  </Panel>
 {/if}
-</Card>
+
 <style lang="scss">
   .description {
     display: flex;
     padding: 1rem;
     height: 12rem;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
   }

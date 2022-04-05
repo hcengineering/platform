@@ -21,13 +21,17 @@
   import { getMetadata, IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
-    AnyComponent, closePopup,
+    AnyComponent,
+    closePanel,
+    closePopup,
     closeTooltip,
-    Component, getCurrentLocation,
+    Component,
+    getCurrentLocation,
     location,
     Location,
     navigate,
     PanelInstance,
+    panelstore,
     Popup,
     showPopup,
     TooltipInstance
@@ -43,7 +47,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  
 
   export let client: Client
 
@@ -91,8 +94,11 @@
   async function updateSpace (spaceId?: Ref<Space>, spaceSpecial?: string): Promise<void> {
     if (spaceId === currentSpace) {
       // Check if we need update location.
-      const loc = getCurrentLocation()
       if (spaceSpecial !== currentSpecial && spaceSpecial !== asideId) {
+        closePopup()
+        closePanel()
+        closeTooltip()
+        const loc = getCurrentLocation()
         if (spaceSpecial !== undefined) {
           setSpaceSpecial(loc, spaceSpecial)
         } else {
@@ -120,6 +126,9 @@
       createItemDialog = currentView?.createItemDialog ?? undefined
       createItemLabel = currentView?.createItemLabel ?? undefined
 
+      closePopup()
+      closePanel()
+      closeTooltip()
       const loc = getCurrentLocation()
       loc.path[2] = spaceId
       loc.path.length = 3
@@ -160,6 +169,9 @@
       loc.path[2] = id
       loc.path.length = 3
       navigate(loc)
+      closePopup()
+      closePanel()
+      closeTooltip()
     }
   }
 
@@ -234,6 +246,10 @@
     createItemDialog = undefined
     createItemLabel = undefined
 
+    closePanel()
+    closeTooltip()
+    closePopup()
+
     const loc = getCurrentLocation()
     loc.path[1] = app._id
     loc.path.length = 2
@@ -263,26 +279,34 @@
     navigate(loc)
     asideId = undefined
   }
+
+  let contentPanel: HTMLElement
 </script>
 
 {#if client}
   <svg class="svg-mask">
     <clipPath id="notify-normal">
-      <path d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z" />
+      <path
+        d="M0,0v52.5h52.5V0H0z M34,23.2c-3.2,0-5.8-2.6-5.8-5.8c0-3.2,2.6-5.8,5.8-5.8c3.2,0,5.8,2.6,5.8,5.8 C39.8,20.7,37.2,23.2,34,23.2z"
+      />
     </clipPath>
     <clipPath id="notify-small">
       <path d="M0,0v45h45V0H0z M29.5,20c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S32.3,20,29.5,20z" />
     </clipPath>
     <clipPath id="nub-bg">
-      <path d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z" />
+      <path
+        d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z"
+      />
     </clipPath>
     <clipPath id="nub-border">
-      <path d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z" />
+      <path
+        d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z"
+      />
     </clipPath>
   </svg>
   <div class="workbench-container">
     <div class="antiPanel-application" on:click={toggleNav}>
-      <div class="flex-col mt-1">        
+      <div class="flex-col mt-1">
         <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}
@@ -319,7 +343,8 @@
           notify={hasNotification}
         />
         <div class="flex-center">
-          <div id="profile-button"
+          <div
+            id="profile-button"
             class="cursor-pointer"
             on:click|stopPropagation={(el) => {
               showPopup(AccountPopup, {}, 'account')
@@ -334,10 +359,10 @@
     </div>
     {#if currentApplication && navigatorModel && navigator && visibileNav}
       <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
-        {#if currentApplication}          
+        {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}
-            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }}/>
+            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} />
           {/if}
         {/if}
         <Navigator
@@ -349,24 +374,29 @@
           on:archive={(evt) => selectArchive()}
         />
         {#if currentApplication.navFooterComponent}
-          <Component is={currentApplication.navFooterComponent} props={{ currentSpace }}/>
+          <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
         {/if}
       </div>
     {/if}
-    <div class="antiPanel-component antiComponent border-left">
+    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel}>
       {#if currentApplication && currentApplication.component}
-        <Component is={currentApplication.component} props={{ currentSpace }}/>
+        <Component is={currentApplication.component} props={{ currentSpace }} />
       {:else if specialComponent}
-        <Component is={specialComponent.component} props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }} />
+        <Component
+          is={specialComponent.component}
+          props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
+        />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="antiPanel-component indent antiComponent filled"><Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} /></div>
+    <div class="antiPanel-component indent antiComponent filled">
+      <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+    </div>
     {/if}
   </div>
-  <PanelInstance />
+  <PanelInstance {contentPanel} />
   <Popup />
   <TooltipInstance />
 {:else}

@@ -23,7 +23,7 @@
   export let inline: boolean = false
 
   async function show () {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'middle')
   }
 </script>
 
