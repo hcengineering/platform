@@ -55,7 +55,6 @@ import { Action } from '@anticrm/view';
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, comment, chunter.class.Comment)
     actions.push(subscribeAction)
-    console.log(actions)
     showPopup(
       Menu,
       {
