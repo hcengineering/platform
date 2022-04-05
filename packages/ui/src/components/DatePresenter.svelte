@@ -120,19 +120,44 @@
     edits.forEach(edit => {
       edit.value = getValue(currentDate, edit.id)
     })
+    edits = edits
   }
   const saveDate = (): void => {
     value = currentDate.getTime()
-    // dateToEdits()
+    dateToEdits()
     renderCellStyles()
     dispatch('change', value)
   }
-  $: if (value !== null && value !== undefined) dateToEdits()
-     else if (value === null) {
-       edits.map(edit => edit.value = -1)
-       currentDate = today
-      //  dateToEdits()
-     }
+  if (value !== null && value !== undefined) dateToEdits()
+  else if (value === null) {
+    edits.map(edit => edit.value = -1)
+    currentDate = today
+  }
+
+  const fixEdits = (): void => {
+    let tempValues: number[] = []
+    edits.forEach((edit, i) => {
+      tempValues[i] = edit.value > 0 ? edit.value : getValue(currentDate, edit.id)
+    })
+    console.log('!!!!!!!!! Check Edits: ', tempValues)
+    currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
+  }
+  const isNull = (full: boolean = false): boolean => {
+    let result: boolean = false
+    edits.forEach((edit, i) => {
+      if (edit.value < 1 && full) result = true
+      if (i < 3 && !full && edit.value < 1) result = true
+    })
+    return result
+  }
+  const closeDatePopup = (): void => {
+    if (!isNull(true)) {
+      saveDate()
+      console.log('!!!!!!!!!!!!!! SAVED !!!!!!!!!!!')
+    } else value = null
+    edit = false
+    // selected = 'day'
+  }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
     const target = ev.target as HTMLElement
@@ -142,37 +167,52 @@
       const num: number = parseInt(ev.key, 10)
 
       if (startTyping) {
-        edits.forEach(edit => { if (edit.id === ed) edit.value = num })
-        startTyping = false
+        // edits.forEach(edit => { if (edit.id === ed) edit.value = num })
+        if (num === 0) edits[index].value = 0
+        else {
+          edits[index].value = num
+          startTyping = false
+        }
         console.log('!!! First number', edits, ed)
       } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
         edits.forEach(edit => { if (edit.id === ed) edit.value = getMaxValue(currentDate, ed) })
       } else {
         edits.forEach(edit => { if (edit.id === ed) edit.value = edit.value * 10 + num })
       }
+
+      if (!isNull(false) && edits[2].value > 999 && !startTyping) {
+        fixEdits()
+        currentDate = setValue(edits[index].value, currentDate, ed)
+        dateToEdits()
+      }
       edits = edits
-      currentDate = setValue(edits[index].value, currentDate, ed)
-      // saveDate()
+
       if (selected === 'day' && edits[0].value > getMaxValue(currentDate, 'day') / 10) selected = 'month'
       else if (selected === 'month' && edits[1].value > 1) selected = 'year'
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
       else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
-      console.log('!!!!!!!!!!!! Digit', edits)
+      // console.log('!!!!!!!!!!!! Digit', edits)
     }
     if (ev.code === 'Enter') {
-      currentDate.setSeconds(0, 0)
+      fixEdits()
       saveDate()
       edit = false
     }
     if (ev.code === 'Backspace') {
       edits[index].value = -1
+      startTyping = true
     }
     if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && edits[index].el) {
       if (edits[index].value !== -1) {
         let val = (ev.code === 'ArrowUp')
                 ? edits[index].value + 1
                 : edits[index].value - 1
-        if (currentDate) currentDate = setValue(val, currentDate, ed)
+        if (currentDate) {
+          currentDate = setValue(val, currentDate, ed)
+          dateToEdits()
+          // fixEdits()
+          saveDate()
+        }
       }
     }
     if (ev.code === 'ArrowLeft' && edits[index].el) {
@@ -181,21 +221,23 @@
     if (ev.code === 'ArrowRight' && edits[index].el) {
       selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
     }
+    if (ev.code === 'Tab') {
+      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDatePopup()
+    }
   }
 
   const focused = (ed: TEdits): void => {
     selected = ed
     startTyping = true
+    console.log('!!!!!!!!!!!!! FOCUSED !!!!!!!!!!!!! -------- selected: ', selected)
   }
   const unfocus = (ev: FocusEvent, ed: TEdits | HTMLElement): void => {
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
     edits.forEach(edit => { if (edit.el === target) kl = true })
     if (target === datePopup || target === closeBtn) kl = true
-    if (!kl) {
-      edit = false
-      selected = 'day'
-    }
+    console.log('!!!!!!!!!!!!! UnFocus !!!!!!!!!!!!! -------- target: ', target, ' --- kl: ', kl, ' --- ed: ', ed, kl ? ' --- Not Closed Popup' : ' --- Closed Popup!!!')
+    if (!kl || target === null) closeDatePopup()
   }
 
   $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
@@ -225,6 +267,7 @@
   } else {
     if (datePopup) datePopup.style.visibility = 'hidden'
   }
+  $: console.log('!!!!!!!! EDIT !!!!!!!!!! ------ ', edit)
 </script>
 
 <button
@@ -239,7 +282,7 @@
       on:focus={() => focused(edits[0].id)}
       on:blur={(ev) => unfocus(ev, edits[0].id)}
     >
-      {#if (value !== null && value !== undefined) || (value === null && edits[0].value !== -1)}
+      {#if (value !== null && value !== undefined) && (edits[0].value > 0)}
         {edits[0].value.toString().padStart(2, '0')}
       {:else}ДД{/if}
     </span>
@@ -249,7 +292,7 @@
       on:focus={() => focused(edits[1].id)}
       on:blur={(ev) => unfocus(ev, edits[1].id)}
     >
-      {#if (value !== null && value !== undefined) || (value === null && edits[1].value !== -1)}
+      {#if (value !== null && value !== undefined) && (edits[1].value > 0)}
         {edits[1].value.toString().padStart(2, '0')}
       {:else}ММ{/if}
     </span>
@@ -259,8 +302,8 @@
       on:focus={() => focused(edits[2].id)}
       on:blur={(ev) => unfocus(ev, edits[2].id)}
     >
-      {#if (value !== null && value !== undefined) || (value === null && edits[2].value !== -1)}
-        {edits[2].value.toString().padStart(2, '0')}
+      {#if (value !== null && value !== undefined) && (edits[2].value > 0)}
+        {edits[2].value.toString().padStart(4, '0')}
       {:else}ГГГГ{/if}
     </span>
     {#if withTime}
@@ -288,6 +331,7 @@
           selected = 'day'
           startTyping = true
           value = null
+          edits.forEach(edit => edit.value = -1)
           if (edits[0].el) edits[0].el.focus()
         }}
         on:blur={(ev) => unfocus(ev, closeBtn)}
@@ -353,6 +397,7 @@
   .datetime-popup-container {
     visibility: hidden;
     position: fixed;
+    outline: none;
     z-index: 10000;
   }
 
