@@ -14,10 +14,13 @@
 -->
 
 <script lang="ts">
+import { Attachment } from '@anticrm/attachment';
+
   import { AttachmentDocList } from '@anticrm/attachment-resources'
+import AttachmentList from '@anticrm/attachment-resources/src/components/AttachmentList.svelte';
   import type { Message } from '@anticrm/chunter'
   import contact,{ Employee,EmployeeAccount,formatName } from '@anticrm/contact'
-  import { Account,Ref } from '@anticrm/core'
+  import { Account,Ref, WithLookup } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
@@ -32,9 +35,12 @@
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
 
-  export let message: Message
+  export let message: WithLookup<Message>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
+
+  $: employee = getEmployee(message)
+  $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -62,10 +68,11 @@
     )
   }
 
-  async function getEmployee (createdBy: Ref<Account>): Promise<Employee | undefined> {
-    const account = await client.findOne(contact.class.EmployeeAccount, { _id: createdBy as Ref<EmployeeAccount> })
-    if (account === undefined) return
-    return employees.get(account.employee)
+  function getEmployee (message: WithLookup<Message>): Employee | undefined {
+    const employee = (message.$lookup?.createBy as EmployeeAccount).employee
+    if (employee !== undefined) {
+      return employees.get(employee)
+    }
   }
 
   function openThread () {
@@ -74,25 +81,23 @@
 </script>
 
 <div class="container">
-  {#await getEmployee(message.createBy) then employee}
-    <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
-    <div class="message">
-      <div class="header">
-        {#if employee}{formatName(employee.name)}{/if}
-        <span>{getTime(message.createOn)}</span>
-      </div>
-      <div class="text"><MessageViewer message={message.content}/></div>
-      {#if message.attachments}<div class="attachments"><AttachmentDocList value={message} /></div>{/if}
-      {#if (reactions || message.replies)}
-        <div class="footer flex-col">
-          <div>{#if reactions}<Reactions/>{/if}</div>
-          {#if !thread}
-            <div>{#if message.replies}<Replies replies={message.replies} lastReply={message.lastReply} on:click={openThread} />{/if}</div>
-          {/if}
-        </div>
-      {/if}
+  <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
+  <div class="message">
+    <div class="header">
+      {#if employee}{formatName(employee.name)}{/if}
+      <span>{getTime(message.createOn)}</span>
     </div>
-  {/await}
+    <div class="text"><MessageViewer message={message.content}/></div>
+    {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {#if (reactions || message.replies)}
+      <div class="footer flex-col">
+        <div>{#if reactions}<Reactions/>{/if}</div>
+        {#if !thread}
+          <div>{#if message.replies}<Replies replies={message.replies} lastReply={message.lastReply} on:click={openThread} />{/if}</div>
+        {/if}
+      </div>
+    {/if}
+  </div>
   <div class="buttons">
     <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} action={(e) => { showMenu(e) }}/></div>
     {#if !thread}

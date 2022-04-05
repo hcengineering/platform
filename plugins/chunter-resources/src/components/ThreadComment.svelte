@@ -14,10 +14,11 @@
 -->
 
 <script lang="ts">
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
+  import { Attachment } from '@anticrm/attachment'
+  import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Comment } from '@anticrm/chunter'
-  import contact,{ Employee,EmployeeAccount,formatName } from '@anticrm/contact'
-  import { Account,Ref } from '@anticrm/core'
+  import { Employee,EmployeeAccount,formatName } from '@anticrm/contact'
+  import { Ref,WithLookup } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
   import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
@@ -29,8 +30,10 @@
   import Emoji from './icons/Emoji.svelte'
   import Reactions from './Reactions.svelte'
 
-  export let comment: Comment
+  export let comment: WithLookup<Comment>
   export let employees: Map<Ref<Employee>, Employee>
+
+  $: attachments = (comment.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
 
@@ -56,30 +59,31 @@
     )
   }
 
-  async function getEmployee (createdBy: Ref<Account>): Promise<Employee | undefined> {
-    const account = await client.findOne(contact.class.EmployeeAccount, { _id: createdBy as Ref<EmployeeAccount> })
-    if (account === undefined) return
-    return employees.get(account.employee)
+  $: employee = getEmployee(comment)
+
+  function getEmployee (comment: WithLookup<Comment>): Employee | undefined {
+    const employee = (comment.$lookup?.modifiedBy as EmployeeAccount)?.employee
+    if (employee !== undefined) {
+      return employees.get(employee)
+    }
   }
 </script>
 
 <div class="container">
-  {#await getEmployee(comment.modifiedBy) then employee}
-    <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
-    <div class="message">
-      <div class="header">
-        {#if employee}{formatName(employee.name)}{/if}
-        <span>{getTime(comment.modifiedOn)}</span>
-      </div>
-      <div class="text"><MessageViewer message={comment.message}/></div>
-      {#if comment.attachments}<div class="attachments"><AttachmentDocList value={comment} /></div>{/if}
-      {#if reactions}
-        <div class="footer">
-          <div><Reactions/></div>
-        </div>
-      {/if}
+  <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
+  <div class="message">
+    <div class="header">
+      {#if employee}{formatName(employee.name)}{/if}
+      <span>{getTime(comment.modifiedOn)}</span>
     </div>
-  {/await}
+    <div class="text"><MessageViewer message={comment.message}/></div>
+    {#if comment.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {#if reactions}
+      <div class="footer">
+        <div><Reactions/></div>
+      </div>
+    {/if}
+  </div>
   <div class="buttons">
     <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} action={(e) => { showMenu(e) }}/></div>
     <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>

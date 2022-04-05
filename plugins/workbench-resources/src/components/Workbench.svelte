@@ -391,9 +391,7 @@
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-    <div class="antiPanel-component indent antiComponent filled">
-      <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-    </div>
+      <div class="antiPanel-component antiComponent border-left"><Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} /></div>
     {/if}
   </div>
   <PanelInstance {contentPanel} />

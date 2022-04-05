@@ -16,6 +16,7 @@
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
 import type { Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -26,6 +27,9 @@ export const serverChunterId = 'server-chunter' as Plugin
  * @public
  */
 export default plugin(serverChunterId, {
+  trigger: {
+    CommentCreate: '' as Resource<TriggerFunc>
+  },
   function: {
     CommentRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>,
     ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,

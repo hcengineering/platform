@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
-import chunter, { Comment, Channel } from '@anticrm/chunter'
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
+import chunter, { Channel, Comment, Message } from '@anticrm/chunter'
+import { EmployeeAccount } from '@anticrm/contact'
+import core, { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
+import { TriggerControl } from '@anticrm/server-core'
 import workbench from '@anticrm/workbench'
 
 /**
@@ -49,8 +51,40 @@ export async function CommentRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T
   return result
 }
 
+/**
+ * @public
+ */
+export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  if (tx._class !== core.class.TxCreateDoc) return []
+  const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
+  if (!hierarchy.isDerived(doc._class, chunter.class.Comment)) {
+    return []
+  }
+
+  const comment = doc as Comment
+  if (!hierarchy.isDerived(comment.attachedToClass, chunter.class.Message)) {
+    return []
+  }
+
+  const lastReplyTx = control.txFactory.createTxUpdateDoc<Message>(chunter.class.Message, comment.space, comment.attachedTo as Ref<Message>, {
+    lastReply: tx.modifiedOn
+  })
+  const employee = control.modelDb.getObject(tx.modifiedBy) as EmployeeAccount
+  const employeeTx = control.txFactory.createTxUpdateDoc<Message>(chunter.class.Message, comment.space, comment.attachedTo as Ref<Message>, {
+    $push: { replies: employee.employee }
+  })
+  const result: TxUpdateDoc<Message>[] = []
+  result.push(lastReplyTx)
+  result.push(employeeTx)
+  return result
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  trigger: {
+    CommentCreate
+  },
   function: {
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,

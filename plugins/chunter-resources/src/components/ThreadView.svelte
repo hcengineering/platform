@@ -16,11 +16,12 @@
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { Comment,Message } from '@anticrm/chunter'
-  import contact,{ Employee, EmployeeAccount } from '@anticrm/contact'
-  import { Class,generateId,getCurrentAccount,Lookup,Ref, Space } from '@anticrm/core'
+  import contact,{ Employee,EmployeeAccount } from '@anticrm/contact'
+  import core,{ generateId,getCurrentAccount,Ref,Space,TxFactory } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery,getClient } from '@anticrm/presentation'
   import { IconClose,Label } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate,beforeUpdate,createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
@@ -37,8 +38,23 @@
   let message: Message | undefined
   let commentId = generateId()
 
+  let div: HTMLDivElement | undefined
+	let autoscroll: boolean = false
+
+	beforeUpdate(() => {
+		autoscroll = div !== undefined && (div.offsetHeight + div.scrollTop) > (div.scrollHeight - 20)
+	})
+
+	afterUpdate(() => {
+		if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+	})
+
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+
   const lookup = {
-    _id: { attachments: attachment.class.Attachment }
+    _id: { attachments: attachment.class.Attachment },
+    modifiedBy: core.class.Account
   }
 
   $: updateQueries(_id)
@@ -47,12 +63,19 @@
     messageQuery.query(chunter.class.Message, {
       _id: id
     }, (res) => message = res[0], {
-      lookup
+      lookup: {
+        _id: { attachments: attachment.class.Attachment },
+        createBy: core.class.Account
+      }
     })
 
     query.query(chunter.class.Comment, {
       attachedTo: id
-    }, (res) => comments = res, {
+    }, (res) => {
+      comments = res
+      newMessagesPos = newMessagesStart(comments)
+      notificationClient.updateLastView(id, chunter.class.Message)
+    }, {
       lookup
     })
   }
@@ -64,8 +87,9 @@
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
-    const employee = (getCurrentAccount() as EmployeeAccount).employee
-    await client.createDoc(chunter.class.Comment, space, {
+    const me = getCurrentAccount()._id
+    const txFactory = new TxFactory(me)
+    const tx = txFactory.createTxCreateDoc(chunter.class.Comment, space, {
       attachedTo: _id,
       attachedToClass: chunter.class.Message,
       collection: 'replies',
@@ -73,39 +97,49 @@
       attachments
     }, commentId)
 
-    await client.updateDoc(chunter.class.Message, space, _id, {
-      $push: { replies: employee },
-      lastReply: new Date().getTime()
-    })
+    await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
+    await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, space, chunter.class.Channel, commentId, message)
+
     commentId = generateId()
   }
   let comments: Comment[] = []
+
+  function newMessagesStart (comments: Comment[]): number {
+    const lastView = $lastViews.get(_id)
+    if (lastView === undefined) return -1
+    for (let index = 0; index < comments.length; index++) {
+      const comment = comments[index]
+      if (comment.modifiedOn > lastView) return index
+    }
+    return -1
+  }
+
+  let newMessagesPos: number = -1
 </script>
 
 <div class="header">
   <div class="title"><Label label={chunter.string.Thread} /></div>
   <div class="tool" on:click={() => { dispatch('close') }}><IconClose size='medium' /></div>
 </div>
-<div class="h-full flex-col">
-  <div class="content">
-    {#if message}
-      <div class="flex-col">
-        <MsgView {message} {employees} thread />
-        {#if comments.length}
-          <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: message.replies?.length }} />
-        {/if}
-        {#each comments as comment}
-          <ThreadComment {comment} {employees} />
-        {/each}
-      </div>
+<div class="flex-col vScroll content" bind:this={div}>
+  {#if message}
+    <MsgView {message} {employees} thread />
+    {#if comments.length}
+      <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}
-  </div>
-  <div class="ref-input">
-    <AttachmentRefInput {space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage}/>
-  </div>
+    {#each comments as comment, i (comment._id)}
+      {#if newMessagesPos === i}
+        <ChannelSeparator title={chunter.string.New} line reverse isNew />
+      {/if}
+      <ThreadComment {comment} {employees} />
+    {/each}
+  {/if}
+</div>
+<div class="ref-input">
+  <AttachmentRefInput {space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage}/>
 </div>
 
 <style lang="scss">
@@ -134,9 +168,6 @@
     }
   }
   .content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
     margin: 1rem 1rem 0px;
     padding: 1.5rem 1.5rem 0px;
   }

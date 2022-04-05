@@ -14,19 +14,36 @@
 -->
 
 <script lang="ts">
+  import attachment from '@anticrm/attachment'
   import type { Message } from '@anticrm/chunter'
   import contact,{ Employee } from '@anticrm/contact'
-  import { Ref,Space } from '@anticrm/core'
+  import core, { Doc,Ref,Space,Timestamp, WithLookup } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
+  import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
+  import ChannelSeparator from './ChannelSeparator.svelte'
   import MessageComponent from './Message.svelte'
-
   export let space: Ref<Space> | undefined
 
-  let messages: Message[] | undefined
+  let div: HTMLDivElement | undefined
+	let autoscroll: boolean = false
+
+	beforeUpdate(() => {
+		autoscroll = div !== undefined && (div.offsetHeight + div.scrollTop) > (div.scrollHeight - 20)
+	})
+
+	afterUpdate(() => {
+		if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+	})
+
+  let messages: WithLookup<Message>[] | undefined
   let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
   const query = createQuery()
   const employeeQuery = createQuery()
+
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
 
   employeeQuery.query(contact.class.Employee, { }, (res) => employees = new Map(res.map((r) => { return [r._id, r] })))
 
@@ -42,14 +59,37 @@
       space
     }, (res) => {
       messages = res
+      newMessagesPos = newMessagesStart(messages)
+      notificationClient.updateLastView(space, chunter.class.Channel)
+    }, {
+      lookup: {
+        _id: { attachments: attachment.class.Attachment },
+        createBy: core.class.Account
+      }
     })
   }
 
+  function newMessagesStart (messages: Message[]): number {
+    if (space === undefined) return -1
+    const lastView = $lastViews.get(space)
+    if (lastView === undefined) return -1
+    for (let index = 0; index < messages.length; index++) {
+      const message = messages[index]
+      if (message.createOn > lastView) return index
+    }
+    return -1
+  }
+
+  let newMessagesPos: number = -1
+
 </script>
 
-<div class="flex-col container">
+<div class="flex-col vScroll container" bind:this={div}>
   {#if messages}
-    {#each messages as message}
+    {#each messages as message, i (message._id)}
+      {#if newMessagesPos === i}
+        <ChannelSeparator title={chunter.string.New} line reverse isNew />
+      {/if}
       <MessageComponent {message} {employees} on:openThread />
     {/each}
   {/if}
@@ -57,6 +97,7 @@
 
 <style lang="scss">
   .container {
-    flex-shrink: 0;
+    margin: 1rem 1rem 0;
+    padding: 1.5rem 1.5rem 0px;
   }
 </style>
