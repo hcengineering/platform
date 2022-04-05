@@ -36,7 +36,7 @@ async function MarkUnread (object: Message): Promise<void> {
 
 async function MarkCommentUnread (object: Comment): Promise<void> {
   const client = NotificationClientImpl.getClient()
-  const value =  object.modifiedOn - 1
+  const value = object.modifiedOn - 1
   await client.updateLastView(object.attachedTo, object.attachedToClass, value, true)
 }
 
