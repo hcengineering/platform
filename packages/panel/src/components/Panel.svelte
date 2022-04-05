@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import activity from '@anticrm/activity'
+  import calendar from '@anticrm/calendar'
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
-  import calendar from '@anticrm/calendar'
   import type { Asset } from '@anticrm/platform'
-  import { ActionIcon,AnyComponent,AnySvelteComponent,Component,Icon,IconClose,IconExpand,IconMoreH,Scroller } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { ActionIcon, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
+  import { PopupAlignment } from '@anticrm/ui'
 
   export let title: string
   export let subtitle: string | undefined = undefined
@@ -28,72 +28,53 @@
   export let fullSize: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
+  export let position: PopupAlignment | undefined = undefined
 
-  const dispatch = createEventDispatcher()
+  let innerWidth = 0
+
+  $: allowFullSize = innerWidth > 900 && position === 'full'
+  $: isFullSize = allowFullSize && fullSize
 </script>
-
-<div class="antiOverlay" on:click={() => { dispatch('close') }} />
-<div class="antiDialogs antiComponent" class:fullSize>
-  {#if fullSize}
-    <div class="ad-section-50 divide">
-      <div class="ac-header short mirror divide">
-        <div class="ac-header__wrap-title">
-          {#if icon }<div class="ac-header__icon"><Icon {icon} size={'large'}/></div>{/if}
-          <div class="ac-header__wrap-description">
-            <span class="ac-header__title">{title}</span>
-            {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
-          </div>
-        </div>
-        <div class="flex">
-          <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-          <div class="ml-2">
-            <Component is={notification.component.LastViewEditor} props={{ value: object }} />
-          </div>
-        </div>
-      </div>
-      {#if $$slots.subtitle}
-        <div class="ac-subtitle">
-          <div class="ac-subtitle-content">
-            <slot name="subtitle" />
-          </div>
-        </div>
-      {/if}
-      <Scroller>
-        <div class="p-10"><slot /></div>
-      </Scroller>
-    </div>
-    <div class="ad-section-50">
-      <Component is={rightSection ?? activity.component.Activity} props={{ object, fullSize }} />
-    </div>
-  {:else}
-    <div class="ac-header short mirror-tool divide">
-      <div class="ac-header__wrap-title">
-        {#if icon }<div class="ac-header__icon"><Icon {icon} size={'large'}/></div>{/if}
-        <div class="ac-header__wrap-description">
-          <span class="ac-header__title">{title}</span>
-          {#if subtitle }<span class="ac-header__description">{subtitle}</span>{/if}
-        </div>
-      </div>
+<svelte:window bind:innerWidth />
+<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize}>
+  <svelte:fragment slot="subtitle">
+    <slot name="subtitle" />
+  </svelte:fragment>
+  <svelte:fragment slot="commands">
+    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    <div class="ml-2">
       <Component is={notification.component.LastViewEditor} props={{ value: object }} />
     </div>
-    {#if $$slots.subtitle}
-      <div class="ac-subtitle">
-        <div class="ac-subtitle-content">
-          <slot name="subtitle" />
-        </div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="rightSection">
+    {#if isFullSize}
+      <div class="ad-section-50">
+        <Component is={rightSection ?? activity.component.Activity} props={{ object, fullSize: isFullSize }} />
       </div>
     {/if}
-    <Component is={activity.component.Activity} props={{ object, fullSize }}>
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    {#if allowFullSize}
+      <div class="tool">
+        <ActionIcon
+          icon={IconExpand}
+          size={'medium'}
+          action={() => {
+            fullSize = !fullSize
+          }}
+        />
+      </div>
+    {/if}
+  </svelte:fragment>
+  {#if isFullSize}
+    <Scroller>
+      <div class="p-10"><slot /></div>
+    </Scroller>
+  {:else}
+    <Component is={activity.component.Activity} props={{ object, fullSize: isFullSize }}>
       <slot />
     </Component>
   {/if}
+</Panel>
 
-  <div class="ad-tools">
-    <div class="tool">
-      <ActionIcon icon={IconExpand} size={'medium'} action={() => { fullSize = !fullSize }} />
-    </div>
-    <div class="tool">
-      <ActionIcon icon={IconClose} size={'medium'} action={() => { dispatch('close') }} />
-    </div>
-  </div>
-</div>

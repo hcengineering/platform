@@ -20,7 +20,7 @@ import { readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
-export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment, AnySvelteComponentWithProps, Location } from './types'
+export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment, AnySvelteComponentWithProps, Location, PopupAlignment } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 
@@ -97,6 +97,7 @@ export { default as IconCheck } from './components/icons/Check.svelte'
 export { default as IconArrowLeft } from './components/icons/ArrowLeft.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
+export { default as Panel } from './components/Panel.svelte'
 
 export * from './utils'
 export * from './popups'

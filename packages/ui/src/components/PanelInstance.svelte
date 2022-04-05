@@ -17,8 +17,10 @@
   import { getResource } from '@anticrm/platform'
   import { afterUpdate } from 'svelte'
   import { AnySvelteComponent, Spinner } from '..'
-  import { closePanel, PanelProps, panelstore as modal } from '../panelup'
+  import { closePanel, PanelProps, panelstore } from '../panelup'
   import { popupstore } from '../popups'
+
+  export let contentPanel: HTMLElement
 
   let modalHTML: HTMLElement
   let componentInstance: any
@@ -31,7 +33,7 @@
     closePanel()
   }
 
-  $: props = $modal.panel
+  $: props = $panelstore.panel
 
   $: if (props !== undefined) {
     getResource(props.component).then((r) => {
@@ -51,7 +53,7 @@
     _close()
   }
 
-  const fitPopup = (props: PanelProps): void => {
+  const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
       if (props.element) {
         show = false
@@ -76,10 +78,11 @@
           } else {
             modalHTML.style.left = rect.left + 'px'
           }
-        } else if (props.element === 'right') {
-          modalHTML.style.top = '0'
-          modalHTML.style.bottom = '0'
-          modalHTML.style.right = '0'
+        } else if (props.element === 'right' && contentPanel !== undefined) {
+          const rect = contentPanel.getBoundingClientRect()
+          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
+          modalHTML.style.bottom = '0.75rem'
+          modalHTML.style.right = '0.75rem'
         } else if (props.element === 'float') {
           modalHTML.style.top = '4rem'
           modalHTML.style.bottom = '4rem'
@@ -87,11 +90,24 @@
         } else if (props.element === 'account') {
           modalHTML.style.bottom = '2.75rem'
           modalHTML.style.left = '5rem'
-        } else if (props.element === 'full') {
-          modalHTML.style.top = '0'
-          modalHTML.style.bottom = '0'
-          modalHTML.style.left = '0'
-          modalHTML.style.right = '0'
+        } else if (props.element === 'full' && contentPanel !== undefined) {
+          const rect = contentPanel.getBoundingClientRect()
+          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
+          modalHTML.style.bottom = '0.75rem'
+          modalHTML.style.left = '0.75rem'
+          modalHTML.style.right = '0.75rem'
+        } else if (props.element === 'content' && contentPanel !== undefined) {
+          const rect = contentPanel.getBoundingClientRect()
+          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
+          modalHTML.style.bottom = '0.75rem'
+          modalHTML.style.left = `calc(${rect.left}px + 0.5rem)`
+          modalHTML.style.right = '0.75rem'
+        } else if (props.element === 'middle' && contentPanel !== undefined) {
+          const rect = contentPanel.getBoundingClientRect()
+          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
+          modalHTML.style.bottom = '0.75rem'
+          modalHTML.style.left = '50%'
+          modalHTML.style.transform = 'translateX(-50%)'
         }
       } else {
         modalHTML.style.top = '50%'
@@ -108,13 +124,13 @@
     }
   }
   afterUpdate(() => {
-    if (props) fitPopup(props)
+    if (props) fitPopup(props, contentPanel)
   })
 </script>
 
 <svelte:window
   on:resize={() => {
-    if (props) fitPopup(props)
+    if (props) fitPopup(props, contentPanel)
   }}
   on:keydown={(evt) => {
     if (props) handleKeydown(evt)
@@ -123,29 +139,33 @@
 {#if props}
   {#if !component}
     <Spinner />
-  {:else}
-    <div class="popup" bind:this={modalHTML} style={'z-index: 401'}>
+  {:else}    
+  <div class="antiPanel panel-instance" bind:this={modalHTML}>      
       <svelte:component
         this={component}
         bind:this={componentInstance}
         _id={props._id}
         _class={props._class}
         rightSection={props.rightSection}
-        on:update={fitPopup}
+        position={props.element }
         on:close={_close}
+        on:update={() => {
+          if (props) {
+            fitPopup(props, contentPanel)
+          }
+        }}
       />
     </div>
-    <div class="modal-overlay" class:show style={'z-index: 400'} on:click={() => escapeClose()} />
+    {#if props.element !== 'content'}
+      <div class="modal-overlay" class:show style={'z-index: 400'} on:click={() => escapeClose()} />
+    {/if}
   {/if}
 {/if}
 
 <style lang="scss">
-  .popup {
+  .panel-instance {
+    z-index: 401;
     position: fixed;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-height: calc(100vh - 2rem);
     background-color: transparent;
   }
   .modal-overlay {
