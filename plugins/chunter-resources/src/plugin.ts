@@ -36,6 +36,7 @@ export default mergeIds(chunterId, chunter, {
     Replies: '' as IntlString,
     Thread: '' as IntlString,
     RepliesCount: '' as IntlString,
-    LastReply: '' as IntlString
+    LastReply: '' as IntlString,
+    New: '' as IntlString
   }
 })

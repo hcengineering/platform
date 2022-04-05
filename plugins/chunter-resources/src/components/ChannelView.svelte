@@ -17,6 +17,7 @@
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { Message } from '@anticrm/chunter'
   import { generateId,getCurrentAccount,Ref,Space, TxFactory } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getClient } from '@anticrm/presentation'
   import { getCurrentLocation,navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
@@ -28,6 +29,7 @@
   const client = getClient()
   const _class = chunter.class.Message
   let _id = generateId() as Ref<Message>
+  const notificationClient = NotificationClientImpl.getClient()
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
@@ -40,10 +42,12 @@
       attachments
     }, _id)
     tx.attributes.createOn = tx.modifiedOn
+    await notificationClient.updateLastView(space, chunter.class.Channel, tx.modifiedOn, true)
     await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, space, chunter.class.Channel, _id, message)
+
     _id = generateId()
   }
 
@@ -55,22 +59,12 @@
 
 </script>
 
-<div class="msg-board">
-  <Channel {space} on:openThread={(e) => { openThread(e.detail) }} />
-</div>
+<Channel {space} on:openThread={(e) => { openThread(e.detail) }} />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage}/>
 </div>
 
 <style lang="scss">
-  .msg-board {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    margin: 1rem 1rem 0;
-    padding: 1.5rem 1.5rem 0px;
-    overflow: auto;
-  }
   .reference {
     margin: 1.25rem 2.5rem;
   }

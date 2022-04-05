@@ -24,6 +24,7 @@
     "Replies": "Replies",
     "LastReply": "Last reply",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
-    "Thread": "Thread"
+    "Thread": "Thread",
+    "New": "New"
   }
 }
