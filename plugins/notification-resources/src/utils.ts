@@ -63,7 +63,8 @@ export class NotificationClientImpl implements NotificationClient {
     const user = getCurrentAccount()._id
     const lastView = time ?? new Date().getTime()
     const current = this.lastViews.get(_id)
-    if (current !== undefined && current.lastView !== -1) {
+    if (current !== undefined) {
+      if (current.lastView === -1 && !force) return
       if (current.lastView < lastView || force) {
         const u = client.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
           lastView: lastView

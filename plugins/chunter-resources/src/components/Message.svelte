@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Message } from '@anticrm/chunter'
-  import { Employee,EmployeeAccount,formatName } from '@anticrm/contact'
-  import { Ref,WithLookup } from '@anticrm/core'
+  import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
-  import { Avatar,getClient,MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon,IconMoreH,Menu,showPopup } from '@anticrm/ui'
+  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
+  import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
@@ -43,11 +44,24 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let reactions: boolean = false
+  const reactions: boolean = false
+
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+  $: subscribed = ($lastViews.get(message._id) ?? -1) > -1
+  $: subscribeAction = subscribed
+    ? ({
+        label: chunter.string.TurnOffReplies,
+        action: chunter.actionImpl.UnsubscribeMessage
+      } as Action)
+    : ({
+        label: chunter.string.GetNewReplies,
+        action: chunter.actionImpl.SubscribeMessage
+      } as Action)
 
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
-    if (actions.length === 0) return
+    actions.push(subscribeAction)
     showPopup(
       Menu,
       {
@@ -85,25 +99,41 @@
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
     </div>
-    <div class="text"><MessageViewer message={message.content}/></div>
+    <div class="text"><MessageViewer message={message.content} /></div>
     {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
-    {#if (reactions || message.replies)}
+    {#if reactions || message.replies}
       <div class="footer flex-col">
-        <div>{#if reactions}<Reactions/>{/if}</div>
+        <div>
+          {#if reactions}<Reactions />{/if}
+        </div>
         {#if !thread}
-          <div>{#if message.replies}<Replies replies={message.replies} lastReply={message.lastReply} on:click={openThread} />{/if}</div>
+          <div>
+            {#if message.replies}<Replies
+                replies={message.replies}
+                lastReply={message.lastReply}
+                on:click={openThread}
+              />{/if}
+          </div>
         {/if}
       </div>
     {/if}
   </div>
   <div class="buttons">
-    <div class="tool"><ActionIcon icon={IconMoreH} size={'medium'} action={(e) => { showMenu(e) }}/></div>
+    <div class="tool">
+      <ActionIcon
+        icon={IconMoreH}
+        size={'medium'}
+        action={(e) => {
+          showMenu(e)
+        }}
+      />
+    </div>
     {#if !thread}
-      <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread}/></div>
+      <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
     {/if}
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'}/></div>
+    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
-    <div class="tool"><ActionIcon icon={Emoji} size={'medium'}/></div>
+    <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>
 </div>
 
@@ -114,7 +144,9 @@
     margin-bottom: 2rem;
     z-index: 1;
 
-    .avatar { min-width: 2.25rem; }
+    .avatar {
+      min-width: 2.25rem;
+    }
 
     .message {
       display: flex;
@@ -127,14 +159,14 @@
         font-size: 1rem;
         line-height: 150%;
         color: var(--theme-caption-color);
-        margin-bottom: .25rem;
+        margin-bottom: 0.25rem;
 
         span {
-          margin-left: .5rem;
+          margin-left: 0.5rem;
           font-weight: 400;
-          font-size: .875rem;
+          font-size: 0.875rem;
           line-height: 1.125rem;
-          opacity: .4;
+          opacity: 0.4;
         }
       }
       .text {
@@ -145,7 +177,7 @@
       }
       .footer {
         align-items: flex-start;
-        margin-top: .5rem;
+        margin-top: 0.5rem;
         user-select: none;
 
         div + div {
@@ -157,14 +189,14 @@
     .buttons {
       position: absolute;
       visibility: hidden;
-      top: -.5rem;
-      right: -.5rem;
+      top: -0.5rem;
+      right: -0.5rem;
       display: flex;
       flex-direction: row-reverse;
       user-select: none;
 
       .tool + .tool {
-        margin-right: .5rem;
+        margin-right: 0.5rem;
       }
     }
 
@@ -183,7 +215,7 @@
       height: calc(100% + 2.5rem);
       background-color: var(--theme-button-bg-enabled);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
       z-index: -1;
     }
   }

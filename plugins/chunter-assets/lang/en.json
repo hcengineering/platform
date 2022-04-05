@@ -25,6 +25,9 @@
     "LastReply": "Last reply",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
     "Thread": "Thread",
-    "New": "New"
+    "New": "New",
+    "MarkUnread": "Mark unread",
+    "GetNewReplies": "Get notified about new replies",
+    "TurnOffReplies": "Turn off notifications for replies"
   }
 }
