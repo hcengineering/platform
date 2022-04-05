@@ -23,6 +23,21 @@
     "Location": "Location",
     "Members": "Members",
     "BoardCreateLabel": "Board",
-    "Settings": "Settings"
+    "Settings": "Settings",
+    "InList": "in list",
+    "AddToCard": "Add to card",
+    "Labels": "Labels",
+    "Checklist": "Checklist",
+    "Dates": "Dates",
+    "Attachments": "Attachments",
+    "CustomFields": "Custom Fields",
+    "Automation": "Automation",
+    "AddButton": "Add Button",
+    "Actions": "Actions",
+    "Move": "Move",
+    "Copy": "Copy",
+    "MakeTemplate": "Make Template",
+    "Watch": "Watch",
+    "Archive": "Archive"
   }
 }

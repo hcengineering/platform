@@ -20,7 +20,8 @@ import board, { boardId } from '@anticrm/board'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(board.icon, {
   Board: `${icons}#board`,
-  Card: `${icons}#card`
+  Card: `${icons}#card`,
+  Plus: `${icons}#plus`
 })
 
 addStringsLoader(boardId, async (lang: string) => await import(`../lang/${lang}.json`))

@@ -16,11 +16,9 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import { ContactPresenter } from '@anticrm/contact-resources'
   import type { WithLookup } from '@anticrm/core'
   import type { Card } from '@anticrm/board'
   import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
   import notification from '@anticrm/notification'
@@ -33,7 +31,7 @@
   }
 
   function showLead () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'middle')
+    showPanel(board.component.EditCard, object._id, object._class, 'middle')
   }
 </script>
 
@@ -56,7 +54,7 @@
       />
     </div>
   </div>
-  <div class="flex-between">   
+  <div class="flex-between">
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
