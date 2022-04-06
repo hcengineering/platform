@@ -21,8 +21,8 @@
 
   export let value: Event
   
-  $: date = value ? new Date(value.date) : undefined
-  $: dueDate = value ? new Date(value.dueDate ?? value.date) : undefined
+  $: date = (value === undefined || value === null) ? null : new Date(value.date)
+  $: dueDate = (value === undefined || value === null) ? null : new Date(value.dueDate ?? value.date)
 
   $: interval = (value.dueDate ?? value.date) - value.date
 
@@ -47,7 +47,7 @@
 
 <div class="antiSelect">
   {#if date}
-    <DatePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
+    <DatePresenter value={value.date} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
     {#if interval > 0}
     {#await formatDueDate(interval) then t}
         <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         

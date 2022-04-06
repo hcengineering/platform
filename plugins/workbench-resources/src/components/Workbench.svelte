@@ -34,6 +34,7 @@
     panelstore,
     Popup,
     showPopup,
+    DatePickerPopup,
     TooltipInstance
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
@@ -397,6 +398,7 @@
   <PanelInstance {contentPanel} />
   <Popup />
   <TooltipInstance />
+  <DatePickerPopup />
 {:else}
   No client
 {/if}

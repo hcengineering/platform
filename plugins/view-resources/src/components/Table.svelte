@@ -23,7 +23,7 @@
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
   import notification from '@anticrm/notification'
-import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>

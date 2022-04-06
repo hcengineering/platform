@@ -13,54 +13,65 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { translate } from '@anticrm/platform'
   import { onMount, createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
-  import { daysInMonth } from './internal/DateUtils'
-  import { TimePopup, tooltipstore as tooltip, showTooltip } from '../..'
-  import DatePopup from './DatePopup.svelte'
+  import { firstDay, daysInMonth, getWeekDayName, getMonthName, day, areDatesEqual } from './internal/DateUtils'
+  import type { TCellStyle, ICell } from './internal/DateUtils'
+  import ui, { TimePopup, Icon, IconClose } from '../..'
   import DPClock from './icons/DPClock.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
 
   export let value: number | null | undefined
-  export let withDate: boolean = true
   export let withTime: boolean = false
+  export let mondayStart: boolean = true
   export let editable: boolean = false
 
-  const INPUT_WIDTH_INCREMENT = 2
   const dispatch = createEventDispatcher()
 
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
   interface IEdits {
     id: TEdits
-    numeric: number
-    value: string
-    el?: HTMLInputElement
+    value: number
+    el?: HTMLElement
   }
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today: Date = new Date(Date.now())
+  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
   let currentDate: Date = new Date(value ?? Date.now())
-
+  currentDate.setSeconds(0, 0)
   let selected: TEdits = 'day'
-  let dateDiv: HTMLElement
-  let timeDiv: HTMLElement
-  let dateBox: HTMLElement
-  let timeBox: HTMLElement
-  let dateContainer: HTMLElement
-  let text: HTMLElement
+  let todayString: string
+  translate(ui.string.Today, {}).then(res => todayString = res)
 
-  let dateShow: boolean = false
-  $: dateShow = !!($tooltip.label || $tooltip.component)
+  let edit: boolean = false
+  let startTyping: boolean = false
+  let datePresenter: HTMLElement
+  let datePopup: HTMLElement
+  let closeBtn: HTMLElement
 
-  function computeSize (t: HTMLInputElement | EventTarget | null, ed: TEdits) {
-    const target = t as HTMLInputElement
-    const val = (target.value === '' || target.value.length < 2) ? '00' : target.value
-    text.innerHTML = val.replaceAll(' ', '&nbsp;')
-    target.style.width = text.clientWidth + INPUT_WIDTH_INCREMENT + 'px'
+  let days: Array<ICell> = []
+  let edits: IEdits[] = [{ id: 'day', value: -1 }, { id: 'month', value: -1 }, { id: 'year', value: -1 },
+                         { id: 'hour', value: -1 }, { id: 'min', value: -1 }]
+
+  const getDateStyle = (date: Date): TCellStyle => {
+    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
+    return 'not-selected'
   }
-
-  const edits: IEdits[] = [{ id: 'day', numeric: 0, value: '0' }, { id: 'month', numeric: 0, value: '0' },
-                           { id: 'year', numeric: 0, value: '0' }, { id: 'hour', numeric: 0, value: '0' },
-                           { id: 'min', numeric: 0, value: '0' }]
+  const renderCellStyles = (): void => {
+    days = []
+    for (let i = 1; i <= daysInMonth(currentDate); i++) {
+      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
+      days.push({
+        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
+        style: getDateStyle(tempDate),
+        focused: false,
+        today: areDatesEqual(tempDate, today)
+      })
+    }
+    days = days
+  }
+  $: if (currentDate) renderCellStyles()
 
   const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
@@ -103,313 +114,471 @@
 
   const dateToEdits = (): void => {
     edits.forEach(edit => {
-      edit.numeric = getValue(currentDate, edit.id)
-      if (value !== undefined && value !== null) edit.value = edit.numeric.toString().padStart(edit.id === 'year' ? 4 : 2, '0')
-      else edit.value = (edit.id === 'year') ? '----' : '--'
-      if (edit.el) {
-        edit.el.value = edit.value
-        computeSize(edit.el, edit.id)
-      }
+      edit.value = getValue(currentDate, edit.id)
     })
+    edits = edits
   }
   const saveDate = (): void => {
+    currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+    currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+    currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
-    $tooltip.props = { value }
+    renderCellStyles()
     dispatch('change', value)
   }
-  $: if (value) dateToEdits()
-  
-  const onInput = (t: HTMLInputElement | EventTarget | null, ed: TEdits) => {
-    const target = t as HTMLInputElement
-    const val: number = Number(target.value)
-    if (isNaN(val)) {
-      target.classList.add('wrong-input')
-      edits[getIndex(ed)].el?.select()
-    } else {
-      target.classList.remove('wrong-input')
-      if (val > getMaxValue(currentDate ?? today, ed)) {
-        setValue(getMaxValue(currentDate ?? today, ed), currentDate ?? today, ed)
-        target.classList.add('wrong-input')
-        edits[getIndex(ed)].el?.select()
-      } else {
-        currentDate = setValue(val, currentDate ?? today, ed)
-        saveDate()
-        if (ed === 'day' && val > daysInMonth(currentDate ?? today) / 10) edits[1].el?.select()
-        else if (ed === 'month' && val > 1) edits[2].el?.select()
-        else if (ed === 'year' && val > 1900 && withTime) edits[3].el?.select()
-        else if (ed === 'hour' && val > 2) edits[4].el?.select()
-      }
-      dateToEdits()
-    }
-    computeSize(t, ed)
+  if (value !== null && value !== undefined) dateToEdits()
+  else if (value === null) {
+    edits.map(edit => edit.value = -1)
+    currentDate = today
   }
-  
+
+  const fixEdits = (): void => {
+    let tempValues: number[] = []
+    edits.forEach((edit, i) => {
+      tempValues[i] = edit.value > 0 ? edit.value : getValue(currentDate, edit.id)
+    })
+    currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
+  }
+  const isNull = (full: boolean = false): boolean => {
+    let result: boolean = false
+    edits.forEach((edit, i) => {
+      if (edit.value < 1 && full) result = true
+      if (i < 3 && !full && edit.value < 1) result = true
+    })
+    return result
+  }
+  const closeDatePopup = (): void => {
+    if (!isNull()) saveDate()
+    else {
+      value = null
+      dispatch('change', null)
+    }
+    edit = false
+  }
+
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
-    const target = ev.target as HTMLInputElement
+    const target = ev.target as HTMLElement
     const index = getIndex(ed)
 
-    if (ev.code === 'Backspace') {
-      target.value = ''
-      target.classList.remove('wrong-input')
+    if (ev.key >= '0' && ev.key <= '9') {
+      const num: number = parseInt(ev.key, 10)
+
+      if (startTyping) {
+        if (num === 0) edits[index].value = 0
+        else {
+          edits[index].value = num
+          startTyping = false
+        }
+      } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
+        edits[index].value = getMaxValue(currentDate, ed)
+      } else {
+        edits[index].value = edits[index].value * 10 + num
+      }
+
+      if (!isNull(false) && edits[2].value > 999 && !startTyping) {
+        fixEdits()
+        currentDate = setValue(edits[index].value, currentDate, ed)
+        dateToEdits()
+      }
+      edits = edits
+
+      if (selected === 'day' && edits[0].value > getMaxValue(currentDate, 'day') / 10) selected = 'month'
+      else if (selected === 'month' && edits[1].value > 1) selected = 'year'
+      else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
+      else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
     }
-    if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && target.value !== '') {
-      let val = (ev.code === 'ArrowUp')
-              ? edits[index].numeric + 1
-              : edits[index].numeric - 1
-      if (currentDate) {
-        target.classList.remove('wrong-input')
-        currentDate = setValue(val, currentDate, ed)
-        saveDate()
+    if (ev.code === 'Enter') closeDatePopup()
+    if (ev.code === 'Backspace') {
+      edits[index].value = -1
+      startTyping = true
+    }
+    if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && edits[index].el) {
+      if (edits[index].value !== -1) {
+        let val = (ev.code === 'ArrowUp')
+                ? edits[index].value + 1
+                : edits[index].value - 1
+        if (currentDate) {
+          currentDate = setValue(val, currentDate, ed)
+          dateToEdits()
+        }
       }
     }
-  }
-
-  const updateFromTooltip = (result: any): void => {
-    if (result.detail !== undefined) {
-      currentDate = new Date(result.detail)
-      saveDate()
+    if (ev.code === 'ArrowLeft' && edits[index].el) {
+      selected = index === 0 ? edits[withTime ? 4 : 2].id : edits[index - 1].id
+    }
+    if (ev.code === 'ArrowRight' && edits[index].el) {
+      selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
+    }
+    if (ev.code === 'Tab') {
+      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDatePopup()
     }
   }
-  const hoverEdits = (ev: MouseEvent, t: 'date' | 'time'): void => {
-    if (!dateShow) showTooltip(undefined,
-                               t === 'date' ? dateBox : timeBox,
-                               undefined, t === 'date' ? DatePopup : TimePopup,
-                               { value: currentDate ?? today },
-                               undefined,
-                               updateFromTooltip)
-    // $tooltip.props = { value }
+
+  const focused = (ed: TEdits): void => {
+    selected = ed
+    startTyping = true
+  }
+  const unfocus = (ev: FocusEvent, ed: TEdits | HTMLElement): void => {
+    const target = ev.relatedTarget as HTMLElement
+    let kl: boolean = false
+    edits.forEach(edit => { if (edit.el === target) kl = true })
+    if (target === datePopup || target === closeBtn) kl = true
+    if (!kl || target === null) closeDatePopup()
   }
 
-  const editClick = (ev: MouseEvent, el: TEdits): void => {
-    ev.stopPropagation()
-    const target = ev.target as HTMLInputElement
-    target.select()
-  }
+  $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
+  afterUpdate(() => {
+    const tempEl = edits[getIndex(selected)].el
+    if (tempEl) tempEl.focus()
+  })
 
-  onMount(() => { dateToEdits() })
-  // onDestroy(() => { closeTooltip() })
+  const fitPopup = (): void => {
+    if (datePresenter && datePopup) {
+      const rect: DOMRect = datePresenter.getBoundingClientRect()
+      const rectPopup: DOMRect = datePopup.getBoundingClientRect()
+      if (document.body.clientHeight - rect.bottom < rect.top) { // Top
+        datePopup.style.top = 'none'
+        datePopup.style.bottom = rect.top - 4 + 'px'
+      } else { // Bottom
+        datePopup.style.bottom = 'none'
+        datePopup.style.top = rect.bottom + 4 + 'px'
+      }
+      datePopup.style.left = (rect.left + rect.width / 2) - datePopup.clientWidth / 2 + 'px'
+      console.log('!!!!!!! Popup - rect:', rect, ' --- rectPopup:', rectPopup, ' --- afterPopup:', datePopup.getBoundingClientRect())
+    }
+  }
+  $: if (edit) {
+    if (datePopup) {
+      fitPopup()
+      datePopup.style.visibility = 'visible'
+    }
+  } else {
+    if (datePopup) datePopup.style.visibility = 'hidden'
+  }
 </script>
 
-{#if currentDate !== undefined}
-  <div bind:this={dateContainer} class="datetime-presenter-container">
-    {#if editable}
-      <div bind:this={dateDiv} class="flex-row-center flex-no-shrink flex-nowrap">
-        <div class="datetime-icon" class:selected={withDate} on:click|stopPropagation={() => { withDate = !withDate }}>
-          <div class="icon"><DPCalendar size={'full'} /></div>
-        </div>
-        <div class="hidden-text" bind:this={text} />
-        <div
-          bind:this={dateBox}
-          class="datetime-presenter antiWrapper conners focusWI dateBox"
-          class:zero={!withDate}
-          on:mousemove={(ev) => hoverEdits(ev, 'date')}
-        >
-          <input
-            type="text" placeholder={'00'} class="zone" class:selected={selected === edits[0].id}
-            bind:this={edits[0].el} bind:value={edits[0].value}
-            on:click|stopPropagation={ev => editClick(ev, edits[0].id)}
-            on:input={ev => onInput(ev.target, edits[0].id)}
-            on:keydown={ev => keyDown(ev, edits[0].id)}
-          />
-          <div class="symbol">.</div>
-          <input
-            type="text" placeholder={'00'} class="zone" class:selected={selected === edits[1].id}
-            bind:this={edits[1].el} bind:value={edits[1].value}
-            on:click|stopPropagation={ev => editClick(ev, edits[1].id)}
-            on:input={ev => onInput(ev.target, edits[1].id)}
-            on:keydown={ev => keyDown(ev, edits[1].id)}
-          />
-          <div class="symbol">.</div>
-          <input
-            type="text" placeholder={'0000'} class="zone" class:selected={selected === edits[2].id}
-            bind:this={edits[2].el} bind:value={edits[2].value}
-            on:click|stopPropagation={ev => editClick(ev, edits[2].id)}
-            on:input={ev => onInput(ev.target, edits[2].id)}
-            on:keydown={ev => keyDown(ev, edits[2].id)}
-          />
-        </div>
-      </div>
-      <div class="datetime-icon" class:selected={withTime} on:click|stopPropagation={() => { withTime = !withTime }}>
-        <div class="icon"><DPClock size={'full'} /></div>
-      </div>
-      <div
-        bind:this={timeBox}
-        class="datetime-presenter antiWrapper conners focusWI timeBox"
-        class:zero={!withTime}
-        on:mousemove={(ev) => hoverEdits(ev, 'time')}
+<button
+  bind:this={datePresenter}
+  class="button normal"
+  class:edit
+  class:editable
+  on:click={() => { if (editable) edit = true }}
+>
+  {#if edit}
+    <span bind:this={edits[0].el} class="digit" tabindex="0"
+      on:keydown={(ev) => keyDown(ev, edits[0].id)}
+      on:focus={() => focused(edits[0].id)}
+      on:blur={(ev) => unfocus(ev, edits[0].id)}
+    >
+      {#if (value !== null && value !== undefined) || (edits[0].value > 0)}
+        {edits[0].value.toString().padStart(2, '0')}
+      {:else}ДД{/if}
+    </span>
+    <span class="separator">.</span>
+    <span bind:this={edits[1].el} class="digit" tabindex="0"
+      on:keydown={(ev) => keyDown(ev, edits[1].id)}
+      on:focus={() => focused(edits[1].id)}
+      on:blur={(ev) => unfocus(ev, edits[1].id)}
+    >
+      {#if (value !== null && value !== undefined) || (edits[1].value > 0)}
+        {edits[1].value.toString().padStart(2, '0')}
+      {:else}ММ{/if}
+    </span>
+    <span class="separator">.</span>
+    <span bind:this={edits[2].el} class="digit" tabindex="0"
+      on:keydown={(ev) => keyDown(ev, edits[2].id)}
+      on:focus={() => focused(edits[2].id)}
+      on:blur={(ev) => unfocus(ev, edits[2].id)}
+    >
+      {#if (value !== null && value !== undefined) || (edits[2].value > 0)}
+        {edits[2].value.toString().padStart(4, '0')}
+      {:else}ГГГГ{/if}
+    </span>
+    {#if withTime}
+      <div class="time-divider" />
+      <span bind:this={edits[3].el} class="digit" tabindex="0"
+        on:keydown={(ev) => keyDown(ev, edits[3].id)}
+        on:focus={() => focused(edits[3].id)}
+        on:blur={(ev) => unfocus(ev, edits[3].id)}
       >
-        <input
-          type="text" placeholder={'00'} class="zone" class:selected={selected === edits[3].id}
-          bind:this={edits[3].el} bind:value={edits[3].value}
-          on:click|stopPropagation={ev => editClick(ev, edits[3].id)}
-          on:input={ev => onInput(ev.target, edits[3].id)}
-          on:keydown={ev => keyDown(ev, edits[3].id)}
-        />
-        <div class="symbol">:</div>
-        <input
-          type="text" placeholder={'00'} class="zone" class:selected={selected === edits[4].id}
-          bind:this={edits[4].el} bind:value={edits[4].value}
-          on:click|stopPropagation={ev => editClick(ev, edits[4].id)}
-          on:input={ev => onInput(ev.target, edits[4].id)}
-          on:blur={ev => onInput(ev.target, edits[4].id)}
-          on:keydown={ev => keyDown(ev, edits[4].id)}
-        />
+        {#if (value !== null && value !== undefined) || (edits[3].value > -1)}
+          {edits[3].value.toString().padStart(2, '0')}
+        {:else}ЧЧ{/if}
+      </span>
+      <span class="separator">:</span>
+      <span bind:this={edits[4].el} class="digit" tabindex="0"
+        on:keydown={(ev) => keyDown(ev, edits[4].id)}
+        on:focus={() => focused(edits[4].id)}
+        on:blur={(ev) => unfocus(ev, edits[4].id)}
+      >
+        {#if (value !== null && value !== undefined) || (edits[4].value > -1)}
+          {edits[4].value.toString().padStart(2, '0')}
+        {:else}ММ{/if}
+      </span>
+    {/if}
+    {#if value}
+      <div
+        bind:this={closeBtn} class="close-btn" tabindex="0"
+        on:click={() => {
+          selected = 'day'
+          startTyping = true
+          value = null
+          edits.forEach(edit => edit.value = -1)
+          if (edits[0].el) edits[0].el.focus()
+        }}
+        on:blur={(ev) => unfocus(ev, closeBtn)}
+      >
+        <Icon icon={IconClose} size={'x-small'} />
       </div>
+    {/if}
+  {:else}
+    <div class="btn-icon mr-1">
+      <Icon icon={DPCalendar} size={'small'}/>
+    </div>
+    {#if value !== null && value !== undefined}
+      <span class="digit">{new Date(value).getDate()}</span>
+      <span class="digit">{getMonthName(new Date(value), 'short')}</span>
+      {#if new Date(value).getFullYear() !== today.getFullYear()}
+        <span class="digit">{new Date(value).getFullYear()}</span>
+      {/if}
+      {#if withTime}
+        <div class="time-divider" />
+        <span class="digit">{new Date(value).getHours().toString().padStart(2, '0')}</span>
+        <span class="separator">:</span>
+        <span class="digit">{new Date(value).getMinutes().toString().padStart(2, '0')}</span>
+      {/if}
     {:else}
-      <div class="flex-col">
-        <div bind:this={dateDiv} class="datetime-presenter readable">
-          <div class="preview-icon"><DPCalendar size={'full'} /></div>
-          {currentDate.getDate().toString().padStart(2, '0')}
-          <div class="symbol">.</div>
-          {currentDate.getMonth().toString().padStart(2, '0')}
-          <div class="symbol">.</div>
-          {currentDate.getFullYear()}
-        </div>
-        {#if withTime}
-          <div bind:this={timeDiv} class="datetime-presenter readable">
-            <div class="preview-icon"><DPClock size={'full'} /></div>
-            {currentDate.getHours().toString().padStart(2, '0')}
-            <div class="symbol">:</div>
-            {currentDate.getMinutes().toString().padStart(2, '0')}
+      No date
+    {/if}
+  {/if}
+</button>
+
+<div bind:this={datePopup} class="datetime-popup-container" tabindex="0" on:blur={(ev) => unfocus(ev, datePopup)}>
+  <div class="popup antiCard">
+    <div class="flex-center monthYear">
+      {#if currentDate}
+        {getMonthName(currentDate)}
+        <span class="ml-1">{currentDate.getFullYear()}</span>
+      {/if}
+    </div>
+
+    {#if currentDate}
+      <div class="calendar" class:no-editable={!editable}>
+        {#each [...Array(7).keys()] as dayOfWeek}
+          <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
+        {/each}
+        {#each days as day, i}
+          <div
+            class="day {day.style}"
+            class:today={day.today}
+            class:focused={day.focused}
+            data-today={day.today ? todayString : ''}
+            style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
+            on:click|stopPropagation={() => {
+              if (currentDate) currentDate.setDate(i + 1)
+              saveDate()
+            }}
+          >
+            {i + 1}
           </div>
-        {/if}
+        {/each}
       </div>
     {/if}
   </div>
-{/if}
+</div>
 
 <style lang="scss">
-  .datetime-presenter-container {
+  .datetime-popup-container {
+    visibility: hidden;
+    position: fixed;
+    outline: none;
+    z-index: 10000;
+  }
+
+  .popup {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--theme-caption-color);
+  }
+
+  .monthYear {
+    margin: 0 1rem;
+    color: var(--theme-content-accent-color);
+    white-space: nowrap;
+  }
+
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1.75rem);
+    gap: .125rem;
+
+    .caption, .day {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      color: var(--theme-content-dark-color);
+    }
+    .caption {
+      font-size: .75rem;
+      color: var(--theme-content-trans-color);
+    }
+    .day {
+      background-color: rgba(var(--theme-caption-color), .05);
+      border: 1px solid transparent;
+      border-radius: 50%;
+      cursor: pointer;
+
+      &.selected {
+        background-color: var(--primary-button-enabled);
+        border-color: var(--primary-button-focused-border);
+        color: var(--primary-button-color);
+      }
+      &.today {
+        position: relative;
+        border-color: var(--theme-content-color);
+        font-weight: 500;
+        color: var(--theme-caption-color);
+
+        &::after {
+          position: absolute;
+          content: attr(data-today);
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          font-weight: 600;
+          font-size: .35rem;
+          text-transform: uppercase;
+          color: var(--theme-content-dark-color);
+        }
+      }
+      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
+    }
+
+    // &.no-editable { pointer-events: none; }
+  }
+
+  .button {
     position: relative;
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
     flex-shrink: 0;
-    min-width: 0;
+    padding: 0 .5rem;
+    font-weight: 500;
+    min-width: 1.5rem;
     width: auto;
-    border-radius: .75rem;
-  }
-
-  .datetime-presenter {
-    flex-shrink: 0;
-    border-radius: .5rem;
-
-    &.readable {
-      display: flex;
-      align-items: center;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
-      min-width: 0;
-      color: var(--theme-content-accent-color);
-
-      .symbol { margin: 0 .125rem; }
-    }
-
-    .zone {
-      position: relative;
-      display: flex;
-      align-items: center;
-      font-weight: 500;
-      color: var(--theme-content-accent-color);
-      cursor: pointer;
-      z-index: 1;
-
-      &::before, &::after {
-        position: absolute;
-        top: 0;
-        left: -.125rem;
-        width: calc(100% + .25rem);
-        height: 100%;
-        border-radius: .75rem;
-        z-index: -1;
-      }
-      &::before { background-color: var(--primary-button-outline); }
-      &::after { background-color: var(--theme-bg-accent-hover); }
-      &:hover::after { content: ''; }
-    }
-
-    .symbol {
-      font-weight: 500;
-      color: var(--theme-content-dark-color);
-    }
-  }
-
-  .datetime-icon {
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--theme-content-color);
-    background-color: var(--theme-bg-accent-color);
-    border-radius: .75rem;
-
-    &:hover {
-      color: var(--theme-caption-color);
-      background-color: var(--theme-bg-accent-hover);
-    }
-
-    &.selected {
-      margin-right: .25rem;
-      color: var(--theme-content-accent-color);
-      background-color: var(--theme-bg-accent-hover);
-
-      &:hover {
-        color: var(--theme-caption-color);
-        background-color: var(--theme-bg-focused-color);
-      }
-    }
-
-    .icon {
-      overflow: hidden;
-      width: .75rem;
-      height: .75rem;
-    }
-  }
-
-  .preview-icon {
-    margin-right: .25rem;
-    width: .75rem;
-    height: .75rem;
-    color: var(--theme-content-dark-color);
-  }
-
-  input {
-    margin: 0;
-    padding: 0;
-    width: 1.5rem;
-    height: 1.25rem;
-    color: var(--theme-caption-color);
-    border: transparent;
+    height: 1.5rem;
+    white-space: nowrap;
+    line-height: 1.5rem;
+    color: var(--accent-color);
+    background-color: transparent;
+    border: 1px solid transparent;
     border-radius: .25rem;
-    text-align: center;
-    transition: background-color .2s ease-out;
+    transition-property: border, background-color, color, box-shadow;
+    transition-duration: .15s;
+    cursor: default;
 
-    &:hover { background-color: var(--theme-bg-accent-hover); }
-    &:focus {
-      color: var(--theme-bg-color);
-      background-color: var(--primary-button-enabled);
+    .btn-icon {
+      color: var(--content-color);
+      transition: color .15s;
+      pointer-events: none;
     }
-    &::placeholder { color: var(--theme-content-dark-color); }
-  }
+    &:hover { transition-duration: 0; }
+    &:focus-within .datepopup-container { visibility: visible; }
 
-  .timeBox, .dateBox {
-    visibility: visible;
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    max-width: 100%;
-    width: auto;
-    opacity: 1;
+    &.normal {
+      font-weight: 400;
+      color: var(--content-color);
+      background-color: var(--button-bg-color);
+      box-shadow: var(--button-shadow);
 
-    &.zero {
+      &.editable {
+        cursor: pointer;
+        &:hover {
+          color: var(--accent-color);
+          background-color: var(--button-bg-hover);
+
+          .btn-icon { color: var(--accent-color); }
+          .time-divider {
+            background-color: var(--button-border-hover);
+            opacity: 1;
+          }
+        }
+        &:focus-within {
+          .time-divider {
+            background-color: var(--primary-edit-border-color);
+            opacity: .5;
+          }
+        }
+      }
+      &:disabled {
+        background-color: #30323655;
+        cursor: default;
+        &:hover {
+          color: var(--content-color);
+          .btn-icon { color: var(--content-color); }
+        }
+      }
+
+      .close-btn {
+        margin: 0 .25rem;
+        width: .75rem;
+        height: .75rem;
+        color: var(--content-color);
+        background-color: var(--button-bg-color);
+        outline: none;
+        border-radius: 50%;
+        cursor: pointer;
+
+        &:hover {
+          color: var(--accent-color);
+          background-color: var(--button-bg-hover);
+        }
+      }
+    }
+    &.edit {
+      padding: 0 .125rem;
+      background-color: transparent;
+      border-color: var(--primary-edit-border-color);
+      &:hover { background-color: transparent; }
+    }
+
+    .digit {
+      padding: 0 .125rem;
+      height: 1.125rem;
+      line-height: 1.125rem;
+      color: var(--accent-color);
+      outline: none;
+      border-radius: .125rem;
+
+      &:focus { background-color: var(--primary-bg-color); }
+    }
+    .time-divider {
+      flex-shrink: 0;
+      margin: 0 .125rem;
+      width: 1px;
+      min-width: 1px;
+      height: .75rem;
+      background-color: var(--button-border-color);
+      opacity: 1;
+      transition-property: opacity, background-color;
+      transition-duration: .15s;
+    }
+
+    .datepopup-container {
       visibility: hidden;
-      width: 0;
-      max-width: 0;
-      opacity: 0;
+      position: absolute;
+      top: calc(100% + .5rem);
+      left: 50%;
+      width: auto;
+      height: auto;
+      transform: translateX(-50%);
+      z-index: 10000;
     }
   }
-  .dateBox { margin-right: .25rem; }
 </style>

@@ -25,4 +25,4 @@
   // export let attributeType: TypeDate | undefined
 </script>
 
-<DatePresenter bind:value editable on:change={(res) => { if (res.detail !== undefined) onChange(res.detail) }} />
+<DatePresenter {value} editable on:change={(res) => { if (res.detail !== undefined) onChange(res.detail) }} />

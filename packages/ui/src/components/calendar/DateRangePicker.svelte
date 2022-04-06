@@ -15,9 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
-  import Label from './Label.svelte'
-  import DatePresenter from './DatePresenter.svelte'
-  import DatePopup from './DatePopup.svelte'
+  import Label from '../Label.svelte'
+  import DateRangePresenter from './DateRangePresenter.svelte'
+  import DateRangePopup from './DateRangePopup.svelte'
 
   export let title: IntlString
   export let value: number | null | undefined = null
@@ -36,6 +36,6 @@
 <div class="antiSelect antiWrapper cursor-default">
   <div class="flex-col">
     <span class="label mb-1"><Label label={title} /></span>
-    <DatePresenter {value} {withTime} editable on:change={changeValue} />
+    <DateRangePresenter {value} {withTime} editable on:change={changeValue} />
   </div>
 </div>

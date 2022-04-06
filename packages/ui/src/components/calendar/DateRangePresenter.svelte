@@ -13,18 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { onMount, createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
-  import { firstDay, daysInMonth, getWeekDayName, getMonthName, day, areDatesEqual } from './calendar/internal/DateUtils'
-  import type { TCellStyle, ICell } from './calendar/internal/DateUtils'
-  import ui, { TimePopup, tooltipstore as tooltip, showTooltip, Icon, IconClose } from '..'
-  import Button from './Button.svelte'
-  import DatePopup from './DatePopup.svelte'
-  import DPClock from './calendar/icons/DPClock.svelte'
-  import DPCalendar from './calendar/icons/DPCalendar.svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { daysInMonth, getMonthName } from './internal/DateUtils'
+  import { Icon, IconClose } from '../..'
+  import { dpstore, closeDatePopup } from '../../popups'
+  import DPCalendar from './icons/DPCalendar.svelte'
+  import DateRangePopup from './DateRangePopup.svelte'
 
   export let value: number | null | undefined
-  export let withDate: boolean = true
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let editable: boolean = false
@@ -40,42 +36,17 @@
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today: Date = new Date(Date.now())
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
   let currentDate: Date = new Date(value ?? Date.now())
   currentDate.setSeconds(0, 0)
   let selected: TEdits = 'day'
-  let todayString: string
-  translate(ui.string.Today, {}).then(res => todayString = res)
 
   let edit: boolean = false
+  let opened: boolean = false
   let startTyping: boolean = false
-  let dateShow: boolean = false
   let datePresenter: HTMLElement
-  let datePopup: HTMLElement
   let closeBtn: HTMLElement
 
-  let days: Array<ICell> = []
-  let edits: IEdits[] = [{ id: 'day', value: -1 }, { id: 'month', value: -1 }, { id: 'year', value: -1 },
-                           { id: 'hour', value: -1 }, { id: 'min', value: -1 }]
-
-  const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
-    return 'not-selected'
-  }
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(currentDate); i++) {
-      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
-      days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate),
-        focused: false,
-        today: areDatesEqual(tempDate, today)
-      })
-    }
-    days = days
-  }
-  $: if (currentDate) renderCellStyles()
+  let edits: IEdits[] = editsType.map(edit => { return { id: edit, value: -1 } })
 
   const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
@@ -123,9 +94,12 @@
     edits = edits
   }
   const saveDate = (): void => {
+    currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+    currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+    currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
-    renderCellStyles()
+    $dpstore.currentDate = currentDate
     dispatch('change', value)
   }
   if (value !== null && value !== undefined) dateToEdits()
@@ -139,7 +113,6 @@
     edits.forEach((edit, i) => {
       tempValues[i] = edit.value > 0 ? edit.value : getValue(currentDate, edit.id)
     })
-    console.log('!!!!!!!!! Check Edits: ', tempValues)
     currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
   }
   const isNull = (full: boolean = false): boolean => {
@@ -150,13 +123,14 @@
     })
     return result
   }
-  const closeDatePopup = (): void => {
-    if (!isNull(true)) {
-      saveDate()
-      console.log('!!!!!!!!!!!!!! SAVED !!!!!!!!!!!')
-    } else value = null
-    edit = false
-    // selected = 'day'
+  const closeDP = (): void => {
+    if (!isNull()) saveDate()
+    else {
+      value = null
+      dispatch('change', null)
+    }
+    closeDatePopup()
+    edit = opened = false
   }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
@@ -167,22 +141,21 @@
       const num: number = parseInt(ev.key, 10)
 
       if (startTyping) {
-        // edits.forEach(edit => { if (edit.id === ed) edit.value = num })
         if (num === 0) edits[index].value = 0
         else {
           edits[index].value = num
           startTyping = false
         }
-        console.log('!!! First number', edits, ed)
       } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
-        edits.forEach(edit => { if (edit.id === ed) edit.value = getMaxValue(currentDate, ed) })
+        edits[index].value = getMaxValue(currentDate, ed)
       } else {
-        edits.forEach(edit => { if (edit.id === ed) edit.value = edit.value * 10 + num })
+        edits[index].value = edits[index].value * 10 + num
       }
 
       if (!isNull(false) && edits[2].value > 999 && !startTyping) {
         fixEdits()
         currentDate = setValue(edits[index].value, currentDate, ed)
+        $dpstore.currentDate = currentDate
         dateToEdits()
       }
       edits = edits
@@ -191,13 +164,8 @@
       else if (selected === 'month' && edits[1].value > 1) selected = 'year'
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
       else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
-      // console.log('!!!!!!!!!!!! Digit', edits)
     }
-    if (ev.code === 'Enter') {
-      fixEdits()
-      saveDate()
-      edit = false
-    }
+    if (ev.code === 'Enter') closeDP()
     if (ev.code === 'Backspace') {
       edits[index].value = -1
       startTyping = true
@@ -209,9 +177,8 @@
                 : edits[index].value - 1
         if (currentDate) {
           currentDate = setValue(val, currentDate, ed)
+          $dpstore.currentDate = currentDate
           dateToEdits()
-          // fixEdits()
-          saveDate()
         }
       }
     }
@@ -222,22 +189,20 @@
       selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
     }
     if (ev.code === 'Tab') {
-      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDatePopup()
+      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDP()
     }
   }
 
   const focused = (ed: TEdits): void => {
     selected = ed
     startTyping = true
-    console.log('!!!!!!!!!!!!! FOCUSED !!!!!!!!!!!!! -------- selected: ', selected)
   }
   const unfocus = (ev: FocusEvent, ed: TEdits | HTMLElement): void => {
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
     edits.forEach(edit => { if (edit.el === target) kl = true })
-    if (target === datePopup || target === closeBtn) kl = true
-    console.log('!!!!!!!!!!!!! UnFocus !!!!!!!!!!!!! -------- target: ', target, ' --- kl: ', kl, ' --- ed: ', ed, kl ? ' --- Not Closed Popup' : ' --- Closed Popup!!!')
-    if (!kl || target === null) closeDatePopup()
+    if (target === popupComp || target === closeBtn) kl = true
+    if (!kl || target === null) closeDP()
   }
 
   $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
@@ -246,35 +211,48 @@
     if (tempEl) tempEl.focus()
   })
 
-  const fitPopup = (): void => {
-    if (datePresenter && datePopup) {
-      const rect: DOMRect = datePresenter.getBoundingClientRect()
-      if (document.body.clientHeight - rect.bottom < rect.top) { // Top
-        datePopup.style.top = 'none'
-        datePopup.style.bottom = rect.top - 4 + 'px'
-      } else { // Bottom
-        datePopup.style.bottom = 'none'
-        datePopup.style.top = rect.bottom + 4 + 'px'
+  const _change = (result: any): void => {
+    if (result !== undefined) {
+      currentDate = result
+      saveDate()
+    }
+  }
+  const _close = (result: any): void => {
+    if (result !== undefined) {
+      if (result !== null) {
+        currentDate = result
+        saveDate()
       }
-      datePopup.style.left = (rect.left + rect.width / 2) - datePopup.clientWidth / 2 + 'px'
+      closeDP()
     }
   }
-  $: if (edit) {
-    if (datePopup) {
-      fitPopup()
-      datePopup.style.visibility = 'visible'
-    }
-  } else {
-    if (datePopup) datePopup.style.visibility = 'hidden'
+
+  const openPopup = (): void => {
+    opened = edit = true
+    $dpstore.currentDate = currentDate
+    $dpstore.anchor = datePresenter
+    $dpstore.onChange = _change
+    $dpstore.onClose = _close
+    $dpstore.component = DateRangePopup
   }
-  $: console.log('!!!!!!!! EDIT !!!!!!!!!! ------ ', edit)
+  let popupComp: HTMLElement
+  $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
+  $: if (opened && edits[0].el && $dpstore.frendlyFocus === undefined) {
+    let frendlyFocus: HTMLElement[] = []
+    edits.forEach((edit, i) => {
+      if (edit.el) frendlyFocus[i] = edit.el
+    })
+    frendlyFocus.push(closeBtn)
+    $dpstore.frendlyFocus = frendlyFocus
+  }
 </script>
 
 <button
   bind:this={datePresenter}
-  class="button normal"
+  class="datetime-button"
+  class:editable
   class:edit
-  on:click={() => { if (editable) edit = true }}
+  on:click={() => { if (editable && !opened) openPopup() }}
 >
   {#if edit}
     <span bind:this={edits[0].el} class="digit" tabindex="0"
@@ -282,7 +260,7 @@
       on:focus={() => focused(edits[0].id)}
       on:blur={(ev) => unfocus(ev, edits[0].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[0].value > 0)}
+      {#if (value !== null && value !== undefined) && (edits[0].value !== -1)}
         {edits[0].value.toString().padStart(2, '0')}
       {:else}ДД{/if}
     </span>
@@ -292,7 +270,7 @@
       on:focus={() => focused(edits[1].id)}
       on:blur={(ev) => unfocus(ev, edits[1].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[1].value > 0)}
+      {#if (value !== null && value !== undefined) && (edits[1].value !== -1)}
         {edits[1].value.toString().padStart(2, '0')}
       {:else}ММ{/if}
     </span>
@@ -302,7 +280,7 @@
       on:focus={() => focused(edits[2].id)}
       on:blur={(ev) => unfocus(ev, edits[2].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[2].value > 0)}
+      {#if (value !== null && value !== undefined) && (edits[2].value !== -1)}
         {edits[2].value.toString().padStart(4, '0')}
       {:else}ГГГГ{/if}
     </span>
@@ -313,7 +291,9 @@
         on:focus={() => focused(edits[3].id)}
         on:blur={(ev) => unfocus(ev, edits[3].id)}
       >
-        {value ? edits[3].value.toString().padStart(2, '0') : 'ЧЧ'}
+        {#if (value !== null && value !== undefined) || (edits[3].value > -1)}
+          {edits[3].value.toString().padStart(2, '0')}
+        {:else}ЧЧ{/if}
       </span>
       <span class="separator">:</span>
       <span bind:this={edits[4].el} class="digit" tabindex="0"
@@ -321,7 +301,9 @@
         on:focus={() => focused(edits[4].id)}
         on:blur={(ev) => unfocus(ev, edits[4].id)}
       >
-        {value ? edits[4].value.toString().padStart(2, '0') : 'ММ'}
+        {#if (value !== null && value !== undefined) || (edits[4].value > -1)}
+          {edits[4].value.toString().padStart(2, '0')}
+        {:else}ММ{/if}
       </span>
     {/if}
     {#if value}
@@ -340,18 +322,19 @@
       </div>
     {/if}
   {:else}
-    <div class="btn-icon mr-1">
-      <Icon icon={DPCalendar} size={'small'}/>
+    <div class="btn-icon">
+      <Icon icon={DPCalendar} size={'full'}/>
     </div>
     {#if value !== null && value !== undefined}
-      <span class="digit">{new Date(value).getDate()}</span>
-      <span class="digit">{getMonthName(new Date(value), 'short')}</span>
-      <span class="digit">{new Date(value).getFullYear()}</span>
+      {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
+      {#if new Date(value).getFullYear() !== today.getFullYear()}
+        {new Date(value).getFullYear()}
+      {/if}
       {#if withTime}
         <div class="time-divider" />
-        <span class="digit">{new Date(value).getHours().toString().padStart(2, '0')}</span>
+        {new Date(value).getHours().toString().padStart(2, '0')}
         <span class="separator">:</span>
-        <span class="digit">{new Date(value).getMinutes().toString().padStart(2, '0')}</span>
+        {new Date(value).getMinutes().toString().padStart(2, '0')}
       {/if}
     {:else}
       No date
@@ -359,182 +342,61 @@
   {/if}
 </button>
 
-<div bind:this={datePopup} class="datetime-popup-container" tabindex="0" on:blur={(ev) => unfocus(ev, datePopup)}>
-  <div class="popup antiCard">
-    <div class="flex-center monthYear">
-      {#if currentDate}
-        {getMonthName(currentDate)}
-        <span class="ml-1">{currentDate.getFullYear()}</span>
-      {/if}
-    </div>
-
-    {#if currentDate}
-      <div class="calendar" class:no-editable={!editable}>
-        {#each [...Array(7).keys()] as dayOfWeek}
-          <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
-        {/each}
-        {#each days as day, i}
-          <div
-            class="day {day.style}"
-            class:today={day.today}
-            class:focused={day.focused}
-            data-today={day.today ? todayString : ''}
-            style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
-            on:click|stopPropagation={() => {
-              if (currentDate) currentDate.setDate(i + 1)
-              saveDate()
-            }}
-          >
-            {i + 1}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-</div>
-
 <style lang="scss">
-  .datetime-popup-container {
-    visibility: hidden;
-    position: fixed;
-    outline: none;
-    z-index: 10000;
-  }
-
-  .popup {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    color: var(--theme-caption-color);
-  }
-
-  .monthYear {
-    margin: 0 1rem;
-    color: var(--theme-content-accent-color);
-    white-space: nowrap;
-  }
-
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1.75rem);
-    gap: .125rem;
-
-    .caption, .day {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 1.75rem;
-      height: 1.75rem;
-      color: var(--theme-content-dark-color);
-    }
-    .caption {
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-    .day {
-      background-color: rgba(var(--theme-caption-color), .05);
-      border: 1px solid transparent;
-      border-radius: 50%;
-      cursor: pointer;
-
-      &.selected {
-        background-color: var(--primary-button-enabled);
-        border-color: var(--primary-button-focused-border);
-        color: var(--primary-button-color);
-      }
-      &.today {
-        position: relative;
-        border-color: var(--theme-content-color);
-        font-weight: 500;
-        color: var(--theme-caption-color);
-
-        &::after {
-          position: absolute;
-          content: attr(data-today);
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          font-weight: 600;
-          font-size: .35rem;
-          text-transform: uppercase;
-          color: var(--theme-content-dark-color);
-        }
-      }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
-    }
-
-    // &.no-editable { pointer-events: none; }
-  }
-
-  .button {
+  .datetime-button {
     position: relative;
     display: flex;
     align-items: center;
     flex-shrink: 0;
     padding: 0 .5rem;
-    font-weight: 500;
+    font-weight: 400;
     min-width: 1.5rem;
     width: auto;
     height: 1.5rem;
     white-space: nowrap;
     line-height: 1.5rem;
-    color: var(--accent-color);
-    background-color: transparent;
+    color: var(--content-color);
+    background-color: var(--button-bg-color);
     border: 1px solid transparent;
     border-radius: .25rem;
+    box-shadow: var(--button-shadow);
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
+    cursor: default;
 
     .btn-icon {
+      margin-right: .375rem;
+      width: .875rem;
+      height: .875rem;
       color: var(--content-color);
       transition: color .15s;
       pointer-events: none;
     }
-    &:hover {
-      color: var(--caption-color);
-      transition-duration: 0;
-      
-      .btn-icon { color: var(--caption-color); }
-    }
-    &:focus-within .datepopup-container { visibility: visible; }
 
-    &.normal {
-      font-weight: 400;
-      color: var(--content-color);
-      background-color: var(--button-bg-color);
-      box-shadow: var(--button-shadow);
+    &:hover {
+      color: var(--accent-color);
+      transition-duration: 0;
+    }
+    &.editable {
+      cursor: pointer;
 
       &:hover {
-        color: var(--accent-color);
         background-color: var(--button-bg-hover);
-
         .btn-icon { color: var(--accent-color); }
+        .time-divider { background-color: var(--button-border-hover); }
       }
-      &:disabled {
-        background-color: #30323655;
-        cursor: default;
-        &:hover {
-          color: var(--content-color);
-          .btn-icon { color: var(--content-color); }
-        }
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
+        &:hover { background-color: transparent; }
       }
+    }
+    &:disabled {
+      background-color: #30323655;
+      cursor: default;
 
-      .close-btn {
-        margin: 0 .25rem;
-        width: .75rem;
-        height: .75rem;
+      &:hover {
         color: var(--content-color);
-        background-color: var(--button-bg-color);
-        outline: none;
-        border-radius: 50%;
-        cursor: pointer;
-
-        &:hover {
-          color: var(--accent-color);
-          background-color: var(--button-bg-hover);
-        }
+        .btn-icon { color: var(--content-color); }
       }
     }
     &.edit {
@@ -544,7 +406,27 @@
       &:hover { background-color: transparent; }
     }
 
+    .close-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 .25rem;
+      width: .75rem;
+      height: .75rem;
+      color: var(--content-color);
+      background-color: var(--button-bg-color);
+      outline: none;
+      border-radius: 50%;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+      }
+    }
+
     .digit {
+      position: relative;
       padding: 0 .125rem;
       height: 1.125rem;
       line-height: 1.125rem;
@@ -553,25 +435,23 @@
       border-radius: .125rem;
 
       &:focus { background-color: var(--primary-bg-color); }
+      &::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11000;
+        cursor: pointer;
+      }
     }
     .time-divider {
       flex-shrink: 0;
-      margin: 0 .125rem;
+      margin: 0 .25rem;
       width: 1px;
       min-width: 1px;
       height: .75rem;
-      background-color: var(--divider-color);
-    }
-
-    .datepopup-container {
-      visibility: hidden;
-      position: absolute;
-      top: calc(100% + .5rem);
-      left: 50%;
-      width: auto;
-      height: auto;
-      transform: translateX(-50%);
-      z-index: 10000;
+      background-color: var(--button-border-color);
     }
   }
 </style>
