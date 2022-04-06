@@ -80,10 +80,48 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
   return result
 }
 
+/**
+ * @public
+ */
+export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  if (tx._class !== core.class.TxCreateDoc) return []
+  const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
+  if (!hierarchy.isDerived(doc._class, chunter.class.Message)) {
+    return []
+  }
+
+  const message = doc as Message
+
+  const channel = (await control.findAll(chunter.class.Channel, {
+    _id: message.space
+  }, { limit: 1 }))[0]
+
+  if (channel.lastMessage === undefined || channel.lastMessage < message.createOn) {
+    const res = control.txFactory.createTxUpdateDoc<Channel>(channel._class, channel.space, channel._id, {
+      lastMessage: message.createOn
+    })
+    return [res]
+  }
+  return []
+}
+
+/**
+ * @public
+ */
+export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const promises = [
+    MessageCreate(tx, control),
+    CommentCreate(tx, control)
+  ]
+  const res = await Promise.all(promises)
+  return res.flat()
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    CommentCreate
+    ChunterTrigger
   },
   function: {
     CommentRemove,

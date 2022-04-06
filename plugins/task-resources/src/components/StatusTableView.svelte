@@ -135,7 +135,7 @@
       <Label label={task.string.DoneStates} />
     </div>
   </div>
-  <div class="flex-row-center caption-color states" class:antiStatesBar={doneStatusesView}>
+  <div class="flex-row-center caption-color states" class:antiStatesBar={doneStatusesView} class:justify-end={doneStatusesView} >
     {#if doneStatusesView}
       <div
           class="doneState withoutDone flex-center whitespace-nowrap"

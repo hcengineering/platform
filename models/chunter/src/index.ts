@@ -24,13 +24,17 @@ import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
+import notification from '@anticrm/model-notification'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
 
 @Model(chunter.class.Channel, core.class.Space)
 @UX(chunter.string.Channel, chunter.icon.Hashtag)
-export class TChannel extends TSpace implements Channel {}
+export class TChannel extends TSpace implements Channel {
+  @Prop(TypeTimestamp(), chunter.string.LastMessage)
+  lastMessage?: Timestamp
+}
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
 export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
@@ -96,6 +100,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.ChannelPresenter
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.SpaceLastEdit, {
+    lastEditField: 'lastMessage'
   })
 
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
