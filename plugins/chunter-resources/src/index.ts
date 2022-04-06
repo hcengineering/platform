@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { Comment, Message } from '@anticrm/chunter'
+import chunter, { Comment, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
@@ -34,7 +34,7 @@ async function MarkUnread (object: Message): Promise<void> {
   await client.updateLastView(object.space, chunter.class.Channel, object.createOn - 1, true)
 }
 
-async function MarkCommentUnread (object: Comment): Promise<void> {
+async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
   const value = object.modifiedOn - 1
   await client.updateLastView(object.attachedTo, object.attachedToClass, value, true)
@@ -45,7 +45,7 @@ async function SubscribeMessage (object: Message): Promise<void> {
   await client.updateLastView(object._id, object._class, undefined, true)
 }
 
-async function SubscribeComment (object: Comment): Promise<void> {
+async function SubscribeComment (object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
   await client.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
 }
@@ -55,7 +55,7 @@ async function UnsubscribeMessage (object: Message): Promise<void> {
   await client.unsubscribe(object._id)
 }
 
-async function UnsubscribeComment (object: Comment): Promise<void> {
+async function UnsubscribeComment (object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
   await client.unsubscribe(object.attachedTo)
 }

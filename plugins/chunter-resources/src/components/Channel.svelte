@@ -97,7 +97,7 @@
   function markUnread (lastViews: Map<Ref<Doc>, number>) {
     if (messages === undefined) return
     const newPos = newMessagesStart(messages)
-    if (newPos < newMessagesPos || newMessagesPos === -1) {
+    if (newPos !== -1 || newMessagesPos === -1) {
       newMessagesPos = newPos
     }
   }
