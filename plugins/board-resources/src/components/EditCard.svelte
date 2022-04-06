@@ -51,7 +51,7 @@
 
   function change (field: string, value: any) {
     if (object) {
-      client.updateDoc(object._class, object.space, object._id, { [field]: value })
+      client.update(object, { [field]: value })
     }
   }
 
@@ -62,42 +62,42 @@
 
 {#if object !== undefined}
   <Scroller>
-    <div class="root">
+    <div class="flex-col-stretch h-full w-165 p-6">
       <!-- TODO cover -->
       <div class="close-button">
         <Button icon={IconClose} kind="transparent" size="large" on:click={() => dispatch('close')} />
       </div>
-      <div class="row">
-        <div class="first-column">
+      <div class="flex-row-streach">
+        <div class="w-9">
           <Icon icon={board.icon.Card} size="large" />
         </div>
-        <div class="title">
+        <div class="fs-title">
           <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
         </div>
       </div>
-      <div class="row">
-        <div class="first-column" />
+      <div class="flex-row-streach">
+        <div class="w-9" />
         <div>
-          <Label label={board.string.InList} /><span class="state-name">{state?.title}</span>
+          <Label label={board.string.InList} /><span class="state-name ml-1">{state?.title}</span>
         </div>
       </div>
-      <div class="card-info">
-        <div class="left-pane">
-          <div class="row">
-            <div class="first-column" />
+      <div class="flex-row-streach">
+        <div class="flex-grow mr-4">
+          <div class="flex-row-streach">
+            <div class="w-9" />
             <CardFields value={object} />
           </div>
-          <div class="row section-header">
-            <div class="first-column">
+          <div class="flex-row-streach mt-4 mb-2">
+            <div class="w-9">
               <Icon icon={board.icon.Card} size="large" />
             </div>
-            <div class="section-label">
+            <div class="fs-title">
               <Label label={board.string.Description} />
             </div>
           </div>
-          <div class="row">
-            <div class="first-column" />
-            <div class="description">
+          <div class="flex-row-streach">
+            <div class="w-9" />
+            <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
               <StyledTextBox
                 alwaysEdit={true}
                 showButtons={false}
@@ -109,11 +109,11 @@
           </div>
           <!-- TODO attachments-->
           <!-- TODO checklists -->
-          <div class="row section-header">
-            <div class="first-column">
+          <div class="flex-row-streach mt-4 mb-2">
+            <div class="w-9">
               <Icon icon={IconActivity} size="large" />
             </div>
-            <div class="section-label">
+            <div class="flex-grow fs-title">
               <Label label={activity.string.Activity} />
             </div>
             <Button
@@ -125,14 +125,14 @@
               }}
             />
           </div>
-          <div class="row">
-            <div class="first-column" />
-            <div class="comment-input">
+          <div class="flex-row-streach">
+            <div class="w-9" />
+            <div class="w-full">
               <Component is={chunter.component.CommentInput} props={{ object }} />
             </div>
           </div>
           {#if isActivityShown === true}
-            <Component is={activity.component.Activity} props={{ object, noCommentInput: true, transparent: true }}>
+            <Component is={activity.component.Activity} props={{ object, showCommenInput: false, transparent: true }}>
               <slot />
             </Component>
           {/if}
@@ -145,68 +145,12 @@
 {/if}
 
 <style lang="scss">
-  .root {
-    display: flex;
-    justify-content: start;
-    flex-direction: column;
-    padding: 20px;
-    width: 650px;
-    height: 100%;
-  }
   .close-button {
     position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-  .title {
-    font-size: 20px;
-    font-weight: 600;
-  }
-  .card-info {
-    padding-top: 10px;
-  }
-  .description {
-    height: 70px;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--theme-menu-divider);
-    border-radius: 8px;
-  }
-  .first-column {
-    width: 40px;
-  }
-  .card-info {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-  }
-  .left-pane {
-    flex: 1;
-  }
-  .right-pane {
-    width: 160px;
-    padding-left: 20px;
-  }
-  .row {
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: row;
-  }
-  .section-header {
-    margin-top: 20px;
-    margin-bottom: 5px;
-  }
-  .section-label {
-    flex: 1;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .comment-input {
-    width: 100%;
+    top: 0.7rem;
+    right: 0.7rem;
   }
   .state-name {
-    padding-left: 5px;
     text-decoration: underline;
 
     &:hover {

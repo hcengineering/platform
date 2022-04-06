@@ -33,7 +33,7 @@
 
   const client = getClient()
 
-  async function createFunnel (): Promise<void> {
+  async function createBoard (): Promise<void> {
     if (
       templateId !== undefined &&
       (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
@@ -55,7 +55,7 @@
 
 <SpaceCreateCard
   label={board.string.CreateBoard}
-  okAction={createFunnel}
+  okAction={createBoard}
   canSave={name.length > 0}
   on:close={() => {
     dispatch('close')

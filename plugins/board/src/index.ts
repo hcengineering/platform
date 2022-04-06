@@ -84,8 +84,7 @@ const boards = plugin(boardId, {
   },
   icon: {
     Board: '' as Asset,
-    Card: '' as Asset,
-    Plus: '' as Asset
+    Card: '' as Asset
   },
   space: {
     BoardTemplates: '' as Ref<KanbanTemplateSpace>

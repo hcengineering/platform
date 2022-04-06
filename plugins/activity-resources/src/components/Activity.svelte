@@ -24,7 +24,7 @@
 
   export let object: Doc
   export let fullSize: boolean = false
-  export let noCommentInput: boolean = false
+  export let showCommenInput: boolean = true
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
@@ -79,7 +79,7 @@
         {/if}
       </div>
     </Scroller>
-    {#if !noCommentInput}
+    {#if showCommenInput}
       <div class="ref-input">
         <Component is={chunter.component.CommentInput} props={{ object }} />
       </div>
@@ -108,7 +108,7 @@
       </div>
     </div>
   </Scroller>
-  {#if !noCommentInput}
+  {#if showCommenInput}
     <div class="ref-input fill">
       <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>

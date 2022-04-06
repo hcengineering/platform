@@ -15,21 +15,21 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Button, IconAttachment, Label } from '@anticrm/ui'
+  import { Button, IconAdd, IconAttachment, Label } from '@anticrm/ui'
   import board from '../plugin'
 
   export let value: Card
 </script>
 
 {#if value}
-  <div class="root">
-    <div class="section">
+  <div class="flex-col flex-gap-3 w-full">
+    <div class="flex-col flex-gap-1">
       <Label label={board.string.AddToCard} />
-      <Button icon={board.icon.Card} label={board.string.Members} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={board.icon.Card} label={board.string.Labels} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={board.icon.Card} label={board.string.Checklist} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={board.icon.Card} label={board.string.Dates} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={IconAttachment} label={board.string.Attachments} kind="no-border" justify={'left'} width={'100%'} />
+      <Button icon={board.icon.Card} label={board.string.Members} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Labels} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Checklist} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Dates} kind="no-border" justify={'left'} />
+      <Button icon={IconAttachment} label={board.string.Attachments} kind="no-border" justify={'left'} />
       <Button
         icon={board.icon.Card}
         label={board.string.CustomFields}
@@ -38,20 +38,14 @@
         width={'100%'}
       />
     </div>
-    <div>
+    <div class="flex-col flex-gap-1">
       <Label label={board.string.Automation} />
-      <Button
-        icon={board.icon.Plus}
-        label={board.string.AddButton}
-        kind="transparent"
-        justify={'left'}
-        width={'100%'}
-      />
+      <Button icon={IconAdd} label={board.string.AddButton} kind="transparent" justify={'left'} />
     </div>
-    <div class="section">
+    <div class="flex-col flex-gap-1">
       <Label label={board.string.Actions} />
-      <Button icon={board.icon.Card} label={board.string.Move} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={board.icon.Card} label={board.string.Copy} kind="no-border" justify={'left'} width={'100%'} />
+      <Button icon={board.icon.Card} label={board.string.Move} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Copy} kind="no-border" justify={'left'} />
       <Button
         icon={board.icon.Card}
         label={board.string.MakeTemplate}
@@ -59,22 +53,8 @@
         justify={'left'}
         width={'100%'}
       />
-      <Button icon={board.icon.Card} label={board.string.Watch} kind="no-border" justify={'left'} width={'100%'} />
-      <Button icon={board.icon.Card} label={board.string.Archive} kind="no-border" justify={'left'} width={'100%'} />
+      <Button icon={board.icon.Card} label={board.string.Watch} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Archive} kind="no-border" justify={'left'} />
     </div>
   </div>
 {/if}
-
-<style lang="scss">
-  .root {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-  .section {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-</style>
