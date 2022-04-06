@@ -7,7 +7,7 @@
   "scripts": {
     "build": "echo 'no build for ui'",
     "build:docs": "api-extractor run --local",
-    "lint": "eslint",
+    "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
   },
@@ -26,7 +26,7 @@
     "sass": "^1.37.5",
     "svelte-check": "^2.2.10",
     "svelte-loader": "^3.1.2",
-    "svelte-preprocess": "^4.10.3",
+    "svelte-preprocess": "^4.10.5",
     "typescript": "^4.3.5"
   },
   "dependencies": {
@@ -48,6 +48,6 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.1",
-    "svelte": "^3.37.0"
+    "svelte": "^3.46"
   }
 }

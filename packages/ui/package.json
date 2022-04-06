@@ -15,7 +15,7 @@
   "devDependencies": {
     "svelte-loader": "^3.1.2",
     "sass": "^1.37.5",
-    "svelte-preprocess": "^4.10.3",
+    "svelte-preprocess": "^4.10.5",
     "svelte-check": "^2.2.10",
     "@anticrm/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
@@ -33,6 +33,6 @@
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "@anticrm/theme": "~0.6.0",
-    "svelte": "^3.37.0"
+    "svelte": "^3.46"
   }
 }

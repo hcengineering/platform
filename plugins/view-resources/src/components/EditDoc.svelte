@@ -26,7 +26,7 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label } from '@anticrm/ui'
+  import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'

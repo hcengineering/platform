@@ -30,17 +30,15 @@
     location,
     Location,
     navigate,
-    PanelInstance,
-    panelstore,
-    Popup,
+    PanelInstance, Popup,
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
+import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.svelte'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
-  import ActivityStatus from './ActivityStatus.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
   import TopMenu from './icons/TopMenu.svelte'
@@ -226,9 +224,6 @@
     { limit: 1 }
   )
 
-  let isNavigate: boolean = false
-  $: isNavigate = !!navigatorModel
-
   function navigateApp (app: Application): void {
     if (currentApp === app._id) {
       // Nothing to do.
@@ -346,7 +341,7 @@
           <div
             id="profile-button"
             class="cursor-pointer"
-            on:click|stopPropagation={(el) => {
+            on:click|stopPropagation={() => {
               showPopup(AccountPopup, {}, 'account')
             }}
           >
@@ -371,7 +366,7 @@
           model={navigatorModel}
           on:special={(evt) => selectSpecial(evt.detail)}
           on:space={(evt) => updateSpace(evt.detail.space, evt.detail.spaceSpecial)}
-          on:archive={(evt) => selectArchive()}
+          on:archive={() => selectArchive()}
         />
         {#if currentApplication.navFooterComponent}
           <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
@@ -385,6 +380,11 @@
         <Component
           is={specialComponent.component}
           props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
+        />
+      {:else if currentView?.component !== undefined}
+        <Component
+          is={currentView.component}
+          props={{ ...currentView.componentProps, currentView }}
         />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />

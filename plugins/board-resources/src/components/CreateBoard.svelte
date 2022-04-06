@@ -16,10 +16,10 @@
 <script lang="ts">
   import core, { Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import { Component, EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import { Component, EditBox, Grid, IconFolder } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
 
   const dispatch = createEventDispatcher()
 
