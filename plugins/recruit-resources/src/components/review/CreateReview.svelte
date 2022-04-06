@@ -22,7 +22,7 @@
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { DatePicker, Grid, Status as StatusControl, StylishEdit, EditBox, Row } from '@anticrm/ui'
+  import { DatePicker, EditBox, Grid, Row, Status as StatusControl } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'

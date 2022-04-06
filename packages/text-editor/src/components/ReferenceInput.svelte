@@ -168,7 +168,7 @@
       } extensions={editorExtensions} />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit}><div class="icon"><Send/></div></button>
+      <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'}/></div></button>
     {/if}
   </div>
   <div class="buttons">

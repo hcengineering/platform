@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import calendar from '@anticrm/calendar'
   import { formatName, Person } from '@anticrm/contact'
   import { Hierarchy } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
-  import recruit from '../../plugin'
   import { showPanel, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
@@ -35,7 +35,7 @@
 {#if value} 
   <div class='flex persons'>
     {#each persons as p}
-      <Tooltip label={recruit.string.PersonsLabel} props={{ name: formatName(p.name) }}>
+      <Tooltip label={calendar.string.PersonsLabel} props={{ name: formatName(p.name) }}>
         <div class="flex-presenter" class:inline-presenter={inline} on:click={() => onClick(p)}>
           <div class="icon">
             <Avatar size={'x-small'} avatar={p.avatar} />

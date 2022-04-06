@@ -16,7 +16,6 @@
 <script lang="ts">
   import calendar from '@anticrm/calendar'
   import contact, { Contact } from '@anticrm/contact'
-  import { OrganizationSelector } from '@anticrm/contact-resources'
   import { getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'

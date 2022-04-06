@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity } from '@anticrm/platform'
+  import { Status, Severity, OK } from '@anticrm/platform'
 
   import Form from './Form.svelte'
   import { signUp } from '../utils'
@@ -37,7 +37,7 @@
     password2: ''
   }
 
-  let status = new Status(Severity.OK, 0, '')
+  let status: Status<any> = OK
 
   const action = {
     i18n: login.string.SignUp,

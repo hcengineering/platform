@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import type { Doc, Ref } from '@anticrm/core'
+  import type { Doc, FindOptions, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import task from '@anticrm/task'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
@@ -24,6 +24,8 @@
   import FileDuo from './icons/FileDuo.svelte'
   import chunter from '@anticrm/chunter'
   import attachment from '@anticrm/attachment'
+import { Applicant } from '@anticrm/recruit'
+import { BuildModelKey } from '@anticrm/view'
 
   export let objectId: Ref<Doc>
   // export let space: Ref<Space>
@@ -34,6 +36,21 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
   }
+  const options: FindOptions<Applicant> = {
+    lookup: {
+      state: task.class.State,
+      space: core.class.Space,
+      doneState: task.class.DoneState
+    }
+  }
+  const config: (BuildModelKey | string)[] = [
+    '',
+    '$lookup.space.name',
+    { key: '', presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+    { key: '', presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+    '$lookup.state',
+    '$lookup.doneState'
+  ]
 </script>
 
 <div class="applications-container">
@@ -44,23 +61,8 @@
   {#if applications > 0}
     <Table 
       _class={recruit.class.Applicant}
-      config={[
-        '',
-        '$lookup.space.name',
-        { key: '', presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
-        { key: '', presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
-       '$lookup.state',
-       '$lookup.doneState'
-       ]}
-      options={
-        {
-          lookup: {
-            state: task.class.State,
-            space: core.class.Space,
-            doneState: task.class.DoneState
-          }
-        }
-      }
+      config={config}
+      options={options}
       query={ { attachedTo: objectId } }
       loadingProps={ { length: applications } }
     />
