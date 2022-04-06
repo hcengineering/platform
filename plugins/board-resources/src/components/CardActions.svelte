@@ -25,11 +25,11 @@
   <div class="flex-col flex-gap-3 w-full">
     <div class="flex-col flex-gap-1">
       <Label label={board.string.AddToCard} />
-      <Button icon={board.icon.Card} label={board.string.Members} kind="no-border" justify={'left'} />
-      <Button icon={board.icon.Card} label={board.string.Labels} kind="no-border" justify={'left'} />
-      <Button icon={board.icon.Card} label={board.string.Checklist} kind="no-border" justify={'left'} />
-      <Button icon={board.icon.Card} label={board.string.Dates} kind="no-border" justify={'left'} />
-      <Button icon={IconAttachment} label={board.string.Attachments} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Members} kind="no-border" justify="left" />
+      <Button icon={board.icon.Card} label={board.string.Labels} kind="no-border" justify="left" />
+      <Button icon={board.icon.Card} label={board.string.Checklist} kind="no-border" justify="left" />
+      <Button icon={board.icon.Card} label={board.string.Dates} kind="no-border" justify="left" />
+      <Button icon={IconAttachment} label={board.string.Attachments} kind="no-border" justify="left" />
       <Button
         icon={board.icon.Card}
         label={board.string.CustomFields}
@@ -40,12 +40,12 @@
     </div>
     <div class="flex-col flex-gap-1">
       <Label label={board.string.Automation} />
-      <Button icon={IconAdd} label={board.string.AddButton} kind="transparent" justify={'left'} />
+      <Button icon={IconAdd} label={board.string.AddButton} kind="transparent" justify="left" />
     </div>
     <div class="flex-col flex-gap-1">
       <Label label={board.string.Actions} />
-      <Button icon={board.icon.Card} label={board.string.Move} kind="no-border" justify={'left'} />
-      <Button icon={board.icon.Card} label={board.string.Copy} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Move} kind="no-border" justify="left" />
+      <Button icon={board.icon.Card} label={board.string.Copy} kind="no-border" justify="left" />
       <Button
         icon={board.icon.Card}
         label={board.string.MakeTemplate}
@@ -53,8 +53,8 @@
         justify={'left'}
         width={'100%'}
       />
-      <Button icon={board.icon.Card} label={board.string.Watch} kind="no-border" justify={'left'} />
-      <Button icon={board.icon.Card} label={board.string.Archive} kind="no-border" justify={'left'} />
+      <Button icon={board.icon.Card} label={board.string.Watch} kind="no-border" justify="left" />
+      <Button icon={board.icon.Card} label={board.string.Archive} kind="no-border" justify="left" />
     </div>
   </div>
 {/if}
