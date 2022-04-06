@@ -14,15 +14,10 @@
 -->
 
 <script lang="ts">
-  import { AttachedDoc, Class, Doc, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import task, { DoneState, LostState, WonState, DocWithRank, calcRank } from '@anticrm/task'
-  import { AnySvelteComponent, getPlatformColor, Grid } from '@anticrm/ui'
-  import { Loading, ScrollBox } from '@anticrm/ui'
-  import KanbanPanel from './KanbanPanel.svelte'
+  import { Ref } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import type { Kanban } from '@anticrm/task'
+  import task, { DoneState, LostState, WonState } from '@anticrm/task'
   import { createEventDispatcher } from 'svelte'
 
   export let kanban: Kanban

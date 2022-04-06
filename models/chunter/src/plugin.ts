@@ -47,7 +47,8 @@ export default mergeIds(chunterId, chunter, {
     Chat: '' as IntlString,
     CreateBy: '' as IntlString,
     Create: '' as IntlString,
-    MarkUnread: '' as IntlString
+    MarkUnread: '' as IntlString,
+    LastMessage: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

@@ -28,6 +28,7 @@
   export let parent = false
   export let collapsed = false
   export let selected = false
+  export let bold = false
   export let actions: () => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
@@ -57,7 +58,7 @@
     dispatch('click')
   }}
 >
-  <span class="an-element__label" class:title={node}>
+  <span class="an-element__label" class:bold class:title={node}>
     <div class="flex-row-center">
       {#if icon && !parent}
         <div class="an-element__icon">

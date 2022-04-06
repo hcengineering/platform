@@ -28,7 +28,7 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
-    CommentCreate: '' as Resource<TriggerFunc>
+    ChunterTrigger: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>,

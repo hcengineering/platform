@@ -26,6 +26,7 @@
 
   export let object: WithLookup<Issue>
   export let draggable: boolean
+  export let dragged: boolean
 
   const showMenu = (ev?: Event): void => {
     showPopup(ContextMenu, { object }, ev ? (ev.target as HTMLElement) : null)
@@ -35,7 +36,7 @@
   $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
+<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
   <div class="flex-between mb-2">
     <div class="flex">
       <TaskPresenter value={object} />
@@ -80,13 +81,21 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, 0.06);
-    border-radius: 0.75rem;
+    padding: .5rem 1rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--board-card-bg-color);
+    border-radius: .25rem;
     user-select: none;
 
+    &:hover { 
+      background-color: var(--board-card-bg-hover); 
+    }
     &.draggable {
       cursor: grab;
+    }
+    &.dragged {
+      padding: 1rem;
+      background-color: var(--board-bg-color);
     }
   }
 </style>

@@ -15,16 +15,17 @@
 -->
 <script lang="ts">
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
+  import type { Card } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import type { WithLookup } from '@anticrm/core'
-  import type { Card } from '@anticrm/board'
+  import notification from '@anticrm/notification'
   import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
-  import notification from '@anticrm/notification'
 
   export let object: WithLookup<Card>
   export let draggable: boolean
+  export let dragged: boolean
 
   function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
@@ -35,7 +36,7 @@
   }
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
+<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
   <div class="flex-between mb-4">
     <div class="flex-col">
       <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
@@ -70,14 +71,21 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, 0.06);
-    border-radius: 0.75rem;
+    padding: .5rem 1rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--board-card-bg-color);
+    border-radius: .25rem;
     user-select: none;
-    backdrop-filter: blur(10px);
 
+    &:hover { 
+      background-color: var(--board-card-bg-hover); 
+    }
     &.draggable {
       cursor: grab;
+    }
+    &.dragged {
+      padding: 1rem;
+      background-color: var(--board-bg-color);
     }
   }
 </style>

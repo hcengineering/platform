@@ -36,6 +36,9 @@
     const me = getCurrentAccount()._id
     const txFactory = new TxFactory(me)
     const tx = txFactory.createTxCreateDoc<Message>(_class, space, {
+      attachedTo: space,
+      attachedToClass: chunter.class.Channel,
+      collection: 'messages',
       content: message,
       createOn: 0,
       createBy: me,
