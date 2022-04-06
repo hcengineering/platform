@@ -72,7 +72,13 @@
       throw new Error('contact not found')
     }
     if (!client.getHierarchy().hasMixin(customerInstance, lead.mixin.Customer)) {
-      await client.createMixin<Contact, Customer>(customerInstance._id, customerInstance._class, customerInstance.space, lead.mixin.Customer, {})
+      await client.createMixin<Contact, Customer>(
+        customerInstance._id,
+        customerInstance._class,
+        customerInstance.space,
+        lead.mixin.Customer,
+        { description: '' }
+      )
     }
 
     await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
@@ -102,6 +108,11 @@
       maxWidth={'16rem'}
       focus
     />
-    <UserBox _class={contact.class.Contact} title={lead.string.Customer} caption={lead.string.SelectCustomer} bind:value={customer} />
+    <UserBox
+      _class={contact.class.Contact}
+      title={lead.string.Customer}
+      caption={lead.string.SelectCustomer}
+      bind:value={customer}
+    />
   </Grid>
 </Card>

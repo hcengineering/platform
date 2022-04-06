@@ -35,7 +35,7 @@
     on:click={show}
   >
     <div class="icon">
-      <Icon icon={lead.icon.Lead} size={'small'} />
+      <Icon icon={lead.icon.Board} size={'small'} />
     </div>
     <span class="label">{value.title}</span>
   </a>

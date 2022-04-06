@@ -26,7 +26,7 @@
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-  function show (evt: Event) {
+  function show () {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>

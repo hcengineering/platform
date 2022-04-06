@@ -16,7 +16,7 @@
     "@anticrm/platform-rig": "~0.6.0",
     "svelte-loader": "^3.1.2",
     "sass": "^1.37.5",
-    "svelte-preprocess": "^4.10.3",
+    "svelte-preprocess": "^4.10.5",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
@@ -31,7 +31,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "svelte": "^3.37.0",
+    "svelte": "^3.46",
     "@anticrm/platform": "~0.6.5",
     "cropperjs": "~1.5.12",
     "smartcrop": "~2.0.5"

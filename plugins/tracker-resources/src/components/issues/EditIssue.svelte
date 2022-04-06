@@ -63,7 +63,6 @@
 {#if object !== undefined}
   <Panel
     reverseCommands={true}
-    useOverlay={false}
     rightSection={rightSection !== undefined}
     on:close={() => {
       dispatch('close')
