@@ -25,7 +25,6 @@ export default mergeIds(boardId, board, {
   component: {
     CreateBoard: '' as AnyComponent,
     CreateCard: '' as AnyComponent,
-    EditCard: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
