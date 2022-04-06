@@ -99,7 +99,9 @@
             <div class="first-column" />
             <div class="description">
               <StyledTextBox
-                noButtons={true}
+                alwaysEdit={true}
+                showButtons={false}
+                placeholder={board.string.DescriptionPlaceholder}
                 bind:content={object.description}
                 on:value={(evt) => change('description', evt.detail)}
               />
@@ -164,7 +166,7 @@
     padding-top: 10px;
   }
   .description {
-    height: 100px;
+    height: 70px;
     width: 100%;
     padding: 10px;
     border: 1px solid var(--theme-menu-divider);

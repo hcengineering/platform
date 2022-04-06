@@ -41,6 +41,7 @@ export default mergeIds(boardId, board, {
     Assignee: '' as IntlString,
     ManageBoardStatuses: '' as IntlString,
     Description: '' as IntlString,
+    DescriptionPlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Members: '' as IntlString,
     BoardCreateLabel: '' as IntlString,

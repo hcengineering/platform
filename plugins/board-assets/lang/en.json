@@ -20,6 +20,7 @@
     "Card": "Card",
     "Assignee": "Assignee",
     "Description": "Description",
+    "DescriptionPlaceholder": "Add a more detailed description...",
     "Location": "Location",
     "Members": "Members",
     "BoardCreateLabel": "Board",

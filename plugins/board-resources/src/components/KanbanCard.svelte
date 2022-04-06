@@ -36,7 +36,7 @@
   }
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
+<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged>
   <div class="flex-between mb-4">
     <div class="flex-col">
       <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
@@ -71,14 +71,14 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     background-color: var(--board-card-bg-color);
     border: 1px solid var(--board-card-bg-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     user-select: none;
 
-    &:hover { 
-      background-color: var(--board-card-bg-hover); 
+    &:hover {
+      background-color: var(--board-card-bg-hover);
     }
     &.draggable {
       cursor: grab;
