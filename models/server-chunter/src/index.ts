@@ -35,6 +35,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.CommentCreate
+    trigger: serverChunter.trigger.ChunterTrigger
   })
 }

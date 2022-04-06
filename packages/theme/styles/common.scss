@@ -86,6 +86,10 @@
       font-weight: 500;
       color: var(--accent-color);
     }
+    &.bold {
+      font-weight: 600;
+      color: var(--theme-caption-color);
+    }
   }
   .an-element__icon-arrow {
     margin-left: .5rem;

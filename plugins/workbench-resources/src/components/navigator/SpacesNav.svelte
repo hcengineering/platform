@@ -15,6 +15,8 @@
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
+  import notification from '@anticrm/notification'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Action, AnyComponent, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
@@ -80,6 +82,23 @@
     }
     return result
   }
+
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+  const hierarchy = client.getHierarchy()
+  $: clazz = hierarchy.getClass(model.spaceClass)
+  $: lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
+
+  function isChanged (space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
+    const field = lastEditMixin?.lastEditField
+    const lastView = lastViews.get(space._id)
+    if (lastView === undefined || lastView === -1) return false
+    if (field === undefined) return false
+    const value = (space as any)[field]
+    if (isNaN(value)) return false
+
+    return lastView < value
+  }
 </script>
 
 <TreeNode label={model.label} parent actions={async () => [addSpace]} indent={'ml-2'}>
@@ -107,6 +126,7 @@
         icon={classIcon(client, space._class)}
         selected={currentSpace === space._id}
         actions={() => getActions(space)}
+        bold={isChanged(space, $lastViews)}
         on:click={() => {
           selectSpace(space._id)
         }}

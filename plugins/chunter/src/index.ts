@@ -22,7 +22,9 @@ import { AnyComponent } from '@anticrm/ui'
 /**
  * @public
  */
-export interface Channel extends Space {}
+export interface Channel extends Space {
+  lastMessage?: Timestamp
+}
 
 /**
  * @public

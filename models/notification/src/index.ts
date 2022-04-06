@@ -15,9 +15,9 @@
 //
 
 import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@anticrm/core'
-import { ArrOf, Builder, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import type { EmailNotification, LastView, NotificationType, NotificationProvider, NotificationSetting, Notification, NotificationStatus } from '@anticrm/notification'
+import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import core, { TAttachedDoc, TClass, TDoc } from '@anticrm/model-core'
+import type { EmailNotification, LastView, NotificationType, NotificationProvider, NotificationSetting, Notification, NotificationStatus, SpaceLastEdit } from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
 import notification from './plugin'
 import setting from '@anticrm/setting'
@@ -81,8 +81,13 @@ export class TNotificationSetting extends TDoc implements NotificationSetting {
   enabled!: boolean
 }
 
+@Mixin(notification.mixin.SpaceLastEdit, core.class.Class)
+export class TSpaceLastEdit extends TClass implements SpaceLastEdit {
+  lastEditField!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TLastView, TNotification, TEmaiNotification, TNotificationType, TNotificationProvider, TNotificationSetting)
+  builder.createModel(TLastView, TNotification, TEmaiNotification, TNotificationType, TNotificationProvider, TNotificationSetting, TSpaceLastEdit)
 
   builder.createDoc(notification.class.NotificationType, core.space.Model, {
     label: notification.string.MentionNotification
@@ -108,3 +113,4 @@ export function createModel (builder: Builder): void {
 }
 
 export { notificationOperation } from './migration'
+export { notification as default }
