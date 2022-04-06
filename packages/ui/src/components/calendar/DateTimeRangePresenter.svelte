@@ -13,32 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
-  import ui, { Label } from '../..'
+  import ui from '../..'
   import DateRangePresenter from './DateRangePresenter.svelte'
-  import DateRangePopup from './DateRangePopup.svelte'
 
-  export let title: IntlString
-  export let value: number | null | undefined = null
-  export let withTime: boolean = false
+  export let value: number | null | undefined
+  export let mondayStart: boolean = true
+  export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined
   export let labelNull: IntlString = ui.string.NoDate
-
-  const dispatch = createEventDispatcher()
-
-  const changeValue = (result: any): void => {
-    if (result.detail !== undefined) {
-      value = result.detail
-      dispatch('change', value)
-    }
-  }
 </script>
 
-<div class="antiSelect antiWrapper cursor-default">
-  <div class="flex-col">
-    <span class="label mb-1"><Label label={title} /></span>
-    <DateRangePresenter {value} {withTime} {icon} {labelOver} {labelNull} editable on:change={changeValue} />
-  </div>
-</div>
+<DateRangePresenter bind:value withTime {mondayStart} {editable} {icon} {labelOver} {labelNull} />

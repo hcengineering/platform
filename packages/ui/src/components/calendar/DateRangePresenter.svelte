@@ -13,17 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import { daysInMonth, getMonthName } from './internal/DateUtils'
-  import { Icon, IconClose } from '../..'
+  import ui, { Label, Icon, IconClose } from '../..'
   import { dpstore, closeDatePopup } from '../../popups'
   import DPCalendar from './icons/DPCalendar.svelte'
+  import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import DateRangePopup from './DateRangePopup.svelte'
 
   export let value: number | null | undefined
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let editable: boolean = false
+  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let labelOver: IntlString | undefined = undefined
+  export let labelNull: IntlString = ui.string.NoDate
 
   const dispatch = createEventDispatcher()
 
@@ -322,19 +327,23 @@
       </div>
     {/if}
   {:else}
-    <div class="btn-icon">
-      <Icon icon={DPCalendar} size={'full'}/>
+    <div class="btn-icon {icon}">
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
     </div>
     {#if value !== null && value !== undefined}
-      {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
-      {#if new Date(value).getFullYear() !== today.getFullYear()}
-        {new Date(value).getFullYear()}
-      {/if}
-      {#if withTime}
-        <div class="time-divider" />
-        {new Date(value).getHours().toString().padStart(2, '0')}
-        <span class="separator">:</span>
-        {new Date(value).getMinutes().toString().padStart(2, '0')}
+      {#if labelOver !== undefined}
+        <Label label={labelOver} />
+      {:else}
+        {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
+        {#if new Date(value).getFullYear() !== today.getFullYear()}
+          {new Date(value).getFullYear()}
+        {/if}
+        {#if withTime}
+          <div class="time-divider" />
+          {new Date(value).getHours().toString().padStart(2, '0')}
+          <span class="separator">:</span>
+          {new Date(value).getMinutes().toString().padStart(2, '0')}
+        {/if}
       {/if}
     {:else}
       No date
@@ -350,12 +359,13 @@
     flex-shrink: 0;
     padding: 0 .5rem;
     font-weight: 400;
+    font-size: .8125rem;
     min-width: 1.5rem;
     width: auto;
     height: 1.5rem;
     white-space: nowrap;
     line-height: 1.5rem;
-    color: var(--content-color);
+    color: var(--accent-color);
     background-color: var(--button-bg-color);
     border: 1px solid transparent;
     border-radius: .25rem;
@@ -368,13 +378,16 @@
       margin-right: .375rem;
       width: .875rem;
       height: .875rem;
-      color: var(--content-color);
       transition: color .15s;
       pointer-events: none;
+
+      &.normal { color: var(--content-color); }
+      &.warning { color: var(--warning-color); }
+      &.overdue { color: var(--error-color); }
     }
 
     &:hover {
-      color: var(--accent-color);
+      color: var(--caption-color);
       transition-duration: 0;
     }
     &.editable {
@@ -382,7 +395,11 @@
 
       &:hover {
         background-color: var(--button-bg-hover);
-        .btn-icon { color: var(--accent-color); }
+        .btn-icon {
+          &.normal { color: var(--caption-color); }
+          &.warning { color: var(--warning-color); }
+          &.overdue { color: var(--error-color); }
+        }
         .time-divider { background-color: var(--button-border-hover); }
       }
       &:focus-within {

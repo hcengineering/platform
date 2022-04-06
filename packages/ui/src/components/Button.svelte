@@ -107,7 +107,7 @@
       pointer-events: none;
     }
     &:hover {
-      color: var(--caption-color);
+      color: var(--accent-color);
       transition-duration: 0;
       
       .btn-icon { color: var(--caption-color); }
@@ -137,15 +137,15 @@
     }
     &.no-border {
       font-weight: 400;
-      color: var(--content-color);
+      color: var(--accent-color);
       background-color: var(--button-bg-color);
       box-shadow: var(--button-shadow);
 
       &:hover {
-        color: var(--accent-color);
+        color: var(--caption-color);
         background-color: var(--button-bg-hover);
 
-        .btn-icon { color: var(--accent-color); }
+        .btn-icon { color: var(--caption-color); }
       }
       &:disabled {
         background-color: #30323655;
