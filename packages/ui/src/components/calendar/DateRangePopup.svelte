@@ -13,31 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import ui, { dpstore, IconNavPrev, IconNavNext, Icon } from '../..'
+  import { dpstore, IconNavPrev, IconNavNext, Icon } from '../..'
   import { TCellStyle, ICell } from './internal/DateUtils'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
 
+  const dispatch = createEventDispatcher()
+
   let currentDate: Date
-  $: if ($dpstore.currentDate) currentDate = $dpstore.currentDate
+  let viewDate: Date
+  $: if ($dpstore.currentDate) {
+    currentDate = $dpstore.currentDate
+    viewDate = new Date(currentDate)
+  }
 
   let mondayStart: boolean = true
   let monthYear: string
   const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
-  const dispatch = createEventDispatcher()
-
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
+  $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
   let days: Array<ICell> = []
-
-  const getNow = (): Date => {
-    const tempDate = new Date(Date.now())
-    return new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate())
-  }
-  const today: Date = getNow()
-  let todayString: string
-  translate(ui.string.Today, {}).then(res => todayString = res)
 
   const getDateStyle = (date: Date): TCellStyle => {
     if (areDatesEqual(currentDate, date)) return 'selected'
@@ -46,34 +41,38 @@
   
   const renderCellStyles = (): void => {
     days = []
-    for (let i = 1; i <= daysInMonth(currentDate); i++) {
-      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
+    for (let i = 1; i <= daysInMonth(viewDate); i++) {
+      const tempDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), i)
       days.push({
         dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate),
-        focused: false,
-        today: areDatesEqual(tempDate, today)
+        style: getDateStyle(tempDate)
       })
     }
     days = days
-    monthYear = capitalizeFirstLetter(getMonthName(currentDate)) + ' ' + currentDate.getFullYear()
+    monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
   }
-  $: if (currentDate) renderCellStyles()
+  $: if (viewDate) renderCellStyles()
+
+  const today: Date = new Date(Date.now())
+  const isToday = (n: number): boolean => {
+    if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
+    return false
+  }
 </script>
 
 <div class="daterange-popup-container">
   <div class="header">
-    {#if currentDate}
+    {#if viewDate}
       <div class="monthYear">{monthYear}</div>
       <div class="group">
         <div class="btn" on:click={() => {
-          currentDate.setMonth(currentDate.getMonth() - 1)
+          viewDate.setMonth(viewDate.getMonth() - 1)
           renderCellStyles()
         }}>
           <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
         </div>
         <div class="btn" on:click={() => {
-          currentDate.setMonth(currentDate.getMonth() + 1)
+          viewDate.setMonth(viewDate.getMonth() + 1)
           renderCellStyles()
         }}>
           <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
@@ -82,7 +81,7 @@
     {/if}
   </div>
 
-  {#if currentDate}
+  {#if viewDate}
     <div class="calendar">
       {#each [...Array(7).keys()] as dayOfWeek}
         <span class="caption">{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span>
@@ -90,14 +89,12 @@
       {#each days as day, i}
         <div
           class="day {day.style}"
-          class:today={day.today}
-          class:focused={day.focused}
+          class:today={isToday(i)}
           class:day-off={day.dayOfWeek > 5}
-          data-today={day.today ? todayString : ''}
           style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
           on:click|stopPropagation={() => {
-            currentDate.setDate(i + 1)
-            dispatch('close', currentDate)
+            viewDate.setDate(i + 1)
+            dispatch('close', viewDate)
           }}
         >
           {i + 1}
@@ -182,7 +179,6 @@
 
       &.day-off { color: var(--content-color); }
       &.today {
-        position: relative;
         font-weight: 500;
         color: var(--caption-color);
         background-color: var(--button-bg-color);

@@ -260,7 +260,7 @@
       on:focus={() => focused(edits[0].id)}
       on:blur={(ev) => unfocus(ev, edits[0].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[0].value !== -1)}
+      {#if (edits[0].value > -1)}
         {edits[0].value.toString().padStart(2, '0')}
       {:else}ДД{/if}
     </span>
@@ -270,7 +270,7 @@
       on:focus={() => focused(edits[1].id)}
       on:blur={(ev) => unfocus(ev, edits[1].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[1].value !== -1)}
+      {#if (edits[1].value > -1)}
         {edits[1].value.toString().padStart(2, '0')}
       {:else}ММ{/if}
     </span>
@@ -280,7 +280,7 @@
       on:focus={() => focused(edits[2].id)}
       on:blur={(ev) => unfocus(ev, edits[2].id)}
     >
-      {#if (value !== null && value !== undefined) && (edits[2].value !== -1)}
+      {#if (edits[2].value > -1)}
         {edits[2].value.toString().padStart(4, '0')}
       {:else}ГГГГ{/if}
     </span>
@@ -291,7 +291,7 @@
         on:focus={() => focused(edits[3].id)}
         on:blur={(ev) => unfocus(ev, edits[3].id)}
       >
-        {#if (value !== null && value !== undefined) || (edits[3].value > -1)}
+        {#if (edits[3].value > -1)}
           {edits[3].value.toString().padStart(2, '0')}
         {:else}ЧЧ{/if}
       </span>
@@ -301,7 +301,7 @@
         on:focus={() => focused(edits[4].id)}
         on:blur={(ev) => unfocus(ev, edits[4].id)}
       >
-        {#if (value !== null && value !== undefined) || (edits[4].value > -1)}
+        {#if (edits[4].value > -1)}
           {edits[4].value.toString().padStart(2, '0')}
         {:else}ММ{/if}
       </span>

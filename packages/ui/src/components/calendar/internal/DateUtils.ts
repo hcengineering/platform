@@ -81,8 +81,6 @@ export type TCellStyle = 'not-selected' | 'selected'
 export interface ICell {
   dayOfWeek: number
   style: TCellStyle
-  focused: boolean
-  today?: boolean
 }
 
 export function getMonday (d: Date, mondayStart: boolean): Date {
