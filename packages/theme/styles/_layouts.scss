@@ -423,11 +423,7 @@ a.no-line {
 .pointer-events-none { pointer-events: none; }
 
 /* Text */
-.text-sm { font-size: .75rem; }
-.text-md { font-size: .8125rem; }
-.text-lg { font-size: 1.125rem; }
-.font-normal { font-weight: 400; }
-.font-medium { font-weight: 500; }
+
 .fs-title {
   font-weight: 500;
   font-size: 1rem;
@@ -441,6 +437,11 @@ a.no-line {
   color: var(--theme-content-trans-color);
   user-select: none;
 }
+.text-sm { font-size: .75rem; }
+.text-md { font-size: .8125rem; }
+.text-lg { font-size: 1.125rem; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
 .fs-bold { font-weight: 500; }
 .uppercase { text-transform: uppercase; }
 .text-left { text-align: left; }

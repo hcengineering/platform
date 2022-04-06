@@ -14,19 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity from '@anticrm/activity'
   import type { Card } from '@anticrm/board'
-  import chunter from '@anticrm/chunter'
   import { Class, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, Component, EditBox, Icon, IconActivity, IconClose, Label, Scroller } from '@anticrm/ui'
+  import { Button, EditBox, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
-  import CardActions from './CardActions.svelte'
-  import CardFields from './CardFields.svelte'
+  import CardActions from './editor/CardActions.svelte'
+  import CardActivity from './editor/CardActivity.svelte'
+  import CardFields from './editor/CardFields.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -36,7 +35,6 @@
 
   let object: Card | undefined
   let state: State | undefined
-  let isActivityShown: boolean = true
 
   $: _id &&
     _class &&
@@ -71,7 +69,7 @@
         <div class="w-9">
           <Icon icon={board.icon.Card} size="large" />
         </div>
-        <div class="fs-title">
+        <div class="fs-title text-lg">
           <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
         </div>
       </div>
@@ -109,36 +107,10 @@
           </div>
           <!-- TODO attachments-->
           <!-- TODO checklists -->
-          <div class="flex-row-streach mt-4 mb-2">
-            <div class="w-9">
-              <Icon icon={IconActivity} size="large" />
-            </div>
-            <div class="flex-grow fs-title">
-              <Label label={activity.string.Activity} />
-            </div>
-            <Button
-              kind="no-border"
-              label={isActivityShown ? board.string.HideDetails : board.string.ShowDetails}
-              width="100px"
-              on:click={() => {
-                isActivityShown = !isActivityShown
-              }}
-            />
-          </div>
-          <div class="flex-row-streach">
-            <div class="w-9" />
-            <div class="w-full">
-              <Component is={chunter.component.CommentInput} props={{ object }} />
-            </div>
-          </div>
-          {#if isActivityShown === true}
-            <Component is={activity.component.Activity} props={{ object, showCommenInput: false, transparent: true }}>
-              <slot />
-            </Component>
-          {/if}
+          <CardActivity value={object} />
         </div>
 
-        <div class="right-pane"><CardActions value={object} /></div>
+        <CardActions value={object} />
       </div>
     </div>
   </Scroller>
