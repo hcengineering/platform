@@ -38,6 +38,8 @@
     "Copy": "Copy",
     "MakeTemplate": "Make Template",
     "Watch": "Watch",
-    "Archive": "Archive"
+    "Archive": "Archive",
+    "HideDetails": "Hide Details",
+    "ShowDetails": "Show Details"
   }
 }

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Button, Label } from '@anticrm/ui'
+  import { Button, IconAttachment, Label } from '@anticrm/ui'
   import board from '../plugin'
 
   export let value: Card
@@ -29,13 +29,7 @@
       <Button icon={board.icon.Card} label={board.string.Labels} kind="no-border" justify={'left'} width={'100%'} />
       <Button icon={board.icon.Card} label={board.string.Checklist} kind="no-border" justify={'left'} width={'100%'} />
       <Button icon={board.icon.Card} label={board.string.Dates} kind="no-border" justify={'left'} width={'100%'} />
-      <Button
-        icon={board.icon.Card}
-        label={board.string.Attachments}
-        kind="no-border"
-        justify={'left'}
-        width={'100%'}
-      />
+      <Button icon={IconAttachment} label={board.string.Attachments} kind="no-border" justify={'left'} width={'100%'} />
       <Button
         icon={board.icon.Card}
         label={board.string.CustomFields}
@@ -77,7 +71,6 @@
     flex-direction: column;
     gap: 10px;
     width: 100%;
-    padding-left: 10px;
   }
   .section {
     display: flex;

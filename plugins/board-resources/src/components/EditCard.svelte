@@ -16,11 +16,13 @@
 <script lang="ts">
   import activity from '@anticrm/activity'
   import type { Card } from '@anticrm/board'
+  import chunter from '@anticrm/chunter'
   import { Class, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Component, EditBox, Icon, Label } from '@anticrm/ui'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Button, Component, EditBox, Icon, IconActivity, IconClose, Label, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import CardActions from './CardActions.svelte'
@@ -34,6 +36,7 @@
 
   let object: Card | undefined
   let state: State | undefined
+  let isActivityShown: boolean = true
 
   $: _id &&
     _class &&
@@ -46,12 +49,10 @@
       state = result[0]
     })
 
-  function close () {
-    dispatch('close')
-  }
-
   function change (field: string, value: any) {
-    client.updateDoc(value._class, value.space, value._id, { [field]: value })
+    if (object) {
+      client.updateDoc(object._class, object.space, object._id, { [field]: value })
+    }
   }
 
   onMount(() => {
@@ -60,64 +61,100 @@
 </script>
 
 {#if object !== undefined}
-  <div class="root">
-    <!-- TODO cover -->
-    <div class="row">
-      <div class="first_column">
-        <Icon icon={board.icon.Card} size="large" />
+  <Scroller>
+    <div class="root">
+      <!-- TODO cover -->
+      <div class="close-button">
+        <Button icon={IconClose} kind="transparent" size="large" on:click={() => dispatch('close')} />
       </div>
-      <div class="title">
-        <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
-      </div>
-    </div>
-    <div class="row">
-      <div class="first_column" />
-      <div>
-        <Label label={board.string.InList} /><span class="state-name">{state?.title}</span>
-      </div>
-    </div>
-    <div class="card-info">
-      <div class="left-pane">
-        <div class="row">
-          <div class="first_column" />
-          <CardFields value={object} />
+      <div class="row">
+        <div class="first-column">
+          <Icon icon={board.icon.Card} size="large" />
         </div>
-        <div class="row">
-          <div class="first_column">
-            <Icon icon={board.icon.Card} size="large" />
+        <div class="title">
+          <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
+        </div>
+      </div>
+      <div class="row">
+        <div class="first-column" />
+        <div>
+          <Label label={board.string.InList} /><span class="state-name">{state?.title}</span>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="left-pane">
+          <div class="row">
+            <div class="first-column" />
+            <CardFields value={object} />
           </div>
-          <div class="description-label">
-            <Label label={board.string.Description} />
+          <div class="row section-header">
+            <div class="first-column">
+              <Icon icon={board.icon.Card} size="large" />
+            </div>
+            <div class="section-label">
+              <Label label={board.string.Description} />
+            </div>
           </div>
+          <div class="row">
+            <div class="first-column" />
+            <div class="description">
+              <StyledTextBox
+                noButtons={true}
+                bind:content={object.description}
+                on:value={(evt) => change('description', evt.detail)}
+              />
+            </div>
+          </div>
+          <!-- TODO attachments-->
+          <!-- TODO checklists -->
+          <div class="row section-header">
+            <div class="first-column">
+              <Icon icon={IconActivity} size="large" />
+            </div>
+            <div class="section-label">
+              <Label label={activity.string.Activity} />
+            </div>
+            <Button
+              kind="no-border"
+              label={isActivityShown ? board.string.HideDetails : board.string.ShowDetails}
+              width="100px"
+              on:click={() => {
+                isActivityShown = !isActivityShown
+              }}
+            />
+          </div>
+          <div class="row">
+            <div class="first-column" />
+            <div class="comment-input">
+              <Component is={chunter.component.CommentInput} props={{ object }} />
+            </div>
+          </div>
+          {#if isActivityShown === true}
+            <Component is={activity.component.Activity} props={{ object, noCommentInput: true, transparent: true }}>
+              <slot />
+            </Component>
+          {/if}
         </div>
-        <div class="row">
-          <div class="first_column" />
-          <EditBox
-            bind:value={object.description}
-            maxWidth="39rem"
-            focus
-            on:change={() => change('description', object?.description)}
-          />
-        </div>
-        <!-- TODO attachments-->
-        <!-- TODO checklists -->
+
+        <div class="right-pane"><CardActions value={object} /></div>
       </div>
-      <div class="right-pane"><CardActions value={object} /></div>
     </div>
-    <Component is={activity.component.Activity} props={{ object, transparent: true }}>
-      <slot />
-    </Component>
-  </div>
+  </Scroller>
 {/if}
 
 <style lang="scss">
   .root {
     display: flex;
-    justify-content: center;
+    justify-content: start;
     flex-direction: column;
     padding: 20px;
     width: 650px;
     height: 100%;
+  }
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
   .title {
     font-size: 20px;
@@ -126,11 +163,14 @@
   .card-info {
     padding-top: 10px;
   }
-  .description-label {
-    font-size: 16px;
-    font-weight: 600;
+  .description {
+    height: 100px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--theme-menu-divider);
+    border-radius: 8px;
   }
-  .first_column {
+  .first-column {
     width: 40px;
   }
   .card-info {
@@ -143,6 +183,7 @@
   }
   .right-pane {
     width: 160px;
+    padding-left: 20px;
   }
   .row {
     display: flex;
@@ -150,11 +191,24 @@
     align-items: center;
     flex-direction: row;
   }
+  .section-header {
+    margin-top: 20px;
+    margin-bottom: 5px;
+  }
+  .section-label {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .comment-input {
+    width: 100%;
+  }
   .state-name {
     padding-left: 5px;
+    text-decoration: underline;
 
     &:hover {
-      text-decoration: underline;
+      color: var(--caption-color);
     }
   }
 </style>

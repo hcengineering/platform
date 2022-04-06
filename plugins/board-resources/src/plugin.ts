@@ -59,7 +59,9 @@ export default mergeIds(boardId, board, {
     Copy: '' as IntlString,
     MakeTemplate: '' as IntlString,
     Watch: '' as IntlString,
-    Archive: '' as IntlString
+    Archive: '' as IntlString,
+    HideDetails: '' as IntlString,
+    ShowDetails: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
