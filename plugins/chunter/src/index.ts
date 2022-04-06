@@ -27,13 +27,29 @@ export interface Channel extends Space {}
 /**
  * @public
  */
-export interface Message extends Doc {
+export interface ChunterMessage extends AttachedDoc {
   content: string
   attachments?: number
-  replies?: Ref<Employee>[]
-  lastReply?: Timestamp
   createBy: Ref<Account>
   createOn: Timestamp
+}
+
+/**
+ * @public
+ */
+export interface ThreadMessage extends ChunterMessage {
+  attachedTo: Ref<Message>
+  attachedToClass: Ref<Class<Message>>
+}
+
+/**
+ * @public
+ */
+export interface Message extends ChunterMessage {
+  attachedTo: Ref<Space>
+  attachedToClass: Ref<Class<Space>>
+  replies?: Ref<Employee>[]
+  lastReply?: Timestamp
 }
 
 /**
@@ -78,6 +94,8 @@ export default plugin(chunterId, {
   },
   class: {
     Message: '' as Ref<Class<Message>>,
+    ChunterMessage: '' as Ref<Class<ChunterMessage>>,
+    ThreadMessage: '' as Ref<Class<ThreadMessage>>,
     Backlink: '' as Ref<Class<Backlink>>,
     Comment: '' as Ref<Class<Comment>>,
     Channel: '' as Ref<Class<Channel>>

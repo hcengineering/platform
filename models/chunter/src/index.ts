@@ -14,16 +14,16 @@
 //
 
 import activity from '@anticrm/activity'
-import type { Backlink, Channel, Comment, Message } from '@anticrm/chunter'
-import type { Account, Class, Doc, Domain, Ref, Timestamp } from '@anticrm/core'
+import type { Backlink, Channel, ChunterMessage, Comment, Message, ThreadMessage } from '@anticrm/chunter'
+import contact, { Employee } from '@anticrm/contact'
+import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
-import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
-import contact, { Employee } from '@anticrm/contact'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -32,8 +32,8 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 @UX(chunter.string.Channel, chunter.icon.Hashtag)
 export class TChannel extends TSpace implements Channel {}
 
-@Model(chunter.class.Message, core.class.Doc, DOMAIN_CHUNTER)
-export class TMessage extends TDoc implements Message {
+@Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
+export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
   @Prop(TypeMarkup(), chunter.string.Content)
   @Index(IndexKind.FullText)
   content!: string
@@ -41,17 +41,31 @@ export class TMessage extends TDoc implements Message {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
-  replies?: Ref<Employee>[]
-
-  @Prop(TypeTimestamp(), chunter.string.LastReply)
-  lastReply?: Timestamp
-
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
   createBy!: Ref<Account>
 
   @Prop(TypeTimestamp(), chunter.string.Create)
   createOn!: Timestamp
+}
+
+@Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
+export class TThreadMessage extends TChunterMessage implements ThreadMessage {
+  declare attachedTo: Ref<Message>
+
+  declare attachedToClass: Ref<Class<Message>>
+}
+
+@Model(chunter.class.Message, chunter.class.ChunterMessage)
+export class TMessage extends TChunterMessage implements Message {
+  declare attachedTo: Ref<Space>
+
+  declare attachedToClass: Ref<Class<Space>>
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
+  replies?: Ref<Employee>[]
+
+  @Prop(TypeTimestamp(), chunter.string.LastReply)
+  lastReply?: Timestamp
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
@@ -73,7 +87,7 @@ export class TBacklink extends TComment implements Backlink {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TComment, TBacklink)
+  builder.createModel(TChannel, TMessage, TThreadMessage, TChunterMessage, TComment, TBacklink)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message
@@ -122,11 +136,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: chunter.class.Comment,
-    action: chunter.action.MarkCommentUnread,
-    query: {
-      attachedToClass: chunter.class.Message
-    }
+    target: chunter.class.ThreadMessage,
+    action: chunter.action.MarkCommentUnread
   })
 
   builder.createDoc(workbench.class.Application, core.space.Model, {

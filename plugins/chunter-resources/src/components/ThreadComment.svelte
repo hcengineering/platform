@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList } from '@anticrm/attachment-resources'
-  import type { Comment } from '@anticrm/chunter'
+  import type { ThreadMessage } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { Ref, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -31,10 +31,10 @@
   import Emoji from './icons/Emoji.svelte'
   import Reactions from './Reactions.svelte'
 
-  export let comment: WithLookup<Comment>
+  export let message: WithLookup<ThreadMessage>
   export let employees: Map<Ref<Employee>, Employee>
 
-  $: attachments = (comment.$lookup?.attachments ?? []) as Attachment[]
+  $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
 
@@ -42,7 +42,7 @@
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
-  $: subscribed = ($lastViews.get(comment.attachedTo) ?? -1) > -1
+  $: subscribed = ($lastViews.get(message.attachedTo) ?? -1) > -1
   $: subscribeAction = subscribed
     ? ({
         label: chunter.string.TurnOffReplies,
@@ -54,7 +54,7 @@
       } as Action)
 
   const showMenu = async (ev: Event): Promise<void> => {
-    const actions = await getActions(client, comment, chunter.class.Comment)
+    const actions = await getActions(client, message, chunter.class.ThreadMessage)
     actions.push(subscribeAction)
     showPopup(
       Menu,
@@ -65,7 +65,7 @@
             icon: a.icon,
             action: async () => {
               const impl = await getResource(a.action)
-              await impl(comment)
+              await impl(message)
             }
           }))
         ]
@@ -74,10 +74,10 @@
     )
   }
 
-  $: employee = getEmployee(comment)
+  $: employee = getEmployee(message)
 
-  function getEmployee (comment: WithLookup<Comment>): Employee | undefined {
-    const employee = (comment.$lookup?.modifiedBy as EmployeeAccount)?.employee
+  function getEmployee (comment: WithLookup<ThreadMessage>): Employee | undefined {
+    const employee = (comment.$lookup?.createBy as EmployeeAccount)?.employee
     if (employee !== undefined) {
       return employees.get(employee)
     }
@@ -89,10 +89,10 @@
   <div class="message">
     <div class="header">
       {#if employee}{formatName(employee.name)}{/if}
-      <span>{getTime(comment.modifiedOn)}</span>
+      <span>{getTime(message.createOn)}</span>
     </div>
-    <div class="text"><MessageViewer message={comment.message} /></div>
-    {#if comment.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    <div class="text"><MessageViewer message={message.content} /></div>
+    {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
     {#if reactions}
       <div class="footer">
         <div><Reactions /></div>

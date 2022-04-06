@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { Comment, Message } from '@anticrm/chunter'
+  import type { ThreadMessage, Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -34,9 +34,9 @@
   const dispatch = createEventDispatcher()
 
   export let _id: Ref<Message>
-  export let space: Ref<Space>
+  export let currentSpace: Ref<Space>
   let message: Message | undefined
-  let commentId = generateId()
+  let commentId = generateId() as Ref<ThreadMessage>
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -54,7 +54,7 @@
 
   const lookup = {
     _id: { attachments: attachment.class.Attachment },
-    modifiedBy: core.class.Account
+    createBy: core.class.Account
   }
 
   $: updateQueries(_id)
@@ -75,7 +75,7 @@
     )
 
     query.query(
-      chunter.class.Comment,
+      chunter.class.ThreadMessage,
       {
         attachedTo: id
       },
@@ -108,35 +108,37 @@
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
     const txFactory = new TxFactory(me)
-    const tx = txFactory.createTxCreateDoc(
-      chunter.class.Comment,
-      space,
+    const tx = txFactory.createTxCreateDoc<ThreadMessage>(
+      chunter.class.ThreadMessage,
+      currentSpace,
       {
         attachedTo: _id,
         attachedToClass: chunter.class.Message,
         collection: 'replies',
-        message,
+        content: message,
+        createBy: me,
+        createOn: 0,
         attachments
       },
       commentId
     )
-
+    tx.attributes.createOn = tx.modifiedOn
     await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, space, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, currentSpace, chunter.class.Channel, commentId, message)
 
     commentId = generateId()
   }
-  let comments: Comment[] = []
+  let comments: ThreadMessage[] = []
 
-  function newMessagesStart (comments: Comment[]): number {
+  function newMessagesStart (comments: ThreadMessage[]): number {
     const lastView = $lastViews.get(_id)
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
-      if (comment.modifiedOn > lastView) return index
+      if (comment.createOn > lastView) return index
     }
     return -1
   }
@@ -144,7 +146,7 @@
   $: markUnread($lastViews)
   function markUnread (lastViews: Map<Ref<Doc>, number>) {
     const newPos = newMessagesStart(comments)
-    if (newPos < newMessagesPos || newMessagesPos === -1) {
+    if (newPos !== -1 || newMessagesPos === -1) {
       newMessagesPos = newPos
     }
   }
@@ -172,12 +174,12 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment {comment} {employees} />
+      <ThreadComment message={comment} {employees} />
     {/each}
   {/if}
 </div>
 <div class="ref-input">
-  <AttachmentRefInput {space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+  <AttachmentRefInput space={currentSpace} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
 </div>
 
 <style lang="scss">
