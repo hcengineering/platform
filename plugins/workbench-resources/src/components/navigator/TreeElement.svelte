@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { Ref, Space } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
-  import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreH, IconMoreV } from '@anticrm/ui'
+  import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -35,7 +35,7 @@
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  async function onMenuClick(ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent) {
     showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })

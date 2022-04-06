@@ -15,31 +15,30 @@
 
 <script lang="ts">
 
-  import core, { Doc, DocumentQuery, Ref, Space } from '@anticrm/core'
-  import recruit from '@anticrm/recruit'
+  import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
+  import recruit, { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
   import { Table } from '@anticrm/view-resources'
 
   export let value: Ref<Space>
   export let resultQuery: DocumentQuery<Doc>
 
+  const options: FindOptions<Applicant> = {
+    lookup: {
+      state: task.class.State,
+      space: core.class.Space,
+      doneState: task.class.DoneState,
+      attachedTo: recruit.mixin.Candidate
+    },
+    limit: 10
+  }
 </script>
 
 <div class='popup-table'>
     <Table 
     _class={recruit.class.Applicant}
     config={['', '$lookup.attachedTo', '$lookup.state', '$lookup.doneState', 'modifiedOn']}
-    options={
-      {
-        lookup: {
-          state: task.class.State,
-          space: core.class.Space,
-          doneState: task.class.DoneState,
-          attachedTo: recruit.mixin.Candidate
-        },
-        limit: 10
-      }    
-    }
+    options={options}
     query={ { ...(resultQuery ?? {}), space: value } }
     loadingProps={{ length: 0 }}
     />

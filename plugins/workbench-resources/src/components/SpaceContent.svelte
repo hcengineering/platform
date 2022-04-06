@@ -27,12 +27,14 @@
 
 {#if viewlet}
   {#key space}
-    <Component is={viewlet.$lookup?.descriptor?.component} props={ {
-      _class,
-      space,
-      options: viewlet.options,
-      config: viewlet.config,
-      search
-    } } />
+    {#if viewlet.$lookup?.descriptor?.component}
+      <Component is={viewlet.$lookup?.descriptor?.component} props={ {
+        _class,
+        space,
+        options: viewlet.options,
+        config: viewlet.config,
+        search
+      } } />
+    {/if}
   {/key}
 {/if}

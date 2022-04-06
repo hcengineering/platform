@@ -217,7 +217,7 @@
     }
   }
 
-  async function recognize (name: string): Promise<void> {
+  async function recognize (): Promise<void> {
     const token = getMetadata(login.metadata.LoginToken) ?? ''
     const fileUrl = window.location.origin + getFileUrl(resume.uuid)
 
@@ -241,7 +241,7 @@
         object.city = doc.city
       }
 
-      if (isUndef(object.avatar) && doc.avatar !== undefined) {
+      if (isUndef(object.avatar ?? undefined) && doc.avatar !== undefined) {
         // We had avatar, let's try to upload it.
         const data = atob(doc.avatar)
         let n = data.length
@@ -326,7 +326,7 @@
       resume.lastModified = file.lastModified
 
       if (file.type.includes('application/pdf')) {
-        await recognize(resume.uuid)
+        await recognize()
       }
 
       console.log('uploaded file uuid', resume.uuid)

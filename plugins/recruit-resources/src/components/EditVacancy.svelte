@@ -28,7 +28,7 @@
 
   export let _id: Ref<Vacancy>
 
-  let object: Vacancy
+  let object: Required<Vacancy>
 
   const dispatch = createEventDispatcher()
 
@@ -37,9 +37,9 @@
   const query = createQuery()
   const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
 
-  async function updateObject (_id: Ref<Vacancy>): Promise<void> {
-    await query.query(recruit.class.Vacancy, { _id }, result => {
-      object = result[0]
+  function updateObject (_id: Ref<Vacancy>): void {
+    query.query(recruit.class.Vacancy, { _id }, result => {
+      object = result[0] as Required<Vacancy>
     })
   }
 

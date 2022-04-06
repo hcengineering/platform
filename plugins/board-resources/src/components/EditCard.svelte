@@ -43,7 +43,7 @@
       placeholder={board.string.CardPlaceholder}
       maxWidth="39rem"
       focus
-      on:change={(evt) => change('title', object.title)}
+      on:change={() => change('title', object.title)}
     />
   </Grid>
 {/if}

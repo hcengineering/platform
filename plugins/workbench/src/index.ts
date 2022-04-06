@@ -79,6 +79,10 @@ export interface ViewConfiguration {
   class: Ref<Class<Doc>> // show object of this class
   createItemDialog?: AnyComponent
   createItemLabel?: IntlString
+
+  // If defined component will be used to render content for selected space.
+  component?: AnyComponent
+  componentProps?: Record<string, any>
 }
 
 /**
