@@ -222,8 +222,9 @@
     createItemLabel = currentView?.createItemLabel
   }
 
-  function setSpaceSpecial (spaceSpecial: string): void {
-    if (spaceSpecial === currentSpecial || spaceSpecial === asideId) return
+  function setSpaceSpecial (spaceSpecial: string | undefined): void {
+    if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
+    if (asideId !== undefined && spaceSpecial === asideId) return
     clear(3)
     if (spaceSpecial === undefined) return
     specialComponent = getSpecialComponent(spaceSpecial)
