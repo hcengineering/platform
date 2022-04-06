@@ -1,14 +1,14 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -30,11 +30,11 @@
     location,
     Location,
     navigate,
-    PanelInstance, Popup,
+    PanelInstance,
+    Popup,
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
-import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.svelte'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
   import workbench from '../plugin'
@@ -47,6 +47,7 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
   import SpaceView from './SpaceView.svelte'
 
   export let client: Client
+  let contentPanel: HTMLElement
 
   setClient(client)
   NotificationClientImpl.getClient()
@@ -55,145 +56,13 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
   let specialComponent: SpecialNavModel | undefined
+  let asideId: string | undefined
 
   let currentApplication: Application | undefined
+  let navigatorModel: NavigatorModel | undefined
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
-  let navigatorModel: NavigatorModel | undefined
-
-  let asideId: string | undefined
-
-  onDestroy(
-    location.subscribe(async (loc) => {
-      closeTooltip()
-      closePopup()
-      if (currentApp !== loc.path[1]) {
-        currentApp = loc.path[1] as Ref<Application>
-        currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
-        navigatorModel = currentApplication?.navigatorModel
-      }
-      const currentFolder = loc.path[2] as Ref<Space>
-
-      if (currentSpecial !== currentFolder) {
-        const newSpecial = getSpecialComponent(currentFolder)
-        if (newSpecial !== undefined) {
-          specialComponent = newSpecial
-          currentSpecial = currentFolder
-          currentSpace = undefined
-          return
-        }
-      }
-
-      updateSpace(currentFolder, loc.path[3])
-    })
-  )
-
-  async function updateSpace (spaceId?: Ref<Space>, spaceSpecial?: string): Promise<void> {
-    if (spaceId === currentSpace) {
-      // Check if we need update location.
-      if (spaceSpecial !== currentSpecial && spaceSpecial !== asideId) {
-        closePopup()
-        closePanel()
-        closeTooltip()
-        const loc = getCurrentLocation()
-        if (spaceSpecial !== undefined) {
-          setSpaceSpecial(loc, spaceSpecial)
-        } else {
-          loc.path.length = 3
-          spaceSpecial = undefined
-          currentSpecial = undefined
-          asideId = undefined
-        }
-        navigate(loc)
-      }
-      return
-    }
-    if (spaceId === undefined) {
-      return
-    }
-    const space = await client.findOne(core.class.Space, { _id: spaceId })
-    if (space) {
-      currentSpace = spaceId
-      currentSpecial = undefined
-      specialComponent = undefined
-
-      const spaceClass = client.getHierarchy().getClass(space._class) // (await client.findAll(core.class.Class, { _id: space._class }))[0]
-      const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
-      currentView = view.view
-      createItemDialog = currentView?.createItemDialog ?? undefined
-      createItemLabel = currentView?.createItemLabel ?? undefined
-
-      closePopup()
-      closePanel()
-      closeTooltip()
-      const loc = getCurrentLocation()
-      loc.path[2] = spaceId
-      loc.path.length = 3
-      if (spaceSpecial !== undefined) {
-        setSpaceSpecial(loc, spaceSpecial)
-      }
-      navigate(loc)
-    } else {
-      asideId = undefined
-      currentView = undefined
-      createItemDialog = undefined
-      createItemLabel = undefined
-    }
-  }
-
-  function setSpaceSpecial (loc: Location, spaceSpecial: string): void {
-    loc.path[3] = spaceSpecial
-    loc.path.length = 4
-    specialComponent = getSpecialComponent(spaceSpecial)
-    if (specialComponent !== undefined) {
-      currentSpecial = spaceSpecial
-      asideId = undefined
-    } else if (navigatorModel?.aside !== undefined) {
-      asideId = spaceSpecial
-    } else {
-      loc.path.length = 3
-      currentSpecial = undefined
-      asideId = undefined
-    }
-  }
-
-  function selectSpecial (id: string): void {
-    specialComponent = getSpecialComponent(id)
-    if (specialComponent !== undefined) {
-      currentSpecial = id
-      currentSpace = undefined
-      const loc = getCurrentLocation()
-      loc.path[2] = id
-      loc.path.length = 3
-      navigate(loc)
-      closePopup()
-      closePanel()
-      closeTooltip()
-    }
-  }
-
-  function selectArchive (): void {
-    currentSpace = undefined
-    currentSpecial = undefined
-    const loc = getCurrentLocation()
-    loc.path[2] = 'archive'
-    loc.path.length = 3
-    navigate(loc)
-  }
-
-  function getSpecialComponent (id: string): SpecialNavModel | undefined {
-    const sp = navigatorModel?.specials?.find((x) => x.id === id)
-    if (sp !== undefined) {
-      return sp
-    }
-    for (const s of navigatorModel?.spaces ?? []) {
-      const sp = s.specials?.find((x) => x.id === id)
-      if (sp !== undefined) {
-        return sp
-      }
-    }
-  }
 
   let apps: Application[] = []
 
@@ -205,10 +74,11 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
   })
 
   let visibileNav: boolean = true
-  const toggleNav = async () => {
+  async function toggleNav (): Promise<void> {
     visibileNav = !visibileNav
     closeTooltip()
   }
+
   const account = getCurrentAccount() as EmployeeAccount
   let employee: Employee | undefined
   const employeeQ = createQuery()
@@ -223,33 +93,6 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
     },
     { limit: 1 }
   )
-
-  function navigateApp (app: Application): void {
-    if (currentApp === app._id) {
-      // Nothing to do.
-      return
-    }
-    currentApp = app._id
-    currentApplication = app
-    navigatorModel = currentApplication?.navigatorModel
-    visibileNav = true
-
-    currentSpace = undefined
-    specialComponent = undefined
-    currentSpecial = undefined
-    currentView = undefined
-    createItemDialog = undefined
-    createItemLabel = undefined
-
-    closePanel()
-    closeTooltip()
-    closePopup()
-
-    const loc = getCurrentLocation()
-    loc.path[1] = app._id
-    loc.path.length = 2
-    navigate(loc)
-  }
 
   let hasNotification = false
   const notificationQuery = createQuery()
@@ -268,14 +111,141 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
     }
   )
 
-  function closeAside () {
+  onDestroy(
+    location.subscribe(async (loc) => {
+      closeTooltip()
+      closePopup()
+      await setApp(loc)
+      const currentFolder = loc.path[2] as Ref<Space>
+
+      if (currentSpecial !== currentFolder) {
+        const newSpecial = getSpecialComponent(currentFolder)
+        if (newSpecial !== undefined) {
+          clear(2)
+          specialComponent = newSpecial
+          currentSpecial = currentFolder
+          return
+        }
+      }
+
+      updateSpace(currentFolder)
+      setSpaceSpecial(loc.path[3])
+    })
+  )
+
+  async function setApp (loc: Location): Promise<void> {
+    if (currentApp !== loc.path[1]) {
+      clear(1)
+      currentApp = loc.path[1] as Ref<Application>
+      currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
+      navigatorModel = currentApplication?.navigatorModel
+    }
+  }
+
+  function clear (level: number): void {
+    switch (level) {
+      case 1:
+        currentApp = undefined
+        currentApplication = undefined
+        navigatorModel = undefined
+      // eslint-disable-next-line no-fallthrough
+      case 2:
+        currentSpace = undefined
+        currentSpecial = undefined
+        currentView = undefined
+        createItemDialog = undefined
+        createItemLabel = undefined
+        specialComponent = undefined
+      // eslint-disable-next-line no-fallthrough
+      case 3:
+        asideId = undefined
+        if (currentSpace !== undefined) {
+          specialComponent = undefined
+        }
+    }
+  }
+
+  function navigateApp (app: Application): void {
+    if (currentApp === app._id) {
+      // Nothing to do.
+      return
+    }
+    visibileNav = true
+
+    closePanel()
+    const loc = getCurrentLocation()
+    loc.path[1] = app._id
+    loc.path.length = 2
+    navigate(loc)
+  }
+
+  function selectSpecial (id: string): void {
+    if (currentSpecial === id) return
+    closePanel()
+    const loc = getCurrentLocation()
+    loc.path[2] = id
+    loc.path.length = 3
+    navigate(loc)
+  }
+
+  function selectSpace (spaceId?: Ref<Space>, spaceSpecial?: string): void {
+    if (currentSpace === spaceId && (spaceSpecial === currentSpecial || spaceSpecial === asideId)) return
+    closePanel()
+    const loc = getCurrentLocation()
+    if (spaceId !== undefined) {
+      loc.path[2] = spaceId
+      const special = spaceSpecial
+      if (special !== undefined) {
+        loc.path[3] = special
+      }
+    }
+    navigate(loc)
+  }
+
+  function closeAside (): void {
     const loc = getCurrentLocation()
     loc.path.length = 3
     navigate(loc)
-    asideId = undefined
   }
 
-  let contentPanel: HTMLElement
+  async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
+    if (spaceId === currentSpace) return
+    clear(2)
+    if (spaceId === undefined) return
+    const space = await client.findOne(core.class.Space, { _id: spaceId })
+    if (space === undefined) return
+    currentSpace = spaceId
+    const spaceClass = client.getHierarchy().getClass(space._class)
+    const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
+    currentView = view.view
+    createItemDialog = currentView?.createItemDialog
+    createItemLabel = currentView?.createItemLabel
+  }
+
+  function setSpaceSpecial (spaceSpecial: string): void {
+    if (spaceSpecial === currentSpecial || spaceSpecial === asideId) return
+    clear(3)
+    if (spaceSpecial === undefined) return
+    specialComponent = getSpecialComponent(spaceSpecial)
+    if (specialComponent !== undefined) {
+      currentSpecial = spaceSpecial
+    } else if (navigatorModel?.aside !== undefined) {
+      asideId = spaceSpecial
+    }
+  }
+
+  function getSpecialComponent (id: string): SpecialNavModel | undefined {
+    const sp = navigatorModel?.specials?.find((x) => x.id === id)
+    if (sp !== undefined) {
+      return sp
+    }
+    for (const s of navigatorModel?.spaces ?? []) {
+      const sp = s.specials?.find((x) => x.id === id)
+      if (sp !== undefined) {
+        return sp
+      }
+    }
+  }
 </script>
 
 {#if client}
@@ -365,8 +335,7 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
           {currentSpecial}
           model={navigatorModel}
           on:special={(evt) => selectSpecial(evt.detail)}
-          on:space={(evt) => updateSpace(evt.detail.space, evt.detail.spaceSpecial)}
-          on:archive={() => selectArchive()}
+          on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
         />
         {#if currentApplication.navFooterComponent}
           <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
@@ -382,16 +351,15 @@ import HtmlPresenter from '@anticrm/view-resources/src/components/HTMLPresenter.
           props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
         />
       {:else if currentView?.component !== undefined}
-        <Component
-          is={currentView.component}
-          props={{ ...currentView.componentProps, currentView }}
-        />
+        <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="antiPanel-component antiComponent border-left"><Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} /></div>
+      <div class="antiPanel-component antiComponent border-left">
+        <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+      </div>
     {/if}
   </div>
   <PanelInstance {contentPanel} />
