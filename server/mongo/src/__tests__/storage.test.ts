@@ -25,12 +25,16 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
-  Hierarchy, MeasureMetricsContext, ModelDb, Ref,
+  Hierarchy,
+  MeasureMetricsContext,
+  ModelDb,
+  Ref,
   SortingOrder,
   Space,
   Tx,
   TxOperations,
-  TxResult
+  TxResult,
+  toFindResult
 } from '@anticrm/core'
 import { createServerStorage, DbAdapter, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { MongoClient } from 'mongodb'
@@ -50,7 +54,7 @@ class NullDbAdapter implements DbAdapter {
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
-    return []
+    return toFindResult([])
   }
 
   async tx (tx: Tx): Promise<TxResult> {
@@ -78,9 +82,7 @@ class NullFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async remove (id: Ref<Doc>): Promise<void> {
-
-  }
+  async remove (id: Ref<Doc>): Promise<void> {}
 
   async close (): Promise<void> {}
 }
@@ -276,43 +278,76 @@ describe('mongo operations', () => {
       rate: 20
     })
 
-    const commentId = await operations.addCollection(taskPlugin.class.TaskComment, '' as Ref<Space>, docId, taskPlugin.class.Task, 'tasks', {
-      message: 'my-msg',
-      date: new Date()
-    })
-
-    await operations.addCollection(taskPlugin.class.TaskComment, '' as Ref<Space>, docId, taskPlugin.class.Task, 'tasks', {
-      message: 'my-msg2',
-      date: new Date()
-    })
-
-    const r2 = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {}, {
-      lookup: {
-        attachedTo: taskPlugin.class.Task
+    const commentId = await operations.addCollection(
+      taskPlugin.class.TaskComment,
+      '' as Ref<Space>,
+      docId,
+      taskPlugin.class.Task,
+      'tasks',
+      {
+        message: 'my-msg',
+        date: new Date()
       }
-    })
+    )
+
+    await operations.addCollection(
+      taskPlugin.class.TaskComment,
+      '' as Ref<Space>,
+      docId,
+      taskPlugin.class.Task,
+      'tasks',
+      {
+        message: 'my-msg2',
+        date: new Date()
+      }
+    )
+
+    const r2 = await client.findAll<TaskComment>(
+      taskPlugin.class.TaskComment,
+      {},
+      {
+        lookup: {
+          attachedTo: taskPlugin.class.Task
+        }
+      }
+    )
     expect(r2.length).toEqual(2)
     expect((r2[0].$lookup?.attachedTo as Task)?._id).toEqual(docId)
 
-    const r3 = await client.findAll<Task>(taskPlugin.class.Task, {}, {
-      lookup: {
-        _id: { comment: taskPlugin.class.TaskComment }
+    const r3 = await client.findAll<Task>(
+      taskPlugin.class.Task,
+      {},
+      {
+        lookup: {
+          _id: { comment: taskPlugin.class.TaskComment }
+        }
       }
-    })
+    )
 
     expect(r3).toHaveLength(1)
     expect((r3[0].$lookup as any).comment).toHaveLength(2)
 
-    const comment2Id = await operations.addCollection(taskPlugin.class.TaskComment, '' as Ref<Space>, commentId, taskPlugin.class.TaskComment, 'comments', {
-      message: 'my-msg3',
-      date: new Date()
-    })
+    const comment2Id = await operations.addCollection(
+      taskPlugin.class.TaskComment,
+      '' as Ref<Space>,
+      commentId,
+      taskPlugin.class.TaskComment,
+      'comments',
+      {
+        message: 'my-msg3',
+        date: new Date()
+      }
+    )
 
-    const r4 = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {
-      _id: comment2Id
-    }, {
-      lookup: { attachedTo: [taskPlugin.class.TaskComment, { attachedTo: taskPlugin.class.Task } as any] }
-    })
+    const r4 = await client.findAll<TaskComment>(
+      taskPlugin.class.TaskComment,
+      {
+        _id: comment2Id
+      },
+      {
+        lookup: { attachedTo: [taskPlugin.class.TaskComment, { attachedTo: taskPlugin.class.Task } as any] }
+      }
+    )
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
   })

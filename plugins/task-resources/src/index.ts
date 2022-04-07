@@ -95,15 +95,21 @@ async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
   )
 }
 
-export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
+export async function queryTask<D extends Task> (
+  _class: Ref<Class<D>>,
+  client: Client,
+  search: string
+): Promise<ObjectSearchResult[]> {
   const cl = client.getHierarchy().getClass(_class)
-  const shortLabel = (await translate(cl.shortLabel ?? '' as IntlString, {})).toUpperCase()
+  const shortLabel = (await translate(cl.shortLabel ?? ('' as IntlString), {})).toUpperCase()
 
   // Check number pattern
 
   const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
-  const named = new Map((await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => [e._id, e]))
+  const named = new Map(
+    (await client.findAll<Task>(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map((e) => [e._id, e])
+  )
   const nids: number[] = []
   if (sequence > 0) {
     for (let n = 0; n < sequence; n++) {
@@ -112,7 +118,7 @@ export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: 
         nids.push(n)
       }
     }
-    const numbered = await client.findAll<Task>(_class, { number: { $in: nids } }, { limit: 200 }) as D[]
+    const numbered = await client.findAll<Task>(_class, { number: { $in: nids } }, { limit: 200 })
     for (const d of numbered) {
       if (!named.has(d._id)) {
         named.set(d._id, d)
@@ -120,7 +126,7 @@ export async function queryTask<D extends Task> (_class: Ref<Class<D>>, client: 
     }
   }
 
-  return Array.from(named.values()).map(e => ({
+  return Array.from(named.values()).map((e) => ({
     doc: e,
     title: `${shortLabel}-${e.number}`,
     icon: task.icon.Task,
