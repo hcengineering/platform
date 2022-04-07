@@ -41,6 +41,7 @@ test.describe('contact tests', () => {
     await firstName.fill(orgName)
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
+    await page.isHidden('button:has-text("Create")')
     await expect(page.locator(`text=${orgName}`)).toBeVisible()
   })
   test('contact-search', async ({ page }) => {

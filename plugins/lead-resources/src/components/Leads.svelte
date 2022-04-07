@@ -14,8 +14,8 @@
 -->
 
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
-  import type { Customer } from '@anticrm/lead'
+  import type { FindOptions, Ref } from '@anticrm/core'
+  import type { Customer, Lead } from '@anticrm/lead'
   import task from '@anticrm/task'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
@@ -26,8 +26,15 @@
   export let leads: number | undefined = undefined
   $: loadingProps = leads !== undefined ? { length: leads } : undefined
 
-  const createLead = (ev: MouseEvent): void =>
+  const createLead = (ev: MouseEvent): void => {
     showPopup(CreateLead, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
+  }
+
+  const options: FindOptions<Lead> = {
+    lookup: {
+      state: task.class.State
+    }
+  }
 </script>
 
 <div class="applications-container">
@@ -39,13 +46,7 @@
     <Table 
       _class={lead.class.Lead}
       config={['', '$lookup.state']}
-      options={
-        {
-          lookup: {
-            state: task.class.State
-          }
-        }
-      }
+      options={options}
       query={ { attachedTo: objectId } }
       {loadingProps}
     />

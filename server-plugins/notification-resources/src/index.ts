@@ -87,6 +87,9 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
   switch (actualTx._class) {
     case core.class.TxCreateDoc: {
       const createTx = actualTx as TxCreateDoc<Doc>
+      if (control.hierarchy.isDerived(createTx.objectClass, notification.class.LastView)) {
+        return []
+      }
       if (control.hierarchy.isDerived(createTx.objectClass, core.class.AttachedDoc)) {
         const doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<AttachedDoc>)
         const attachedTx = await getUpdateLastViewTx(control.findAll, doc.attachedTo, doc.attachedToClass, createTx.modifiedOn, createTx.modifiedBy)
@@ -106,13 +109,7 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
     case core.class.TxMixin: {
       const tx = actualTx as TxCUD<Doc>
       const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-      if (control.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
-        const attachedDoc = doc as AttachedDoc
-        const attachedTx = await getUpdateLastViewTx(control.findAll, attachedDoc.attachedTo, attachedDoc.attachedToClass, tx.modifiedOn, tx.modifiedBy)
-        if (attachedTx !== undefined) {
-          result.push(attachedTx)
-        }
-      } else {
+      if (!control.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
         const resTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy)
         if (resTx !== undefined) {
           result.push(resTx)

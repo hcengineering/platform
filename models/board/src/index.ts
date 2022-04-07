@@ -69,9 +69,9 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
-      class: board.class.Card,
-      createItemDialog: board.component.CreateCard,
-      createItemLabel: board.string.CardCreateLabel
+      class: board.class.Card
+      // createItemDialog: board.component.CreateCard,
+      // createItemLabel: board.string.CardCreateLabel
     }
   })
 

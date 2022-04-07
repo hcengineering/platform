@@ -255,7 +255,7 @@
                     </div>
                   </td>
                 {/if}
-                <td>
+                <td id={`loader-${i}-${attribute.key}`}>
                   <Spinner size="small" />
                 </td>
               {/if}

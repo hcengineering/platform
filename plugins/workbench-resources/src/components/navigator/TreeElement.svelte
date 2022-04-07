@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { Ref, Space } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
-  import type { Ref, Space } from '@anticrm/core'
-  import { Icon, Label, ActionIcon, Menu, showPopup, IconMoreH, IconMoreV } from '@anticrm/ui'
+  import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined
@@ -28,13 +28,14 @@
   export let parent = false
   export let collapsed = false
   export let selected = false
+  export let bold = false
   export let actions: () => Promise<Action[]> = async () => []
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   const dispatch = createEventDispatcher()
 
   let hovered = false
-  async function onMenuClick(ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent) {
     showPopup(Menu, { actions: await actions(), ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
@@ -57,7 +58,7 @@
     dispatch('click')
   }}
 >
-  <span class="an-element__label" class:title={node}>
+  <span class="an-element__label" class:bold class:title={node}>
     <div class="flex-row-center">
       {#if icon && !parent}
         <div class="an-element__icon">

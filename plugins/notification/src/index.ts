@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, TxCUD } from '@anticrm/core'
+import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, TxCUD } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
@@ -82,6 +82,13 @@ export interface NotificationSetting extends Doc {
 /**
  * @public
  */
+export interface SpaceLastEdit extends Class<Doc> {
+  lastEditField: string
+}
+
+/**
+ * @public
+ */
 export const notificationId = 'notification' as Plugin
 
 /**
@@ -89,6 +96,7 @@ export const notificationId = 'notification' as Plugin
  */
 export interface NotificationClient {
   updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
+  unsubscribe: (_id: Ref<Doc>) => Promise<void>
 }
 
 /**
@@ -100,6 +108,9 @@ export type NotificationClientFactoy = () => NotificationClient
  * @public
  */
 const notification = plugin(notificationId, {
+  mixin: {
+    SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>
+  },
   class: {
     LastView: '' as Ref<Class<LastView>>,
     Notification: '' as Ref<Class<Notification>>,

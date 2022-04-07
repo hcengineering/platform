@@ -16,17 +16,25 @@
 import type { TxViewlet } from '@anticrm/activity'
 import { Channel, chunterId } from '@anticrm/chunter'
 import chunter from '@anticrm/chunter-resources/src/plugin'
-import type { Ref } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
+import type { Doc, Ref } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import type { ViewletDescriptor } from '@anticrm/view'
+import type { Action, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
     ThreadView: '' as AnyComponent
+  },
+  action: {
+    MarkCommentUnread: '' as Ref<Action>,
+    MarkUnread: '' as Ref<Action>
+  },
+  actionImpl: {
+    MarkUnread: '' as Resource<(object: Doc) => Promise<void>>,
+    MarkCommentUnread: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,
@@ -38,7 +46,9 @@ export default mergeIds(chunterId, chunter, {
     Reference: '' as IntlString,
     Chat: '' as IntlString,
     CreateBy: '' as IntlString,
-    Create: '' as IntlString
+    Create: '' as IntlString,
+    MarkUnread: '' as IntlString,
+    LastMessage: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

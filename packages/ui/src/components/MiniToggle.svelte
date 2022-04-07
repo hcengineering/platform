@@ -82,7 +82,7 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--tooltip-bg-color);
+        background: var(--accent-bg-color);
         // box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
         transition: all .1s ease-out;
       }

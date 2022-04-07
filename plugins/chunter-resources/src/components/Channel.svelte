@@ -12,30 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import type { Message } from '@anticrm/chunter'
   import contact,{ Employee } from '@anticrm/contact'
-  import core, { Doc,Ref,Space,Timestamp, WithLookup } from '@anticrm/core'
+  import core,{ Doc,Ref,Space,WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
-  import { afterUpdate, beforeUpdate } from 'svelte'
+  import { afterUpdate,beforeUpdate } from 'svelte'
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MessageComponent from './Message.svelte'
   export let space: Ref<Space> | undefined
 
   let div: HTMLDivElement | undefined
-	let autoscroll: boolean = false
+  let autoscroll: boolean = false
 
-	beforeUpdate(() => {
-		autoscroll = div !== undefined && (div.offsetHeight + div.scrollTop) > (div.scrollHeight - 20)
-	})
+  beforeUpdate(() => {
+    autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
+  })
 
-	afterUpdate(() => {
-		if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
-	})
+  afterUpdate(() => {
+    if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+  })
 
   let messages: WithLookup<Message>[] | undefined
   let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
@@ -45,7 +44,16 @@
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
 
-  employeeQuery.query(contact.class.Employee, { }, (res) => employees = new Map(res.map((r) => { return [r._id, r] })))
+  employeeQuery.query(
+    contact.class.Employee,
+    {},
+    (res) =>
+      (employees = new Map(
+        res.map((r) => {
+          return [r._id, r]
+        })
+      ))
+  )
 
   $: updateQuery(space)
 
@@ -55,24 +63,29 @@
       messages = []
       return
     }
-    query.query(chunter.class.Message, {
-      space
-    }, (res) => {
-      messages = res
-      newMessagesPos = newMessagesStart(messages)
-      notificationClient.updateLastView(space, chunter.class.Channel)
-    }, {
-      lookup: {
-        _id: { attachments: attachment.class.Attachment },
-        createBy: core.class.Account
+    query.query(
+      chunter.class.Message,
+      {
+        space
+      },
+      (res) => {
+        messages = res
+        newMessagesPos = newMessagesStart(messages)
+        notificationClient.updateLastView(space, chunter.class.Channel)
+      },
+      {
+        lookup: {
+          _id: { attachments: attachment.class.Attachment },
+          createBy: core.class.Account
+        }
       }
-    })
+    )
   }
 
   function newMessagesStart (messages: Message[]): number {
     if (space === undefined) return -1
     const lastView = $lastViews.get(space)
-    if (lastView === undefined) return -1
+    if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < messages.length; index++) {
       const message = messages[index]
       if (message.createOn > lastView) return index
@@ -80,8 +93,16 @@
     return -1
   }
 
-  let newMessagesPos: number = -1
+  $: markUnread($lastViews)
+  function markUnread (lastViews: Map<Ref<Doc>, number>) {
+    if (messages === undefined) return
+    const newPos = newMessagesStart(messages)
+    if (newPos !== -1 || newMessagesPos === -1) {
+      newMessagesPos = newPos
+    }
+  }
 
+  let newMessagesPos: number = -1
 </script>
 
 <div class="flex-col vScroll container" bind:this={div}>

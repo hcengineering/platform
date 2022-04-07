@@ -27,6 +27,7 @@
 
   export let object: WithLookup<Applicant>
   export let draggable: boolean
+  export let dragged: boolean
 
   function showCandidate () {
     showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
@@ -36,7 +37,7 @@
   $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend>
+<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
   <div class="flex-between mb-3">
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
@@ -48,10 +49,12 @@
       </div>
     </div>
     <div class="tool mr-1 flex-row-center">
+      {#if !dragged}
       <div class="mr-2">
         <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
       </div>
-      <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
+        <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
+      {/if}
     </div>
   </div>
   <div class="flex-between">
@@ -81,13 +84,22 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.25rem;
-    background-color: rgba(222, 222, 240, 0.06);
-    border-radius: 0.75rem;
+    padding: .5rem 1rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--board-card-bg-color);
+    border-radius: .25rem;
     user-select: none;
 
+    &:hover { 
+      background-color: var(--board-card-bg-hover); 
+    }
     &.draggable {
       cursor: grab;
+    }
+    &.dragged {
+      padding: 1rem;
+      background-color: var(--board-bg-color);
+      border: 1px solid var(--board-bg-color);
     }
   }
   .tool {

@@ -16,10 +16,10 @@
 <script lang="ts">
   import core, { Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
   import { Component, EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
 
   const dispatch = createEventDispatcher()
 
@@ -63,7 +63,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={'Funnel name'} maxWidth={'16rem'} focus />
+    <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={lead.string.FunnelName} maxWidth={'16rem'} focus />
     <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />
 
     <Component is={task.component.KanbanTemplateSelector} props={{

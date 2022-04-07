@@ -19,8 +19,7 @@
   import core from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { EditBox, Grid, Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
-import LangPopup from '@anticrm/ui/src/components/internal/LangPopup.svelte'
+  import { ActionIcon, EditBox, Grid, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
 
@@ -59,7 +58,9 @@ import LangPopup from '@anticrm/ui/src/components/internal/LangPopup.svelte'
 <div class="antiDialogs antiComponent">
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-title">
-      <div class="ac-header__icon"><Icon icon={clazz.icon} size={'medium'} /></div>
+      {#if clazz.icon}
+        <div class="ac-header__icon"><Icon icon={clazz.icon} size={'medium'} /></div>
+      {/if}
       <div class="ac-header__title"><Label label={clazz.label} /></div>
     </div>
     <div class="tool"><ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} /></div>

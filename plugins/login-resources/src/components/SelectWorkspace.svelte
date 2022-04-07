@@ -67,7 +67,7 @@
   </div>
   {#await getWorkspaces() then workspaces}
     <div class="form">
-      {#each workspaces as workspace (workspace._id)}
+      {#each workspaces as workspace}
         <div
           class="workspace flex-center fs-title cursor-pointer focused-button form-row"
           on:click={() => select(workspace.workspace)}

@@ -54,8 +54,12 @@
 .theme-dark {
   --body-color: #1f2023;
   --body-accent: #222326;
-  --tooltip-bg-color: #27282b;
-  --tooltip-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
+  --board-bg-color: #1c1d1f;
+  --board-card-bg-color: #27282b;
+  --board-card-bg-hover: #2a2b2e;
+  --board-card-shadow: rgb(0 0 0 / 6%) 0px 0px 1px;
+  --accent-bg-color: #27282b;
+  --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
   --dark-color: #62666d;
   --content-color: #8a8f98;
@@ -69,7 +73,7 @@
   --divider-color: #303236;
   --menu-bg-select: #2d2f36;
   --menu-icon-hover: #f3f3f8;
-  --popup-bg-color: linear-gradient(136.61deg, var(--tooltip-bg-color) 13.72%, #2d2e31 74.3%);
+  --popup-bg-color: linear-gradient(136.61deg, var(--accent-bg-color) 13.72%, #2d2e31 74.3%);
   --popup-bg-hover: #37373c;
   --popup-divider: #313236;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;

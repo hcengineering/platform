@@ -37,6 +37,7 @@
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-workbench": "~0.6.1",
+    "@anticrm/model-notification": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
     "@anticrm/workbench": "~0.6.1"
   }
