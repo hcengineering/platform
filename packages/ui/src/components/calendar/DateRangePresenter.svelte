@@ -13,18 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { onMount, createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
-  import { firstDay, daysInMonth, getWeekDayName, getMonthName, day, areDatesEqual } from './internal/DateUtils'
-  import type { TCellStyle, ICell } from './internal/DateUtils'
-  import ui, { TimePopup, Icon, IconClose } from '../..'
-  import DPClock from './icons/DPClock.svelte'
+  import type { IntlString } from '@anticrm/platform'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { daysInMonth, getMonthName } from './internal/DateUtils'
+  import ui, { Label, Icon, IconClose } from '../..'
+  import { dpstore, closeDatePopup } from '../../popups'
   import DPCalendar from './icons/DPCalendar.svelte'
+  import DPCalendarOver from './icons/DPCalendarOver.svelte'
+  import DateRangePopup from './DateRangePopup.svelte'
 
   export let value: number | null | undefined
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let editable: boolean = false
+  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let labelOver: IntlString | undefined = undefined // label instead of date
+  export let labelNull: IntlString = ui.string.NoDate
 
   const dispatch = createEventDispatcher()
 
@@ -37,39 +41,17 @@
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today: Date = new Date(Date.now())
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
   let currentDate: Date = new Date(value ?? Date.now())
   currentDate.setSeconds(0, 0)
   let selected: TEdits = 'day'
-  let todayString: string
-  translate(ui.string.Today, {}).then(res => todayString = res)
 
   let edit: boolean = false
+  let opened: boolean = false
   let startTyping: boolean = false
   let datePresenter: HTMLElement
-  let datePopup: HTMLElement
   let closeBtn: HTMLElement
 
-  let days: Array<ICell> = []
-  let edits: IEdits[] = [{ id: 'day', value: -1 }, { id: 'month', value: -1 }, { id: 'year', value: -1 },
-                         { id: 'hour', value: -1 }, { id: 'min', value: -1 }]
-
-  const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
-    return 'not-selected'
-  }
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(currentDate); i++) {
-      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
-      days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate)
-      })
-    }
-    days = days
-  }
-  $: if (currentDate) renderCellStyles()
+  let edits: IEdits[] = editsType.map(edit => { return { id: edit, value: -1 } })
 
   const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
@@ -122,7 +104,7 @@
     currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
-    renderCellStyles()
+    $dpstore.currentDate = currentDate
     dispatch('change', value)
   }
   if (value !== null && value !== undefined) dateToEdits()
@@ -146,13 +128,14 @@
     })
     return result
   }
-  const closeDatePopup = (): void => {
+  const closeDP = (): void => {
     if (!isNull()) saveDate()
     else {
       value = null
       dispatch('change', null)
     }
-    edit = false
+    closeDatePopup()
+    edit = opened = false
   }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
@@ -177,6 +160,7 @@
       if (!isNull(false) && edits[2].value > 999 && !startTyping) {
         fixEdits()
         currentDate = setValue(edits[index].value, currentDate, ed)
+        $dpstore.currentDate = currentDate
         dateToEdits()
       }
       edits = edits
@@ -186,7 +170,7 @@
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
       else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
     }
-    if (ev.code === 'Enter') closeDatePopup()
+    if (ev.code === 'Enter') closeDP()
     if (ev.code === 'Backspace') {
       edits[index].value = -1
       startTyping = true
@@ -198,6 +182,7 @@
                 : edits[index].value - 1
         if (currentDate) {
           currentDate = setValue(val, currentDate, ed)
+          $dpstore.currentDate = currentDate
           dateToEdits()
         }
       }
@@ -209,7 +194,7 @@
       selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
     }
     if (ev.code === 'Tab') {
-      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDatePopup()
+      if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) closeDP()
     }
   }
 
@@ -221,8 +206,8 @@
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
     edits.forEach(edit => { if (edit.el === target) kl = true })
-    if (target === datePopup || target === closeBtn) kl = true
-    if (!kl || target === null) closeDatePopup()
+    if (target === popupComp || target === closeBtn) kl = true
+    if (!kl || target === null) closeDP()
   }
 
   $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
@@ -231,37 +216,48 @@
     if (tempEl) tempEl.focus()
   })
 
-  const fitPopup = (): void => {
-    if (datePresenter && datePopup) {
-      const rect: DOMRect = datePresenter.getBoundingClientRect()
-      const rectPopup: DOMRect = datePopup.getBoundingClientRect()
-      if (document.body.clientHeight - rect.bottom < rect.top) { // Top
-        datePopup.style.top = 'none'
-        datePopup.style.bottom = rect.top - 4 + 'px'
-      } else { // Bottom
-        datePopup.style.bottom = 'none'
-        datePopup.style.top = rect.bottom + 4 + 'px'
-      }
-      datePopup.style.left = (rect.left + rect.width / 2) - datePopup.clientWidth / 2 + 'px'
-      console.log('!!!!!!! Popup - rect:', rect, ' --- rectPopup:', rectPopup, ' --- afterPopup:', datePopup.getBoundingClientRect())
+  const _change = (result: any): void => {
+    if (result !== undefined) {
+      currentDate = result
+      saveDate()
     }
   }
-  $: if (edit) {
-    if (datePopup) {
-      fitPopup()
-      datePopup.style.visibility = 'visible'
+  const _close = (result: any): void => {
+    if (result !== undefined) {
+      if (result !== null) {
+        currentDate = result
+        saveDate()
+      }
+      closeDP()
     }
-  } else {
-    if (datePopup) datePopup.style.visibility = 'hidden'
+  }
+
+  const openPopup = (): void => {
+    opened = edit = true
+    $dpstore.currentDate = currentDate
+    $dpstore.anchor = datePresenter
+    $dpstore.onChange = _change
+    $dpstore.onClose = _close
+    $dpstore.component = DateRangePopup
+  }
+  let popupComp: HTMLElement
+  $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
+  $: if (opened && edits[0].el && $dpstore.frendlyFocus === undefined) {
+    let frendlyFocus: HTMLElement[] = []
+    edits.forEach((edit, i) => {
+      if (edit.el) frendlyFocus[i] = edit.el
+    })
+    frendlyFocus.push(closeBtn)
+    $dpstore.frendlyFocus = frendlyFocus
   }
 </script>
 
 <button
   bind:this={datePresenter}
-  class="button normal"
-  class:edit
+  class="datetime-button"
   class:editable
-  on:click={() => { if (editable) edit = true }}
+  class:edit
+  on:click={() => { if (editable && !opened) openPopup() }}
 >
   {#if edit}
     <span bind:this={edits[0].el} class="digit" tabindex="0"
@@ -269,7 +265,7 @@
       on:focus={() => focused(edits[0].id)}
       on:blur={(ev) => unfocus(ev, edits[0].id)}
     >
-      {#if (value !== null && value !== undefined) || (edits[0].value > 0)}
+      {#if (edits[0].value > -1)}
         {edits[0].value.toString().padStart(2, '0')}
       {:else}ДД{/if}
     </span>
@@ -279,7 +275,7 @@
       on:focus={() => focused(edits[1].id)}
       on:blur={(ev) => unfocus(ev, edits[1].id)}
     >
-      {#if (value !== null && value !== undefined) || (edits[1].value > 0)}
+      {#if (edits[1].value > -1)}
         {edits[1].value.toString().padStart(2, '0')}
       {:else}ММ{/if}
     </span>
@@ -289,7 +285,7 @@
       on:focus={() => focused(edits[2].id)}
       on:blur={(ev) => unfocus(ev, edits[2].id)}
     >
-      {#if (value !== null && value !== undefined) || (edits[2].value > 0)}
+      {#if (edits[2].value > -1)}
         {edits[2].value.toString().padStart(4, '0')}
       {:else}ГГГГ{/if}
     </span>
@@ -300,7 +296,7 @@
         on:focus={() => focused(edits[3].id)}
         on:blur={(ev) => unfocus(ev, edits[3].id)}
       >
-        {#if (value !== null && value !== undefined) || (edits[3].value > -1)}
+        {#if (edits[3].value > -1)}
           {edits[3].value.toString().padStart(2, '0')}
         {:else}ЧЧ{/if}
       </span>
@@ -310,7 +306,7 @@
         on:focus={() => focused(edits[4].id)}
         on:blur={(ev) => unfocus(ev, edits[4].id)}
       >
-        {#if (value !== null && value !== undefined) || (edits[4].value > -1)}
+        {#if (edits[4].value > -1)}
           {edits[4].value.toString().padStart(2, '0')}
         {:else}ММ{/if}
       </span>
@@ -331,209 +327,93 @@
       </div>
     {/if}
   {:else}
-    <div class="btn-icon mr-1">
-      <Icon icon={DPCalendar} size={'small'}/>
+    <div class="btn-icon {icon}">
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
     </div>
     {#if value !== null && value !== undefined}
-      <span class="digit">{new Date(value).getDate()}</span>
-      <span class="digit">{getMonthName(new Date(value), 'short')}</span>
-      {#if new Date(value).getFullYear() !== today.getFullYear()}
-        <span class="digit">{new Date(value).getFullYear()}</span>
-      {/if}
-      {#if withTime}
-        <div class="time-divider" />
-        <span class="digit">{new Date(value).getHours().toString().padStart(2, '0')}</span>
-        <span class="separator">:</span>
-        <span class="digit">{new Date(value).getMinutes().toString().padStart(2, '0')}</span>
+      {#if labelOver !== undefined}
+        <Label label={labelOver} />
+      {:else}
+        {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
+        {#if new Date(value).getFullYear() !== today.getFullYear()}
+          {new Date(value).getFullYear()}
+        {/if}
+        {#if withTime}
+          <div class="time-divider" />
+          {new Date(value).getHours().toString().padStart(2, '0')}
+          <span class="separator">:</span>
+          {new Date(value).getMinutes().toString().padStart(2, '0')}
+        {/if}
       {/if}
     {:else}
-      No date
+      <Label label={labelNull} />
     {/if}
   {/if}
 </button>
 
-<div bind:this={datePopup} class="datetime-popup-container" tabindex="0" on:blur={(ev) => unfocus(ev, datePopup)}>
-  <div class="popup antiCard">
-    <div class="flex-center monthYear">
-      {#if currentDate}
-        {getMonthName(currentDate)}
-        <span class="ml-1">{currentDate.getFullYear()}</span>
-      {/if}
-    </div>
-
-    {#if currentDate}
-      <div class="calendar" class:no-editable={!editable}>
-        {#each [...Array(7).keys()] as dayOfWeek}
-          <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
-        {/each}
-        {#each days as day, i}
-          <div
-            class="day {day.style}"
-            style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
-            on:click|stopPropagation={() => {
-              if (currentDate) currentDate.setDate(i + 1)
-              saveDate()
-            }}
-          >
-            {i + 1}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-</div>
-
 <style lang="scss">
-  .datetime-popup-container {
-    visibility: hidden;
-    position: fixed;
-    outline: none;
-    z-index: 10000;
-  }
-
-  .popup {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    color: var(--theme-caption-color);
-  }
-
-  .monthYear {
-    margin: 0 1rem;
-    color: var(--theme-content-accent-color);
-    white-space: nowrap;
-  }
-
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1.75rem);
-    gap: .125rem;
-
-    .caption, .day {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 1.75rem;
-      height: 1.75rem;
-      color: var(--theme-content-dark-color);
-    }
-    .caption {
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-    .day {
-      background-color: rgba(var(--theme-caption-color), .05);
-      border: 1px solid transparent;
-      border-radius: 50%;
-      cursor: pointer;
-
-      &.selected {
-        background-color: var(--primary-button-enabled);
-        border-color: var(--primary-button-focused-border);
-        color: var(--primary-button-color);
-      }
-      &.today {
-        position: relative;
-        border-color: var(--theme-content-color);
-        font-weight: 500;
-        color: var(--theme-caption-color);
-
-        &::after {
-          position: absolute;
-          content: attr(data-today);
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          font-weight: 600;
-          font-size: .35rem;
-          text-transform: uppercase;
-          color: var(--theme-content-dark-color);
-        }
-      }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
-    }
-
-    // &.no-editable { pointer-events: none; }
-  }
-
-  .button {
+  .datetime-button {
     position: relative;
     display: flex;
     align-items: center;
     flex-shrink: 0;
     padding: 0 .5rem;
-    font-weight: 500;
+    font-weight: 400;
+    font-size: .8125rem;
     min-width: 1.5rem;
     width: auto;
     height: 1.5rem;
     white-space: nowrap;
     line-height: 1.5rem;
     color: var(--accent-color);
-    background-color: transparent;
+    background-color: var(--button-bg-color);
     border: 1px solid transparent;
     border-radius: .25rem;
+    box-shadow: var(--button-shadow);
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
     cursor: default;
 
     .btn-icon {
-      color: var(--content-color);
+      margin-right: .375rem;
+      width: .875rem;
+      height: .875rem;
       transition: color .15s;
       pointer-events: none;
+
+      &.normal { color: var(--content-color); }
+      &.warning { color: var(--warning-color); }
+      &.overdue { color: var(--error-color); }
     }
-    &:hover { transition-duration: 0; }
-    &:focus-within .datepopup-container { visibility: visible; }
 
-    &.normal {
-      font-weight: 400;
-      color: var(--content-color);
-      background-color: var(--button-bg-color);
-      box-shadow: var(--button-shadow);
+    &:hover {
+      color: var(--caption-color);
+      transition-duration: 0;
+    }
+    &.editable {
+      cursor: pointer;
 
-      &.editable {
-        cursor: pointer;
-        &:hover {
-          color: var(--accent-color);
-          background-color: var(--button-bg-hover);
-
-          .btn-icon { color: var(--accent-color); }
-          .time-divider {
-            background-color: var(--button-border-hover);
-            opacity: 1;
-          }
+      &:hover {
+        background-color: var(--button-bg-hover);
+        .btn-icon {
+          &.normal { color: var(--caption-color); }
+          &.warning { color: var(--warning-color); }
+          &.overdue { color: var(--error-color); }
         }
-        &:focus-within {
-          .time-divider {
-            background-color: var(--primary-edit-border-color);
-            opacity: .5;
-          }
-        }
+        .time-divider { background-color: var(--button-border-hover); }
       }
-      &:disabled {
-        background-color: #30323655;
-        cursor: default;
-        &:hover {
-          color: var(--content-color);
-          .btn-icon { color: var(--content-color); }
-        }
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
+        &:hover { background-color: transparent; }
       }
+    }
+    &:disabled {
+      background-color: #30323655;
+      cursor: default;
 
-      .close-btn {
-        margin: 0 .25rem;
-        width: .75rem;
-        height: .75rem;
+      &:hover {
         color: var(--content-color);
-        background-color: var(--button-bg-color);
-        outline: none;
-        border-radius: 50%;
-        cursor: pointer;
-
-        &:hover {
-          color: var(--accent-color);
-          background-color: var(--button-bg-hover);
-        }
+        .btn-icon { color: var(--content-color); }
       }
     }
     &.edit {
@@ -543,7 +423,27 @@
       &:hover { background-color: transparent; }
     }
 
+    .close-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 .25rem;
+      width: .75rem;
+      height: .75rem;
+      color: var(--content-color);
+      background-color: var(--button-bg-color);
+      outline: none;
+      border-radius: 50%;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
+      }
+    }
+
     .digit {
+      position: relative;
       padding: 0 .125rem;
       height: 1.125rem;
       line-height: 1.125rem;
@@ -552,28 +452,23 @@
       border-radius: .125rem;
 
       &:focus { background-color: var(--primary-bg-color); }
+      &::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11000;
+        cursor: pointer;
+      }
     }
     .time-divider {
       flex-shrink: 0;
-      margin: 0 .125rem;
+      margin: 0 .25rem;
       width: 1px;
       min-width: 1px;
       height: .75rem;
       background-color: var(--button-border-color);
-      opacity: 1;
-      transition-property: opacity, background-color;
-      transition-duration: .15s;
-    }
-
-    .datepopup-container {
-      visibility: hidden;
-      position: absolute;
-      top: calc(100% + .5rem);
-      left: 50%;
-      width: auto;
-      height: auto;
-      transform: translateX(-50%);
-      z-index: 10000;
     }
   }
 </style>

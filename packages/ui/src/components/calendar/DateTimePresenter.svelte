@@ -16,6 +16,8 @@
   import DatePresenter from './DatePresenter.svelte'
 
   export let value: number | null | undefined
+  export let mondayStart: boolean = true
+  export let editable: boolean = false
 </script>
 
-<DatePresenter {value} withTime />
+<DatePresenter bind:value withTime {mondayStart} {editable} />

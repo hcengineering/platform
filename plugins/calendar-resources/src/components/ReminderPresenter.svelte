@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Reminder } from '@anticrm/calendar'
   import { getResource } from '@anticrm/platform'
-  import { DateTimePresenter, showPanel, Tooltip } from '@anticrm/ui'
+  import { DateTimeRangePresenter, showPanel, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Reminder
@@ -37,6 +37,6 @@
         </Tooltip>
       {/await}
     </div>
-    <DateTimePresenter value={value.date + value.shift} />
+    <DateTimeRangePresenter value={value.date + value.shift} />
   {/if}
 </div>
