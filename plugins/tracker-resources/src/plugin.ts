@@ -31,6 +31,7 @@ export default mergeIds(trackerId, tracker, {
     Active: '' as IntlString,
     Backlog: '' as IntlString,
     Board: '' as IntlString,
+    Project: '' as IntlString,
     Projects: '' as IntlString,
     CreateTeam: '' as IntlString,
     NewIssue: '' as IntlString,
