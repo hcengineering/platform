@@ -39,7 +39,7 @@
       if (current === undefined) {
         showPopup(CreateReminder, { attachedTo: value._id, attachedToClass: value._class, title }, ev.target as HTMLElement)
       } else {
-        showPopup(DocRemindersPopup, { attachedTo: value._id, attachedToClass: value._class }, ev.target as HTMLElement )
+        showPopup(DocRemindersPopup, { attachedTo: value._id, attachedToClass: value._class, title }, ev.target as HTMLElement )
       }
     }
   }
