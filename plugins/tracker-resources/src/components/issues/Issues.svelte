@@ -16,9 +16,10 @@
   import type { DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ScrollBox } from '@anticrm/ui'
+  import { Label, ScrollBox } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
+  import { IntlString } from '@anticrm/platform'
 
   export let currentSpace: Ref<Team>
   export let categories = [
@@ -28,14 +29,25 @@
     IssueStatus.Done,
     IssueStatus.Canceled
   ]
-
+  export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
 
+  const spaceQuery = createQuery()
+  const issuesMap: { [status: string]: number } = {}
+
+  $: getTotalIssues = () => {
+    let total = 0
+
+    for (const issuesAmount of Object.values(issuesMap)) {
+      total += issuesAmount
+    }
+
+    return total
+  }
+
   $: resultQuery =
     search === '' ? { space: currentSpace, ...query } : { $search: search, space: currentSpace, ...query }
-
-  const spaceQuery = createQuery()
 
   let currentTeam: Team | undefined
 
@@ -46,9 +58,20 @@
 
 {#if currentTeam}
   <ScrollBox vertical stretch>
+    <div class="fs-title">
+      <Label label={title} params={{ value: getTotalIssues() }} />
+    </div>
+
     <div class="ml-4 mt-4">
       {#each categories as category}
-        <CategoryPresenter {category} query={resultQuery} {currentTeam} />
+        <CategoryPresenter
+          {category}
+          query={resultQuery}
+          {currentTeam}
+          on:content={(event) => {
+            issuesMap[category] = event.detail
+          }}
+        />
       {/each}
     </div>
   </ScrollBox>
