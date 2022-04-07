@@ -16,11 +16,11 @@
 
 <script lang="ts">
   // import { TypeDate } from '@anticrm/core'
-  import { DatePresenter } from '@anticrm/ui'
+  import { DateRangePresenter } from '@anticrm/ui'
 
   export let value: number | null | undefined
   // export let attributeType: TypeDate | undefined
   console.log('!!!!!!!!!! EXPORT VALUE (view): ', value)
 </script>
 
-<DatePresenter {value} />
+<DateRangePresenter {value} />

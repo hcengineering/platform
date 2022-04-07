@@ -16,15 +16,15 @@
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import { translate } from '@anticrm/platform'
-  import { DatePresenter } from '@anticrm/ui'
+  import { DateRangePresenter } from '@anticrm/ui'
   import calendar from '../plugin'
 
   export let value: Event
   
-  $: date = (value === undefined || value === null) ? null : new Date(value.date)
-  $: dueDate = (value === undefined || value === null) ? null : new Date(value.dueDate ?? value.date)
+  $: date = (value === undefined || value === null) ? null : (value.date !== null) ? new Date(value.date) : null
+  $: dueDate = (value === undefined || value === null) ? null : (value.dueDate) ? new Date(value.dueDate) : null
 
-  $: interval = (value.dueDate ?? value.date) - value.date
+  $: interval = (value.dueDate && value.date) ? value.dueDate - value.date : 0
 
   const SECOND = 1000
   const MINUTE = SECOND * 60
@@ -46,14 +46,13 @@
 </script>
 
 <div class="antiSelect">
-  {#if date}
-    <DatePresenter value={value.date} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
-    {#if interval > 0}
+  <DateRangePresenter
+    value={value.date}
+    withTime={date !== null && date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY}
+  />
+  {#if interval > 0}
     {#await formatDueDate(interval) then t}
-        <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         
-      {/await}
-    {/if}
-  {:else}
-    No date
+      <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         
+    {/await}
   {/if}
 </div>

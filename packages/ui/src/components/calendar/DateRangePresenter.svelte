@@ -346,7 +346,7 @@
         {/if}
       {/if}
     {:else}
-      No date
+      <Label label={labelNull} />
     {/if}
   {/if}
 </button>

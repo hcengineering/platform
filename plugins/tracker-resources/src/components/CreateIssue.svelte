@@ -20,7 +20,7 @@
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, Status as StatusControl, Button, showPopup, DatePresenter, DateRangePresenter } from '@anticrm/ui'
+  import ui, { EditBox, Grid, Status as StatusControl, Button, showPopup, DatePresenter, DateRangePresenter } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
@@ -89,6 +89,7 @@
   }
 
   let startDate: number | null = null
+  let targetDate: number | null = null
   interface IPair {
     icon: Asset
     label: IntlString
@@ -167,7 +168,7 @@
         })
       }}
     />
-    <DatePresenter value={startDate} editable />
-    <DateRangePresenter value={startDate} editable />
+    <DateRangePresenter value={startDate} labelNull={ui.string.StartDate} editable />
+    <DateRangePresenter value={targetDate} labelNull={ui.string.TargetDate} editable />
   </div>
 </Card>
