@@ -1,14 +1,25 @@
 <script lang="ts">
+  import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Scroller } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import { ActionIcon, Icon, IconAdd, Scroller } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import contact from '@anticrm/contact'
+  import IssuesList from './IssuesList.svelte'
 
   export let query: DocumentQuery<Issue>
   export let category: IssueStatus
   export let currentTeam: Team
+
+  const dispatch = createEventDispatcher()
+
+  const statusIconsMap = Object.freeze({
+    [IssueStatus.Backlog]: tracker.icon.StatusBacklog,
+    [IssueStatus.Todo]: tracker.icon.StatusTodo,
+    [IssueStatus.InProgress]: tracker.icon.StatusInProgress,
+    [IssueStatus.Done]: tracker.icon.StatusDone,
+    [IssueStatus.Canceled]: tracker.icon.StatusCanceled
+  })
 
   const options: FindOptions<Issue> = {
     lookup: {
@@ -16,37 +27,73 @@
     }
   }
 
-  let visible = false
+  let issuesAmount = 0
 </script>
 
-<div class='category' class:visible={visible}>
-  <div class='fs-title'>
-    {IssueStatus[category]}
+<div class="category" class:visible={issuesAmount > 0}>
+  <div class="header">
+    <div class="title">
+      <div class="icon">
+        <Icon icon={statusIconsMap[category]} size={'small'} />
+      </div>
+      <div class="fs-title">
+        {IssueStatus[category]}
+        {issuesAmount}
+      </div>
+    </div>
+    <div class="actionAdd">
+      <ActionIcon label={tracker.string.AddIssue} icon={IconAdd} size={'small'} />
+    </div>
   </div>
-<Scroller>
-  <Table
-    _class={tracker.class.Issue}
-    config={[
-      { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam }, label: tracker.string.Issue },
-      'title',
-      // 'status',
-      '$lookup.assignee',
-      'modifiedOn'
-    ]}
-    options={options}
-    query={{ ...query, status: category }}
-    showNotification
-    highlightRows
-    on:content={(evt) => { visible = evt.detail.length > 0 }}
-  />
-</Scroller>
+  <Scroller>
+    <IssuesList
+      _class={tracker.class.Issue}
+      config={[
+        { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+        { key: '', presenter: tracker.component.TitlePresenter },
+        { key: '', presenter: tracker.component.LabelsPresenter },
+        { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+        '$lookup.assignee'
+      ]}
+      {options}
+      query={{ ...query, status: category }}
+      on:content={(evt) => {
+        issuesAmount = evt.detail.length
+        dispatch('content', issuesAmount)
+      }}
+    />
+  </Scroller>
 </div>
 
 <style lang="scss">
   .category {
     display: none;
-    &.visible { 
-      display: block; 
+    &.visible {
+      display: block;
     }
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 2.5rem;
+    background-color: var(--theme-table-bg-hover);
+    padding-left: 2rem;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+  }
+
+  .actionAdd {
+    padding-right: 2rem;
+  }
+
+  .icon {
+    margin-right: 0.75rem;
+    width: 1rem;
+    height: 1rem;
   }
 </style>
