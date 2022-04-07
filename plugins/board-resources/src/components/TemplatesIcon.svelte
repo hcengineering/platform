@@ -12,6 +12,6 @@
     width: 100%;
     height: 100%;
     color: #fff;
-    background-color: #4474F6;
+    background-color: #4474f6;
   }
 </style>

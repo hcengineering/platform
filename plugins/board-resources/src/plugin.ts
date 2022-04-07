@@ -41,17 +41,35 @@ export default mergeIds(boardId, board, {
     Assignee: '' as IntlString,
     ManageBoardStatuses: '' as IntlString,
     Description: '' as IntlString,
+    DescriptionPlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Members: '' as IntlString,
     BoardCreateLabel: '' as IntlString,
-    Settings: '' as IntlString
+    Settings: '' as IntlString,
+    InList: '' as IntlString,
+    AddToCard: '' as IntlString,
+    Labels: '' as IntlString,
+    Checklist: '' as IntlString,
+    Dates: '' as IntlString,
+    Attachments: '' as IntlString,
+    CustomFields: '' as IntlString,
+    Automation: '' as IntlString,
+    AddButton: '' as IntlString,
+    Actions: '' as IntlString,
+    Move: '' as IntlString,
+    Copy: '' as IntlString,
+    MakeTemplate: '' as IntlString,
+    Watch: '' as IntlString,
+    Archive: '' as IntlString,
+    HideDetails: '' as IntlString,
+    ShowDetails: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
     CardsPresenter: '' as AnyComponent,
     Boards: '' as AnyComponent,
+    EditCard: '' as AnyComponent,
     Members: '' as AnyComponent,
     Settings: '' as AnyComponent
-
   }
 })
