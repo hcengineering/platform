@@ -54,11 +54,9 @@
     if (!opened) {
       opened = true
       showPopup(TimeShiftPopup, { title, value, direction }, container, (ev) => {
-        console.log('picker close handle')
-        console.log(ev)
         changeValue(ev)
         opened = false
-      }, changeValue)
+      })
     }
   }}
 >

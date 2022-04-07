@@ -33,7 +33,7 @@
   const client = getClient()
 
   export function canClose (): boolean {
-    return title.trim().length === 0 && participants.length === 0
+    return title !== undefined && title.trim().length === 0 && participants.length === 0
   }
 
   async function saveReminder () {
@@ -58,7 +58,7 @@
 <Card
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
-  canSave={title.trim().length > 0 && participants.length > 0}
+  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0}
   {space}
   on:close={() => {
     dispatch('close')
