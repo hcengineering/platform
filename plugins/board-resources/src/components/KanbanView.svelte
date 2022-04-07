@@ -13,16 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Card } from '@anticrm/board'
-  import { Class, FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { Class, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Kanban as KanbanUI } from '@anticrm/kanban'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import { calcRank } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { Kanban as KanbanUI, KanbanPanelEmpty } from '@anticrm/task-resources'
-  
+  import task, { calcRank } from '@anticrm/task'
+  import KanbanCard from './KanbanCard.svelte'
+  import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
+
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
   export let search: string
@@ -32,35 +32,53 @@
   let states: State[] = []
 
   const kanbanQuery = createQuery()
-  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
+  $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, (result) => {
+    kanban = result[0]
+  })
 
   const statesQuery = createQuery()
   $: if (kanban !== undefined) {
-    statesQuery.query(task.class.State, { space: kanban.space }, result => { states = result }, {
-      sort: {
-        rank: SortingOrder.Ascending
+    statesQuery.query(
+      task.class.State,
+      { space: kanban.space },
+      (result) => {
+        states = result
+      },
+      {
+        sort: {
+          rank: SortingOrder.Ascending
+        }
       }
-    })
+    )
+  }
+  function castObject (object: any): WithLookup<Card> {
+    return object as WithLookup<Card>
   }
 
   const client = getClient()
 
   async function addItem (title: any) {
     const lastOne = await client.findOne(
-        task.class.State,
-        { space },
-        { sort: { rank: SortingOrder.Descending } }
+      task.class.State,
+      { space },
+      { sort: { rank: SortingOrder.Descending } }
     )
     await client.createDoc(task.class.State, space, {
-        title,
-        color: 9,
-        rank: calcRank(lastOne, undefined)
+      title,
+      color: 9,
+      rank: calcRank(lastOne, undefined)
     })
   }
+  /* eslint-disable no-undef */
 </script>
 
-<KanbanUI {_class} {space} {search} {options} stateQuery={{ doneState: null }} states={states}>
+<KanbanUI {_class} {space} {search} {options} query={{ doneState: null }} states={states}
+  fieldName={'state'} rankFieldName={'rank'}>
+  <svelte:fragment slot='card' let:object let:dragged>
+    <KanbanCard object={castObject(object)} {dragged} />
+  </svelte:fragment>
+
   <svelte:fragment slot='additionalPanel'>
-    <KanbanPanelEmpty on:add={(e) => {addItem(e.detail)}} />
+    <KanbanPanelEmpty on:add={(e) => { addItem(e.detail) }} />
   </svelte:fragment>
 </KanbanUI>

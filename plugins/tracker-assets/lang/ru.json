@@ -27,7 +27,8 @@
     "Urgent": "Urgent",
     "High": "High",
     "Medium": "Medium",
-    "Low": "Low"
+    "Low": "Low",
+    "AddIssueTooltip": "Добавить задачу..."
   },
   "status": {
    

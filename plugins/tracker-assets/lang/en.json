@@ -50,7 +50,8 @@
     "DocumentColor": "",
     "Rank": "",
     "IssueTitlePlaceholder": "Issue title",
-    "IssueDescriptionPlaceholder": "Add description"
+    "IssueDescriptionPlaceholder": "Add description",
+    "AddIssueTooltip": "Add issue..."
   },
   "status": {
    

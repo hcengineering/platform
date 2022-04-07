@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/task-resources",
+  "name": "@anticrm/kanban",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -16,6 +16,7 @@
     "svelte-loader": "^3.1.2",
     "sass": "^1.37.5",
     "svelte-preprocess": "^4.10.5",
+    "svelte-check": "^2.2.10",
     "@anticrm/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -27,28 +28,15 @@
     "prettier-plugin-svelte": "^2.2.0",
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
-    "svelte-check": "^2.2.10"
+    "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.5",
-    "svelte": "^3.46",
-    "@anticrm/task": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/text-editor": "~0.6.0",
-    "@anticrm/contact": "~0.6.5",
+    "svelte": "^3.46",
+    "lexorank": "^1.0.4",
+    "@anticrm/platform": "~0.6.5",
     "@anticrm/core": "~0.6.16",
-    "@anticrm/chunter": "~0.6.1",
-    "@anticrm/attachment": "~0.6.1",
-    "@anticrm/panel": "~0.6.0",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/login": "~0.6.1",
-    "@anticrm/attachment-resources": "~0.6.0",
-    "@anticrm/chunter-resources": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1",
-    "@anticrm/notification": "~0.6.0",
-    "@anticrm/tags": "~0.6.1",
-    "@anticrm/kanban": "~0.6.0"
+    "@anticrm/presentation": "~0.6.2",
+    "@anticrm/notification": "~0.6.0"
   }
 }

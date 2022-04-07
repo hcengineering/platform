@@ -27,11 +27,7 @@
     "Unarchive": "Разархивировать",
     "MarkAsDone": "Отметить выполненным",
     "MarkAsUndone": "Отметить невыполненным",
-    "Kanban": "Канбан",
-    "NewList": "Добавить еще одну колонку",
-    "AddList": "Добавить колонку",
-    "NewListPlaceholder": "Введите заголовок колонки...",
-    
+    "Kanban": "Канбан",    
     "ApplicationLabelTask": "Задачи",
     "Projects": "Проекты",
     "CreateProject": "Новый проект",

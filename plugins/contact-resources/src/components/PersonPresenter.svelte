@@ -22,6 +22,7 @@
 
   export let value: Person
   export let inline: boolean = false
+  export let showLabel = true
 
   async function onClick () {
     showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
@@ -29,6 +30,7 @@
 </script>
 
 {#if value}
+  
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
@@ -38,6 +40,8 @@
     <div class="icon">
       <Avatar size={'x-small'} avatar={value.avatar} />
     </div>
-    <span class="label">{formatName(value.name)}</span>
+    {#if showLabel}
+      <span class="label">{formatName(value.name)}</span>
+    {/if}
   </a>
 {/if}
