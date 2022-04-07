@@ -16,7 +16,7 @@
 
 import { Employee } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 
@@ -65,6 +65,20 @@ export interface Card extends Task {
   comments?: number
   attachments?: number
 }
+/**
+ * @public
+ */
+export interface CardAction extends Doc {
+  hint?: IntlString
+  icon: Asset
+  isInline?: boolean
+  isTransparent?: boolean
+  label: IntlString
+  position: number
+  type: string
+  handler?: Resource<(card: Card) => void>
+  supported?: Resource<(card: Card) => boolean>
+}
 
 /**
  * @public
@@ -78,9 +92,17 @@ const boards = plugin(boardId, {
   app: {
     Board: '' as Ref<Doc>
   },
+  cardActionType: {
+    Editor: 'Editor',
+    Cover: 'Cover',
+    AddToCard: 'AddToCard',
+    Automation: 'Automation',
+    Action: 'Action'
+  },
   class: {
     Board: '' as Ref<Class<Board>>,
-    Card: '' as Ref<Class<Card>>
+    Card: '' as Ref<Class<Card>>,
+    CardAction: '' as Ref<Class<CardAction>>
   },
   icon: {
     Board: '' as Asset,
