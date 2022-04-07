@@ -28,6 +28,9 @@
     "MarkAsDone": "Mark as done",
     "MarkAsUndone": "Mark as undone",
     "Kanban": "Kanban",
+    "NewList": "Add another list",
+    "AddList": "Add list",
+    "NewListPlaceholder": "Enter list title...",
     
     "ApplicationLabelTask": "Tasks",
     "Projects": "Projects",

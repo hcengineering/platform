@@ -28,6 +28,9 @@
     "MarkAsDone": "Отметить выполненным",
     "MarkAsUndone": "Отметить невыполненным",
     "Kanban": "Канбан",
+    "NewList": "Добавить еще одну колонку",
+    "AddList": "Добавить колонку",
+    "NewListPlaceholder": "Введите заголовок колонки...",
     
     "ApplicationLabelTask": "Задачи",
     "Projects": "Проекты",
