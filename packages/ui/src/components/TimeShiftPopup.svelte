@@ -33,8 +33,8 @@
 
 <div class="antiPopup">
   {#each values as value}
-    <div class="ap-menuItem">
-      <TimeShiftPresenter value={value * base} on:click={() => { dispatch('close', value) }} />
+    <div class="ap-menuItem" on:click={() => { dispatch('close', value) }} >
+      <TimeShiftPresenter value={value * base}/>
     </div>
   {/each}
 </div>
