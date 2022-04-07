@@ -44,6 +44,7 @@ import AssignedTasks from './components/AssignedTasks.svelte'
 import task from './plugin'
 
 export { default as Kanban } from './components/kanban/Kanban.svelte'
+export { default as KanbanPanelEmpty } from './components/kanban/KanbanPanelEmpty.svelte'
 
 async function createTask (object: Doc): Promise<void> {
   showPopup(CreateTask, { parent: object._id, space: object.space })

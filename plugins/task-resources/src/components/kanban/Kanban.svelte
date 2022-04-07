@@ -205,7 +205,7 @@
               {/each}
             </KanbanPanel>
           {/each}
-          <!-- <KanbanPanelEmpty label={'Add new column'} /> -->
+          <slot name="additionalPanel"/>
         </div>
       </ScrollBox>
     </div>

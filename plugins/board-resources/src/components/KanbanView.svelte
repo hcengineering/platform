@@ -17,10 +17,11 @@
 <script lang="ts">
   import { Card } from '@anticrm/board'
   import { Class, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
+  import { calcRank } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Kanban as KanbanUI } from '@anticrm/task-resources'
+  import { Kanban as KanbanUI, KanbanPanelEmpty } from '@anticrm/task-resources'
   
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
@@ -41,8 +42,25 @@
       }
     })
   }
+
+  const client = getClient()
+
+  async function addItem (title: any) {
+    const lastOne = await client.findOne(
+        task.class.State,
+        { space },
+        { sort: { rank: SortingOrder.Descending } }
+    )
+    await client.createDoc(task.class.State, space, {
+        title,
+        color: 9,
+        rank: calcRank(lastOne, undefined)
+    })
+  }
 </script>
 
 <KanbanUI {_class} {space} {search} {options} stateQuery={{ doneState: null }} states={states}>
-  // eslint-disable-next-line no-undef  
+  <svelte:fragment slot='additionalPanel'>
+    <KanbanPanelEmpty on:add={(e) => {addItem(e.detail)}} />
+  </svelte:fragment>
 </KanbanUI>
