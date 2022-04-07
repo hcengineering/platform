@@ -20,7 +20,6 @@
   import type { WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
 
@@ -33,11 +32,11 @@
   }
 
   function showLead () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'middle')
+    showPanel(board.component.EditCard, object._id, object._class, 'middle')
   }
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
+<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged>
   <div class="flex-between mb-4">
     <div class="flex-col">
       <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
@@ -56,7 +55,7 @@
       />
     </div>
   </div>
-  <div class="flex-between">   
+  <div class="flex-between">
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
@@ -72,14 +71,14 @@
   .card-container {
     display: flex;
     flex-direction: column;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     background-color: var(--board-card-bg-color);
     border: 1px solid var(--board-card-bg-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     user-select: none;
 
-    &:hover { 
-      background-color: var(--board-card-bg-hover); 
+    &:hover {
+      background-color: var(--board-card-bg-hover);
     }
     &.draggable {
       cursor: grab;

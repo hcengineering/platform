@@ -33,22 +33,21 @@
 
   const client = getClient()
 
-  async function createFunnel (): Promise<void> {
-    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
+  async function createBoard (): Promise<void> {
+    if (
+      templateId !== undefined &&
+      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
+    ) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(
-      board.class.Board,
-      core.space.Space,
-      {
-        name,
-        description,
-        private: false,
-        archived: false,
-        members: []
-      }
-    )
+    const id = await client.createDoc(board.class.Board, core.space.Space, {
+      name,
+      description,
+      private: false,
+      archived: false,
+      members: []
+    })
 
     await createKanban(client, id, templateId)
   }
@@ -56,22 +55,32 @@
 
 <SpaceCreateCard
   label={board.string.CreateBoard}
-  okAction={createFunnel}
+  okAction={createBoard}
   canSave={name.length > 0}
   on:close={() => {
     dispatch('close')
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={board.string.BoardName} icon={IconFolder} bind:value={name} placeholder={board.string.Board} maxWidth={'16rem'} focus />
+    <EditBox
+      label={board.string.BoardName}
+      icon={IconFolder}
+      bind:value={name}
+      placeholder={board.string.Board}
+      maxWidth={'16rem'}
+      focus
+    />
     <!-- <ToggleWithLabel label={board.string.MakePrivate} description={board.string.MakePrivateDescription} /> -->
 
-    <Component is={task.component.KanbanTemplateSelector} props={{
-      folders: [board.space.BoardTemplates],
-      template: templateId
-    }} on:change={(evt) => {
-      templateId = evt.detail
-    }}/>
-
+    <Component
+      is={task.component.KanbanTemplateSelector}
+      props={{
+        folders: [board.space.BoardTemplates],
+        template: templateId
+      }}
+      on:change={(evt) => {
+        templateId = evt.detail
+      }}
+    />
   </Grid>
 </SpaceCreateCard>

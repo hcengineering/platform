@@ -15,28 +15,29 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Icon, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import board from '../plugin'
+  import { Button, Label } from '@anticrm/ui'
+  import { getEditorCardActionGroups } from '../../utils/CardActionUtils'
 
   export let value: Card
-  export let inline: boolean = false
 
-  async function show () {
-    showPanel(board.component.EditCard, value._id, value._class, 'middle')
-  }
+  const actionGroups = getEditorCardActionGroups(value)
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
-    on:click={show}
-  >
-    <div class="icon">
-      <Icon icon={board.icon.Card} size={'small'} />
-    </div>
-    <span class="label">{value.title}</span>
-  </a>
+  <div class="flex-col flex-gap-3">
+    {#each actionGroups as group}
+      <div class="flex-col flex-gap-1">
+        <Label label={group.label} />
+        {#each group.actions as action}
+          <Button
+            icon={action.icon}
+            label={action.label}
+            kind={action.isTransparent ? 'transparent' : 'no-border'}
+            justify="left"
+            on:click={() => action.handler?.(value)}
+          />
+        {/each}
+      </div>
+    {/each}
+  </div>
 {/if}

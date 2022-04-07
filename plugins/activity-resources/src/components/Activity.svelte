@@ -24,6 +24,7 @@
 
   export let object: Doc
   export let fullSize: boolean = false
+  export let showCommenInput: boolean = true
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
@@ -39,7 +40,7 @@
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
-  
+
     editable = new Map(result.map(it => [it.objectClass, it.editable ?? false]))
   })
 
@@ -78,9 +79,11 @@
         {/if}
       </div>
     </Scroller>
-    <div class="ref-input">
-      <Component is={chunter.component.CommentInput} props={{ object }} />
-    </div>
+    {#if showCommenInput}
+      <div class="ref-input">
+        <Component is={chunter.component.CommentInput} props={{ object }} />
+      </div>
+    {/if}
   </div>
 {:else}
   <Scroller>
@@ -105,9 +108,11 @@
       </div>
     </div>
   </Scroller>
-  <div class="ref-input fill">
-    <Component is={chunter.component.CommentInput} props={{ object }} />
-  </div>
+  {#if showCommenInput}
+    <div class="ref-input fill">
+      <Component is={chunter.component.CommentInput} props={{ object }} />
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
