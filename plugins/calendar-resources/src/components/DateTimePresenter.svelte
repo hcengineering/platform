@@ -21,10 +21,10 @@
 
   export let value: Event
   
-  $: date = (value === undefined || value === null) ? null : (value.date !== null) ? new Date(value.date) : null
-  $: dueDate = (value === undefined || value === null) ? null : (value.dueDate) ? new Date(value.dueDate) : null
+  $: date = value ? new Date(value.date) : undefined
+  $: dueDate = value ? new Date(value.dueDate ?? value.date) : undefined
 
-  $: interval = (value.dueDate && value.date) ? value.dueDate - value.date : 0
+  $: interval = (value.dueDate ?? value.date) - value.date
 
   const SECOND = 1000
   const MINUTE = SECOND * 60
@@ -46,13 +46,14 @@
 </script>
 
 <div class="antiSelect">
-  <DateRangePresenter
-    value={value.date}
-    withTime={date !== null && date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY}
-  />
-  {#if interval > 0}
-    {#await formatDueDate(interval) then t}
-      <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         
-    {/await}
+  {#if date}
+    <DateRangePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
+    {#if interval > 0}
+      {#await formatDueDate(interval) then t}
+        <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>
+      {/await}
+    {/if}
+  {:else}
+    No date
   {/if}
 </div>

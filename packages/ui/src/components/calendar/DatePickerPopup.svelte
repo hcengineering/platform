@@ -19,20 +19,20 @@
   import type { AnySvelteComponent } from '../../types'
   import { dpstore } from '../../popups'
 
-  let component: AnySvelteComponent
+  let component: AnySvelteComponent | undefined
   let anchor: HTMLElement
 
   let modalHTML: HTMLElement
-  let frendlyFocus: HTMLElement[]
+  let frendlyFocus: HTMLElement[] | undefined
   let componentInstance: any
 
-  $: if ($dpstore.component) component = $dpstore.component
-  $: if ($dpstore.frendlyFocus) frendlyFocus = $dpstore.frendlyFocus
+  $: component = $dpstore.component
+  $: frendlyFocus = $dpstore.frendlyFocus
   $: if ($dpstore.anchor) {
     anchor = $dpstore.anchor
     if (modalHTML) $dpstore.popup = modalHTML
   }
-  $: if ($dpstore.component) component = $dpstore.component
+  $: component = $dpstore.component
 
   function _update (result: any): void {
     fitPopup()
@@ -88,7 +88,7 @@
   const unfocus = (ev: FocusEvent): void => {
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
-    frendlyFocus.forEach(edit => { if (edit === target) kl = true })
+    frendlyFocus?.forEach(edit => { if (edit === target) kl = true })
     if (target === modalHTML) kl = true
     if (!kl || target === null) _close(null)
   }

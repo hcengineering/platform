@@ -27,7 +27,7 @@
   export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
-  export let labelOver: IntlString | undefined = undefined
+  export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
 
   const dispatch = createEventDispatcher()

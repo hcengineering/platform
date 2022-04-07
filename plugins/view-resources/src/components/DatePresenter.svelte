@@ -20,7 +20,6 @@
 
   export let value: number | null | undefined
   // export let attributeType: TypeDate | undefined
-  console.log('!!!!!!!!!! EXPORT VALUE (view): ', value)
 </script>
 
 <DateRangePresenter {value} />

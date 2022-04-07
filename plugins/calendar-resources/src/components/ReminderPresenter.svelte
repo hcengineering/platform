@@ -37,6 +37,6 @@
         </Tooltip>
       {/await}
     </div>
-    <DateTimeRangePresenter value={value.date === null ? null : value.date + value.shift} />
+    <DateTimeRangePresenter value={value.date + value.shift} />
   {/if}
 </div>

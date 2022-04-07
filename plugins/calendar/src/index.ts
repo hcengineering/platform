@@ -33,10 +33,10 @@ export interface Event extends AttachedDoc {
   location?: string
 
   // Event scheduled date
-  date: Timestamp | null
+  date: Timestamp
 
   // Event due date for long events.
-  dueDate?: Timestamp | null
+  dueDate?: Timestamp
 
   attachments?: number
   comments?: number

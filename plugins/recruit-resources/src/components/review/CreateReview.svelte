@@ -134,7 +134,10 @@
 
   $: validate(doc, doc._class)
   const updateStart = (result: any): void => {
-    if (result.detail !== undefined) dueDate = result.detail
+    if (result.detail !== undefined) {
+      dueDate = result.detail
+      dueDate = dueDate
+    }
   }
 </script>
 
@@ -169,7 +172,7 @@
     {/if}
     <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
     <OrganizationSelector bind:value={company} label={recruit.string.Company} />
-    <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
+    <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime labelOver={'ddd'} on:change={updateStart} />
     <DateRangePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
     <Row>
       <StyledTextBox

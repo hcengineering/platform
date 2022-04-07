@@ -26,7 +26,7 @@
 
   let title: string = value.title
   let description: string = value.description
-  let startDate: number | null = value.date
+  let startDate: number = value.date
   let participants: Ref<Employee>[] = value.participants ?? []
   const space = calendar.space.PersonalEvents
 
@@ -56,7 +56,7 @@
   label={calendar.string.EditReminder}
   okAction={saveReminder}
   okLabel={presentation.string.Save}
-  canSave={title.trim().length > 0 && startDate !== null && startDate > 0 && participants.length > 0}
+  canSave={title.trim().length > 0 && startDate > 0 && participants.length > 0}
   {space}
   on:close={() => {
     dispatch('close')
