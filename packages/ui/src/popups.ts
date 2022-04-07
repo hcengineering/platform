@@ -51,3 +51,55 @@ export function closePopup (): void {
     return popups
   })
 }
+
+interface IDatePopup {
+  component: AnySvelteComponent | undefined
+  currentDate: Date | undefined
+  anchor: HTMLElement | undefined
+  popup: HTMLElement | undefined
+  frendlyFocus: HTMLElement[] | undefined
+  onClose?: (result: any) => void
+  onChange?: (result: any) => void
+}
+
+export const dpstore = writable<IDatePopup>({
+  component: undefined,
+  currentDate: undefined,
+  anchor: undefined,
+  popup: undefined,
+  frendlyFocus: undefined,
+  onClose: undefined,
+  onChange: undefined
+})
+
+export function showDatePopup (
+  component: AnySvelteComponent | undefined,
+  currentDate: Date,
+  anchor?: HTMLElement,
+  popup?: HTMLElement,
+  frendlyFocus?: HTMLElement[] | undefined,
+  onClose?: (result: any) => void,
+  onChange?: (result: any) => void
+): void {
+  dpstore.set({
+    component: component,
+    currentDate: currentDate,
+    anchor: anchor,
+    popup: popup,
+    frendlyFocus: frendlyFocus,
+    onClose: onClose,
+    onChange: onChange
+  })
+}
+
+export function closeDatePopup (): void {
+  dpstore.set({
+    component: undefined,
+    currentDate: undefined,
+    anchor: undefined,
+    popup: undefined,
+    frendlyFocus: undefined,
+    onClose: undefined,
+    onChange: undefined
+  })
+}

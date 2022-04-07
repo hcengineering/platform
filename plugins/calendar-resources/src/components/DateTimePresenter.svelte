@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import { translate } from '@anticrm/platform'
-  import { DatePresenter } from '@anticrm/ui'
+  import { DateRangePresenter } from '@anticrm/ui'
   import calendar from '../plugin'
 
   export let value: Event
@@ -47,10 +47,10 @@
 
 <div class="antiSelect">
   {#if date}
-    <DatePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
+    <DateRangePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
     {#if interval > 0}
-    {#await formatDueDate(interval) then t}
-        <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>         
+      {#await formatDueDate(interval) then t}
+        <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>
       {/await}
     {/if}
   {:else}

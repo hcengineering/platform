@@ -72,17 +72,15 @@ export function isWeekend (date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6
 }
 
-export function getMonthName (date: Date): string {
+export function getMonthName (date: Date, option: 'narrow' | 'short' | 'long' | 'numeric' | '2-digit' = 'long'): string {
   const locale = new Intl.NumberFormat().resolvedOptions().locale
-  return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+  return new Intl.DateTimeFormat(locale, { month: option }).format(date)
 }
 
 export type TCellStyle = 'not-selected' | 'selected'
 export interface ICell {
   dayOfWeek: number
   style: TCellStyle
-  focused: boolean
-  today?: boolean
 }
 
 export function getMonday (d: Date, mondayStart: boolean): Date {
