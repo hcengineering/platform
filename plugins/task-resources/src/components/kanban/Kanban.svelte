@@ -172,7 +172,7 @@
             >
               <!-- <KanbanCardEmpty label={'Create new application'} /> -->
               {#each getStateObjects(objects, state, dragCard) as object}
-                  <div transition:slideD={{ isDragging }}
+                  <div transition:slideD|local={{ isDragging }}
                     class="step-tb75"
                     on:dragover|preventDefault={(evt) => {
                       if (dragCard !== undefined) {
