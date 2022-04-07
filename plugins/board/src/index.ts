@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
+import type { AttachedDoc, Class, Client, Doc, Markup, Ref } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -76,8 +76,8 @@ export interface CardAction extends Doc {
   label: IntlString
   position: number
   type: string
-  handler?: Resource<(card: Card) => void>
-  supported?: Resource<(card: Card) => boolean>
+  handler?: Resource<(card: Card, client: Client) => void>
+  supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
 /**

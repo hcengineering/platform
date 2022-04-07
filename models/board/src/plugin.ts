@@ -16,7 +16,7 @@
 
 import { boardId, Card, CardAction } from '@anticrm/board'
 import board from '@anticrm/board-resources/src/plugin'
-import type { Ref, Space } from '@anticrm/core'
+import type { Client, Ref, Space } from '@anticrm/core'
 import { mergeIds, Resource } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
@@ -47,18 +47,18 @@ export default mergeIds(boardId, board, {
     Archive: '' as Ref<CardAction>
   },
   cardActionHandler: {
-    Members: '' as Resource<(card: Card) => void>,
-    Labels: '' as Resource<(card: Card) => void>,
-    Checklist: '' as Resource<(card: Card) => void>,
-    Dates: '' as Resource<(card: Card) => void>,
-    Attachments: '' as Resource<(card: Card) => void>,
-    CustomFields: '' as Resource<(card: Card) => void>,
-    AddButton: '' as Resource<(card: Card) => void>,
-    Move: '' as Resource<(card: Card) => void>,
-    Copy: '' as Resource<(card: Card) => void>,
-    MakeTemplate: '' as Resource<(card: Card) => void>,
-    Watch: '' as Resource<(card: Card) => void>,
-    Archive: '' as Resource<(card: Card) => void>
+    Members: '' as Resource<(card: Card, client: Client) => void>,
+    Labels: '' as Resource<(card: Card, client: Client) => void>,
+    Checklist: '' as Resource<(card: Card, client: Client) => void>,
+    Dates: '' as Resource<(card: Card, client: Client) => void>,
+    Attachments: '' as Resource<(card: Card, client: Client) => void>,
+    CustomFields: '' as Resource<(card: Card, client: Client) => void>,
+    AddButton: '' as Resource<(card: Card, client: Client) => void>,
+    Move: '' as Resource<(card: Card, client: Client) => void>,
+    Copy: '' as Resource<(card: Card, client: Client) => void>,
+    MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
+    Watch: '' as Resource<(card: Card, client: Client) => void>,
+    Archive: '' as Resource<(card: Card, client: Client) => void>
   },
   space: {
     DefaultBoard: '' as Ref<Space>

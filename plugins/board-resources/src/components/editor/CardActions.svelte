@@ -26,18 +26,18 @@
   export let value: Card
   const client = getClient()
 
-  let addToCardActions: CardAction[] = []
-  let automationActions: CardAction[] = []
-  let actions: CardAction[] = []
+  const addToCardActions: CardAction[] = []
+  const automationActions: CardAction[] = []
+  const actions: CardAction[] = []
 
   let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
 
-  getCardActions(client).then((result) => {
-    result.forEach(async (action) => {
+  getCardActions(client).then(async (result) => {
+    for (const action of result) {
       let supported = true
       if (action.supported) {
         const supportedHandler = await getResource(action.supported)
-        supported = supportedHandler(value)
+        supported = supportedHandler(value, client)
       }
       if (supported) {
         if (action.type === board.cardActionType.AddToCard) {
@@ -48,7 +48,7 @@
           actions.push(action)
         }
       }
-    })
+    }
 
     actionGroups = [
       {
@@ -65,7 +65,6 @@
       }
     ]
   })
-
 </script>
 
 {#if value}
@@ -83,9 +82,10 @@
               on:click={async () => {
                 if (action.handler) {
                   const handler = await getResource(action.handler)
-                  handler(value)
+                  handler(value, client)
                 }
-              }} />
+              }}
+            />
           {/each}
         </div>
       {/if}

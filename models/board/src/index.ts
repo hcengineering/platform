@@ -17,7 +17,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
@@ -74,8 +74,8 @@ export class TCardAction extends TDoc implements CardAction {
   label!: IntlString
   position!: number
   type!: string
-  handler?: Resource<(card: Card) => void>
-  supported?: Resource<(card: Card) => boolean>
+  handler?: Resource<(card: Card, client: Client) => void>
+  supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
 export function createModel (builder: Builder): void {
