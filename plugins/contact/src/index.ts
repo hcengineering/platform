@@ -24,8 +24,7 @@ import {
   FindResult,
   Ref,
   Space,
-  UXObject,
-  toFindResult
+  UXObject
 } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
@@ -194,9 +193,9 @@ export async function findPerson (
   client: Client,
   person: Data<Person>,
   channels: AttachedData<Channel>[]
-): Promise<FindResult<Person>> {
+): Promise<Person[]> {
   if (channels.length === 0 || person.name.length === 0) {
-    return toFindResult([])
+    return []
   }
   // Take only first part of first name for match.
   const values = channels.map((it) => it.value)
@@ -214,7 +213,7 @@ export async function findPerson (
       await client.findAll(contactPlugin.class.Person, { name: { $like: `${lastName}%${firstName}%` } })
     ).map((it) => it._id)
     if (potentialPersonIds.length === 0) {
-      return toFindResult([])
+      return []
     }
   }
 
@@ -230,7 +229,7 @@ export async function findPerson (
     }
   )
 
-  const result: FindResult<Person> = toFindResult([])
+  const result: Person[] = []
 
   for (const c of potentialPersons) {
     let matches = 0
@@ -252,7 +251,6 @@ export async function findPerson (
 
     if (matches >= 2) {
       result.push(c)
-      result.total++
     }
   }
   return result
