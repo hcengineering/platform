@@ -64,9 +64,7 @@
       const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
       days.push({
         dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate),
-        focused: false,
-        today: areDatesEqual(tempDate, today)
+        style: getDateStyle(tempDate)
       })
     }
     days = days
@@ -371,9 +369,6 @@
         {#each days as day, i}
           <div
             class="day {day.style}"
-            class:today={day.today}
-            class:focused={day.focused}
-            data-today={day.today ? todayString : ''}
             style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
             on:click|stopPropagation={() => {
               if (currentDate) currentDate.setDate(i + 1)
