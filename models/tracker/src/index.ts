@@ -101,7 +101,7 @@ export class TIssue extends TDoc implements Issue {
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
   attachments!: number
 
-  // @Prop(Collection(core.class.TypeString), tracker.string.Labels)
+  @Prop(Collection(core.class.TypeString), tracker.string.Labels)
   labels?: string[]
 
   declare space: Ref<Team>
