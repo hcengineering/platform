@@ -146,7 +146,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: board.class.Card,
-    descriptor: task.viewlet.Kanban,
+    descriptor: board.viewlet.Kanban,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
       lookup: {}
@@ -175,6 +175,17 @@ export function createModel (builder: Builder): void {
       icon: board.component.TemplatesIcon
     },
     board.space.BoardTemplates
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: task.string.Kanban,
+      icon: task.icon.Kanban,
+      component: board.component.KanbanView
+    },
+    board.viewlet.Kanban
   )
 }
 
