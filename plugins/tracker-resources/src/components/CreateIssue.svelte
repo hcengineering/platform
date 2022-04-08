@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@anticrm/platform'
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
-  import { OK, Status } from '@anticrm/platform'
-  import { getClient, UserBox } from '@anticrm/presentation'
+  import { Asset, IntlString } from '@anticrm/platform'
+  import { getClient } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import ui, { EditBox, Grid, Status as StatusControl, Button, showPopup, DatePresenter, DateRangePresenter } from '@anticrm/ui'
+  import ui, { Button, DateRangePresenter, EditBox, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
@@ -29,12 +27,12 @@
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
+  export let issueStatus = IssueStatus.Backlog
   
   $: _space = space
   $: _parent = parent
-  const status: Status = OK
 
-  let assignee: Ref<Employee> | null = null
+  const assignee: Ref<Employee> | null = null
 
   const object: Data<Issue> = {
     title: '',
@@ -42,7 +40,7 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: IssueStatus.Backlog,
+    status: issueStatus,
     priority: IssuePriority.NoPriority,
     dueDate: null,
     comments: 0
@@ -88,25 +86,26 @@
     await client.createDoc(tracker.class.Issue, _space, value, taskId)
   }
 
-  let startDate: number | null = null
-  let targetDate: number | null = null
+  const startDate: number | null = null
+  const targetDate: number | null = null
   interface IPair {
     icon: Asset
     label: IntlString
   }
   const statuses: Array<IPair> =
     [{ icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
-     { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
-     { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
-     { icon: tracker.icon.StatusDone, label: tracker.string.Done },
-     { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }]
-  let selectStatus: IPair = statuses[0]
+      { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
+      { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
+      { icon: tracker.icon.StatusDone, label: tracker.string.Done },
+      { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }]
+  // TODO: Refactor
+  let selectStatus: IPair = statuses[issueStatus]
   const priorities: Array<IPair> =
     [{ icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
-     { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
-     { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
-     { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
-     { icon: tracker.icon.PriorityLow, label: tracker.string.Low }]
+      { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
+      { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
+      { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
+      { icon: tracker.icon.PriorityLow, label: tracker.string.Low }]
   let selectPriority: IPair = priorities[0]
 </script>
 

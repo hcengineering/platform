@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +13,8 @@
 // limitations under the License.
 -->
 
-<script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { Label } from '@anticrm/ui'
-  import { IconAdd } from '@anticrm/ui'
-
-  export let label: IntlString
-</script>
-
 <div class="card-container">
-  <div class="icon">
-    <IconAdd size={'small'} />
-  </div>
-  <Label {label} />
+  <slot/>
 </div>
 
 <style lang="scss">

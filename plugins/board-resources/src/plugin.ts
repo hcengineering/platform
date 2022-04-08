@@ -62,7 +62,10 @@ export default mergeIds(boardId, board, {
     Watch: '' as IntlString,
     Archive: '' as IntlString,
     HideDetails: '' as IntlString,
-    ShowDetails: '' as IntlString
+    ShowDetails: '' as IntlString,
+    NewList: '' as IntlString,
+    AddList: '' as IntlString,
+    NewListPlaceholder: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

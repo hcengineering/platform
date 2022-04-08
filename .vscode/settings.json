@@ -1,0 +1,19 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.rush": true,
+    "**/lib": true,
+    "**/.heft": true,
+    "**/_api-extractor-temp": true,
+    "**/svelte.config.js": true,
+    "**/postcss.config.js": true,
+    "**/node_modules": true,
+    "**/temp": true
+  },
+  "explorerExclude.backup": null
+}

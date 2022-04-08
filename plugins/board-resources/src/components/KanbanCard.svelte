@@ -24,7 +24,6 @@
   import board from '../plugin'
 
   export let object: WithLookup<Card>
-  export let draggable: boolean
   export let dragged: boolean
 
   function showMenu (ev?: Event): void {
@@ -36,56 +35,31 @@
   }
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged>
-  <div class="flex-between mb-4">
-    <div class="flex-col">
-      <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
-    </div>
-    <div class="flex-row-center">
-      <div class="mr-2">
-        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-      </div>
-      <ActionIcon
-        label={board.string.More}
-        action={(evt) => {
-          showMenu(evt)
-        }}
-        icon={IconMoreH}
-        size={'small'}
-      />
-    </div>
+<div class="flex-between mb-4">
+  <div class="flex-col">
+    <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
   </div>
-  <div class="flex-between">
-    <div class="flex-row-center">
-      {#if (object.attachments ?? 0) > 0}
-        <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
-      {/if}
-      {#if (object.comments ?? 0) > 0}
-        <div class="step-lr75"><CommentsPresenter value={object} /></div>
-      {/if}
+  <div class="flex-row-center">
+    <div class="mr-2">
+      <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
     </div>
+    <ActionIcon
+      label={board.string.More}
+      action={(evt) => {
+        showMenu(evt)
+      }}
+      icon={IconMoreH}
+      size={'small'}
+    />
   </div>
 </div>
-
-<style lang="scss">
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem 1rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--board-card-bg-color);
-    border-radius: 0.25rem;
-    user-select: none;
-
-    &:hover {
-      background-color: var(--board-card-bg-hover);
-    }
-    &.draggable {
-      cursor: grab;
-    }
-    &.dragged {
-      padding: 1rem;
-      background-color: var(--board-bg-color);
-    }
-  }
-</style>
+<div class="flex-between">
+  <div class="flex-row-center">
+    {#if (object.attachments ?? 0) > 0}
+      <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
+    {/if}
+    {#if (object.comments ?? 0) > 0}
+      <div class="step-lr75"><CommentsPresenter value={object} /></div>
+    {/if}
+  </div>
+</div>
