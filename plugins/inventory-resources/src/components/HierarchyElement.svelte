@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@anticrm/core'
+  import { Doc, Ref, getObjectValue } from '@anticrm/core'
   import { IconMoreV, showPopup } from '@anticrm/ui'
   import { AttributeModel } from '@anticrm/view'
   import inventory, { Category } from '@anticrm/inventory'
@@ -28,19 +28,6 @@
   export let model: AttributeModel[]
   export let parent: Ref<Doc> = inventory.global.Category
   let expanded: Set<Ref<Category>> = new Set<Ref<Category>>()
-
-  function getValue (doc: Category, key: string): any {
-    if (key.length === 0) {
-      return doc
-    }
-    const path = key.split('.')
-    const len = path.length
-    let obj = doc as any
-    for (let i = 0; i < len; i++) {
-      obj = obj?.[path[i]]
-    }
-    return obj ?? ''
-  }
 
   const showMenu = async (ev: MouseEvent, object: Category): Promise<void> => {
     showPopup(ContextMenu, { object }, ev.target as HTMLElement)
@@ -74,13 +61,21 @@
                 {/if}
               </div>
             {/if}
-            <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} {...attribute.props} />
+            <svelte:component
+              this={attribute.presenter}
+              value={getObjectValue(attribute.key, object)}
+              {...attribute.props}
+            />
             <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>
           </div>
         </td>
       {:else}
         <td>
-          <svelte:component this={attribute.presenter} value={getValue(object, attribute.key)} {...attribute.props} />
+          <svelte:component
+            this={attribute.presenter}
+            value={getObjectValue(attribute.key, object)}
+            {...attribute.props}
+          />
         </td>
       {/if}
     {/each}

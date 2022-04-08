@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
+  import { SortingOrder, getObjectValue } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Component, CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
@@ -79,19 +79,6 @@
     )
   }
   $: update(_class, query, sortKey, sortOrder, options)
-
-  function getValue (doc: Doc, key: string): any {
-    if (key.length === 0) {
-      return doc
-    }
-    const path = key.split('.')
-    const len = path.length
-    let obj = doc as any
-    for (let i = 0; i < len; i++) {
-      obj = obj?.[path[i]]
-    }
-    return obj ?? ''
-  }
 
   const client = getClient()
 
@@ -219,7 +206,7 @@
                   <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
-                      value={getValue(object, attribute.key)}
+                      value={getObjectValue(attribute.key, object)}
                       {...attribute.props}
                     />
                     <div id='context-menu' class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
@@ -231,7 +218,7 @@
                 <td>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getValue(object, attribute.key)}
+                    value={getObjectValue(attribute.key, object)}
                     {...attribute.props}
                   />
                 </td>

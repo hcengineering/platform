@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, getObjectValue } from '@anticrm/core'
   import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, Loading, showPopup, Spinner, IconMoreV } from '@anticrm/ui'
@@ -67,21 +67,6 @@
 
   $: updateData(_class, query, options)
 
-  const getValue = (doc: Doc, key: string) => {
-    if (key.length === 0) {
-      return doc
-    }
-
-    let docObject = doc as any
-    const pathTokens = key.split('.')
-
-    for (let i = 0; i < pathTokens.length; i++) {
-      docObject = docObject?.[pathTokens[i]]
-    }
-
-    return docObject ?? ''
-  }
-
   const client = getClient()
 
   const showMenu = async (event: MouseEvent, docObject: Doc, rowIndex: number) => {
@@ -132,7 +117,7 @@
                 <div class="issuePresenter">
                   <svelte:component
                     this={attributeModel.presenter}
-                    value={getValue(docObject, attributeModel.key)}
+                    value={getObjectValue(attributeModel.key, docObject)}
                     {...attributeModel.props}
                   />
                   <div
@@ -148,7 +133,7 @@
               <div class="gridElement">
                 <svelte:component
                   this={attributeModel.presenter}
-                  value={getValue(docObject, attributeModel.key)}
+                  value={getObjectValue(attributeModel.key, docObject)}
                   {...attributeModel.props}
                 />
               </div>
