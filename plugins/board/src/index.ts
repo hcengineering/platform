@@ -109,6 +109,7 @@ const boards = plugin(boardId, {
     Board: '' as Ref<Doc>
   },
   cardActionType: {
+    Suggested: 'Suggested',
     Editor: 'Editor',
     Cover: 'Cover',
     AddToCard: 'AddToCard',

@@ -26,6 +26,7 @@
   export let value: Card
   const client = getClient()
 
+  const suggestedActions: CardAction[] = []
   const addToCardActions: CardAction[] = []
   const automationActions: CardAction[] = []
   const actions: CardAction[] = []
@@ -40,7 +41,9 @@
         supported = supportedHandler(value, client)
       }
       if (supported) {
-        if (action.type === board.cardActionType.AddToCard) {
+        if (action.type === board.cardActionType.Suggested) {
+          suggestedActions.push(action)
+        } else if (action.type === board.cardActionType.AddToCard) {
           addToCardActions.push(action)
         } else if (action.type === board.cardActionType.Automation) {
           automationActions.push(action)
@@ -51,6 +54,10 @@
     }
 
     actionGroups = [
+      {
+        label: plugin.string.Suggested,
+        actions: suggestedActions.sort(cardActionSorter)
+      },
       {
         label: plugin.string.AddToCard,
         actions: addToCardActions.sort(cardActionSorter)

@@ -217,9 +217,23 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
+      isInline: false,
+      label: board.string.Join,
+      position: 10,
+      type: board.cardActionType.Suggested,
+      handler: board.cardActionHandler.Join,
+      supported: board.cardActionSupportedHandler.Join
+    },
+    board.cardAction.Join
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
       isInline: true,
       label: board.string.Members,
-      position: 10,
+      position: 20,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.Members
     },
@@ -232,7 +246,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: true,
       label: board.string.Labels,
-      position: 20,
+      position: 30,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.Labels
     },
@@ -245,7 +259,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: false,
       label: board.string.Checklist,
-      position: 30,
+      position: 40,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.Checklist
     },
@@ -258,7 +272,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: true,
       label: board.string.Dates,
-      position: 40,
+      position: 50,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.Dates
     },
@@ -271,7 +285,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: false,
       label: board.string.Attachments,
-      position: 50,
+      position: 60,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.Attachments
     },
@@ -283,8 +297,21 @@ export function createModel (builder: Builder): void {
     {
       icon: board.icon.Card,
       isInline: false,
+      label: board.string.Cover,
+      position: 70,
+      type: board.cardActionType.Cover,
+      handler: board.cardActionHandler.Cover
+    },
+    board.cardAction.Cover
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
       label: board.string.CustomFields,
-      position: 60,
+      position: 80,
       type: board.cardActionType.AddToCard,
       handler: board.cardActionHandler.CustomFields
     },
@@ -298,7 +325,7 @@ export function createModel (builder: Builder): void {
       isInline: false,
       kind: 'transparent',
       label: board.string.AddButton,
-      position: 70,
+      position: 90,
       type: board.cardActionType.Automation,
       handler: board.cardActionHandler.AddButton
     },
@@ -311,7 +338,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: true,
       label: board.string.Move,
-      position: 80,
+      position: 100,
       type: board.cardActionType.Action,
       handler: board.cardActionHandler.Move
     },
@@ -324,7 +351,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: true,
       label: board.string.Copy,
-      position: 90,
+      position: 110,
       type: board.cardActionType.Action,
       handler: board.cardActionHandler.Copy
     },
@@ -337,7 +364,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: false,
       label: board.string.MakeTemplate,
-      position: 100,
+      position: 120,
       type: board.cardActionType.Action,
       handler: board.cardActionHandler.MakeTemplate
     },
@@ -350,7 +377,7 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: false,
       label: board.string.Watch,
-      position: 110,
+      position: 130,
       type: board.cardActionType.Action,
       handler: board.cardActionHandler.Watch
     },
@@ -363,11 +390,41 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Card,
       isInline: true,
       label: board.string.Archive,
-      position: 120,
+      position: 140,
       type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Archive
+      handler: board.cardActionHandler.Archive,
+      supported: board.cardActionSupportedHandler.Archive
     },
     board.cardAction.Archive
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.SendToBoard,
+      position: 140,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.SendToBoard,
+      supported: board.cardActionSupportedHandler.SendToBoard
+    },
+    board.cardAction.SendToBoard
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      kind: 'dangerous',
+      label: board.string.Delete,
+      position: 150,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.Delete,
+      supported: board.cardActionSupportedHandler.Delete
+    },
+    board.cardAction.Delete
   )
 }
 
