@@ -41,6 +41,9 @@
     "Watch": "Watch",
     "Archive": "Archive",
     "HideDetails": "Hide Details",
-    "ShowDetails": "Show Details"
+    "ShowDetails": "Show Details",
+    "NewList": "Add another list",
+    "AddList": "Add list",
+    "NewListPlaceholder": "Enter list title..."
   }
 }

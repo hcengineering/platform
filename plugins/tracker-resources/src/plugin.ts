@@ -34,6 +34,7 @@ export default mergeIds(trackerId, tracker, {
     BacklogIssues: '' as IntlString,
     Backlog: '' as IntlString,
     Board: '' as IntlString,
+    Project: '' as IntlString,
     Projects: '' as IntlString,
     CreateTeam: '' as IntlString,
     AddIssue: '' as IntlString,
@@ -53,7 +54,6 @@ export default mergeIds(trackerId, tracker, {
     High: '' as IntlString,
     Medium: '' as IntlString,
     Low: '' as IntlString,
-
     Title: '' as IntlString,
     Identifier: '' as IntlString,
     Description: '' as IntlString,
@@ -79,7 +79,8 @@ export default mergeIds(trackerId, tracker, {
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
-    TaskUnAssign: '' as IntlString
+    TaskUnAssign: '' as IntlString,
+    AddIssueTooltip: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

@@ -21,6 +21,7 @@ import CreateCard from './components/CreateCard.svelte'
 import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import KanbanView from './components/KanbanView.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -29,6 +30,7 @@ export default async (): Promise<Resources> => ({
     EditCard,
     KanbanCard,
     CardPresenter,
-    TemplatesIcon
+    TemplatesIcon,
+    KanbanView
   }
 })

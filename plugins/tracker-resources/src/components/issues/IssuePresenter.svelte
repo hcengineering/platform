@@ -16,21 +16,13 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue, Team } from '@anticrm/tracker'
-  import { IssuePriority } from '@anticrm/tracker'
   import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import { issuePriorities } from '../../utils'
 
   export let value: Issue
   export let currentTeam: Team
   export let inline: boolean = false
-
-  const priorityIconsMap = Object.freeze({
-    [IssuePriority.NoPriority]: tracker.icon.PriorityNoPriority,
-    [IssuePriority.Low]: tracker.icon.PriorityLow,
-    [IssuePriority.Medium]: tracker.icon.PriorityMedium,
-    [IssuePriority.High]: tracker.icon.PriorityHigh,
-    [IssuePriority.Urgent]: tracker.icon.PriorityUrgent
-  })
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
@@ -47,7 +39,7 @@
     on:click={show}
   >
     <div class="icon">
-      <Icon icon={priorityIconsMap[value.priority]} size={'small'} />
+      <Icon icon={issuePriorities[value.priority].icon} size={'small'} />
     </div>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />

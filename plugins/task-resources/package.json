@@ -48,6 +48,7 @@
     "@anticrm/chunter-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.1",
     "@anticrm/notification": "~0.6.0",
-    "@anticrm/tags": "~0.6.1"
+    "@anticrm/tags": "~0.6.1",
+    "@anticrm/kanban": "~0.6.0"
   }
 }

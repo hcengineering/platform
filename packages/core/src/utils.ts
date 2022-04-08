@@ -14,6 +14,7 @@
 //
 
 import type { Account, Doc, Ref } from './classes'
+import { FindResult } from './storage'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -50,7 +51,9 @@ let currentAccount: Account
  * @public
  * @returns
  */
-export function getCurrentAccount (): Account { return currentAccount }
+export function getCurrentAccount (): Account {
+  return currentAccount
+}
 
 /**
  * @public
@@ -64,4 +67,12 @@ export function setCurrentAccount (account: Account): void {
  */
 export function escapeLikeForRegexp (value: string): string {
   return value.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+
+/**
+ * @public
+ */
+export function toFindResult<T extends Doc> (docs: T[], total?: number): FindResult<T> {
+  const length = total ?? docs.length
+  return Object.assign(docs, { total: length })
 }

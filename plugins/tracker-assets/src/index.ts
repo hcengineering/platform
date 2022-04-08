@@ -31,6 +31,11 @@ loadMetadata(tracker.icon, {
   NewIssue: `${icons}#newissue`,
   Magnifier: `${icons}#magnifier`,
   Home: `${icons}#home`,
+  Labels: `${icons}#priority-nopriority`, // TODO: add icon
+  MoreActions: `${icons}#priority-nopriority`, // TODO: add icon
+  DueDate: `${icons}#inbox`, // TODO: add icon
+  Parent: `${icons}#myissues`, // TODO: add icon
+
   StatusBacklog: `${icons}#status-backlog`,
   StatusTodo: `${icons}#status-todo`,
   StatusInProgress: `${icons}#status-inprogress`,

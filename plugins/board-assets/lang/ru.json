@@ -41,6 +41,9 @@
     "Watch": "Отслеживать",
     "Archive": "Архивировать",
     "HideDetails": "Спрятать",
-    "ShowDetails": "Показать"
+    "ShowDetails": "Показать",
+    "NewList": "Добавить еще одну колонку",
+    "AddList": "Добавить колонку",
+    "NewListPlaceholder": "Введите заголовок колонки..."
   }
 }

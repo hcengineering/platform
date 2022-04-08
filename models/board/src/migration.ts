@@ -41,8 +41,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
 }
 
 export const boardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createSpace(ops)

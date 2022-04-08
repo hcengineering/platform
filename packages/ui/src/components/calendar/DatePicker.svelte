@@ -15,7 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
-  import { Label, DatePresenter } from '../..'
+  import Label from '../Label.svelte'
+  import DatePresenter from './DatePresenter.svelte'
+  import DatePopup from './DatePopup.svelte'
 
   export let title: IntlString
   export let value: number | null | undefined = null

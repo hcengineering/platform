@@ -14,25 +14,16 @@
 -->
 <script lang="ts">
   import type { Issue } from '@anticrm/tracker'
-  import { IssueStatus } from '@anticrm/tracker'
   import { Icon } from '@anticrm/ui'
-  import tracker from '../../plugin'
+  import { issueStatuses } from '../../utils'
 
   export let value: Issue
-
-  const statusIconsMap = Object.freeze({
-    [IssueStatus.Backlog]: tracker.icon.StatusBacklog,
-    [IssueStatus.Todo]: tracker.icon.StatusTodo,
-    [IssueStatus.InProgress]: tracker.icon.StatusInProgress,
-    [IssueStatus.Done]: tracker.icon.StatusDone,
-    [IssueStatus.Canceled]: tracker.icon.StatusCanceled
-  })
 </script>
 
 {#if value}
   <div class="titlePresenter">
     <div class="icon">
-      <Icon icon={statusIconsMap[value.status]} size={'small'} />
+      <Icon icon={issueStatuses[value.status].icon} size={'small'} />
     </div>
     <span class="label nowrap" title={value.title}>{value.title}</span>
   </div>

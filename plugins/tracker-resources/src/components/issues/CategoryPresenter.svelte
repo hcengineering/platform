@@ -6,20 +6,13 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import IssuesList from './IssuesList.svelte'
+  import { issueStatuses } from '../../utils'
 
   export let query: DocumentQuery<Issue>
   export let category: IssueStatus
   export let currentTeam: Team
 
   const dispatch = createEventDispatcher()
-
-  const statusIconsMap = Object.freeze({
-    [IssueStatus.Backlog]: tracker.icon.StatusBacklog,
-    [IssueStatus.Todo]: tracker.icon.StatusTodo,
-    [IssueStatus.InProgress]: tracker.icon.StatusInProgress,
-    [IssueStatus.Done]: tracker.icon.StatusDone,
-    [IssueStatus.Canceled]: tracker.icon.StatusCanceled
-  })
 
   const options: FindOptions<Issue> = {
     lookup: {
@@ -34,7 +27,7 @@
   <div class="header">
     <div class="title">
       <div class="icon">
-        <Icon icon={statusIconsMap[category]} size={'small'} />
+        <Icon icon={issueStatuses[category].icon} size={'small'} />
       </div>
       <div class="fs-title">
         {IssueStatus[category]}

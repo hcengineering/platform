@@ -22,6 +22,7 @@ import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, Storage, TxResult, WithLookup } from './storage'
 import { SortingOrder } from './storage'
 import { Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
+import { toFindResult } from './utils'
 
 /**
  * @public
@@ -73,7 +74,7 @@ class ClientImpl implements Client {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const domain = this.hierarchy.getDomain(_class)
-    let result =
+    const data =
       domain === DOMAIN_MODEL
         ? await this.model.findAll(_class, query, options)
         : await this.conn.findAll(_class, query, options)
@@ -81,10 +82,10 @@ class ClientImpl implements Client {
     // In case of mixin we need to create mixin proxies.
 
     // Update mixins & lookups
-    result = result.map((v) => {
+    const result = data.map((v) => {
       return this.hierarchy.updateLookupMixin(_class, v, options)
     })
-    return result
+    return toFindResult(result, data.total)
   }
 
   async findOne<T extends Doc>(
@@ -162,9 +163,7 @@ export async function createClient (
       if (t._class === core.class.TxCreateDoc) {
         const ct = t as TxCreateDoc<Doc>
         if (ct.objectClass === core.class.PluginConfiguration) {
-          configs.set(ct.objectId as Ref<PluginConfiguration>,
-            TxProcessor.createDoc2Doc(ct) as PluginConfiguration
-          )
+          configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
         }
       } else if (t._class === core.class.TxUpdateDoc) {
         const ut = t as TxUpdateDoc<Doc>
@@ -177,7 +176,7 @@ export async function createClient (
       }
     }
 
-    const excludedPlugins = Array.from(configs.values()).filter(it => !allowedPlugins.includes(it.pluginId as Plugin))
+    const excludedPlugins = Array.from(configs.values()).filter((it) => !allowedPlugins.includes(it.pluginId as Plugin))
 
     for (const a of excludedPlugins) {
       for (const c of configs.values()) {
@@ -186,9 +185,9 @@ export async function createClient (
           for (const id of c.transactions) {
             excluded.add(id as Ref<Tx>)
           }
-          const exclude = systemTx.filter(t => excluded.has(t._id))
+          const exclude = systemTx.filter((t) => excluded.has(t._id))
           console.log('exclude plugin', c.pluginId, exclude.length)
-          systemTx = systemTx.filter(t => !excluded.has(t._id))
+          systemTx = systemTx.filter((t) => !excluded.has(t._id))
         }
       }
     }

@@ -16,23 +16,24 @@
 
 <script lang="ts">
   import { Class, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import task, { DocWithRank, DoneState } from '@anticrm/task'
-  import KanbanUI from './Kanban.svelte'
+  import { Kanban as KanbanUI } from '@anticrm/kanban'
+  import { getResource } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
+  import task from '@anticrm/task'
   import KanbanDragDone from './KanbanDragDone.svelte'
 
-  type Item = DocWithRank & { state: Ref<State>, doneState: Ref<DoneState> | null }
-
-  export let _class: Ref<Class<Item>>
+  export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
   // export let open: AnyComponent
   export let search: string
-  export let options: FindOptions<Item> | undefined
+  export let options: FindOptions<Task> | undefined
   // export let config: string[]
 
   let kanban: Kanban
   let states: State[] = []
+
+  const client = getClient()
 
   const kanbanQuery = createQuery()
   $: kanbanQuery.query(task.class.Kanban, { attachedTo: space }, result => { kanban = result[0] })
@@ -45,14 +46,25 @@
       }
     })
   }
+
+  $: clazz = client.getHierarchy().getClass(_class)
+  $: presenterMixin = client.getHierarchy().as(clazz, task.mixin.KanbanCard)
+  $: cardPresenter = getResource(presenterMixin.card)
+  /* eslint-disable no-undef */
 </script>
 
-<KanbanUI {_class} {space} {search} {options} stateQuery={{ doneState: null }} states={states}>
-  // eslint-disable-next-line no-undef
-  <svelte:fragment slot='doneBar' let:onDone={onDone}>
-    <KanbanDragDone {kanban} on:done={(e) => {
-      // eslint-disable-next-line no-undef
-      onDone({ doneState: e.detail._id })
-    }} />
-  </svelte:fragment>
-</KanbanUI>
+{#await cardPresenter then presenter}
+  <KanbanUI {_class} {space} {search} {options} query={{ doneState: null }} states={states}
+    fieldName={'state'} rankFieldName={'rank'}>
+    <svelte:fragment slot='card' let:object let:dragged>
+      <svelte:component this={presenter} {object} {dragged}/>
+    </svelte:fragment>
+    // eslint-disable-next-line no-undef
+    <svelte:fragment slot='doneBar' let:onDone>
+      <KanbanDragDone {kanban} on:done={(e) => {
+        // eslint-disable-next-line no-undef
+        onDone({ doneState: e.detail._id })
+      }} />
+    </svelte:fragment>
+  </KanbanUI>
+{/await}

@@ -145,7 +145,9 @@ export type WithLookup<T extends Doc> = T & {
 /**
  * @public
  */
-export type FindResult<T extends Doc> = WithLookup<T>[]
+export type FindResult<T extends Doc> = WithLookup<T>[] & {
+  total: number
+}
 
 /**
  * @public

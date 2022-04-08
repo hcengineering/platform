@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
-import { boardId } from '@anticrm/board'
+import { boardId, Card, CardAction } from '@anticrm/board'
 import board from '@anticrm/board-resources/src/plugin'
-import type { Ref, Space } from '@anticrm/core'
-import { mergeIds } from '@anticrm/platform'
+import type { Client, Ref, Space } from '@anticrm/core'
+import { mergeIds, Resource } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
+import { ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(boardId, board, {
   component: {
@@ -28,7 +29,36 @@ export default mergeIds(boardId, board, {
     KanbanCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
-    Cards: '' as AnyComponent
+    Cards: '' as AnyComponent,
+    KanbanView: '' as AnyComponent
+  },
+  cardAction: {
+    Members: '' as Ref<CardAction>,
+    Labels: '' as Ref<CardAction>,
+    Checklist: '' as Ref<CardAction>,
+    Dates: '' as Ref<CardAction>,
+    Attachments: '' as Ref<CardAction>,
+    CustomFields: '' as Ref<CardAction>,
+    AddButton: '' as Ref<CardAction>,
+    Move: '' as Ref<CardAction>,
+    Copy: '' as Ref<CardAction>,
+    MakeTemplate: '' as Ref<CardAction>,
+    Watch: '' as Ref<CardAction>,
+    Archive: '' as Ref<CardAction>
+  },
+  cardActionHandler: {
+    Members: '' as Resource<(card: Card, client: Client) => void>,
+    Labels: '' as Resource<(card: Card, client: Client) => void>,
+    Checklist: '' as Resource<(card: Card, client: Client) => void>,
+    Dates: '' as Resource<(card: Card, client: Client) => void>,
+    Attachments: '' as Resource<(card: Card, client: Client) => void>,
+    CustomFields: '' as Resource<(card: Card, client: Client) => void>,
+    AddButton: '' as Resource<(card: Card, client: Client) => void>,
+    Move: '' as Resource<(card: Card, client: Client) => void>,
+    Copy: '' as Resource<(card: Card, client: Client) => void>,
+    MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
+    Watch: '' as Resource<(card: Card, client: Client) => void>,
+    Archive: '' as Resource<(card: Card, client: Client) => void>
   },
   space: {
     DefaultBoard: '' as Ref<Space>
@@ -38,5 +68,8 @@ export default mergeIds(boardId, board, {
   },
   ids: {
     Sequence: '' as Ref<Sequence>
+  },
+  viewlet: {
+    Kanban: '' as Ref<ViewletDescriptor>
   }
 })

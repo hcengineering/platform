@@ -23,6 +23,7 @@
   export let _class: Ref<Class<Doc>>
   export let value: Doc | undefined
   export let attributeType: Type<any>
+  export let props: Record<string, any> = {}
 
   const client = getClient()
   let presenter: AttributeModel | undefined
@@ -44,5 +45,5 @@
 </script>
 
 {#if presenter}  
-  <svelte:component this={presenter.presenter} value={doc} {attributeType} inline />
+  <svelte:component this={presenter.presenter} value={doc} {attributeType} {...props} inline />
 {/if}
