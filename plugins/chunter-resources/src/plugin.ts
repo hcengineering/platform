@@ -22,7 +22,9 @@ import type { AnyComponent } from '@anticrm/ui'
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
-    ChannelView: '' as AnyComponent
+    ChannelHeader: '' as AnyComponent,
+    ChannelView: '' as AnyComponent,
+    EditChannel: '' as AnyComponent,
   },
   actionImpl: {
     SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,

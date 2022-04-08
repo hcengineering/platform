@@ -115,6 +115,10 @@ export function createModel (builder: Builder): void {
     editor: chunter.component.EditChannel
   })
 
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.ChannelHeader
+  })
+
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
     label: chunter.string.Chat,
     icon: view.icon.Table,
