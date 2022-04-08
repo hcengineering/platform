@@ -15,26 +15,17 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
-
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { createEventDispatcher } from 'svelte'
   import { Icon, Label } from '@anticrm/ui'
-  import tracker from '../plugin'
 
   // export let _class: Ref<Class<Space>>
   // export let spaceQuery: DocumentQuery<Space> | undefined
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{
-    icon: Asset
-    label: IntlString
-  }>
+  export let value: Array<{id: number | string, icon: Asset, label: IntlString}>
 
   let search: string = ''
-  let input: HTMLInputElement
-  let objects: Space[] = []
 
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
@@ -48,13 +39,13 @@
 <div class="selectPopup">
   {#if searchable}
     <div class="header">
-      <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+      <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
     </div>
   {/if}
   <div class="scroll">
     <div class="box">
       {#each value.filter(el => el.label.toLowerCase().includes(search.toLowerCase())) as space}
-        <button class="menu-item" on:click={() => { dispatch('close', space) }}>
+        <button class="menu-item" on:click={() => { dispatch('close', space.id) }}>
           <div class="icon"><Icon icon={space.icon} size={'small'} /></div>
           <span class="label"><Label label={space.label} /></span>
         </button>
