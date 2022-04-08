@@ -50,13 +50,6 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
-export interface AttachedCardLabel extends CardLabel, AttachedDoc {
-  attachedTo: Ref<Board>
-}
-
-/**
- * @public
- */
 export interface CardDate extends Doc {
   dueDate?: number
   isChecked?: boolean
