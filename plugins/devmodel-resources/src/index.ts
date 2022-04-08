@@ -13,13 +13,27 @@
 // limitations under the License.
 //
 
+import core, {
+  Class,
+  Client,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  ModelDb,
+  Ref,
+  toFindResult,
+  Tx,
+  TxResult,
+  WithLookup
+} from '@anticrm/core'
+import { Builder } from '@anticrm/model'
 import { getMetadata, IntlString, Resources } from '@anticrm/platform'
+import view from '@anticrm/view'
+import workbench from '@anticrm/workbench'
 import ModelView from './components/ModelView.svelte'
 import QueryView from './components/QueryView.svelte'
-import core, { Class, Client, Doc, DocumentQuery, FindOptions, Ref, FindResult, Hierarchy, ModelDb, Tx, TxResult, WithLookup, Metrics } from '@anticrm/core'
-import { Builder } from '@anticrm/model'
-import workbench from '@anticrm/workbench'
-import view from '@anticrm/view'
 import devmodel from './plugin'
 
 export interface TxWitHResult {
@@ -61,19 +75,53 @@ class ModelClient implements Client {
     return this.client.getModel()
   }
 
-  async findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
     const result = await this.client.findOne(_class, query, options)
-    console.info('devmodel# findOne=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
-    queries.push({ _class, query, options: options as FindOptions<Doc>, result: result !== undefined ? [result] : [], findOne: true })
+    console.info(
+      'devmodel# findOne=>',
+      _class,
+      query,
+      options,
+      'result => ',
+      result,
+      ' =>model',
+      this.client.getModel(),
+      getMetadata(devmodel.metadata.DevModel)
+    )
+    queries.push({
+      _class,
+      query,
+      options: options as FindOptions<Doc>,
+      result: toFindResult(result !== undefined ? [result] : []),
+      findOne: true
+    })
     if (queries.length > 100) {
       queries.shift()
     }
     return result
   }
 
-  async findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const result = await this.client.findAll(_class, query, options)
-    console.info('devmodel# findAll=>', _class, query, options, 'result => ', result, ' =>model', this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
+    console.info(
+      'devmodel# findAll=>',
+      _class,
+      query,
+      options,
+      'result => ',
+      result,
+      ' =>model',
+      this.client.getModel(),
+      getMetadata(devmodel.metadata.DevModel)
+    )
     queries.push({ _class, query, options: options as FindOptions<Doc>, result, findOne: false })
     if (queries.length > 100) {
       queries.shift()
@@ -101,29 +149,33 @@ export async function Hook (client: Client): Promise<Client> {
   // Client is alive here, we could hook with some model extensions special for DevModel plugin.
   const builder = new Builder()
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: 'DevModel' as IntlString,
-    icon: view.icon.Table,
-    hidden: false,
-    navigatorModel: {
-      spaces: [
-      ],
-      specials: [
-        {
-          label: 'Transactions' as IntlString,
-          icon: view.icon.Table,
-          id: 'transactions',
-          component: devmodel.component.ModelView
-        },
-        {
-          label: 'Queries' as IntlString,
-          icon: view.icon.Table,
-          id: 'queries',
-          component: devmodel.component.QueryView
-        }
-      ]
-    }
-  }, devmodel.ids.DevModelApp)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: 'DevModel' as IntlString,
+      icon: view.icon.Table,
+      hidden: false,
+      navigatorModel: {
+        spaces: [],
+        specials: [
+          {
+            label: 'Transactions' as IntlString,
+            icon: view.icon.Table,
+            id: 'transactions',
+            component: devmodel.component.ModelView
+          },
+          {
+            label: 'Queries' as IntlString,
+            icon: view.icon.Table,
+            id: 'queries',
+            component: devmodel.component.QueryView
+          }
+        ]
+      }
+    },
+    devmodel.ids.DevModelApp
+  )
 
   const model = client.getModel()
   for (const tx of builder.getTxes()) {
