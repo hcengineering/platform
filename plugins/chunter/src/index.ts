@@ -24,6 +24,7 @@ import { AnyComponent } from '@anticrm/ui'
  */
 export interface Channel extends Space {
   lastMessage?: Timestamp
+  topic?: string
 }
 
 /**
@@ -103,7 +104,9 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>
   },
   space: {
-    Backlinks: '' as Ref<Space>
+    Backlinks: '' as Ref<Space>,
+    Description: '' as Ref<Space>,
+    Topic: '' as Ref<Space>
   },
   string: {
     EditUpdate: '' as IntlString,

@@ -26,6 +26,7 @@
 
   let name: string = ''
   let description: string = ''
+  let topic: string = ''
   export function canClose(): boolean {
     return name === ''
   }
@@ -35,6 +36,7 @@
     client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
       description,
+      topic,
       private: false,
       archived: false,
       members: [getCurrentAccount()._id]

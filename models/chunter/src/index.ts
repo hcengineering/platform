@@ -34,6 +34,11 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 export class TChannel extends TSpace implements Channel {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
+
+  // TODO: check if this is correct (FullText/Indexed)
+  @Prop(TypeMarkup(), chunter.string.Topic)
+  @Index(IndexKind.FullText)
+  topic?: string
 }
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
@@ -104,6 +109,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.SpaceLastEdit, {
     lastEditField: 'lastMessage'
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectEditor, {
+    editor: chunter.component.EditChannel
   })
 
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
