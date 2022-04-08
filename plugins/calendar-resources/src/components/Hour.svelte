@@ -77,7 +77,4 @@
     justify-content: center;
     background-color: var(--theme-dialog-accent);
   }
-  .title {
-    align-self: flex-start;
-  }
 </style>
