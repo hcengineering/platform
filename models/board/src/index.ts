@@ -70,7 +70,7 @@ export class TCardAction extends TDoc implements CardAction {
   hint?: IntlString
   icon!: Asset
   isInline?: boolean
-  isTransparent?: boolean
+  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
   label!: IntlString
   position!: number
   type!: string
@@ -287,7 +287,7 @@ export function createModel (builder: Builder): void {
     {
       icon: board.icon.Card,
       isInline: false,
-      isTransparent: true,
+      kind: 'transparent',
       label: board.string.AddButton,
       position: 70,
       type: board.cardActionType.Automation,

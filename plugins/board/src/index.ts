@@ -50,19 +50,14 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
-export interface CardDate extends Doc {
-  dueDate?: number
-  isChecked?: boolean
-  startDate?: number
-}
-
-/**
- * @public
- */
 export interface Card extends Task {
   title: string
 
-  date?: Ref<CardDate>
+  date?: {
+    dueDate?: number
+    isChecked?: boolean
+    startDate?: number
+  }
   description: Markup
 
   isArchived?: boolean
@@ -86,7 +81,7 @@ export interface CardAction extends Doc {
   hint?: IntlString
   icon: Asset
   isInline?: boolean
-  isTransparent?: boolean
+  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
   label: IntlString
   position: number
   type: string
@@ -117,7 +112,6 @@ const boards = plugin(boardId, {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
     CardAction: '' as Ref<Class<CardAction>>,
-    CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {

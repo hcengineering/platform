@@ -77,7 +77,7 @@
             <Button
               icon={action.icon}
               label={action.label}
-              kind={action.isTransparent ? 'transparent' : 'no-border'}
+              kind={action.kind ?? 'no-border'}
               justify="left"
               on:click={async () => {
                 if (action.handler) {
