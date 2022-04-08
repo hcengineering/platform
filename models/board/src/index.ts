@@ -17,7 +17,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'

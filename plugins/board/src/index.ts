@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Client, Doc, Markup, Ref } from '@anticrm/core'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -50,14 +50,19 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
+export interface CardDate {
+  dueDate?: number
+  isChecked?: boolean
+  startDate?: number
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
-  date?: {
-    dueDate?: number
-    isChecked?: boolean
-    startDate?: number
-  }
+  date?: CardDate
   description: Markup
 
   isArchived?: boolean
