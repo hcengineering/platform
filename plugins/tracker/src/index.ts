@@ -149,6 +149,10 @@ export default plugin(trackerId, {
     NewIssue: '' as Asset,
     Magnifier: '' as Asset,
     Home: '' as Asset,
+    Labels: '' as Asset,
+    MoreActions: '' as Asset,
+    DueDate: '' as Asset,
+    Parent: '' as Asset,
 
     StatusBacklog: '' as Asset,
     StatusTodo: '' as Asset,
