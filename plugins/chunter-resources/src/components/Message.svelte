@@ -65,7 +65,7 @@
       await client.removeDoc(chunter.class.Message, space, message._id)
       const loc = getCurrentLocation()
 
-      if (loc.path.length > 3) {
+      if (loc.path[3] === message._id) {
         loc.path.length = 3
         navigate(loc)
       }
