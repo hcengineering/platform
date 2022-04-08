@@ -2,6 +2,13 @@ import { Card } from '@anticrm/board'
 import { EmployeeAccount } from '@anticrm/contact'
 import { TxOperations as Client, getCurrentAccount } from '@anticrm/core'
 
+export function updateCard (client: Client, card: Card, field: string, value: any): void {
+  if (!card) {
+    return
+  }
+  client.update(card, { [field]: value })
+}
+
 export function isArchived (card: Card): boolean {
   return !!card.isArchived
 }
@@ -19,11 +26,8 @@ export function canAddCurrentUser (card: Card): boolean {
   return !card.members.includes(employee)
 }
 
-export function updateCard (client: Client, card: Card, field: string, value: any): void {
-  if (!card) {
-    return
-  }
-  client.update(card, { [field]: value })
+export function hasCover (card: Card): boolean {
+  return !!card.coverColor || !!card.coverImage
 }
 
 export function addCurrentUser (card: Card, client: Client): void {
