@@ -50,12 +50,33 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
+export interface AttachedCardLabel extends CardLabel, AttachedDoc {
+  attachedTo: Ref<Board>
+}
+
+/**
+ * @public
+ */
+export interface CardDate extends Doc {
+  dueDate?: number
+  isChecked?: boolean
+  startDate?: number
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
+  date?: Ref<CardDate>
   description: Markup
 
-  members: Ref<Employee>[]
+  isArchived?: boolean
+
+  members?: Ref<Employee>[]
+
+  labels?: Ref<CardLabel>[]
 
   location: string
 
@@ -102,7 +123,9 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardAction: '' as Ref<Class<CardAction>>
+    CardAction: '' as Ref<Class<CardAction>>,
+    CardDate: '' as Ref<Class<CardDate>>,
+    CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {
     Board: '' as Asset,
