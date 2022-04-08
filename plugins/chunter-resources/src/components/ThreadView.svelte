@@ -174,7 +174,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment message={comment} {employees} />
+      <ThreadComment space={currentSpace} message={comment} {employees} />
     {/each}
   {/if}
 </div>

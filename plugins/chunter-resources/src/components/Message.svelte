@@ -21,7 +21,7 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH, Menu, showPopup, getCurrentLocation, navigate } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -60,13 +60,17 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
+  async function deleteMessage () {
+    if (space) {
+      await client.removeDoc(chunter.class.Message, space, message._id)
+      const loc = getCurrentLocation()
 
-
-async function deleteMessage() {
-  if (space) {
-    await client.removeDoc(chunter.class.Message, space, message._id)  
-  }  
-}
+      if (loc.path.length > 3) {
+        loc.path.length = 3
+        navigate(loc)
+      }
+    }
+  }
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
