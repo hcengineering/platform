@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2022 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachments } from '@anticrm/attachment-resources'
   import { Channel } from '@anticrm/chunter'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
@@ -56,12 +55,12 @@
 
   function onTopicChange (ev: Event) {
     const newTopic = (ev.target as HTMLInputElement).value
-    client.updateDoc(_class, chunter.space.Topic, channel._id, { topic: newTopic })
+    client.update(channel, { topic: newTopic })
   }
 
   function onDescriptionChange (ev: Event) {
     const newDescription = (ev.target as HTMLInputElement).value
-    client.updateDoc(_class, chunter.space.Description, channel._id, { description: newDescription })
+    client.update(channel, { description: newDescription })
   }
 </script>
 
@@ -133,7 +132,7 @@
             focus
             on:change={onDescriptionChange}
           />
-          <Attachments objectId={channel._id} _class={channel._class} space={channel.space} />
+          <!-- TODO: implement Attachments here -->
         </div>
       {/if}
     {:else}

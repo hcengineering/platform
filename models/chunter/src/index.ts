@@ -18,7 +18,7 @@ import type { Backlink, Channel, ChunterMessage, Comment, Message, ThreadMessage
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeTimestamp, UX } from '@anticrm/model'
+import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -35,8 +35,7 @@ export class TChannel extends TSpace implements Channel {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
 
-  // TODO: check if this is correct (FullText/Indexed)
-  @Prop(TypeMarkup(), chunter.string.Topic)
+  @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
   topic?: string
 }

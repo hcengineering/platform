@@ -104,9 +104,7 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>
   },
   space: {
-    Backlinks: '' as Ref<Space>,
-    Description: '' as Ref<Space>,
-    Topic: '' as Ref<Space>
+    Backlinks: '' as Ref<Space>
   },
   string: {
     EditUpdate: '' as IntlString,
