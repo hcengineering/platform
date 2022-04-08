@@ -27,11 +27,7 @@
     "Unarchive": "Unarchive",
     "MarkAsDone": "Mark as done",
     "MarkAsUndone": "Mark as undone",
-    "Kanban": "Kanban",
-    "NewList": "Add another list",
-    "AddList": "Add list",
-    "NewListPlaceholder": "Enter list title...",
-    
+    "Kanban": "Kanban",    
     "ApplicationLabelTask": "Tasks",
     "Projects": "Projects",
     "CreateProject": "New Project",

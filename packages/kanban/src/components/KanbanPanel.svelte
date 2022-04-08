@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,29 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { ScrollBox } from '@anticrm/ui'
 
   export let label: string
   export let color: string
-  // export let counter: number
-  // export let addAction: () => void | undefined
+  export let customHeader: boolean
 </script>
 
 <div class="panel-container step-lr75">
-  <div class="header">
-    <div class="bar" style="background-color: {color}" />
-    <div class="flex-between label">
-      <div>
-        <span class="lines-limit-2">{label}</span>
-        <!-- <span>({counter})</span> -->
+  {#if customHeader}
+    <slot name="header" />
+  {:else}
+    <div class="header">
+      <div class="bar" style="background-color: {color}" />
+      <div class="flex-between label">
+        <div>
+          <span class="lines-limit-2">{label}</span>
+        </div>
       </div>
-      <!-- <div class="tool ml-3" on:click|preventDefault={addAction}>
-        <IconAdd size={'small'} />
-      </div> -->
     </div>
-  </div>
+  {/if}
   <div class="scroll" on:dragover on:drop>
     <ScrollBox vertical>
       <slot />
@@ -51,7 +49,7 @@
     height: 100%;
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 
     .header {
       display: flex;
@@ -61,28 +59,18 @@
       user-select: none;
 
       .bar {
-        height: .375rem;
-        border-radius: .25rem;
+        height: 0.375rem;
+        border-radius: 0.25rem;
       }
       .label {
-        padding: 0 .5rem 0 1rem;
+        padding: 0 0.5rem 0 1rem;
         height: 100%;
         font-weight: 500;
         color: var(--theme-caption-color);
-        // span {
-        //   font-weight: 400;
-        //   color: var(--theme-content-dark-color);
-        // }
       }
-      // .tool {
-      //   opacity: .4;
-      //   cursor: pointer;
-      //   &:hover { opacity: 1; }
-      // }
     }
 
-    .scroll {
-      margin: 0 .75rem .75rem;
+    .scroll {      
       min-height: 0;
       height: 100%;
     }

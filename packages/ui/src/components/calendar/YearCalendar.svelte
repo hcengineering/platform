@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script type="ts">
-import { dataset_dev } from 'svelte/internal';
-
   import MonthCalendar from './MonthCalendar.svelte'
 
   /**
@@ -36,6 +34,7 @@ import { dataset_dev } from 'svelte/internal';
     date.setMonth(m)
     return date
   }
+  /* eslint-disable no-undef */
 </script>
 
 <div class="year-erp-calendar">
@@ -43,7 +42,6 @@ import { dataset_dev } from 'svelte/internal';
     <div class="antiComponentBox mt-2 mb-2 ml-2 mr-2 flex-grow" style={`min-width: ${minWidth};`}>
       {getMonthName(month(value, m))}
       <MonthCalendar {cellHeight} weekFormat="narrow" bind:value currentDate={month(currentDate, m)} {mondayStart} on:change>
-        <!----> eslint-disable-next-line no-undef -->
         <svelte:fragment slot="cell" let:date={date}>
           <slot name="cell" date={date} />
         </svelte:fragment>

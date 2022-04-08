@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { IconAdd, Button, EditBox, ActionIcon, IconClose } from '@anticrm/ui'
-    import { createEventDispatcher } from 'svelte';
-    import tracker from '../../plugin';
+    import { ActionIcon, Button, EditBox, IconAdd, IconClose } from '@anticrm/ui'
+    import { createEventDispatcher } from 'svelte'
+    import board from '../plugin'
 
     const dispatch = createEventDispatcher()
 
@@ -9,10 +9,10 @@
     let newPanelTitle = ''
 
     async function onAdd () {
-        if (!newPanelTitle) return;
-        dispatch('add', newPanelTitle)
-        newPanelTitle = ''
-        isAdding = false
+      if (!newPanelTitle) return
+      dispatch('add', newPanelTitle)
+      newPanelTitle = ''
+      isAdding = false
     }
 </script>
 
@@ -21,13 +21,13 @@
         <EditBox
             bind:value={newPanelTitle}
             maxWidth={'19rem'}
-            placeholder={tracker.string.NewListPlaceholder}
+            placeholder={board.string.NewListPlaceholder}
             focus={true}
         />
         <div class="list-add-controls">
             <Button
                 icon={IconAdd}
-                label={tracker.string.AddList}
+                label={board.string.AddList}
                 justify={'left'}
                 on:click={() => { onAdd() }}
             />
@@ -40,7 +40,7 @@
     {:else}
         <Button
         icon={IconAdd}
-        label={tracker.string.NewList}
+        label={board.string.NewList}
         justify={'left'}
         on:click={() => { isAdding = true }}
         />
