@@ -63,6 +63,7 @@
   box-sizing: border-box;
   scrollbar-color: var(--theme-menu-color) var(--theme-bg-color);
   scrollbar-width: thin;
+  --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
 }
 
 ::-webkit-scrollbar {
@@ -99,7 +100,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+  font-family: var(--font-family);
   font-weight: 400;
   font-size: .875rem;
   color: var(--content-color);

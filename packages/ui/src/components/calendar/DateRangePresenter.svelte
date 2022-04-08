@@ -470,5 +470,6 @@
       height: .75rem;
       background-color: var(--button-border-color);
     }
+    .separator { margin: 0 .1rem; }
   }
 </style>

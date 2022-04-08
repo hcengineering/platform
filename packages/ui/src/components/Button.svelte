@@ -22,7 +22,7 @@
 
   export let label: IntlString | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous' = 'secondary'
-  export let size: 'small' | 'medium' | 'large' | 'large' = 'medium'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false

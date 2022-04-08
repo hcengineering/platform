@@ -13,189 +13,155 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import ui from '../..'
-  import type { TCellStyle, ICell } from './internal/DateUtils'
+  import { createEventDispatcher } from 'svelte'
+  import ui, { Button, ActionIcon, IconClose } from '../..'
+  import { TCellStyle, ICell } from './internal/DateUtils'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
+  import Month from './Month.svelte'
 
-  export let value: number | null | undefined
+  export let currentDate: Date | null
   export let mondayStart: boolean = true
-  export let editable: boolean = false
 
   const dispatch = createEventDispatcher()
-  let currentDate: Date = new Date(value ?? Date.now())
-  let days: Array<ICell> = []
-  let scrollDiv: HTMLElement
 
-  $: if (value) currentDate = new Date(value)
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
-
-  const getNow = (): Date => {
-    const tempDate = new Date(Date.now())
-    return new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate())
+  const changeMonth = (date: Date, up: boolean): Date => {
+    return new Date(date.getFullYear(), date.getMonth() + (up ? 1 : -1), date.getDate())
   }
-  const today: Date = getNow()
-  let todayString: string
-  translate(ui.string.Today, {}).then(res => todayString = res)
+  const today: Date = new Date(Date.now())
+  let viewDate: Date = (currentDate != undefined) ? changeMonth(currentDate, true) : changeMonth(today, true)
 
-
-  const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
-    return 'not-selected'
-  }
-  
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(currentDate); i++) {
-      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
-      days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate)
-      })
+  const onChange = (ev: Event): void => {
+    console.log('!!! onChange - ev', ev)
+    const el: HTMLInputElement = ev.target as HTMLInputElement
+    if (currentDate != undefined) {
+      viewDate = changeMonth(currentDate ?? today, true)
     }
-    days = days
   }
-  $: if (currentDate) renderCellStyles()
-
-  const scrolling = (ev: Event): void => {
-    // console.log('!!! Scrolling:', ev)
+  const updateDate = (result: any): void => {
+    if (result.detail != undefined) {
+      currentDate = result.detail
+      currentDate = currentDate
+    }
   }
-
-  afterUpdate(() => {
-    if (value) currentDate = new Date(value)
-  })
-  onMount(() => {
-    if (scrollDiv) scrollDiv.addEventListener('wheel', scrolling)
-  })
-  onDestroy(() => {
-    if (scrollDiv) scrollDiv.removeEventListener('wheel', scrolling)
-  })
 </script>
 
-<div bind:this={scrollDiv} class="convert-scroller">
-  <div class="popup">
-    <div class="flex-center monthYear">
-      {#if currentDate}
-        {getMonthName(currentDate)}
-        <span class="ml-1">{currentDate.getFullYear()}</span>
-      {/if}
+<div class="date-popup-container">
+  <div class="header">
+    <span class="fs-title overflow-label">Add due date</span>
+    <ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} />
+  </div>
+  <div class="content">
+    <div class="label">
+      <span class="bold">Due Date</span><span class="divider">-</span>Issue needs to be completed by this date
     </div>
-
-    {#if currentDate}
-      <div class="calendar" class:no-editable={!editable}>
-        {#each [...Array(7).keys()] as dayOfWeek}
-          <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
-        {/each}
-        {#each days as day, i}
-          <div
-            class="day {day.style}"
-            style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
-            on:click|stopPropagation={() => {
-              if (currentDate) currentDate.setDate(i + 1)
-              value = currentDate.getTime()
-              dispatch('update', value)
-            }}
-          >
-            {i + 1}
-          </div>
-        {/each}
-      </div>
-    {/if}
+    <input class="datetime" autocomplete="off" type="datetime-local" value={currentDate} on:change={onChange} />
+    <div class="month-group">
+      <Month
+        bind:currentDate={currentDate}
+        viewDate={changeMonth(viewDate, false)}
+        {mondayStart}
+        viewUpdate={false}
+        hideNavigator
+        on:update={updateDate}
+      />
+      <Month
+        bind:currentDate={currentDate}
+        bind:viewDate
+        {mondayStart}
+        viewUpdate={false}
+        on:update={updateDate}
+      />
+    </div>
+  </div>
+  <div class="footer">
+    <Button kind={'primary'} label={ui.string.Ok} size={'x-large'} width={'100%'} />
   </div>
 </div>
 
 <style lang="scss">
-  .convert-scroller {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    min-width: 0;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: .5rem;
-    user-select: none;
-
-    overflow-x: scroll;
-    overflow-y: scroll;
-    // width: calc(100% - 1px);
-    // max-height: calc(100% - 1px);
-    // mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem, rgba(0, 0, 0, 1) calc(100% - 2rem), rgba(0, 0, 0, 0) 100%);
-    &::-webkit-scrollbar:vertical { width: 0; }
-    &::-webkit-scrollbar:horizontal { height: 0; }
-  }
-
-  .popup {
+  .date-popup-container {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    width: 100%;
-    height: 100%;
-    // width: calc(100% + 1px);
-    // height: calc(100% + 1px);
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+    width: max-content;
+    height: max-content;
     color: var(--theme-caption-color);
+    background: var(--board-card-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: .5rem;
-    // pointer-events: none;
-  }
+    box-shadow: var(--card-shadow);
 
-  .monthYear {
-    margin: 0 1rem;
-    // line-height: 150%;
-    color: var(--theme-content-accent-color);
-    white-space: nowrap;
-  }
-
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: .125rem;
-
-    .caption, .day {
+    .header {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      width: 1.75rem;
-      height: 1.75rem;
-      color: var(--theme-content-dark-color);
+      padding: 1rem 1.5rem 1rem 2rem;
+      border-bottom: 1px solid var(--divider-color);
     }
-    .caption {
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-    .day {
-      background-color: rgba(var(--theme-caption-color), .05);
-      border: 1px solid transparent;
-      border-radius: .25rem;
-      cursor: pointer;
 
-      &.selected {
-        background-color: var(--primary-button-enabled);
-        border-color: var(--primary-button-focused-border);
-        color: var(--primary-button-color);
-      }
-      &.today {
-        position: relative;
-        border-color: var(--theme-content-color);
-        font-weight: 500;
-        color: var(--theme-caption-color);
+    .content {
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 2rem;
 
-        &::after {
-          position: absolute;
-          content: attr(data-today);
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          font-weight: 600;
-          font-size: .35rem;
-          text-transform: uppercase;
-          color: var(--theme-content-dark-color);
+      .label {
+        padding-left: 2px;
+        margin-bottom: .25rem;
+        font-size: .8125rem;
+        color: var(--content-color);
+
+        .bold {
+          font-weight: 500;
+          color: var(--accent-color);
+        }
+        .divider {
+          margin: 0 .5rem;
+          line-height: 1.4375rem;
+          color: var(--dark-color);
         }
       }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
+
+      .month-group {
+        display: flex;
+        flex-wrap: nowrap;
+        margin: .5rem -.5rem 0;
+      }
     }
 
-    // &.no-editable { pointer-events: none; }
+    .footer {
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--divider-color);
+    }
+  }
+
+  .datetime {
+    margin: 0;
+    padding: .75rem;
+    height: 3rem;
+    font-family: inherit;
+    font-size: .8125rem;
+    color: var(--content-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: .25rem;
+    background-clip: padding-box;
+    text-transform: uppercase;
+    appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button,
+    &::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    &::-webkit-input-placeholder {  visibility: hidden !important; }
+    &:hover { border-color: var(--button-border-hover); }
+    &:focus {
+      color: var(--caption-color);
+      border-color: var(--primary-edit-border-color);
+    }
   }
 </style>
