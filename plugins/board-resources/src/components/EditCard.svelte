@@ -23,6 +23,7 @@
   import { Button, EditBox, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
+  import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardActivity from './editor/CardActivity.svelte'
   import CardFields from './editor/CardFields.svelte'
@@ -49,7 +50,7 @@
 
   function change (field: string, value: any) {
     if (object) {
-      client.update(object, { [field]: value })
+      updateCard(client, object, field, value)
     }
   }
 
