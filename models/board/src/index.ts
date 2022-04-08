@@ -15,17 +15,18 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card } from '@anticrm/board'
+import type { Board, Card, CardAction } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core from '@anticrm/model-core'
+import core, { TDoc } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
+import { Asset, IntlString, Resource } from '@anticrm/platform'
 import type {} from '@anticrm/view'
 import board from './plugin'
 
@@ -64,8 +65,21 @@ export class TCard extends TTask implements Card {
   members!: Ref<Employee>[]
 }
 
+@Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)
+export class TCardAction extends TDoc implements CardAction {
+  hint?: IntlString
+  icon!: Asset
+  isInline?: boolean
+  isTransparent?: boolean
+  label!: IntlString
+  position!: number
+  type!: string
+  handler?: Resource<(card: Card, client: Client) => void>
+  supported?: Resource<(card: Card, client: Client) => boolean>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard)
+  builder.createModel(TBoard, TCard, TCardAction)
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -186,6 +200,165 @@ export function createModel (builder: Builder): void {
       component: board.component.KanbanView
     },
     board.viewlet.Kanban
+  )
+
+  // card actions
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Members,
+      position: 10,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.Members
+    },
+    board.cardAction.Members
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Labels,
+      position: 20,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.Labels
+    },
+    board.cardAction.Labels
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      label: board.string.Checklist,
+      position: 30,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.Checklist
+    },
+    board.cardAction.Checklist
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Dates,
+      position: 40,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.Dates
+    },
+    board.cardAction.Dates
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      label: board.string.Attachments,
+      position: 50,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.Attachments
+    },
+    board.cardAction.Attachments
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      label: board.string.CustomFields,
+      position: 60,
+      type: board.cardActionType.AddToCard,
+      handler: board.cardActionHandler.CustomFields
+    },
+    board.cardAction.CustomFields
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      isTransparent: true,
+      label: board.string.AddButton,
+      position: 70,
+      type: board.cardActionType.Automation,
+      handler: board.cardActionHandler.AddButton
+    },
+    board.cardAction.AddButton
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Move,
+      position: 80,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.Move
+    },
+    board.cardAction.Move
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Copy,
+      position: 90,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.Copy
+    },
+    board.cardAction.Copy
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      label: board.string.MakeTemplate,
+      position: 100,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.MakeTemplate
+    },
+    board.cardAction.MakeTemplate
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: false,
+      label: board.string.Watch,
+      position: 110,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.Watch
+    },
+    board.cardAction.Watch
+  )
+  builder.createDoc(
+    board.class.CardAction,
+    core.space.Model,
+    {
+      icon: board.icon.Card,
+      isInline: true,
+      label: board.string.Archive,
+      position: 120,
+      type: board.cardActionType.Action,
+      handler: board.cardActionHandler.Archive
+    },
+    board.cardAction.Archive
   )
 }
 
