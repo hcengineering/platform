@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { daysInMonth, getMonthName } from './internal/DateUtils'
-  import ui, { Label, Icon, IconClose, showPopup } from '../..'
+  import { createEventDispatcher } from 'svelte'
+  import { getMonthName } from './internal/DateUtils'
+  import ui, { Label, Icon, showPopup } from '../..'
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import DatePopup from './DatePopup.svelte'
@@ -33,30 +33,34 @@
 
   const today: Date = new Date(Date.now())
   let currentDate: Date | null = null
-  if (value != undefined) {
-    currentDate = new Date(value)
-    currentDate.setSeconds(0, 0)
-  }
-
+  if (value != undefined) currentDate = new Date(value)
   let opened: boolean = false
-  let datePresenter: HTMLElement
+
+  const onChange = (result: Date | null): void => {
+    if (result === null) {
+      currentDate = null
+      value = null
+    } else {
+      currentDate = result
+      value = currentDate.getTime()
+    }
+    value = value
+    dispatch('change', value)
+    opened = false
+  }
 </script>
 
 <button
-  bind:this={datePresenter}
   class="datetime-button"
   class:editable
   on:click={() => {
     if (editable && !opened) {
       opened = true
-      showPopup(DatePopup, { currentDate, mondayStart }, undefined, (result) => {
-        if (result !== undefined) console.log('!!! Closing popup - result:', result)
-        console.log('!!! Popup Closed !!!')
-        opened = false
-      }, (result) => {
-        if (result !== undefined) console.log('!!! Updating popup - result:', result)
-        console.log('!!! Popup Updated !!!')
-      })
+      showPopup(DatePopup,
+                { currentDate, mondayStart, withTime },
+                undefined,
+                () => { opened = false },
+                (result) => { if (result !== undefined) onChange(result) })
     }
   }}
 >
@@ -91,7 +95,6 @@
     flex-shrink: 0;
     padding: 0 .5rem;
     font-weight: 400;
-    font-size: .8125rem;
     min-width: 1.5rem;
     width: auto;
     height: 1.5rem;

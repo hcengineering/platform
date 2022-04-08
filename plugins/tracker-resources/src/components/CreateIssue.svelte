@@ -19,7 +19,7 @@
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
@@ -92,6 +92,7 @@
     { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
     { icon: tracker.icon.Parent, label: tracker.string.Parent }
   ]
+  let issueDate: number | null = null
 </script>
 
 <!-- canSave: object.title.length > 0 && _space != null -->
@@ -150,6 +151,7 @@
       size="small"
       kind="no-border"
     />
+    <DatePresenter value={issueDate} editable />
     <Button
       icon={tracker.icon.MoreActions}
       width="min-content"
@@ -159,7 +161,5 @@
         showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
       }}
     />
-    <!-- <DateRangePresenter value={startDate} labelNull={ui.string.StartDate} editable />
-    <DateRangePresenter value={targetDate} labelNull={ui.string.TargetDate} editable /> -->
   </div>
 </Card>

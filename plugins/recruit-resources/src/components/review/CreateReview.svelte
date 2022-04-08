@@ -22,7 +22,7 @@
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { DateRangePicker, DatePicker, Grid, Status as StatusControl, EditBox, Row } from '@anticrm/ui'
+  import { DateRangePicker, Grid, Status as StatusControl, EditBox, Row } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
@@ -172,7 +172,7 @@
     {/if}
     <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
     <OrganizationSelector bind:value={company} label={recruit.string.Company} />
-    <DatePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
+    <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
     <DateRangePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
     <Row>
       <StyledTextBox

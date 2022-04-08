@@ -148,6 +148,7 @@
         .btn-icon { color: var(--caption-color); }
       }
       &:disabled {
+        color: var(--content-color);
         background-color: #30323655;
         cursor: default;
         &:hover {

@@ -17,7 +17,6 @@
   import type { IntlString } from '@anticrm/platform'
   import ui, { Label } from '../..'
   import DateRangePresenter from './DateRangePresenter.svelte'
-  import DateRangePopup from './DateRangePopup.svelte'
 
   export let title: IntlString
   export let value: number | null | undefined = null
