@@ -41,7 +41,7 @@
         {issuesAmount}
       </div>
     </div>
-    <div class="actionAdd">
+    <div class="mr-3">
       <ActionIcon label={tracker.string.AddIssue} icon={IconAdd} size={'small'} />
     </div>
   </div>
@@ -91,10 +91,6 @@
   .title {
     display: flex;
     align-items: center;
-  }
-
-  .actionAdd {
-    padding-right: 2rem;
   }
 
   .icon {

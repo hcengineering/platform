@@ -20,7 +20,6 @@
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { buildModel, LoadingProps, Menu } from '@anticrm/view-resources'
-  import ControlCheckBox from './ControlCheckBox.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -36,7 +35,6 @@
   const DOCS_MAX_AMOUNT = 200
   const liveQuery = createQuery()
   const sort = { modifiedOn: SortingOrder.Descending }
-  const checkBoxClass = 'antiTable-cells__checkCell'
 
   let selectedIssueIds = new Set<Ref<Doc>>()
   let selectedRowIndex: number | undefined
@@ -77,8 +75,11 @@
     })
   }
 
-  const handleIssueSelected = (id: Ref<Doc>, isSelected: boolean) => {
-    if (isSelected) {
+  const handleIssueSelected = (id: Ref<Doc>, event: Event) => {
+    const eventTarget = event.target as HTMLInputElement
+    const isChecked = eventTarget.checked
+
+    if (isChecked) {
       selectedIssueIds.add(id)
     } else {
       selectedIssueIds.delete(id)
@@ -104,16 +105,22 @@
   <div class="listRoot">
     {#if docObjects}
       {#each docObjects as docObject, rowIndex (docObject._id)}
-        <div class="listGrid" class:mListGridChecked={selectedIssueIds.has(docObject._id)}>
+        <div
+          class="listGrid"
+          class:mListGridChecked={selectedIssueIds.has(docObject._id)}
+          class:mListGridFixed={rowIndex === selectedRowIndex}
+        >
           {#each attributeModels as attributeModel, attributeModelIndex}
             {#if attributeModelIndex === 0}
               <div class="gridElement">
-                <ControlCheckBox
-                  id={docObject._id}
-                  controlCheckBoxClass={checkBoxClass}
-                  isChecked={selectedIssueIds.has(docObject._id)}
-                  onSelected={handleIssueSelected}
-                />
+                <div class="antiTable-cells__checkCell">
+                  <CheckBox
+                    checked={selectedIssueIds.has(docObject._id)}
+                    on:change={(event) => {
+                      handleIssueSelected(docObject._id, event)
+                    }}
+                  />
+                </div>
                 <div class="issuePresenter">
                   <svelte:component
                     this={attributeModel.presenter}
@@ -143,16 +150,14 @@
       {/each}
     {:else if loadingProps !== undefined}
       {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-        <div class="listGrid">
+        <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
           {#each attributeModels as _, attributeModelIndex}
             {#if attributeModelIndex === 0}
               <div class="gridElement">
-                <div class={checkBoxClass}>
-                  <CheckBox checked={false} />
+                <CheckBox checked={false} />
+                <div class="ml-4">
+                  <Spinner size="small" />
                 </div>
-              </div>
-              <div>
-                <Spinner size="small" />
               </div>
             {/if}
           {/each}
@@ -180,6 +185,16 @@
 
     &.mListGridChecked {
       background-color: var(--theme-table-bg-hover);
+    }
+
+    &.mListGridFixed {
+      .eIssuePresenterContextMenu {
+        visibility: visible;
+      }
+    }
+
+    &.mListGridIsLoading {
+      grid-template-columns: auto;
     }
 
     &:hover {
