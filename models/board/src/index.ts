@@ -28,7 +28,6 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import type {} from '@anticrm/view'
 import board from './plugin'
 
 @Model(board.class.Board, task.class.SpaceWithStates)
