@@ -63,7 +63,7 @@
             {/if}
             <svelte:component
               this={attribute.presenter}
-              value={getObjectValue(attribute.key, object)}
+              value={getObjectValue(attribute.key, object) ?? ''}
               {...attribute.props}
             />
             <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>

@@ -124,7 +124,7 @@
                 <div class="issuePresenter">
                   <svelte:component
                     this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject)}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
                     {...attributeModel.props}
                   />
                   <div
@@ -140,7 +140,7 @@
               <div class="gridElement">
                 <svelte:component
                   this={attributeModel.presenter}
-                  value={getObjectValue(attributeModel.key, docObject)}
+                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
                   {...attributeModel.props}
                 />
               </div>

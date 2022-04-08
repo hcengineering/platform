@@ -206,7 +206,7 @@
                   <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
-                      value={getObjectValue(attribute.key, object)}
+                      value={getObjectValue(attribute.key, object) ?? ''}
                       {...attribute.props}
                     />
                     <div id='context-menu' class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
@@ -218,7 +218,7 @@
                 <td>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getObjectValue(attribute.key, object)}
+                    value={getObjectValue(attribute.key, object) ?? ''}
                     {...attribute.props}
                   />
                 </td>
