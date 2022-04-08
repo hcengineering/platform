@@ -110,8 +110,8 @@
     />
     <UserBox
       _class={contact.class.Contact}
-      title={lead.string.Customer}
-      caption={lead.string.SelectCustomer}
+      label={lead.string.Customer}
+      placeholder={lead.string.SelectCustomer}
       bind:value={customer}
     />
   </Grid>

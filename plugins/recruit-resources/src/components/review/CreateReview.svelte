@@ -163,8 +163,8 @@
     {#if !preserveCandidate}
       <UserBox
         _class={contact.class.Person}
-        title={recruit.string.Candidate}
-        caption={recruit.string.Candidates}
+        label={recruit.string.Candidate}
+        placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
       />
     {:else}

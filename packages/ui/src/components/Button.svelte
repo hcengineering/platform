@@ -21,7 +21,7 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous' = 'secondary'
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
@@ -33,6 +33,8 @@
 
   export let input: HTMLButtonElement | undefined = undefined
   
+  $: iconOnly = label === undefined && $$slots.content === undefined
+
   onMount(() => {
     if (focus && input) {
       input.focus()
@@ -44,15 +46,15 @@
 <button
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
-  class:only-icon={label === undefined}
+  class:only-icon={iconOnly}
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   on:click
 >
   {#if icon && !loading}
     <div class="btn-icon"
-      class:mr-1={label && kind === 'no-border'}
-      class:mr-2={label && kind !== 'no-border'}
+      class:mr-1={!iconOnly && kind === 'no-border'}
+      class:mr-2={!iconOnly && kind !== 'no-border'}
       class:resetIconSize
     >
       <Icon {icon} size={'small'}/>
@@ -63,6 +65,8 @@
   {:else}
     {#if label}
       <Label {label} />
+    {:else if $$slots.content}
+      <slot name="content" />
     {/if}
   {/if}
 </button>
@@ -158,6 +162,15 @@
       }
     }
     &.transparent:hover { background-color: var(--button-bg-hover); }
+    &.link {
+      padding: 0 .875rem;
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
+        .btn-icon { color: var(--content-color); }
+      }
+    }
     &.primary {
       padding: 0 1rem;
       color: var(--white-color);

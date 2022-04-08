@@ -74,6 +74,14 @@
       text-overflow: ellipsis;
       overflow: hidden;
     }
+    .check {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-left: 1rem;
+      width: 1rem;
+      height: 2rem;
+    }
     &:hover { background-color: var(--popup-bg-hover); }
   }
 }
@@ -148,7 +156,7 @@
     margin-left: 1rem;
     width: 1rem;
     height: 1rem;
-  }   
+  }
 
   &-withHeader {
     .ap-header {

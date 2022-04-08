@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup } from '@anticrm/ui'
   import { issueStatuses } from '../utils'
   import tracker from '../plugin'
-  import SelectPopup from './SelectPopup.svelte'
 
   export let status: IssueStatus
 

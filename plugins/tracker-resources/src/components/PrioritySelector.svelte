@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@anticrm/tracker'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup } from '@anticrm/ui'
   import { issuePriorities } from '../utils'
   import tracker from '../plugin'
-  import SelectPopup from './SelectPopup.svelte'
 
   export let priority: IssuePriority
 

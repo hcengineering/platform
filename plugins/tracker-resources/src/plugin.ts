@@ -79,7 +79,7 @@ export default mergeIds(trackerId, tracker, {
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
-    TaskUnAssign: '' as IntlString,
+    Unassigned: '' as IntlString,
     AddIssueTooltip: '' as IntlString
   },
   component: {

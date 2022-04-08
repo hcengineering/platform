@@ -16,7 +16,7 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label } from '@anticrm/ui'
+  import { Icon, Label } from '..'
 
   // export let _class: Ref<Class<Space>>
   // export let spaceQuery: DocumentQuery<Space> | undefined
