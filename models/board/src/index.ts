@@ -15,10 +15,10 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction } from '@anticrm/board'
+import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Model, Prop, TypeBoolean, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -27,6 +27,7 @@ import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
+import type { AnyComponent } from '@anticrm/ui'
 import type {} from '@anticrm/view'
 import board from './plugin'
 
@@ -44,13 +45,21 @@ export class TCard extends TTask implements Card {
   @Index(IndexKind.FullText)
   title!: string
 
+  @Prop(TypeBoolean(), board.string.IsArchived)
+  isArchived?: boolean
+
+  date?: CardDate
+
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)
   description!: string
 
+  @Prop(Collection(board.class.CardLabel), board.string.Labels)
+  labels?: Ref<CardLabel>[]
+
   @Prop(TypeString(), board.string.Location)
   @Index(IndexKind.FullText)
-  location!: string
+  location?: string
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
@@ -62,11 +71,12 @@ export class TCard extends TTask implements Card {
   declare assignee: Ref<Employee> | null
 
   @Prop(Collection(contact.class.Employee), board.string.Members)
-  members!: Ref<Employee>[]
+  members?: Ref<Employee>[]
 }
 
 @Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)
 export class TCardAction extends TDoc implements CardAction {
+  component?: AnyComponent
   hint?: IntlString
   icon!: Asset
   isInline?: boolean

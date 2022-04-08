@@ -15,7 +15,7 @@
 
 import board, { boardId } from '@anticrm/board'
 import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(boardId, board, {
   string: {
@@ -44,6 +44,7 @@ export default mergeIds(boardId, board, {
     DescriptionPlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Members: '' as IntlString,
+    IsArchived: '' as IntlString,
     BoardCreateLabel: '' as IntlString,
     Settings: '' as IntlString,
     InList: '' as IntlString,

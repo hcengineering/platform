@@ -15,10 +15,11 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref } from '@anticrm/core'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -51,9 +52,9 @@ export interface CardLabel extends AttachedDoc {
  * @public
  */
 export interface CardDate {
-  dueDate?: number
+  dueDate?: Timestamp
   isChecked?: boolean
-  startDate?: number
+  startDate?: Timestamp
 }
 
 /**
@@ -71,7 +72,7 @@ export interface Card extends Task {
 
   labels?: Ref<CardLabel>[]
 
-  location: string
+  location?: string
 
   coverColor?: number
   coverImage?: string
@@ -83,6 +84,7 @@ export interface Card extends Task {
  * @public
  */
 export interface CardAction extends Doc {
+  component?: AnyComponent
   hint?: IntlString
   icon: Asset
   isInline?: boolean
