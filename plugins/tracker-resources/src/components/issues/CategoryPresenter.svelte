@@ -51,7 +51,6 @@
       config={[
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
         { key: '', presenter: tracker.component.TitlePresenter },
-        { key: '', presenter: tracker.component.LabelsPresenter },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         '$lookup.assignee'
       ]}

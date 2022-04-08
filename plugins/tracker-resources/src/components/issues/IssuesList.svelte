@@ -188,7 +188,7 @@
 
   .listGrid {
     display: grid;
-    grid-template-columns: auto auto 1fr auto 9rem;
+    grid-template-columns: 9rem auto 4rem 2rem;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
@@ -205,7 +205,7 @@
   .gridElement {
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: start;
   }
 
   .issuePresenter {

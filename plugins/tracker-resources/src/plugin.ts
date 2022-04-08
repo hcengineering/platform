@@ -94,7 +94,6 @@ export default mergeIds(trackerId, tracker, {
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
-    LabelsPresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent
