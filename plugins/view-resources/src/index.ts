@@ -27,6 +27,7 @@ import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
 import Table from './components/Table.svelte'
+import Menu from './components/Menu.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import { deleteObject } from './utils'
@@ -40,7 +41,7 @@ import view from './plugin'
 
 export { default as ContextMenu } from './components/Menu.svelte'
 export { buildModel, getActions, getObjectPresenter, LoadingProps, getCollectionCounter } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup }
+export { Table, TableView, EditDoc, ColorsPopup, Menu }
 
 function Delete (object: Doc): void {
   showPopup(

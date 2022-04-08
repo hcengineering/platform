@@ -105,7 +105,7 @@
         <div class='flex-between mb-2'>
           <IssuePresenter value={object} {currentTeam}/>
           {#if issue.$lookup?.assignee }          
-            <Component is={view.component.ObjectPresenter} props={{ value: issue.$lookup.assignee, props: { showLabel: false } }}/> 
+            <Component is={view.component.ObjectPresenter} props={{ value: issue.$lookup.assignee, props: { shouldShowName: false } }}/> 
           {/if}
         </div>
         <span class='fs-bold title'>
