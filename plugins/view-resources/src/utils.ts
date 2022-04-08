@@ -71,6 +71,7 @@ export async function getObjectPresenter (
     _class,
     label: preserveKey.label ?? clazz.label,
     presenter,
+    props: preserveKey.props,
     sortingKey
   }
 }

@@ -18,6 +18,7 @@
   import type { Issue, Team } from '@anticrm/tracker'
   import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import { issuePriorities } from '../../utils'
 
   export let value: Issue
   export let currentTeam: Team
@@ -37,6 +38,9 @@
     class:inline-presenter={inline}
     on:click={show}
   >
+    <div class="icon">
+      <Icon icon={issuePriorities[value.priority].icon} size={'small'} />
+    </div>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />
     </div>
