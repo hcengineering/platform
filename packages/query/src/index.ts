@@ -41,7 +41,8 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  WithLookup
+  WithLookup,
+  toFindResult
 } from '@anticrm/core'
 import justClone from 'just-clone'
 
@@ -50,6 +51,7 @@ interface Query {
   query: DocumentQuery<Doc>
   result: Doc[] | Promise<Doc[]>
   options?: FindOptions<Doc>
+  total: number
   callback: (result: FindResult<Doc>) => void
 }
 
@@ -124,12 +126,14 @@ export class LiveQuery extends TxProcessor implements Client {
       _class,
       query,
       result,
+      total: 0,
       options: options as FindOptions<Doc>,
       callback: callback as (result: Doc[]) => void
     }
     this.queries.push(q)
     result
       .then((result) => {
+        q.total = result.total
         q.callback(result)
       })
       .catch((err) => {
@@ -155,7 +159,7 @@ export class LiveQuery extends TxProcessor implements Client {
           doc[tx.bag] = bag = {}
         }
         bag[tx.key] = tx.value
-        await this.callback(updatedDoc, q)
+        await this.updatedDocCallback(updatedDoc, q)
       }
     }
     return {}
@@ -175,7 +179,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (updatedDoc !== undefined) {
         // Create or apply mixin value
         updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
-        await this.callback(updatedDoc, q)
+        await this.updatedDocCallback(updatedDoc, q)
       } else {
         if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
           // Mixin potentially added to object we doesn't have in out results
@@ -241,6 +245,7 @@ export class LiveQuery extends TxProcessor implements Client {
         const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId }, q.options)
         if (match === undefined) {
           q.result.splice(pos, 1)
+          q.total--
         } else {
           q.result[pos] = match
         }
@@ -253,18 +258,20 @@ export class LiveQuery extends TxProcessor implements Client {
             q.result[pos] = current
           } else {
             q.result.splice(pos, 1)
+            q.total--
           }
         } else {
           await this.__updateDoc(q, updatedDoc, tx)
           if (!this.match(q, updatedDoc)) {
             q.result.splice(pos, 1)
+            q.total--
           } else {
             q.result[pos] = updatedDoc
           }
         }
       }
       this.sort(q, tx)
-      await this.callback(q.result[pos], q)
+      await this.updatedDocCallback(q.result[pos], q)
     } else if (this.matchQuery(q, tx)) {
       return await this.refresh(q)
     }
@@ -284,7 +291,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.options?.sort !== undefined) {
         resultSort(q.result, q.options?.sort)
       }
-      q.callback(this.clone(q.result))
+      await this.callback(q)
     }
   }
 
@@ -328,9 +335,10 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   private async refresh (q: Query): Promise<void> {
-    q.result = this.client.findAll(q._class, q.query, q.options)
-    q.result = await q.result
-    q.callback(this.clone(q.result))
+    const res = await this.client.findAll(q._class, q.query, q.options)
+    q.result = res
+    q.total = res.total
+    await this.callback(q)
   }
 
   // Check if query is partially matched.
@@ -442,6 +450,7 @@ export class LiveQuery extends TxProcessor implements Client {
         if (match === undefined) return
       }
       q.result.push(doc)
+      q.total++
 
       if (q.options?.sort !== undefined) {
         resultSort(q.result, q.options?.sort)
@@ -449,14 +458,22 @@ export class LiveQuery extends TxProcessor implements Client {
 
       if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
         if (q.result.pop()?._id !== doc._id) {
-          q.callback(this.clone(q.result))
+          await this.callback(q)
         }
       } else {
-        q.callback(this.clone(q.result))
+        await this.callback(q)
       }
     }
 
     await this.handleDocAddLookup(q, doc)
+  }
+
+  private async callback (q: Query): Promise<void> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    const clone = this.clone(q.result)
+    q.callback(toFindResult(clone, q.total))
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
@@ -472,7 +489,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.options?.sort !== undefined) {
         resultSort(q.result, q.options?.sort)
       }
-      q.callback(this.clone(q.result))
+      await this.callback(q)
     }
   }
 
@@ -529,7 +546,8 @@ export class LiveQuery extends TxProcessor implements Client {
     const index = q.result.findIndex((p) => p._id === tx.objectId)
     if (index > -1) {
       q.result.splice(index, 1)
-      q.callback(this.clone(q.result))
+      q.total--
+      await this.callback(q)
     }
     await this.handleDocRemoveLookup(q, tx)
   }
@@ -568,7 +586,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.options?.sort !== undefined) {
         resultSort(q.result, q.options?.sort)
       }
-      q.callback(this.clone(q.result))
+      await this.callback(q)
     }
   }
 
@@ -717,16 +735,18 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async callback (updatedDoc: Doc, q: Query): Promise<void> {
+  private async updatedDocCallback (updatedDoc: Doc, q: Query): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
       if (q.result[q.options?.limit]._id === updatedDoc._id) {
         return await this.refresh(q)
       }
-      if (q.result.pop()?._id !== updatedDoc._id) q.callback(q.result)
+      if (q.result.pop()?._id !== updatedDoc._id) {
+        await this.callback(q)
+      }
     } else {
-      q.callback(this.clone(q.result))
+      await this.callback(q)
     }
   }
 }

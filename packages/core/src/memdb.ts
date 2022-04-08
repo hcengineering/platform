@@ -23,6 +23,7 @@ import { matchQuery, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
 import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
+import { toFindResult } from './utils'
 
 /**
  * @public
@@ -77,7 +78,7 @@ export abstract class MemDb extends TxProcessor {
     return doc as T
   }
 
-  private async getLookupValue<T extends Doc> (doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+  private async getLookupValue<T extends Doc>(doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(doc, lookup, result)
@@ -101,7 +102,11 @@ export abstract class MemDb extends TxProcessor {
     }
   }
 
-  private async getReverseLookupValue<T extends Doc> (doc: T, lookup: ReverseLookups, result: LookupData<T>): Promise<void> {
+  private async getReverseLookupValue<T extends Doc>(
+    doc: T,
+    lookup: ReverseLookups,
+    result: LookupData<T>
+  ): Promise<void> {
     for (const key in lookup._id) {
       const value = lookup._id[key]
       if (Array.isArray(value)) {
@@ -129,7 +134,7 @@ export abstract class MemDb extends TxProcessor {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    let result: Doc[]
+    let result: WithLookup<Doc>[]
     const baseClass = this.hierarchy.getBaseClass(_class)
     if (
       Object.prototype.hasOwnProperty.call(query, '_id') &&
@@ -144,16 +149,17 @@ export abstract class MemDb extends TxProcessor {
 
     if (baseClass !== _class) {
       // We need to filter instances without mixin was set
-      result = result.filter(r => (r as any)[_class] !== undefined)
+      result = result.filter((r) => (r as any)[_class] !== undefined)
     }
 
     if (options?.lookup !== undefined) result = await this.lookup(result as T[], options.lookup)
 
     if (options?.sort !== undefined) resultSort(result, options?.sort)
-
+    const total = result.length
     result = result.slice(0, options?.limit)
-    const tresult = clone(result) as T[]
-    return tresult.map(it => this.hierarchy.updateLookupMixin(_class, it, options))
+    const tresult = clone(result) as WithLookup<T>[]
+    const res = tresult.map((it) => this.hierarchy.updateLookupMixin(_class, it, options))
+    return toFindResult(res, total)
   }
 
   addDoc (doc: Doc): void {
