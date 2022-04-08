@@ -359,7 +359,6 @@
     flex-shrink: 0;
     padding: 0 .5rem;
     font-weight: 400;
-    font-size: .8125rem;
     min-width: 1.5rem;
     width: auto;
     height: 1.5rem;
@@ -403,8 +402,9 @@
         .time-divider { background-color: var(--button-border-hover); }
       }
       &:focus-within {
+        background-color: var(--button-bg-color);
         border-color: var(--primary-edit-border-color);
-        &:hover { background-color: transparent; }
+        &:hover { background-color: var(--button-bg-color); }
       }
     }
     &:disabled {
@@ -470,5 +470,6 @@
       height: .75rem;
       background-color: var(--button-border-color);
     }
+    .separator { margin: 0 .1rem; }
   }
 </style>

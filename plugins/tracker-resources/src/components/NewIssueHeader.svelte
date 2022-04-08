@@ -6,7 +6,7 @@
   export let currentSpace: Ref<Space>
 
   async function newIssue(target: EventTarget | null): Promise<void> {
-    showPopup(CreateIssue, { space: currentSpace }, target as HTMLElement)
+    showPopup(CreateIssue, { space: currentSpace }, 'top')
   }
 </script>
 

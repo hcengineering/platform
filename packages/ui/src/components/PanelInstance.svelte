@@ -83,10 +83,11 @@
           modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
           modalHTML.style.bottom = '0.75rem'
           modalHTML.style.right = '0.75rem'
-        } else if (props.element === 'float') {
-          modalHTML.style.top = '4rem'
-          modalHTML.style.bottom = '4rem'
-          modalHTML.style.right = '4rem'
+        } else if (props.element === 'top') {
+          modalHTML.style.top = '15vh'
+          modalHTML.style.left = '50%'
+          modalHTML.style.transform = 'translateX(-50%)'
+          show = true
         } else if (props.element === 'account') {
           modalHTML.style.bottom = '2.75rem'
           modalHTML.style.left = '5rem'
