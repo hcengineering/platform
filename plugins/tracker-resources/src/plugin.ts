@@ -60,6 +60,7 @@ export default mergeIds(trackerId, tracker, {
     Status: '' as IntlString,
     Number: '' as IntlString,
     Assignee: '' as IntlString,
+    AssignTo: '' as IntlString,
     AssignedTo: '' as IntlString,
     Parent: '' as IntlString,
     BlockedBy: '' as IntlString,
@@ -93,7 +94,6 @@ export default mergeIds(trackerId, tracker, {
     IssuePresenter: '' as AnyComponent,
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
-    AssigneePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent

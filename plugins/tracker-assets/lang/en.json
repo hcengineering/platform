@@ -39,6 +39,7 @@
     "Status": "",
     "Number": "Number",
     "Assignee": "Assignee",
+    "AssignTo": "Assign to",
     "AssignedTo": "Assigned to {value}",
     "Parent": "",
     "BlockedBy": "",

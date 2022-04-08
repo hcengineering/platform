@@ -52,7 +52,14 @@
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
         { key: '', presenter: tracker.component.TitlePresenter },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-        '$lookup.assignee'
+        {
+          key: '$lookup.assignee',
+          props: {
+            shouldShowName: false,
+            shouldShowPlaceholder: true,
+            tooltipLabels: { personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }
+          }
+        }
       ]}
       {options}
       query={{ ...query, status: category }}

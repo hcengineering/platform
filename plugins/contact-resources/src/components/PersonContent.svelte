@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,23 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, formatName } from '@anticrm/contact'
+  import { formatName, Person } from '@anticrm/contact'
   import { Hierarchy } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
-  import { showPanel, Tooltip } from '@anticrm/ui'
+  import { showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import tracker from '../../plugin'
 
-  export let value: Employee
+  export let value: Person | undefined
   export let inline: boolean = false
+  export let shouldShowName = true
+  export let shouldShowPlaceholder = false
+
+  const avatarSize = 'x-small'
 
   const onClick = async () => {
-    showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
+    if (value) {
+      showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
+    }
   }
 </script>
 
-{#if value}
-  <Tooltip label={tracker.string.AssignedTo} props={{ value: formatName(value.name) }}>
+{#if value || shouldShowPlaceholder}
+  {#if value}
     <a
       class="flex-presenter"
       class:inline-presenter={inline}
@@ -38,8 +42,15 @@
       on:click={onClick}
     >
       <div class="icon">
-        <Avatar size={'x-small'} avatar={value.avatar} />
+        <Avatar size={avatarSize} avatar={value?.avatar} />
       </div>
+      {#if shouldShowName}
+        <span class="label">{formatName(value.name)}</span>
+      {/if}
     </a>
-  </Tooltip>
+  {:else}
+    <div class="icon">
+      <Avatar size={avatarSize} avatar={undefined} />
+    </div>
+  {/if}
 {/if}
