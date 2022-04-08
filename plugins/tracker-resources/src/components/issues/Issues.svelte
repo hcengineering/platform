@@ -67,6 +67,7 @@
         <CategoryPresenter
           {category}
           query={resultQuery}
+          {currentSpace}
           {currentTeam}
           on:content={(event) => {
             issuesMap[category] = event.detail
