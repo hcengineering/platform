@@ -315,7 +315,7 @@
     </div>
   </div>
   <div class="footer">
-    <Button kind={'primary'} label={ui.string.Ok} size={'x-large'} width={'100%'} on:click={closeDP} />
+    <Button kind={'primary'} label={ui.string.SaveDueDate} size={'x-large'} width={'100%'} on:click={closeDP} />
   </div>
 </div>
 
