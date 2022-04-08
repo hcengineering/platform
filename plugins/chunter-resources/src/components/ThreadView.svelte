@@ -166,7 +166,7 @@
 </div>
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
-    <MsgView space={currentSpace} {message} {employees} thread />
+    <MsgView {message} {employees} thread />
     {#if comments.length}
       <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}
@@ -174,7 +174,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment space={currentSpace} message={comment} {employees} />
+      <ThreadComment message={comment} {employees} />
     {/each}
   {/if}
 </div>

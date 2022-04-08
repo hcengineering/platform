@@ -17,7 +17,7 @@
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Message } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup, getCurrentAccount, Space } from '@anticrm/core'
+  import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
@@ -37,7 +37,6 @@
   export let message: WithLookup<Message>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
-  export let space: Ref<Space> | undefined
 
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -61,16 +60,14 @@
       } as Action)
 
   async function deleteMessage () {
-    if (space) {
-      await client.removeDoc(chunter.class.Message, space, message._id)
+      await client.remove(message)
       const loc = getCurrentLocation()
 
       if (loc.path[3] === message._id) {
         loc.path.length = 3
         navigate(loc)
-      }
+      }  
     }
-  }
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,

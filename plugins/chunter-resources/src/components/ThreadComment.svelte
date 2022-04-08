@@ -13,12 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { ThreadMessage } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup, getCurrentAccount, Space } from '@anticrm/core'
+  import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
@@ -34,12 +33,10 @@
 
   export let message: WithLookup<ThreadMessage>
   export let employees: Map<Ref<Employee>, Employee>
-  export let space: Ref<Space>
 
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   const reactions: boolean = false
 
@@ -56,15 +53,9 @@
         action: chunter.actionImpl.SubscribeComment
       } as Action)
 
-  async function deleteMessage () {
-    if (space) {
-      await client.removeDoc(chunter.class.ThreadMessage, space, message._id)
-    }
-  }
-
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: deleteMessage
+    action: async () => await client.remove(message)
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
