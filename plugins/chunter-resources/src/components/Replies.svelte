@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import contact,{ Employee } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import { Ref, Timestamp } from '@anticrm/core'
-  import { Avatar,createQuery } from '@anticrm/presentation'
+  import { Avatar, createQuery } from '@anticrm/presentation'
   import { Label, TimeSince } from '@anticrm/ui'
   import chunter from '../plugin'
 
@@ -32,16 +31,19 @@
   $: updateQuery(employees)
 
   function updateQuery (employees: Set<Ref<Employee>>) {
-    query.query(contact.class.Employee, {
-      _id: { $in: Array.from(employees) }
-    }, (res) => {
-      showReplies = res
-    }, {
-      limit: shown
-    })
+    query.query(
+      contact.class.Employee,
+      {
+        _id: { $in: Array.from(employees) }
+      },
+      (res) => {
+        showReplies = res
+      },
+      {
+        limit: shown
+      }
+    )
   }
-
-
 </script>
 
 <div class="flex-row-center container cursor-pointer" on:click>
@@ -53,7 +55,9 @@
       <div class="reply"><span>+{employees.size - shown}</span></div>
     {/if}
   </div>
-  <div class="whitespace-nowrap ml-2 mr-2 over-underline"><Label label={chunter.string.RepliesCount} params={{ replies: replies.length }} /></div>
+  <div class="whitespace-nowrap ml-2 mr-2 over-underline">
+    <Label label={chunter.string.RepliesCount} params={{ replies: replies.length }} />
+  </div>
   {#if replies.length > 1}
     <div class="mr-1">
       <Label label={chunter.string.LastReply} />
@@ -82,9 +86,9 @@
         align-items: center;
         width: 1.5rem;
         height: 1.5rem;
-        font-size: .75rem;
+        font-size: 0.75rem;
         font-weight: 500;
-        line-height: .5;
+        line-height: 0.5;
         color: var(--theme-caption-color);
         background-color: var(--theme-bg-selection);
         border-radius: 50%;

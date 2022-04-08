@@ -24,7 +24,7 @@ export default mergeIds(chunterId, chunter, {
     CreateChannel: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
-    EditChannel: '' as AnyComponent,
+    EditChannel: '' as AnyComponent
   },
   actionImpl: {
     SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,

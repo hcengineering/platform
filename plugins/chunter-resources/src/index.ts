@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { Comment, Message, ThreadMessage } from '@anticrm/chunter'
+import chunter, { Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'

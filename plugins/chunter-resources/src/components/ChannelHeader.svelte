@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-
-import { Channel } from '@anticrm/chunter';
+  import { Channel } from '@anticrm/chunter'
   import type { Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { showPanel } from '@anticrm/ui'

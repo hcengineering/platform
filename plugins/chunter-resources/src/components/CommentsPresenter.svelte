@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
   import { Tooltip, IconThread } from '@anticrm/ui'
@@ -28,9 +27,9 @@
 {#if value && value.comments && value.comments > 0}
   <Tooltip label={chunter.string.Comments} component={CommentPopup} props={{ objectId: value._id }}>
     <div class="sm-tool-icon ml-1 mr-1">
-      <span class="icon"><IconThread {size}/></span>
+      <span class="icon"><IconThread {size} /></span>
       {#if showCounter}
-      &nbsp;{value.comments}
+        &nbsp;{value.comments}
       {/if}
     </div>
   </Tooltip>
