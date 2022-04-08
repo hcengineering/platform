@@ -166,7 +166,7 @@
 </div>
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
-    <MsgView {message} {employees} thread />
+    <MsgView space={currentSpace} {message} {employees} thread />
     {#if comments.length}
       <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}

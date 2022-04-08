@@ -17,7 +17,7 @@
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Message } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup } from '@anticrm/core'
+  import { Ref, WithLookup, getCurrentAccount, Space } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
@@ -37,6 +37,7 @@
   export let message: WithLookup<Message>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
+  export let space: Ref<Space> | undefined
 
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -59,6 +60,19 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
+
+
+async function deleteMessage() {
+  if (space) {
+    await client.removeDoc(chunter.class.Message, space, message._id)  
+  }  
+}
+
+  const deleteAction = {
+    label: chunter.string.DeleteMessage,
+    action: deleteMessage
+  }
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
     actions.push(subscribeAction)
@@ -73,7 +87,8 @@
               const impl = await getResource(a.action)
               await impl(message)
             }
-          }))
+          })),
+          ...(getCurrentAccount()._id === message.createBy ? [deleteAction] : [])
         ]
       },
       ev.target as HTMLElement

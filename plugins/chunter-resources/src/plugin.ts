@@ -46,6 +46,7 @@ export default mergeIds(chunterId, chunter, {
     LastReply: '' as IntlString,
     New: '' as IntlString,
     GetNewReplies: '' as IntlString,
-    TurnOffReplies: '' as IntlString
+    TurnOffReplies: '' as IntlString,
+    DeleteMessage: '' as IntlString
   }
 })
