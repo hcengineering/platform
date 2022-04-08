@@ -18,7 +18,7 @@
   import type { Card, CardAction } from '@anticrm/board'
   import { IntlString, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Label } from '@anticrm/ui'
+  import { Button, Component, Label } from '@anticrm/ui'
 
   import plugin from '../../plugin'
   import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
@@ -74,18 +74,24 @@
         <div class="flex-col flex-gap-1">
           <Label label={group.label} />
           {#each group.actions as action}
-            <Button
-              icon={action.icon}
-              label={action.label}
-              kind={action.isTransparent ? 'transparent' : 'no-border'}
-              justify="left"
-              on:click={async () => {
-                if (action.handler) {
-                  const handler = await getResource(action.handler)
-                  handler(value, client)
-                }
-              }}
-            />
+            {#if action.component}
+              <Component is={action.component} props={{ object: value }}>
+                <slot />
+              </Component>
+            {:else}
+              <Button
+                icon={action.icon}
+                label={action.label}
+                kind={action.kind ?? 'no-border'}
+                justify="left"
+                on:click={async () => {
+                  if (action.handler) {
+                    const handler = await getResource(action.handler)
+                    handler(value, client)
+                  }
+                }}
+              />
+            {/if}
           {/each}
         </div>
       {/if}

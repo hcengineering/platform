@@ -16,7 +16,7 @@
 
 import { boardId, Card, CardAction } from '@anticrm/board'
 import board from '@anticrm/board-resources/src/plugin'
-import type { Client, Ref, Space } from '@anticrm/core'
+import type { TxOperations as Client, Ref, Space } from '@anticrm/core'
 import { mergeIds, Resource } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
