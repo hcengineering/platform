@@ -15,24 +15,20 @@
 -->
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
-  import { showPanel } from '@anticrm/ui'
+  import { getPanelURI } from '@anticrm/ui'
   import view from '@anticrm/view'
   import Company from './icons/Company.svelte'
 
   export let value: Organization
   export let inline: boolean = false
 
-  async function onClick () {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
-  }
 </script>
 
 {#if value}
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
-    on:click={onClick}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'full')}"
   >
     <div class="icon circle"><Company size={'small'} /></div>
     <span class="label">{value.name}</span>

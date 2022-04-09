@@ -18,7 +18,7 @@
   import type { Applicant } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
   import { Icon, Label } from '@anticrm/ui'
-  import { showPanel } from '@anticrm/ui/src/panelup'
+  import { getPanelURI } from '@anticrm/ui/src/panelup'
   import view from '@anticrm/view'
 
   export let value: Applicant
@@ -26,18 +26,13 @@
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
-
-  function show () {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
-  }
 </script>
 
 {#if value && shortLabel}
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
-    on:click={show}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'full')}"
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />

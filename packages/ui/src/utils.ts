@@ -14,11 +14,11 @@
 //
 
 // import type { Metadata } from '@anticrm/platform'
-import { setMetadata } from '@anticrm/platform'
 import type { Metadata } from '@anticrm/platform'
+import { setMetadata } from '@anticrm/platform'
 
-export function setMetadataLocalStorage(id: Metadata<string>, value: string | null): void {
-  if (value) {
+export function setMetadataLocalStorage (id: Metadata<string>, value: string | null): void {
+  if (value != null) {
     localStorage.setItem(id, value)
   } else {
     localStorage.removeItem(id)
@@ -26,95 +26,10 @@ export function setMetadataLocalStorage(id: Metadata<string>, value: string | nu
   setMetadata(id, value)
 }
 
-export function fetchMetadataLocalStorage(id: Metadata<string>): string | null {
+export function fetchMetadataLocalStorage (id: Metadata<string>): string | null {
   const value = localStorage.getItem(id)
   if (value !== null) {
     setMetadata(id, value)
   }
   return value
 }
-
-// import { Readable, derived, writable } from 'svelte/store'
-// import { onDestroy, getContext, setContext } from 'svelte'
-
-// function windowLocation (): Location {
-//   return parseLocation(window.location)
-// }
-
-// const locationWritable = writable(windowLocation())
-// window.addEventListener('popstate', () => {
-//   locationWritable.set(windowLocation())
-// })
-
-// const location: Readable<Location> = derived(locationWritable, (loc) => loc)
-
-// function subscribeLocation (listener: (location: Location) => void, destroyFactory: (op: () => void) => void): void {
-//   const unsubscribe = location.subscribe((location) => {
-//     listener(location)
-//   })
-//   destroyFactory(unsubscribe)
-// }
-
-// function navigate (newUrl: string): void {
-//   const curUrl = locationToUrl(windowLocation())
-//   if (curUrl === newUrl) {
-//     return
-//   }
-//   history.pushState(null, '', newUrl)
-//   locationWritable.set(windowLocation())
-// }
-
-// function navigateJoin (
-//   path: string[] | undefined,
-//   query: Record<string, string> | undefined,
-//   fragment: string | undefined
-// ): void {
-//   const newLocation = windowLocation()
-//   if (path != null) {
-//     newLocation.path = path
-//   }
-//   if (query != null) {
-//     // For query we do replace
-//     const currentQuery = newLocation.query || {}
-//     for (const kv of Object.entries(query)) {
-//       currentQuery[kv[0]] = kv[1]
-//     }
-//   }
-//   if (fragment) {
-//     newLocation.fragment = fragment
-//   }
-//   navigate(locationToUrl(newLocation))
-// }
-
-// const CONTEXT_ROUTE_VALUE = 'routes.context'
-
-// export function newRouter<T> (
-//   pattern: string,
-//   matcher: (match: T) => void,
-//   defaults: T | undefined = undefined
-// ): ApplicationRouter<T> {
-//   const r: Router<any> = getContext(CONTEXT_ROUTE_VALUE)
-//   const navigateOp = (loc: Location): void => {
-//     navigate(locationToUrl(loc))
-//   }
-//   const result = r ? r.newRouter<T>(pattern, defaults) : new Router<T>(pattern, r, defaults, navigateOp)
-//   result.subscribe(matcher)
-//   if (!r) {
-//     // No parent, we need to subscribe for location changes.
-//     subscribeLocation((loc) => {
-//       result.update(loc)
-//     }, onDestroy)
-//   }
-//   if (r) {
-//     // We need to remove child router from parent, if component is destroyed
-//     onDestroy(() => r.clearChildRouter())
-//   }
-//   setContext(CONTEXT_ROUTE_VALUE, result)
-//   return result
-// }
-
-// R O U T E R  M E T A D A T A  K E Y S
-
-// export function applicationShortcutKey (shortcut: string): Metadata<AnyComponent> {
-//   return ('shortcut:ui.' + shortcut) as Metadata<AnyComponent>
-// }

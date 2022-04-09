@@ -18,7 +18,7 @@
   import { getClient } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
-  import { closeTooltip, Icon, showPanel } from '@anticrm/ui'
+  import { getPanelURI, Icon } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Review
@@ -34,19 +34,13 @@
       shortLabel = r
     })
   }
-
-  function show () {
-    closeTooltip()
-    showPanel(view.component.EditDoc, value._id, value._class, 'right')
-  }
 </script>
 
 {#if value && shortLabel}
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
-    on:click={show}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'right')}"
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />

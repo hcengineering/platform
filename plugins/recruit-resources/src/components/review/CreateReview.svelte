@@ -18,7 +18,7 @@
   import { OrganizationSelector } from '@anticrm/contact-resources'
   import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, getClient, UserBox } from '@anticrm/presentation'
+  import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
@@ -26,6 +26,7 @@
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
+  import calendar from '@anticrm/calendar'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Person>
@@ -166,18 +167,43 @@
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
-        kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+        kind={'link'}
+        size={'x-large'}
+        justify={'left'}
+        width={'100%'}
+        labelDirection={'left'}
       />
     {:else}
-      <div></div>
+      <div />
     {/if}
     <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
     <OrganizationSelector
-      bind:value={company} label={recruit.string.Company}
-      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+      bind:value={company}
+      label={recruit.string.Company}
+      kind={'link'}
+      size={'x-large'}
+      justify={'left'}
+      width={'100%'}
+      labelDirection={'left'}
     />
     <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
     <DateRangePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
+
+    <Row>
+      <UserBoxList
+        _class={contact.class.Employee}
+        items={doc.participants}
+        title={calendar.string.Participants}
+        on:open={(evt) => {
+          doc.participants = [...(doc.participants ?? []), evt.detail._id]
+        }}
+        on:delete={(evt) => {
+          doc.participants = doc.participants?.filter((it) => it !== evt.detail._id) ?? [currentUser.employee]
+        }}
+        noItems={calendar.string.NoParticipants}
+      />
+    </Row>
+
     <Row>
       <StyledTextBox
         emphasized

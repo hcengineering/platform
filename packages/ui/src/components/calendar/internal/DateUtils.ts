@@ -73,8 +73,12 @@ export function isWeekend (date: Date): boolean {
 }
 
 export function getMonthName (date: Date, option: 'narrow' | 'short' | 'long' | 'numeric' | '2-digit' = 'long'): string {
-  const locale = new Intl.NumberFormat().resolvedOptions().locale
-  return new Intl.DateTimeFormat(locale, { month: option }).format(date)
+  try {
+    const locale = new Intl.NumberFormat().resolvedOptions().locale
+    return new Intl.DateTimeFormat(locale, { month: option }).format(date)
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 export type TCellStyle = 'not-selected' | 'selected'
