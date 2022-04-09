@@ -127,7 +127,7 @@
       </div>
 
       <div class="text-sm mt-4">
-        <DropdownLabels title={tags.string.CategoryLabel} bind:selected={data.category} items={categoryItems} />
+        <DropdownLabels label={tags.string.CategoryLabel} bind:selected={data.category} items={categoryItems} />
       </div>
     </div>
   </div>

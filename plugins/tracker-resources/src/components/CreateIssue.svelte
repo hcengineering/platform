@@ -19,12 +19,11 @@
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
   import Card from './Card.svelte'
-  import SelectPopup from './SelectPopup.svelte'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
@@ -131,11 +130,11 @@
     <PrioritySelector bind:priority={object.priority} />
     <UserBox
       _class={contact.class.Employee}
-      title={tracker.string.Assignee}
-      caption={tracker.string.Assignee}
+      label={tracker.string.Assignee}
+      placeholder={tracker.string.AssignTo}
       bind:value={assignee}
       allowDeselect
-      titleDeselect={tracker.string.TaskUnAssign}
+      titleDeselect={tracker.string.Unassigned}
     />
     <Button
       label={tracker.string.Labels}

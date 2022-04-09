@@ -50,7 +50,7 @@
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    background-color: rgba(196, 196, 204, .2);
+    background-color: var(--popup-bg-hover);
     border-radius: 50%;
     pointer-events: none;
 

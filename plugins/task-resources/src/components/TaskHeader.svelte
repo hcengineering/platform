@@ -55,8 +55,8 @@
   <div class="flex-center">
     <UserBox
       _class={getAssigneeClass(object)}
-      title={assigneeTitle}
-      caption={assigneeTitle}
+      label={assigneeTitle}
+      placeholder={assigneeTitle}
       bind:value={object.assignee}
       on:change={change}
       allowDeselect

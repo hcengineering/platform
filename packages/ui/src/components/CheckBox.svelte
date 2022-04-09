@@ -63,7 +63,7 @@
         & .back {
           fill: var(--theme-bg-check);
           &.primary {
-            fill: var(--primary-button-enabled);
+            fill: var(--primary-bg-color);
           }
         }
         & .check {

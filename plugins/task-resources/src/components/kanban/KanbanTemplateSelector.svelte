@@ -41,4 +41,4 @@
   }
 </script>
 
-<DropdownLabels {items} bind:selected={selectedItem} title={plugin.string.States} />
+<DropdownLabels {items} bind:selected={selectedItem} label={plugin.string.States} />

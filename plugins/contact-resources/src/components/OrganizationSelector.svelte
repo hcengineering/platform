@@ -19,6 +19,7 @@
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Dropdown } from '@anticrm/ui'
+  import type { TooltipAligment } from '@anticrm/ui'
   import { ListItem } from '@anticrm/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
@@ -26,6 +27,12 @@
 
   export let value: Ref<Organization> | undefined
   export let label: IntlString = contact.string.Organization
+
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
+  export let labelDirection: TooltipAligment | undefined = undefined
 
   const query = createQuery()
   const dispatch = createEventDispatcher()
@@ -63,4 +70,8 @@
   }
 </script>
 
-<Dropdown icon={Company} label={label} placeholder={label} {items} bind:selected />
+<Dropdown
+  icon={Company} label={label} placeholder={label}
+  {items} bind:selected
+  {kind} {size} {justify} {width} {labelDirection}
+/>
