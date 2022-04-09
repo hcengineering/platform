@@ -119,7 +119,9 @@
       await setApp(loc)
       const currentFolder = loc.path[2] as Ref<Space>
 
-      if (currentSpecial !== currentFolder) {
+      if (currentSpecial === currentFolder) {
+        return
+      } else {
         const newSpecial = getSpecialComponent(currentFolder)
         if (newSpecial !== undefined) {
           clear(2)
