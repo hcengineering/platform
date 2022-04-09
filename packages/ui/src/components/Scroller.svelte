@@ -323,7 +323,7 @@
     width: 0;
     height: 0;
     // background-color: red;
-    background-color: var(--theme-bg-accent-color);
+    background-color: var(--body-color);
     z-index: -1;
   }
   .fly-head {
