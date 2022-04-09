@@ -70,7 +70,7 @@
       icon={(size === 'x-large' && selected) ? undefined : IconPerson}
       width={width ?? 'min-content'}
       {size} {kind} {justify}
-      on:click={(ev) => {
+      on:click={() => {
         if (!opened && !readonly) {
           opened = true
           showPopup(UsersPopup, { _class, allowDeselect, selected: value, titleDeselect, placeholder }, container, (result) => {

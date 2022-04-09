@@ -34,7 +34,7 @@
     href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
     on:click={onClick}
   >
-    <div class="icon"><Company size={'small'} /></div>
+    <div class="icon circle"><Company size={'small'} /></div>
     <span class="label">{value.name}</span>
   </a>
 {/if}

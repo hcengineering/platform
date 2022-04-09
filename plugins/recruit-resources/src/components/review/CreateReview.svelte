@@ -166,12 +166,16 @@
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
+        kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
       />
     {:else}
       <div></div>
     {/if}
     <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
+    <OrganizationSelector
+      bind:value={company} label={recruit.string.Company}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+    />
     <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
     <DateRangePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
     <Row>

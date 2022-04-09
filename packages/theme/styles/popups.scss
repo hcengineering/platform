@@ -35,6 +35,8 @@
       color: #d6d6d6;
       border: none;
       caret-color: var(--caret-color);
+      
+      &::placeholder { color: var(--content-color); }
     }
   }
 

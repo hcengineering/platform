@@ -99,7 +99,7 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.5}>
+  <Grid column={1} rowGap={1}>
     <EditBox
       label={lead.string.LeadName}
       bind:value={title}
@@ -113,6 +113,7 @@
       label={lead.string.Customer}
       placeholder={lead.string.SelectCustomer}
       bind:value={customer}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
     />
   </Grid>
 </Card>

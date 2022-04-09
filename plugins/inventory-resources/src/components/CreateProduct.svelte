@@ -87,11 +87,10 @@
       focus
     />
     <DropdownLabels
-      header
       items={categories}
       bind:selected={doc.attachedTo}
-      caption={inventory.string.Categories}
-      title={inventory.string.Category}
+      placeholder={inventory.string.Categories}
+      label={inventory.string.Category}
     />
   </Grid>
 </Card>

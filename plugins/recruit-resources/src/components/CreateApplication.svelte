@@ -138,11 +138,7 @@
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
-        kind={'link'}
-        size={'x-large'}
-        justify={'left'}
-        width={'100%'}
-        labelDirection={'left'}
+        kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
       />
     {/if}
     <UserBox
@@ -152,11 +148,7 @@
       bind:value={doc.assignee}
       allowDeselect
       titleDeselect={recruit.string.UnAssignRecruiter}
-      kind={'link'}
-      size={'x-large'}
-      justify={'left'}
-      width={'100%'}
-      labelDirection={'left'}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
     />
   </Grid>
 </Card>
