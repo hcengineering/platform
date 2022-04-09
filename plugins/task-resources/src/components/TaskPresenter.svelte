@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import type { Issue } from '@anticrm/task'
-  import { Icon, Label, showPanel } from '@anticrm/ui'
+  import { getPanelURI, Icon, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import task from '../plugin'
 
@@ -25,18 +25,13 @@
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
-
-  function show () {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
-  }
 </script>
 
 {#if value && shortLabel}
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, value._class].join('|'))}"
-    on:click={show}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'full')}"
   >
     <div class="icon">
       <Icon icon={task.icon.Task} size={'small'} />

@@ -16,11 +16,25 @@ let currentLocation: string | undefined
 location.subscribe((loc) => {
   if (loc.fragment !== currentLocation && loc.fragment !== undefined && loc.fragment.trim().length > 0) {
     const props = decodeURIComponent(loc.fragment).split('|')
-    showPanel(props[0] as AnyComponent, props[1], props[2], 'full')
+    showPanel(props[0] as AnyComponent, props[1], props[2], (props[3] ?? undefined) as PopupAlignment)
   } else if ((loc.fragment === undefined || (loc.fragment !== undefined && loc.fragment.trim().length === 0)) && currentLocation !== undefined) {
     closePanel()
   }
 })
+
+export function getPanelURI (
+  component: AnyComponent,
+  _id: string,
+  _class: string,
+  element?: PopupAlignment,
+  rightSection?: AnyComponent
+): string {
+  const panelProps = [component, _id, _class]
+  if (typeof element === 'string') {
+    panelProps.push(element)
+  }
+  return encodeURIComponent(panelProps.join('|'))
+}
 
 export function showPanel (
   component: AnyComponent,
@@ -29,7 +43,7 @@ export function showPanel (
   element?: PopupAlignment,
   rightSection?: AnyComponent
 ): void {
-  const newLoc = encodeURIComponent([component, _id, _class].join('|'))
+  const newLoc = getPanelURI(component, _id, _class, element)
   if (currentLocation === newLoc) {
     return
   }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person } from '@anticrm/contact'
+  import { Person } from '@anticrm/contact'
   import type { Class, Doc, Ref } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { ActionIcon, CircleButton, IconAdd, IconClose, Label, ShowMore, showPopup } from '@anticrm/ui'
@@ -78,7 +78,7 @@
             </div>
           {/if}
           {#each persons as person}
-            <div class="antiComponentBox flex-center margin_025 antiComponentBoxFocused">
+            <div class="antiComponentBox flex-center antiComponentBoxFocused">
               <UserInfo value={person} size={'x-small'} />
               <div class="ml-1">
                 <ActionIcon icon={IconClose} size={'small'} action={() => removePerson(person)} />
@@ -93,16 +93,13 @@
 
 <style lang="scss">
   .persons-container {
-    padding: 0.5rem;
     color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
   }
   .person-items {
     flex-grow: 1;
-    display: flex;
-    flex-wrap: wrap;  
+    display: grid;
+    gap: 0.25rem;
+    grid-template-columns: repeat(3, 1fr);
   }
   .margin_025 {
     margin: 0.25rem;

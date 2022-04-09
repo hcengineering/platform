@@ -16,7 +16,7 @@
   import { formatName, Person } from '@anticrm/contact'
   import { Hierarchy } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
-  import { showPanel } from '@anticrm/ui'
+  import { getPanelURI } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Person | undefined
@@ -25,12 +25,6 @@
   export let shouldShowPlaceholder = false
 
   const avatarSize = 'x-small'
-
-  const onClick = async () => {
-    if (value) {
-      showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
-    }
-  }
 </script>
 
 {#if value || shouldShowPlaceholder}
@@ -38,8 +32,7 @@
     <a
       class="flex-presenter"
       class:inline-presenter={inline}
-      href="#{encodeURIComponent([view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value)].join('|'))}"
-      on:click={onClick}
+      href="#{getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')}"
     >
       <div class="icon">
         <Avatar size={avatarSize} avatar={value?.avatar} />

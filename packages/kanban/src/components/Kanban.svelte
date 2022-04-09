@@ -238,7 +238,7 @@
   }
   .kanban-content {
     display: flex;
-    margin: 1.5rem 2rem;
+    margin: 0.5rem 2rem;
     height: 100%;
   }
 
