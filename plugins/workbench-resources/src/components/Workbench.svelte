@@ -119,7 +119,9 @@
       await setApp(loc)
       const currentFolder = loc.path[2] as Ref<Space>
 
-      if (currentSpecial !== currentFolder) {
+      if (currentSpecial === currentFolder) {
+        return
+      } else {
         const newSpecial = getSpecialComponent(currentFolder)
         if (newSpecial !== undefined) {
           clear(2)
@@ -210,6 +212,9 @@
   }
 
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
+    console.log('update space')
+    console.log(spaceId)
+    console.log(currentSpace)
     if (spaceId === currentSpace) return
     clear(2)
     if (spaceId === undefined) return
