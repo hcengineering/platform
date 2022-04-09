@@ -81,6 +81,7 @@
     </div>
   </div>
 </div>
+
 <style lang="scss">
   .panel-content {
     display: flex;

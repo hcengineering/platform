@@ -43,33 +43,26 @@
   }
 </script>
 
-<div class="antiPopup">
-  <div class="ap-space" />
-  {#each states as state}
-    <button
-      class="ap-menuItem ap-woScroll flex-row-center"
-      on:click={() => {
-        dispatch('close', state)
-      }}
-    >
-      <div class="color" style="background-color: {getColor(state._class)}" />
-      {state.title}
-    </button>
-  {/each}
-  <button
-    class="ap-menuItem ap-woScroll flex-row-center"
-    on:click={() => {
-      dispatch('close', null)
-    }}
-  >
-    <div class="color background-card-divider" />
-    <Label label={task.string.NoDoneState}/>
-  </button>
-  <div class="ap-space" />
+<div class="selectPopup">
+  <div class="scroll">
+    <div class="box">
+      {#each states as state}
+        <button class="menu-item" on:click={() => { dispatch('close', state) }}>
+          <div class="color" style="background-color: {getColor(state._class)}" />
+          <span class="label">{state.title}</span>
+        </button>
+      {/each}
+      <button class="menu-item" on:click={() => { dispatch('close', null) }}>
+        <div class="color background-card-divider" />
+        <Label label={task.string.NoDoneState}/>
+      </button>
+    </div>
+  </div>
 </div>
 
 <style lang="scss">
   .color {
+    flex-shrink: 0;
     margin-right: .75rem;
     width: .5rem;
     height: .5rem;
