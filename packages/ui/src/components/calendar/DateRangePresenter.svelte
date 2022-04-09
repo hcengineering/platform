@@ -109,12 +109,12 @@
   }
   if (value !== null && value !== undefined) dateToEdits()
   else if (value === null) {
-    edits.map(edit => edit.value = -1)
+    edits.forEach((edit) => { edit.value = -1 })
     currentDate = today
   }
 
   const fixEdits = (): void => {
-    let tempValues: number[] = []
+    const tempValues: number[] = []
     edits.forEach((edit, i) => {
       tempValues[i] = edit.value > 0 ? edit.value : getValue(currentDate, edit.id)
     })
@@ -139,7 +139,6 @@
   }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
-    const target = ev.target as HTMLElement
     const index = getIndex(ed)
 
     if (ev.key >= '0' && ev.key <= '9') {
@@ -175,11 +174,11 @@
       edits[index].value = -1
       startTyping = true
     }
-    if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && edits[index].el) {
+    if (ev.code === 'ArrowUp' || (ev.code === 'ArrowDown' && edits[index].el)) {
       if (edits[index].value !== -1) {
-        let val = (ev.code === 'ArrowUp')
-                ? edits[index].value + 1
-                : edits[index].value - 1
+        const val = (ev.code === 'ArrowUp')
+          ? edits[index].value + 1
+          : edits[index].value - 1
         if (currentDate) {
           currentDate = setValue(val, currentDate, ed)
           $dpstore.currentDate = currentDate
@@ -243,7 +242,7 @@
   let popupComp: HTMLElement
   $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
   $: if (opened && edits[0].el && $dpstore.frendlyFocus === undefined) {
-    let frendlyFocus: HTMLElement[] = []
+    const frendlyFocus: HTMLElement[] = []
     edits.forEach((edit, i) => {
       if (edit.el) frendlyFocus[i] = edit.el
     })
@@ -318,7 +317,7 @@
           selected = 'day'
           startTyping = true
           value = null
-          edits.forEach(edit => edit.value = -1)
+          edits.forEach(edit => { edit.value = -1 })
           if (edits[0].el) edits[0].el.focus()
         }}
         on:blur={(ev) => unfocus(ev, closeBtn)}
