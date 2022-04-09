@@ -212,9 +212,6 @@
   }
 
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
-    console.log('update space')
-    console.log(spaceId)
-    console.log(currentSpace)
     if (spaceId === currentSpace) return
     clear(2)
     if (spaceId === undefined) return
