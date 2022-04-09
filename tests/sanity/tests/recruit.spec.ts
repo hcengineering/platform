@@ -65,7 +65,7 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Create")')
 
     await page.locator(`tr:has-text("${vacancyId}") >> text=APP-`).click()
-    await page.click('text=Assigned recruiter Not selected')
+    await page.click('button:has-text("Assigned recruiter")')
     await page.click('button:has-text("Rosamund Chen")')
   })
 
@@ -83,7 +83,7 @@ test.describe('recruit tests', () => {
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
-    await page.click('text=Not selected')
+    await page.click('button:has-text("Candidate")')
     await page.click('button:has-text("Alex P.")')
     await page.click('button:has-text("Create")')
 
@@ -154,7 +154,7 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Apple")
     // await page.click('button:has-text("Apple")')
     // Click text=Candidate Not selected >> span
-    await page.click('text=Candidate Not selected >> span')
+    await page.click('button:has-text("Candidate")')
     // Click button:has-text("Andrey P.")
     await page.click('button:has-text("Andrey P.")')
     // Click text=Create
