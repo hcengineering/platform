@@ -29,6 +29,7 @@
     "High": "Высокий",
     "Medium": "Средний",
     "Low": "Низкий",
+    "Unassigned": "Не назначен",
     "AddIssueTooltip": "Добавить задачу\u2026",
 
     "Title": "Заголовок",
@@ -36,6 +37,7 @@
     "Status": "",
     "Number": "Number",
     "Assignee": "Исполнитель",
+    "AssignTo": "Назначить...",
     "Parent": "Указать родительскую задачу\u2026",
     "BlockedBy": "",
     "RelatedTo": "",

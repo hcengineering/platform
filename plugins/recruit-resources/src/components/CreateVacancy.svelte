@@ -63,7 +63,10 @@
 >
   <Grid column={1} rowGap={1.5}>
     <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder={recruit.string.VacancyPlaceholder} maxWidth={'16rem'} focus/>
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
+    <OrganizationSelector
+      bind:value={company} label={recruit.string.Company}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+    />
 
     <Component is={task.component.KanbanTemplateSelector} props={{
       folders: [recruit.space.VacancyTemplates],
