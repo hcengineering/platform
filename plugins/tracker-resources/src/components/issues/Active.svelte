@@ -1,12 +1,10 @@
-<script lang='ts'>
+<script lang="ts">
   import { Ref } from '@anticrm/core'
   import { IssueStatus, Team } from '@anticrm/tracker'
   import Issues from './Issues.svelte'
-  export let currentSpace: Ref<Team>
+  import tracker from '../../plugin'
 
-  let todalIssues = 0
+  export let currentSpace: Ref<Team>
 </script>
-<div class='fs-title'>
-  Active issues {todalIssues}
-</div>
-<Issues currentSpace={currentSpace} categories={[IssueStatus.InProgress, IssueStatus.Todo]} on:content={(evt) => { todalIssues = evt.detail.length } }></Issues>
+
+<Issues {currentSpace} categories={[IssueStatus.InProgress, IssueStatus.Todo]} title={tracker.string.ActiveIssues} />

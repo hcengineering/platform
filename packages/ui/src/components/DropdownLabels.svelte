@@ -26,11 +26,10 @@
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
 
-  export let title: IntlString
-  export let caption: IntlString | undefined = undefined
+  export let label: IntlString
+  export let placeholder: IntlString | undefined = undefined
   export let items: DropdownTextItem[]
   export let selected: DropdownTextItem['id'] | undefined = undefined
-  export let header: boolean = false
 
   let btn: HTMLElement
   let opened: boolean = false
@@ -52,7 +51,7 @@
   on:click|preventDefault={() => {
     if (!opened) {
       opened = true
-      showPopup(DropdownLabelsPopup, { title, caption, items, selected, header }, btn, (result) => {
+      showPopup(DropdownLabelsPopup, { placeholder, items, selected }, btn, (result) => {
         if (result) {
           selected = result
           dispatch('selected', result)
@@ -62,7 +61,7 @@
     }
   }}
 >
-  <div class="overflow-label label"><Label label={title} /></div>
+  <div class="overflow-label label"><Label label={label} /></div>
   <div class="flex-row-center space">
     <span class="mr-1">
       {#if opened}

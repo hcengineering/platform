@@ -131,17 +131,24 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.75}>
+  <Grid column={1} rowGap={1}>
     {#if !preserveCandidate}
-      <UserBox _class={contact.class.Person} title={recruit.string.Candidate} caption={recruit.string.Candidates} bind:value={doc.attachedTo} />
+      <UserBox
+        _class={contact.class.Person}
+        label={recruit.string.Candidate}
+        placeholder={recruit.string.Candidates}
+        bind:value={doc.attachedTo}
+        kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+      />
     {/if}
     <UserBox
       _class={contact.class.Employee}
-      title={recruit.string.AssignRecruiter}
-      caption={recruit.string.Recruiters}
+      label={recruit.string.AssignRecruiter}
+      placeholder={recruit.string.Recruiters}
       bind:value={doc.assignee}
       allowDeselect
       titleDeselect={recruit.string.UnAssignRecruiter}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
     />
   </Grid>
 </Card>

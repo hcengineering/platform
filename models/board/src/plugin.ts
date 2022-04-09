@@ -16,7 +16,7 @@
 
 import { boardId, Card, CardAction } from '@anticrm/board'
 import board from '@anticrm/board-resources/src/plugin'
-import type { Client, Ref, Space } from '@anticrm/core'
+import type { TxOperations as Client, Ref, Space } from '@anticrm/core'
 import { mergeIds, Resource } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
@@ -33,6 +33,8 @@ export default mergeIds(boardId, board, {
     KanbanView: '' as AnyComponent
   },
   cardAction: {
+    Cover: '' as Ref<CardAction>,
+    Join: '' as Ref<CardAction>,
     Members: '' as Ref<CardAction>,
     Labels: '' as Ref<CardAction>,
     Checklist: '' as Ref<CardAction>,
@@ -44,9 +46,13 @@ export default mergeIds(boardId, board, {
     Copy: '' as Ref<CardAction>,
     MakeTemplate: '' as Ref<CardAction>,
     Watch: '' as Ref<CardAction>,
-    Archive: '' as Ref<CardAction>
+    Archive: '' as Ref<CardAction>,
+    SendToBoard: '' as Ref<CardAction>,
+    Delete: '' as Ref<CardAction>
   },
   cardActionHandler: {
+    Cover: '' as Resource<(card: Card, client: Client) => void>,
+    Join: '' as Resource<(card: Card, client: Client) => void>,
     Members: '' as Resource<(card: Card, client: Client) => void>,
     Labels: '' as Resource<(card: Card, client: Client) => void>,
     Checklist: '' as Resource<(card: Card, client: Client) => void>,
@@ -58,7 +64,15 @@ export default mergeIds(boardId, board, {
     Copy: '' as Resource<(card: Card, client: Client) => void>,
     MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
     Watch: '' as Resource<(card: Card, client: Client) => void>,
-    Archive: '' as Resource<(card: Card, client: Client) => void>
+    Archive: '' as Resource<(card: Card, client: Client) => void>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => void>,
+    Delete: '' as Resource<(card: Card, client: Client) => void>
+  },
+  cardActionSupportedHandler: {
+    Join: '' as Resource<(card: Card, client: Client) => boolean>,
+    Archive: '' as Resource<(card: Card, client: Client) => boolean>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => boolean>,
+    Delete: '' as Resource<(card: Card, client: Client) => boolean>
   },
   space: {
     DefaultBoard: '' as Ref<Space>

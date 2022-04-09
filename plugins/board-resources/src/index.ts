@@ -22,6 +22,7 @@ import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived } from './utils/CardUtils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -32,5 +33,14 @@ export default async (): Promise<Resources> => ({
     CardPresenter,
     TemplatesIcon,
     KanbanView
+  },
+  cardActionHandler: {
+    Join: addCurrentUser
+  },
+  cardActionSupportedHandler: {
+    Join: canAddCurrentUser,
+    Archive: isUnarchived,
+    SendToBoard: isArchived,
+    Delete: isArchived
   }
 })

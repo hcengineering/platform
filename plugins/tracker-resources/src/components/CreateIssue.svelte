@@ -13,26 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
-  import ui, { Button, DateRangePresenter, EditBox, showPopup } from '@anticrm/ui'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
   import Card from './Card.svelte'
-  import SelectPopup from './SelectPopup.svelte'
+  import StatusSelector from './StatusSelector.svelte'
+  import PrioritySelector from './PrioritySelector.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
   export let issueStatus = IssueStatus.Backlog
-  
   $: _space = space
   $: _parent = parent
 
-  const assignee: Ref<Employee> | null = null
+  let assignee: Ref<Employee> | null = null
 
   const object: Data<Issue> = {
     title: '',
@@ -86,27 +87,11 @@
     await client.createDoc(tracker.class.Issue, _space, value, taskId)
   }
 
-  const startDate: number | null = null
-  const targetDate: number | null = null
-  interface IPair {
-    icon: Asset
-    label: IntlString
-  }
-  const statuses: Array<IPair> =
-    [{ icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
-      { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
-      { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
-      { icon: tracker.icon.StatusDone, label: tracker.string.Done },
-      { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }]
-  // TODO: Refactor
-  let selectStatus: IPair = statuses[issueStatus]
-  const priorities: Array<IPair> =
-    [{ icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
-      { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
-      { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
-      { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
-      { icon: tracker.icon.PriorityLow, label: tracker.string.Low }]
-  let selectPriority: IPair = priorities[0]
+  const moreActions: Array<{ icon: Asset; label: IntlString }> = [
+    { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
+    { icon: tracker.icon.Parent, label: tracker.string.Parent }
+  ]
+  let issueDate: number | null = null
 </script>
 
 <!-- canSave: object.title.length > 0 && _space != null -->
@@ -132,42 +117,48 @@
     kind={'large-style'}
     focus
   />
-  <!-- <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}/> -->
-  <!-- <UserBox
-    _class={contact.class.Employee}
-    title={tracker.string.Assignee}
-    caption={tracker.string.Assignee}
-    bind:value={assignee}
-    allowDeselect
-    titleDeselect={tracker.string.TaskUnAssign}
-  /> -->
-  <div style="height: 30px"></div>
+  <div class="mt-4">
+    <StyledTextBox
+      alwaysEdit
+      showButtons={false}
+      bind:content={object.description}
+      placeholder={tracker.string.IssueDescriptionPlaceholder}
+    />
+  </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
-    <Button
-      label={selectStatus.label}
-      icon={selectStatus.icon}
-      width={'min-content'}
-      size={'small'}
-      kind={'no-border'}
-      on:click={(ev) => {
-        showPopup(SelectPopup, { value: statuses, placeholder: tracker.string.SetStatus, searchable: true }, ev.currentTarget, (result) => {
-          if (result !== undefined) { selectStatus = result }
-        })
-      }}
+    <StatusSelector bind:status={object.status} />
+    <PrioritySelector bind:priority={object.priority} />
+    <UserBox
+      _class={contact.class.Employee}
+      label={tracker.string.Assignee}
+      placeholder={tracker.string.AssignTo}
+      bind:value={assignee}
+      allowDeselect
+      titleDeselect={tracker.string.Unassigned}
     />
     <Button
-      label={selectPriority.label}
-      icon={selectPriority.icon}
-      width={'min-content'}
-      size={'small'}
-      kind={'no-border'}
+      label={tracker.string.Labels}
+      icon={tracker.icon.Labels}
+      width="min-content"
+      size="small"
+      kind="no-border"
+    />
+    <Button
+      label={tracker.string.Project}
+      icon={tracker.icon.Projects}
+      width="min-content"
+      size="small"
+      kind="no-border"
+    />
+    <DatePresenter value={issueDate} editable />
+    <Button
+      icon={tracker.icon.MoreActions}
+      width="min-content"
+      size="small"
+      kind="transparent"
       on:click={(ev) => {
-        showPopup(SelectPopup, { value: priorities, placeholder: tracker.string.SetStatus }, ev.currentTarget, (result) => {
-          if (result !== undefined) { selectPriority = result }
-        })
+        showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
       }}
     />
-    <DateRangePresenter value={startDate} labelNull={ui.string.StartDate} editable />
-    <DateRangePresenter value={targetDate} labelNull={ui.string.TargetDate} editable />
   </div>
 </Card>

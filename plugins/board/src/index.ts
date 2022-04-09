@@ -15,10 +15,11 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Client, Doc, Markup, Ref } from '@anticrm/core'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -50,14 +51,28 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
+export interface CardDate {
+  dueDate?: Timestamp
+  isChecked?: boolean
+  startDate?: Timestamp
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
+  date?: CardDate
   description: Markup
 
-  members: Ref<Employee>[]
+  isArchived?: boolean
 
-  location: string
+  members?: Ref<Employee>[]
+
+  labels?: Ref<CardLabel>[]
+
+  location?: string
 
   coverColor?: number
   coverImage?: string
@@ -69,10 +84,11 @@ export interface Card extends Task {
  * @public
  */
 export interface CardAction extends Doc {
+  component?: AnyComponent
   hint?: IntlString
   icon: Asset
   isInline?: boolean
-  isTransparent?: boolean
+  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
   label: IntlString
   position: number
   type: string
@@ -93,6 +109,7 @@ const boards = plugin(boardId, {
     Board: '' as Ref<Doc>
   },
   cardActionType: {
+    Suggested: 'Suggested',
     Editor: 'Editor',
     Cover: 'Cover',
     AddToCard: 'AddToCard',
@@ -102,7 +119,8 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardAction: '' as Ref<Class<CardAction>>
+    CardAction: '' as Ref<Class<CardAction>>,
+    CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {
     Board: '' as Asset,

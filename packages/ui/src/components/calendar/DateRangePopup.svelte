@@ -14,197 +14,28 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { dpstore, IconNavPrev, IconNavNext, Icon } from '../..'
-  import { TCellStyle, ICell } from './internal/DateUtils'
-  import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
+  import { dpstore } from '../..'
+  import Month from './Month.svelte'
 
   const dispatch = createEventDispatcher()
 
-  let currentDate: Date
-  let viewDate: Date
-  $: if ($dpstore.currentDate) {
-    currentDate = $dpstore.currentDate
-    viewDate = new Date(currentDate)
-  }
-
-  let mondayStart: boolean = true
-  let monthYear: string
-  const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
-
-  $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
-  let days: Array<ICell> = []
-
-  const getDateStyle = (date: Date): TCellStyle => {
-    if (areDatesEqual(currentDate, date)) return 'selected'
-    return 'not-selected'
-  }
-  
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(viewDate); i++) {
-      const tempDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), i)
-      days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate)
-      })
-    }
-    days = days
-    monthYear = capitalizeFirstLetter(getMonthName(viewDate)) + ' ' + viewDate.getFullYear()
-  }
-  $: if (viewDate) renderCellStyles()
-
   const today: Date = new Date(Date.now())
-  const isToday = (n: number): boolean => {
-    if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
-    return false
-  }
+  $: currentDate = $dpstore.currentDate ?? today
+  let mondayStart: boolean = true
 </script>
 
-<div class="daterange-popup-container">
-  <div class="header">
-    {#if viewDate}
-      <div class="monthYear">{monthYear}</div>
-      <div class="group">
-        <div class="btn" on:click={() => {
-          viewDate.setMonth(viewDate.getMonth() - 1)
-          renderCellStyles()
-        }}>
-          <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
-        </div>
-        <div class="btn" on:click={() => {
-          viewDate.setMonth(viewDate.getMonth() + 1)
-          renderCellStyles()
-        }}>
-          <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  {#if viewDate}
-    <div class="calendar">
-      {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="caption">{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span>
-      {/each}
-      {#each days as day, i}
-        <div
-          class="day {day.style}"
-          class:today={isToday(i)}
-          class:day-off={day.dayOfWeek > 5}
-          style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
-          on:click|stopPropagation={() => {
-            viewDate.setDate(i + 1)
-            dispatch('close', viewDate)
-          }}
-        >
-          {i + 1}
-        </div>
-      {/each}
-    </div>
-  {/if}
+<div class="month-popup-container">
+  <Month bind:currentDate={currentDate} {mondayStart} on:update={(result) => {
+    if (result.detail !== undefined) {
+      dispatch('close', result.detail)
+    }
+  }} />
 </div>
 
 <style lang="scss">
-  .daterange-popup-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    color: var(--theme-caption-color);
+  .month-popup-container {
     background: var(--popup-bg-color);
     border-radius: .5rem;
     box-shadow: var(--popup-shadow);
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1rem .75rem;
-      color: var(--caption-color);
-
-      .monthYear {
-        font-weight: 500;
-        font-size: 1rem;
-        &::first-letter { text-transform: capitalize; }
-      }
-      .group {
-        display: flex;
-        align-items: center;
-        .btn {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 1.25rem;
-          height: 1.75rem;
-          color: var(--dark-color);
-          cursor: pointer;
-
-          .icon-btn { height: .75rem; }
-          &:hover { color: var(--accent-color); }
-        }
-      }
-    }
-  }
-
-  .calendar {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: .5rem;
-    padding: 0 1rem 1rem;
-
-    .caption, .day {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 1.625rem;
-      height: 1.625rem;
-      font-size: 1rem;
-      color: var(--content-color);
-    }
-    .caption {
-      align-items: start;
-      height: 2rem;
-      color: var(--dark-color);
-      &::first-letter { text-transform: capitalize; }
-    }
-    .day {
-      position: relative;
-      color: var(--accent-color);
-      background-color: rgba(var(--accent-color), .05);
-      border: 1px solid transparent;
-      border-radius: 50%;
-      cursor: pointer;
-
-      &.day-off { color: var(--content-color); }
-      &.today {
-        font-weight: 500;
-        color: var(--caption-color);
-        background-color: var(--button-bg-color);
-        border-color: var(--dark-color);
-      }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
-      &.selected, &:hover {
-        color: var(--caption-color);
-        background-color: var(--primary-bg-color);
-      }
-
-      &:before {
-        content: '';
-        position: absolute;
-        inset: -.625rem;
-      }
-    }
-
-    &::before {
-      position: absolute;
-      content: '';
-      top: 2rem;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background-color: var(--button-bg-color);
-    }
   }
 </style>

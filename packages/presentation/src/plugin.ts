@@ -41,6 +41,8 @@ export default plugin(presentationId, {
     Change: '' as IntlString,
     Remove: '' as IntlString,
     Members: '' as IntlString,
+    Search: '' as IntlString,
+    Unassigned: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

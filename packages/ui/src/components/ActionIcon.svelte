@@ -44,10 +44,11 @@
     cursor: pointer;
 
     .icon {
+      color: var(--dark-color);
       &.invisible { opacity: 0; }
     }
     &:hover .icon {
-      color: var(--theme-caption-color);
+      color: var(--accent-color);
       opacity: 1;
     }
     &:focus {

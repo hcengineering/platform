@@ -122,7 +122,7 @@
 
       <div class="text-sm mt-4">
         <DropdownLabels
-          title={tags.string.CategoryLabel}
+          label={tags.string.CategoryLabel}
           bind:selected={category}
           items={categoryItems}
           on:selected={() => {

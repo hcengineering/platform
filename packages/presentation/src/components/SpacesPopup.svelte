@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
-
-  import ui, { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
-  import SpaceInfo from './SpaceInfo.svelte'
-
+  import { translate } from '@anticrm/platform'
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
   import { createQuery } from '../utils'
+  import SpaceInfo from './SpaceInfo.svelte'
+  import presentation from '..'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined
 
   let search: string = ''
   let objects: Space[] = []
+  let phTraslate: string = ''
+  $: translate(presentation.string.Search, {}).then(res => { phTraslate = res })
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -33,21 +34,17 @@
   afterUpdate(() => { dispatch('update', Date.now()) })
 </script>
 
-<div class="antiPopup antiPopup-withHeader">
-  <div class="ap-space" />
-  <div class="ap-header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} focus />
-    <div class="ap-caption"><Label label={ui.string.Suggested} /></div>
+<div class="selectPopup">
+  <div class="header">
+    <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
   </div>
-  <div class="ap-space" />
-  <div class="ap-scroll">
-    <div class="ap-box">
+  <div class="scroll">
+    <div class="box">
       {#each objects as space}
-        <button class="ap-menuItem" on:click={() => { dispatch('close', space) }}>
+        <button class="menu-item flex-between" on:click={() => { dispatch('close', space) }}>
           <SpaceInfo size={'large'} value={space} />
         </button>
       {/each}
     </div>
   </div>
-  <div class="ap-space" />
 </div>

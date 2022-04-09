@@ -78,10 +78,11 @@
           modalHTML.style.top = '0'
           modalHTML.style.bottom = '0'
           modalHTML.style.right = '0'
-        } else if (element === 'float') {
-          modalHTML.style.top = '4rem'
-          modalHTML.style.bottom = '4rem'
-          modalHTML.style.right = '4rem'
+        } else if (element === 'top') {
+          modalHTML.style.top = '15vh'
+          modalHTML.style.left = '50%'
+          modalHTML.style.transform = 'translateX(-50%)'
+          show = true
         } else if (element === 'account') {
           modalHTML.style.bottom = '2.75rem'
           modalHTML.style.left = '5rem'
@@ -92,7 +93,7 @@
           modalHTML.style.right = '0'
         }
       } else {
-        modalHTML.style.top = '25%'
+        modalHTML.style.top = '50%'
         modalHTML.style.left = '50%'
         modalHTML.style.transform = 'translate(-50%, -50%)'
         show = true

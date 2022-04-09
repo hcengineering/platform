@@ -97,11 +97,11 @@
         />
         <UserBox
           _class={contact.class.Employee}
-          title={tracker.string.Assignee}
-          caption={tracker.string.Assignee}
+          label={tracker.string.Assignee}
+          placeholder={tracker.string.Assignee}
           bind:value={object.assignee}
           allowDeselect
-          titleDeselect={tracker.string.TaskUnAssign}
+          titleDeselect={tracker.string.Unassigned}
           on:change={() => change('assignee', object?.assignee)}
         />
       </Grid>
