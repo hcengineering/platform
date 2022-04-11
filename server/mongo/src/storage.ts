@@ -38,7 +38,8 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  toFindResult
+  toFindResult,
+  WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
@@ -303,21 +304,24 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
       pipeline.push({ $sort: sort })
     }
-    if (options.limit !== undefined) {
-      pipeline.push({ $limit: options.limit })
-    }
     const domain = this.hierarchy.getDomain(clazz)
     let cursor = this.db.collection(domain).aggregate(pipeline)
     if (options?.projection !== undefined) {
       cursor = cursor.project(options.projection)
     }
-    const result = (await cursor.toArray()) as FindResult<T>
+    let result = (await cursor.toArray()) as WithLookup<T>[]
+
+    const total = result.length
+    if (options.limit !== undefined) {
+      result = result.slice(0, options.limit)
+    }
+
     for (const row of result) {
       row.$lookup = {}
       await this.fillLookupValue(options.lookup, row)
       this.clearExtraLookups(row)
     }
-    return result
+    return toFindResult(result, total)
   }
 
   private clearExtraLookups (row: any): void {
