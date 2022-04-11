@@ -2,7 +2,7 @@
   import type { Employee } from '@anticrm/contact'
   import { getFirstName, getLastName } from '@anticrm/contact'
   import { ContactPresenter } from '@anticrm/contact-resources'
-  import { CircleButton, showPopup } from '@anticrm/ui'
+  import { Button, showPopup } from '@anticrm/ui'
 
   export let value: Employee
   export let size: 'large' | 'medium'
@@ -12,12 +12,14 @@
 </script>
 
 {#if value}
-  <CircleButton
+  <Button
     {size}
+    kind="no-border"
+    isCircle={true}
     on:click={() => {
       showPopup(ContactPresenter, { value }) // TODO: show proper popup
     }}
   >
     <div slot="content" class="text-md">{nameLabel}</div>
-  </CircleButton>
+  </Button>
 {/if}

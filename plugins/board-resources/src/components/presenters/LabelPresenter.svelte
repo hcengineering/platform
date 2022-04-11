@@ -5,12 +5,14 @@
   export let value: CardLabel
   export let size: 'large' | 'medium'
 
-  const backgroundColor = getPlatformColor(value.color)
+  const background = getPlatformColor(value.color)
 
 </script>
 
 {#if value}
-  <Button {size} on:click>
-    <div style:background={backgroundColor} slot="content">{value.title}</div>
-  </Button>
+  <div style:background class="border-radius-1">
+    <Button {size} kind="transparent" on:click>
+      <div class="flex-center h-full w-full min-w-4" slot="content">{value.title ?? ''}</div>
+    </Button>
+  </div>
 {/if}

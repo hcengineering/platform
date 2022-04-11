@@ -19,7 +19,7 @@
   import contact, { Employee } from '@anticrm/contact'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, CircleButton, IconAdd, Label } from '@anticrm/ui'
+  import { Button, IconAdd, Label } from '@anticrm/ui'
 
   import board from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
@@ -69,7 +69,7 @@
 
 {#if value}
   {#if members && members.length > 0}
-    <div class="flex-col mt-4">
+    <div class="flex-col mt-4 mr-6">
       <div class="text-md font-medium">
         <Label label={board.string.Members} />
       </div>
@@ -77,27 +77,27 @@
         {#each members as member}
           <MemberPresenter value={member} size="large" />
         {/each}
-        <CircleButton icon={IconAdd} size="large" on:click={membersHandler} />
+        <Button icon={IconAdd} isCircle={true} kind="no-border" size="large" on:click={membersHandler} />
       </div>
     </div>
   {/if}
   {#if labels && labels.length > 0}
-    <div class="flex-col mt-4">
+    <div class="flex-col mt-4 mr6">
       <div class="text-md font-medium">
         <Label label={board.string.Labels} />
       </div>
       <div class="flex-row-center flex-gap-1">
         {#each labels as label}
-          <LabelPresenter value={label} on:click={labelsHandler} />
+          <LabelPresenter value={label} size="large" on:click={labelsHandler} />
         {/each}
-        <Button icon={IconAdd} size="large" on:click={labelsHandler} />
+        <Button icon={IconAdd} kind="no-border" size="large" on:click={labelsHandler} />
       </div>
     </div>
   {/if}
   {#if value.date && hasDate(value)}
     <div class="flex-col mt-4">
       <div class="text-md font-medium">
-        <Label label={board.string.Labels} />
+        <Label label={board.string.Dates} />
       </div>
       <DatePresenter value={value.date} on:click={dateHandler} />
     </div>
