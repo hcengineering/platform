@@ -22,7 +22,8 @@
   import task, { calcRank } from '@anticrm/task'
   import KanbanCard from './KanbanCard.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
-
+  import AddCard from './add-card/AddCard.svelte'
+  
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
   export let search: string
@@ -80,5 +81,9 @@
 
   <svelte:fragment slot='additionalPanel'>
     <KanbanPanelEmpty on:add={(e) => { addItem(e.detail) }} />
+  </svelte:fragment>
+
+  <svelte:fragment slot="afterCard" let:space={targetSpace} let:state={targetState}>
+    <AddCard space={targetSpace} state={targetState}/>
   </svelte:fragment>
 </KanbanUI>
