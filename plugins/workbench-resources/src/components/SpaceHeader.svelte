@@ -47,8 +47,7 @@
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
   }
 
-  let selectedViewlet = 0
-  $: viewlet = viewlets[selectedViewlet]
+  $: updateViewlets(viewlets)
 
   $: if (prevSpaceId !== spaceId) {
     search = ''
@@ -67,6 +66,12 @@
     const editor = await getEditor(space._class)
     showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'right')
   }
+
+
+  function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
+    const index = viewlets.findIndex((p) => p.descriptor === viewlet?.descriptor)
+    viewlet = index === -1 ? viewlets[0] : viewlets[index]
+  }
 </script>
 
 <div class="ac-header divide full">
@@ -74,11 +79,11 @@
     <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} on:click={onSpaceEdit} />
     {#if viewlets.length > 1}
       <div class="flex">
-        {#each viewlets as viewlet, i}
-          <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-            <button class="ac-header__icon-button" class:selected={selectedViewlet === i} on:click={() => { selectedViewlet = i }}>
-              {#if viewlet.$lookup?.descriptor?.icon}
-                <Icon icon={viewlet.$lookup?.descriptor?.icon} size={'small'} />
+        {#each viewlets as v, i}
+          <Tooltip label={v.$lookup?.descriptor?.label} direction={'top'}>
+            <button class="ac-header__icon-button" class:selected={viewlet?._id === v._id} on:click={() => { viewlet = v }}>
+              {#if v.$lookup?.descriptor?.icon}
+                <Icon icon={v.$lookup?.descriptor?.icon} size={'small'} />
               {/if}
             </button>
           </Tooltip>
