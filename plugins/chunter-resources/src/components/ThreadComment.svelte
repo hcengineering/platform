@@ -55,7 +55,7 @@
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => await client.remove(message)
+    action: async () => await client.removeDoc(message._class, message.space, message._id)
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
