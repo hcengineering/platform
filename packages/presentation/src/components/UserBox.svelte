@@ -15,20 +15,17 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import type { IntlString } from '@anticrm/platform'
-  import { getClient } from '../utils'
-  import { Label, showPopup, Button, Tooltip } from '@anticrm/ui'
-  import type { TooltipAligment } from '@anticrm/ui'
-  import Avatar from './Avatar.svelte'
-  import UsersPopup from './UsersPopup.svelte'
-  import UserInfo from './UserInfo.svelte'
-  import IconPerson from './icons/Person.svelte'
-
-  import type { Ref, Class } from '@anticrm/core'
   import contact, { Contact, formatName } from '@anticrm/contact'
+  import type { Class, Ref } from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import type { TooltipAligment } from '@anticrm/ui'
+  import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
+  import { getClient } from '../utils'
+  import IconPerson from './icons/Person.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let _class: Ref<Class<Contact>>
   export let label: IntlString

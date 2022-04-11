@@ -109,7 +109,7 @@
     </div>
   </Scroller>
   {#if showCommenInput}
-    <div class="ref-input fill">
+    <div class="ref-input">
       <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
   {/if}
@@ -129,14 +129,14 @@
     padding: 1.5rem 2.5rem;
 
     &.fill {
-      background-color: var(--theme-bg-accent-normal);
+      background-color: var(--body-color);
     }
   }
   .p-activity {
     padding: 1.5rem 2.5rem 2.5rem;
   }
   .scroller-back {
-    background-color: var(--theme-bg-accent-normal);
+    background-color: var(--body-accent);
   }
 
   :global(.grid .msgactivity-container:last-child::after) {

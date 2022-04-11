@@ -18,7 +18,7 @@
   import { afterUpdate } from 'svelte'
   import { AnySvelteComponent, Spinner } from '..'
   import { closePanel, PanelProps, panelstore } from '../panelup'
-  import { popupstore } from '../popups'
+  import { fitPopupElement, popupstore } from '../popups'
 
   export let contentPanel: HTMLElement
 
@@ -55,67 +55,7 @@
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
-      if (props.element) {
-        show = false
-        modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
-        modalHTML.style.maxHeight = modalHTML.style.height = ''
-        if (typeof props.element !== 'string') {
-          const el = props.element as HTMLElement
-          const rect = el.getBoundingClientRect()
-          const rectPopup = modalHTML.getBoundingClientRect()
-          // Vertical
-          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-            modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
-          } else if (rectPopup.height + 28 < rect.top) {
-            modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
-          } else {
-            modalHTML.style.top = modalHTML.style.bottom = '1rem'
-          }
-
-          // Horizontal
-          if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
-            modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-          } else {
-            modalHTML.style.left = rect.left + 'px'
-          }
-        } else if (props.element === 'right' && contentPanel !== undefined) {
-          const rect = contentPanel.getBoundingClientRect()
-          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
-          modalHTML.style.bottom = '0.75rem'
-          modalHTML.style.right = '0.75rem'
-        } else if (props.element === 'top') {
-          modalHTML.style.top = '15vh'
-          modalHTML.style.left = '50%'
-          modalHTML.style.transform = 'translateX(-50%)'
-          show = true
-        } else if (props.element === 'account') {
-          modalHTML.style.bottom = '2.75rem'
-          modalHTML.style.left = '5rem'
-        } else if (props.element === 'full' && contentPanel !== undefined) {
-          const rect = contentPanel.getBoundingClientRect()
-          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
-          modalHTML.style.bottom = '0.75rem'
-          modalHTML.style.left = '0.75rem'
-          modalHTML.style.right = '0.75rem'
-        } else if (props.element === 'content' && contentPanel !== undefined) {
-          const rect = contentPanel.getBoundingClientRect()
-          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
-          modalHTML.style.bottom = '0.75rem'
-          modalHTML.style.left = `calc(${rect.left}px + 0.5rem)`
-          modalHTML.style.right = '0.75rem'
-        } else if (props.element === 'middle' && contentPanel !== undefined) {
-          const rect = contentPanel.getBoundingClientRect()
-          modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
-          modalHTML.style.bottom = '0.75rem'
-          modalHTML.style.left = '50%'
-          modalHTML.style.transform = 'translateX(-50%)'
-        }
-      } else {
-        modalHTML.style.top = '50%'
-        modalHTML.style.left = '50%'
-        modalHTML.style.transform = 'translate(-50%, -50%)'
-        show = true
-      }
+      show = fitPopupElement(modalHTML, props.element, contentPanel)
     }
   }
 
@@ -140,25 +80,27 @@
 {#if props}
   {#if !component}
     <Spinner />
-  {:else}    
-  <div class="antiPanel panel-instance" bind:this={modalHTML}>      
-      <svelte:component
-        this={component}
-        bind:this={componentInstance}
-        _id={props._id}
-        _class={props._class}
-        rightSection={props.rightSection}
-        position={props.element }
-        on:close={_close}
-        on:update={() => {
-          if (props) {
-            fitPopup(props, contentPanel)
-          }
-        }}
-      />
+  {:else}
+    <div class="panel-instance" class:bg={props.element === 'content'} bind:this={modalHTML}>
+      <div class="p-2 w-full h-full">
+        <svelte:component
+          this={component}
+          bind:this={componentInstance}
+          _id={props._id}
+          _class={props._class}
+          rightSection={props.rightSection}
+          position={props.element}
+          on:close={_close}
+          on:update={() => {
+            if (props) {
+              fitPopup(props, contentPanel)
+            }
+          }}
+        />
+      </div>
     </div>
     {#if props.element !== 'content'}
-      <div class="modal-overlay" class:show style={'z-index: 400'} on:click={() => escapeClose()} />
+      <div class="modal-overlay" class:show on:click={() => escapeClose()} />
     {/if}
   {/if}
 {/if}
@@ -168,8 +110,12 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
+    &.bg {
+      background-color: var(--theme-bg-color);
+    }
   }
   .modal-overlay {
+    z-index: 400;
     position: fixed;
     top: 0;
     left: 0;
@@ -177,6 +123,6 @@
     height: 100%;
     &.show {
       background: rgba(0, 0, 0, 0.5);
-    }
+    }   
   }
 </style>

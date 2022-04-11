@@ -65,9 +65,15 @@
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--board-card-bg-color);
     border: 1px solid var(--board-card-bg-color);
-    border-radius: .25rem;
+    border-radius: .5rem;
+    transition-property: box-shadow, background-color;
+    transition-timing-function: ease-in-out;
+    transition-duration: .15s;
 
-    &:hover { background-color: var(--board-card-bg-hover); }
+    &:hover {
+      background-color: var(--board-card-bg-hover);
+      box-shadow: var(--popup-shadow);
+    }
 
     .label {
       margin-bottom: 1.75rem;
