@@ -151,6 +151,30 @@
     }
   }
   let newMessagesPos: number = -1
+
+  async function handleCommentDeletion (comment: ThreadMessage, commentIndex: number) {
+    if (!message?.replies) {
+        return
+    }
+    const {length} = comments
+    const isLastReply = comment === comments[length - 1] && length > 1
+
+    const newReplies = [...message.replies]
+    newReplies.splice(commentIndex, 1)
+
+    await client.update(
+      message,
+      { 
+        replies: newReplies,
+        ...(isLastReply 
+            ? {
+              lastReply: comments[length - 2].createOn        
+            }
+            : {}
+        )
+      } 
+    )
+  }
 </script>
 
 <div class="header">
@@ -174,7 +198,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment message={comment} {employees} />
+      <ThreadComment message={comment} {employees} on:delete={e => handleCommentDeletion(e.detail, i)} />
     {/each}
   {/if}
 </div>

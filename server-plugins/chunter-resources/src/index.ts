@@ -58,7 +58,7 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
   const hierarchy = control.hierarchy
   if (tx._class !== core.class.TxCreateDoc) return []
   const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
-  if (!hierarchy.isDerived(doc._class, chunter.class.Comment)) {
+  if (!hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
     return []
   }
 

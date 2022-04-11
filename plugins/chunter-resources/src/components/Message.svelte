@@ -124,7 +124,7 @@
         </div>
         {#if !thread}
           <div>
-            {#if message.replies}<Replies
+            {#if message.replies?.length}<Replies
                 replies={message.replies}
                 lastReply={message.lastReply}
                 on:click={openThread}
