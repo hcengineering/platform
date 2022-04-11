@@ -48,7 +48,7 @@ export interface Response<R> {
  * @returns
  */
 export function protoSerialize (object: object): string {
-  return JSON.stringify(object, (key, value) => { return value ?? null })
+  return JSON.stringify(object, replacer)
 }
 
 /**
@@ -57,7 +57,7 @@ export function protoSerialize (object: object): string {
  * @returns
  */
 export function protoDeserialize (data: string): any {
-  return JSON.parse(data)
+  return JSON.parse(data, receiver)
 }
 
 /**
@@ -76,6 +76,27 @@ export function serialize (object: Request<any> | Response<any>): string {
  */
 export function readResponse<D> (response: string): Response<D> {
   return protoDeserialize(response)
+}
+
+function replacer (key: string, value: any): any {
+  if (Array.isArray(value) && (value as any).total !== undefined) {
+    return {
+      dataType: 'TotalArray',
+      total: (value as any).total,
+      value: [...value]
+    }
+  } else {
+    return value ?? null
+  }
+}
+
+function receiver (key: string, value: any): any {
+  if (typeof value === 'object' && value !== null) {
+    if (value.dataType === 'TotalArray') {
+      return Object.assign(value.value, { total: value.total })
+    }
+  }
+  return value
 }
 
 /**
