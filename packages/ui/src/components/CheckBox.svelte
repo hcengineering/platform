@@ -13,14 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte'
+
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
   export let circle: boolean = false
   export let primary: boolean = false
+
+  const dispatch = createEventDispatcher()
+
+  const handleValueChanged = (event: Event) => {
+    const eventTarget = event.target as HTMLInputElement
+    const isChecked = eventTarget.checked
+
+    dispatch('value', isChecked)
+  }
+
 </script>
 
 <label class="checkbox" class:circle class:primary class:checked>
-  <input class="chBox" type="checkbox" bind:checked on:change />
+  <input class="chBox" type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if !circle}
       <path
