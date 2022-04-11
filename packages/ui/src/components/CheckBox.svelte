@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let checked: boolean = false
   export let symbol: 'check' | 'minus' = 'check'
