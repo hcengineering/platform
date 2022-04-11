@@ -18,10 +18,11 @@
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { EditBox, Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
+  import { Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
+  import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
@@ -40,36 +41,9 @@
 
   const tabLabels: IntlString[] = [chunter.string.Channel, chunter.string.Members]
   let selectedTabIndex = 0
-
-  function onNameChange (ev: Event) {
-    const value = (ev.target as HTMLInputElement).value
-    if (value.trim().length > 0) {
-      client.updateDoc(_class, channel.space, channel._id, { name: value })
-    } else {
-      // Just refresh value
-      query.query(chunter.class.Channel, { _id }, (result) => {
-        channel = result[0]
-      })
-    }
-  }
-
-  function onTopicChange (ev: Event) {
-    const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel, { topic: newTopic })
-  }
-
-  function onDescriptionChange (ev: Event) {
-    const newDescription = (ev.target as HTMLInputElement).value
-    client.update(channel, { description: newDescription })
-  }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
-    dispatch('close')
-  }}
-/>
+<div on:click={() => {dispatch('close')}} />
 <div class="antiDialogs antiComponent">
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-title">
@@ -104,37 +78,7 @@
   </div>
   <Scroller padding>
     {#if selectedTabIndex === 0}
-      <!-- Channel description -->
-      {#if channel}
-        <div class="flex-col flex-gap-3">
-          <EditBox
-            label={clazz.label}
-            icon={clazz.icon}
-            bind:value={channel.name}
-            placeholder={clazz.label}
-            maxWidth="39rem"
-            focus
-            on:change={onNameChange}
-          />
-          <EditBox
-            label={chunter.string.Topic}
-            bind:value={channel.topic}
-            placeholder={chunter.string.Topic}
-            maxWidth="39rem"
-            focus
-            on:change={onTopicChange}
-          />
-          <EditBox
-            label={chunter.string.ChannelDescription}
-            bind:value={channel.description}
-            placeholder={chunter.string.ChannelDescription}
-            maxWidth="39rem"
-            focus
-            on:change={onDescriptionChange}
-          />
-          <!-- TODO: implement Attachments here -->
-        </div>
-      {/if}
+      <EditChannelDescriptionTab channel={channel} _id={_id} _class={_class} />
     {:else}
       <!-- Channel members -->
       <Members />

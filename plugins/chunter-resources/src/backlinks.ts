@@ -39,10 +39,10 @@ function extractBacklinks (
   attachedDocId: Ref<Doc> | undefined,
   message: string,
   kids: NodeListOf<ChildNode>
-): Array<Data<Backlink>> {
-  const result: Array<Data<Backlink>> = []
+): Data<Backlink>[] {
+  const result: Data<Backlink>[] = []
 
-  const nodes: Array<NodeListOf<ChildNode>> = [kids]
+  const nodes: NodeListOf<ChildNode>[] = [kids]
   while (true) {
     const nds = nodes.shift()
     if (nds === undefined) {
@@ -77,7 +77,7 @@ export function getBacklinks (
   backlinkClass: Ref<Class<Doc>>,
   attachedDocId: Ref<Doc> | undefined,
   content: string
-): Array<Data<Backlink>> {
+): Data<Backlink>[] {
   const parser = new DOMParser()
   const doc = parser.parseFromString(content, 'application/xhtml+xml')
   return extractBacklinks(backlinkId, backlinkClass, attachedDocId, content, doc.childNodes as NodeListOf<HTMLElement>)

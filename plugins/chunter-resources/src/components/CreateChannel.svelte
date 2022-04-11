@@ -24,7 +24,6 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  const description: string = ''
   export function canClose (): boolean {
     return name === ''
   }
@@ -33,7 +32,7 @@
   function createChannel () {
     client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
-      description,
+      description: '',
       private: false,
       archived: false,
       members: [getCurrentAccount()._id]
