@@ -16,8 +16,7 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import { Class, Ref } from '@anticrm/core'
-  import modelBoard from '@anticrm/model-board'
-  import { getResource } from '@anticrm/platform';
+  import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
@@ -26,7 +25,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import board from '../plugin'
-import { getCardActions } from '../utils/CardActionUtils';
+  import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardActivity from './editor/CardActivity.svelte'
@@ -53,8 +52,7 @@ import { getCardActions } from '../utils/CardActionUtils';
       state = result[0]
     })
 
-  getCardActions(client, {_id: modelBoard.cardAction.Move}).then(async (result) => {
-    
+  getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
     if (result[0]?.handler) {
       const handler = await getResource(result[0].handler)
       handleMove = () => {
@@ -65,7 +63,7 @@ import { getCardActions } from '../utils/CardActionUtils';
     }
   })
 
-  function change (field: string, value: any) {
+  function change(field: string, value: any) {
     if (object) {
       updateCard(client, object, field, value)
     }
@@ -77,60 +75,66 @@ import { getCardActions } from '../utils/CardActionUtils';
 </script>
 
 {#if object !== undefined}
-<Panel showHeader={false} on:close={() => dispatch('close')}>
-  <Scroller>
-    <div class="flex-col-stretch h-full w-165 p-6">
-      <!-- TODO cover -->
-      <div class="flex-row-streach">
-        <div class="w-9">
-          <Icon icon={board.icon.Card} size="large" />
-        </div>
-        <div class="fs-title text-lg">
-          <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
-        </div>
-      </div>
-      <div class="flex-row-streach">
-        <div class="w-9" />
-        <div>
-          <Label label={board.string.InList} /><span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
-        </div>
-      </div>
-      <div class="flex-row-streach">
-        <div class="flex-grow mr-4">
-          <div class="flex-row-streach">
-            <div class="w-9" />
-            <CardFields value={object} />
+  <Panel showHeader={false} on:close={() => dispatch('close')}>
+    <Scroller>
+      <div class="flex-col-stretch h-full w-165 p-6">
+        <!-- TODO cover -->
+        <div class="flex-row-streach">
+          <div class="w-9">
+            <Icon icon={board.icon.Card} size="large" />
           </div>
-          <div class="flex-row-streach mt-4 mb-2">
-            <div class="w-9">
-              <Icon icon={board.icon.Card} size="large" />
-            </div>
-            <div class="fs-title">
-              <Label label={board.string.Description} />
-            </div>
+          <div class="fs-title text-lg">
+            <EditBox
+              bind:value={object.title}
+              maxWidth="39rem"
+              focus
+              on:change={() => change('title', object?.title)}
+            />
           </div>
-          <div class="flex-row-streach">
-            <div class="w-9" />
-            <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
-              <StyledTextBox
-                alwaysEdit={true}
-                showButtons={false}
-                placeholder={board.string.DescriptionPlaceholder}
-                bind:content={object.description}
-                on:value={(evt) => change('description', evt.detail)}
-              />
-            </div>
-          </div>
-          <!-- TODO attachments-->
-          <!-- TODO checklists -->
-          <CardActivity value={object} />
         </div>
+        <div class="flex-row-streach">
+          <div class="w-9" />
+          <div>
+            <Label label={board.string.InList} />
+            <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
+          </div>
+        </div>
+        <div class="flex-row-streach">
+          <div class="flex-grow mr-4">
+            <div class="flex-row-streach">
+              <div class="w-9" />
+              <CardFields value={object} />
+            </div>
+            <div class="flex-row-streach mt-4 mb-2">
+              <div class="w-9">
+                <Icon icon={board.icon.Card} size="large" />
+              </div>
+              <div class="fs-title">
+                <Label label={board.string.Description} />
+              </div>
+            </div>
+            <div class="flex-row-streach">
+              <div class="w-9" />
+              <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
+                <StyledTextBox
+                  alwaysEdit={true}
+                  showButtons={false}
+                  placeholder={board.string.DescriptionPlaceholder}
+                  bind:content={object.description}
+                  on:value={(evt) => change('description', evt.detail)}
+                />
+              </div>
+            </div>
+            <!-- TODO attachments-->
+            <!-- TODO checklists -->
+            <CardActivity value={object} />
+          </div>
 
-        <CardActions value={object} />
+          <CardActions value={object} />
+        </div>
       </div>
-    </div>
-  </Scroller>
-</Panel>
+    </Scroller>
+  </Panel>
 {/if}
 
 <style lang="scss">

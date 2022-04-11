@@ -17,7 +17,6 @@
   import type { Card, CardLabel } from '@anticrm/board'
 
   import contact, { Employee } from '@anticrm/contact'
-  import modelBoard from '@anticrm/model-board'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Button, CircleButton, IconAdd, Label } from '@anticrm/ui'
@@ -51,22 +50,21 @@
     })
 
   getCardActions(client, {
-    _id: { $in: [modelBoard.cardAction.Dates, modelBoard.cardAction.Labels, modelBoard.cardAction.Members] }
+    _id: { $in: [board.cardAction.Dates, board.cardAction.Labels, board.cardAction.Members] }
   }).then(async (result) => {
     for (const action of result) {
       if (action.handler) {
         const handler = await getResource(action.handler)
-        if (action._id === modelBoard.cardAction.Dates) {
+        if (action._id === board.cardAction.Dates) {
           dateHandler = () => handler(value, client)
-        } else if (action._id === modelBoard.cardAction.Labels) {
+        } else if (action._id === board.cardAction.Labels) {
           labelsHandler = () => handler(value, client)
-        } else if (action._id === modelBoard.cardAction.Members) {
+        } else if (action._id === board.cardAction.Members) {
           membersHandler = () => handler(value, client)
         }
       }
     }
   })
-
 </script>
 
 {#if value}
@@ -77,7 +75,7 @@
       </div>
       <div class="flex-row-center flex-gap-1">
         {#each members as member}
-          <MemberPresenter value={member} size="large"/>
+          <MemberPresenter value={member} size="large" />
         {/each}
         <CircleButton icon={IconAdd} size="large" on:click={membersHandler} />
       </div>

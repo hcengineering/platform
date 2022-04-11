@@ -9,7 +9,6 @@
   const firstName = getFirstName(value.name)
   const lastName = getLastName(value.name)
   const nameLabel = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase()
-
 </script>
 
 {#if value}
@@ -17,7 +16,8 @@
     {size}
     on:click={() => {
       showPopup(ContactPresenter, { value }) // TODO: show proper popup
-    }}>
+    }}
+  >
     <div slot="content" class="text-md">{nameLabel}</div>
   </CircleButton>
 {/if}
