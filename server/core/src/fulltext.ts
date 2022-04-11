@@ -145,28 +145,33 @@ export class FullTextIndex implements WithFind {
     if ($search === undefined) return toFindResult([])
 
     let skip = 0
-    const result: FindResult<T> = toFindResult([])
+    const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+    const baseClass = this.hierarchy.getBaseClass(_class)
+    const classes = this.hierarchy.getDescendants(baseClass)
+    const fullTextLimit = 10000
     while (true) {
-      const docs = await this.adapter.search(_class, query, options?.limit, skip)
-      if (docs.length === 0) {
-        result.total = result.length
-        return result
-      }
-      skip += docs.length
-      const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>(docs.map((p) => p.id))
+      const docs = await this.adapter.search(classes, query, fullTextLimit, skip)
       for (const doc of docs) {
+        ids.add(doc.id)
         if (doc.attachedTo !== undefined) {
           ids.add(doc.attachedTo)
         }
       }
-      const resultIds = getResultIds(ids, _id)
-      const current = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
-      result.push(...current)
-      result.total += current.total
-      if (result.length > 0 && result.length >= (options?.limit ?? 0)) {
-        return result
+      if (docs.length < fullTextLimit) {
+        break
       }
+      skip += docs.length
     }
+    const resultIds = getResultIds(ids, _id)
+    const { limit, ...otherOptions } = options ?? { }
+    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, otherOptions)
+    const total = result.total
+    result.sort((a, b) => resultIds.indexOf(a._id) - resultIds.indexOf(b._id))
+    if (limit !== undefined) {
+      const res = toFindResult(result.splice(0, limit), total)
+      return res
+    }
+    return toFindResult(result, total)
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>, parentDoc?: Doc): AnyAttribute[] {

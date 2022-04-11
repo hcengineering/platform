@@ -25,7 +25,7 @@ class ElasticAdapter implements FullTextAdapter {
     await this.client.close()
   }
 
-  async search (_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, size: number | undefined, from: number | undefined): Promise<IndexedDoc[]> {
+  async search (_classes: Ref<Class<Doc>>[], query: DocumentQuery<Doc>, size: number | undefined, from: number | undefined): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
     const request: any = {
       bool: {
@@ -39,11 +39,9 @@ class ElasticAdapter implements FullTextAdapter {
         ],
         should: [
           {
-            term: {
-              _class: {
-                value: _class,
-                case_insensitive: true
-              }
+            terms: {
+              _class: _classes.map((c) => c.toLowerCase()),
+              boost: 10.0
             }
           }
         ]
@@ -53,12 +51,9 @@ class ElasticAdapter implements FullTextAdapter {
     if (query.space != null) {
       if (typeof query.space === 'object' && query.space.$in !== undefined) {
         request.bool.should.push({
-          term: {
-            space: {
-              value: query.space.$in,
-              boost: 2.0,
-              case_insensitive: true
-            }
+          terms: {
+            space: query.space.$in.map((c) => c.toLowerCase()),
+            boost: 2.0
           }
         })
       } else {
