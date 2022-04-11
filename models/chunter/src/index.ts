@@ -34,6 +34,9 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 export class TChannel extends TSpace implements Channel {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
+
+  @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
+  pinned?: Ref<ChunterMessage>[]
 }
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)

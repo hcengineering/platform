@@ -15,14 +15,15 @@
 
 <script lang="ts">
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { Message } from '@anticrm/chunter'
+  import { ChunterMessage, Message, Channel } from '@anticrm/chunter'
   import { generateId,getCurrentAccount,Ref,Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getClient } from '@anticrm/presentation'
   import { getCurrentLocation,navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
-  import Channel from './Channel.svelte'
+  import ChannelComponent  from './Channel.svelte'
+  import PinnedMessages from './PinnedMessages.svelte';
 
   export let space: Ref<Space>
 
@@ -60,9 +61,27 @@
     navigate(loc)
   }
 
+  async function onPinMessage(props: {messageId: Ref<ChunterMessage>, channelId: Ref<Channel>}) {
+    let pinned: Ref<ChunterMessage>[] = [];
+
+    await client.findOne<Channel>(chunter.class.Channel, {_id: props.channelId}).then(r => { pinned = r?.pinned ?? [] })
+      
+    pinned = pinned.includes(props.messageId)
+      ? pinned.filter(m => m !== props.messageId)
+      : [...pinned, props.messageId]
+
+    const me = getCurrentAccount()._id
+    const txFactory = new TxFactory(me)
+    const upd = txFactory.createTxUpdateDoc(chunter.class.Channel, space, props.channelId, {
+      pinned: pinned
+    })
+    client.tx(upd)
+  }
+
 </script>
 
-<Channel {space} on:openThread={(e) => { openThread(e.detail) }} />
+<PinnedMessages {space} on:pinMessage={(e) => { onPinMessage(e.detail) }} />
+<ChannelComponent {space} on:openThread={(e) => { openThread(e.detail) }} on:pinMessage={(e) => { onPinMessage(e.detail) }} />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage}/>
 </div>

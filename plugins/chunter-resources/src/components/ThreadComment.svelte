@@ -24,6 +24,7 @@
   import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -36,6 +37,7 @@
 
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
+  const dispatch = createEventDispatcher()
   const client = getClient()
 
   const reactions: boolean = false
@@ -82,6 +84,10 @@
       return employees.get(employee)
     }
   }
+
+  function pinMessage () {
+    dispatch('pinMessage', { messageId: message._id, channelId: message.space })
+  }
 </script>
 
 <div class="container">
@@ -109,7 +115,7 @@
         }}
       />
     </div>
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
+    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} action={pinMessage} /></div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>

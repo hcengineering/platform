@@ -90,6 +90,10 @@
   function openThread () {
     dispatch('openThread', message._id)
   }
+
+  function pinMessage () {
+    dispatch('pinMessage', { messageId: message._id, channelId: message.attachedTo })
+  }
 </script>
 
 <div class="container">
@@ -131,7 +135,7 @@
     {#if !thread}
       <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
     {/if}
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
+    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} action={pinMessage} /></div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>

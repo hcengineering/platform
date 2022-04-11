@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ThreadMessage, Message } from '@anticrm/chunter'
+  import type { ThreadMessage, Message, ChunterMessage, Channel } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -151,6 +151,25 @@
     }
   }
   let newMessagesPos: number = -1
+
+  async function onPinMessage (props: { messageId: Ref<ChunterMessage>; channelId: Ref<Channel> }) {
+    let pinned: Ref<ChunterMessage>[] = []
+
+    await client.findOne<Channel>(chunter.class.Channel, { _id: props.channelId }).then((r) => {
+      pinned = r?.pinned ?? []
+    })
+
+    pinned = pinned.includes(props.messageId)
+      ? pinned.filter((m) => m !== props.messageId)
+      : [...pinned, props.messageId]
+
+    const me = getCurrentAccount()._id
+    const txFactory = new TxFactory(me)
+    const upd = txFactory.createTxUpdateDoc(chunter.class.Channel, currentSpace, props.channelId, {
+      pinned: pinned
+    })
+    client.tx(upd)
+  }
 </script>
 
 <div class="header">
@@ -174,7 +193,13 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment message={comment} {employees} />
+      <ThreadComment
+        message={comment}
+        {employees}
+        on:pinMessage={(e) => {
+          onPinMessage(e.detail)
+        }}
+      />
     {/each}
   {/if}
 </div>
