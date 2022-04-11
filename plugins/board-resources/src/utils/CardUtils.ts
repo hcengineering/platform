@@ -30,6 +30,10 @@ export function hasCover (card: Card): boolean {
   return !!card.coverColor || !!card.coverImage
 }
 
+export function hasDate (card: Card): boolean {
+  return !!card.date && (!!card.date.dueDate || !!card.date.startDate)
+}
+
 export function addCurrentUser (card: Card, client: Client): void {
   const employee = (getCurrentAccount() as EmployeeAccount).employee
   card.members = card.members ?? []

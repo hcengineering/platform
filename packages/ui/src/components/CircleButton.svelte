@@ -18,7 +18,7 @@
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
 
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | undefined
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'
   export let transparent: boolean = false
   export let selected: boolean = false
@@ -27,7 +27,12 @@
 
 <div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click|stopPropagation on:mousemove>
   <div class="content">
-    <Icon {icon} size={'full'} />
+    {#if $$slots.content}
+      <slot name="content" />
+    {:else if icon} 
+      <Icon {icon} size={'full'} />
+    {/if}
+    
   </div>
 </div>
 

@@ -16,13 +16,17 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import { Class, Ref } from '@anticrm/core'
+  import modelBoard from '@anticrm/model-board'
+  import { getResource } from '@anticrm/platform';
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, EditBox, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
+  import { EditBox, Icon, Label, Panel, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+
   import board from '../plugin'
+import { getCardActions } from '../utils/CardActionUtils';
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardActivity from './editor/CardActivity.svelte'
@@ -36,6 +40,7 @@
 
   let object: Card | undefined
   let state: State | undefined
+  let handleMove: () => void
 
   $: _id &&
     _class &&
@@ -47,6 +52,18 @@
     query.query(task.class.State, { _id: object.state }, async (result) => {
       state = result[0]
     })
+
+  getCardActions(client, {_id: modelBoard.cardAction.Move}).then(async (result) => {
+    
+    if (result[0]?.handler) {
+      const handler = await getResource(result[0].handler)
+      handleMove = () => {
+        if (object) {
+          handler(object, client)
+        }
+      }
+    }
+  })
 
   function change (field: string, value: any) {
     if (object) {
@@ -60,12 +77,10 @@
 </script>
 
 {#if object !== undefined}
+<Panel showHeader={false} on:close={() => dispatch('close')}>
   <Scroller>
     <div class="flex-col-stretch h-full w-165 p-6">
       <!-- TODO cover -->
-      <div class="close-button">
-        <Button icon={IconClose} kind="transparent" size="large" on:click={() => dispatch('close')} />
-      </div>
       <div class="flex-row-streach">
         <div class="w-9">
           <Icon icon={board.icon.Card} size="large" />
@@ -77,7 +92,7 @@
       <div class="flex-row-streach">
         <div class="w-9" />
         <div>
-          <Label label={board.string.InList} /><span class="state-name ml-1">{state?.title}</span>
+          <Label label={board.string.InList} /><span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
         </div>
       </div>
       <div class="flex-row-streach">
@@ -115,6 +130,7 @@
       </div>
     </div>
   </Scroller>
+</Panel>
 {/if}
 
 <style lang="scss">

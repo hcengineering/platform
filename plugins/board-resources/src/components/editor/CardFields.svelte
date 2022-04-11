@@ -14,11 +14,94 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
+  import type { Card, CardLabel } from '@anticrm/board'
+
+  import contact, { Employee } from '@anticrm/contact'
+  import modelBoard from '@anticrm/model-board'
+  import { getResource } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Button, CircleButton, IconAdd, Label } from '@anticrm/ui'
+
+  import board from '../../plugin'
+  import { getCardActions } from '../../utils/CardActionUtils'
+  import { hasDate } from '../../utils/CardUtils'
+  import DatePresenter from '../presenters/DatePresenter.svelte'
+  import LabelPresenter from '../presenters/LabelPresenter.svelte'
+  import MemberPresenter from '../presenters/MemberPresenter.svelte'
 
   export let value: Card
+  const query = createQuery()
+  const client = getClient()
+  let members: Employee[]
+  let labels: CardLabel[]
+  let membersHandler: () => void
+  let labelsHandler: () => void
+  let dateHandler: () => void
+
+  $: value.members &&
+    value.members.length > 0 &&
+    query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
+      members = result
+    })
+
+  $: value.labels &&
+    value.labels.length > 0 &&
+    query.query(board.class.CardLabel, { _id: { $in: value.labels } }, (result) => {
+      labels = result
+    })
+
+  getCardActions(client, {
+    _id: { $in: [modelBoard.cardAction.Dates, modelBoard.cardAction.Labels, modelBoard.cardAction.Members] }
+  }).then(async (result) => {
+    for (const action of result) {
+      if (action.handler) {
+        const handler = await getResource(action.handler)
+        if (action._id === modelBoard.cardAction.Dates) {
+          dateHandler = () => handler(value, client)
+        } else if (action._id === modelBoard.cardAction.Labels) {
+          labelsHandler = () => handler(value, client)
+        } else if (action._id === modelBoard.cardAction.Members) {
+          membersHandler = () => handler(value, client)
+        }
+      }
+    }
+  })
+
 </script>
 
 {#if value}
-  <div />
+  {#if members && members.length > 0}
+    <div class="flex-col mt-4">
+      <div class="text-md font-medium">
+        <Label label={board.string.Members} />
+      </div>
+      <div class="flex-row-center flex-gap-1">
+        {#each members as member}
+          <MemberPresenter value={member} size="large"/>
+        {/each}
+        <CircleButton icon={IconAdd} size="large" on:click={membersHandler} />
+      </div>
+    </div>
+  {/if}
+  {#if labels && labels.length > 0}
+    <div class="flex-col mt-4">
+      <div class="text-md font-medium">
+        <Label label={board.string.Labels} />
+      </div>
+      <div class="flex-row-center flex-gap-1">
+        {#each labels as label}
+          <LabelPresenter value={label} on:click={labelsHandler} />
+        {/each}
+        <Button icon={IconAdd} size="large" on:click={labelsHandler} />
+      </div>
+    </div>
+  {/if}
+  {#if value.date && hasDate(value)}
+    <div class="flex-col mt-4">
+      <div class="text-md font-medium">
+        <Label label={board.string.Labels} />
+      </div>
+      <DatePresenter value={value.date} on:click={dateHandler} />
+    </div>
+  {/if}
 {/if}
