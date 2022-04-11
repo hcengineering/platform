@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { generateId, openWorkbench } from './utils'
+import { openWorkbench } from './utils'
 
 test.describe('workbench tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe('workbench tests', () => {
     await page.click('text=Vacancies')
     await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/vacancies')
     // Click text=Software Engineer
-    await page.click('text=Software Engineer');
+    await page.click('text=Software Engineer')
     await expect(page.locator('text=Software Engineer')).toBeVisible()
     await expect(page.locator('text=APP-1')).toBeVisible()
     await page.click('[name="tooltip-task:string:Kanban"]')
