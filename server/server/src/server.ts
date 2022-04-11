@@ -31,7 +31,7 @@ import {
   toFindResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
-import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
+import { createMongoAdapter, createMongoTxAdapter, createMongoPrivateAdapter } from '@anticrm/mongo'
 import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
 import { createServerStorage } from '@anticrm/server-core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
@@ -50,12 +50,14 @@ import { serverTagsId } from '@anticrm/server-tags'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverTelegramId } from '@anticrm/server-telegram'
+import { DOMAIN_PREFERENCE } from '@anticrm/server-preference'
 
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
+    user: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
@@ -63,7 +65,7 @@ class NullDbAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
+  async tx (tx: Tx, user: string): Promise<TxResult> {
     return {}
   }
 
@@ -113,6 +115,7 @@ export function start (
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
+          [DOMAIN_PREFERENCE]: 'PrivateMongo',
           [DOMAIN_MODEL]: 'Null'
         },
         defaultAdapter: 'Mongo',
@@ -123,6 +126,10 @@ export function start (
           },
           Mongo: {
             factory: createMongoAdapter,
+            url: dbUrl
+          },
+          PrivateMongo: {
+            factory: createMongoPrivateAdapter,
             url: dbUrl
           },
           Null: {

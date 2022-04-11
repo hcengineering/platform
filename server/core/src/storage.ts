@@ -29,9 +29,7 @@ import core, {
   Hierarchy,
   MeasureContext, Mixin, ModelDb,
   Ref,
-  ServerStorage,
-  Storage,
-  Tx,
+  ServerStorage, Tx,
   TxBulkWrite,
   TxCollectionCUD,
   TxCreateDoc,
@@ -53,12 +51,14 @@ import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } fro
 /**
  * @public
  */
-export interface DbAdapter extends Storage {
+export interface DbAdapter {
   /**
    * Method called after hierarchy is ready to use.
    */
   init: (model: Tx[]) => Promise<void>
   close: () => Promise<void>
+  findAll: <T extends Doc>(user: string, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  tx: (tx: Tx, user: string) => Promise<TxResult>
 }
 
 /**
@@ -130,16 +130,16 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
+  private async routeTx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<TxResult> {
     if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      return await this.getAdapter(domain).tx(txCUD)
+      return await this.getAdapter(domain).tx(txCUD, userEmail)
     } else {
       if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
         const bulkWrite = tx as TxBulkWrite
         for (const tx of bulkWrite.txes) {
-          await this.tx(ctx, tx)
+          await this.tx(ctx, userEmail, tx)
         }
       } else {
         throw new Error('not implemented (routeTx)')
@@ -148,7 +148,7 @@ class TServerStorage implements ServerStorage {
     }
   }
 
-  async processCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+  async processCollection (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<Tx[]> {
     if (tx._class === core.class.TxCollectionCUD) {
       const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
       const _id = colTx.objectId
@@ -163,7 +163,7 @@ class TServerStorage implements ServerStorage {
 
       const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
       if (isCreateTx || colTx.tx._class === core.class.TxRemoveDoc) {
-        attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+        attachedTo = (await this.findAll(ctx, userEmail, _class, { _id }, { limit: 1 }))[0]
         if (attachedTo !== undefined) {
           const txFactory = new TxFactory(tx.modifiedBy)
           const baseClass = this.hierarchy.getBaseClass(_class)
@@ -191,6 +191,7 @@ class TServerStorage implements ServerStorage {
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,
+    userEmail: string,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -198,10 +199,10 @@ class TServerStorage implements ServerStorage {
     return await ctx.with('find-all', {}, (ctx) => {
       const domain = this.hierarchy.getDomain(clazz)
       if (query.$search !== undefined) {
-        return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+        return ctx.with('full-text-find-all', {}, (ctx) => this.fulltext.findAll(ctx, userEmail, clazz, query, options))
       }
       return ctx.with('db-find-all', { _class: clazz, domain }, () =>
-        this.getAdapter(domain).findAll(clazz, query, options)
+        this.getAdapter(domain).findAll(userEmail, clazz, query, options)
       )
     })
   }
@@ -229,8 +230,8 @@ class TServerStorage implements ServerStorage {
     )
   }
 
-  async buildRemovedDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
-    const txes = await this.findAll(ctx, core.class.TxCUD, { objectId: tx.objectId }, { sort: { modifiedOn: 1 } })
+  async buildRemovedDoc (ctx: MeasureContext, userEmail: string, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
+    const txes = await this.findAll(ctx, userEmail, core.class.TxCUD, { objectId: tx.objectId }, { sort: { modifiedOn: 1 } })
     let doc: Doc
     let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) {
@@ -260,38 +261,38 @@ class TServerStorage implements ServerStorage {
     return tx
   }
 
-  async processRemove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+  async processRemove (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<Tx[]> {
     const actualTx = this.extractTx(tx)
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
     const rtx = actualTx as TxRemoveDoc<Doc>
     const result: Tx[] = []
-    const object = await this.buildRemovedDoc(ctx, rtx)
+    const object = await this.buildRemovedDoc(ctx, userEmail, rtx)
     if (object === undefined) return []
-    result.push(...await this.deleteClassCollections(ctx, object._class, rtx.objectId))
+    result.push(...await this.deleteClassCollections(ctx, userEmail, object._class, rtx.objectId))
     const mixins = this.getMixins(object._class, object)
     for (const mixin of mixins) {
-      result.push(...await this.deleteClassCollections(ctx, mixin, rtx.objectId))
+      result.push(...await this.deleteClassCollections(ctx, userEmail, mixin, rtx.objectId))
     }
-    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    result.push(...await this.deleteRelatedDocuments(ctx, userEmail, object))
     return result
   }
 
-  async deleteClassCollections (ctx: MeasureContext, _class: Ref<Class<Doc>>, objectId: Ref<Doc>): Promise<Tx[]> {
+  async deleteClassCollections (ctx: MeasureContext, userEmail: string, _class: Ref<Class<Doc>>, objectId: Ref<Doc>): Promise<Tx[]> {
     const attributes = this.hierarchy.getAllAttributes(_class)
     const result: Tx[] = []
     for (const attribute of attributes) {
       if (this.hierarchy.isDerived(attribute[1].type._class, core.class.Collection)) {
         const collection = attribute[1].type as Collection<AttachedDoc>
-        const allAttached = await this.findAll(ctx, collection.of, { attachedTo: objectId })
+        const allAttached = await this.findAll(ctx, userEmail, collection.of, { attachedTo: objectId })
         for (const attached of allAttached) {
-          result.push(...await this.deleteObject(ctx, attached))
+          result.push(...await this.deleteObject(ctx, userEmail, attached))
         }
       }
     }
     return result
   }
 
-  async deleteObject (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+  async deleteObject (ctx: MeasureContext, userEmail: string, object: Doc): Promise<Tx[]> {
     const result: Tx[] = []
     const factory = new TxFactory(core.account.System)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
@@ -308,38 +309,38 @@ class TServerStorage implements ServerStorage {
     } else {
       result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
     }
-    result.push(...await this.deleteClassCollections(ctx, object._class, object._id))
+    result.push(...await this.deleteClassCollections(ctx, userEmail, object._class, object._id))
     const mixins = this.getMixins(object._class, object)
     for (const mixin of mixins) {
-      result.push(...await this.deleteClassCollections(ctx, mixin, object._id))
+      result.push(...await this.deleteClassCollections(ctx, userEmail, mixin, object._id))
     }
-    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    result.push(...await this.deleteRelatedDocuments(ctx, userEmail, object))
     return result
   }
 
-  async deleteRelatedDocuments (ctx: MeasureContext, object: Doc): Promise<Tx[]> {
+  async deleteRelatedDocuments (ctx: MeasureContext, userEmail: string, object: Doc): Promise<Tx[]> {
     const result: Tx[] = []
     const objectClass = this.hierarchy.getClass(object._class)
     if (this.hierarchy.hasMixin(objectClass, serverCore.mixin.ObjectDDParticipant)) {
       const removeParticipand: ObjectDDParticipant = this.hierarchy.as(objectClass, serverCore.mixin.ObjectDDParticipant)
       const collector = await getResource(removeParticipand.collectDocs)
       const docs = await collector(object, this.hierarchy, async (_class, query, options) => {
-        return await this.findAll(ctx, _class, query, options)
+        return await this.findAll(ctx, userEmail, _class, query, options)
       })
       for (const d of docs) {
-        result.push(...await this.deleteObject(ctx, d))
+        result.push(...await this.deleteObject(ctx, userEmail, d))
       }
     }
     return result
   }
 
-  async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
+  async tx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
     const objClass = txObjectClass(tx)
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
       if (tx.space !== core.space.DerivedTx) {
-        await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
+        await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx, userEmail))
       }
 
       if (tx.objectSpace === core.space.Model) {
@@ -353,17 +354,17 @@ class TServerStorage implements ServerStorage {
         clazz: Ref<Class<T>>,
         query: DocumentQuery<T>,
         options?: FindOptions<T>
-      ): Promise<FindResult<T>> => this.findAll(mctx, clazz, query, options)
+      ): Promise<FindResult<T>> => this.findAll(mctx, userEmail, clazz, query, options)
 
       const triggerFx = new Effects()
       let derived: Tx[] = []
       let result: TxResult = {}
       // store object
-      result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
+      result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, userEmail, tx))
       // invoke triggers and store derived objects
       derived = [
-        ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
-        ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, tx))),
+        ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, userEmail, tx))),
+        ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, userEmail, tx))),
         ...(await ctx.with('process-triggers', {}, (ctx) =>
           this.triggers.apply(tx.modifiedBy, tx, {
             fx: triggerFx.fx,
@@ -384,14 +385,14 @@ class TServerStorage implements ServerStorage {
       ]
 
       for (const tx of derived) {
-        await ctx.with('derived-route-tx', { _class: txClass(tx) }, (ctx) => this.routeTx(ctx, tx))
+        await ctx.with('derived-route-tx', { _class: txClass(tx) }, (ctx) => this.routeTx(ctx, userEmail, tx))
       }
 
       // index object
-      await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, tx))
+      await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, userEmail, tx))
       // index derived objects
       for (const tx of derived) {
-        await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
+        await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, userEmail, tx))
       }
 
       for (const fx of triggerFx.effects) {

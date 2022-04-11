@@ -25,10 +25,11 @@ import type { Tx } from './tx'
 export interface ServerStorage {
   findAll: <T extends Doc>(
     ctx: MeasureContext,
+    userEmail: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
+  tx: (ctx: MeasureContext, userEmail: string, tx: Tx) => Promise<[TxResult, Tx[]]>
   close: () => Promise<void>
 }

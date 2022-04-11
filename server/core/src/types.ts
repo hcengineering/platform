@@ -81,7 +81,7 @@ export type FullTextAdapterFactory = (url: string, workspace: string) => Promise
  * @public
  */
 export interface WithFind {
-  findAll: <T extends Doc> (ctx: MeasureContext, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  findAll: <T extends Doc> (ctx: MeasureContext, userEmail: string, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
 }
 
 /**

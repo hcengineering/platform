@@ -27,12 +27,12 @@ class ServerStorageWrapper implements ClientConnection {
 
   findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
-    return this.storage.findAll(this.measureCtx, c, q, o)
+    return this.storage.findAll(this.measureCtx, '', c, q, o)
   }
 
   async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
-    const [result, derived] = await this.storage.tx(this.measureCtx, _tx)
+    const [result, derived] = await this.storage.tx(this.measureCtx, '', _tx)
     for (const tx of derived) { this.handler(tx) }
     return result
   }

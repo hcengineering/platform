@@ -50,6 +50,7 @@ createTaskModel(txes)
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
+    user: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
@@ -57,7 +58,7 @@ class NullDbAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
+  async tx (tx: Tx, user: string): Promise<TxResult> {
     return {}
   }
 
@@ -133,7 +134,7 @@ describe('mongo operations', () => {
 
     // Put all transactions to Tx
     for (const t of txes) {
-      await txStorage.tx(t)
+      await txStorage.tx(t, '')
     }
 
     const conf: DbConfiguration = {
@@ -166,8 +167,8 @@ describe('mongo operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
+        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, '', _class, query, options),
+        tx: async (tx) => (await serverStorage.tx(ctx, '', tx))[0],
         close: async () => {}
       }
       return st

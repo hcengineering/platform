@@ -1262,6 +1262,21 @@
       "packageName": "@anticrm/kanban",
       "projectFolder": "packages/kanban",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/preference",
+      "projectFolder": "plugins/preference",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-preference",
+      "projectFolder": "models/preference",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-preference",
+      "projectFolder": "server-plugins/preference",
+      "shouldPublish": true
     }
   ]
 }

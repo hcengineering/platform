@@ -34,11 +34,11 @@ class Session {
   async ping (): Promise<string> { console.log('ping'); return 'pong!' }
 
   async findAll <T extends Doc>(ctx: MeasureContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
-    return await this.storage.findAll(ctx, _class, query, options)
+    return await this.storage.findAll(ctx, this.token.email, _class, query, options)
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    const [result, derived] = await this.storage.tx(ctx, tx)
+    const [result, derived] = await this.storage.tx(ctx, this.token.email, tx)
 
     this.manager.broadcast(this, this.token, { result: tx })
     for (const dtx of derived) {

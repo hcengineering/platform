@@ -38,8 +38,10 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  toFindResult
+  toFindResult,
+  Account
 } from '@anticrm/core'
+import platform, { PlatformError, Severity, Status } from '@anticrm/platform'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
 import { getMongoClient } from './utils'
@@ -345,6 +347,7 @@ abstract class MongoAdapterBase extends TxProcessor {
   }
 
   async findAll<T extends Doc>(
+    user: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -573,8 +576,53 @@ class MongoAdapter extends MongoAdapterBase {
     }
   }
 
-  override async tx (tx: Tx): Promise<TxResult> {
+  override async tx (tx: Tx, user: string): Promise<TxResult>
+  override async tx (tx: Tx): Promise<TxResult>
+
+  override async tx (tx: Tx, user?: string): Promise<TxResult> {
     return await super.tx(tx)
+  }
+}
+
+class MongoPrivateAdapter extends MongoAdapter {
+  private accounts: Map<string, Ref<Account>> = new Map<string, Ref<Account>>()
+  override async init (): Promise<void> {
+    this.accounts = new Map((await this.modelDb.findAll(core.class.Account, {})).map((p) => [p.email, p._id]))
+  }
+
+  override async tx (tx: Tx, user: string): Promise<TxResult>
+  override async tx (tx: Tx): Promise<TxResult>
+
+  override async tx (tx: Tx, user?: string): Promise<TxResult> {
+    if (user === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    const account = await this.getUser(user)
+    if (account === undefined || account !== tx.modifiedBy) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    return await super.tx(tx)
+  }
+
+  override async findAll<T extends Doc>(user: string, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+    const account = this.getUser(user)
+    if (account === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    return await super.findAll(user, _class, {
+      ...query,
+      modifiedBy: account
+    }, options)
+  }
+
+  private async getUser (user: string): Promise<Ref<Account> | undefined> {
+    const res = this.accounts.get(user)
+    if (res !== undefined) return res
+    const accounts = await this.modelDb.findAll(core.class.Account, { email: user })
+    const account = accounts[0]?._id
+    if (account === undefined) return
+    this.accounts.set(user, account)
   }
 }
 
@@ -600,7 +648,10 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     throw new Error('Method not implemented.')
   }
 
-  override async tx (tx: Tx): Promise<TxResult> {
+  override async tx (tx: Tx, user: string): Promise<TxResult>
+  override async tx (tx: Tx): Promise<TxResult>
+
+  override async tx (tx: Tx, user?: string): Promise<TxResult> {
     await this.txCollection().insertOne(translateDoc(tx))
     return {}
   }
@@ -641,6 +692,20 @@ export async function createMongoAdapter (
   const client = await getMongoClient(url)
   const db = client.db(dbName)
   return new MongoAdapter(db, hierarchy, modelDb, client)
+}
+
+/**
+ * @public
+ */
+export async function createMongoPrivateAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  dbName: string,
+  modelDb: ModelDb
+): Promise<DbAdapter> {
+  const client = await getMongoClient(url)
+  const db = client.db(dbName)
+  return new MongoPrivateAdapter(db, hierarchy, modelDb, client)
 }
 
 /**

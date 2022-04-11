@@ -40,11 +40,12 @@ describe('server', () => {
     async () => ({
       findAll: async <T extends Doc>(
         ctx: MeasureContext,
+        user: string,
         _class: Ref<Class<T>>,
         query: DocumentQuery<T>,
         options?: FindOptions<T>
       ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []],
+      tx: async (ctx: MeasureContext, user: string, tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []],
       close: async () => {}
     }),
     3333
