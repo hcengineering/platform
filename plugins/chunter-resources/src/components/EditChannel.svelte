@@ -43,7 +43,11 @@
   let selectedTabIndex = 0
 </script>
 
-<div on:click={() => {dispatch('close')}} />
+<div
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="antiDialogs antiComponent">
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-title">
@@ -78,7 +82,7 @@
   </div>
   <Scroller padding>
     {#if selectedTabIndex === 0}
-      <EditChannelDescriptionTab channel={channel} _id={_id} _class={_class} />
+      <EditChannelDescriptionTab {channel} {_id} {_class} />
     {:else}
       <!-- Channel members -->
       <Members />
