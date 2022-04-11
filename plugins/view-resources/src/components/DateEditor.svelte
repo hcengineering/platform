@@ -17,7 +17,7 @@
 <script lang="ts">
   // import { TypeDate } from '@anticrm/core'
   // import { IntlString } from '@anticrm/platform'
-  import { DatePresenter } from '@anticrm/ui'
+  import { DateRangePresenter } from '@anticrm/ui'
 
   export let value: number | null | undefined
   // export let label: IntlString
@@ -25,4 +25,4 @@
   // export let attributeType: TypeDate | undefined
 </script>
 
-<DatePresenter {value} on:change={onChange} editable />
+<DateRangePresenter {value} withTime editable on:change={(res) => { if (res.detail !== undefined) onChange(res.detail) }} />

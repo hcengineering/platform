@@ -15,29 +15,26 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
-  import { Hierarchy } from '@anticrm/core'
-  import { Avatar } from '@anticrm/presentation'
-  import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { IntlString } from '@anticrm/platform'
+  import { Tooltip } from '@anticrm/ui'
+  import PersonContent from './PersonContent.svelte'
 
   export let value: Person
   export let inline: boolean = false
-
-  async function onClick () {
-    showPanel(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')
-  }
+  export let shouldShowName = true
+  export let shouldShowPlaceholder = false
+  export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
 </script>
 
-{#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{encodeURIComponent([view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value)].join('|'))}"
-    on:click={onClick}
-  >
-    <div class="icon">
-      <Avatar size={'x-small'} avatar={value.avatar} />
-    </div>
-    <span class="label">{formatName(value.name)}</span>
-  </a>
+{#if value || shouldShowPlaceholder}
+  {#if tooltipLabels}
+    <Tooltip
+      label={value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel}
+      props={{ value: formatName(value?.name) }}
+    >
+      <PersonContent {inline} {value} {shouldShowName} {shouldShowPlaceholder} />
+    </Tooltip>
+  {:else}
+    <PersonContent {inline} {value} {shouldShowName} {shouldShowPlaceholder} />
+  {/if}
 {/if}

@@ -14,46 +14,31 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
+  import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
 
-  import Label from './Label.svelte'
-  import EditWithIcon from './EditWithIcon.svelte'
-  import IconSearch from './icons/Search.svelte'
   import type { AnySvelteComponent, ListItem } from '../types'
   import plugin from '../plugin'
   import Icon from './Icon.svelte'
 
-  export let title: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent
-  export let caption: IntlString = plugin.string.Suggested
+  export let placeholder: IntlString = plugin.string.SearchDots
   export let items: ListItem[]
-  export let header: boolean = true
 
   let search: string = ''
+  let phTraslate: string = ''
+  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
   const dispatch = createEventDispatcher()
 </script>
 
-<div
-  class="antiPopup"
-  class:antiPopup-withHeader={header}
-  class:antiPopup-withTitle={title}
->
-  {#if header}
-    {#if title}
-      <div class="ap-title"><Label label={title} /></div>
-    {:else}
-      <div class="ap-space" />
-    {/if}
-    <div class="ap-header">
-      <EditWithIcon icon={IconSearch} bind:value={search} placeholder={plugin.string.SearchDots} focus />
-      <div class="ap-caption"><Label label={caption} /></div>
-    </div>
-  {/if}
-  <div class="ap-space" />
-  <div class="ap-scroll">
-    <div class="ap-box">
+<div class="selectPopup">
+  <div class="header">
+    <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+  </div>
+  <div class="scroll">
+    <div class="box">
       {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="ap-menuItem" on:click={() => { dispatch('close', item) }}>
+        <button class="menu-item flex-between" on:click={() => { dispatch('close', item) }}>
           <div class="flex-center img" class:image={item.image}>
             {#if item.image}
               <img src={item.image} alt={item.label} />
@@ -70,19 +55,17 @@
       {/each}
     </div>
   </div>
-  <div class="ap-space" />
 </div>
 
 <style lang="scss">
   .img {
     margin-right: .75rem;
     flex-shrink: 0;
-    width: 2.25rem;
-    height: 2.25rem;
-    color: var(--theme-caption-color);
-    background-color: transparent;
-    border: 1px solid var(--theme-card-divider);
-    border-radius: .5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--caption-color);
+    background-color: var(--popup-bg-hover);
+    border-radius: 50%;
     outline: none;
     overflow: hidden;
   }

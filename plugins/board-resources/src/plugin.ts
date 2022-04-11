@@ -15,7 +15,7 @@
 
 import board, { boardId } from '@anticrm/board'
 import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(boardId, board, {
   string: {
@@ -44,9 +44,11 @@ export default mergeIds(boardId, board, {
     DescriptionPlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Members: '' as IntlString,
+    IsArchived: '' as IntlString,
     BoardCreateLabel: '' as IntlString,
     Settings: '' as IntlString,
     InList: '' as IntlString,
+    Suggested: '' as IntlString,
     AddToCard: '' as IntlString,
     Labels: '' as IntlString,
     Checklist: '' as IntlString,
@@ -56,13 +58,20 @@ export default mergeIds(boardId, board, {
     Automation: '' as IntlString,
     AddButton: '' as IntlString,
     Actions: '' as IntlString,
+    Cover: '' as IntlString,
+    Join: '' as IntlString,
     Move: '' as IntlString,
     Copy: '' as IntlString,
     MakeTemplate: '' as IntlString,
     Watch: '' as IntlString,
     Archive: '' as IntlString,
+    SendToBoard: '' as IntlString,
+    Delete: '' as IntlString,
     HideDetails: '' as IntlString,
-    ShowDetails: '' as IntlString
+    ShowDetails: '' as IntlString,
+    NewList: '' as IntlString,
+    AddList: '' as IntlString,
+    NewListPlaceholder: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

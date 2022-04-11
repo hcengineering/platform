@@ -23,9 +23,11 @@
     "DescriptionPlaceholder": "Добавьте более подробное описание...",
     "Location": "Location",
     "Members": "Участники",
+    "IsArchived": "Архивировано",
     "BoardCreateLabel": "Board",
     "Settings": "Настройки",
     "InList": "в списке",
+    "Suggested": "Предложенное",
     "AddToCard": "Добавить",
     "Labels": "Метки",
     "Checklist": "Списки",
@@ -35,12 +37,19 @@
     "Automation": "Автоматизация",
     "AddButton": "Добавить",
     "Actions": "Действия",
+    "Cover": "Обложка",
+    "Join": "Присоединиться",
     "Move": "Переместить",
     "Copy": "Копировать",
     "MakeTemplate": "Шаблон",
     "Watch": "Отслеживать",
     "Archive": "Архивировать",
+    "SendToBoard": "Вернуть",
+    "Delete": "Удалить",
     "HideDetails": "Спрятать",
-    "ShowDetails": "Показать"
+    "ShowDetails": "Показать",
+    "NewList": "Добавить еще одну колонку",
+    "AddList": "Добавить колонку",
+    "NewListPlaceholder": "Введите заголовок колонки..."
   }
 }

@@ -13,7 +13,19 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedData, AttachedDoc, Class, Client, Data, Doc, FindResult, Ref, Space, UXObject } from '@anticrm/core'
+import {
+  Account,
+  AttachedData,
+  AttachedDoc,
+  Class,
+  Client,
+  Data,
+  Doc,
+  FindResult,
+  Ref,
+  Space,
+  UXObject
+} from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
@@ -61,15 +73,12 @@ export interface Contact extends Doc {
 /**
  * @public
  */
-export interface Person extends Contact {
-}
+export interface Person extends Contact {}
 
 /**
  * @public
  */
-export interface Organization extends Contact {
-
-}
+export interface Organization extends Contact {}
 
 /**
  * @public
@@ -180,37 +189,47 @@ export default contactPlugin
 /**
  * @public
  */
-export async function findPerson (client: Client, person: Data<Person>, channels: AttachedData<Channel>[]): Promise<FindResult<Person>> {
+export async function findPerson (
+  client: Client,
+  person: Data<Person>,
+  channels: AttachedData<Channel>[]
+): Promise<Person[]> {
   if (channels.length === 0 || person.name.length === 0) {
     return []
   }
   // Take only first part of first name for match.
-  const values = channels.map(it => it.value)
+  const values = channels.map((it) => it.value)
 
   // Same name persons
 
   const potentialChannels = await client.findAll(contactPlugin.class.Channel, { value: { $in: values } })
-  let potentialPersonIds = Array.from(new Set(potentialChannels.map(it => it.attachedTo as Ref<Person>)).values())
+  let potentialPersonIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Person>)).values())
 
   if (potentialPersonIds.length === 0) {
     const firstName = getFirstName(person.name).split(' ').shift() ?? ''
     const lastName = getLastName(person.name)
     // try match using just first/last name
-    potentialPersonIds = (await client.findAll(contactPlugin.class.Person, { name: { $like: `${lastName}%${firstName}%` } })).map(it => it._id)
+    potentialPersonIds = (
+      await client.findAll(contactPlugin.class.Person, { name: { $like: `${lastName}%${firstName}%` } })
+    ).map((it) => it._id)
     if (potentialPersonIds.length === 0) {
       return []
     }
   }
 
-  const potentialPersons: FindResult<Person> = await client.findAll(contactPlugin.class.Person, { _id: { $in: potentialPersonIds } }, {
-    lookup: {
-      _id: {
-        channels: contactPlugin.class.Channel
+  const potentialPersons: FindResult<Person> = await client.findAll(
+    contactPlugin.class.Person,
+    { _id: { $in: potentialPersonIds } },
+    {
+      lookup: {
+        _id: {
+          channels: contactPlugin.class.Channel
+        }
       }
     }
-  })
+  )
 
-  const result: FindResult<Person> = []
+  const result: Person[] = []
 
   for (const c of potentialPersons) {
     let matches = 0
@@ -220,7 +239,7 @@ export async function findPerson (client: Client, person: Data<Person>, channels
     if (c.city === person.city) {
       matches++
     }
-    for (const ch of c.$lookup?.channels as Channel[] ?? []) {
+    for (const ch of (c.$lookup?.channels as Channel[]) ?? []) {
       for (const chc of channels) {
         if (chc.provider === ch.provider && chc.value === ch.value.trim()) {
           // We have matched value

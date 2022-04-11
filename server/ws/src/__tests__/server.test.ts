@@ -19,22 +19,36 @@ import { start, disableLogging } from '../server'
 import { generateToken } from '@anticrm/server-token'
 import WebSocket from 'ws'
 
-import type { Doc, Ref, Class, DocumentQuery, FindOptions, FindResult, Tx, TxResult, MeasureContext } from '@anticrm/core'
-import { MeasureMetricsContext } from '@anticrm/core'
+import type {
+  Doc,
+  Ref,
+  Class,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Tx,
+  TxResult,
+  MeasureContext
+} from '@anticrm/core'
+import { MeasureMetricsContext, toFindResult } from '@anticrm/core'
 
 describe('server', () => {
   disableLogging()
 
-  start(new MeasureMetricsContext('test', {}), async () => ({
-    findAll: async <T extends Doc>(
-      ctx: MeasureContext,
-      _class: Ref<Class<T>>,
-      query: DocumentQuery<T>,
-      options?: FindOptions<T>
-    ): Promise<FindResult<T>> => ([]),
-    tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => ([{}, []]),
-    close: async () => {}
-  }), 3333)
+  start(
+    new MeasureMetricsContext('test', {}),
+    async () => ({
+      findAll: async <T extends Doc>(
+        ctx: MeasureContext,
+        _class: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ): Promise<FindResult<T>> => toFindResult([]),
+      tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []],
+      close: async () => {}
+    }),
+    3333
+  )
 
   function connect (): WebSocket {
     const token: string = generateToken('', 'latest')
@@ -46,7 +60,9 @@ describe('server', () => {
     conn.on('open', () => {
       conn.close()
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 
   it('should not connect to server without token', (done) => {
@@ -54,7 +70,9 @@ describe('server', () => {
     conn.on('error', () => {
       conn.close()
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 
   it('should send many requests', (done) => {
@@ -74,6 +92,8 @@ describe('server', () => {
         conn.close()
       }
     })
-    conn.on('close', () => { done() })
+    conn.on('close', () => {
+      done()
+    })
   })
 })

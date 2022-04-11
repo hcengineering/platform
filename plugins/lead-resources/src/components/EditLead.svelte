@@ -36,7 +36,7 @@
 </script>
 
 {#if object !== undefined}
-  <Grid column={1} rowGap={1.5}>
+  <Grid column={2} rowGap={1}>
     <EditBox
       label={lead.string.LeadName}
       bind:value={object.title}
@@ -48,8 +48,9 @@
     />
     <UserBox
       _class={contact.class.Contact}
-      title={lead.string.Customer}
-      caption={lead.string.SelectCustomer}
+      label={lead.string.Customer}
+      placeholder={lead.string.SelectCustomer}
+      kind={'link'} size={'x-large'} justify={'left'} width={'100%'}
       bind:value={object.attachedTo}
       on:change={() => {
         change('attachedTo', object.attachedTo)

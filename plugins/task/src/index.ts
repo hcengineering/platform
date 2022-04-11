@@ -46,6 +46,7 @@ export interface DocWithRank extends Doc {
 export interface State extends DocWithRank {
   title: string
   color: number
+  isArchived?: boolean
 }
 
 /**

@@ -33,6 +33,7 @@
     PanelInstance,
     Popup,
     showPopup,
+    DatePickerPopup,
     TooltipInstance
   } from '@anticrm/ui'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
@@ -118,7 +119,9 @@
       await setApp(loc)
       const currentFolder = loc.path[2] as Ref<Space>
 
-      if (currentSpecial !== currentFolder) {
+      if (currentSpecial === currentFolder) {
+        return
+      } else {
         const newSpecial = getSpecialComponent(currentFolder)
         if (newSpecial !== undefined) {
           clear(2)
@@ -366,6 +369,7 @@
   <PanelInstance {contentPanel} />
   <Popup />
   <TooltipInstance />
+  <DatePickerPopup />
 {:else}
   No client
 {/if}

@@ -13,194 +13,441 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import ui from '../..'
-  import type { TCellStyle, ICell } from './internal/DateUtils'
-  import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, daysInMonth } from './internal/DateUtils'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { IntlString } from '@anticrm/platform'
+  import ui, { Button, ActionIcon, IconClose, Icon, Label } from '../..'
+  import { daysInMonth } from './internal/DateUtils'
+  import MonthSquare from './MonthSquare.svelte'
 
-  export let value: number | null | undefined
+  export let currentDate: Date | null
+  export let withTime: boolean = false
   export let mondayStart: boolean = true
-  export let editable: boolean = false
 
   const dispatch = createEventDispatcher()
-  let currentDate: Date = new Date(value ?? Date.now())
-  let days: Array<ICell> = []
-  let scrollDiv: HTMLElement
 
-  $: if (value) currentDate = new Date(value)
-  $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
-
-  const getNow = (): Date => {
-    const tempDate = new Date(Date.now())
-    return new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate())
+  let popupCaption: IntlString = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
+  type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
+  interface IEdits {
+    id: TEdits
+    value: number
+    el?: HTMLElement
   }
-  const today: Date = getNow()
-  let todayString: string
-  translate(ui.string.Today, {}).then(res => todayString = res)
+  const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
+  const getIndex = (id: TEdits): number => editsType.indexOf(id)
+  const today: Date = new Date(Date.now())
+  let selected: TEdits | null = 'day'
+  let startTyping: boolean = false
+  let edits: IEdits[] = editsType.map(edit => { return { id: edit, value: -1 } })
+  let viewDate: Date = currentDate ?? today
+  let viewDateSec: Date
 
-
-  const getDateStyle = (date: Date): TCellStyle => {
-    if (value !== undefined && value !== null && areDatesEqual(currentDate, date)) return 'selected'
-    return 'not-selected'
-  }
-  
-  const renderCellStyles = (): void => {
-    days = []
-    for (let i = 1; i <= daysInMonth(currentDate); i++) {
-      const tempDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i)
-      days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
-        style: getDateStyle(tempDate),
-        focused: false,
-        today: areDatesEqual(tempDate, today)
-      })
+  const getValue = (date: Date | null | undefined, id: TEdits): number => {
+    if (date == undefined) date = today
+    switch (id) {
+      case 'day': return date.getDate()
+      case 'month': return date.getMonth() + 1
+      case 'year': return date.getFullYear()
+      case 'hour': return date.getHours()
+      case 'min': return date.getMinutes()
     }
-    days = days
   }
-  $: if (currentDate) renderCellStyles()
+  const setValue = (val: number, date: Date, id: TEdits): Date => {
+    switch (id) {
+      case 'day':
+        date.setDate(val)
+        break
+      case 'month':
+        date.setMonth(val - 1)
+        break
+      case 'year':
+        date.setFullYear(val)
+        break
+      case 'hour':
+        date.setHours(val)
+        break
+      case 'min':
+        date.setMinutes(val)
+        break
+    }
+    return date
+  }
+  const getMaxValue = (date: Date, id: TEdits): number => {
+    switch (id) {
+      case 'day': return daysInMonth(date)
+      case 'month': return 12
+      case 'year': return 3000
+      case 'hour': return 23
+      case 'min': return 59
+    }
+  }
 
-  const scrolling = (ev: Event): void => {
-    // console.log('!!! Scrolling:', ev)
+  const dateToEdits = (): void => {
+    edits.forEach(edit => {
+      edit.value = getValue(currentDate, edit.id)
+    })
+    edits = edits
   }
+  const clearEdits = (): void => {
+    edits.forEach(edit => edit.value = -1)
+    if (edits[0].el) edits[0].el.focus()
+  }
+  const fixEdits = (): void => {
+    const h: number = edits[3].value === -1 ? 0 : edits[3].value
+    const m: number = edits[4].value === -1 ? 0 : edits[4].value
+    viewDate = currentDate = new Date(edits[2].value, edits[1].value - 1, edits[0].value, h, m)
+  }
+  const isNull = (full: boolean = false): boolean => {
+    let result: boolean = false
+    edits.forEach((edit, i) => {
+      if (edit.value === -1 && full && i > 2) result = true
+      if (edit.value === -1 && !full && i < 3) result = true
+      if (i === 0 && edit.value === 0) result = true
+      if (i === 2 && (edit.value < 1970 || edit.value > 3000)) result = true
+    })
+    return result
+  }
+
+  const saveDate = (): void => {
+    if (currentDate) {
+      currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+      currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+      currentDate.setSeconds(0, 0)
+      viewDate = currentDate = currentDate
+      dateToEdits()
+      dispatch('update', currentDate)
+    }
+  }
+  const closeDP = (): void => {
+    if (!isNull()) saveDate()
+    else {
+      currentDate = null
+      dispatch('update', null)
+    }
+    dispatch('close')
+  }
+
+  const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
+    if (selected === ed) {
+      const index = getIndex(ed)
+      if (ev.key >= '0' && ev.key <= '9') {
+        const num: number = parseInt(ev.key, 10)
+        if (startTyping) {
+          if (num === 0) edits[index].value = 0
+          else {
+            edits[index].value = num
+            startTyping = false
+          }
+        } else if (edits[index].value * 10 + num > getMaxValue(viewDate, ed)) {
+          edits[index].value = getMaxValue(viewDate, ed)
+        } else {
+          edits[index].value = edits[index].value * 10 + num
+        }
+        if (!isNull(false) && !startTyping) {
+          fixEdits()
+          currentDate = setValue(edits[index].value, viewDate, ed)
+          dateToEdits()
+        }
+        edits = edits
+
+        if (selected === 'day' && edits[0].value > getMaxValue(viewDate, 'day') / 10) selected = 'month'
+        else if (selected === 'month' && edits[1].value > 1) selected = 'year'
+        else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
+        else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
+      }
+      if (ev.code === 'Enter') {
+        if (!isNull(false)) closeDP()
+      }
+      if (ev.code === 'Backspace') {
+        edits[index].value = -1
+        startTyping = true
+      }
+      if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && edits[index].el) {
+        if (edits[index].value !== -1) {
+          let val = (ev.code === 'ArrowUp')
+                  ? edits[index].value + 1
+                  : edits[index].value - 1
+          if (currentDate) {
+            currentDate = setValue(val, currentDate, ed)
+            dateToEdits()
+          }
+        }
+      }
+      if (ev.code === 'ArrowLeft' && edits[index].el) {
+        selected = index === 0 ? edits[withTime ? 4 : 2].id : edits[index - 1].id
+      }
+      if (ev.code === 'ArrowRight' && edits[index].el) {
+        selected = index === (withTime ? 4 : 2) ? edits[0].id : edits[index + 1].id
+      }
+      if (ev.code === 'Tab') {
+        if ((ed === 'year' && !withTime) || (ed === 'min' && withTime)) saveDate()
+      }
+    }
+  }
+  const focused = (ed: TEdits): void => {
+    selected = ed
+    startTyping = true
+  }
+  const updateDate = (date: Date | null): void => {
+    if (date != undefined) {
+      currentDate = date
+      dateToEdits()
+      closeDP()
+    }
+  }
+  const navigateMonth = (result: any): void => {
+    if (result != undefined) {
+      if (result.charAt(1) === 'm') viewDate.setMonth(viewDate.getMonth() + (result === '-m' ? -1 : 1))
+      viewDate = viewDate
+    }
+  }
+  const changeMonth = (date: Date, up: boolean): Date => {
+    return new Date(date.getFullYear(), date.getMonth() + (up ? 1 : -1), date.getDate())
+  }
+
+  if (currentDate != undefined) dateToEdits()
+  $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
+  $: if (viewDate) viewDateSec = changeMonth(viewDate, true)
 
   afterUpdate(() => {
-    if (value) currentDate = new Date(value)
-  })
-  onMount(() => {
-    if (scrollDiv) scrollDiv.addEventListener('wheel', scrolling)
-  })
-  onDestroy(() => {
-    if (scrollDiv) scrollDiv.removeEventListener('wheel', scrolling)
+    if (selected != undefined) edits[getIndex(selected)].el?.focus()
   })
 </script>
 
-<div bind:this={scrollDiv} class="convert-scroller">
-  <div class="popup">
-    <div class="flex-center monthYear">
+<div class="date-popup-container">
+  <div class="header">
+    <span class="fs-title overflow-label"><Label label={popupCaption} /></span>
+    <ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} />
+  </div>
+  <div class="content">
+    <div class="label">
+      <span class="bold"><Label label={ui.string.DueDate} /></span>
+      <span class="divider">-</span>
+      <Label label={ui.string.IssueNeedsToBeCompletedByThisDate} />
+    </div>
+
+    <div class="datetime-input">
+      <div class="flex-row-center">
+        <span bind:this={edits[0].el} class="digit" tabindex="0"
+          on:keydown={(ev) => keyDown(ev, edits[0].id)}
+          on:focus={() => focused(edits[0].id)}
+          on:blur={() => selected = null}
+        >
+          {#if (edits[0].value > -1)}
+            {edits[0].value.toString().padStart(2, '0')}
+          {:else}ДД{/if}
+        </span>
+        <span class="separator">.</span>
+        <span bind:this={edits[1].el} class="digit" tabindex="0"
+          on:keydown={(ev) => keyDown(ev, edits[1].id)}
+          on:focus={() => focused(edits[1].id)}
+          on:blur={() => selected = null}
+        >
+          {#if (edits[1].value > -1)}
+            {edits[1].value.toString().padStart(2, '0')}
+          {:else}ММ{/if}
+        </span>
+        <span class="separator">.</span>
+        <span bind:this={edits[2].el} class="digit" tabindex="0"
+          on:keydown={(ev) => keyDown(ev, edits[2].id)}
+          on:focus={() => focused(edits[2].id)}
+          on:blur={() => selected = null}
+        >
+          {#if (edits[2].value > -1)}
+            {edits[2].value.toString().padStart(4, '0')}
+          {:else}ГГГГ{/if}
+        </span>
+        {#if withTime}
+          <div class="time-divider" />
+          <span bind:this={edits[3].el} class="digit" tabindex="0"
+            on:keydown={(ev) => keyDown(ev, edits[3].id)}
+            on:focus={() => focused(edits[3].id)}
+            on:blur={() => selected = null}
+          >
+            {#if (edits[3].value > -1)}
+              {edits[3].value.toString().padStart(2, '0')}
+            {:else}ЧЧ{/if}
+          </span>
+          <span class="separator">:</span>
+          <span bind:this={edits[4].el} class="digit" tabindex="0"
+            on:keydown={(ev) => keyDown(ev, edits[4].id)}
+            on:focus={() => focused(edits[4].id)}
+            on:blur={() => selected = null}
+          >
+            {#if (edits[4].value > -1)}
+              {edits[4].value.toString().padStart(2, '0')}
+            {:else}ММ{/if}
+          </span>
+        {/if}
+      </div>
       {#if currentDate}
-        {getMonthName(currentDate)}
-        <span class="ml-1">{currentDate.getFullYear()}</span>
+        <div
+          class="close-btn" tabindex="0"
+          on:click={() => {
+            selected = 'day'
+            startTyping = true
+            currentDate = null
+            clearEdits()
+          }}
+          on:blur={() => selected = null}
+        >
+          <Icon icon={IconClose} size={'x-small'} />
+        </div>
       {/if}
     </div>
 
-    {#if currentDate}
-      <div class="calendar" class:no-editable={!editable}>
-        {#each [...Array(7).keys()] as dayOfWeek}
-          <div class="caption">{getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short')}</div>
-        {/each}
-        {#each days as day, i}
-          <div
-            class="day {day.style}"
-            class:today={day.today}
-            class:focused={day.focused}
-            data-today={day.today ? todayString : ''}
-            style="grid-column: {day.dayOfWeek}/{day.dayOfWeek + 1};"
-            on:click|stopPropagation={() => {
-              if (currentDate) currentDate.setDate(i + 1)
-              value = currentDate.getTime()
-              dispatch('update', value)
-            }}
-          >
-            {i + 1}
-          </div>
-        {/each}
-      </div>
-    {/if}
+    <div class="month-group">
+      <MonthSquare
+        bind:currentDate={currentDate}
+        {viewDate}
+        {mondayStart}
+        viewUpdate={false}
+        hideNavigator
+        on:update={(result) => updateDate(result.detail)}
+      />
+      <MonthSquare
+        bind:currentDate={currentDate}
+        viewDate={viewDateSec}
+        {mondayStart}
+        viewUpdate={false}
+        on:update={(result) => updateDate(result.detail)}
+        on:navigation={(result) => navigateMonth(result.detail)}
+      />
+    </div>
+  </div>
+  <div class="footer">
+    <Button kind={'primary'} label={ui.string.SaveDueDate} size={'x-large'} width={'100%'} on:click={closeDP} />
   </div>
 </div>
 
 <style lang="scss">
-  .convert-scroller {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    min-width: 0;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: .5rem;
-    user-select: none;
-
-    overflow-x: scroll;
-    overflow-y: scroll;
-    // width: calc(100% - 1px);
-    // max-height: calc(100% - 1px);
-    // mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem, rgba(0, 0, 0, 1) calc(100% - 2rem), rgba(0, 0, 0, 0) 100%);
-    &::-webkit-scrollbar:vertical { width: 0; }
-    &::-webkit-scrollbar:horizontal { height: 0; }
-  }
-
-  .popup {
+  .date-popup-container {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    width: 100%;
-    height: 100%;
-    // width: calc(100% + 1px);
-    // height: calc(100% + 1px);
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+    width: max-content;
+    height: max-content;
     color: var(--theme-caption-color);
+    background: var(--board-card-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: .5rem;
-    // pointer-events: none;
+    box-shadow: var(--card-shadow);
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem 1rem 2rem;
+      border-bottom: 1px solid var(--divider-color);
+    }
+
+    .content {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 2rem;
+      min-height: 0;
+
+      .label {
+        padding-left: 2px;
+        margin-bottom: .25rem;
+        font-size: .8125rem;
+        color: var(--content-color);
+
+        .bold {
+          font-weight: 500;
+          color: var(--accent-color);
+        }
+        .divider {
+          margin: 0 .25rem;
+          line-height: 1.4375rem;
+          color: var(--dark-color);
+        }
+      }
+
+      .month-group {
+        display: flex;
+        flex-wrap: nowrap;
+        margin: .5rem -.5rem 0;
+      }
+    }
+
+    .footer {
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--divider-color);
+    }
   }
 
-  .monthYear {
-    margin: 0 1rem;
-    // line-height: 150%;
-    color: var(--theme-content-accent-color);
-    white-space: nowrap;
-  }
+  .datetime-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+    padding: .75rem;
+    height: 3rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--content-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: .25rem;
+    transition: border-color .15s ease;
 
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: .125rem;
+    &:hover { border-color: var(--button-border-hover); }
+    &:focus-within {
+      color: var(--caption-color);
+      border-color: var(--primary-edit-border-color);
+    }
 
-    .caption, .day {
+    .close-btn {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 1.75rem;
-      height: 1.75rem;
-      color: var(--theme-content-dark-color);
-    }
-    .caption {
-      font-size: .75rem;
-      color: var(--theme-content-trans-color);
-    }
-    .day {
-      background-color: rgba(var(--theme-caption-color), .05);
-      border: 1px solid transparent;
-      border-radius: .25rem;
+      margin: 0 .25rem;
+      width: .75rem;
+      height: .75rem;
+      color: var(--content-color);
+      background-color: var(--button-bg-color);
+      outline: none;
+      border-radius: 50%;
       cursor: pointer;
 
-      &.selected {
-        background-color: var(--primary-button-enabled);
-        border-color: var(--primary-button-focused-border);
-        color: var(--primary-button-color);
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-bg-hover);
       }
-      &.today {
-        position: relative;
-        border-color: var(--theme-content-color);
-        font-weight: 500;
-        color: var(--theme-caption-color);
-
-        &::after {
-          position: absolute;
-          content: attr(data-today);
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          font-weight: 600;
-          font-size: .35rem;
-          text-transform: uppercase;
-          color: var(--theme-content-dark-color);
-        }
-      }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
     }
 
-    // &.no-editable { pointer-events: none; }
+    .digit {
+      position: relative;
+      padding: 0 .125rem;
+      height: 1.5rem;
+      line-height: 1.5rem;
+      color: var(--accent-color);
+      outline: none;
+      border-radius: .125rem;
+
+      &:focus { background-color: var(--primary-bg-color); }
+      &::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11000;
+        cursor: pointer;
+      }
+    }
+    .time-divider {
+      flex-shrink: 0;
+      margin: 0 .25rem;
+      width: 1px;
+      min-width: 1px;
+      height: .75rem;
+      background-color: var(--button-border-color);
+    }
+    .separator { margin: 0 .1rem; }
   }
 </style>

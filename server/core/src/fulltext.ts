@@ -40,7 +40,8 @@ import core, {
   TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  toFindResult
 } from '@anticrm/core'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
@@ -141,13 +142,14 @@ export class FullTextIndex implements WithFind {
   ): Promise<FindResult<T>> {
     console.log('search', query)
     const { _id, $search, ...mainQuery } = query
-    if ($search === undefined) return []
+    if ($search === undefined) return toFindResult([])
 
     let skip = 0
-    const result: FindResult<T> = []
+    const result: FindResult<T> = toFindResult([])
     while (true) {
       const docs = await this.adapter.search(_class, query, options?.limit, skip)
       if (docs.length === 0) {
+        result.total = result.length
         return result
       }
       skip += docs.length
@@ -158,7 +160,9 @@ export class FullTextIndex implements WithFind {
         }
       }
       const resultIds = getResultIds(ids, _id)
-      result.push(...await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options))
+      const current = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
+      result.push(...current)
+      result.total += current.total
       if (result.length > 0 && result.length >= (options?.limit ?? 0)) {
         return result
       }

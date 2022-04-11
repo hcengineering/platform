@@ -15,7 +15,21 @@
 //
 
 import { Client as MinioClient } from 'minio'
-import { Class, Doc, DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, FindOptions, FindResult, Hierarchy, ModelDb, Ref, Tx, TxResult } from '@anticrm/core'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  ModelDb,
+  Ref,
+  Tx,
+  TxResult,
+  toFindResult
+} from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
@@ -41,8 +55,18 @@ import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
-  async findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> { return [] }
-  async tx (tx: Tx): Promise<TxResult> { return {} }
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
+    return toFindResult([])
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    return {}
+  }
+
   async close (): Promise<void> {}
 }
 
@@ -62,7 +86,13 @@ export interface MinioConfig {
 /**
  * @public
  */
-export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfig, port: number, host?: string): () => void {
+export function start (
+  dbUrl: string,
+  fullTextUrl: string,
+  minioConf: MinioConfig,
+  port: number,
+  host?: string
+): () => void {
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
   addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
@@ -77,38 +107,44 @@ export function start (dbUrl: string, fullTextUrl: string, minioConf: MinioConfi
   addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
-  return startJsonRpc(metricsContext, (workspace: string) => {
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'MongoTx',
-        [DOMAIN_MODEL]: 'Null'
-      },
-      defaultAdapter: 'Mongo',
-      adapters: {
-        MongoTx: {
-          factory: createMongoTxAdapter,
-          url: dbUrl
+  return startJsonRpc(
+    metricsContext,
+    (workspace: string) => {
+      const conf: DbConfiguration = {
+        domains: {
+          [DOMAIN_TX]: 'MongoTx',
+          [DOMAIN_MODEL]: 'Null'
         },
-        Mongo: {
-          factory: createMongoAdapter,
-          url: dbUrl
+        defaultAdapter: 'Mongo',
+        adapters: {
+          MongoTx: {
+            factory: createMongoTxAdapter,
+            url: dbUrl
+          },
+          Mongo: {
+            factory: createMongoAdapter,
+            url: dbUrl
+          },
+          Null: {
+            factory: createNullAdapter,
+            url: ''
+          }
         },
-        Null: {
-          factory: createNullAdapter,
-          url: ''
-        }
-      },
-      fulltextAdapter: {
-        factory: createElasticAdapter,
-        url: fullTextUrl
-      },
-      storageFactory: () => new MinioClient({
-        ...minioConf,
-        port: 9000,
-        useSSL: false
-      }),
-      workspace
-    }
-    return createServerStorage(conf)
-  }, port, host)
+        fulltextAdapter: {
+          factory: createElasticAdapter,
+          url: fullTextUrl
+        },
+        storageFactory: () =>
+          new MinioClient({
+            ...minioConf,
+            port: 9000,
+            useSSL: false
+          }),
+        workspace
+      }
+      return createServerStorage(conf)
+    },
+    port,
+    host
+  )
 }

@@ -16,10 +16,11 @@
 
 import { Ref } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { Team } from '@anticrm/tracker'
+import { IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
+import tracker from './plugin'
 
 export interface NavigationItem {
   id: string
@@ -60,4 +61,20 @@ export const calcRank = (prev?: { rank: string }, next?: { rank: string }): stri
   const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
 
   return a.between(b).toString()
+}
+
+export const issueStatuses: Record<IssueStatus, { icon: Asset, label: IntlString }> = {
+  [IssueStatus.Backlog]: { icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
+  [IssueStatus.Todo]: { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
+  [IssueStatus.InProgress]: { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
+  [IssueStatus.Done]: { icon: tracker.icon.StatusDone, label: tracker.string.Done },
+  [IssueStatus.Canceled]: { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }
+}
+
+export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {
+  [IssuePriority.NoPriority]: { icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
+  [IssuePriority.Urgent]: { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
+  [IssuePriority.High]: { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
+  [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
+  [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
 }

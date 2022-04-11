@@ -182,6 +182,12 @@ p:last-child { margin-block-end: 0; }
   .icon {
     margin-right: .5rem;
     color: var(--theme-content-dark-color);
+
+    &.circle {
+      padding: .25rem;
+      background-color: var(--popup-bg-hover);
+      border-radius: 50%;
+    }
   }
   .label {
     min-width: 0;
@@ -318,6 +324,7 @@ p:last-child { margin-block-end: 0; }
 
 .p-2 { padding: .5rem; }
 .p-3 { padding: .75rem; }
+.p-4 { padding: 1rem; }
 .p-6 { padding: 1.5rem; }
 .p-10 { padding: 2.5rem; }
 
@@ -361,6 +368,7 @@ p:last-child { margin-block-end: 0; }
 .h-full { height: 100%; }
 .h-2 { height: .5rem; }
 .h-9 { height: 2.25rem; }
+.h-18 { height: 4.5rem; }
 .w-full { width: 100%;  }
 .w-9 { width: 2.25rem; }
 .w-85 {width: 21.25rem; }
@@ -427,7 +435,7 @@ a.no-line {
 .fs-title {
   font-weight: 500;
   font-size: 1rem;
-  color: var(--theme-caption-color);
+  color: var(--caption-color);
   user-select: none;
 }
 .trans-title {

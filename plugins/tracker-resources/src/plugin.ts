@@ -29,10 +29,15 @@ export default mergeIds(trackerId, tracker, {
     Issues: '' as IntlString,
     Views: '' as IntlString,
     Active: '' as IntlString,
+    AllIssues: '' as IntlString,
+    ActiveIssues: '' as IntlString,
+    BacklogIssues: '' as IntlString,
     Backlog: '' as IntlString,
     Board: '' as IntlString,
+    Project: '' as IntlString,
     Projects: '' as IntlString,
     CreateTeam: '' as IntlString,
+    AddIssue: '' as IntlString,
     NewIssue: '' as IntlString,
     Team: '' as IntlString,
     SelectTeam: '' as IntlString,
@@ -49,13 +54,14 @@ export default mergeIds(trackerId, tracker, {
     High: '' as IntlString,
     Medium: '' as IntlString,
     Low: '' as IntlString,
-  
     Title: '' as IntlString,
     Identifier: '' as IntlString,
     Description: '' as IntlString,
     Status: '' as IntlString,
     Number: '' as IntlString,
     Assignee: '' as IntlString,
+    AssignTo: '' as IntlString,
+    AssignedTo: '' as IntlString,
     Parent: '' as IntlString,
     BlockedBy: '' as IntlString,
     RelatedTo: '' as IntlString,
@@ -64,6 +70,7 @@ export default mergeIds(trackerId, tracker, {
     Labels: '' as IntlString,
     Space: '' as IntlString,
     DueDate: '' as IntlString,
+    ModificationDate: '' as IntlString,
     Issue: '' as IntlString,
     Document: '' as IntlString,
     DocumentIcon: '' as IntlString,
@@ -72,7 +79,8 @@ export default mergeIds(trackerId, tracker, {
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
-    TaskUnAssign: '' as IntlString
+    Unassigned: '' as IntlString,
+    AddIssueTooltip: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -85,6 +93,8 @@ export default mergeIds(trackerId, tracker, {
     Board: '' as AnyComponent,
     Projects: '' as AnyComponent,
     IssuePresenter: '' as AnyComponent,
+    TitlePresenter: '' as AnyComponent,
+    ModificationDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent

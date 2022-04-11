@@ -14,30 +14,97 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
-  import { Button, Label } from '@anticrm/ui'
-  import { getEditorCardActionGroups } from '../../utils/CardActionUtils'
+  import board from '@anticrm/board'
+  import type { Card, CardAction } from '@anticrm/board'
+  import { IntlString, getResource } from '@anticrm/platform'
+  import { getClient } from '@anticrm/presentation'
+  import { Button, Component, Label } from '@anticrm/ui'
+
+  import plugin from '../../plugin'
+  import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
+  import { hasCover } from '../../utils/CardUtils'
 
   export let value: Card
+  const client = getClient()
 
-  const actionGroups = getEditorCardActionGroups(value)
+  const suggestedActions: CardAction[] = []
+  const addToCardActions: CardAction[] = []
+  const automationActions: CardAction[] = []
+  const actions: CardAction[] = []
+
+  let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
+
+  getCardActions(client).then(async (result) => {
+    for (const action of result) {
+      let supported = true
+      if (action.supported) {
+        const supportedHandler = await getResource(action.supported)
+        supported = supportedHandler(value, client)
+      }
+      if (supported) {
+        if (action.type === board.cardActionType.Suggested) {
+          suggestedActions.push(action)
+        } else if (action.type === board.cardActionType.Cover && !hasCover(value)) {
+          addToCardActions.push(action)
+        } else if (action.type === board.cardActionType.AddToCard) {
+          addToCardActions.push(action)
+        } else if (action.type === board.cardActionType.Automation) {
+          automationActions.push(action)
+        } else if (action.type === board.cardActionType.Action) {
+          actions.push(action)
+        }
+      }
+    }
+
+    actionGroups = [
+      {
+        label: plugin.string.Suggested,
+        actions: suggestedActions.sort(cardActionSorter)
+      },
+      {
+        label: plugin.string.AddToCard,
+        actions: addToCardActions.sort(cardActionSorter)
+      },
+      {
+        label: plugin.string.Automation,
+        actions: automationActions.sort(cardActionSorter)
+      },
+      {
+        label: plugin.string.Actions,
+        actions: actions.sort(cardActionSorter)
+      }
+    ]
+  })
 </script>
 
 {#if value}
   <div class="flex-col flex-gap-3">
     {#each actionGroups as group}
-      <div class="flex-col flex-gap-1">
-        <Label label={group.label} />
-        {#each group.actions as action}
-          <Button
-            icon={action.icon}
-            label={action.label}
-            kind={action.isTransparent ? 'transparent' : 'no-border'}
-            justify="left"
-            on:click={() => action.handler?.(value)}
-          />
-        {/each}
-      </div>
+      {#if group.actions.length > 0}
+        <div class="flex-col flex-gap-1">
+          <Label label={group.label} />
+          {#each group.actions as action}
+            {#if action.component}
+              <Component is={action.component} props={{ object: value }}>
+                <slot />
+              </Component>
+            {:else}
+              <Button
+                icon={action.icon}
+                label={action.label}
+                kind={action.kind ?? 'no-border'}
+                justify="left"
+                on:click={async () => {
+                  if (action.handler) {
+                    const handler = await getResource(action.handler)
+                    handler(value, client)
+                  }
+                }}
+              />
+            {/if}
+          {/each}
+        </div>
+      {/if}
     {/each}
   </div>
 {/if}

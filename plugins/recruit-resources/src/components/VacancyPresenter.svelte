@@ -15,24 +15,19 @@
 -->
 <script lang="ts">
   import type { Vacancy } from '@anticrm/recruit'
-  import recruit from '../plugin'
   import { Icon } from '@anticrm/ui'
-  import { showPanel } from '@anticrm/ui/src/panelup'
+  import { getPanelURI } from '@anticrm/ui/src/panelup'
+  import recruit from '../plugin'
 
   export let value: Vacancy
   export let inline: boolean = false
-
-  function show () {
-    showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
-  }
 </script>
 
 {#if value}
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{encodeURIComponent([recruit.component.EditVacancy, value._id, value._class].join('|'))}"
-    on:click={show}
+    href="#{getPanelURI(recruit.component.EditVacancy, value._id, value._class, 'right')}"
   >
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />

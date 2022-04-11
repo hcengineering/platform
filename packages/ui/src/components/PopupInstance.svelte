@@ -16,8 +16,8 @@
 
 <script lang="ts">
   import { afterUpdate } from 'svelte'
-  import { fade } from 'svelte/transition'
-  import type { AnySvelteComponent, AnyComponent, PopupAlignment } from '../types'
+  import { fitPopupElement } from '../popups'
+  import type { AnyComponent, AnySvelteComponent, PopupAlignment } from '../types'
 
   export let is: AnyComponent | AnySvelteComponent
   export let props: object
@@ -51,52 +51,7 @@
 
   const fitPopup = (): void => {
     if (modalHTML) {
-      if (element) {
-        show = false
-        modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
-        modalHTML.style.maxHeight = modalHTML.style.height = ''
-        if (typeof element !== 'string') {
-          const el = element as HTMLElement
-          const rect = el.getBoundingClientRect()
-          const rectPopup = modalHTML.getBoundingClientRect()
-          // Vertical
-          if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-            modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
-          } else if (rectPopup.height + 28 < rect.top) {
-            modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + 1px)`
-          } else {
-            modalHTML.style.top = modalHTML.style.bottom = '1rem'
-          }
-
-          // Horizontal
-          if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
-            modalHTML.style.right = document.body.clientWidth - rect.right + 'px'
-          } else {
-            modalHTML.style.left = rect.left + 'px'
-          }
-        } else if (element === 'right') {
-          modalHTML.style.top = '0'
-          modalHTML.style.bottom = '0'
-          modalHTML.style.right = '0'
-        } else if (element === 'float') {
-          modalHTML.style.top = '4rem'
-          modalHTML.style.bottom = '4rem'
-          modalHTML.style.right = '4rem'
-        } else if (element === 'account') {
-          modalHTML.style.bottom = '2.75rem'
-          modalHTML.style.left = '5rem'
-        } else if (element === 'full') {
-          modalHTML.style.top = '0'
-          modalHTML.style.bottom = '0'
-          modalHTML.style.left = '0'
-          modalHTML.style.right = '0'
-        }
-      } else {
-        modalHTML.style.top = '25%'
-        modalHTML.style.left = '50%'
-        modalHTML.style.transform = 'translate(-50%, -50%)'
-        show = true
-      }
+      show = fitPopupElement(modalHTML, element)
     }
   }
 
