@@ -50,6 +50,9 @@
     "ShowDetails": "Show Details",
     "NewList": "Add another list",
     "AddList": "Add list",
-    "NewListPlaceholder": "Enter list title..."
+    "NewListPlaceholder": "Enter list title...",
+    "AddACard": "Add a card",
+    "AddCard": "Add card",
+    "CardTitlePlaceholder": "Enter a title for this card..."
   }
 }
