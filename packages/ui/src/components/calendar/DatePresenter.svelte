@@ -28,6 +28,7 @@
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
+  export let showIcon = true
 
   const dispatch = createEventDispatcher()
 
@@ -64,9 +65,11 @@
     }
   }}
 >
-  <div class="btn-icon {icon}">
-    <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
-  </div>
+  {#if showIcon}
+    <div class="btn-icon {icon}">
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
+    </div>
+  {/if}
   {#if value !== null && value !== undefined}
     {#if labelOver !== undefined}
       <Label label={labelOver} />

@@ -21,6 +21,7 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
+  export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -30,6 +31,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
+  export let isCircle: boolean = false
 
   export let input: HTMLButtonElement | undefined = undefined
   
@@ -47,6 +49,8 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
+  class:border-radius-1={!isCircle}
+  class:border-radius-4={isCircle}
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   on:click
@@ -64,7 +68,7 @@
     <Spinner />
   {:else}
     {#if label}
-      <Label {label} />
+      <Label {label} params={labelParams}/>
     {:else if $$slots.content}
       <slot name="content" />
     {/if}
@@ -101,7 +105,6 @@
     color: var(--accent-color);
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: .25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
 

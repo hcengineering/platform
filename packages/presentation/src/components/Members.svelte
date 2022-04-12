@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import type { Card } from '@anticrm/board'
 
-  export let value: Card
+<script lang="ts">
+  // import { Class, Doc, Ref, Space } from '@anticrm/core'
+  // import { getClient } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
+  // import { Table } from '@anticrm/view-resources'
+  import presentation from '../plugin'
+
+  // const client = getClient()
+
 </script>
 
-{#if value}
-  <div />
-{/if}
+<div class="flex-col">
+  <div class="flex-row-center">
+    <span class="title"><Label label={presentation.string.Members} /></span>
+  </div>
+  <!-- TODO: implement Members -->
+</div>
+
+<style lang="scss">
+
+</style>

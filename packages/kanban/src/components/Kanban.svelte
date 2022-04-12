@@ -218,7 +218,7 @@
                 </div>
               </div>
             {/each}
-            <slot name="afterCard" {state} />
+            <slot name="afterCard" {space} {state} />
           </KanbanPanel>
         {/each}
         <slot name="additionalPanel" />

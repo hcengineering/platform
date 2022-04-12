@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { AttachmentDocList } from '@anticrm/attachment-resources'
   import type { Comment } from '@anticrm/chunter'
@@ -41,7 +40,7 @@
       <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
     </div>
     <ShowMore limit={126} fixed>
-      <MessageViewer message={value.message}/>
+      <MessageViewer message={value.message} />
       <AttachmentDocList {value} />
     </ShowMore>
   </div>
@@ -56,6 +55,6 @@
     display: inline-flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: .25rem;
+    margin-bottom: 0.25rem;
   }
 </style>

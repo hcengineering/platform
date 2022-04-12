@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Backlink } from '@anticrm/chunter'
   import { MessageViewer } from '@anticrm/presentation'
@@ -22,4 +21,4 @@
   // export let edit: boolean = false
 </script>
 
-<MessageViewer message={value.message}/>
+<MessageViewer message={value.message} />
