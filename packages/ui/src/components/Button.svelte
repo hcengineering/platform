@@ -21,6 +21,7 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
+  export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -67,7 +68,7 @@
     <Spinner />
   {:else}
     {#if label}
-      <Label {label} />
+      <Label {label} params={labelParams}/>
     {:else if $$slots.content}
       <slot name="content" />
     {/if}
