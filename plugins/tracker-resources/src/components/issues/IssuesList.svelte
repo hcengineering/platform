@@ -75,11 +75,8 @@
     })
   }
 
-  const handleIssueSelected = (id: Ref<Doc>, event: Event) => {
-    const eventTarget = event.target as HTMLInputElement
-    const isChecked = eventTarget.checked
-
-    if (isChecked) {
+  const handleIssueSelected = (id: Ref<Doc>, event: CustomEvent<boolean>) => {
+    if (event.detail) {
       selectedIssueIds.add(id)
     } else {
       selectedIssueIds.delete(id)
@@ -116,7 +113,7 @@
                 <div class="eListGridCheckBox ml-2">
                   <CheckBox
                     checked={selectedIssueIds.has(docObject._id)}
-                    on:change={(event) => {
+                    on:value={(event) => {
                       handleIssueSelected(docObject._id, event)
                     }}
                   />
