@@ -17,7 +17,7 @@
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { ThreadMessage } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup } from '@anticrm/core'
+  import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
@@ -53,6 +53,11 @@
         action: chunter.actionImpl.SubscribeComment
       } as Action)
 
+  const deleteAction = {
+    label: chunter.string.DeleteMessage,
+    action: async () => await client.removeDoc(message._class, message.space, message._id)
+  }
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.ThreadMessage)
     actions.push(subscribeAction)
@@ -67,7 +72,8 @@
               const impl = await getResource(a.action)
               await impl(message)
             }
-          }))
+          })),
+          ...(getCurrentAccount()._id === message.createBy ? [deleteAction] : [])
         ]
       },
       ev.target as HTMLElement
