@@ -53,6 +53,10 @@
     "NewListPlaceholder": "Enter list title...",
     "AddACard": "Add a card",
     "AddCard": "Add card",
-    "CardTitlePlaceholder": "Enter a title for this card..."
+    "CardTitlePlaceholder": "Enter a title for this card...",
+    "Create": "Create",
+    "CreateDescription": "If you want, we can create a card for every new line ({number}). You can also create one card with a long title.",
+    "CreateSingle": "Just one card",
+    "CreateMultiple": "Create {number} cards"
   }
 }

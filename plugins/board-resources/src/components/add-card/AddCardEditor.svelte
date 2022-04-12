@@ -3,8 +3,9 @@
   import board from '../../plugin'
 
   export let onClose: () => void
-  export let onAdd: (title: string) => Promise<void>
+  export let onAdd: (title: string, checkNewLine?: boolean) => Promise<any>
 
+  let isEditing = false
   let title = ''
   let inputRef: TextArea
   let openedContainerRef: HTMLDivElement
@@ -15,12 +16,13 @@
       return
     }
 
-    await onAdd(title)
+    isEditing = false
+    await onAdd(title, true)
     title = ''
   }
 
   async function onClickOutside(e: any) {
-    if (openedContainerRef && !openedContainerRef.contains(e.target) && !e.defaultPrevented) {
+    if (openedContainerRef && !openedContainerRef.contains(e.target) && !e.defaultPrevented && isEditing) {
       if (title) {
         await onAdd(title)
       }
@@ -39,6 +41,7 @@
   };
 
   $: if (inputRef && !title) {
+    isEditing = true
     inputRef.focus()
   }
 </script>

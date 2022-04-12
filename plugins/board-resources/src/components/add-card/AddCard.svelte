@@ -17,17 +17,20 @@
   import board from '../../plugin'
   import task, { calcRank } from '@anticrm/task'
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { IconAdd, Button } from '@anticrm/ui'
+  import { IconAdd, Button, showPopup, AnySvelteComponent } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import AddCardEditor from './AddCardEditor.svelte'
+  import AddMultipleCardsPopup from './AddMultipleCardsPopup.svelte'
 
   export let space: Ref<Space>
   export let state: any
 
+  let anchorRef: HTMLDivElement
   const client = getClient()
-  let newCardId = generateId() as Ref<BoardCard>
 
   async function addCard(title: string) {
+    const newCardId = generateId() as Ref<BoardCard>
+
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -52,9 +55,51 @@
       location: ''
     }
 
-    await client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)
+    return client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)
+  }
 
-    newCardId = generateId() as Ref<BoardCard>
+  async function addCards(title: string, checkNewLine: boolean = false) {
+    if (!checkNewLine) {
+      return addCard(title.replace('\n', ' '))
+    }
+
+    const splittedTitle = title.split('\n')
+
+    if (splittedTitle.length === 1) {
+      return addCard(splittedTitle[0])
+    }
+
+    return new Promise<'single' | 'multiple' | 'close'>((resolve) => {
+      const popupOpts = {
+        onAddSingle: () => {
+          closePopup()
+          resolve('single')
+        },
+        onAddMultiple: () => {
+          closePopup()
+          resolve('multiple')
+        },
+        onClose: () => {
+          closePopup()
+          resolve('close')
+        },
+        cardsNumber: splittedTitle.length
+      }
+
+      const closePopup = showPopup(AddMultipleCardsPopup, popupOpts, anchorRef, () => resolve('close'))
+    }).then((value) => {
+      if (value === 'single' || value === 'close') {
+        return addCard(title.replace('\n', ' ')).then((res) => {
+          if (value === 'close') {
+            onClose()
+          }
+
+          return [res]
+        })
+      }
+
+      return Promise.all(splittedTitle.map((titlePart) => addCard(titlePart)))
+    })
   }
 
   let isOpened = false
@@ -70,8 +115,9 @@
 </script>
 
 <div class="flex-col step-tb75">
+  <div bind:this={anchorRef} style:position="absolute" />
   {#if isOpened}
-    <AddCardEditor {onClose} onAdd={addCard} />
+    <AddCardEditor {onClose} onAdd={addCards} />
   {:else}
     <Button
       icon={IconAdd}
