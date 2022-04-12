@@ -19,22 +19,19 @@
 
   export let value: State
 </script>
+
 {#if value}
-  <div class="overflow-label state-container" style="background-color: {getPlatformColor(value.color)}">
-    {value.title}
+  <div class="flex-row-center">
+    <div class="state-container" style="background-color: {getPlatformColor(value.color)}" />
+    <span class="overflow-label">{value.title ?? ''}</span>
   </div>
 {/if}
 
 <style lang="scss">
   .state-container {
-    padding: 0.25rem 0.5rem;
-    width: 6.25rem;
-    max-width: 6.25rem;
-    text-transform: uppercase;
-    text-align: center;
-    letter-spacing: 0.5px;
-    font-size: 0.625rem;
-    color: #fff;
+    margin-right: .5rem;
+    width: .875rem;
+    height: .875rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.25rem;
   }

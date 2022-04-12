@@ -44,7 +44,7 @@
   $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
 
   function showCreateDialog (ev: Event) {
-    showPopup(createItemDialog as AnyComponent, { space: spaceId }, ev.target as HTMLElement)
+    showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
   }
 
   $: updateViewlets(viewlets)

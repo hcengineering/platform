@@ -32,7 +32,7 @@
   const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: recruit.mixin.Candidate, descriptor: view.viewlet.Table })
   
   function showCreateDialog (ev: Event) {
-    showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
+    showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, 'top')
   }
   
   let category: Ref<TagCategory> | undefined = undefined

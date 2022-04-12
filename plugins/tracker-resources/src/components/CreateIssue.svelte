@@ -16,14 +16,13 @@
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import { getClient, UserBox } from '@anticrm/presentation'
+  import presentation, { getClient, UserBox, Card } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter, SelectPopup } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
-  import Card from './Card.svelte'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
@@ -115,7 +114,6 @@
 <Card
   label={tracker.string.NewIssue}
   okAction={createIssue}
-  icon={tracker.icon.Home}
   canSave={true}
   okLabel={tracker.string.SaveIssue}
   spaceClass={tracker.class.Team}
@@ -127,6 +125,9 @@
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="space">
+    <Button icon={tracker.icon.Home} label={presentation.string.Save} size={'small'} kind={'no-border'} disabled on:click={() => { }} />
+  </svelte:fragment>
   <EditBox
     bind:value={object.title}
     placeholder={tracker.string.IssueTitlePlaceholder}
@@ -134,17 +135,15 @@
     kind={'large-style'}
     focus
   />
-  <div class="mt-4">
-    <StyledTextBox
-      alwaysEdit
-      showButtons={false}
-      bind:content={object.description}
-      placeholder={tracker.string.IssueDescriptionPlaceholder}
-    />
-  </div>
-  <div slot="pool" class="flex-row-center text-sm gap-1-5">
-    <StatusSelector status={object.status} onStatusChange={handleStatusChanged} />
-    <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
+  <StyledTextBox
+    alwaysEdit
+    showButtons={false}
+    bind:content={object.description}
+    placeholder={tracker.string.IssueDescriptionPlaceholder}
+  />
+  <svelte:fragment slot="pool">
+    <StatusSelector bind:status={object.status} onStatusChange={handleStatusChanged} />
+    <PrioritySelector bind:priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
@@ -177,5 +176,8 @@
         showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
       }}
     />
-  </div>
+  </svelte:fragment>
+  <svelte:fragment slot="footer">
+    <Button icon={IconAttachment} kind={'transparent'} on:click={() => { }} />
+  </svelte:fragment>
 </Card>

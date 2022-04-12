@@ -21,8 +21,12 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
+<<<<<<< HEAD
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
+=======
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous' = 'secondary'
+>>>>>>> Update dialogs layouts
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let shape: 'circle' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -58,7 +62,7 @@
   on:click
 >
   {#if icon && !loading}
-    <div class="btn-icon"
+    <div class="btn-icon pointer-events-none"
       class:mr-1={!iconOnly && kind === 'no-border'}
       class:mr-2={!iconOnly && kind !== 'no-border'}
       class:resetIconSize
@@ -69,11 +73,13 @@
   {#if loading}
     <Spinner />
   {:else}
-    {#if label}
-      <Label {label} params={labelParams}/>
-    {:else if $$slots.content}
-      <slot name="content" />
-    {/if}
+    <span class="overflow-label pointer-events-none">
+      {#if label}
+        <Label {label} params={labelParams} />
+      {:else if $$slots.content}
+        <slot name="content" />
+      {/if}
+    </span>
   {/if}
 </button>
 
@@ -174,6 +180,16 @@
         background-color: var(--body-color);
         border-color: var(--divider-color);
         .btn-icon { color: var(--content-color); }
+      }
+    }
+    &.link-bordered {
+      padding: 0 .875rem;
+      color: var(--acctent-color);
+      border-color: var(--button-border-color);
+      &:hover {
+        color: var(--acctent-color);
+        border-color: var(--button-border-hover);
+        .btn-icon { color: var(--accent-color); }
       }
     }
     &.primary {

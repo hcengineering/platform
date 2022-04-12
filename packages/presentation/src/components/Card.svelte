@@ -20,7 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
 
-  import { Button, Label } from '@anticrm/ui'
+  import { Button, Label, IconClose, MiniToggle } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
   import presentation from '..'
 
@@ -34,31 +34,50 @@
   export let okAction: () => void
   export let canSave: boolean = false
   export let size: 'small'| 'medium' = 'small'
-
+  export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create
   export let cancelLabel: IntlString = presentation.string.Cancel
 
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard" class:w-85={size === 'small'} class:w-165={size === 'medium'} on:submit|preventDefault={ () => {} }>
+<form class="antiCard dialog" on:submit|preventDefault={ () => {} }>
   <div class="antiCard-header">
-    <div class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></div>
-    {#if $$slots.error}
-      <div class="antiCard-header__error">
-        <slot name="error" />
-      </div>
-    {/if}
+    <div class="antiCard-header__title-wrap">
+      {#if spaceClass && spaceLabel && spacePlaceholder}
+        {#if $$slots.space}
+          <slot name="space" />
+        {:else}
+          <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+        {/if}
+        <span class="antiCard-header__divider">›</span>
+      {/if}
+      <span class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></span>
+    </div>
+    <div class="buttons-group small-gap">
+      <Button icon={IconClose} kind={'transparent'} on:click={() => { dispatch('close') }} />
+    </div>
   </div>
   <div class="antiCard-content"><slot /></div>
-  {#if spaceClass && spaceLabel && spacePlaceholder}
+  {#if (spaceClass && spaceLabel && spacePlaceholder) || $$slots.pool}
     <div class="antiCard-pool">
-      <div class="antiCard-pool__separator" />
-      <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+      <slot name="pool" />
     </div>
   {/if}
-  <div class="antiCard-footer">
-    <Button disabled={!canSave} label={okLabel} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={cancelLabel} on:click={() => { dispatch('close') }} />
+  <div class="antiCard-footer reverse">
+    <div class="buttons-group text-sm">
+      {#if createMore !== undefined}
+        <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
+      {/if}
+      <Button disabled={!canSave} label={okLabel} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
+    </div>
+    <div class="buttons-group text-sm">
+      {#if $$slots.error}
+        <div class="antiCard-footer__error">
+          <slot name="error" />
+        </div>
+      {/if}
+      <slot name="footer" />
+    </div>
   </div>
 </form>
