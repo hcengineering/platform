@@ -74,7 +74,11 @@ export default mergeIds(boardId, board, {
     NewListPlaceholder: '' as IntlString,
     AddACard: '' as IntlString,
     AddCard: '' as IntlString,
-    CardTitlePlaceholder: '' as IntlString
+    CardTitlePlaceholder: '' as IntlString,
+    Create: '' as IntlString,
+    CreateDescription: '' as IntlString,
+    CreateSingle: '' as IntlString,
+    CreateMultiple: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
