@@ -16,17 +16,37 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import Label from './Label.svelte'
+  import { createEventDispatcher } from 'svelte'
+  import plugin from '../plugin'
+  import { translate } from '@anticrm/platform'
 
-  export let label: IntlString | undefined
-  export let width: string | undefined
-  export let height: string | undefined
-  export let value: string | undefined
-  export let placeholder: string | undefined
+  export let label: IntlString | undefined = undefined
+  export let width: string | undefined = undefined
+  export let height: string | undefined = undefined
+  export let value: string | undefined = undefined
+  export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
+  export let placeholderParam: any | undefined = undefined
+  export let noFocusBorder: boolean = false
+
+  let input: HTMLTextAreaElement
+  let phTraslate: string = ''
+
+  $: translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
+
+  export function focus() {
+    input.focus()
+  }
+
+  const dispatch = createEventDispatcher()
+
+  const onKeydown = (e: any) => {
+    dispatch('keydown', e)
+  }
 </script>
 
-<div class="textarea" style="{width ? `width: ${width}px;` : ''} {height ? `height: ${height}px;` : ''}">
+<div class="textarea" class:no-focus-border={noFocusBorder} style:width={width} style:height={height}>
   {#if label}<div class="label"><Label label={label} /></div>{/if}
-  <textarea bind:value {placeholder} />
+  <textarea bind:value bind:this={input} on:keydown={onKeydown} placeholder={phTraslate} />
 </div>
 
 <style lang="scss">
@@ -66,6 +86,17 @@
       }
       &::placeholder {
         color: var(--theme-content-dark-color);
+      }
+    }
+  }
+
+  .no-focus-border {
+    textarea {
+      font-weight: 500;
+      font-size: 1rem;
+
+      &:focus {
+        border-color: transparent;
       }
     }
   }

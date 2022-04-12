@@ -47,7 +47,7 @@
       })
       _class = attachTo
     }
-    viewlet = viewlets[0]
+    space = currentSpace
   }
 
   $: update(currentView?.class)
