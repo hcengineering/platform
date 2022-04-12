@@ -13,28 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref } from '@anticrm/core'
+  import { Issue, IssuePriority, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import type { Issue, Team } from '@anticrm/tracker'
-  import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import PrioritySelector from '../PrioritySelector.svelte'
 
   export let value: Issue
-  export let currentTeam: Team
-  export let inline: boolean = false
+  export let currentSpace: Ref<Team> | undefined = undefined
 
   const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-  const handleIssueEditorOpened = () => {
-    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
+  const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
+    if (newPriority === undefined) {
+      return
+    }
+
+    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
+
+    if (currentIssue === undefined) {
+      return
+    }
+
+    await client.update(currentIssue, { priority: newPriority })
   }
 </script>
 
-{#if value && shortLabel}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
-    <div class="icon">
-      <Icon icon={tracker.icon.Issue} size={'small'} />
-    </div>
-    <span class="label nowrap">{currentTeam.identifier}-{value.number}</span>
-  </div>
+{#if value}
+  <PrioritySelector
+    kind={'icon'}
+    shouldShowLabel={false}
+    priority={value.priority}
+    onPriorityChange={handlePriorityChanged}
+  />
 {/if}
