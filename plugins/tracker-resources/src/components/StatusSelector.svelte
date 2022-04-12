@@ -14,11 +14,14 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup } from '@anticrm/ui'
+  import { Button, Icon, Label, showPopup, SelectPopup } from '@anticrm/ui'
   import { issueStatuses } from '../utils'
   import tracker from '../plugin'
 
   export let status: IssueStatus
+  export let kind: 'button' | 'icon' = 'button'
+  export let shouldShowLabel: boolean = true
+  export let onStatusChange: ((newStatus: IssueStatus | undefined) => void) | undefined = undefined
 
   const statusesInfo = [
     IssueStatus.Backlog,
@@ -28,25 +31,34 @@
     IssueStatus.Canceled
   ].map((s) => ({ id: s, ...issueStatuses[s] }))
 
-  function handleStatusChange (id: any) {
-    if (id !== undefined) {
-      status = id
-    }
-  }
-</script>
-
-<Button
-  label={issueStatuses[status].label}
-  icon={issueStatuses[status].icon}
-  width="min-content"
-  size="small"
-  kind="no-border"
-  on:click={(ev) => {
+  const handleStatusEditorOpened = (event: Event) => {
     showPopup(
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
-      ev.currentTarget,
-      handleStatusChange
+      event.currentTarget,
+      onStatusChange
     )
-  }}
-/>
+  }
+</script>
+
+{#if kind === 'button'}
+  <Button
+    label={shouldShowLabel ? issueStatuses[status].label : undefined}
+    icon={issueStatuses[status].icon}
+    width="min-content"
+    size="small"
+    kind="no-border"
+    on:click={handleStatusEditorOpened}
+  />
+{:else if kind === 'icon'}
+  <div class="flex-presenter" on:click={handleStatusEditorOpened}>
+    <div class="icon">
+      <Icon icon={issueStatuses[status].icon} size={'small'} />
+    </div>
+    {#if shouldShowLabel}
+      <div class="label nowrap">
+        <Label label={issueStatuses[status].label} />
+      </div>
+    {/if}
+  </div>
+{/if}
