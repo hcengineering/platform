@@ -34,7 +34,8 @@
 
   let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
 
-  getCardActions(client).then(async (result) => {
+  async function fetch() {
+    const result = await getCardActions(client)
     for (const action of result) {
       let supported = true
       if (action.supported) {
@@ -74,7 +75,9 @@
         actions: actions.sort(cardActionSorter)
       }
     ]
-  })
+  }
+
+  $: fetch()
 </script>
 
 {#if value}
@@ -99,8 +102,7 @@
                     const handler = await getResource(action.handler)
                     handler(value, client)
                   }
-                }}
-              />
+                }} />
             {/if}
           {/each}
         </div>

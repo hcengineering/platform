@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
+  import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import type { WithLookup } from '@anticrm/core'
@@ -26,40 +26,57 @@
   export let object: WithLookup<Card>
   export let dragged: boolean
 
+  let loadingAttachment = 0
+  let dragoverAttachment = false
+
   function showMenu(ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
   }
 
-  function showLead() {
+  function showCard() {
     showPanel(board.component.EditCard, object._id, object._class, 'middle')
   }
+
 </script>
 
-<div class="flex-between mb-4">
-  <div class="flex-col">
-    <div class="fs-title cursor-pointer" on:click={showLead}>{object.title}</div>
-  </div>
-  <div class="flex-row-center">
-    <div class="mr-2">
-      <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+<AttachmentDroppable
+  bind:loading={loadingAttachment}
+  bind:dragover={dragoverAttachment}
+  objectClass={object._class}
+  objectId={object._id}
+  space={object.space}>
+  <div class:opacity-overlay={dragoverAttachment}>
+  <div class="flex-between mb-4">
+    <div class="flex-col">
+      <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
     </div>
-    <ActionIcon
-      label={board.string.More}
-      action={(evt) => {
-        showMenu(evt)
-      }}
-      icon={IconMoreH}
-      size={'small'}
-    />
+    <div class="flex-row-center">
+      <div class="mr-2">
+        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+      </div>
+      <ActionIcon
+        label={board.string.More}
+        action={(evt) => {
+          showMenu(evt)
+        }}
+        icon={IconMoreH}
+        size="small" />
+    </div>
+  </div>
+  <div class="flex-between">
+    <div class="flex-row-center">
+      {#if (object.attachments ?? 0) > 0}
+        <div class="step-lr75">
+          <AttachmentsPresenter value={object} />
+        </div>
+      {/if}
+      {#if (object.comments ?? 0) > 0}
+        <div class="step-lr75">
+          <CommentsPresenter value={object} />
+        </div>
+      {/if}
+    </div>
   </div>
 </div>
-<div class="flex-between">
-  <div class="flex-row-center">
-    {#if (object.attachments ?? 0) > 0}
-      <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
-    {/if}
-    {#if (object.comments ?? 0) > 0}
-      <div class="step-lr75"><CommentsPresenter value={object} /></div>
-    {/if}
-  </div>
-</div>
+</AttachmentDroppable>
+

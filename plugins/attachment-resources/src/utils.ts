@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Space } from '@anticrm/core'
+import type { Class, Doc, Ref, Space,  TxOperations as Client } from '@anticrm/core'
 import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
+import { getMetadata, setPlatformStatus, unknownError } from '@anticrm/platform'
+
+import attachment from './plugin'
 
 export async function uploadFile (file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }): Promise<string> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
@@ -65,6 +67,26 @@ export async function deleteFile (id: string): Promise<void> {
 
   if (resp.status !== 200) {
     throw new Error('Failed to delete file')
+  }
+}
+
+export async function createAttachment (client: Client, file: File, loading: number, attachTo: {objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc>}) {
+  loading++
+  const {objectClass, objectId, space} = attachTo
+  try {
+    const uuid = await uploadFile(file, { space, attachedTo: objectId })
+    console.log('uploaded file uuid', uuid)
+    client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
+      name: file.name,
+      file: uuid,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified
+    })
+  } catch (err: any) {
+    setPlatformStatus(unknownError(err))
+  } finally {
+    loading--
   }
 }
 
