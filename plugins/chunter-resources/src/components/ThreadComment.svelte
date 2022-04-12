@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { ThreadMessage } from '@anticrm/chunter'
@@ -38,7 +37,6 @@
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   const reactions: boolean = false
 
@@ -57,10 +55,7 @@
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => { 
-      await client.removeDoc(message._class, message.space, message._id)
-      dispatch('delete', message)
-    }
+    action: async () => await client.removeDoc(message._class, message.space, message._id)
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
