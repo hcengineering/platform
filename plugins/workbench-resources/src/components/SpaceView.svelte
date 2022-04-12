@@ -47,7 +47,6 @@
       })
       _class = attachTo
     }
-    space = currentSpace
   }
 
   $: update(currentView?.class)
