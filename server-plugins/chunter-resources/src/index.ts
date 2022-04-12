@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import chunter, { Channel, Comment, Message } from '@anticrm/chunter'
+import chunter, { Channel, Comment, Message, ThreadMessage } from '@anticrm/chunter'
 import { EmployeeAccount } from '@anticrm/contact'
-import core, { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
+import core, { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc, TxRemoveDoc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { TriggerControl } from '@anticrm/server-core'
@@ -58,7 +58,7 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
   const hierarchy = control.hierarchy
   if (tx._class !== core.class.TxCreateDoc) return []
   const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>)
-  if (!hierarchy.isDerived(doc._class, chunter.class.Comment)) {
+  if (!hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
     return []
   }
 
@@ -78,6 +78,44 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
   result.push(lastReplyTx)
   result.push(employeeTx)
   return result
+}
+
+/**
+ * @public
+ */
+export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const hierarchy = control.hierarchy
+  if (tx._class !== core.class.TxRemoveDoc) return []
+
+  const rmTx = tx as TxRemoveDoc<ThreadMessage>
+  if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.ThreadMessage)) {
+    return []
+  }
+  const createTx = (await control.findAll(core.class.TxCreateDoc, {
+    objectId: rmTx.objectId
+  }, { limit: 1 }))[0]
+
+  const comment = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<ThreadMessage>)
+
+  const comments = await control.findAll(chunter.class.ThreadMessage, {
+    attachedTo: comment.attachedTo
+  })
+  const updateTx = control.txFactory.createTxUpdateDoc<Message>(
+    chunter.class.Message,
+    comment.space,
+    comment.attachedTo,
+    {
+      replies:
+        comments
+          .map(comm => (control.modelDb.getObject(comm.createBy) as EmployeeAccount).employee),
+      lastReply:
+        comments.length > 0
+          ? Math.max(...comments.map(comm => comm.createOn))
+          : undefined
+    }
+  )
+
+  return [updateTx]
 }
 
 /**
@@ -112,7 +150,8 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
 export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const promises = [
     MessageCreate(tx, control),
-    CommentCreate(tx, control)
+    CommentCreate(tx, control),
+    CommentDelete(tx, control)
   ]
   const res = await Promise.all(promises)
   return res.flat()
