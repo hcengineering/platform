@@ -26,11 +26,11 @@
   export let object: WithLookup<Card>
   export let dragged: boolean
 
-  function showMenu (ev?: Event): void {
+  function showMenu(ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
   }
 
-  function showLead () {
+  function showLead() {
     showPanel(board.component.EditCard, object._id, object._class, 'middle')
   }
 </script>

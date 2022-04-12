@@ -30,6 +30,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
+  export let isCircle: boolean = false
 
   export let input: HTMLButtonElement | undefined = undefined
   
@@ -47,6 +48,8 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
+  class:border-radius-1={!isCircle}
+  class:border-radius-4={isCircle}
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   on:click
@@ -101,7 +104,6 @@
     color: var(--accent-color);
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: .25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
 
