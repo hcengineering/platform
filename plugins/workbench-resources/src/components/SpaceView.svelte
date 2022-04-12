@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import core,{ Class,Doc,Ref,Space,WithLookup } from '@anticrm/core'
+  import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { AnyComponent,Component } from '@anticrm/ui'
