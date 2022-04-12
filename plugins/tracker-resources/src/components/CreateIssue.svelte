@@ -101,6 +101,14 @@
 
     object.priority = newPriority
   }
+
+  const handleStatusChanged = (newStatus: IssueStatus | undefined) => {
+    if (newStatus === undefined) {
+      return
+    }
+
+    object.status = newStatus
+  }
 </script>
 
 <!-- canSave: object.title.length > 0 && _space != null -->
@@ -135,7 +143,7 @@
     />
   </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
-    <StatusSelector bind:status={object.status} />
+    <StatusSelector status={object.status} onStatusChange={handleStatusChanged} />
     <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}
