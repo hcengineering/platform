@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -54,6 +54,7 @@ import { createModel as serverGmailModel } from '@anticrm/model-server-gmail'
 import { createModel as serverTelegramModel } from '@anticrm/model-server-telegram'
 import { createModel as trackerModel } from '@anticrm/model-tracker'
 import { createModel as boardModel } from '@anticrm/model-board'
+import { createModel as preferenceModel } from '@anticrm/model-preference'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -78,6 +79,7 @@ const builders: [(b: Builder) => void, string][] = [
   [templatesModel, 'templates'],
   [textEditorModel, 'text-editor'],
   [notificationModel, 'notification'],
+  [preferenceModel, 'preference'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],

@@ -1269,6 +1269,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/preference-assets",
+      "projectFolder": "plugins/preference-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/preference-resources",
+      "projectFolder": "plugins/preference-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/model-preference",
       "projectFolder": "models/preference",
       "shouldPublish": true

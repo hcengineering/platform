@@ -387,6 +387,10 @@ abstract class MongoAdapterBase extends TxProcessor {
     const res = await cursor.toArray()
     return toFindResult(res, total)
   }
+
+  isPrivate (): boolean {
+    return false
+  }
 }
 
 class MongoAdapter extends MongoAdapterBase {
@@ -592,6 +596,10 @@ class MongoPrivateAdapter extends MongoAdapter {
   private accounts: Map<string, Ref<Account>> = new Map<string, Ref<Account>>()
   override async init (): Promise<void> {
     this.accounts = new Map((await this.modelDb.findAll(core.class.Account, {})).map((p) => [p.email, p._id]))
+  }
+
+  isPrivate (): boolean {
+    return false
   }
 
   override async tx (tx: Tx, user: string): Promise<TxResult>

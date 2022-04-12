@@ -68,6 +68,8 @@
     "@anticrm/model-server-gmail": "~0.6.0",
     "@anticrm/model-server-telegram": "~0.6.0",
     "@anticrm/model-tracker": "~0.6.0",
-    "@anticrm/model-board": "~0.6.0"
+    "@anticrm/model-board": "~0.6.0",
+    "@anticrm/model-preference": "~0.6.0"
+
   }
 }

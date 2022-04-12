@@ -30,6 +30,6 @@ export interface ServerStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (ctx: MeasureContext, userEmail: string, tx: Tx) => Promise<[TxResult, Tx[]]>
+  tx: (ctx: MeasureContext, userEmail: string, tx: Tx) => Promise<[TxResult, Tx[], string | undefined]>
   close: () => Promise<void>
 }

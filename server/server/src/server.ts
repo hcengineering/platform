@@ -70,6 +70,10 @@ class NullDbAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+
+  isPrivate (): boolean {
+    return false
+  }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {

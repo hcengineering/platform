@@ -45,6 +45,10 @@ class InMemoryTxAdapter implements TxAdapter {
   }
 
   async close (): Promise<void> {}
+
+  isPrivate (): boolean {
+    return false
+  }
 }
 
 class InMemoryAdapter implements DbAdapter {
@@ -69,6 +73,10 @@ class InMemoryAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+
+  isPrivate (): boolean {
+    return false
+  }
 }
 
 /**

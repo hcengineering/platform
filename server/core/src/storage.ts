@@ -59,6 +59,7 @@ export interface DbAdapter {
   close: () => Promise<void>
   findAll: <T extends Doc>(user: string, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
   tx: (tx: Tx, user: string) => Promise<TxResult>
+  isPrivate: () => boolean
 }
 
 /**
@@ -130,11 +131,14 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<TxResult> {
+  private async routeTx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<[TxResult, boolean]> {
     if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      return await this.getAdapter(domain).tx(txCUD, userEmail)
+      const adapter = await this.getAdapter(domain)
+      const priv = adapter.isPrivate()
+      const res = await adapter.tx(txCUD, userEmail)
+      return [res, priv]
     } else {
       if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
         const bulkWrite = tx as TxBulkWrite
@@ -144,7 +148,7 @@ class TServerStorage implements ServerStorage {
       } else {
         throw new Error('not implemented (routeTx)')
       }
-      return {}
+      return [{}, false]
     }
   }
 
@@ -334,7 +338,7 @@ class TServerStorage implements ServerStorage {
     return result
   }
 
-  async tx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<[TxResult, Tx[]]> {
+  async tx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> {
     // store tx
     const _class = txClass(tx)
     const objClass = txObjectClass(tx)
@@ -358,9 +362,8 @@ class TServerStorage implements ServerStorage {
 
       const triggerFx = new Effects()
       let derived: Tx[] = []
-      let result: TxResult = {}
       // store object
-      result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, userEmail, tx))
+      const [result, priv] = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, userEmail, tx))
       // invoke triggers and store derived objects
       derived = [
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, userEmail, tx))),
@@ -399,7 +402,7 @@ class TServerStorage implements ServerStorage {
         await fx()
       }
 
-      return [result, derived]
+      return [result, derived, priv ? userEmail : undefined]
     })
   }
 }

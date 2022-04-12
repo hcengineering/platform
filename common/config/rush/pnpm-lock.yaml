@@ -103,6 +103,8 @@ specifiers:
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
+  '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
+  '@rush-temp/preference-resources': file:./projects/preference-resources.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
   '@rush-temp/prod-tracker': file:./projects/prod-tracker.tgz
@@ -373,6 +375,8 @@ dependencies:
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_37f79b97d0d86442e45d380c86f520c5
   '@rush-temp/pod-account': file:projects/pod-account.tgz
   '@rush-temp/preference': file:projects/preference.tgz
+  '@rush-temp/preference-assets': file:projects/preference-assets.tgz
+  '@rush-temp/preference-resources': file:projects/preference-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/presentation': file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/prod': file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e
   '@rush-temp/prod-tracker': file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e
@@ -12798,7 +12802,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-RLEP3hoSiGNZeIxc4bRN7FQFcFFz4Sv6E2rF1tQHkBIIFJdUSVxDk4xwkopcU5UNNZyoW1UrwlG5jXOzWV9Pkg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-NxbYGWKtCvK3tUbHGFiHRNdc/AmAFb9WWma26yTTzkRBM0ZLgXFfNqNaloQad+dXa1NR0SqpCKswdhelZ1QYgg==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -13859,6 +13863,62 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/preference-assets.tgz:
+    resolution: {integrity: sha512-ppUED31aeD7XmNevsK2XDz527e+gbmV43y68t7bM/DfypniAvcPaNBZ20CzQETmHsBrHSdUNTGFMv3HKMtmzNA==, tarball: file:projects/preference-assets.tgz}
+    name: '@rush-temp/preference-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/preference-resources.tgz_096c09b0b673a57c275d9767a12070b1:
+    resolution: {integrity: sha512-yFKMH1CAGe+Qjjd97wL7TxS46P5PxAH1YP0URTJZ2mNmmMc3XYJmI1ocgDYPGIeX8brsZtf/5DKT+TL+Za6NKQ==, tarball: file:projects/preference-resources.tgz}
+    id: file:projects/preference-resources.tgz
+    name: '@rush-temp/preference-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.46.6
+      prettier: 2.5.1
+      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.46.6
+      sass: 1.45.0
+      svelte: 3.46.6
+      svelte-check: 2.3.0_b04a52a339c2665a42d74bbf4bb86835
+      svelte-loader: 3.1.2_svelte@3.46.6
+      svelte-preprocess: 4.10.5_6f8bc07a13fa60df66bfb708fddfe692
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
   file:projects/preference.tgz:
     resolution: {integrity: sha512-WGzTspMfF/YBgM5AlF26hbbPD9Qbj4Vp7AL0DJeescfvY2MF4rFQ+wJK5ewuFWbDYGVu0kMJiszRP/7OVXqHFQ==, tarball: file:projects/preference.tgz}
     name: '@rush-temp/preference'
@@ -13916,7 +13976,7 @@ packages:
     dev: false
 
   file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-dl5eoirwPVY6dcl4eNTnk0BUpGnXVxppdq2EQd1S81HGk0zT+2X76KJaZ3sUf7byks3kNFl4rFmWOn+JLrpXNA==, tarball: file:projects/prod-tracker.tgz}
+    resolution: {integrity: sha512-TS+ztjq/9obYYCDwLjDWLNzfLLnUqVX8t93kP5jO+MYeVT2prAc0QGqUNYO8E4wYsIZmuNJBo6JlzaF5uYfw/w==, tarball: file:projects/prod-tracker.tgz}
     id: file:projects/prod-tracker.tgz
     name: '@rush-temp/prod-tracker'
     version: 0.0.0
@@ -13962,7 +14022,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-VvhwhIktsLPXGK+aXdKgBVK9CbQkWIVyYy+MmgjEDIpMcoNWbZzL/fdu+Dw/F1OT80Vq01Y7aDeN8TaoHJkWZg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-M83OvMJT5z0Lz9ZuQOEYuIjj6KK8dqhBpGwfibphhxxAedHRg8BWMBO5Chv78bWbOLi3gFhYz7Bkvz6Pj8YmSw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -15570,7 +15630,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-PB/gIO0hbQwlQ3b3RlHWf0ZcsjET1b4nuzS8sTOs6xDdtVZbWH3xTbms89OiLW0znBpHTsKRV5BIacXKe9cc+g==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-eOAAEsi3JGqWCHF6hXBUi64UcNZWliEQhfWhRVamJAM6HvYjUgWT2PYbI/Ci4FNp7ZnYeYQ3tGoz3hfcwaoYiw==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

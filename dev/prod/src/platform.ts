@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -34,6 +34,7 @@ import { imageCropperId } from '@anticrm/image-cropper'
 import { inventoryId } from '@anticrm/inventory'
 import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
+import { preferenceId } from '@anticrm/preference'
 import { tagsId } from '@anticrm/tags'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
@@ -60,6 +61,7 @@ import '@anticrm/tags-assets'
 import '@anticrm/calendar-assets'
 import '@anticrm/tracker-assets'
 import '@anticrm/board-assets'
+import '@anticrm/preference-assets'
 import presentation, { presentationId } from '@anticrm/presentation'
 import { coreId } from '@anticrm/core'
 import { textEditorId } from '@anticrm/text-editor'
@@ -108,6 +110,7 @@ export async function configurePlatform() {
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@anticrm/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
+  addLocation(preferenceId, () => import(/* webpackChunkName: "preference" */ '@anticrm/preference-resources'))
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@anticrm/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
 

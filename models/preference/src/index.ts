@@ -31,7 +31,7 @@ export class TSpacePreference extends TPreference implements SpacePreference {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TPreference)
+  builder.createModel(TPreference, TSpacePreference)
 }
 
 export { preference as default }

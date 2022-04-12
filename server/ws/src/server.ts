@@ -31,6 +31,10 @@ class Session {
     private readonly storage: ServerStorage
   ) {}
 
+  getUser (): string {
+    return this.token.email
+  }
+
   async ping (): Promise<string> { console.log('ping'); return 'pong!' }
 
   async findAll <T extends Doc>(ctx: MeasureContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
@@ -38,11 +42,11 @@ class Session {
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    const [result, derived] = await this.storage.tx(ctx, this.token.email, tx)
+    const [result, derived, target] = await this.storage.tx(ctx, this.token.email, tx)
 
-    this.manager.broadcast(this, this.token, { result: tx })
+    this.manager.broadcast(this, this.token, { result: tx }, target)
     for (const dtx of derived) {
-      this.manager.broadcast(null, this.token, { result: dtx })
+      this.manager.broadcast(null, this.token, { result: dtx }, target)
     }
     return result
   }
@@ -105,7 +109,7 @@ class SessionManager {
     }
   }
 
-  broadcast (from: Session | null, token: Token, resp: Response<any>): void {
+  broadcast (from: Session | null, token: Token, resp: Response<any>, target?: string): void {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
@@ -114,7 +118,13 @@ class SessionManager {
     if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
     const msg = serialize(resp)
     for (const session of workspace.sessions) {
-      if (session[0] !== from) { session[1].send(msg) }
+      if (session[0] !== from) {
+        if (target === undefined) {
+          session[1].send(msg)
+        } else if (session[0].getUser() === target) {
+          session[1].send(msg)
+        }
+      }
     }
   }
 }

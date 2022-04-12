@@ -33,6 +33,7 @@ import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
+import { preferenceId } from '@anticrm/preference'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -47,6 +48,7 @@ import '@anticrm/gmail-assets'
 import '@anticrm/workbench-assets'
 import '@anticrm/templates-assets'
 import '@anticrm/notification-assets'
+import '@anticrm/preference-assets'
 import '@anticrm/tracker-assets'
 import presentation, { presentationId } from '@anticrm/presentation'
 import { coreId } from '@anticrm/core'
@@ -92,6 +94,7 @@ export async function configurePlatform() {
   addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
+  addLocation(preferenceId, () => import(/* webpackChunkName: "preference" */ '@anticrm/preference-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))

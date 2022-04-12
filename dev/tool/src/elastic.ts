@@ -394,6 +394,10 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
   async close (): Promise<void> {
     await this.adapter.close()
   }
+
+  isPrivate (): boolean {
+    return false
+  }
 }
 
 class MongoReadOnlyTxAdapter extends MongoReadOnlyAdapter implements TxAdapter {

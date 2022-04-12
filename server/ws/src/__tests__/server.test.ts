@@ -45,8 +45,9 @@ describe('server', () => {
         query: DocumentQuery<T>,
         options?: FindOptions<T>
       ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: MeasureContext, user: string, tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []],
-      close: async () => {}
+      tx: async (ctx: MeasureContext, user: string, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> => [{}, [], undefined],
+      close: async () => {},
+      isPrivate: () => false
     }),
     3333
   )
