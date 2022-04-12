@@ -14,11 +14,14 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, Icon, Label } from '@anticrm/ui'
   import { issuePriorities } from '../utils'
   import tracker from '../plugin'
 
   export let priority: IssuePriority
+  export let kind: 'button' | 'icon' = 'button'
+  export let shouldShowLabel: boolean = true
+  export let onPriorityChange: ((newPriority: IssuePriority | undefined) => void) | undefined = undefined
 
   const prioritiesInfo = [
     IssuePriority.NoPriority,
@@ -26,27 +29,36 @@
     IssuePriority.High,
     IssuePriority.Medium,
     IssuePriority.Low
-  ].map((s) => ({ id: s, ...issuePriorities[s] }))
+  ].map((p) => ({ id: p, ...issuePriorities[p] }))
 
-  function handlePriorityChange (id: any) {
-    if (id !== undefined) {
-      priority = id
-    }
+  const handlePriorityEditorOpened = (event: Event) => {
+    showPopup(
+      SelectPopup,
+      { value: prioritiesInfo, placeholder: tracker.string.SetPriority, searchable: true },
+      event.currentTarget,
+      onPriorityChange
+    )
   }
 </script>
 
-<Button
-  label={issuePriorities[priority].label}
-  icon={issuePriorities[priority].icon}
-  width="min-content"
-  size="small"
-  kind="no-border"
-  on:click={(ev) => {
-    showPopup(
-      SelectPopup,
-      { value: prioritiesInfo, placeholder: tracker.string.SetStatus },
-      ev.currentTarget,
-      handlePriorityChange
-    )
-  }}
-/>
+{#if kind === 'button'}
+  <Button
+    label={shouldShowLabel ? issuePriorities[priority].label : undefined}
+    icon={issuePriorities[priority].icon}
+    width="min-content"
+    size="small"
+    kind="no-border"
+    on:click={handlePriorityEditorOpened}
+  />
+{:else if kind === 'icon'}
+  <div class="flex-presenter" on:click={handlePriorityEditorOpened}>
+    <div class="icon">
+      <Icon icon={issuePriorities[priority].icon} size={'small'} />
+    </div>
+    {#if shouldShowLabel}
+      <div class="label nowrap">
+        <Label label={issuePriorities[priority].label} />
+      </div>
+    {/if}
+  </div>
+{/if}
