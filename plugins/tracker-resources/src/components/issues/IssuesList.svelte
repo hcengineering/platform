@@ -113,7 +113,7 @@
           {#each attributeModels as attributeModel, attributeModelIndex}
             {#if attributeModelIndex === 0}
               <div class="gridElement">
-                <div class="checkBox ml-2">
+                <div class="eListGridCheckBox ml-2">
                   <CheckBox
                     checked={selectedIssueIds.has(docObject._id)}
                     on:change={(event) => {
@@ -193,6 +193,10 @@
 
     &.mListGridChecked {
       background-color: var(--theme-table-bg-hover);
+
+      .eListGridCheckBox {
+        opacity: 1;
+      }
     }
 
     &.mListGridFixed {
@@ -207,6 +211,20 @@
 
     &:hover {
       background-color: var(--theme-table-bg-hover);
+    }
+
+    .eListGridCheckBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.03rem;
+      border-radius: 0.25rem;
+      background-color: rgba(247, 248, 248, 0.5);
+      opacity: 0;
+
+      &:hover {
+        opacity: 1;
+      }
     }
   }
 
