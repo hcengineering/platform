@@ -30,6 +30,7 @@ import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
+import Threads from './components/Threads.svelte'
 
 export { CommentsPresenter }
 
@@ -90,6 +91,7 @@ export default async (): Promise<Resources> => ({
     CommentsPresenter,
     ChannelPresenter,
     EditChannel,
+    Threads,
     ThreadView
   },
   activity: {

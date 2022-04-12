@@ -27,6 +27,7 @@
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
     "Topic": "Topic",
     "Thread": "Thread",
+    "Threads": "Threads",
     "New": "New",
     "MarkUnread": "Mark unread",
     "GetNewReplies": "Get notified about new replies",

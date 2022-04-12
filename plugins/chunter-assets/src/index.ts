@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(chunter.icon, {
   Chunter: `${icons}#chunter`,
   Hashtag: `${icons}#hashtag`,
+  Thread: `${icons}#thread`,
   Lock: `${icons}#lock`
 })
 
