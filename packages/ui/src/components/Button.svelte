@@ -24,7 +24,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
-  export let shape: 'circle' | undefined
+  export let shape: 'circle' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -32,7 +32,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
-  export let title: string | undefined
+  export let title: string | undefined = undefined
 
   export let input: HTMLButtonElement | undefined = undefined
   
