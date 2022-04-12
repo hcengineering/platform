@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
-  import { Channels } from '@anticrm/contact-resources'
+  import { ChannelsView } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
   import {
     Account,
@@ -50,7 +50,9 @@
     Label,
     Link,
     showPopup,
-    Spinner
+    Spinner,
+    Button,
+    IconAttachment
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -397,89 +399,27 @@
     dispatch('close')
   }}
 >
-  {#if matches.length > 0}
-    <div class="flex-row update-container ERROR">
-      <div class="flex mb-2">
-        <IconInfo size={'small'} />
-        <div class="text-sm ml-2 overflow-label">
-          <Label label={contact.string.PersonAlreadyExists} />
-        </div>
-      </div>
-      <PersonPresenter value={matches[0]} />
-    </div>
-  {/if}
   <div class="flex-row-center">
     <div class="mr-4">
       <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
     </div>
     <div class="flex-col">
-      <div class="fs-title">
-        <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} maxWidth="10rem" bind:value={firstName} focus />
+      <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
+      <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
+      <div class="mt-1">
+        <EditBox placeholder={recruit.string.Title} bind:value={object.title} kind={'small-style'} maxWidth={'32rem'} />
       </div>
-      <div class="fs-title mb-1">
-        <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} maxWidth="10rem" bind:value={lastName} />
-      </div>
-      <div class="text-sm">
-        <EditBox placeholder={recruit.string.Title} maxWidth="10rem" bind:value={object.title} />
-      </div>
-      <div class="text-sm">
-        <EditBox placeholder={recruit.string.Location} maxWidth="10rem" bind:value={object.city} />
-      </div>
+      <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
     </div>
   </div>
-
-  <div class="flex-row-center channels">
-    <Channels
-      bind:channels
-      on:change={(e) => {
-        channels = e.detail
-      }}
-    />
-  </div>
-
-  <div
-    class="flex-center resume"
-    class:solid={dragover || resume.uuid}
-    on:dragover|preventDefault={() => {
-      dragover = true
-    }}
-    on:dragleave={() => {
-      dragover = false
-    }}
-    on:drop|preventDefault|stopPropagation={drop}
-  >
-    {#if resume.uuid}
-      <Link
-        label={resume.name}
-        icon={FileIcon}
-        maxLenght={16}
-        on:click={() => {
-          showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
-        }}
-      />
-    {:else}
-      {#if loading}
-        <Link label={'Uploading...'} icon={Spinner} disabled />
-      {:else}
-        <Link
-          label={'Add or drop resume'}
-          icon={FileUpload}
-          on:click={() => {
-            inputFile.click()
-          }}
-        />
-      {/if}
-      <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
-    {/if}
-  </div>
-
-  <div class="separator" />
+  {#if channels.length > 0}
+    <ChannelsView value={channels} size={'small'} on:click />
+  {/if}
   <div class="flex-col locations">
     <span><Label label={recruit.string.WorkLocationPreferences} /></span>
     <div class="row"><Label label={recruit.string.Onsite} /><YesNo bind:value={object.onsite} /></div>
     <div class="row"><Label label={recruit.string.Remote} /><YesNo bind:value={object.remote} /></div>
   </div>
-  <div class="separator" />
   <div class="flex-col locations">
     <span><Label label={recruit.string.SkillsLabel} /></span>
     <div class="flex-grow">
@@ -495,6 +435,41 @@
       />
     </div>
   </div>
+  <svelte:fragment slot="footer">
+    <Button
+      icon={contact.icon.SocialEdit}
+      kind={'transparent'}
+      on:click={(ev) =>
+        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+          if (result !== undefined) channels = result
+        })
+      }
+    />
+    <Button
+      icon={!resume.uuid && loading ? Spinner : IconAttachment}
+      kind={'transparent'}
+      on:click={() => { inputFile.click() }}
+    />
+    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
+    {#if resume.uuid}
+      <Button
+        icon={FileIcon}
+        kind={'link-bordered'}
+        on:click={() => {
+          showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
+        }}
+      ><svelte:fragment slot="content">{resume.name}</svelte:fragment></Button>
+    {/if}
+    {#if matches.length > 0}
+      <div class="flex-row-center error-color">
+        <IconInfo size={'small'} />
+        <span class="text-sm overflow-label ml-2">
+          <Label label={contact.string.PersonAlreadyExists} />
+        </span>
+        <div class="ml-4"><PersonPresenter value={matches[0]} /></div>
+      </div>
+    {/if}
+  </svelte:fragment>
 </Card>
 
 <style lang="scss">

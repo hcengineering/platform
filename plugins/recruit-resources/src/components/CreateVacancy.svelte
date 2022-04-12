@@ -18,7 +18,7 @@
   import core, { Ref } from '@anticrm/core'
   import { getClient, Card } from '@anticrm/presentation'
   import task, { createKanban, KanbanTemplate } from '@anticrm/task'
-  import { Component, EditBox } from '@anticrm/ui'
+  import { Component, EditBox, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { OrganizationSelector } from '@anticrm/contact-resources'
@@ -61,11 +61,16 @@
   canSave={!!name}
   on:close={() => { dispatch('close') }}
 >
-  <EditBox
-    bind:value={name}
-    placeholder={recruit.string.VacancyPlaceholder}
-    maxWidth={'37.5rem'} kind={'large-style'} focus
-  />
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <EditBox
+      bind:value={name}
+      placeholder={recruit.string.VacancyPlaceholder}
+      maxWidth={'37.5rem'} kind={'large-style'} focus
+    />
+  </div>
   <svelte:fragment slot="pool">
     <OrganizationSelector
       bind:value={company} label={recruit.string.Company}

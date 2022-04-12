@@ -29,7 +29,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text'| 'password' | 'number' = 'text'
-  export let kind: 'editbox' | 'large-style' = 'editbox'
+  export let kind: 'editbox' | 'large-style' | 'small-style' = 'editbox'
   export let focus: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -104,6 +104,10 @@
     .large-style {
       font-weight: 500;
       font-size: 1.125rem;
+    }
+    .small-style {
+      font-weight: 400;
+      font-size: .75rem;
     }
 
     input {

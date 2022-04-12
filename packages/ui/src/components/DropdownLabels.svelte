@@ -68,7 +68,7 @@
       }}
     >
       <span slot="content" style="overflow: hidden">
-        {#if selectedItem}{selectedItem.label}{:else}<Label label={placeholder ?? ui.string.NotSelected} />{/if}
+        {#if selectedItem}{selectedItem.label}{:else}<Label label={label ?? ui.string.NotSelected} />{/if}
       </span>
     </Button>
   </Tooltip>

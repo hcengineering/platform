@@ -21,12 +21,8 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
-<<<<<<< HEAD
   export let labelParams: Record<string, any> = {}
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
-=======
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous' = 'secondary'
->>>>>>> Update dialogs layouts
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
   export let shape: 'circle' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -59,6 +55,7 @@
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   {title}
+  type={kind === 'primary' ? 'submit' : 'button'}
   on:click
 >
   {#if icon && !loading}

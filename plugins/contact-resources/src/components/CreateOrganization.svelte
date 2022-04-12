@@ -66,7 +66,7 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button icon={Company} size={'medium'} kind={'link-bordered'} />
+      <Button icon={Company} size={'medium'} kind={'link-bordered'} disabled />
     </div>
     <EditBox
       placeholder={contact.string.OrganizationNamePlaceholder}
@@ -89,16 +89,3 @@
     />
   </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .logo {
-    width: 5rem;
-    height: 5rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
-    border-radius: 50%;
-  }
-  .channels {
-    margin: 1rem 0;
-  }
-</style>

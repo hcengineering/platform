@@ -65,19 +65,19 @@
     </div>
   {/if}
   <div class="antiCard-footer reverse">
-    <div class="buttons-group text-sm">
+    <div class="buttons-group text-sm flex-no-shrink">
       {#if createMore !== undefined}
         <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}
       <Button disabled={!canSave} label={okLabel} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
     </div>
-    <div class="buttons-group text-sm">
+    <div class="buttons-group small-gap text-sm">
+      <slot name="footer" />
       {#if $$slots.error}
         <div class="antiCard-footer__error">
           <slot name="error" />
         </div>
       {/if}
-      <slot name="footer" />
     </div>
   </div>
 </form>
