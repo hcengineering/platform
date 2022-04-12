@@ -77,7 +77,7 @@
         {#each members as member}
           <MemberPresenter value={member} size="large" />
         {/each}
-        <Button icon={IconAdd} isCircle={true} kind="no-border" size="large" on:click={membersHandler} />
+        <Button icon={IconAdd} shape="circle" kind="no-border" size="large" on:click={membersHandler} />
       </div>
     </div>
   {/if}

@@ -24,6 +24,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'secondary'
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
+  export let shape: 'circle' | undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -31,7 +32,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
-  export let isCircle: boolean = false
+  export let title: string | undefined
 
   export let input: HTMLButtonElement | undefined = undefined
   
@@ -49,10 +50,11 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
-  class:border-radius-1={!isCircle}
-  class:border-radius-4={isCircle}
+  class:border-radius-1={shape !== 'circle'}
+  class:border-radius-4={shape === 'circle'}
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
+  {title}
   on:click
 >
   {#if icon && !loading}
