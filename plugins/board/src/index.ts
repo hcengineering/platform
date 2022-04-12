@@ -108,14 +108,6 @@ const boards = plugin(boardId, {
   app: {
     Board: '' as Ref<Doc>
   },
-  cardActionType: {
-    Suggested: 'Suggested',
-    Editor: 'Editor',
-    Cover: 'Cover',
-    AddToCard: 'AddToCard',
-    Automation: 'Automation',
-    Action: 'Action'
-  },
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
@@ -128,6 +120,56 @@ const boards = plugin(boardId, {
   },
   space: {
     BoardTemplates: '' as Ref<KanbanTemplateSpace>
+  },
+  cardActionType: {
+    Suggested: 'Suggested',
+    Editor: 'Editor',
+    Cover: 'Cover',
+    AddToCard: 'AddToCard',
+    Automation: 'Automation',
+    Action: 'Action'
+  },
+  cardAction: {
+    Cover: '' as Ref<CardAction>,
+    Join: '' as Ref<CardAction>,
+    Members: '' as Ref<CardAction>,
+    Labels: '' as Ref<CardAction>,
+    Checklist: '' as Ref<CardAction>,
+    Dates: '' as Ref<CardAction>,
+    Attachments: '' as Ref<CardAction>,
+    CustomFields: '' as Ref<CardAction>,
+    AddButton: '' as Ref<CardAction>,
+    Move: '' as Ref<CardAction>,
+    Copy: '' as Ref<CardAction>,
+    MakeTemplate: '' as Ref<CardAction>,
+    Watch: '' as Ref<CardAction>,
+    Archive: '' as Ref<CardAction>,
+    SendToBoard: '' as Ref<CardAction>,
+    Delete: '' as Ref<CardAction>
+  },
+  cardActionHandler: {
+    Cover: '' as Resource<(card: Card, client: Client) => void>,
+    Join: '' as Resource<(card: Card, client: Client) => void>,
+    Members: '' as Resource<(card: Card, client: Client) => void>,
+    Labels: '' as Resource<(card: Card, client: Client) => void>,
+    Checklist: '' as Resource<(card: Card, client: Client) => void>,
+    Dates: '' as Resource<(card: Card, client: Client) => void>,
+    Attachments: '' as Resource<(card: Card, client: Client) => void>,
+    CustomFields: '' as Resource<(card: Card, client: Client) => void>,
+    AddButton: '' as Resource<(card: Card, client: Client) => void>,
+    Move: '' as Resource<(card: Card, client: Client) => void>,
+    Copy: '' as Resource<(card: Card, client: Client) => void>,
+    MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
+    Watch: '' as Resource<(card: Card, client: Client) => void>,
+    Archive: '' as Resource<(card: Card, client: Client) => void>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => void>,
+    Delete: '' as Resource<(card: Card, client: Client) => void>
+  },
+  cardActionSupportedHandler: {
+    Join: '' as Resource<(card: Card, client: Client) => boolean>,
+    Archive: '' as Resource<(card: Card, client: Client) => boolean>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => boolean>,
+    Delete: '' as Resource<(card: Card, client: Client) => boolean>
   }
 })
 

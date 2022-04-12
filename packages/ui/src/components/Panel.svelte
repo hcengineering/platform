@@ -25,28 +25,34 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let rightSection: boolean = false
   export let reverseCommands = false
+  export let showHeader = true
 
   const dispatch = createEventDispatcher()
+
 </script>
 
 <div class="antiPanel antiComponent">
   <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>
-    <div class="ac-header short mirror divide">
-      <div class="ac-header__wrap-title">
-        {#if icon}<div class="ac-header__icon"><Icon {icon} size={'large'} /></div>{/if}
-        <div class="ac-header__wrap-description">
-          {#if title}
-            <span class="ac-header__title">{title}</span>
+    {#if showHeader}
+      <div class="ac-header short mirror divide">
+        <div class="ac-header__wrap-title">
+          {#if icon}
+            <div class="ac-header__icon">
+              <Icon {icon} size={'large'} />
+            </div>
           {/if}
-          {#if subtitle}<span class="ac-header__description">{subtitle}</span>{/if}
+          <div class="ac-header__wrap-description">
+            {#if title}<span class="ac-header__title">{title}</span>{/if}
+            {#if subtitle}<span class="ac-header__description">{subtitle}</span>{/if}
+          </div>
         </div>
+        {#if rightSection}
+          <div class="flex">
+            <slot name="commands" />
+          </div>
+        {/if}
       </div>
-      {#if rightSection}
-        <div class="flex">
-          <slot name="commands" />
-        </div>
-      {/if}
-    </div>
+    {/if}
     {#if $$slots.subtitle}
       <div class="ac-subtitle">
         <div class="ac-subtitle-content">
@@ -54,13 +60,13 @@
         </div>
       </div>
     {/if}
-    <div class='flex-col'>
+    <div class="flex-col">
       <slot />
     </div>
   </div>
 
   {#if rightSection}
-    <slot name='rightSection'/>
+    <slot name="rightSection" />
   {/if}
 
   <div class="ad-tools" class:grow-reverse={reverseCommands}>
@@ -69,15 +75,14 @@
         <slot name="commands" />
       </div>
     {/if}
-    <slot name='actions'/>
+    <slot name="actions" />
     <div class="tool">
       <ActionIcon
         icon={IconClose}
         size={'medium'}
         action={() => {
           dispatch('close')
-        }}
-      />
+        }} />
     </div>
   </div>
 </div>
@@ -89,4 +94,5 @@
     flex-direction: column;
     align-content: stretch;
   }
+
 </style>

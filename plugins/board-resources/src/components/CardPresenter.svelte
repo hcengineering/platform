@@ -21,7 +21,6 @@
 
   export let value: Card
   export let inline: boolean = false
-
 </script>
 
 {#if value}
