@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { AnySvelteComponent } from '@anticrm/ui'
   import Check from './icons/Check.svelte'
@@ -23,13 +22,16 @@
     count: number
   }
 
-  export let reactions: Reaction[] = [{ icon: Check, count: 3}, { icon: Heart, count: 10}]
+  export let reactions: Reaction[] = [
+    { icon: Check, count: 3 },
+    { icon: Heart, count: 10 }
+  ]
 </script>
 
 <div class="container">
   {#each reactions as reaction}
     <div class="flex-row-center reaction">
-      <svelte:component this={reaction.icon} size={'medium'}/>
+      <svelte:component this={reaction.icon} size={'medium'} />
       <div class="caption-color counter">{reaction.count}</div>
     </div>
   {/each}
@@ -40,7 +42,11 @@
     display: flex;
     user-select: none;
 
-    .counter { margin-left: .25rem; }
-    .reaction + .reaction { margin-left: 1rem; }
+    .counter {
+      margin-left: 0.25rem;
+    }
+    .reaction + .reaction {
+      margin-left: 1rem;
+    }
   }
 </style>

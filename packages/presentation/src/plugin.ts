@@ -40,6 +40,7 @@ export default plugin(presentationId, {
     AddSocialLinks: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString,
+    Members: '' as IntlString,
     Search: '' as IntlString,
     Unassigned: '' as IntlString
   },

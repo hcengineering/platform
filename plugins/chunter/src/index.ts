@@ -24,6 +24,7 @@ import { AnyComponent } from '@anticrm/ui'
  */
 export interface Channel extends Space {
   lastMessage?: Timestamp
+  topic?: string
 }
 
 /**
