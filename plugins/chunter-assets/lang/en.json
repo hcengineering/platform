@@ -32,6 +32,7 @@
     "GetNewReplies": "Get notified about new replies",
     "TurnOffReplies": "Turn off notifications for replies",
     "PinMessage": "Pin message",
-    "UnpinMessage": "Unpin message"
+    "UnpinMessage": "Unpin message",
+    "DeleteMessage": "Delete message"
   }
 }
