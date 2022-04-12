@@ -29,7 +29,7 @@
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardActivity from './editor/CardActivity.svelte'
-  import CardFields from './editor/CardFields.svelte'
+  import CardDetails from './editor/CardDetails.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -103,7 +103,7 @@
           <div class="flex-grow mr-4">
             <div class="flex-row-streach">
               <div class="w-9" />
-              <CardFields value={object} />
+              <CardDetails value={object} />
             </div>
             <div class="flex-row-streach mt-4 mb-2">
               <div class="w-9">
