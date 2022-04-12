@@ -186,7 +186,7 @@
 
   .listGrid {
     display: grid;
-    grid-template-columns: 4rem 6rem auto 4rem 2rem;
+    grid-template-columns: 4rem 5rem 2rem auto 4rem 2rem;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
@@ -231,7 +231,7 @@
   }
 
   .priorityPresenter {
-    padding-left: 0.5rem;
+    padding-left: 0.75rem;
   }
 
   .issuePresenter {
