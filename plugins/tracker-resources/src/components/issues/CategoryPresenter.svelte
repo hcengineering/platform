@@ -55,14 +55,7 @@
         { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace } },
         { key: '', presenter: tracker.component.TitlePresenter },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-        {
-          key: '$lookup.assignee',
-          props: {
-            shouldShowName: false,
-            shouldShowPlaceholder: true,
-            tooltipLabels: { personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }
-          }
-        }
+        { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
       ]}
       {options}
       query={{ ...query, status: category }}
