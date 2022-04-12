@@ -47,6 +47,7 @@ export default mergeIds(trackerId, tracker, {
     InProgress: '' as IntlString,
     Done: '' as IntlString,
     Canceled: '' as IntlString,
+    SetPriority: '' as IntlString,
     SetStatus: '' as IntlString,
     Priority: '' as IntlString,
     NoPriority: '' as IntlString,
@@ -95,6 +96,7 @@ export default mergeIds(trackerId, tracker, {
     IssuePresenter: '' as AnyComponent,
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
+    PriorityPresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent
