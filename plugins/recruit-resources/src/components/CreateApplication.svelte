@@ -164,7 +164,7 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <div class="flex-between mt-2 mb-2">
+  <!-- <div class="flex-between mt-2 mb-2">
     <div class="card" class:empty={!selectedCandidate}>
       {#if selectedCandidate}
         <CandidateCard candidate={selectedCandidate} disabled />
@@ -180,7 +180,7 @@
         <Label label={recruit.status.VacancyRequired} />
       {/if}
     </div>
-  </div>
+  </div> -->
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox

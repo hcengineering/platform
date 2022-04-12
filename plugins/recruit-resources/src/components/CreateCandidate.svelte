@@ -413,15 +413,10 @@
     </div>
   </div>
   {#if channels.length > 0}
-    <ChannelsView value={channels} size={'small'} on:click />
+    <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
   {/if}
-  <div class="flex-col locations">
-    <span><Label label={recruit.string.WorkLocationPreferences} /></span>
-    <div class="row"><Label label={recruit.string.Onsite} /><YesNo bind:value={object.onsite} /></div>
-    <div class="row"><Label label={recruit.string.Remote} /><YesNo bind:value={object.remote} /></div>
-  </div>
-  <div class="flex-col locations">
-    <span><Label label={recruit.string.SkillsLabel} /></span>
+  <div class="flex-col">
+    <span class="text-sm fs-bold content-accent-color"><Label label={recruit.string.SkillsLabel} /></span>
     <div class="flex-grow">
       <Component
         is={tags.component.TagsEditor}
@@ -435,6 +430,15 @@
       />
     </div>
   </div>
+  <svelte:fragment slot="pool">
+    <div class="flex-between w-full">
+      <span class="ml-2 content-color overflow-label"><Label label={recruit.string.WorkLocationPreferences} /></span>
+      <div class="buttons-group small-gap">
+        <YesNo label={recruit.string.Onsite} bind:value={object.onsite} />
+        <YesNo label={recruit.string.Remote} bind:value={object.remote} />
+      </div>
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
       icon={contact.icon.SocialEdit}
@@ -471,59 +475,3 @@
     {/if}
   </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .channels {
-    margin-top: 1.25rem;
-  }
-
-  .locations {
-    span {
-      margin-bottom: 0.125rem;
-      font-weight: 500;
-      font-size: 0.75rem;
-      color: var(--theme-content-accent-color);
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.75rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .separator {
-    margin: 1rem 0;
-    height: 1px;
-    background-color: var(--theme-card-divider);
-  }
-
-  .resume {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: var(--theme-zone-bg);
-    border: 1px dashed var(--theme-zone-border);
-    border-radius: 0.5rem;
-    backdrop-filter: blur(10px);
-    &.solid {
-      border-style: solid;
-    }
-  }
-  .update-container {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    user-select: none;
-    font-size: 14px;
-
-    color: var(--theme-content-color);
-    &.ERROR { color: var(--system-error-color); }
-
-    border: 1px dashed var(--theme-zone-border);
-    border-radius: 0.5rem;
-    backdrop-filter: blur(10px);
-  }
-</style>

@@ -180,7 +180,7 @@
       }
     }
     &.link-bordered {
-      padding: 0 .875rem;
+      padding: 0 .375rem;
       color: var(--acctent-color);
       border-color: var(--button-border-color);
       &:hover {

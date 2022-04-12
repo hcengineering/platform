@@ -117,7 +117,7 @@
     </div>
   </div>
   {#if channels.length > 0}
-    <ChannelsView value={channels} size={'small'} on:click />
+    <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
   {/if}
   <svelte:fragment slot="footer">
     <Button
