@@ -18,7 +18,7 @@ import type { Backlink, Channel, ChunterMessage, Comment, Message, ThreadMessage
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeTimestamp, UX } from '@anticrm/model'
+import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
@@ -37,6 +37,10 @@ export class TChannel extends TSpace implements Channel {
 
   @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
   pinned?: Ref<ChunterMessage>[]
+
+  @Prop(TypeString(), chunter.string.Topic)
+  @Index(IndexKind.FullText)
+  topic?: string
 }
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
@@ -107,6 +111,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.SpaceLastEdit, {
     lastEditField: 'lastMessage'
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectEditor, {
+    editor: chunter.component.EditChannel
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.ChannelHeader
   })
 
   builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {

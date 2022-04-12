@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Comment } from '@anticrm/chunter'
   import type { TxCreateDoc } from '@anticrm/core'
   import { getClient, MessageViewer } from '@anticrm/presentation'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
-  import { ReferenceInput } from '@anticrm/text-editor'
   import { Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { updateBacklinks } from '../../backlinks'
@@ -36,13 +34,21 @@
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
-    await client.updateCollection(tx.objectClass, tx.objectSpace, tx.objectId, value.attachedTo, value.attachedToClass, value.collection, {
-      message,
-      attachments
-    })
+    await client.updateCollection(
+      tx.objectClass,
+      tx.objectSpace,
+      tx.objectId,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection,
+      {
+        message,
+        attachments
+      }
+    )
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, event.detail)
-  
+
     dispatch('close', false)
   }
   let refInput: AttachmentRefInput
@@ -50,19 +56,32 @@
 
 <div class:editing>
   {#if edit}
-    <AttachmentRefInput bind:this={refInput} _class={value._class} objectId={value._id} space={value.space} content={value.message} on:message={onMessage} showSend={false} />
-    <div class='flex-row-reverse gap-2 reverse'>
-      <Button label={chunter.string.EditCancel} on:click={() => {
-        dispatch('close', false)
-      }}/>
+    <AttachmentRefInput
+      bind:this={refInput}
+      _class={value._class}
+      objectId={value._id}
+      space={value.space}
+      content={value.message}
+      on:message={onMessage}
+      showSend={false}
+    />
+    <div class="flex-row-reverse gap-2 reverse">
+      <Button
+        label={chunter.string.EditCancel}
+        on:click={() => {
+          dispatch('close', false)
+        }}
+      />
       <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
     </div>
   {:else}
-    <MessageViewer message={value.message}/>
+    <MessageViewer message={value.message} />
     <AttachmentDocList {value} />
   {/if}
 </div>
 
 <style lang="scss">
-  .editing { border: 1px solid var(--primary-button-focused-border); }
+  .editing {
+    border: 1px solid var(--primary-button-focused-border);
+  }
 </style>

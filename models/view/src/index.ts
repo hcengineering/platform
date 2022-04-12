@@ -29,6 +29,7 @@ import type {
   ObjectEditorHeader,
   ObjectFactory,
   ObjectValidator,
+  SpaceHeader,
   Viewlet,
   HTMLPresenter,
   TextPresenter,
@@ -56,6 +57,11 @@ export class TObjectEditor extends TClass implements ObjectEditor {
 @Mixin(view.mixin.ObjectEditorHeader, core.class.Class)
 export class TObjectEditorHeader extends TClass implements ObjectEditorHeader {
   editor!: AnyComponent
+}
+
+@Mixin(view.mixin.SpaceHeader, core.class.Class)
+export class TSpaceHeader extends TClass implements SpaceHeader {
+  header!: AnyComponent
 }
 
 @Mixin(view.mixin.ObjectValidator, core.class.Class)
@@ -123,6 +129,7 @@ export function createModel (builder: Builder): void {
     TObjectFactory,
     TObjectEditorHeader,
     THTMLPresenter,
+    TSpaceHeader,
     TTextPresenter,
     TIgnoreActions
   )

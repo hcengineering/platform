@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref, Doc, SortingOrder } from '@anticrm/core'
 
@@ -25,10 +24,14 @@
 
   let comments: Comment[] = []
   const query = createQuery()
-  $: query.query(chunter.class.Comment, { attachedTo: objectId }, (res) => {
-    comments = res
-  }, { limit: 3, sort: { modifiedOn: SortingOrder.Descending } })
-
+  $: query.query(
+    chunter.class.Comment,
+    { attachedTo: objectId },
+    (res) => {
+      comments = res
+    },
+    { limit: 3, sort: { modifiedOn: SortingOrder.Descending } }
+  )
 </script>
 
 {#each comments as comment}
@@ -38,6 +41,10 @@
 {/each}
 
 <style lang="scss">
-  .item { max-width: 30rem; }
-  .item + .item { margin-top: 1.25rem; }
+  .item {
+    max-width: 30rem;
+  }
+  .item + .item {
+    margin-top: 1.25rem;
+  }
 </style>

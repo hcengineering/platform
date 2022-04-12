@@ -22,7 +22,9 @@ import type { AnyComponent } from '@anticrm/ui'
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
-    ChannelView: '' as AnyComponent
+    ChannelHeader: '' as AnyComponent,
+    ChannelView: '' as AnyComponent,
+    EditChannel: '' as AnyComponent
   },
   actionImpl: {
     SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
@@ -41,8 +43,10 @@ export default mergeIds(chunterId, chunter, {
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
+    Members: '' as IntlString,
     In: '' as IntlString,
     Replies: '' as IntlString,
+    Topic: '' as IntlString,
     Thread: '' as IntlString,
     RepliesCount: '' as IntlString,
     LastReply: '' as IntlString,

@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { IntlString } from "@anticrm/platform"
-  import { Label } from "@anticrm/ui"
+  import type { IntlString } from '@anticrm/platform'
+  import { Label } from '@anticrm/ui'
 
   export let title: IntlString
   export let line: boolean = false
@@ -24,9 +23,9 @@
   export let isNew: boolean = false
 </script>
 
-<div class="w-full text-sm flex-center whitespace-nowrap mb-6" class:flex-reverse={reverse} class:new={isNew} >
+<div class="w-full text-sm flex-center whitespace-nowrap mb-6" class:flex-reverse={reverse} class:new={isNew}>
   <Label label={title} {params} />
-  <div class:ml-4={!reverse} class:mr-4={reverse} class:line={line} ></div>
+  <div class:ml-4={!reverse} class:mr-4={reverse} class:line />
 </div>
 
 <style lang="scss">
@@ -35,7 +34,6 @@
     width: 100%;
     height: 1px;
     background-color: var(--theme-chat-divider);
-
   }
   .new {
     .line {

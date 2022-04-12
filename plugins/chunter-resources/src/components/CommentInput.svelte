@@ -1,4 +1,3 @@
-
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
@@ -26,15 +25,23 @@
   export let object: Doc
   const _class = chunter.class.Comment
   let _id: Ref<Comment> = generateId()
-  
+
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
-    await client.addCollection<Doc, Comment>(_class, object.space, object._id, object._class, 'comments', { message, attachments }, _id)
+    await client.addCollection<Doc, Comment>(
+      _class,
+      object.space,
+      object._id,
+      object._class,
+      'comments',
+      { message, attachments },
+      _id
+    )
 
     // Create an backlink to document
     await createBacklinks(client, object._id, object._class, _id, message)
     _id = generateId()
   }
-
 </script>
-<AttachmentRefInput {_class} space={object.space} objectId={_id} on:message={onMessage}/>
+
+<AttachmentRefInput {_class} space={object.space} objectId={_id} on:message={onMessage} />
