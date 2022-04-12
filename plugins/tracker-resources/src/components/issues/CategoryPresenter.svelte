@@ -50,6 +50,7 @@
     <IssuesList
       _class={tracker.class.Issue}
       config={[
+        { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
         { key: '', presenter: tracker.component.TitlePresenter },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },

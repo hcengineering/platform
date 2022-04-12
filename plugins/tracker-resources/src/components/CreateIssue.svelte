@@ -91,7 +91,16 @@
     { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
     { icon: tracker.icon.Parent, label: tracker.string.Parent }
   ]
+
   let issueDate: number | null = null
+
+  const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
+    if (newPriority === undefined) {
+      return
+    }
+
+    object.priority = newPriority
+  }
 </script>
 
 <!-- canSave: object.title.length > 0 && _space != null -->
@@ -127,7 +136,7 @@
   </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
     <StatusSelector bind:status={object.status} />
-    <PrioritySelector bind:priority={object.priority} />
+    <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.Assignee}

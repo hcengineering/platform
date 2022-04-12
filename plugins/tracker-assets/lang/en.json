@@ -26,6 +26,7 @@
     "InProgress": "In Progress",
     "Done": "Done",
     "Canceled": "Canceled",
+    "SetPriority": "Set priority\u2026",
     "SetStatus": "Set status\u2026",
     "Priority": "Priority",
     "NoPriority": "No priority",
