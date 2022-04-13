@@ -17,7 +17,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 
-  import { Label, showPopup, IconFolder } from '@anticrm/ui'
+  import { Label, showPopup, IconFolder, Button } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
@@ -27,10 +27,8 @@
   export let label: IntlString
   export let placeholder: IntlString
   export let value: Ref<Space> | undefined
-  export let show: boolean = false
 
   let selected: Space | undefined
-  let btn: HTMLElement
 
   const client = getClient()
 
@@ -39,43 +37,21 @@
   }
 
   $: updateSelected(value)
-
-  onMount(() => {
-    if (btn && show) {
-      btn.click()
-      show = false
-    }
-  })
 </script>
 
-<div class="flex-col cursor-pointer"
-  bind:this={btn}
-  on:click|preventDefault={() => {
-    showPopup(SpacesPopup, { _class, spaceQuery }, btn, (result) => {
+<Button
+  icon={IconFolder}
+  size={'small'}
+  kind={'no-border'}
+  on:click={(ev) => {
+    showPopup(SpacesPopup, { _class, spaceQuery }, ev.target, (result) => {
       if (result) {
         value = result._id
       }
     })
   }}
 >
-  <div class="overflow-label label"><Label {label} /></div>
-  <div class="flex-row-center space">
-    <span class="mr-1"><IconFolder size={'small'} /></span>
-    <span class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
-      {#if selected}
-        {selected.name}
-      {:else}
-        <Label label={placeholder} />
-      {/if}
-    </span>
-  </div>
-</div>
-
-<style lang="scss">
-  .label {
-    margin-bottom: .125rem;
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-accent-color);
-  }
-</style>
+  <span slot="content" class="text-sm">
+    {#if selected}{selected.name}{:else}<Label {label} />{/if}
+  </span>
+</Button>

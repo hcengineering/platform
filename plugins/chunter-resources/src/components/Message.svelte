@@ -17,11 +17,11 @@
   import { AttachmentList } from '@anticrm/attachment-resources'
   import type { Message } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup } from '@anticrm/core'
+  import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH, Menu, showPopup, getCurrentLocation, navigate } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -59,6 +59,21 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
+  async function deleteMessage () {
+      await client.remove(message)
+      const loc = getCurrentLocation()
+
+      if (loc.path[3] === message._id) {
+        loc.path.length = 3
+        navigate(loc)
+      }  
+    }
+
+  const deleteAction = {
+    label: chunter.string.DeleteMessage,
+    action: deleteMessage
+  }
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
     actions.push(subscribeAction)
@@ -73,7 +88,8 @@
               const impl = await getResource(a.action)
               await impl(message)
             }
-          }))
+          })),
+          ...(getCurrentAccount()._id === message.createBy ? [deleteAction] : [])
         ]
       },
       ev.target as HTMLElement
@@ -108,7 +124,7 @@
         </div>
         {#if !thread}
           <div>
-            {#if message.replies}<Replies
+            {#if message.replies?.length}<Replies
                 replies={message.replies}
                 lastReply={message.lastReply}
                 on:click={openThread}

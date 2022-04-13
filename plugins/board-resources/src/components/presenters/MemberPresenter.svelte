@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Employee } from '@anticrm/contact'
+  import { Employee, formatName } from '@anticrm/contact'
   import { getFirstName, getLastName } from '@anticrm/contact'
   import { ContactPresenter } from '@anticrm/contact-resources'
   import { Button, showPopup } from '@anticrm/ui'
@@ -9,13 +9,15 @@
   const firstName = getFirstName(value.name)
   const lastName = getLastName(value.name)
   const nameLabel = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase()
+  const formattedName = formatName(value.name)
 </script>
 
 {#if value}
   <Button
     {size}
     kind="no-border"
-    isCircle={true}
+    shape="circle"
+    title={formattedName}
     on:click={() => {
       showPopup(ContactPresenter, { value }) // TODO: show proper popup
     }}

@@ -14,28 +14,10 @@
 -->
 <script lang="ts">
   import type { Issue } from '@anticrm/tracker'
-  import { Icon } from '@anticrm/ui'
-  import { issueStatuses } from '../../utils'
 
   export let value: Issue
 </script>
 
 {#if value}
-  <div class="titlePresenter">
-    <div class="icon">
-      <Icon icon={issueStatuses[value.status].icon} size={'small'} />
-    </div>
-    <span class="label nowrap" title={value.title}>{value.title}</span>
-  </div>
+  <span class="label nowrap" title={value.title}>{value.title}</span>
 {/if}
-
-<style lang="scss">
-  .titlePresenter {
-    display: flex;
-    align-items: center;
-
-    .icon {
-      margin-right: 0.5rem;
-    }
-  }
-</style>

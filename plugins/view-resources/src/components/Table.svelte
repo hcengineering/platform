@@ -48,7 +48,8 @@
 
   const dispatch = createEventDispatcher()
 
-  $: sortingFunction = (config.find(it => (typeof it !== 'string') && it.sortingKey === sortKey) as BuildModelKey)?.sortingFunction
+  $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
+    ?.sortingFunction
 
   let qindex = 0
   async function update (
@@ -103,11 +104,9 @@
 
   let checked: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
-  function check (id: Ref<Doc>, e: Event) {
+  function check (id: Ref<Doc>, event: CustomEvent<boolean>) {
     if (!enableChecking) return
-    const target = e.target as HTMLInputElement
-    const value = target.checked
-    if (value) {
+    if (event.detail) {
       checked.add(id)
     } else {
       checked.delete(id)
@@ -138,8 +137,8 @@
                 <CheckBox
                   symbol={'minus'}
                   checked={objects?.length === checked.size && objects?.length > 0}
-                  on:change={(e) => {
-                    objects.map((o) => check(o._id, e))
+                  on:value={(event) => {
+                    objects.map((object) => check(object._id, event))
                   }}
                 />
               </div>
@@ -182,20 +181,23 @@
                           <div class="antiTable-cells__checkCell">
                             <CheckBox
                               checked={checked.has(object._id)}
-                              on:change={(e) => {
-                                check(object._id, e)
+                              on:value={(event) => {
+                                check(object._id, event)
                               }}
                             />
                           </div>
                         {/if}
-                        <Component is={notification.component.NotificationPresenter} props={{ value: object, kind: enableChecking ? 'table' : 'block' }} />
+                        <Component
+                          is={notification.component.NotificationPresenter}
+                          props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
+                        />
                       </div>
                     {:else}
                       <div class="antiTable-cells__checkCell">
                         <CheckBox
                           checked={checked.has(object._id)}
-                          on:change={(e) => {
-                            check(object._id, e)
+                          on:value={(event) => {
+                            check(object._id, event)
                           }}
                         />
                       </div>
@@ -209,7 +211,11 @@
                       value={getObjectValue(attribute.key, object) ?? ''}
                       {...attribute.props}
                     />
-                    <div id='context-menu' class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
+                    <div
+                      id="context-menu"
+                      class="antiTable-cells__firstCell-menuRow"
+                      on:click={(ev) => showMenu(ev, object, row)}
+                    >
                       <MoreV size={'small'} />
                     </div>
                   </div>
@@ -236,9 +242,7 @@
                 {#if enableChecking}
                   <td>
                     <div class="antiTable-cells__checkCell">
-                      <CheckBox
-                        checked={false}
-                      />
+                      <CheckBox checked={false} />
                     </div>
                   </td>
                 {/if}

@@ -25,6 +25,7 @@
   import recruit from '../plugin'
 
   export let candidate: Candidate
+  export let disabled: boolean = false
 
   let channels: Channel[] = []
   const channelsQuery = createQuery()
@@ -43,8 +44,8 @@
   <div class="label uppercase"><Label label={recruit.string.Candidate} /></div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
-    <div class="name lines-limit-2 over-underline" on:click={() => {
-      showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+    <div class="name lines-limit-2" class:over-underline={!disabled} on:click={() => {
+      if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
     }}>{formatName(candidate.name)}</div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>
@@ -64,15 +65,16 @@
   .card-container {
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--board-card-bg-color);
-    border: 1px solid var(--board-card-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: .5rem;
-    transition-property: box-shadow, background-color;
-    transition-timing-function: ease-in-out;
+    transition-property: box-shadow, background-color, border-color;
+    transition-timing-function: var(--timing-shadow);
     transition-duration: .15s;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
-      box-shadow: var(--popup-shadow);
+      border-color: var(--button-border-color);
+      box-shadow: rgb(0 0 0 / 15%) 0px 4px 8px;
     }
 
     .label {

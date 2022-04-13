@@ -75,11 +75,8 @@
     })
   }
 
-  const handleIssueSelected = (id: Ref<Doc>, event: Event) => {
-    const eventTarget = event.target as HTMLInputElement
-    const isChecked = eventTarget.checked
-
-    if (isChecked) {
+  const handleIssueSelected = (id: Ref<Doc>, event: CustomEvent<boolean>) => {
+    if (event.detail) {
       selectedIssueIds.add(id)
     } else {
       selectedIssueIds.delete(id)
@@ -113,27 +110,35 @@
           {#each attributeModels as attributeModel, attributeModelIndex}
             {#if attributeModelIndex === 0}
               <div class="gridElement">
-                <div class="antiTable-cells__checkCell">
+                <div class="eListGridCheckBox ml-2">
                   <CheckBox
                     checked={selectedIssueIds.has(docObject._id)}
-                    on:change={(event) => {
+                    on:value={(event) => {
                       handleIssueSelected(docObject._id, event)
                     }}
                   />
                 </div>
-                <div class="issuePresenter">
+                <div class="priorityPresenter">
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
                     {...attributeModel.props}
                   />
-                  <div
-                    id="context-menu"
-                    class="eIssuePresenterContextMenu"
-                    on:click={(event) => showMenu(event, docObject, rowIndex)}
-                  >
-                    <IconMoreV size={'small'} />
-                  </div>
+                </div>
+              </div>
+            {:else if attributeModelIndex === 1}
+              <div class="issuePresenter">
+                <svelte:component
+                  this={attributeModel.presenter}
+                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                  {...attributeModel.props}
+                />
+                <div
+                  id="context-menu"
+                  class="eIssuePresenterContextMenu"
+                  on:click={(event) => showMenu(event, docObject, rowIndex)}
+                >
+                  <IconMoreV size={'small'} />
                 </div>
               </div>
             {:else}
@@ -178,13 +183,17 @@
 
   .listGrid {
     display: grid;
-    grid-template-columns: 9rem auto 4rem 2rem;
+    grid-template-columns: 4rem 5rem 2rem auto 4rem 2rem;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
 
     &.mListGridChecked {
       background-color: var(--theme-table-bg-hover);
+
+      .eListGridCheckBox {
+        opacity: 1;
+      }
     }
 
     &.mListGridFixed {
@@ -200,6 +209,34 @@
     &:hover {
       background-color: var(--theme-table-bg-hover);
     }
+
+    .eListGridCheckBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.03rem;
+      border-radius: 0.25rem;
+      background-color: rgba(247, 248, 248, 0.5);
+      opacity: 0;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .checkBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.03rem;
+    border-radius: 0.25rem;
+    background-color: rgba(247, 248, 248, 0.5);
+    opacity: 0;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   .gridElement {
@@ -208,10 +245,14 @@
     justify-content: start;
   }
 
+  .priorityPresenter {
+    padding-left: 0.75rem;
+  }
+
   .issuePresenter {
     display: flex;
     align-items: center;
-    padding: 0 1rem;
+    padding-right: 1rem;
 
     .eIssuePresenterContextMenu {
       visibility: hidden;

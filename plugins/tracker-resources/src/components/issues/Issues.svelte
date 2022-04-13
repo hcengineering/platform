@@ -62,7 +62,7 @@
       <Label label={title} params={{ value: getTotalIssues() }} />
     </div>
 
-    <div class="ml-4 mt-4">
+    <div class="mt-4">
       {#each categories as category}
         <CategoryPresenter
           {category}
