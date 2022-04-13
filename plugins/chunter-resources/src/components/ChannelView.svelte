@@ -21,7 +21,7 @@
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
-  import ChannelComponent from './Channel.svelte'
+  import Channel from './Channel.svelte'
   import PinnedMessages from './PinnedMessages.svelte'
 
   export let space: Ref<Space>
@@ -67,12 +67,7 @@
 </script>
 
 <PinnedMessages {space} />
-<ChannelComponent
-  {space}
-  on:openThread={(e) => {
-    openThread(e.detail)
-  }}
-/>
+<Channel {space} on:openThread={(e) => {openThread(e.detail)}} />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />
 </div>

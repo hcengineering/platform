@@ -111,7 +111,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MessageComponent {message} {employees} on:openThread on:pinMessage />
+      <MessageComponent {message} {employees} on:openThread />
     {/each}
   {/if}
 </div>

@@ -31,7 +31,7 @@
 </script>
 
 {#if pinnedIds.length > 0}
-  <div class="container">
+  <div class="bottom-divider container">
     <div on:click={(ev) => showMessages(ev)}>
       {pinnedIds.length}
     </div>
@@ -41,6 +41,5 @@
 <style lang="scss">
   .container {
     padding-left: 0.5rem;
-    border-bottom: 1px solid var(--divider-color);
   }
 </style>
