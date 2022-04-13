@@ -39,7 +39,6 @@
     template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
     dispatch('change', template)
   }
-  $: console.log('!!! TemplateSelector selectedItem:', template)
 </script>
 
 <DropdownLabels {items} icon={task.icon.ManageStatuses} bind:selected={selectedItem} label={plugin.string.States} />
