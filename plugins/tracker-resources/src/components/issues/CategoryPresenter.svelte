@@ -49,11 +49,14 @@
   <Scroller>
     <IssuesList
       _class={tracker.class.Issue}
-      config={[
+      leftItemsConfig={[
         { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
         { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace } },
-        { key: '', presenter: tracker.component.TitlePresenter },
+        { key: '', presenter: tracker.component.TitlePresenter }
+      ]}
+      rightItemsConfig={[
+        { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
       ]}
