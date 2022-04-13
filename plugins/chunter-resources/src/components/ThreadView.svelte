@@ -57,6 +57,9 @@
     createBy: core.class.Account
   }
 
+  const pinnedQuery = createQuery()
+  let pinnedIds: Ref<ChunterMessage>[] = []
+
   $: updateQueries(_id)
 
   function updateQueries (id: Ref<Message>) {
@@ -87,6 +90,15 @@
       {
         lookup
       }
+    )
+  
+    pinnedQuery.query(
+      chunter.class.Channel,
+      { _id: currentSpace },
+      (res) => {
+        pinnedIds = res[0]?.pinned ?? []
+      },
+      { limit: 1 }
     )
   }
 
@@ -151,18 +163,6 @@
     }
   }
   let newMessagesPos: number = -1
-
-  const pinnedQuery = createQuery()
-  let pinnedIds: Ref<ChunterMessage>[] = []
-  
-    pinnedQuery.query(
-    chunter.class.Channel,
-    { _id: currentSpace },
-    (res) => {
-      pinnedIds = res[0]?.pinned ?? []
-    },
-    { limit: 1 }
-  )
 </script>
 
 <div class="header">
