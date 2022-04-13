@@ -38,7 +38,7 @@
     label: preference.string.Unstar,
     icon: preference.icon.Star,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      const current = await client.findOne(preference.class.SpacePreference, { attachedTo: _id })
+      const current = await client.findOne(preference.class.SpacePreference, { attachedTo: _id as Ref<Space> })
       if (current !== undefined) {
         await client.remove(current)
       }
