@@ -244,8 +244,7 @@ p:last-child { margin-block-end: 0; }
 }
 
 .gap-1, .gap-1-5, .gap-2 {
-  & > * { margin-right: .25rem; }
-  & > *:last-child { margin-right: 0; }
+  & > *:not(:last-child) { margin-right: .25rem; }
   &.reverse {
     flex-direction: row-reverse;
     & > :last-child { margin-right: .25rem; }
@@ -293,6 +292,8 @@ p:last-child { margin-block-end: 0; }
 .ml-6 { margin-left: 1.5rem; }
 .ml-8 { margin-left: 2rem; }
 .ml-10 { margin-left: 2.5rem; }
+.ml-12 { margin-left: 3rem; }
+.ml-22 { margin-left: 5.5rem; }
 .mr-1 { margin-right: .25rem; }
 .mr-2 { margin-right: .5rem; }
 .mr-3 { margin-right: .75rem; }
@@ -300,6 +301,7 @@ p:last-child { margin-block-end: 0; }
 .mr-6 { margin-right: 1.5rem; }
 .mr-8 { margin-right: 2rem; }
 .mr-10 { margin-right: 2.5rem; }
+.mt-0-5 { margin-top: .125rem; }
 .mt-1 { margin-top: .25rem; }
 .mt-2 { margin-top: .5rem; }
 .mt-3 { margin-top: .75rem; }
@@ -317,6 +319,7 @@ p:last-child { margin-block-end: 0; }
 .mx-1 { margin: 0 .25rem; }
 .mx-2 { margin: 0 .5rem; }
 .mx-3 { margin: 0 .75rem; }
+.my-4 { margin: 1rem 0; }
 
 .pl-2 { padding-left: .5rem; }
 .pl-4 { padding-left: 1rem; }
@@ -384,6 +387,7 @@ p:last-child { margin-block-end: 0; }
 .min-w-4 { min-width: 1rem; }
 .min-w-9 { min-width: 2.25rem; }
 .min-h-0 { min-height: 0; }
+.min-w-min { min-width: min-content; }
 .clear-mins {
   min-width: 0;
   min-height: 0;
@@ -547,13 +551,14 @@ a.no-line {
 .background-bg-accent { background-color: var(--theme-bg-accent-color); }
 .background-bg-accent-normal { background-color: var(--theme-bg-accent-normal); }
 
-.content-color { color: var(--theme-content-color); }
+.content-color { color: var(--content-color); }
 .content-trans-color { color: var(--theme-content-trans-color); }
-.content-accent-color { color: var(--theme-content-accent-color); }
+.content-accent-color { color: var(--accent-color); }
 .content-dark-color { color: var(--theme-content-dark-color); }
-.caption-color { color: var(--theme-caption-color); }
+.caption-color { color: var(--caption-color); }
 
 .red-color { color: var(--highlight-red); }
+.error-color { color: var(--error-color); }
 
 .border-radius-4 { border-radius: 1rem; }
 .border-radius-3 { border-radius: 0.75rem; }

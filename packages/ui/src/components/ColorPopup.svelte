@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import { Icon, Label, getPlatformColor } from '..'
@@ -21,7 +21,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{id: number | string, color: number, label: IntlString}>
+  export let value: Array<{id: number | string, color: number, label: string}>
 
   let search: string = ''
 
@@ -40,9 +40,9 @@
   <div class="scroll">
     <div class="box">
       {#each value.filter(el => el.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="menu-item" on:click={() => { dispatch('close', item.id) }}>
+        <button class="menu-item" on:click={() => { dispatch('close', item) }}>
           <div class="color" style="background-color: {getPlatformColor(item.color)}" />
-          <span class="label"><Label label={item.label} /></span>
+          <span class="label">{item.label}</span>
         </button>
       {/each}
     </div>
