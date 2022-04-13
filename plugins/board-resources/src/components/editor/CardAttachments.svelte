@@ -32,7 +32,7 @@
     attachments = await client.findAll(attachment.class.Attachment, { space: value.space, attachedTo: value._id })
   }
 
-  $: value.attachments > 0 && fetch()
+  $: value?.attachments && value.attachments > 0 && fetch()
 
 </script>
 
