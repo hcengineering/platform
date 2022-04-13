@@ -36,12 +36,11 @@
 
     loading++
     try {
-      await createAttachments(client, list, {objectClass, objectId, space})
+      await createAttachments(client, list, { objectClass, objectId, space })
     } finally {
       loading--
     }
   }
-
 </script>
 
 <div
@@ -53,6 +52,7 @@
   on:dragleave={() => {
     dragover = false
   }}
-  on:drop|preventDefault|stopPropagation={fileDrop}>
+  on:drop|preventDefault|stopPropagation={fileDrop}
+>
   <slot />
 </div>

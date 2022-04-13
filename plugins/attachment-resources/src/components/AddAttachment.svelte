@@ -19,7 +19,7 @@
 
     loading++
     try {
-      await createAttachments(client, list, {objectClass, objectId, space})
+      await createAttachments(client, list, { objectClass, objectId, space })
     } finally {
       loading--
     }
@@ -28,7 +28,6 @@
   function openFile() {
     inputFile.click()
   }
-
 </script>
 
 <div>
@@ -44,5 +43,6 @@
     name="file"
     id="file"
     style="display: none"
-    on:change={fileSelected} />
+    on:change={fileSelected}
+  />
 </div>
