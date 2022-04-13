@@ -58,8 +58,8 @@
   const starSpace: Action = {
     label: preference.string.Star,
     icon: preference.icon.Star,
-    action: async (_id: Ref<Doc>): Promise<void> => {
-      await client.createDoc(preference.class.SpacePreference, preference.space.preferences, {
+    action: async (_id: Ref<Space>): Promise<void> => {
+      await client.createDoc(preference.class.SpacePreference, preference.space.Preference, {
         attachedTo: _id
       })
     }

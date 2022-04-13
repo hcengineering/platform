@@ -33,7 +33,7 @@ class TPipeline implements Pipeline {
 
   private buildChain (constructors: MiddlewareCreator[]): Middleware | undefined {
     let current: Middleware | undefined
-    for (let index = constructors.length; index > 0; index++) {
+    for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
       current = element(this.storage, current)
     }
