@@ -1,52 +1,39 @@
 <script lang="ts">
   import { ChunterMessage } from '@anticrm/chunter'
   import { createQuery } from '@anticrm/presentation'
-  import contact, { EmployeeAccount } from '@anticrm/contact'
   import { Ref, Space } from '@anticrm/core'
   import { showPopup } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte';
   import chunter from '../plugin'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
+  import { UnpinMessage } from '../index'
 
   export let space: Ref<Space>
 
-  let messages: ChunterMessage[] = []
-  let pinnedMessages: ChunterMessage[] = []
-
-  const messagesQuery = createQuery()
-
-  messagesQuery.query(chunter.class.ChunterMessage, {}, (res) => {
-    messages = res
-  })
-
+  let pinnedIds: Ref<ChunterMessage>[] = []
   const pinnedQuery = createQuery()
 
-  pinnedQuery.query(chunter.class.Channel, {}, (res) => {
-    const channel = res.find((c) => c._id === space)
-    const pinnedIds = channel?.pinned ?? []
-    pinnedMessages = messages.filter((m) => pinnedIds.includes(m._id))
-  })
-
-  const employeeAccoutsQuery = createQuery()
-  let employeeAcounts: EmployeeAccount[]
-
-  employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = res))
-
-  const dispatch = createEventDispatcher()
+  pinnedQuery.query(
+    chunter.class.Channel,
+    { _id: space },
+    (res) => {
+      pinnedIds = res[0]?.pinned ?? []
+    },
+    { limit: 1 }
+  )
 
   function showMessages (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
-    showPopup(PinnedMessagesPopup, { pinnedMessages, employeeAcounts }, ev.target, (props) => {
+    showPopup(PinnedMessagesPopup, { pinnedIds }, ev.target, (props) => {
       if (props) {
-        dispatch('pinMessage', { messageId: props.message._id, channelId: space })
+        UnpinMessage(props.message)
       }
     })
   }
 </script>
 
-{#if pinnedMessages.length > 0}
+{#if pinnedIds.length > 0}
   <div class="container">
     <div on:click={(ev) => showMessages(ev)}>
-      {pinnedMessages.length}
+      {pinnedIds.length}
     </div>
   </div>
 {/if}

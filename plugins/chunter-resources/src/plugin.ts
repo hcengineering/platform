@@ -28,7 +28,9 @@ export default mergeIds(chunterId, chunter, {
     SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
     SubscribeComment: '' as Resource<(object: Doc) => Promise<void>>,
     UnsubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    UnsubscribeComment: '' as Resource<(object: Doc) => Promise<void>>
+    UnsubscribeComment: '' as Resource<(object: Doc) => Promise<void>>,
+    PinMessage: '' as Resource<(object: Doc) => Promise<void>>,
+    UnpinMessage: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     Channel: '' as IntlString,
@@ -46,6 +48,8 @@ export default mergeIds(chunterId, chunter, {
     LastReply: '' as IntlString,
     New: '' as IntlString,
     GetNewReplies: '' as IntlString,
-    TurnOffReplies: '' as IntlString
+    TurnOffReplies: '' as IntlString,
+    PinMessage: '' as IntlString,
+    UnpinMessage: '' as IntlString
   }
 })

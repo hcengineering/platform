@@ -20,7 +20,7 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
-  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { Avatar, createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
@@ -59,9 +59,32 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
+  const pinnedQuery = createQuery()
+  let pinned = false
+
+  pinnedQuery.query(
+    chunter.class.Channel,
+    { _id: message.space },
+    (res) => {
+      pinned = !!res[0]?.pinned?.includes(message._id)
+    },
+    { limit: 1 }
+  )
+  $: pinActions = pinned
+    ? ({
+        label: chunter.string.UnpinMessage,
+        action: chunter.actionImpl.UnpinMessage
+      } as Action)
+    : ({
+        label: chunter.string.PinMessage,
+        action: chunter.actionImpl.PinMessage
+      } as Action)
+
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
     actions.push(subscribeAction)
+    actions.push(pinActions)
+
     showPopup(
       Menu,
       {
@@ -89,10 +112,6 @@
 
   function openThread () {
     dispatch('openThread', message._id)
-  }
-
-  function pinMessage () {
-    dispatch('pinMessage', { messageId: message._id, channelId: message.attachedTo })
   }
 </script>
 
@@ -135,7 +154,7 @@
     {#if !thread}
       <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
     {/if}
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} action={pinMessage} /></div>
+    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>

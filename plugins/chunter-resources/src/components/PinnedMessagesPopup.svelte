@@ -1,22 +1,32 @@
 <script lang="ts">
-  import { ChunterMessage } from '@anticrm/chunter'
+  import chunter, { ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
-  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { Avatar, createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { IconClose } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getTime } from '../utils'
 
-  export let pinnedMessages: ChunterMessage[]
-  export let employeeAcounts: EmployeeAccount[]
+  export let pinnedIds: Ref<ChunterMessage>[]
+
+  const messagesQuery = createQuery()
+  let pinnedMessages: ChunterMessage[] = []
+
+  $: pinnedIds &&
+    messagesQuery.query(chunter.class.ChunterMessage, { _id: { $in: pinnedIds } }, (res) => {
+      pinnedMessages = res
+    })
+
+  const employeeAccoutsQuery = createQuery()
+  let employeeAcounts: EmployeeAccount[]
+
+  employeeAccoutsQuery.query(contact.class.EmployeeAccount, {}, (res) => (employeeAcounts = res))
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  function getAvatar (id?: Ref<Employee>): string | null {
-    let avatar: string | null = null
-    client.findOne<Employee>(contact.class.Employee, { _id: id }).then((e) => (avatar = e?.avatar ?? null))
-    return avatar
+  async function getAvatar (_id?: Ref<Employee>): Promise<string | undefined | null> {
+    if (_id === undefined) return (await client.findOne(contact.class.Employee, { _id }))?.avatar
   }
 
   function getEmployee (message: ChunterMessage): EmployeeAccount | undefined {
@@ -24,7 +34,7 @@
   }
 </script>
 
-<div class="vScroll popup">
+<div class="antiPopup vScroll popup">
   {#each pinnedMessages as message}
     <div class="message">
       <div class="header">
@@ -55,27 +65,16 @@
 
 <style lang="scss">
   .popup {
-    display: flex;
-    flex-direction: column;
     padding: 1.25rem 1.25rem 1.25rem;
-    width: 300px;
-    max-width: 300px;
-    max-height: 300px;
+    max-height: 20rem;
     color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
-    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, 0.6);
   }
 
   .message {
     padding: 0.75rem 1rem 0.75rem;
     margin-bottom: 1rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.75rem;
-    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, 0.6);
+    box-shadow: inherit;
+    border-radius: inherit;
   }
 
   .header {
@@ -98,7 +97,6 @@
     }
   }
   .time {
-    color: var(--theme-caption-color);
     font-size: 0.75rem;
   }
 </style>

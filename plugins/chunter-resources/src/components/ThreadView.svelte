@@ -151,25 +151,6 @@
     }
   }
   let newMessagesPos: number = -1
-
-  async function onPinMessage (props: { messageId: Ref<ChunterMessage>; channelId: Ref<Channel> }) {
-    let pinned: Ref<ChunterMessage>[] = []
-
-    await client.findOne<Channel>(chunter.class.Channel, { _id: props.channelId }).then((r) => {
-      pinned = r?.pinned ?? []
-    })
-
-    pinned = pinned.includes(props.messageId)
-      ? pinned.filter((m) => m !== props.messageId)
-      : [...pinned, props.messageId]
-
-    const me = getCurrentAccount()._id
-    const txFactory = new TxFactory(me)
-    const upd = txFactory.createTxUpdateDoc(chunter.class.Channel, currentSpace, props.channelId, {
-      pinned: pinned
-    })
-    client.tx(upd)
-  }
 </script>
 
 <div class="header">
@@ -196,9 +177,6 @@
       <ThreadComment
         message={comment}
         {employees}
-        on:pinMessage={(e) => {
-          onPinMessage(e.detail)
-        }}
       />
     {/each}
   {/if}
