@@ -257,7 +257,6 @@
       cursor: grab;
     }
     &.dragged {
-      padding: 1rem;
       background-color: var(--board-bg-color);
     }
   }
