@@ -20,7 +20,7 @@
   import { getResource, IntlString } from '@anticrm/platform'
   import preference from '@anticrm/preference'
   import { getClient } from '@anticrm/presentation'
-  import { Action,IconEdit } from '@anticrm/ui'
+  import { Action, IconEdit } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -31,7 +31,6 @@
   export let label: IntlString
   export let currentSpace: Ref<Space> | undefined
   export let spaces: Space[]
-  export let currentSpecial: string | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
 
@@ -57,11 +56,11 @@
     }
   }
 
-  function selectSpace(id: Ref<Space>, spaceSpecial?: string) {
+  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
     dispatch('space', { space: id, spaceSpecial })
   }
 
-  async function getActions(space: Space): Promise<Action[]> {
+  async function getActions (space: Space): Promise<Action[]> {
     const result = [unStarSpace]
 
     const extraActions = await getContributedActions(client, space, core.class.Space)

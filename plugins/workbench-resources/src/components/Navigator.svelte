@@ -111,7 +111,7 @@
     {#if topSpecials.length > 0 || bottomSpecials.length > 0}<TreeSeparator />{/if}
 
     {#if starred.length}
-      <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpecial} {currentSpace} />
+      <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
     {/if}
 
     {#each model.spaces as m (m.label)}
