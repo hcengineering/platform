@@ -39,11 +39,14 @@
 <div class="attachments-container">
   <div class="flex-row-center">
     <span class="title"><Label label={attachment.string.Attachments} /></span>
-    <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
+    {#if loading}
+      <Spinner />
+    {:else}
+      <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
+    {/if}
   </div>
-  {#if loading}
-    <Spinner />
-  {:else if attachments === 0}
+
+  {#if attachments === 0 && !loading}
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
       <div class="flex-col-center mt-5 zone-container" class:solid={dragover}>
         <UploadDuo size={'large'} />
