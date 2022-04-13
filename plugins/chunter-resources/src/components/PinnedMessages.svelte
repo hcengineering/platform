@@ -1,25 +1,11 @@
 <script lang="ts">
   import { ChunterMessage } from '@anticrm/chunter'
-  import { createQuery } from '@anticrm/presentation'
-  import { Ref, Space } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
   import { showPopup } from '@anticrm/ui'
-  import chunter from '../plugin'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { UnpinMessage } from '../index'
 
-  export let space: Ref<Space>
-
-  let pinnedIds: Ref<ChunterMessage>[] = []
-  const pinnedQuery = createQuery()
-
-  pinnedQuery.query(
-    chunter.class.Channel,
-    { _id: space },
-    (res) => {
-      pinnedIds = res[0]?.pinned ?? []
-    },
-    { limit: 1 }
-  )
+  export let pinnedIds: Ref<ChunterMessage>[]
 
   function showMessages (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
     showPopup(PinnedMessagesPopup, { pinnedIds }, ev.target, (props) => {
