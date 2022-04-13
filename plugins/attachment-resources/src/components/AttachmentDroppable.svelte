@@ -23,12 +23,14 @@
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
+  export let canDrop: ((e: DragEvent) => boolean) | undefined = undefined
   
   export let dragover = false
 
   const client = getClient()
   
   function fileDrop(e: DragEvent) {
+    dragover = false
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
@@ -40,8 +42,10 @@
 </script>
 
 <div
-  on:dragover|preventDefault={() => {
-    dragover = true
+  on:dragover|preventDefault={(e) => {
+    if (canDrop?.(e) ?? true) {
+      dragover = true
+    }
   }}
   on:dragleave={() => {
     dragover = false

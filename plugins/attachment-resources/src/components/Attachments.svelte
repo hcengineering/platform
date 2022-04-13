@@ -47,10 +47,10 @@
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
       <div class="flex-col-center mt-5 zone-container" class:solid={dragover}>
         <UploadDuo size={'large'} />
-        <div class="text-sm content-dark-color mt-2">
+        <div class="text-sm content-dark-color mt-2" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
-        <div class="text-sm">
+        <div class="text-sm" style:pointer-events={dragover ? 'none' : 'all'}>
           <div class="over-underline" on:click={() => inputFile.click()}>
             <Label label={attachment.string.UploadDropFilesHere} />
           </div>
