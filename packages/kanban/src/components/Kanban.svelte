@@ -246,11 +246,7 @@
     height: 100%;
   }
   .card-container {
-    display: flex;
-    flex-direction: column;
-    padding: .5rem 1rem;
     background-color: var(--board-card-bg-color);
-    border: 1px solid var(--board-card-bg-color);
     border-radius: .25rem;
     user-select: none;
 
@@ -263,7 +259,6 @@
     &.dragged {
       padding: 1rem;
       background-color: var(--board-bg-color);
-      border: unset;
     }
   }
 </style>
