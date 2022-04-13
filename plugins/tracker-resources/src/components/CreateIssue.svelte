@@ -92,8 +92,6 @@
     { icon: tracker.icon.Parent, label: tracker.string.Parent }
   ]
 
-  let issueDate: number | null = null
-
   const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
     if (newPriority === undefined) {
       return
@@ -167,7 +165,7 @@
       size="small"
       kind="no-border"
     />
-    <DatePresenter value={issueDate} editable />
+    <DatePresenter bind:value={object.dueDate} editable />
     <Button
       icon={tracker.icon.MoreActions}
       width="min-content"
