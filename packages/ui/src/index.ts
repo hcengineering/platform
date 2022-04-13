@@ -20,7 +20,7 @@ import { readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
-export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAligment, AnySvelteComponentWithProps, Location, PopupAlignment } from './types'
+export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAlignment, AnySvelteComponentWithProps, Location, PopupAlignment } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 
@@ -101,6 +101,8 @@ export { default as IconCheck } from './components/icons/Check.svelte'
 export { default as IconArrowLeft } from './components/icons/ArrowLeft.svelte'
 export { default as IconNavPrev } from './components/icons/NavPrev.svelte'
 export { default as IconNavNext } from './components/icons/NavNext.svelte'
+export { default as IconDPCalendar } from './components/calendar/icons/DPCalendar.svelte'
+export { default as IconDPCalendarOver } from './components/calendar/icons/DPCalendarOver.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -109,6 +111,7 @@ export * from './utils'
 export * from './popups'
 export * from './tooltips'
 export * from './panelup'
+export * from './components/calendar/internal/DateUtils'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })

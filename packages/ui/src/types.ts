@@ -65,12 +65,12 @@ export type TabModel = Tab[]
 
 export type PopupAlignment = HTMLElement | EventTarget | null | 'right' | 'top' | 'account' | 'full' | 'content' | 'middle'
 
-export type TooltipAligment = 'top' | 'bottom' | 'left' | 'right'
+export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 
 export interface LabelAndProps {
   label: IntlString | undefined
   element: HTMLElement | undefined
-  direction?: TooltipAligment
+  direction?: TooltipAlignment
   component?: AnySvelteComponent | AnyComponent
   props?: any
   anchor: HTMLElement | undefined

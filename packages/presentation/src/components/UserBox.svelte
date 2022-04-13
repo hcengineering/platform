@@ -18,7 +18,7 @@
   import contact, { Contact, formatName } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import type { TooltipAligment } from '@anticrm/ui'
+  import type { TooltipAlignment } from '@anticrm/ui'
   import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -39,7 +39,7 @@
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAligment | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   const dispatch = createEventDispatcher()
 

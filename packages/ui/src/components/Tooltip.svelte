@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import type { TooltipAligment, AnySvelteComponent, AnyComponent } from '..'
+  import type { TooltipAlignment, AnySvelteComponent, AnyComponent } from '..'
   import { tooltipstore as tooltip, showTooltip } from '..'
 
   export let label: IntlString | undefined = undefined
-  export let direction: TooltipAligment | undefined = undefined
+  export let direction: TooltipAlignment | undefined = undefined
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any | undefined = undefined
   export let anchor: HTMLElement | undefined = undefined
