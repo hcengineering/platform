@@ -22,7 +22,6 @@
   import { Action, AnyComponent, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
   import preference from '@anticrm/preference'
-  import { PreferenceClientImpl } from '@anticrm/preference-resources'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -38,7 +37,6 @@
   export let currentSpecial: string | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const preferences = PreferenceClientImpl.getClient()
 
   const addSpace: Action = {
     label: model.addSpaceLabel,
@@ -61,7 +59,9 @@
     label: preference.string.Star,
     icon: preference.icon.Star,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      await preferences.set(preference.class.SpacePreference, _id, {})
+      await client.createDoc(preference.class.SpacePreference, preference.space.preferences, {
+        attachedTo: _id
+      })
     }
   }
 

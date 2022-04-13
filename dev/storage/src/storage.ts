@@ -26,11 +26,11 @@ class InMemoryTxAdapter implements TxAdapter {
     this.txdb = new TxDb(hierarchy)
   }
 
-  async findAll<T extends Doc> (user: string, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     return await this.txdb.findAll(_class, query, options)
   }
 
-  tx (tx: Tx, user: string): Promise<TxResult> {
+  tx (tx: Tx): Promise<TxResult> {
     return this.txdb.tx(tx)
   }
 
@@ -45,10 +45,6 @@ class InMemoryTxAdapter implements TxAdapter {
   }
 
   async close (): Promise<void> {}
-
-  isPrivate (): boolean {
-    return false
-  }
 }
 
 class InMemoryAdapter implements DbAdapter {
@@ -58,11 +54,11 @@ class InMemoryAdapter implements DbAdapter {
     this.modeldb = new ModelDb(hierarchy)
   }
 
-  async findAll<T extends Doc> (user: string, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (tx: Tx, user: string): Promise<TxResult> {
+  async tx (tx: Tx): Promise<TxResult> {
     return await this.modeldb.tx(tx)
   }
 
@@ -73,10 +69,6 @@ class InMemoryAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
-
-  isPrivate (): boolean {
-    return false
-  }
 }
 
 /**

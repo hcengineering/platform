@@ -1274,11 +1274,6 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/preference-resources",
-      "projectFolder": "plugins/preference-resources",
-      "shouldPublish": true
-    },
-    {
       "packageName": "@anticrm/model-preference",
       "projectFolder": "models/preference",
       "shouldPublish": true
@@ -1286,6 +1281,11 @@
     {
       "packageName": "@anticrm/server-preference",
       "projectFolder": "server-plugins/preference",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/middleware",
+      "projectFolder": "server/middleware",
       "shouldPublish": true
     }
   ]

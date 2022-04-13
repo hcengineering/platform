@@ -53,6 +53,7 @@ specifiers:
   '@rush-temp/login': file:./projects/login.tgz
   '@rush-temp/login-assets': file:./projects/login-assets.tgz
   '@rush-temp/login-resources': file:./projects/login-resources.tgz
+  '@rush-temp/middleware': file:./projects/middleware.tgz
   '@rush-temp/model': file:./projects/model.tgz
   '@rush-temp/model-activity': file:./projects/model-activity.tgz
   '@rush-temp/model-all': file:./projects/model-all.tgz
@@ -104,7 +105,6 @@ specifiers:
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
   '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
-  '@rush-temp/preference-resources': file:./projects/preference-resources.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
   '@rush-temp/prod-tracker': file:./projects/prod-tracker.tgz
@@ -325,6 +325,7 @@ dependencies:
   '@rush-temp/login': file:projects/login.tgz
   '@rush-temp/login-assets': file:projects/login-assets.tgz_typescript@4.5.4
   '@rush-temp/login-resources': file:projects/login-resources.tgz_096c09b0b673a57c275d9767a12070b1
+  '@rush-temp/middleware': file:projects/middleware.tgz
   '@rush-temp/model': file:projects/model.tgz
   '@rush-temp/model-activity': file:projects/model-activity.tgz_typescript@4.5.4
   '@rush-temp/model-all': file:projects/model-all.tgz_typescript@4.5.4
@@ -376,7 +377,6 @@ dependencies:
   '@rush-temp/pod-account': file:projects/pod-account.tgz
   '@rush-temp/preference': file:projects/preference.tgz
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
-  '@rush-temp/preference-resources': file:projects/preference-resources.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/presentation': file:projects/presentation.tgz_096c09b0b673a57c275d9767a12070b1
   '@rush-temp/prod': file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e
   '@rush-temp/prod-tracker': file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e
@@ -12780,6 +12780,26 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/middleware.tgz:
+    resolution: {integrity: sha512-beRGnoVJZVP/5mEU9bxmXLikwWCRLXBWaeFyIGIZbgjHypFCY57237qoOpLEgXwmBzEUk2jhophOYiT+Xd4qLQ==, tarball: file:projects/middleware.tgz}
+    name: '@rush-temp/middleware'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.41.8
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   file:projects/model-activity.tgz_typescript@4.5.4:
     resolution: {integrity: sha512-TslFvrgSosU016NXZCahvZcTkVGONQ37mfJCHJ/PRA9I33M++MaIlw/ZIhWl9Z/e8dCuYW8PVrlijoYwCmc+kg==, tarball: file:projects/model-activity.tgz}
     id: file:projects/model-activity.tgz
@@ -13884,41 +13904,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/preference-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-yFKMH1CAGe+Qjjd97wL7TxS46P5PxAH1YP0URTJZ2mNmmMc3XYJmI1ocgDYPGIeX8brsZtf/5DKT+TL+Za6NKQ==, tarball: file:projects/preference-resources.tgz}
-    id: file:projects/preference-resources.tgz
-    name: '@rush-temp/preference-resources'
-    version: 0.0.0
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
-      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
-      eslint: 7.32.0
-      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
-      eslint-plugin-import: 2.25.3_eslint@7.32.0
-      eslint-plugin-node: 11.1.0_eslint@7.32.0
-      eslint-plugin-promise: 5.2.0_eslint@7.32.0
-      eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.46.6
-      prettier: 2.5.1
-      prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.46.6
-      sass: 1.45.0
-      svelte: 3.46.6
-      svelte-check: 2.3.0_b04a52a339c2665a42d74bbf4bb86835
-      svelte-loader: 3.1.2_svelte@3.46.6
-      svelte-preprocess: 4.10.5_6f8bc07a13fa60df66bfb708fddfe692
-      typescript: 4.5.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - node-sass
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-    dev: false
-
   file:projects/preference.tgz:
     resolution: {integrity: sha512-WGzTspMfF/YBgM5AlF26hbbPD9Qbj4Vp7AL0DJeescfvY2MF4rFQ+wJK5ewuFWbDYGVu0kMJiszRP/7OVXqHFQ==, tarball: file:projects/preference.tgz}
     name: '@rush-temp/preference'
@@ -13976,7 +13961,7 @@ packages:
     dev: false
 
   file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-TS+ztjq/9obYYCDwLjDWLNzfLLnUqVX8t93kP5jO+MYeVT2prAc0QGqUNYO8E4wYsIZmuNJBo6JlzaF5uYfw/w==, tarball: file:projects/prod-tracker.tgz}
+    resolution: {integrity: sha512-DegdZVFP21HUwqbhSqazxR2nu9OqSlJ8QxOn1S3IOD9AGi7H5OOSvw6E/RItOlGAts0bi261Z81Dgi9EJvTtvA==, tarball: file:projects/prod-tracker.tgz}
     id: file:projects/prod-tracker.tgz
     name: '@rush-temp/prod-tracker'
     version: 0.0.0
@@ -14022,7 +14007,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-M83OvMJT5z0Lz9ZuQOEYuIjj6KK8dqhBpGwfibphhxxAedHRg8BWMBO5Chv78bWbOLi3gFhYz7Bkvz6Pj8YmSw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-WaWihWZzBZ9WDVbJtB+fFusKyv8pR4hbBAZGkpcZ0yiOQL4tL5R0ZFsh0TxDy1TD68XKFqF2FnM3ngNQQr8bKA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -14856,7 +14841,7 @@ packages:
     dev: false
 
   file:projects/server.tgz:
-    resolution: {integrity: sha512-o1A/CtEHJ0ZtGCiOs1jjl0jH/+/J9uElZ0dWeMH+1TgA/A5JtxKfOLRtLeggGNBJ8b5pBJDfDDhLo7R7MOoPIg==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-6vh78sMqcZsw0xfPyn3wQfOBG0e2jWhVLU8zsSvN1m9bFOuuf7strkWQWun+c5dkgtd6vvd57yh0ihz4BDMkZw==, tarball: file:projects/server.tgz}
     name: '@rush-temp/server'
     version: 0.0.0
     dependencies:
@@ -15630,7 +15615,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-eOAAEsi3JGqWCHF6hXBUi64UcNZWliEQhfWhRVamJAM6HvYjUgWT2PYbI/Ci4FNp7ZnYeYQ3tGoz3hfcwaoYiw==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-VMERIjagr6R/HiIj4wyaMCkQBe3K5Lck4JLs9qBw6U025TSH+6aJeJCpo7+lF/yEfANR+Y5HMbCSlohp9GMgaA==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

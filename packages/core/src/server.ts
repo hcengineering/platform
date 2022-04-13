@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,6 +15,8 @@
 
 import { MeasureContext } from '.'
 import type { Doc, Class, Ref } from './classes'
+import { Hierarchy } from './hierarchy'
+import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
 import type { Tx } from './tx'
 
@@ -23,13 +24,14 @@ import type { Tx } from './tx'
  * @public
  */
 export interface ServerStorage {
+  hierarchy: Hierarchy
+  modelDb: ModelDb
   findAll: <T extends Doc>(
     ctx: MeasureContext,
-    userEmail: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (ctx: MeasureContext, userEmail: string, tx: Tx) => Promise<[TxResult, Tx[], string | undefined]>
+  tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
   close: () => Promise<void>
 }

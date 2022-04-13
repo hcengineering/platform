@@ -19,7 +19,6 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource, IntlString } from '@anticrm/platform'
   import preference from '@anticrm/preference'
-  import { PreferenceClientImpl } from '@anticrm/preference-resources'
   import { getClient } from '@anticrm/presentation'
   import { Action,IconEdit } from '@anticrm/ui'
   import view from '@anticrm/view'
@@ -35,13 +34,15 @@
   export let currentSpecial: string | undefined
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const preferences = PreferenceClientImpl.getClient()
 
   const unStarSpace: Action = {
     label: preference.string.Unstar,
     icon: preference.icon.Star,
     action: async (_id: Ref<Doc>): Promise<void> => {
-      await preferences.unset(_id)
+      const current = await client.findOne(preference.class.SpacePreference, { attachedTo: _id })
+      if (current !== undefined) {
+        await client.remove(current)
+      }
     }
   }
 
@@ -49,7 +50,10 @@
     label: preference.string.DeleteStarred,
     icon: view.icon.Delete,
     action: async (): Promise<void> => {
-      await Promise.all(spaces.map(async (space) => { await preferences.unset(space._id) }))
+      const ids = spaces.map((space) => space._id)
+      const current = await client.findAll(preference.class.SpacePreference, { attachedTo: { $in: ids } })
+
+      await Promise.all(current.map(async (item) => { await client.remove(item) }))
     }
   }
 

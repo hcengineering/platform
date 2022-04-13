@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,10 +13,54 @@
 // limitations under the License.
 //
 
-import type { Client as MinioClient } from 'minio'
-import type { Tx, Ref, Doc, Class, Storage, Space, Timestamp, Account, FindResult, DocumentQuery, FindOptions, TxResult, MeasureContext, ModelDb, Obj } from '@anticrm/core'
-import { TxFactory, Hierarchy } from '@anticrm/core'
+import type { Account, Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, ModelDb, Obj, Ref, ServerStorage, Space, Storage, Timestamp, Tx, TxResult } from '@anticrm/core'
+import { Hierarchy, TxFactory } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
+import type { Client as MinioClient } from 'minio'
+
+/**
+ * @public
+ */
+export interface SessionContext extends MeasureContext {
+  userEmail: string
+}
+
+/**
+ * @public
+ */
+export interface Middleware {
+  tx: (ctx: SessionContext, tx: Tx) => Promise<TxMiddlewareResult>
+  findAll: <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindAllMiddlewareResult<T>>
+}
+
+/**
+ * @public
+ */
+export type MiddlewareCreator = (storage: ServerStorage, next?: Middleware) => Middleware
+
+/**
+ * @public
+ */
+export type TxMiddlewareResult = [SessionContext, Tx, string | undefined]
+
+/**
+ * @public
+ */
+export type FindAllMiddlewareResult<T extends Doc> = [SessionContext, Ref<Class<T>>, DocumentQuery<T>, FindOptions<T> | undefined]
+
+/**
+ * @public
+ */
+export interface Pipeline {
+  findAll: <T extends Doc>(
+    ctx: SessionContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+  tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string | undefined]>
+  close: () => Promise<void>
+}
 
 /**
  * @public
@@ -81,7 +124,7 @@ export type FullTextAdapterFactory = (url: string, workspace: string) => Promise
  * @public
  */
 export interface WithFind {
-  findAll: <T extends Doc> (ctx: MeasureContext, userEmail: string, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  findAll: <T extends Doc> (ctx: MeasureContext, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
 }
 
 /**

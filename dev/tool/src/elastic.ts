@@ -214,7 +214,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
       }
       if (isCreateTx(tx)) {
         const createTx = tx as TxCreateDoc<Doc>
-        const docSnapshot = (await tool.storage.findAll(metricsCtx, 'system', createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
+        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
         if (docSnapshot !== undefined) {
           // If there is no doc, then it is removed, not need to do something with elastic.
           const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
@@ -226,7 +226,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
               modifiedOn,
               objectSpace: space // <- it could be moved, let's take actual one.
             }
-            await tool.storage.tx(metricsCtx, 'system', newTx)
+            await tool.storage.tx(metricsCtx, newTx)
           } catch (err: any) {
             console.error('failed to replay tx', tx, err.message)
           }
@@ -246,7 +246,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
             deleted = removedDocument.has((tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId)
           }
           if (!deleted) {
-            await tool.storage.tx(metricsCtx, 'system', tx)
+            await tool.storage.tx(metricsCtx, tx)
           }
         } catch (err: any) {
           console.error('failed to replay tx', tx, err.message)
@@ -257,7 +257,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
       if (isCollectionCreateTx(tx)) {
         const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
         const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
-        const docSnapshot = (await tool.storage.findAll(metricsCtx, 'system', createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
+        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
         if (docSnapshot !== undefined) {
           // If there is no doc, then it is removed, not need to do something with elastic.
           const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
@@ -273,7 +273,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
             collTx.modifiedBy = modifiedBy
             collTx.modifiedOn = modifiedOn
             collTx.objectSpace = space
-            await tool.storage.tx(metricsCtx, 'system', collTx)
+            await tool.storage.tx(metricsCtx, collTx)
           } catch (err: any) {
             console.error('failed to replay tx', tx, err.message)
           }
@@ -379,12 +379,11 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
   }
 
   async findAll<T extends Doc>(
-    user: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return await this.adapter.findAll(user, _class, query, options)
+    return await this.adapter.findAll(_class, query, options)
   }
 
   override tx (tx: Tx): Promise<TxResult> {
@@ -393,10 +392,6 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
 
   async close (): Promise<void> {
     await this.adapter.close()
-  }
-
-  isPrivate (): boolean {
-    return false
   }
 }
 

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Class, Data, Doc, DocumentUpdate, Domain, Ref, Space } from '@anticrm/core'
-import type { Asset, Plugin, Resource, IntlString } from '@anticrm/platform'
+import type { Class, Doc, Domain, Ref, Space } from '@anticrm/core'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
@@ -30,21 +30,6 @@ export interface Preference extends Doc {
 export interface SpacePreference extends Preference {
   attachedTo: Ref<Space>
 }
-
-/**
- * @public
- */
-export interface PreferenceClient {
-  get: (_id: Ref<Doc>) => Preference | undefined
-  update: <T extends Preference>(doc: T, operations: DocumentUpdate<T>) => Promise<void>
-  set: <T extends Preference>(_class: Ref<Class<T>>, _id: Ref<Doc>, data: Omit<Data<T>, 'attachedTo'>) => Promise<void>
-  unset: (_id: Ref<Doc>) => Promise<void>
-}
-
-/**
- * @public
- */
-export type PreferenceClientFactoy = () => PreferenceClient
 
 /**
  * @public
@@ -75,9 +60,6 @@ const preference = plugin(preferenceId, {
     Starred: '' as IntlString,
     Star: '' as IntlString,
     Unstar: '' as IntlString
-  },
-  function: {
-    GetPreferenceClient: '' as Resource<PreferenceClientFactoy>
   }
 })
 

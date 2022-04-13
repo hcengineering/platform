@@ -13,13 +13,4 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
-import { PreferenceClientImpl } from './utils'
-
-export * from './utils'
-
-export default async (): Promise<Resources> => ({
-  function: {
-    GetPreferenceClient: PreferenceClientImpl.getClient
-  }
-})
+export * from './private'

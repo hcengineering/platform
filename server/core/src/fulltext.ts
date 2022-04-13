@@ -67,7 +67,7 @@ export class FullTextIndex implements WithFind {
     return {}
   }
 
-  protected async txMixin (ctx: MeasureContext, userEmail: string, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+  protected async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.mixin)
     let result = {}
     if (attributes === undefined) return result
@@ -83,33 +83,33 @@ export class FullTextIndex implements WithFind {
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
       if (!this.skipUpdateAttached) {
-        await this.updateAttachedDocs(ctx, userEmail, tx, update)
+        await this.updateAttachedDocs(ctx, tx, update)
       }
     }
     return result
   }
 
-  async tx (ctx: MeasureContext, userEmail: string, tx: Tx): Promise<TxResult> {
+  async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
     switch (tx._class) {
       case core.class.TxCreateDoc:
-        return await this.txCreateDoc(ctx, userEmail, tx as TxCreateDoc<Doc>)
+        return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
       case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(ctx, userEmail, tx as TxCollectionCUD<Doc, AttachedDoc>)
+        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
       case core.class.TxUpdateDoc:
-        return await this.txUpdateDoc(ctx, userEmail, tx as TxUpdateDoc<Doc>)
+        return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
       case core.class.TxRemoveDoc:
         return await this.txRemoveDoc(ctx, tx as TxRemoveDoc<Doc>)
       case core.class.TxMixin:
-        return await this.txMixin(ctx, userEmail, tx as TxMixin<Doc, Doc>)
+        return await this.txMixin(ctx, tx as TxMixin<Doc, Doc>)
       case core.class.TxPutBag:
         return await this.txPutBag(ctx, tx as TxPutBag<PropertyType>)
       case core.class.TxBulkWrite:
-        return await this.txBulkWrite(ctx, userEmail, tx as TxBulkWrite)
+        return await this.txBulkWrite(ctx, tx as TxBulkWrite)
     }
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
 
-  protected txCollectionCUD (ctx: MeasureContext, userEmail: string, tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
+  protected txCollectionCUD (ctx: MeasureContext, tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
     // We need update only create transactions to contain attached, attachedToClass.
     if (tx.tx._class === core.class.TxCreateDoc) {
       const createTx = tx.tx as TxCreateDoc<AttachedDoc>
@@ -122,21 +122,20 @@ export class FullTextIndex implements WithFind {
           collection: tx.collection
         }
       }
-      return this.txCreateDoc(ctx, userEmail, d)
+      return this.txCreateDoc(ctx, d)
     }
-    return this.tx(ctx, userEmail, tx.tx)
+    return this.tx(ctx, tx.tx)
   }
 
-  protected async txBulkWrite (ctx: MeasureContext, userEmail: string, bulkTx: TxBulkWrite): Promise<TxResult> {
+  protected async txBulkWrite (ctx: MeasureContext, bulkTx: TxBulkWrite): Promise<TxResult> {
     for (const tx of bulkTx.txes) {
-      await this.tx(ctx, userEmail, tx)
+      await this.tx(ctx, tx)
     }
     return {}
   }
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,
-    userEmail: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -165,7 +164,7 @@ export class FullTextIndex implements WithFind {
     }
     const resultIds = getResultIds(ids, _id)
     const { limit, ...otherOptions } = options ?? { }
-    const result = await this.dbStorage.findAll(ctx, userEmail, _class, { _id: { $in: resultIds }, ...mainQuery }, otherOptions)
+    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, otherOptions)
     const total = result.total
     result.sort((a, b) => resultIds.indexOf(a._id) - resultIds.indexOf(b._id))
     if (limit !== undefined) {
@@ -200,7 +199,7 @@ export class FullTextIndex implements WithFind {
     return result
   }
 
-  protected async txCreateDoc (ctx: MeasureContext, userEmail: string, tx: TxCreateDoc<Doc>): Promise<TxResult> {
+  protected async txCreateDoc (ctx: MeasureContext, tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     const doc = TxProcessor.createDoc2Doc(tx)
     let parentContent: Record<string, string> = {}
@@ -208,7 +207,7 @@ export class FullTextIndex implements WithFind {
       const attachedDoc = doc as AttachedDoc
       if (attachedDoc.attachedToClass !== undefined && attachedDoc.attachedTo !== undefined) {
         const parentDoc = (
-          await this.dbStorage.findAll(ctx, userEmail, attachedDoc.attachedToClass, { _id: attachedDoc.attachedTo }, { limit: 1 })
+          await this.dbStorage.findAll(ctx, attachedDoc.attachedToClass, { _id: attachedDoc.attachedTo }, { limit: 1 })
         )[0]
         if (parentDoc !== undefined) {
           const parentAttributes = this.getFullTextAttributes(parentDoc._class, parentDoc)
@@ -235,7 +234,7 @@ export class FullTextIndex implements WithFind {
     return await this.adapter.index(indexedDoc)
   }
 
-  protected async txUpdateDoc (ctx: MeasureContext, userEmail: string, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+  protected async txUpdateDoc (ctx: MeasureContext, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     const attributes = this.getFullTextAttributes(tx.objectClass)
     let result = {}
     if (attributes.length === 0) return result
@@ -255,7 +254,7 @@ export class FullTextIndex implements WithFind {
     if (shouldUpdate) {
       result = await this.adapter.update(tx.objectId, update)
       if (!this.skipUpdateAttached) {
-        await this.updateAttachedDocs(ctx, userEmail, tx, update)
+        await this.updateAttachedDocs(ctx, tx, update)
       }
     }
     return result
@@ -278,11 +277,10 @@ export class FullTextIndex implements WithFind {
 
   private async updateAttachedDocs (
     ctx: MeasureContext,
-    userEmail: string,
     tx: { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>> },
     update: any
   ): Promise<void> {
-    const doc = (await this.dbStorage.findAll(ctx, userEmail, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+    const doc = (await this.dbStorage.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
     if (doc === undefined) return
     const attributes = this.hierarchy.getAllAttributes(doc._class)
 
@@ -299,7 +297,7 @@ export class FullTextIndex implements WithFind {
     for (const attribute of attributes.values()) {
       if (this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
         const collection = attribute.type as Collection<AttachedDoc>
-        const allAttached = await this.dbStorage.findAll(ctx, userEmail, collection.of, { attachedTo: tx.objectId })
+        const allAttached = await this.dbStorage.findAll(ctx, collection.of, { attachedTo: tx.objectId })
         if (allAttached.length === 0) continue
         const docUpdate: any = {}
         for (const key in update) {

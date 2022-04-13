@@ -20,8 +20,7 @@
   import { Scroller } from '@anticrm/ui'
   import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
-  import { Preference } from '@anticrm/preference'
-  import { PreferenceClientImpl } from '@anticrm/preference-resources'
+  import preferece, { SpacePreference } from '@anticrm/preference'
   import { getSpecialSpaceClass } from '../utils'
   import preference from '@anticrm/preference'
   import SpacesNav from './navigator/SpacesNav.svelte'
@@ -36,8 +35,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
-  const preferenceClient = PreferenceClientImpl.getClient()
-  const preferences = preferenceClient.getPreferences()
 
   let spaces: Space[] = []
   let starred: Space[] = []
@@ -56,7 +53,15 @@
   let topSpecials: SpecialNavModel[] = []
   let bottomSpecials: SpecialNavModel[] = []
 
-  async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, Preference>) {
+  let preferences: Map<Ref<Doc>, SpacePreference> = new Map<Ref<Doc>, SpacePreference>()
+
+  const preferenceQuery = createQuery()
+
+  preferenceQuery.query(preferece.class.SpacePreference, {}, (res) => {
+    preferences = new Map(res.map((r) => { return [r.attachedTo, r] }))
+  })
+
+  async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
     if (model.specials !== undefined) {
       topSpecials = await getSpecials(model.specials, 'top', spaces)
       bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
@@ -68,8 +73,8 @@
     starred = spaces.filter((sp) => preferences.has(sp._id))
   }
 
-  $: if (model) update(model, spaces, $preferences)
-  
+  $: if (model) update(model, spaces, preferences)
+
   async function getSpecials (specials: SpecialNavModel[], state: 'top' | 'bottom', spaces: Space[]): Promise<SpecialNavModel[]> {
     const result: SpecialNavModel[] = []
     for (const sp of specials) {

@@ -72,6 +72,7 @@
     "@anticrm/server-preference": "~0.6.0",
     "@anticrm/server-telegram": "~0.6.0",
     "@anticrm/server-telegram-resources": "~0.6.0",
-    "@anticrm/server-token": "~0.6.0"
+    "@anticrm/server-token": "~0.6.0",
+    "@anticrm/middleware": "~0.6.0"
   }
 }

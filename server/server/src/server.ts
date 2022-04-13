@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Client as MinioClient } from 'minio'
 import {
   Class,
   Doc,
@@ -25,39 +23,34 @@ import {
   FindResult,
   Hierarchy,
   ModelDb,
-  Ref,
-  Tx,
-  TxResult,
-  toFindResult
+  Ref, toFindResult, Tx,
+  TxResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
-import { createMongoAdapter, createMongoTxAdapter, createMongoPrivateAdapter } from '@anticrm/mongo'
-import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
-import { createServerStorage } from '@anticrm/server-core'
-import { start as startJsonRpc } from '@anticrm/server-ws'
-
+import { PrivateMiddleware } from '@anticrm/middleware'
+import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverContactId } from '@anticrm/server-contact'
-import { serverNotificationId } from '@anticrm/server-notification'
-import { serverSettingId } from '@anticrm/server-setting'
+import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
+import { serverContactId } from '@anticrm/server-contact'
+import { createPipeline, DbAdapter, DbConfiguration, MiddlewareCreator } from '@anticrm/server-core'
+import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
+import { serverNotificationId } from '@anticrm/server-notification'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverTaskId } from '@anticrm/server-task'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverTagsId } from '@anticrm/server-tags'
-import { serverCalendarId } from '@anticrm/server-calendar'
-import { serverGmailId } from '@anticrm/server-gmail'
+import { serverTaskId } from '@anticrm/server-task'
 import { serverTelegramId } from '@anticrm/server-telegram'
-import { DOMAIN_PREFERENCE } from '@anticrm/server-preference'
-
+import { start as startJsonRpc } from '@anticrm/server-ws'
+import { Client as MinioClient } from 'minio'
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
-    user: string,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
@@ -65,15 +58,11 @@ class NullDbAdapter implements DbAdapter {
     return toFindResult([])
   }
 
-  async tx (tx: Tx, user: string): Promise<TxResult> {
+  async tx (tx: Tx): Promise<TxResult> {
     return {}
   }
 
   async close (): Promise<void> {}
-
-  isPrivate (): boolean {
-    return false
-  }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -113,13 +102,16 @@ export function start (
   addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
+  const middlewares: MiddlewareCreator[] = [
+    PrivateMiddleware.create
+  ]
+
   return startJsonRpc(
     metricsContext,
     (workspace: string) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
-          [DOMAIN_PREFERENCE]: 'PrivateMongo',
           [DOMAIN_MODEL]: 'Null'
         },
         defaultAdapter: 'Mongo',
@@ -130,10 +122,6 @@ export function start (
           },
           Mongo: {
             factory: createMongoAdapter,
-            url: dbUrl
-          },
-          PrivateMongo: {
-            factory: createMongoPrivateAdapter,
             url: dbUrl
           },
           Null: {
@@ -153,7 +141,7 @@ export function start (
           }),
         workspace
       }
-      return createServerStorage(conf)
+      return createPipeline(conf, middlewares)
     },
     port,
     host
