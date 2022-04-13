@@ -28,14 +28,13 @@
   export let object: WithLookup<Lead>
   export let dragged: boolean
 
-  function showMenu(ev?: Event): void {
+  function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
   }
 
-  function showLead() {
+  function showLead () {
     showPanel(view.component.EditDoc, object._id, object._class, 'full')
   }
-
 </script>
 
 <div class="flex-col pt-2 pb-2 pr-4 pl-4">
@@ -53,7 +52,8 @@
           showMenu(evt)
         }}
         icon={IconMoreH}
-        size={'small'} />
+        size={'small'}
+      />
     </div>
   </div>
   <div class="flex-between">

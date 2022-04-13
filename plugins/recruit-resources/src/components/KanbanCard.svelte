@@ -28,13 +28,12 @@
   export let object: WithLookup<Applicant>
   export let dragged: boolean
 
-  function showCandidate() {
+  function showCandidate () {
     showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
   }
 
   $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
   $: doneTasks = todoItems.filter((it) => it.done)
-
 </script>
 
 <div class="flex-col pt-2 pb-2 pr-4 pl-4">

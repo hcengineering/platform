@@ -32,7 +32,6 @@
 
   $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
   $: doneTasks = todoItems.filter((it) => it.done)
-
 </script>
 
 <div class="flex-col pt-2 pb-2 pr-4 pl-4">
@@ -55,7 +54,8 @@
           showMenu(evt)
         }}
         icon={IconMoreH}
-        size={'small'} />
+        size={'small'}
+      />
     </div>
   </div>
   <div class="caption-color mb-3 lines-limit-4">{object.name}</div>
