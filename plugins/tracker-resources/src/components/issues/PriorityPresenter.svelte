@@ -16,6 +16,7 @@
   import { Ref } from '@anticrm/core'
   import { Issue, IssuePriority, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
+  import { Tooltip } from '@anticrm/ui'
   import tracker from '../../plugin'
   import PrioritySelector from '../PrioritySelector.svelte'
 
@@ -40,10 +41,12 @@
 </script>
 
 {#if value}
-  <PrioritySelector
-    kind={'icon'}
-    shouldShowLabel={false}
-    priority={value.priority}
-    onPriorityChange={handlePriorityChanged}
-  />
+  <Tooltip direction={'bottom'} label={tracker.string.SetPriority}>
+    <PrioritySelector
+      kind={'icon'}
+      shouldShowLabel={false}
+      priority={value.priority}
+      onPriorityChange={handlePriorityChanged}
+    />
+  </Tooltip>
 {/if}
