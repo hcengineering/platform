@@ -36,14 +36,15 @@
       return
     }
 
+    e.preventDefault()
+    e.stopPropagation()
+
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
 
     loading++
     try {
       await createAttachments(client, list, { objectClass, objectId, space })
-      e.preventDefault()
-      e.stopPropagation()
     } finally {
       loading--
     }
