@@ -54,7 +54,9 @@
         {/each}
         <div class="mt-2">
           <AddAttachment bind:inputFile objectClass={value._class} objectId={value._id} space={value.space}>
-            <Button label={board.string.AddAttachment} kind="no-border" slot="control" />
+            <svelte:fragment slot="control" let:click>
+              <Button label={board.string.AddAttachment} kind="no-border" on:click={click}/>
+            </svelte:fragment>
           </AddAttachment>
         </div>
       </div>

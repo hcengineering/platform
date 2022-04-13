@@ -31,9 +31,7 @@
 
 <div>
   {#if $$slots.control}
-    <div on:click={openFile}>
-      <slot name="control"/>
-    </div>
+    <slot name="control" click={openFile}/>
   {:else}
     <CircleButton
       icon={IconAdd}

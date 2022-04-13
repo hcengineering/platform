@@ -46,37 +46,36 @@
   objectId={object._id}
   space={object.space}>
   <div class:opacity-overlay={dragoverAttachment}>
-  <div class="flex-between mb-4">
-    <div class="flex-col">
-      <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
-    </div>
-    <div class="flex-row-center">
-      <div class="mr-2">
-        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+    <div class="flex-between mb-4">
+      <div class="flex-col">
+        <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
       </div>
-      <ActionIcon
-        label={board.string.More}
-        action={(evt) => {
-          showMenu(evt)
-        }}
-        icon={IconMoreH}
-        size="small" />
+      <div class="flex-row-center">
+        <div class="mr-2">
+          <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+        </div>
+        <ActionIcon
+          label={board.string.More}
+          action={(evt) => {
+            showMenu(evt)
+          }}
+          icon={IconMoreH}
+          size="small" />
+      </div>
+    </div>
+    <div class="flex-between">
+      <div class="flex-row-center">
+        {#if (object.attachments ?? 0) > 0}
+          <div class="step-lr75">
+            <AttachmentsPresenter value={object} />
+          </div>
+        {/if}
+        {#if (object.comments ?? 0) > 0}
+          <div class="step-lr75">
+            <CommentsPresenter value={object} />
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
-  <div class="flex-between">
-    <div class="flex-row-center">
-      {#if (object.attachments ?? 0) > 0}
-        <div class="step-lr75">
-          <AttachmentsPresenter value={object} />
-        </div>
-      {/if}
-      {#if (object.comments ?? 0) > 0}
-        <div class="step-lr75">
-          <CommentsPresenter value={object} />
-        </div>
-      {/if}
-    </div>
-  </div>
-</div>
 </AttachmentDroppable>
-
