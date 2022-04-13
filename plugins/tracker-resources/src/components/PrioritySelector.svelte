@@ -52,7 +52,7 @@
   />
 {:else if kind === 'icon'}
   <div class="flex-presenter" on:click={handlePriorityEditorOpened}>
-    <div class="icon">
+    <div class="priorityIcon">
       <Icon icon={issuePriorities[priority].icon} size={'small'} />
     </div>
     {#if shouldShowLabel}
@@ -62,3 +62,15 @@
     {/if}
   </div>
 {/if}
+
+<style lang="scss">
+  .priorityIcon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--theme-content-dark-color);
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
+  }
+</style>
