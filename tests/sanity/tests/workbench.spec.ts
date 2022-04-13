@@ -14,14 +14,14 @@ test.describe('workbench tests', () => {
     await page.click('text=Applications')
     await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/applicants')
     // Click text=Applications Application >> span
-    await expect(page.locator('text=Applications Application >> span')).toBeVisible()
+    await expect(page.locator('text=Applications Application')).toBeVisible()
     await expect(page.locator('text=APP-1')).toBeVisible()
 
     // Click text=Candidates
     await page.click('text=Candidates')
     await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates')
 
-    await expect(page.locator('text=Candidates Candidate >> span')).toBeVisible()
+    await expect(page.locator('text=Candidates Candidate')).toBeVisible()
     await expect(page.locator('text=Andrey P.')).toBeVisible()
 
     // Click text=Vacancies
