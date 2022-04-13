@@ -77,7 +77,7 @@
   )
 </script>
 
-<PinnedMessages {space} />
+<PinnedMessages {pinnedIds} />
 <Channel
   {space}
   on:openThread={(e) => {
