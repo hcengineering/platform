@@ -10,6 +10,10 @@
     "Deselect": "Deselect",
     "AddSocialLinks": "Add social links",
     "Change": "Change",
-    "Remove": "Remove"
+    "Remove": "Remove",
+    "Members": "Members",
+    "Search": "Search...",
+    "Unassigned": "Unassigned",
+    "CreateMore": "Create more"
   }
 }

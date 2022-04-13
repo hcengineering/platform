@@ -17,10 +17,9 @@
   import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import type { AnyComponent } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
+  import { AnyComponent,Component } from '@anticrm/ui'
+  import view,{ Viewlet } from '@anticrm/view'
   import type { ViewConfiguration } from '@anticrm/workbench'
-
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
 
@@ -31,29 +30,54 @@
 
   let search: string = ''
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let space: Ref<Space> | undefined = undefined
+  let space: Space | undefined
   let _class: Ref<Class<Doc>> | undefined = undefined
+  let header: AnyComponent | undefined
 
   const client = getClient()
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  async function update (attachTo?: Ref<Class<Doc>>, currentSpace?: Ref<Space>): Promise<void> {
+  $: update(currentSpace, currentView?.class)
+
+  async function update (currentSpace?: Ref<Space>, attachTo?: Ref<Class<Doc>>): Promise<void> {
+    if (currentSpace === undefined) {
+      space = undefined
+      return
+    }
+    space = await client.findOne(core.class.Space, { _id: currentSpace })
+    if (space === undefined) {
+      header = undefined
+    } else {
+      header = await getHeader(space._class)
+    }
     if (attachTo) {
       viewlets = await client.findAll(view.class.Viewlet, { attachTo }, {
         lookup: {
           descriptor: core.class.Class
         }
       })
+      if (header !== undefined) {
+        viewlet = viewlets[0]
+      }
       _class = attachTo
     }
-    viewlet = viewlets[0]
-    space = currentSpace
   }
 
-  $: update(currentView?.class, currentSpace)
+  const hierarchy = client.getHierarchy()
+  async function getHeader (_class: Ref<Class<Space>>): Promise<AnyComponent | undefined> {
+    const clazz = hierarchy.getClass(_class)
+    const headerMixin = hierarchy.as(clazz, view.mixin.SpaceHeader)
+    if (headerMixin?.header == null && clazz.extends != null) return getHeader(clazz.extends)
+    return headerMixin.header
+  }
+
 </script>
-<SpaceHeader spaceId={space} {viewlets} {createItemDialog} {createItemLabel} bind:search={search} bind:viewlet={viewlet} />
 {#if _class && space}
-  <SpaceContent {space} {_class} {search} {viewlet} />
+  {#if header}
+    <Component is={header} props={{ spaceId: space._id, viewlets, createItemDialog, createItemLabel }} />
+  {:else}
+    <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search={search} bind:viewlet={viewlet} />
+  {/if}
+  <SpaceContent space={space._id} {_class} {search} {viewlet} />
 {/if}

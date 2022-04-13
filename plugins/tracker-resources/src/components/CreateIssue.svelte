@@ -13,26 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@anticrm/platform'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
-  import { OK, Status } from '@anticrm/platform'
-  import { getClient, UserBox } from '@anticrm/presentation'
+  import { Asset, IntlString } from '@anticrm/platform'
+  import presentation, { getClient, UserBox, Card } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, Status as StatusControl, Button, showPopup } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
-  import Card from './Card.svelte'
-  import SelectPopup from './SelectPopup.svelte'
+  import StatusSelector from './StatusSelector.svelte'
+  import PrioritySelector from './PrioritySelector.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
-  
+  export let issueStatus = IssueStatus.Backlog
   $: _space = space
   $: _parent = parent
-  const status: Status = OK
 
   let assignee: Ref<Employee> | null = null
 
@@ -42,7 +40,7 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: IssueStatus.Backlog,
+    status: issueStatus,
     priority: IssuePriority.NoPriority,
     dueDate: null,
     comments: 0
@@ -88,31 +86,34 @@
     await client.createDoc(tracker.class.Issue, _space, value, taskId)
   }
 
-  interface IPair {
-    icon: Asset
-    label: IntlString
+  const moreActions: Array<{ icon: Asset; label: IntlString }> = [
+    { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
+    { icon: tracker.icon.Parent, label: tracker.string.Parent }
+  ]
+
+  let issueDate: number | null = null
+
+  const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
+    if (newPriority === undefined) {
+      return
+    }
+
+    object.priority = newPriority
   }
-  const statuses: Array<IPair> =
-    [{ icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
-     { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
-     { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
-     { icon: tracker.icon.StatusDone, label: tracker.string.Done },
-     { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }]
-  let selectStatus: IPair = statuses[0]
-  const priorities: Array<IPair> =
-    [{ icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
-     { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
-     { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
-     { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
-     { icon: tracker.icon.PriorityLow, label: tracker.string.Low }]
-  let selectPriority: IPair = priorities[0]
+
+  const handleStatusChanged = (newStatus: IssueStatus | undefined) => {
+    if (newStatus === undefined) {
+      return
+    }
+
+    object.status = newStatus
+  }
 </script>
 
 <!-- canSave: object.title.length > 0 && _space != null -->
 <Card
   label={tracker.string.NewIssue}
   okAction={createIssue}
-  icon={tracker.icon.Home}
   canSave={true}
   okLabel={tracker.string.SaveIssue}
   spaceClass={tracker.class.Team}
@@ -124,6 +125,9 @@
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="space">
+    <Button icon={tracker.icon.Home} label={presentation.string.Save} size={'small'} kind={'no-border'} disabled on:click={() => { }} />
+  </svelte:fragment>
   <EditBox
     bind:value={object.title}
     placeholder={tracker.string.IssueTitlePlaceholder}
@@ -131,40 +135,49 @@
     kind={'large-style'}
     focus
   />
-  <!-- <StyledTextBox alwaysEdit bind:content={object.description} placeholder={tracker.string.IssueDescriptionPlaceholder}/> -->
-  <!-- <UserBox
-    _class={contact.class.Employee}
-    title={tracker.string.Assignee}
-    caption={tracker.string.Assignee}
-    bind:value={assignee}
-    allowDeselect
-    titleDeselect={tracker.string.TaskUnAssign}
-  /> -->
-  <div style="height: 30px"></div>
-  <div slot="pool" class="flex-row-center text-sm gap-1-5">
-    <Button
-      label={selectStatus.label}
-      icon={selectStatus.icon}
-      width={'min-content'}
-      size={'small'}
-      kind={'no-border'}
-      on:click={(ev) => {
-        showPopup(SelectPopup, { value: statuses, placeholder: tracker.string.SetStatus, searchable: true }, ev.currentTarget, (result) => {
-          if (result !== undefined) { selectStatus = result }
-        })
-      }}
+  <StyledTextBox
+    alwaysEdit
+    showButtons={false}
+    bind:content={object.description}
+    placeholder={tracker.string.IssueDescriptionPlaceholder}
+  />
+  <svelte:fragment slot="pool">
+    <StatusSelector bind:status={object.status} onStatusChange={handleStatusChanged} />
+    <PrioritySelector bind:priority={object.priority} onPriorityChange={handlePriorityChanged} />
+    <UserBox
+      _class={contact.class.Employee}
+      label={tracker.string.Assignee}
+      placeholder={tracker.string.AssignTo}
+      bind:value={assignee}
+      allowDeselect
+      titleDeselect={tracker.string.Unassigned}
     />
     <Button
-      label={selectPriority.label}
-      icon={selectPriority.icon}
-      width={'min-content'}
-      size={'small'}
-      kind={'no-border'}
+      label={tracker.string.Labels}
+      icon={tracker.icon.Labels}
+      width="min-content"
+      size="small"
+      kind="no-border"
+    />
+    <Button
+      label={tracker.string.Project}
+      icon={tracker.icon.Projects}
+      width="min-content"
+      size="small"
+      kind="no-border"
+    />
+    <DatePresenter value={issueDate} editable />
+    <Button
+      icon={tracker.icon.MoreActions}
+      width="min-content"
+      size="small"
+      kind="transparent"
       on:click={(ev) => {
-        showPopup(SelectPopup, { value: priorities, placeholder: tracker.string.SetStatus }, ev.currentTarget, (result) => {
-          if (result !== undefined) { selectPriority = result }
-        })
+        showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
       }}
     />
-  </div>
+  </svelte:fragment>
+  <svelte:fragment slot="footer">
+    <Button icon={IconAttachment} kind={'transparent'} on:click={() => { }} />
+  </svelte:fragment>
 </Card>

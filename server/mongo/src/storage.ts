@@ -16,12 +16,30 @@
 import core, {
   Class,
   Doc,
-  DocumentQuery, DOMAIN_MODEL, DOMAIN_TX, escapeLikeForRegexp, FindOptions, FindResult, Hierarchy, isOperator, Lookup, Mixin, ModelDb, Ref, ReverseLookups, SortingOrder, Tx,
+  DocumentQuery,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  escapeLikeForRegexp,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  isOperator,
+  Lookup,
+  Mixin,
+  ModelDb,
+  Ref,
+  ReverseLookups,
+  SortingOrder,
+  Tx,
   TxCreateDoc,
-  TxMixin, TxProcessor, TxPutBag,
+  TxMixin,
+  TxProcessor,
+  TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  toFindResult,
+  WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
@@ -39,7 +57,12 @@ interface LookupStep {
 }
 
 abstract class MongoAdapterBase extends TxProcessor {
-  constructor (protected readonly db: Db, protected readonly hierarchy: Hierarchy, protected readonly modelDb: ModelDb, protected readonly client: MongoClient) {
+  constructor (
+    protected readonly db: Db,
+    protected readonly hierarchy: Hierarchy,
+    protected readonly modelDb: ModelDb,
+    protected readonly client: MongoClient
+  ) {
     super()
   }
 
@@ -60,7 +83,10 @@ abstract class MongoAdapterBase extends TxProcessor {
         if (keys[0] === '$like') {
           const pattern = value.$like as string
           translated[tkey] = {
-            $regex: `^${pattern.split('%').map(it => escapeLikeForRegexp(it)).join('.*')}$`,
+            $regex: `^${pattern
+              .split('%')
+              .map((it) => escapeLikeForRegexp(it))
+              .join('.*')}$`,
             $options: 'i'
           }
           continue
@@ -84,7 +110,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     return translated
   }
 
-  private async getLookupValue<T extends Doc> (lookup: Lookup<T>, result: LookupStep[], parent?: string): Promise<void> {
+  private async getLookupValue<T extends Doc>(lookup: Lookup<T>, result: LookupStep[], parent?: string): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(lookup, result, parent)
@@ -119,7 +145,11 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async getReverseLookupValue (lookup: ReverseLookups, result: LookupStep[], parent?: string): Promise<any | undefined> {
+  private async getReverseLookupValue (
+    lookup: ReverseLookups,
+    result: LookupStep[],
+    parent?: string
+  ): Promise<any | undefined> {
     const fullKey = parent !== undefined ? parent + '.' + '_id' : '_id'
     for (const key in lookup._id) {
       const as = parent !== undefined ? parent + key : key
@@ -147,14 +177,20 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async getLookups<T extends Doc> (lookup: Lookup<T> | undefined, parent?: string): Promise<LookupStep[]> {
+  private async getLookups<T extends Doc>(lookup: Lookup<T> | undefined, parent?: string): Promise<LookupStep[]> {
     if (lookup === undefined) return []
     const result: [] = []
     await this.getLookupValue(lookup, result, parent)
     return result
   }
 
-  private async fillLookup<T extends Doc> (_class: Ref<Class<T>>, object: any, key: string, fullKey: string, targetObject: any): Promise<void> {
+  private async fillLookup<T extends Doc>(
+    _class: Ref<Class<T>>,
+    object: any,
+    key: string,
+    fullKey: string,
+    targetObject: any
+  ): Promise<void> {
     if (targetObject.$lookup === undefined) {
       targetObject.$lookup = {}
     }
@@ -173,7 +209,12 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async fillLookupValue<T extends Doc> (lookup: Lookup<T> | undefined, object: any, parent?: string, parentObject?: any): Promise<void> {
+  private async fillLookupValue<T extends Doc>(
+    lookup: Lookup<T> | undefined,
+    object: any,
+    parent?: string,
+    parentObject?: any
+  ): Promise<void> {
     if (lookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
@@ -193,7 +234,12 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async fillReverseLookup (lookup: ReverseLookups, object: any, parent?: string, parentObject?: any): Promise<void> {
+  private async fillReverseLookup (
+    lookup: ReverseLookups,
+    object: any,
+    parent?: string,
+    parentObject?: any
+  ): Promise<void> {
     const targetObject = parentObject ?? object
     if (targetObject.$lookup === undefined) {
       targetObject.$lookup = {}
@@ -258,21 +304,24 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
       pipeline.push({ $sort: sort })
     }
-    if (options.limit !== undefined) {
-      pipeline.push({ $limit: options.limit })
-    }
     const domain = this.hierarchy.getDomain(clazz)
     let cursor = this.db.collection(domain).aggregate(pipeline)
     if (options?.projection !== undefined) {
       cursor = cursor.project(options.projection)
     }
-    const result = (await cursor.toArray()) as FindResult<T>
+    let result = (await cursor.toArray()) as WithLookup<T>[]
+
+    const total = result.length
+    if (options.limit !== undefined) {
+      result = result.slice(0, options.limit)
+    }
+
     for (const row of result) {
       row.$lookup = {}
       await this.fillLookupValue(options.lookup, row)
       this.clearExtraLookups(row)
     }
-    return result
+    return toFindResult(result, total)
   }
 
   private clearExtraLookups (row: any): void {
@@ -316,7 +365,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     if (options?.projection !== undefined) {
       cursor = cursor.project(options.projection)
     }
-
+    let total: number | undefined
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
         const sort: Sort = {}
@@ -328,10 +377,12 @@ abstract class MongoAdapterBase extends TxProcessor {
         cursor = cursor.sort(sort)
       }
       if (options.limit !== undefined) {
+        total = await cursor.count()
         cursor = cursor.limit(options.limit)
       }
     }
-    return await cursor.toArray()
+    const res = await cursor.toArray()
+    return toFindResult(res, total)
   }
 }
 
@@ -400,18 +451,16 @@ class MongoAdapter extends MongoAdapterBase {
         )
       }
     } else {
-      return await this.db
-        .collection(domain)
-        .updateOne(
-          { _id: tx.objectId },
-          {
-            $set: {
-              ...this.translateMixinAttrs(tx.mixin, tx.attributes),
-              modifiedBy: tx.modifiedBy,
-              modifiedOn: tx.modifiedOn
-            }
+      return await this.db.collection(domain).updateOne(
+        { _id: tx.objectId },
+        {
+          $set: {
+            ...this.translateMixinAttrs(tx.mixin, tx.attributes),
+            modifiedBy: tx.modifiedBy,
+            modifiedOn: tx.modifiedOn
           }
-        )
+        }
+      )
     }
   }
 
@@ -569,12 +618,16 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   async getModel (): Promise<Tx[]> {
-    const model = await this.db.collection(DOMAIN_TX).find<Tx>({ objectSpace: core.space.Model }).sort({ _id: 1 }).toArray()
+    const model = await this.db
+      .collection(DOMAIN_TX)
+      .find<Tx>({ objectSpace: core.space.Model })
+      .sort({ _id: 1 })
+      .toArray()
     // We need to put all core.account.System transactions first
     const systemTr: Tx[] = []
     const userTx: Tx[] = []
 
-    model.forEach(tx => ((tx.modifiedBy === core.account.System) ? systemTr : userTx).push(tx))
+    model.forEach((tx) => (tx.modifiedBy === core.account.System ? systemTr : userTx).push(tx))
 
     return systemTr.concat(userTx)
   }

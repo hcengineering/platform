@@ -30,11 +30,11 @@ test.describe('recruit tests', () => {
     // Fill [placeholder="Please\ type\ Skill\ title"]
     await page.fill('[placeholder="Please\\ type\\ Skill\\ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button
-    await page.click('text=Create Skill s1 Please type description here Category Other Create Cancel >> button')
+    await page.click('text=Create more Create >> button')
     // Click text=s1
     await page.click('text=s1')
     // Click :nth-match(:text("Cancel"), 2)
-    await page.click(':nth-match(:text("Cancel"), 2)')
+    await page.click('button:has-text("Cancel")')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
   })
@@ -78,7 +78,7 @@ test.describe('recruit tests', () => {
     // Click text=java
     await page.click('text=java')
     // Click :nth-match(:text("Cancel"), 2)
-    await page.click(':nth-match(:text("Cancel"), 2)')
+    await page.click('button:has-text("Cancel")')
     // Click [placeholder="John"]
     await page.click('[placeholder="John"]')
     // Fill [placeholder="John"]

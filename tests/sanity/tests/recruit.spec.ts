@@ -58,14 +58,14 @@ test.describe('recruit tests', () => {
     // Click on Add button
     await page.click('.applications-container .flex-row-center .flex-center')
 
-    await page.click('span:has-text("Select vacancy")')
+    await page.click('button:has-text("Vacancy")')
 
     await page.click(`button:has-text("${vacancyId}")`)
 
     await page.click('button:has-text("Create")')
 
     await page.locator(`tr:has-text("${vacancyId}") >> text=APP-`).click()
-    await page.click('text=Assigned recruiter Not selected')
+    await page.click('button:has-text("Assigned recruiter")')
     await page.click('button:has-text("Rosamund Chen")')
   })
 
@@ -83,7 +83,7 @@ test.describe('recruit tests', () => {
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
-    await page.click('text=Not selected')
+    await page.click('button:has-text("Candidate")')
     await page.click('button:has-text("Alex P.")')
     await page.click('button:has-text("Create")')
 
@@ -142,19 +142,19 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Review")
     await page.click('button:has-text("Review")')
     // Click [placeholder="\ "]
-    await page.click('[placeholder="placeholder"]')
+    await page.click('[placeholder="Title"]')
     // Fill [placeholder="\ "]
-    await page.fill('[placeholder="placeholder"]', 'Meet PEterson')
+    await page.fill('[placeholder="Title"]', 'Meet PEterson')
     // Click text=Location Company Company >> [placeholder="\ "]
-    await page.click('text=placeholder Location >> [placeholder="placeholder"]')
+    await page.click('[placeholder="Location"]')
     // Fill text=Location Company Company >> [placeholder="\ "]
-    await page.fill('text=placeholder Location >> [placeholder="placeholder"]', 'NSK')
+    await page.fill('[placeholder="Location"]', 'NSK')
     // Click text=Company Company >> div
     // await page.click('text=Company Company >> div')
     // Click button:has-text("Apple")
     // await page.click('button:has-text("Apple")')
     // Click text=Candidate Not selected >> span
-    await page.click('text=Candidate Not selected >> span')
+    await page.click('button:has-text("Candidate")')
     // Click button:has-text("Andrey P.")
     await page.click('button:has-text("Andrey P.")')
     // Click text=Create

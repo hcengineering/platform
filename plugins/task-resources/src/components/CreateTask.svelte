@@ -118,8 +118,8 @@
     />
     <UserBox
       _class={contact.class.Employee}
-      title={plugin.string.TaskAssignee}
-      caption={plugin.string.AssignThisTask}
+      label={plugin.string.TaskAssignee}
+      placeholder={plugin.string.AssignThisTask}
       bind:value={assignee}
       allowDeselect
       titleDeselect={plugin.string.TaskUnAssign}

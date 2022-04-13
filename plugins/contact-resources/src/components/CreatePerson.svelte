@@ -21,11 +21,11 @@
   import { getClient, Card, EditableAvatar } from '@anticrm/presentation'
 
   import attachment from '@anticrm/attachment'
-  import { EditBox, IconInfo, Label } from '@anticrm/ui'
+  import { EditBox, IconInfo, Label, Button, showPopup } from '@anticrm/ui'
 
   import { Channel, combineName, findPerson, Person } from '@anticrm/contact'
   import contact from '../plugin'
-  import Channels from './Channels.svelte'
+  import ChannelsView from './ChannelsView.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
 
   let firstName = ''
@@ -78,7 +78,7 @@
 
   let channels: AttachedData<Channel>[] = []
 
-  let matches: FindResult<Person> = []
+  let matches: Person[] = []
   $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
     matches = p
   })
@@ -93,58 +93,41 @@
     dispatch('close')
   }}
 >
-  {#if matches.length > 0}
-    <div class="flex-row update-container ERROR">
-      <div class="flex mb-2">
+  <svelte:fragment slot="error">
+    {#if matches.length > 0}
+      <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
-        <div class="text-sm ml-2 overflow-label">
+        <span class="text-sm overflow-label ml-2">
           <Label label={contact.string.PersonAlreadyExists} />
-        </div>
+        </span>
+        <div class="ml-4"><PersonPresenter value={matches[0]} /></div>
       </div>
-      <PersonPresenter value={matches[0]} />
-    </div>
-  {/if}
+    {/if}
+  </svelte:fragment>
   <div class="flex-row-center">
     <div class="mr-4">
       <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} on:remove={removeAvatar} />
     </div>
     <div class="flex-col">
-      <div class="fs-title">
-        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="12rem" bind:value={firstName} focus />
-      </div>
-      <div class="fs-title mb-1">
-        <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="12rem" bind:value={lastName} />
-      </div>
-      <div class="text-sm">
-        <EditBox placeholder={contact.string.PersonLocationPlaceholder} maxWidth="12rem" bind:value={object.city} />
+      <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
+      <EditBox placeholder={contact.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
+      <div class="mt-1">
+        <EditBox placeholder={contact.string.PersonLocationPlaceholder} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
       </div>
     </div>
   </div>
-
-  <div class="flex-row-center mt-5">
-    <Channels
-      bind:channels
-      on:change={(e) => {
-        channels = e.detail
-      }}
+  {#if channels.length > 0}
+    <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
+  {/if}
+  <svelte:fragment slot="footer">
+    <Button
+      icon={contact.icon.SocialEdit}
+      kind={'transparent'}
+      on:click={(ev) =>
+        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+          if (result !== undefined) channels = result
+        })
+      }
     />
-  </div>
+  </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .update-container {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    user-select: none;
-    font-size: 14px;
-
-    color: var(--theme-content-color);
-    &.ERROR { color: var(--system-error-color); }
-
-    border: 1px dashed var(--theme-zone-border);
-    border-radius: 0.5rem;
-    backdrop-filter: blur(10px);
-  }
-</style>

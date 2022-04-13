@@ -26,8 +26,6 @@
   let time: string = ''
 
   async function formatTime (value: number) {
-    console.log('value')
-    console.log(value)
     if (value > 0) {
       if (value < HOUR) {
         time = await translate(ui.string.MinutesAfter, { minutes: Math.floor(value / MINUTE) })
@@ -52,4 +50,4 @@
 
 </script>
 
-<span style="white-space: nowrap;" on:click>{time}</span>
+<span style="white-space: nowrap;">{time}</span>

@@ -15,7 +15,7 @@
 
 import board, { boardId } from '@anticrm/board'
 import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(boardId, board, {
   string: {
@@ -41,17 +41,51 @@ export default mergeIds(boardId, board, {
     Assignee: '' as IntlString,
     ManageBoardStatuses: '' as IntlString,
     Description: '' as IntlString,
+    DescriptionPlaceholder: '' as IntlString,
     Location: '' as IntlString,
     Members: '' as IntlString,
+    IsArchived: '' as IntlString,
     BoardCreateLabel: '' as IntlString,
-    Settings: '' as IntlString
+    Settings: '' as IntlString,
+    InList: '' as IntlString,
+    Suggested: '' as IntlString,
+    AddToCard: '' as IntlString,
+    Labels: '' as IntlString,
+    Checklist: '' as IntlString,
+    Dates: '' as IntlString,
+    Attachments: '' as IntlString,
+    CustomFields: '' as IntlString,
+    Automation: '' as IntlString,
+    AddButton: '' as IntlString,
+    Actions: '' as IntlString,
+    Cover: '' as IntlString,
+    Join: '' as IntlString,
+    Move: '' as IntlString,
+    Copy: '' as IntlString,
+    MakeTemplate: '' as IntlString,
+    Watch: '' as IntlString,
+    Archive: '' as IntlString,
+    SendToBoard: '' as IntlString,
+    Delete: '' as IntlString,
+    HideDetails: '' as IntlString,
+    ShowDetails: '' as IntlString,
+    NewList: '' as IntlString,
+    AddList: '' as IntlString,
+    NewListPlaceholder: '' as IntlString,
+    AddACard: '' as IntlString,
+    AddCard: '' as IntlString,
+    CardTitlePlaceholder: '' as IntlString,
+    Create: '' as IntlString,
+    CreateDescription: '' as IntlString,
+    CreateSingle: '' as IntlString,
+    CreateMultiple: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
     CardsPresenter: '' as AnyComponent,
     Boards: '' as AnyComponent,
+    EditCard: '' as AnyComponent,
     Members: '' as AnyComponent,
     Settings: '' as AnyComponent
-
   }
 })

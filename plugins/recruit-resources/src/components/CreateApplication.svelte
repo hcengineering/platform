@@ -17,13 +17,16 @@
   import contact from '@anticrm/contact'
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import type { Applicant, Candidate } from '@anticrm/recruit'
+  import { Card, getClient, UserBox, createQuery, AttributeEditor } from '@anticrm/presentation'
+  import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
-  import { Grid, Status as StatusControl } from '@anticrm/ui'
+  import ui, { Status as StatusControl, Label, Button, ColorPopup, showPopup, getPlatformColor } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
+  import CandidateCard from './CandidateCard.svelte'
+  import VacancyCard from './VacancyCard.svelte'
+  import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
@@ -58,7 +61,7 @@
   }
 
   async function createApplication () {
-    const state = await client.findOne(task.class.State, { space: doc.space })
+    const state = await client.findOne(task.class.State, { space: doc.space, _id: selectedState._id })
     if (state === undefined) {
       throw new Error(`create application: state not found space:${doc.space}`)
     }
@@ -115,6 +118,35 @@
   }
 
   $: validate(doc, doc._class)
+
+  let selectedVacancy: Vacancy
+  let selectedCandidate: Person
+  const vacancyQuery = createQuery()
+  $: if (doc.space !== undefined) {
+    vacancyQuery.query(recruit.class.Vacancy, { _id: doc.space }, (result) => {
+      selectedVacancy = result[0]
+    })
+  }
+  const candidateQuery = createQuery()
+  $: if (doc.attachedTo !== undefined) {
+    candidateQuery.query(contact.class.Person, { _id: doc.attachedTo as Ref<Person> }, (result) => {
+      selectedCandidate = result[0]
+    })
+  }
+  let states: Array<{id: number | string, color: number, label: string}> = []
+  let selectedState: State
+  const statesQuery = createQuery()
+  $: if (doc.space !== undefined) {
+    statesQuery.query(
+      task.class.State,
+      { space: doc.space },
+      (res) => {
+        states = res.map(s => { return { id: s._id, label: s.title, color: s.color} })
+        selectedState = res.filter(s => s._id === doc.state)[0] ?? res[0]
+      },
+      { sort: { rank: SortingOrder.Ascending } }
+    )
+  }
 </script>
 
 <Card
@@ -125,23 +157,108 @@
   spaceQuery={{ archived: false }}
   spaceLabel={recruit.string.Vacancy}
   spacePlaceholder={recruit.string.SelectVacancy}
+  createMore={false}
   bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.75}>
+  <!-- <div class="flex-between mt-2 mb-2">
+    <div class="card" class:empty={!selectedCandidate}>
+      {#if selectedCandidate}
+        <CandidateCard candidate={selectedCandidate} disabled />
+      {:else}
+        <Label label={recruit.status.CandidateRequired} />
+      {/if}
+    </div>
+    <div class="arrows"><ExpandRightDouble /></div>
+    <div class="card" class:empty={!selectedVacancy}>
+      {#if selectedVacancy}
+        <VacancyCard vacancy={selectedVacancy} disabled />
+      {:else}
+        <Label label={recruit.status.VacancyRequired} />
+      {/if}
+    </div>
+  </div> -->
+  <svelte:fragment slot="pool">
     {#if !preserveCandidate}
-      <UserBox _class={contact.class.Person} title={recruit.string.Candidate} caption={recruit.string.Candidates} bind:value={doc.attachedTo} />
+      <UserBox
+        _class={contact.class.Person}
+        label={recruit.string.Candidate}
+        placeholder={recruit.string.Candidates}
+        bind:value={doc.attachedTo}
+        kind={'no-border'} size={'small'}
+      />
     {/if}
     <UserBox
       _class={contact.class.Employee}
-      title={recruit.string.AssignRecruiter}
-      caption={recruit.string.Recruiters}
+      label={recruit.string.AssignRecruiter}
+      placeholder={recruit.string.Recruiters}
       bind:value={doc.assignee}
       allowDeselect
       titleDeselect={recruit.string.UnAssignRecruiter}
+      kind={'no-border'} size={'small'}
     />
-  </Grid>
+    {#if states && doc.space}
+      <Button
+        width="min-content"
+        size="small"
+        kind="no-border"
+        on:click={(ev) => {
+          showPopup(
+            ColorPopup,
+            { value: states, searchable: true, placeholder: ui.string.SearchDots },
+            ev.currentTarget,
+            (result) => {
+              if (result && result.id !== doc.state) {
+                doc.state = result.id
+                selectedState = result
+              }
+            }
+          )
+        }}
+      >
+        <div slot="content" class="flex-row-center">
+          {#if selectedState}
+            <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
+            <span class="label overflow-label">{selectedState.title}</span>
+          {/if}
+        </div>
+      </Button>
+    {/if}
+  </svelte:fragment>
 </Card>
+
+<style lang="scss">
+  .card {
+    align-self: stretch;
+    width: calc(50% - 3rem);
+    min-height: 16rem;
+
+    &.empty {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: .75rem;
+      color: var(--dark-color);
+      border: 1px solid var(--divider-color);
+      border-radius: .25rem;
+    }
+  }
+  .arrows { width: 4rem; }
+  .color {
+    margin-right: .375rem;
+    width: .875rem;
+    height: .875rem;
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .25rem;
+  }
+  .label {
+    flex-grow: 1;
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+</style>

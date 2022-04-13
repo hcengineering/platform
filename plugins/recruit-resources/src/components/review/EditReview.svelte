@@ -16,11 +16,10 @@
 <script lang="ts">
   import calendar from '@anticrm/calendar'
   import contact, { Contact } from '@anticrm/contact'
-  import { OrganizationSelector } from '@anticrm/contact-resources'
   import { getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Grid, Label, showPanel, StylishEdit } from '@anticrm/ui'
+  import { Grid, Label, showPanel, StylishEdit, EditBox } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
@@ -47,58 +46,56 @@
 </script>
 
 {#if object !== undefined}
-  <div class="mb-2">
-    <div class="mb-2">
-      <Grid column={2}>
-        <StylishEdit
-          label={calendar.string.Title}
-          bind:value={object.title}
-          on:change={() => client.update(object, { title: object.title })}
-        />
-        <div class="antiComponentBox over-underline" on:click={() => {
-          if (candidate !== undefined) {
-            showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
-          }
-        }}>
-          <UserBox
-            readonly
-            _class={contact.class.Person}
-            title={recruit.string.Candidate}
-            caption={recruit.string.Candidates}
-            value={object.attachedTo}
-          />
-        </div>
-      </Grid>
-    </div>
-    <div class="mt-2 mb-2">
-      <StyledTextBox
-        label={recruit.string.Description}
-        emphasized
-        content={object.description}
-        on:value={(evt) => {
-          client.update(object, { description: evt.detail })
-        }}
+  <Grid column={2}>
+    <EditBox
+      icon={recruit.icon.Review}
+      label={calendar.string.Title}
+      maxWidth={'20rem'}
+      bind:value={object.title}
+      on:change={() => client.update(object, { title: object.title })}
+    />
+    <div class="clear-mins" on:click={() => {
+      if (candidate !== undefined) {
+        showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+      }
+    }}>
+      <UserBox
+        readonly
+        _class={contact.class.Person}
+        label={recruit.string.Candidate}
+        placeholder={recruit.string.Candidates}
+        value={object.attachedTo}
+        kind={'link'} size={'x-large'} justify={'left'} width={'100%'}
       />
     </div>
-    <div class="flex-row">
-      <div class="mt-4 mb-2">
-        <Label label={calendar.string.Participants} />
-      </div>
-      <UserBoxList
-        _class={contact.class.Employee}
-        items={object.participants}
-        title={calendar.string.Participants}
-        on:open={(evt) => {
-          client.update(object, { $push: { participants: evt.detail._id } })
-        }}
-        on:delete={(evt) => {
-          client.update(object, { $pull: { participants: evt.detail._id } })
-        }}
-        noItems={calendar.string.NoParticipants}
-      />
-    </div>
+  </Grid>
+  <div class="mt-4 mb-4">
+    <StyledTextBox
+      label={recruit.string.Description}
+      emphasized
+      content={object.description}
+      on:value={(evt) => {
+        client.update(object, { description: evt.detail })
+      }}
+    />
   </div>
-
+  <div class="flex-row mb-2">
+    <Label label={calendar.string.Participants} />
+  </div>
+  <div class="mb-4">
+    <UserBoxList
+      _class={contact.class.Employee}
+      items={object.participants}
+      title={calendar.string.Participants}
+      on:open={(evt) => {
+        client.update(object, { $push: { participants: evt.detail._id } })
+      }}
+      on:delete={(evt) => {
+        client.update(object, { $pull: { participants: evt.detail._id } })
+      }}
+      noItems={calendar.string.NoParticipants}
+    />
+  </div>
   <StylishEdit
     label={recruit.string.Verdict}
     bind:value={object.verdict}

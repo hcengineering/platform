@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class,Ref,SortingOrder } from '@anticrm/core'
-  import { createQuery,getClient } from '@anticrm/presentation'
-  import type { DoneState,Kanban,State } from '@anticrm/task'
-  import task,{ calcRank } from '@anticrm/task'
+  import { Class, Ref, SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { DoneState, Kanban, State } from '@anticrm/task'
+  import task, { calcRank } from '@anticrm/task'
   import StatesEditor from '../state/StatesEditor.svelte'
 
   export let kanban: Kanban
@@ -34,7 +34,7 @@
   const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
-  $: statesQ.query(task.class.State, { space: kanban.space }, result => { states = result}, {
+  $: statesQ.query(task.class.State, { space: kanban.space }, result => { states = result }, {
     sort: {
       rank: SortingOrder.Ascending
     }

@@ -13,6 +13,7 @@
     "EditUpdate": "Save...",
     "EditCancel": "Cancel",
     "Comments" : "Comments",
+    "Members": "Members",
     "MentionedIn": "mentioned this ",
     "ContactInfo": "Contact Info",
     "Content": "Content",
@@ -24,12 +25,14 @@
     "Replies": "Replies",
     "LastReply": "Last reply",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",
+    "Topic": "Topic",
     "Thread": "Thread",
     "New": "New",
     "MarkUnread": "Mark unread",
     "GetNewReplies": "Get notified about new replies",
     "TurnOffReplies": "Turn off notifications for replies",
     "PinMessage": "Pin message",
-    "UnpinMessage": "Unpin message"
+    "UnpinMessage": "Unpin message",
+    "DeleteMessage": "Delete message"
   }
 }

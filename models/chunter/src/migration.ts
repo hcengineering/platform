@@ -34,6 +34,7 @@ export async function createGeneral (tx: TxOperations): Promise<void> {
     await tx.createDoc(chunter.class.Channel, core.space.Space, {
       name: 'general',
       description: 'General Channel',
+      topic: 'General Channel',
       private: false,
       archived: false,
       members: []
@@ -49,6 +50,7 @@ export async function createRandom (tx: TxOperations): Promise<void> {
     await tx.createDoc(chunter.class.Channel, core.space.Space, {
       name: 'random',
       description: 'Random Talks',
+      topic: 'Random Talks',
       private: false,
       archived: false,
       members: []

@@ -323,7 +323,7 @@
     width: 0;
     height: 0;
     // background-color: red;
-    background-color: var(--theme-bg-accent-color);
+    background-color: var(--body-color);
     z-index: -1;
   }
   .fly-head {
@@ -340,8 +340,8 @@
     height: 2.5rem;
     font-weight: 500;
     font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
-    background-color: var(--theme-bg-color);
+    color: var(--dark-color);
+    background-color: var(--board-bg-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
     user-select: none;
   }

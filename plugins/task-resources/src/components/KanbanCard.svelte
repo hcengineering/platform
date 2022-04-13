@@ -25,8 +25,6 @@
   import TaskPresenter from './TaskPresenter.svelte'
 
   export let object: WithLookup<Issue>
-  export let draggable: boolean
-  export let dragged: boolean
 
   const showMenu = (ev?: Event): void => {
     showPopup(ContextMenu, { object }, ev ? (ev.target as HTMLElement) : null)
@@ -36,15 +34,13 @@
   $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
-<div class="card-container" {draggable} class:draggable on:dragstart on:dragend class:dragged={dragged}>
+<div class="flex-col pt-2 pb-2 pr-4 pl-4">
   <div class="flex-between mb-2">
     <div class="flex">
       <TaskPresenter value={object} />
       {#if todoItems.length > 0}
         <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
-          <div class="ml-2">
-            ( {doneTasks?.length}/ {todoItems.length} )
-          </div>
+          <div class="ml-2">( {doneTasks?.length}/ {todoItems.length} )</div>
         </Tooltip>
       {/if}
     </div>
@@ -67,35 +63,16 @@
   <div class="flex-between">
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
-        <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
+        <div class="step-lr75">
+          <AttachmentsPresenter value={object} />
+        </div>
       {/if}
       {#if (object.comments ?? 0) > 0}
-        <div class="step-lr75"><CommentsPresenter value={object} /></div>
+        <div class="step-lr75">
+          <CommentsPresenter value={object} />
+        </div>
       {/if}
     </div>
     <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
   </div>
 </div>
-
-<style lang="scss">
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    padding: .5rem 1rem;
-    background-color: var(--board-card-bg-color);
-    border: 1px solid var(--board-card-bg-color);
-    border-radius: .25rem;
-    user-select: none;
-
-    &:hover { 
-      background-color: var(--board-card-bg-hover); 
-    }
-    &.draggable {
-      cursor: grab;
-    }
-    &.dragged {
-      padding: 1rem;
-      background-color: var(--board-bg-color);
-    }
-  }
-</style>

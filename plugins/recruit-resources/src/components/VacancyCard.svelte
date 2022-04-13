@@ -23,6 +23,7 @@
   import { Ref } from '@anticrm/core'
 
   export let vacancy: Vacancy
+  export let disabled: boolean = false
   let company: Organization | undefined
 
   $: getOrganization(vacancy?.company)
@@ -43,14 +44,16 @@
     <VacancyIcon size={'large'} />
   </div>
   {#if vacancy}
-    <div class="name lines-limit-2 over-underline" on:click={() => {
-      closeTooltip()
-      closePopup()
-      closePanel()
-      const loc = getCurrentLocation()
-      loc.path[2] = vacancy._id
-      loc.path.length = 3
-      navigate(loc)
+    <div class="name lines-limit-2" class:over-underline={!disabled} on:click={() => {
+      if (!disabled) {
+        closeTooltip()
+        closePopup()
+        closePanel()
+        const loc = getCurrentLocation()
+        loc.path[2] = vacancy._id
+        loc.path.length = 3
+        navigate(loc)
+      }
     }}>{vacancy.name}</div>
     {#if company}
       <span class="label">{company.name}</span>
@@ -62,9 +65,18 @@
 <style lang="scss">
   .card-container {
     padding: 1rem 1.5rem 1.25rem;
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: .5rem;
+    transition-property: box-shadow, background-color, border-color;
+    transition-timing-function: var(--timing-shadow);
+    transition-duration: .15s;
+
+    &:hover {
+      background-color: var(--board-card-bg-hover);
+      border-color: var(--button-border-color);
+      box-shadow: rgb(0 0 0 / 15%) 0px 4px 8px;
+    }
 
     .logo {
       width: 5rem;

@@ -18,7 +18,7 @@
   import { Ref } from '@anticrm/core'
   import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
+  import { showPopup, Button, SelectPopup } from '@anticrm/ui'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
@@ -35,19 +35,30 @@
 </script>
 
 {#if state}
-  <div class="flex-row-center cursor-pointer" bind:this={container}
-    on:click|preventDefault={() => {
+  <Button
+    width="min-content"
+    size="small"
+    kind="no-border"
+    on:click={(ev) => {
       if (!opened) {
         opened = true
-        showPopup(StatesPopup, { space: state.space }, container, (result) => {
-          if (result && result._id !== value) {
-            value = result._id
-            onChange(value)
-           }
-          opened = false
-        })
+        showPopup(
+          StatesPopup,
+          { space: state.space },
+          ev.currentTarget,
+          (result) => {
+            if (result && result._id !== value) {
+              value = result._id
+              onChange(value)
+            }
+            opened = false
+          }
+        )
       }
-    }} >
-    <StatePresenter value={state} />
-  </div>
+    }}
+  >
+    <svelte:fragment slot="content">
+      <StatePresenter value={state} />
+    </svelte:fragment>
+  </Button>
 {/if}

@@ -78,7 +78,13 @@
 </script>
 
 <PinnedMessages {pinnedIds} />
-<Channel {space} on:openThread={(e) => {openThread(e.detail)}} {pinnedIds} />
+<Channel
+  {space}
+  on:openThread={(e) => {
+    openThread(e.detail)
+  }}
+  {pinnedIds}
+/>
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />
 </div>

@@ -20,7 +20,7 @@
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { IconClose, Label } from '@anticrm/ui'
+  import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
@@ -68,7 +68,15 @@
       {
         _id: id
       },
-      (res) => (message = res[0]),
+      (res) => {
+        message = res[0]
+
+        if (!message) {
+          const loc = getCurrentLocation()
+          loc.path.length = 3
+          navigate(loc)
+        }
+      },
       {
         lookup: {
           _id: { attachments: attachment.class.Attachment },

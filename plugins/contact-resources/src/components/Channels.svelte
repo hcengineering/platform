@@ -45,18 +45,20 @@
     <span class="ml-2"><Label label={presentation.string.AddSocialLinks} /></span>
   </div>
 {:else}
-  <ChannelsView value={channels} size={'small'} {integrations} on:click />
-  <div id="channels-edit" class="ml-1">
-    <CircleButton
-      icon={contact.icon.Edit}
-      size={'small'}
-      selected
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          if (result !== undefined) {
-            dispatch('change', result)
-          }
-        })}
-    />
+  <div class="flex-row-center min-w-min">
+    <ChannelsView value={channels} size={'small'} {integrations} on:click />
+    <div id="channels-edit" class="ml-1">
+      <CircleButton
+        icon={contact.icon.Edit}
+        size={'small'}
+        selected
+        on:click={(ev) =>
+          showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+            if (result !== undefined) {
+              dispatch('change', result)
+            }
+          })}
+      />
+    </div>
   </div>
 {/if}

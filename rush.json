@@ -1257,6 +1257,11 @@
       "packageName": "@anticrm/model-board",
       "projectFolder": "models/board",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/kanban",
+      "projectFolder": "packages/kanban",
+      "shouldPublish": true
     }
   ]
 }

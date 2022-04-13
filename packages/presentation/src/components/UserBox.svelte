@@ -15,32 +15,35 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import type { IntlString } from '@anticrm/platform'
-  import { getClient } from '../utils'
-
-  import { Label, showPopup } from '@anticrm/ui'
-  import Avatar from './Avatar.svelte'
-  import UsersPopup from './UsersPopup.svelte'
-
-  import type { Ref, Class } from '@anticrm/core'
   import contact, { Contact, formatName } from '@anticrm/contact'
+  import type { Class, Ref } from '@anticrm/core'
+  import type { IntlString } from '@anticrm/platform'
+  import type { TooltipAligment } from '@anticrm/ui'
+  import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
+  import { getClient } from '../utils'
+  import IconPerson from './icons/Person.svelte'
+  import UserInfo from './UserInfo.svelte'
+  import UsersPopup from './UsersPopup.svelte'
 
   export let _class: Ref<Class<Contact>>
-  export let title: IntlString
-  export let caption: IntlString
+  export let label: IntlString
+  export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Contact> | null | undefined
   export let show: boolean = false
   export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
+  export let labelDirection: TooltipAligment | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
   let selected: Contact | undefined
-  let btn: HTMLElement
   let container: HTMLElement
   let opened: boolean = false
 
@@ -50,16 +53,7 @@
     selected = await client.findOne(_class, { _id: value })
   }
 
-  $: if (value != null) {
-    updateSelected(value)
-  }
-
-  onMount(() => {
-    if (btn && show) {
-      btn.click()
-      show = false
-    }
-  })
+  $: if (value != null) updateSelected(value)
 
   function getName (obj: Contact): string {
     const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
@@ -67,33 +61,40 @@
   }
 </script>
 
-<div class="antiSelect" bind:this={container}
-  on:click|preventDefault={() => {
-    btn.focus()
-    if (!opened && !readonly) {
-      opened = true
-      showPopup(UsersPopup, { _class, title, caption, allowDeselect, selected: value, titleDeselect }, container, (result) => {
-        if (result === null) {
-          value = null
-          selected = undefined
-          dispatch('change', null)
-        } else if (result !== undefined && result._id !== value) {
-          value = result._id
-          dispatch('change', value)
+<div bind:this={container} class="min-w-0">
+  <Tooltip label={label} fill={width === '100%'} direction={labelDirection}>
+    <Button
+      icon={(size === 'x-large' && selected) ? undefined : IconPerson}
+      width={width ?? 'min-content'}
+      {size} {kind} {justify}
+      on:click={() => {
+        if (!opened && !readonly) {
+          opened = true
+          showPopup(UsersPopup, { _class, allowDeselect, selected: value, titleDeselect, placeholder }, container, (result) => {
+            if (result === null) {
+              value = null
+              selected = undefined
+              dispatch('change', null)
+            } else if (result !== undefined && result._id !== value) {
+              value = result._id
+              dispatch('change', value)
+            }
+            opened = false
+          })
         }
-        opened = false
-      })
-    }
-  }}
->
-  <button class="button circle" class:selected={value} bind:this={btn}>
-    <Avatar avatar={selected ? selected.avatar : undefined} size={'medium'} />
-  </button>
-
-  <div class="group">
-    <span class="label"><Label label={title} /></span>
-    <span class="result" class:selected={value} class:not-selected={!value}>
-      {#if selected}{getName(selected)}{:else}<Label label={presentation.string.NotSelected} />{/if}
-    </span>
-  </div>
+      }}
+    >
+      <span slot="content" style="overflow: hidden">
+        {#if selected}
+          {#if size === 'x-large'}
+            <UserInfo value={selected} size={'medium'} />
+          {:else}
+            {getName(selected)}
+          {/if}
+        {:else}
+          <Label label={label} />
+        {/if}
+      </span>
+    </Button>
+  </Tooltip>
 </div>

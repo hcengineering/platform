@@ -39,7 +39,11 @@ export default plugin(presentationId, {
     Deselect: '' as IntlString,
     AddSocialLinks: '' as IntlString,
     Change: '' as IntlString,
-    Remove: '' as IntlString
+    Remove: '' as IntlString,
+    Members: '' as IntlString,
+    Search: '' as IntlString,
+    Unassigned: '' as IntlString,
+    CreateMore: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

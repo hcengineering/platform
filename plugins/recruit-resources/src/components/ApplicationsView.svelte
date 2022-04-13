@@ -18,10 +18,10 @@
   import attachment from '@anticrm/attachment'
   import chunter from '@anticrm/chunter'
   import contact from '@anticrm/contact'
-  import core,{ Doc,DocumentQuery,FindOptions } from '@anticrm/core'
+  import { Doc, DocumentQuery, FindOptions } from '@anticrm/core'
   import { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
-  import { Button,Icon,IconAdd,Label,Scroller,SearchEdit,showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -60,11 +60,11 @@
   }
 
   function showCreateDialog (ev: Event) {
-    showPopup(CreateApplication, { }, ev.target as HTMLElement)
+    showPopup(CreateApplication, { }, 'top')
   }
 
   function updateResultQuery (search: string): void {
-    resultQuery = (search === '') ? baseQuery : { ...baseQuery,$search: search }
+    resultQuery = (search === '') ? baseQuery : { ...baseQuery, $search: search }
   }
 </script>
 

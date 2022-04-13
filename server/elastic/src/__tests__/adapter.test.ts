@@ -30,7 +30,7 @@ describe('client', () => {
       content0: 'hey there!'
     }
     await adapter.index(doc)
-    const hits = await adapter.search('class1' as Ref<Class<Doc>>, {}, 1)
+    const hits = await adapter.search(['class1' as Ref<Class<Doc>>], {}, 1)
     console.log(hits)
   })
 

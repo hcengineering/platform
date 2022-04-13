@@ -15,10 +15,11 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { AnyComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -50,20 +51,49 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
+export interface CardDate {
+  dueDate?: Timestamp
+  isChecked?: boolean
+  startDate?: Timestamp
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
+  date?: CardDate
   description: Markup
 
-  members: Ref<Employee>[]
+  isArchived?: boolean
 
-  location: string
+  members?: Ref<Employee>[]
+
+  labels?: Ref<CardLabel>[]
+
+  location?: string
 
   coverColor?: number
   coverImage?: string
 
   comments?: number
   attachments?: number
+}
+/**
+ * @public
+ */
+export interface CardAction extends Doc {
+  component?: AnyComponent
+  hint?: IntlString
+  icon: Asset
+  isInline?: boolean
+  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
+  label: IntlString
+  position: number
+  type: string
+  handler?: Resource<(card: Card, client: Client) => void>
+  supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
 /**
@@ -80,7 +110,9 @@ const boards = plugin(boardId, {
   },
   class: {
     Board: '' as Ref<Class<Board>>,
-    Card: '' as Ref<Class<Card>>
+    Card: '' as Ref<Class<Card>>,
+    CardAction: '' as Ref<Class<CardAction>>,
+    CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {
     Board: '' as Asset,
@@ -88,6 +120,56 @@ const boards = plugin(boardId, {
   },
   space: {
     BoardTemplates: '' as Ref<KanbanTemplateSpace>
+  },
+  cardActionType: {
+    Suggested: 'Suggested',
+    Editor: 'Editor',
+    Cover: 'Cover',
+    AddToCard: 'AddToCard',
+    Automation: 'Automation',
+    Action: 'Action'
+  },
+  cardAction: {
+    Cover: '' as Ref<CardAction>,
+    Join: '' as Ref<CardAction>,
+    Members: '' as Ref<CardAction>,
+    Labels: '' as Ref<CardAction>,
+    Checklist: '' as Ref<CardAction>,
+    Dates: '' as Ref<CardAction>,
+    Attachments: '' as Ref<CardAction>,
+    CustomFields: '' as Ref<CardAction>,
+    AddButton: '' as Ref<CardAction>,
+    Move: '' as Ref<CardAction>,
+    Copy: '' as Ref<CardAction>,
+    MakeTemplate: '' as Ref<CardAction>,
+    Watch: '' as Ref<CardAction>,
+    Archive: '' as Ref<CardAction>,
+    SendToBoard: '' as Ref<CardAction>,
+    Delete: '' as Ref<CardAction>
+  },
+  cardActionHandler: {
+    Cover: '' as Resource<(card: Card, client: Client) => void>,
+    Join: '' as Resource<(card: Card, client: Client) => void>,
+    Members: '' as Resource<(card: Card, client: Client) => void>,
+    Labels: '' as Resource<(card: Card, client: Client) => void>,
+    Checklist: '' as Resource<(card: Card, client: Client) => void>,
+    Dates: '' as Resource<(card: Card, client: Client) => void>,
+    Attachments: '' as Resource<(card: Card, client: Client) => void>,
+    CustomFields: '' as Resource<(card: Card, client: Client) => void>,
+    AddButton: '' as Resource<(card: Card, client: Client) => void>,
+    Move: '' as Resource<(card: Card, client: Client) => void>,
+    Copy: '' as Resource<(card: Card, client: Client) => void>,
+    MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
+    Watch: '' as Resource<(card: Card, client: Client) => void>,
+    Archive: '' as Resource<(card: Card, client: Client) => void>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => void>,
+    Delete: '' as Resource<(card: Card, client: Client) => void>
+  },
+  cardActionSupportedHandler: {
+    Join: '' as Resource<(card: Card, client: Client) => boolean>,
+    Archive: '' as Resource<(card: Card, client: Client) => boolean>,
+    SendToBoard: '' as Resource<(card: Card, client: Client) => boolean>,
+    Delete: '' as Resource<(card: Card, client: Client) => boolean>
   }
 })
 

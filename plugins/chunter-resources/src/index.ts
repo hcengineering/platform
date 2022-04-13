@@ -23,10 +23,12 @@ import TxBacklinkReference from './components/activity/TxBacklinkReference.svelt
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
+import ChannelHeader from './components/ChannelHeader.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
+import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 
 export { CommentsPresenter }
@@ -82,10 +84,12 @@ export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
     CreateChannel,
+    ChannelHeader,
     ChannelView,
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    EditChannel,
     ThreadView
   },
   activity: {

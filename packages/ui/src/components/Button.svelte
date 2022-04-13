@@ -21,8 +21,10 @@
   import { onMount } from 'svelte'
 
   export let label: IntlString | undefined = undefined
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous' = 'secondary'
-  export let size: 'small' | 'medium' | 'large' | 'large' = 'medium'
+  export let labelParams: Record<string, any> = {}
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous' = 'secondary'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
+  export let shape: 'circle' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -30,9 +32,12 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
+  export let title: string | undefined = undefined
 
   export let input: HTMLButtonElement | undefined = undefined
   
+  $: iconOnly = label === undefined && $$slots.content === undefined
+
   onMount(() => {
     if (focus && input) {
       input.focus()
@@ -44,15 +49,19 @@
 <button
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
-  class:only-icon={label === undefined}
+  class:only-icon={iconOnly}
+  class:border-radius-1={shape !== 'circle'}
+  class:border-radius-4={shape === 'circle'}
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
+  {title}
+  type={kind === 'primary' ? 'submit' : 'button'}
   on:click
 >
   {#if icon && !loading}
-    <div class="btn-icon"
-      class:mr-1={label && kind === 'no-border'}
-      class:mr-2={label && kind !== 'no-border'}
+    <div class="btn-icon pointer-events-none"
+      class:mr-1={!iconOnly && kind === 'no-border'}
+      class:mr-2={!iconOnly && kind !== 'no-border'}
       class:resetIconSize
     >
       <Icon {icon} size={'small'}/>
@@ -61,9 +70,13 @@
   {#if loading}
     <Spinner />
   {:else}
-    {#if label}
-      <Label {label} />
-    {/if}
+    <span class="overflow-label pointer-events-none">
+      {#if label}
+        <Label {label} params={labelParams} />
+      {:else if $$slots.content}
+        <slot name="content" />
+      {/if}
+    </span>
   {/if}
 </button>
 
@@ -97,7 +110,6 @@
     color: var(--accent-color);
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: .25rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: .15s;
 
@@ -107,7 +119,7 @@
       pointer-events: none;
     }
     &:hover {
-      color: var(--caption-color);
+      color: var(--accent-color);
       transition-duration: 0;
       
       .btn-icon { color: var(--caption-color); }
@@ -137,17 +149,18 @@
     }
     &.no-border {
       font-weight: 400;
-      color: var(--content-color);
+      color: var(--accent-color);
       background-color: var(--button-bg-color);
       box-shadow: var(--button-shadow);
 
       &:hover {
-        color: var(--accent-color);
+        color: var(--caption-color);
         background-color: var(--button-bg-hover);
 
-        .btn-icon { color: var(--accent-color); }
+        .btn-icon { color: var(--caption-color); }
       }
       &:disabled {
+        color: var(--content-color);
         background-color: #30323655;
         cursor: default;
         &:hover {
@@ -157,6 +170,25 @@
       }
     }
     &.transparent:hover { background-color: var(--button-bg-hover); }
+    &.link {
+      padding: 0 .875rem;
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
+        .btn-icon { color: var(--content-color); }
+      }
+    }
+    &.link-bordered {
+      padding: 0 .375rem;
+      color: var(--acctent-color);
+      border-color: var(--button-border-color);
+      &:hover {
+        color: var(--acctent-color);
+        border-color: var(--button-border-hover);
+        .btn-icon { color: var(--accent-color); }
+      }
+    }
     &.primary {
       padding: 0 1rem;
       color: var(--white-color);

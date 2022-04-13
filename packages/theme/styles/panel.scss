@@ -18,9 +18,10 @@
   overflow: hidden;
   min-width: 400px;
 
-  background: var(--popup-bg-color);
+  background: var(--body-accent);
   border-radius: .5rem;
   flex-direction: row;
+  box-shadow: var(--popup-shadow);
   // left: 1rem;
 
   .ac-header.divide { border-bottom: 1px solid var(--theme-card-divider); }
@@ -38,7 +39,7 @@
   .ad-tools {
     position: absolute;
     display: flex;
-    top: 1rem;
+    top: 1.375rem;
     right: 2rem;
     &.grow-reverse {
       left: 0px;

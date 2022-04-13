@@ -15,18 +15,58 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { getClient } from '@anticrm/presentation'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { Class, Ref } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { State } from '@anticrm/task'
+  import task from '@anticrm/task'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { EditBox, Icon, Label, Panel, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+
   import board from '../plugin'
+  import { getCardActions } from '../utils/CardActionUtils'
+  import { updateCard } from '../utils/CardUtils'
+  import CardActions from './editor/CardActions.svelte'
+  import CardActivity from './editor/CardActivity.svelte'
+  import CardDetails from './editor/CardDetails.svelte'
 
-  export let object: Card
-
+  export let _id: Ref<Card>
+  export let _class: Ref<Class<Card>>
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const query = createQuery()
 
-  function change (field: string, value: any) {
-    client.updateDoc(object._class, object.space, object._id, { [field]: value })
+  let object: Card | undefined
+  let state: State | undefined
+  let handleMove: () => void
+
+  $: _id &&
+    _class &&
+    query.query(_class, { _id }, async (result) => {
+      object = result[0]
+    })
+
+  $: object &&
+    query.query(task.class.State, { _id: object.state }, async (result) => {
+      state = result[0]
+    })
+
+  getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
+    if (result[0]?.handler) {
+      const handler = await getResource(result[0].handler)
+      handleMove = () => {
+        if (object) {
+          handler(object, client)
+        }
+      }
+    }
+  })
+
+  function change(field: string, value: any) {
+    if (object) {
+      updateCard(client, object, field, value)
+    }
   }
 
   onMount(() => {
@@ -35,15 +75,79 @@
 </script>
 
 {#if object !== undefined}
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={board.string.CardName}
-      bind:value={object.title}
-      icon={board.icon.Card}
-      placeholder={board.string.CardPlaceholder}
-      maxWidth="39rem"
-      focus
-      on:change={(evt) => change('title', object.title)}
-    />
-  </Grid>
+  <Panel showHeader={false} on:close={() => dispatch('close')}>
+    <Scroller>
+      <div class="flex-col-stretch h-full w-165 p-6">
+        <!-- TODO cover -->
+        <div class="flex-row-streach">
+          <div class="w-9">
+            <Icon icon={board.icon.Card} size="large" />
+          </div>
+          <div class="fs-title text-lg">
+            <EditBox
+              bind:value={object.title}
+              maxWidth="39rem"
+              focus
+              on:change={() => change('title', object?.title)}
+            />
+          </div>
+        </div>
+        <div class="flex-row-streach">
+          <div class="w-9" />
+          <div>
+            <Label label={board.string.InList} />
+            <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
+          </div>
+        </div>
+        <div class="flex-row-streach">
+          <div class="flex-grow mr-4">
+            <div class="flex-row-streach">
+              <div class="w-9" />
+              <CardDetails value={object} />
+            </div>
+            <div class="flex-row-streach mt-4 mb-2">
+              <div class="w-9">
+                <Icon icon={board.icon.Card} size="large" />
+              </div>
+              <div class="fs-title">
+                <Label label={board.string.Description} />
+              </div>
+            </div>
+            <div class="flex-row-streach">
+              <div class="w-9" />
+              <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
+                <StyledTextBox
+                  alwaysEdit={true}
+                  showButtons={false}
+                  placeholder={board.string.DescriptionPlaceholder}
+                  bind:content={object.description}
+                  on:value={(evt) => change('description', evt.detail)}
+                />
+              </div>
+            </div>
+            <!-- TODO attachments-->
+            <!-- TODO checklists -->
+            <CardActivity value={object} />
+          </div>
+
+          <CardActions value={object} />
+        </div>
+      </div>
+    </Scroller>
+  </Panel>
 {/if}
+
+<style lang="scss">
+  .close-button {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+  }
+  .state-name {
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--caption-color);
+    }
+  }
+</style>

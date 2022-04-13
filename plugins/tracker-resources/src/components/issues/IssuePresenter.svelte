@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -26,17 +25,13 @@
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-  function show (evt: Event) {
+  const handleIssueEditorOpened = () => {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>
 
 {#if value && shortLabel}
-  <div
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    on:click={show}
-  >
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />
     </div>

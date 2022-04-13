@@ -107,16 +107,6 @@
     })
   }
 
-  function findDayEvents (events: Event[], date: Date): Event[] {
-    return events.filter((it) => {
-      const d1 = new Date(it.date)
-      const d2 = new Date(it.dueDate ?? it.date)
-      const inDays = areDatesLess(d1, date) && areDatesLess(date, d2)
-
-      return inDays && !isSameDay(d1, date) && !isSameDay(d2, date)
-    })
-  }
-
   interface ShiftType {
     yearShift: number
     monthShift: number
@@ -206,6 +196,7 @@
       }
     }
   }
+  /* eslint-disable no-undef */
 </script>
 
 <div class="fs-title ml-10 mb-2 flex-row-center">

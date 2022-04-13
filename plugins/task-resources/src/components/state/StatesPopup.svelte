@@ -38,20 +38,17 @@
   )
 </script>
 
-<div class="antiPopup">
-  <div class="ap-space" />
-  {#each states as state}
-    <button
-      class="ap-menuItem ap-woScroll flex-row-center"
-      on:click={() => {
-        dispatch('close', state)
-      }}
-    >
-      <div class="color" style="background-color: {getPlatformColor(state.color)}" />
-      {state.title}
-    </button>
-  {/each}
-  <div class="ap-space" />
+<div class="selectPopup">
+  <div class="scroll">
+    <div class="box">
+      {#each states as state}
+        <button class="menu-item" on:click={() => { dispatch('close', state) }}>
+          <div class="color" style="background-color: {getPlatformColor(state.color)}" />
+          <span class="label">{state.title}</span>
+        </button>
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style lang="scss">

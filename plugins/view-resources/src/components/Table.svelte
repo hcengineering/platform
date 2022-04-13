@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
+  import { SortingOrder, getObjectValue } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Component, CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
@@ -23,7 +23,7 @@
   import MoreV from './icons/MoreV.svelte'
   import Menu from './Menu.svelte'
   import notification from '@anticrm/notification'
-import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -48,7 +48,8 @@ import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
-  $: sortingFunction = (config.find(it => (typeof it !== 'string') && it.sortingKey === sortKey) as BuildModelKey)?.sortingFunction
+  $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
+    ?.sortingFunction
 
   let qindex = 0
   async function update (
@@ -80,19 +81,6 @@ import { createEventDispatcher } from 'svelte'
   }
   $: update(_class, query, sortKey, sortOrder, options)
 
-  function getValue (doc: Doc, key: string): any {
-    if (key.length === 0) {
-      return doc
-    }
-    const path = key.split('.')
-    const len = path.length
-    let obj = doc as any
-    for (let i = 0; i < len; i++) {
-      obj = obj?.[path[i]]
-    }
-    return obj ?? ''
-  }
-
   const client = getClient()
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
@@ -116,11 +104,9 @@ import { createEventDispatcher } from 'svelte'
 
   let checked: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
-  function check (id: Ref<Doc>, e: Event) {
+  function check (id: Ref<Doc>, event: CustomEvent<boolean>) {
     if (!enableChecking) return
-    const target = e.target as HTMLInputElement
-    const value = target.checked
-    if (value) {
+    if (event.detail) {
       checked.add(id)
     } else {
       checked.delete(id)
@@ -151,8 +137,8 @@ import { createEventDispatcher } from 'svelte'
                 <CheckBox
                   symbol={'minus'}
                   checked={objects?.length === checked.size && objects?.length > 0}
-                  on:change={(e) => {
-                    objects.map((o) => check(o._id, e))
+                  on:value={(event) => {
+                    objects.map((object) => check(object._id, event))
                   }}
                 />
               </div>
@@ -195,20 +181,23 @@ import { createEventDispatcher } from 'svelte'
                           <div class="antiTable-cells__checkCell">
                             <CheckBox
                               checked={checked.has(object._id)}
-                              on:change={(e) => {
-                                check(object._id, e)
+                              on:value={(event) => {
+                                check(object._id, event)
                               }}
                             />
                           </div>
                         {/if}
-                        <Component is={notification.component.NotificationPresenter} props={{ value: object, kind: enableChecking ? 'table' : 'block' }} />
+                        <Component
+                          is={notification.component.NotificationPresenter}
+                          props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
+                        />
                       </div>
                     {:else}
                       <div class="antiTable-cells__checkCell">
                         <CheckBox
                           checked={checked.has(object._id)}
-                          on:change={(e) => {
-                            check(object._id, e)
+                          on:value={(event) => {
+                            check(object._id, event)
                           }}
                         />
                       </div>
@@ -219,10 +208,14 @@ import { createEventDispatcher } from 'svelte'
                   <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
-                      value={getValue(object, attribute.key)}
+                      value={getObjectValue(attribute.key, object) ?? ''}
                       {...attribute.props}
                     />
-                    <div id='context-menu' class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, object, row)}>
+                    <div
+                      id="context-menu"
+                      class="antiTable-cells__firstCell-menuRow"
+                      on:click={(ev) => showMenu(ev, object, row)}
+                    >
                       <MoreV size={'small'} />
                     </div>
                   </div>
@@ -231,7 +224,7 @@ import { createEventDispatcher } from 'svelte'
                 <td>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getValue(object, attribute.key)}
+                    value={getObjectValue(attribute.key, object) ?? ''}
                     {...attribute.props}
                   />
                 </td>
@@ -249,13 +242,11 @@ import { createEventDispatcher } from 'svelte'
                 {#if enableChecking}
                   <td>
                     <div class="antiTable-cells__checkCell">
-                      <CheckBox
-                        checked={false}
-                      />
+                      <CheckBox checked={false} />
                     </div>
                   </td>
                 {/if}
-                <td>
+                <td id={`loader-${i}-${attribute.key}`}>
                   <Spinner size="small" />
                 </td>
               {/if}

@@ -20,16 +20,17 @@ import type { Ref, Space } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
+import { ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(boardId, board, {
   component: {
     CreateBoard: '' as AnyComponent,
     CreateCard: '' as AnyComponent,
-    EditCard: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
-    Cards: '' as AnyComponent
+    Cards: '' as AnyComponent,
+    KanbanView: '' as AnyComponent
   },
   space: {
     DefaultBoard: '' as Ref<Space>
@@ -39,5 +40,8 @@ export default mergeIds(boardId, board, {
   },
   ids: {
     Sequence: '' as Ref<Sequence>
+  },
+  viewlet: {
+    Kanban: '' as Ref<ViewletDescriptor>
   }
 })

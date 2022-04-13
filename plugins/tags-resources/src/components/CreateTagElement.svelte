@@ -16,7 +16,7 @@
   import { Class, Data, Doc, generateId, Ref } from '@anticrm/core'
   import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
-  import { DropdownLabels, EditBox, getColorNumberByText, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { DropdownLabels, EditBox, getColorNumberByText, getPlatformColor, showPopup, Button, IconFolder } from '@anticrm/ui'
   import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -88,58 +88,65 @@
   okAction={createTagElenent}
   canSave={title.length > 0}
   space={tags.space.Tags}
+  createMore={false}
   on:close={() => {
     dispatch('close')
   }}
 >
-  <div class="flex-row-center">
-    <div class="flex-col">
-      <div class="fs-title flex-row-center">
-        <div
-          class="color"
-          style={getTagStyle(getPlatformColor(color))}
-          on:click={(evt) => {
-            showPopup(ColorsPopup, {}, evt.target, (col) => {
-              if (col != null) {
-                color = col
-                colorSet = true
-              }
-            })
-          }}
-        />
+  <div class="flex-row-top clear-mins">
+    <div class="mr-3">
+      <Button
+        size={'medium'}
+        kind={'link-bordered'}
+        on:click={(evt) => {
+          showPopup(ColorsPopup, {}, evt.target, (col) => {
+            if (col != null) {
+              color = col
+              colorSet = true
+            }
+          })
+        }}
+      >
+        <svelte:fragment slot="content">
+          <div class="color" style={getTagStyle(getPlatformColor(color))} />
+        </svelte:fragment>
+      </Button>
+    </div>
+    <div class="flex-col mt-0-5">
+      <EditBox
+        bind:value={title}
+        placeholder={tags.string.TagName}
+        placeholderParam={{ word: keyTitle }}
+        maxWidth={'35rem'} kind={'large-style'} focus
+      />
+      <div class="mt-2">
         <EditBox
-          focus
-          placeholder={tags.string.TagName}
-          placeholderParam={{ word: keyTitle }}
-          maxWidth={'16rem'}
-          bind:value={title}
-        />
-      </div>
-
-      <div class="text-sm mt-4">
-        <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth={'17.75rem'} bind:value={description} />
-      </div>
-
-      <div class="text-sm mt-4">
-        <DropdownLabels
-          title={tags.string.CategoryLabel}
-          bind:selected={category}
-          items={categoryItems}
-          on:selected={() => {
-            categoryWasSet = true
-          }}
+          bind:value={description}
+          placeholder={tags.string.TagDescriptionPlaceholder}
+          maxWidth={'35rem'} kind={'small-style'}
         />
       </div>
     </div>
   </div>
+  <svelte:fragment slot="pool">
+    <div class="ml-12">
+      <DropdownLabels
+        icon={IconFolder}
+        label={tags.string.CategoryLabel}
+        bind:selected={category}
+        items={categoryItems}
+        on:selected={() => {
+          categoryWasSet = true
+        }}
+      />
+    </div>
+  </svelte:fragment>
 </Card>
 
 <style lang="scss">
   .color {
-    margin-right: 0.75rem;
     width: 1rem;
     height: 1rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
+    border-radius: .25rem;
   }
 </style>

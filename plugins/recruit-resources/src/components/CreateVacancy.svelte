@@ -16,9 +16,9 @@
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
   import core, { Ref } from '@anticrm/core'
-  import { getClient,SpaceCreateCard } from '@anticrm/presentation'
-  import task, { createKanban,KanbanTemplate } from '@anticrm/task'
-  import { Component,EditBox,Grid } from '@anticrm/ui'
+  import { getClient, Card } from '@anticrm/presentation'
+  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import { Component, EditBox, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { OrganizationSelector } from '@anticrm/contact-resources'
@@ -55,21 +55,32 @@
   }
 </script>
 
-<SpaceCreateCard 
+<Card 
   label={recruit.string.CreateVacancy} 
   okAction={createVacancy}
   canSave={!!name}
   on:close={() => { dispatch('close') }}
 >
-  <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.VacancyName} bind:value={name} icon={Vacancy} placeholder={recruit.string.VacancyPlaceholder} maxWidth={'16rem'} focus/>
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} />
-
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <EditBox
+      bind:value={name}
+      placeholder={recruit.string.VacancyPlaceholder}
+      maxWidth={'37.5rem'} kind={'large-style'} focus
+    />
+  </div>
+  <svelte:fragment slot="pool">
+    <OrganizationSelector
+      bind:value={company} label={recruit.string.Company}
+      kind={'no-border'} size={'small'}
+    />
     <Component is={task.component.KanbanTemplateSelector} props={{
       folders: [recruit.space.VacancyTemplates],
       template: templateId
     }} on:change={(evt) => {
       templateId = evt.detail
     }}/>
-  </Grid>
-</SpaceCreateCard>
+  </svelte:fragment>
+</Card>
