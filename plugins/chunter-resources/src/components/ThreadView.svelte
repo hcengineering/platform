@@ -151,6 +151,18 @@
     }
   }
   let newMessagesPos: number = -1
+
+  const pinnedQuery = createQuery()
+  let pinnedIds: Ref<ChunterMessage>[] = []
+  
+    pinnedQuery.query(
+    chunter.class.Channel,
+    { _id: currentSpace },
+    (res) => {
+      pinnedIds = res[0]?.pinned ?? []
+    },
+    { limit: 1 }
+  )
 </script>
 
 <div class="header">
@@ -177,6 +189,7 @@
       <ThreadComment
         message={comment}
         {employees}
+        isPinned={pinnedIds.includes(comment._id)}
       />
     {/each}
   {/if}

@@ -37,6 +37,7 @@
   export let message: WithLookup<Message>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
+  export let isPinned: boolean = false
 
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -59,18 +60,7 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
-  const pinnedQuery = createQuery()
-  let pinned = false
-
-  pinnedQuery.query(
-    chunter.class.Channel,
-    { _id: message.space },
-    (res) => {
-      pinned = !!res[0]?.pinned?.includes(message._id)
-    },
-    { limit: 1 }
-  )
-  $: pinActions = pinned
+  $: pinActions = isPinned
     ? ({
         label: chunter.string.UnpinMessage,
         action: chunter.actionImpl.UnpinMessage

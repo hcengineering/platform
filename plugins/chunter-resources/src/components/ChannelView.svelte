@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { Message } from '@anticrm/chunter'
+  import { ChunterMessage, Message } from '@anticrm/chunter'
   import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
@@ -64,10 +64,21 @@
     loc.path[3] = _id
     navigate(loc)
   }
+
+  const pinnedQuery = createQuery()
+  let pinnedIds: Ref<ChunterMessage>[] = []
+  pinnedQuery.query(
+    chunter.class.Channel,
+    { _id: space },
+    (res) => {
+      pinnedIds = res[0]?.pinned ?? []
+    },
+    { limit: 1 }
+  )
 </script>
 
 <PinnedMessages {space} />
-<Channel {space} on:openThread={(e) => {openThread(e.detail)}} />
+<Channel {space} on:openThread={(e) => {openThread(e.detail)}} {pinnedIds} />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />
 </div>
