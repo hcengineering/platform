@@ -20,11 +20,12 @@
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
-  import { Avatar, createQuery, getClient, MessageViewer } from '@anticrm/presentation'
+  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
   import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { UnpinMessage } from '../index';
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -72,7 +73,13 @@
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => await client.remove(message)
+    action: async () => {
+      (await client.findAll(chunter.class.ThreadMessage, {attachedTo: message._id})).forEach(c => {
+        UnpinMessage(c)
+      })
+      UnpinMessage(message)
+      await client.remove(message)
+    }
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
