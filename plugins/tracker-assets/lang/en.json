@@ -28,6 +28,7 @@
     "Canceled": "Canceled",
     "SetPriority": "Set priority\u2026",
     "SetStatus": "Set status\u2026",
+    "SelectIssue": "Select issue",
     "Priority": "Priority",
     "NoPriority": "No priority",
     "Urgent": "Urgent",
@@ -52,7 +53,7 @@
     "Project": "Project",
     "Space": "",
     "DueDate": "Set due date\u2026",
-    "ModificationDate": "Last Modified: {value}",
+    "ModificationDate": "Updated {value}",
     "Team": "",
     "Issue": "",
     "Document": "",
@@ -61,7 +62,11 @@
     "Rank": "",
     "IssueTitlePlaceholder": "Issue title",
     "IssueDescriptionPlaceholder": "Add description",
-    "AddIssueTooltip": "Add issue..."
+    "AddIssueTooltip": "Add issue...",
+    "DueDatePopupTitle": "Due on {value}",
+    "DueDatePopupOverdueTitle": "Was due on {value}",
+    "DueDatePopupDescription": "{value, plural, =0 {Today} =1 {Tomorrow} other {# days remaining}}",
+    "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}"
   },
   "status": {}
 }

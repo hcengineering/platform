@@ -40,6 +40,7 @@ export default mergeIds(trackerId, tracker, {
     AddIssue: '' as IntlString,
     NewIssue: '' as IntlString,
     Team: '' as IntlString,
+    SelectIssue: '' as IntlString,
     SelectTeam: '' as IntlString,
     SaveIssue: '' as IntlString,
     CreateMore: '' as IntlString,
@@ -77,6 +78,10 @@ export default mergeIds(trackerId, tracker, {
     DocumentIcon: '' as IntlString,
     DocumentColor: '' as IntlString,
     Rank: '' as IntlString,
+    DueDatePopupTitle: '' as IntlString,
+    DueDatePopupOverdueTitle: '' as IntlString,
+    DueDatePopupDescription: '' as IntlString,
+    DueDatePopupOverdueDescription: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -99,6 +104,7 @@ export default mergeIds(trackerId, tracker, {
     PriorityPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
+    DueDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent
