@@ -56,7 +56,7 @@
         <Label label={board.string.DropFileToUpload} />
       </div>
       <div
-        style:opacity={0.3}
+        style:opacity="0.3"
         style:pointer-events="none"
         class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title" />
     {/if}

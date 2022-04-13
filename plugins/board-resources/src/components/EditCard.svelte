@@ -139,11 +139,6 @@
 {/if}
 
 <style lang="scss">
-  .close-button {
-    position: absolute;
-    top: 0.7rem;
-    right: 0.7rem;
-  }
   .state-name {
     text-decoration: underline;
 
