@@ -58,7 +58,7 @@ test.describe('recruit tests', () => {
     // Click on Add button
     await page.click('.applications-container .flex-row-center .flex-center')
 
-    await page.click('span:has-text("Select vacancy")')
+    await page.click('button:has-text("Vacancy")')
 
     await page.click(`button:has-text("${vacancyId}")`)
 
