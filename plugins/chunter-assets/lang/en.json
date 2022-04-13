@@ -31,6 +31,7 @@
     "MarkUnread": "Mark unread",
     "GetNewReplies": "Get notified about new replies",
     "TurnOffReplies": "Turn off notifications for replies",
+    "EditMessage": "Edit message",
     "DeleteMessage": "Delete message"
   }
 }

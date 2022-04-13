@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
-  import { AttachmentList } from '@anticrm/attachment-resources'
+  import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
@@ -53,6 +53,13 @@
         action: chunter.actionImpl.SubscribeComment
       } as Action)
 
+  $: isEditing = false;
+
+  const editAction = {
+    label: chunter.string.EditMessage,
+    action: () => isEditing = true
+  }
+
   const deleteAction = {
     label: chunter.string.DeleteMessage,
     action: async () => await client.removeDoc(message._class, message.space, message._id)
@@ -73,11 +80,26 @@
               await impl(message)
             }
           })),
-          ...(getCurrentAccount()._id === message.createBy ? [deleteAction] : [])
+          ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },
       ev.target as HTMLElement
     )
+  }
+
+  async function onMessageEdit (event: CustomEvent) {
+    const { message: newContent, attachments: newAttachments } = event.detail
+
+    if (newContent !== message.content || newAttachments !== attachments) {
+      await client.update(
+        message,
+        {
+          content: newContent,
+          attachments: newAttachments
+        }
+      )
+    }
+    isEditing = false
   }
 
   $: employee = getEmployee(message)
@@ -97,8 +119,18 @@
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
     </div>
-    <div class="text"><MessageViewer message={message.content} /></div>
-    {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {#if isEditing}
+      <AttachmentRefInput 
+        space={message.space} 
+        _class={chunter.class.Comment} 
+        objectId={message._id} 
+        content={message.content} 
+        on:message={onMessageEdit} 
+      />
+    {:else}
+      <div class="text"><MessageViewer message={message.content} /></div>
+      {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {/if}
     {#if reactions}
       <div class="footer">
         <div><Reactions /></div>
