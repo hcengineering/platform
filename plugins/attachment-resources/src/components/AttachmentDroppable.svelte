@@ -17,25 +17,28 @@
   import { Class, Doc, Ref, Space } from '@anticrm/core'
 
   import { getClient } from '@anticrm/presentation'
-  import { createAttachment } from '../utils'
+  import { createAttachments } from '../utils'
 
   export let loading: number = 0
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let canDrop: ((e: DragEvent) => boolean) | undefined = undefined
-  
+
   export let dragover = false
 
   const client = getClient()
-  
-  function fileDrop(e: DragEvent) {
+
+  async function fileDrop(e: DragEvent) {
     dragover = false
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) createAttachment(client, file, loading, { objectClass, objectId, space })
+
+    loading++
+    try {
+      await createAttachments(client, list, {objectClass, objectId, space})
+    } finally {
+      loading--
     }
   }
 
