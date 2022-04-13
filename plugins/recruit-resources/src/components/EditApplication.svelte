@@ -64,7 +64,8 @@
 <style lang="scss">
   .card {
     align-self: stretch;
-    width: calc(50% - 3.5rem);
+    width: calc(50% - 3rem);
+    min-height: 16rem;
   }
   .arrows { width: 4rem; }
 </style>

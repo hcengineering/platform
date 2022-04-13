@@ -43,7 +43,7 @@
   }
 
   function showCreateDialog (ev: Event) {
-    showPopup(CreateTagElement, { targetClass, keyTitle }, ev.target as HTMLElement)
+    showPopup(CreateTagElement, { targetClass, keyTitle }, 'top')
   }
   const opt: FindOptions<TagElement> = {
     lookup: {

@@ -18,13 +18,14 @@
 
   import { getClient, Card } from '@anticrm/presentation'
 
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, IconAdd } from '@anticrm/ui'
 
   import { Channel, Organization } from '@anticrm/contact'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
   import { AttachedData, generateId } from '@anticrm/core'
   import Channels from './Channels.svelte'
+  import ChannelsView from './ChannelsView.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
@@ -63,31 +64,28 @@
     dispatch('close')
   }}
 >
-  <div class="flex-row-center">
-    <div class="mr-4 flex-center logo">
-      <Company size={'large'} />
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button icon={Company} size={'medium'} kind={'link-bordered'} disabled />
     </div>
-    <div class="flex-col">
-      <div class="fs-title">
-        <EditBox placeholder={contact.string.OrganizationNamePlaceholder} maxWidth="11rem" bind:value={object.name} focus />
-      </div>
-    </div>
+    <EditBox
+      placeholder={contact.string.OrganizationNamePlaceholder}
+      bind:value={object.name}
+      maxWidth={'37.5rem'} kind={'large-style'} focus
+    />
   </div>
-
-  <div class="flex-row-center channels">
-    <Channels bind:channels={channels} on:change={(e) => { channels = e.detail }} />
-  </div>
+  {#if channels.length > 0}
+    <ChannelsView value={channels} size={'small'} on:click />
+  {/if}
+  <svelte:fragment slot="footer">
+    <Button
+      icon={contact.icon.SocialEdit}
+      kind={'transparent'}
+      on:click={(ev) =>
+        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+          if (result !== undefined) channels = result
+        })
+      }
+    />
+  </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .logo {
-    width: 5rem;
-    height: 5rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
-    border-radius: 50%;
-  }
-  .channels {
-    margin-top: 1.25rem;
-  }
-</style>

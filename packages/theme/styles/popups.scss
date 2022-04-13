@@ -70,6 +70,13 @@
       width: 1rem;
       height: 1rem;
     }
+    .color {
+      margin-right: .75rem;
+      width: .875rem;
+      height: .875rem;
+      border: 1px solid rgba(0, 0, 0, .1);
+      border-radius: .25rem;
+    }
     .label {
       flex-grow: 1;
       min-width: 0;

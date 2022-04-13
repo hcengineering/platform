@@ -21,9 +21,8 @@
   import Icon from './Icon.svelte'
   import { showPopup, Button, Tooltip, DropdownPopup } from '..'
   import type { AnySvelteComponent, ListItem, TooltipAligment } from '../types'
-  import Add from './icons/Add.svelte'
 
-  export let icon: Asset | AnySvelteComponent = Add
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString
   export let placeholder: IntlString
   export let items: ListItem[] = []

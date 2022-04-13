@@ -60,7 +60,7 @@
   }
 
   function showCreateDialog (ev: Event) {
-    showPopup(CreateApplication, { }, ev.target as HTMLElement)
+    showPopup(CreateApplication, { }, 'top')
   }
 
   function updateResultQuery (search: string): void {
