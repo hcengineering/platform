@@ -31,12 +31,19 @@
 
   async function fileDrop(e: DragEvent) {
     dragover = false
+
+    if (canDrop && !canDrop(e)) {
+      return
+    }
+
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
 
     loading++
     try {
       await createAttachments(client, list, { objectClass, objectId, space })
+      e.preventDefault()
+      e.stopPropagation()
     } finally {
       loading--
     }
@@ -44,15 +51,16 @@
 </script>
 
 <div
-  on:dragover|preventDefault={(e) => {
+  on:dragover={(e) => {
     if (canDrop?.(e) ?? true) {
       dragover = true
+      e.preventDefault()
     }
   }}
   on:dragleave={() => {
     dragover = false
   }}
-  on:drop|preventDefault|stopPropagation={fileDrop}
+  on:drop={fileDrop}
 >
   <slot />
 </div>
