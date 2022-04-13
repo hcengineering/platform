@@ -41,4 +41,4 @@
   }
 </script>
 
-<DropdownLabels {items} bind:selected={selectedItem} label={plugin.string.States} />
+<DropdownLabels {items} icon={task.icon.ManageStatuses} bind:selected={selectedItem} label={plugin.string.States} />

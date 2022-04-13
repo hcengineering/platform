@@ -124,6 +124,8 @@
 <style lang="scss">
   .channels {
     display: grid;
+    width: min-content;
+    
     &.one { display: block; }
     &.short {
       grid-template-columns: repeat(4, min-content);

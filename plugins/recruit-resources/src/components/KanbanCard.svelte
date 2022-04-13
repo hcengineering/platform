@@ -36,43 +36,47 @@
   $: doneTasks = todoItems.filter((it) => it.done)
 </script>
 
-<div class="flex-between mb-3">
-  <div class="flex-row-center">
-    <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
-    <div class="flex-grow flex-col min-w-0 ml-2">
-      <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
-        {formatName(object.$lookup?.attachedTo?.name ?? '')}
+<div class="flex-col pt-2 pb-2 pr-4 pl-4">
+  <div class="flex-between mb-3">
+    <div class="flex-row-center">
+      <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
+      <div class="flex-grow flex-col min-w-0 ml-2">
+        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
+          {formatName(object.$lookup?.attachedTo?.name ?? '')}
+        </div>
+        <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
       </div>
-      <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
     </div>
-  </div>
-  <div class="tool mr-1 flex-row-center">
-    {#if !dragged}
-      <div class="mr-2">
-        <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-      </div>
-      <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
-    {/if}
-  </div>
-</div>
-<div class="flex-between">
-  <div class="flex-row-center">
-    <div class="sm-tool-icon step-lr75">
-      <ApplicationPresenter value={object} />
-      {#if todoItems.length > 0}
-        <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
-          <div class="ml-2">
-            ( {doneTasks?.length}/ {todoItems.length} )
-          </div>
-        </Tooltip>
+    <div class="tool mr-1 flex-row-center">
+      {#if !dragged}
+        <div class="mr-2">
+          <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+        </div>
+        <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
       {/if}
     </div>
-    {#if (object.attachments ?? 0) > 0}
-      <div class="step-lr75"><AttachmentsPresenter value={object} /></div>
-    {/if}
-    {#if (object.comments ?? 0) > 0}
-      <div class="step-lr75"><CommentsPresenter value={object} /></div>
-    {/if}
   </div>
-  <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
+  <div class="flex-between">
+    <div class="flex-row-center">
+      <div class="sm-tool-icon step-lr75">
+        <ApplicationPresenter value={object} />
+        {#if todoItems.length > 0}
+          <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
+            <div class="ml-2">( {doneTasks?.length}/ {todoItems.length} )</div>
+          </Tooltip>
+        {/if}
+      </div>
+      {#if (object.attachments ?? 0) > 0}
+        <div class="step-lr75">
+          <AttachmentsPresenter value={object} />
+        </div>
+      {/if}
+      {#if (object.comments ?? 0) > 0}
+        <div class="step-lr75">
+          <CommentsPresenter value={object} />
+        </div>
+      {/if}
+    </div>
+    <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
+  </div>
 </div>

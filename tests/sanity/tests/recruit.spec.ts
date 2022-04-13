@@ -58,7 +58,7 @@ test.describe('recruit tests', () => {
     // Click on Add button
     await page.click('.applications-container .flex-row-center .flex-center')
 
-    await page.click('span:has-text("Select vacancy")')
+    await page.click('button:has-text("Vacancy")')
 
     await page.click(`button:has-text("${vacancyId}")`)
 
@@ -142,13 +142,13 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Review")
     await page.click('button:has-text("Review")')
     // Click [placeholder="\ "]
-    await page.click('[placeholder="placeholder"]')
+    await page.click('[placeholder="Title"]')
     // Fill [placeholder="\ "]
-    await page.fill('[placeholder="placeholder"]', 'Meet PEterson')
+    await page.fill('[placeholder="Title"]', 'Meet PEterson')
     // Click text=Location Company Company >> [placeholder="\ "]
-    await page.click('text=placeholder Location >> [placeholder="placeholder"]')
+    await page.click('[placeholder="Location"]')
     // Fill text=Location Company Company >> [placeholder="\ "]
-    await page.fill('text=placeholder Location >> [placeholder="placeholder"]', 'NSK')
+    await page.fill('[placeholder="Location"]', 'NSK')
     // Click text=Company Company >> div
     // await page.click('text=Company Company >> div')
     // Click button:has-text("Apple")
