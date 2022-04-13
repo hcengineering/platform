@@ -107,7 +107,7 @@
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
-      <div class="flex-row h-18">
+      <div class="flex-row h-18 pt-2 pb-2 pr-4 pl-4">
         <div class="flex-between mb-2">
           <IssuePresenter value={object} {currentTeam} />
           {#if issue.$lookup?.assignee}
