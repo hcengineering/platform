@@ -14,24 +14,26 @@
 -->
 
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-
+  import { IntlString, Asset } from '@anticrm/platform'
   import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
-  import Label from './Label.svelte'
-  import IconUp from './icons/Up.svelte'
-  import IconDown from './icons/Down.svelte'
-
-  import type { DropdownTextItem } from '../types'
-  import { showPopup } from '..'
+  import type { AnySvelteComponent, DropdownTextItem, TooltipAligment } from '../types'
+  import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
 
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString
-  export let placeholder: IntlString | undefined = undefined
+  export let placeholder: IntlString | undefined = ui.string.SearchDots
   export let items: DropdownTextItem[]
   export let selected: DropdownTextItem['id'] | undefined = undefined
 
-  let btn: HTMLElement
+  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'no-border'
+  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
+  export let labelDirection: TooltipAligment | undefined = undefined
+
+  let container: HTMLElement
   let opened: boolean = false
   let isDisabled = false
   $: isDisabled = items.length === 0
@@ -46,7 +48,33 @@
   const none = ui.string.None
 </script>
 
-<div class="flex-col cursor-pointer"
+<div bind:this={container} class="min-w-0">
+  <Tooltip label={label} fill={width === '100%'} direction={labelDirection}>
+    <Button
+      {icon}
+      width={width ?? 'min-content'}
+      {size} {kind} {justify}
+      on:click={() => {
+        if (!opened) {
+          opened = true
+          showPopup(DropdownLabelsPopup, { placeholder, items, selected }, container, (result) => {
+            if (result) {
+              selected = result
+              dispatch('selected', result)
+            }
+            opened = false
+          })
+        }
+      }}
+    >
+      <span slot="content" style="overflow: hidden">
+        {#if selectedItem}{selectedItem.label}{:else}<Label label={label ?? ui.string.NotSelected} />{/if}
+      </span>
+    </Button>
+  </Tooltip>
+</div>
+
+<!-- <div class="flex-col cursor-pointer"
   bind:this={btn}
   on:click|preventDefault={() => {
     if (!opened) {
@@ -87,4 +115,4 @@
     font-size: .75rem;
     color: var(--theme-content-accent-color);
   }
-</style>
+</style> -->

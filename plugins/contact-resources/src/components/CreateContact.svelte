@@ -22,7 +22,7 @@
         label: cl.label,
         action: async () => {
           closePopup()
-          showPopup(f.component, {}, targetElement)
+          showPopup(f.component, {}, 'top')
         }
       })
     }

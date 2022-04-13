@@ -42,7 +42,6 @@ export default mergeIds(trackerId, tracker, {
     Team: '' as IntlString,
     SelectTeam: '' as IntlString,
     SaveIssue: '' as IntlString,
-    CreateMore: '' as IntlString,
     Todo: '' as IntlString,
     InProgress: '' as IntlString,
     Done: '' as IntlString,

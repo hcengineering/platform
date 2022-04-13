@@ -22,7 +22,7 @@
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { DateRangePicker, Grid, Status as StatusControl, EditBox, Row } from '@anticrm/ui'
+  import { DateRangePicker, Grid, Status as StatusControl, EditBox, Row, DateRangePresenter } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
@@ -39,8 +39,8 @@
 
   let title: string = ''
   let description: string = ''
-  let startDate: number = Date.now()
-  let dueDate: number = Date.now()
+  let startDate: number | null = null
+  let dueDate: number | null = null
   let location: string = ''
   let company: Ref<Organization> | undefined = undefined
 
@@ -103,8 +103,8 @@
 
     await client.addCollection(recruit.class.Review, doc.space, doc.attachedTo, doc.attachedToClass, 'reviews', {
       number: (incResult as any).object.sequence,
-      date: startDate ?? null,
-      dueDate: dueDate ?? null,
+      date: startDate ?? 0,
+      dueDate: dueDate ?? 0,
       description,
       verdict: '',
       title,
@@ -143,7 +143,6 @@
 </script>
 
 <Card
-  size={'medium'}
   label={recruit.string.CreateReviewParams}
   labelProps={{ label: spaceLabel }}
   okAction={createReview}
@@ -158,61 +157,47 @@
   }}
 >
   <StatusControl slot="error" {status} />
-
-  <Grid column={2} rowGap={1.75}>
-    <EditBox label={recruit.string.Title} icon={recruit.icon.Review} bind:value={title} maxWidth={'13rem'} />
+  <EditBox
+    placeholder={recruit.string.Title} bind:value={title}
+    maxWidth={'37.5rem'} kind={'large-style'} focus
+  />
+  <EditBox
+    placeholder={recruit.string.Location} bind:value={location}
+    maxWidth={'37.5rem'} kind={'small-style'}
+  />
+  <UserBoxList
+    _class={contact.class.Employee}
+    items={doc.participants}
+    title={calendar.string.Participants}
+    on:open={(evt) => {
+      doc.participants = [...(doc.participants ?? []), evt.detail._id]
+    }}
+    on:delete={(evt) => {
+      doc.participants = doc.participants?.filter((it) => it !== evt.detail._id) ?? [currentUser.employee]
+    }}
+    noItems={calendar.string.NoParticipants}
+  />
+  <StyledTextBox
+    emphasized
+    showButtons={false}
+    bind:content={description}
+    label={recruit.string.Description}
+    alwaysEdit
+    placeholder={recruit.string.AddDescription}
+  />
+  <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox
-        _class={contact.class.Person}
-        label={recruit.string.Candidate}
-        placeholder={recruit.string.Candidates}
-        bind:value={doc.attachedTo}
-        kind={'link'}
-        size={'x-large'}
-        justify={'left'}
-        width={'100%'}
-        labelDirection={'left'}
+        _class={contact.class.Person} bind:value={doc.attachedTo}
+        label={recruit.string.Candidate} placeholder={recruit.string.Candidates}
+        kind={'no-border'} size={'small'}
       />
-    {:else}
-      <div />
     {/if}
-    <EditBox label={recruit.string.Location} icon={recruit.icon.Location} bind:value={location} maxWidth={'13rem'} />
     <OrganizationSelector
-      bind:value={company}
-      label={recruit.string.Company}
-      kind={'link'}
-      size={'x-large'}
-      justify={'left'}
-      width={'100%'}
-      labelDirection={'left'}
+      bind:value={company} label={recruit.string.Company}
+      kind={'no-border'} size={'small'}
     />
-    <DateRangePicker title={recruit.string.StartDate} bind:value={startDate} withTime on:change={updateStart} />
-    <DateRangePicker title={recruit.string.DueDate} bind:value={dueDate} withTime />
-
-    <Row>
-      <UserBoxList
-        _class={contact.class.Employee}
-        items={doc.participants}
-        title={calendar.string.Participants}
-        on:open={(evt) => {
-          doc.participants = [...(doc.participants ?? []), evt.detail._id]
-        }}
-        on:delete={(evt) => {
-          doc.participants = doc.participants?.filter((it) => it !== evt.detail._id) ?? [currentUser.employee]
-        }}
-        noItems={calendar.string.NoParticipants}
-      />
-    </Row>
-
-    <Row>
-      <StyledTextBox
-        emphasized
-        showButtons={false}
-        bind:content={description}
-        label={recruit.string.Description}
-        alwaysEdit
-        placeholder={recruit.string.AddDescription}
-      />
-    </Row>
-  </Grid>
+    <DateRangePresenter bind:value={startDate} labelNull={recruit.string.StartDate} withTime editable on:change={updateStart} />
+    <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
+  </svelte:fragment>
 </Card>

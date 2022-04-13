@@ -24,8 +24,8 @@
   import FileDuo from './icons/FileDuo.svelte'
   import chunter from '@anticrm/chunter'
   import attachment from '@anticrm/attachment'
-import { Applicant } from '@anticrm/recruit'
-import { BuildModelKey } from '@anticrm/view'
+  import { Applicant } from '@anticrm/recruit'
+  import { BuildModelKey } from '@anticrm/view'
 
   export let objectId: Ref<Doc>
   // export let space: Ref<Space>

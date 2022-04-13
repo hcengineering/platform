@@ -94,7 +94,7 @@
   }
 
   function showCreateDialog (ev: Event) {
-    showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, ev.target as HTMLElement)
+    showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
   }
   const applicationSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0)) ?? 0
   const modifiedSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0)) ?? 0
