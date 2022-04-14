@@ -95,7 +95,7 @@ export class TCardAction extends TDoc implements CardAction {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardAction)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardAction)
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
