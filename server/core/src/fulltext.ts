@@ -31,6 +31,7 @@ import core, {
   ObjQueryType,
   PropertyType,
   Ref,
+  toFindResult,
   Tx,
   TxBulkWrite,
   TxCollectionCUD,
@@ -40,8 +41,7 @@ import core, {
   TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc,
-  toFindResult
+  TxUpdateDoc
 } from '@anticrm/core'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 

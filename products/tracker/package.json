@@ -98,6 +98,8 @@
     "@anticrm/notification": "~0.6.0",
     "@anticrm/notification-assets": "~0.6.0",
     "@anticrm/notification-resources": "~0.6.0",
+    "@anticrm/preference": "~0.6.0",
+    "@anticrm/preference-assets": "~0.6.0",
     "@anticrm/calendar": "~0.6.0",
     "@anticrm/calendar-assets": "~0.6.0",
     "@anticrm/calendar-resources": "~0.6.0",

@@ -21,6 +21,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Action, AnyComponent, IconAdd, IconEdit, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import preference from '@anticrm/preference'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -54,7 +55,17 @@
     }
   }
 
-  async function getEditor(_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
+  const starSpace: Action = {
+    label: preference.string.Star,
+    icon: preference.icon.Star,
+    action: async (_id: Ref<Space>): Promise<void> => {
+      await client.createDoc(preference.class.SpacePreference, preference.space.Preference, {
+        attachedTo: _id
+      })
+    }
+  }
+
+  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
     const hierarchy = client.getHierarchy()
     const clazz = hierarchy.getClass(_class)
     const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
@@ -62,12 +73,12 @@
     return editorMixin.editor
   }
 
-  function selectSpace(id: Ref<Space>, spaceSpecial?: string) {
+  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
     dispatch('space', { space: id, spaceSpecial })
   }
 
-  async function getActions(space: Space): Promise<Action[]> {
-    const result = [editSpace]
+  async function getActions (space: Space): Promise<Action[]> {
+    const result = [editSpace, starSpace]
 
     const extraActions = await getContributedActions(client, space, core.class.Space)
     for (const act of extraActions) {

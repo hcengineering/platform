@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Client as MinioClient } from 'minio'
 import {
   Class,
   Doc,
@@ -25,32 +23,29 @@ import {
   FindResult,
   Hierarchy,
   ModelDb,
-  Ref,
-  Tx,
-  TxResult,
-  toFindResult
+  Ref, toFindResult, Tx,
+  TxResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
+import { PrivateMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
-import type { DbAdapter, DbConfiguration } from '@anticrm/server-core'
-import { createServerStorage } from '@anticrm/server-core'
-import { start as startJsonRpc } from '@anticrm/server-ws'
-
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverContactId } from '@anticrm/server-contact'
-import { serverNotificationId } from '@anticrm/server-notification'
-import { serverSettingId } from '@anticrm/server-setting'
+import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
+import { serverContactId } from '@anticrm/server-contact'
+import { createPipeline, DbAdapter, DbConfiguration, MiddlewareCreator } from '@anticrm/server-core'
+import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
+import { serverNotificationId } from '@anticrm/server-notification'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverTaskId } from '@anticrm/server-task'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverTagsId } from '@anticrm/server-tags'
-import { serverCalendarId } from '@anticrm/server-calendar'
-import { serverGmailId } from '@anticrm/server-gmail'
+import { serverTaskId } from '@anticrm/server-task'
 import { serverTelegramId } from '@anticrm/server-telegram'
-
+import { start as startJsonRpc } from '@anticrm/server-ws'
+import { Client as MinioClient } from 'minio'
 import { metricsContext } from './metrics'
 
 class NullDbAdapter implements DbAdapter {
@@ -107,6 +102,10 @@ export function start (
   addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
+  const middlewares: MiddlewareCreator[] = [
+    PrivateMiddleware.create
+  ]
+
   return startJsonRpc(
     metricsContext,
     (workspace: string) => {
@@ -142,7 +141,7 @@ export function start (
           }),
         workspace
       }
-      return createServerStorage(conf)
+      return createPipeline(conf, middlewares)
     },
     port,
     host

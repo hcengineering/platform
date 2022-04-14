@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +13,9 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, ServerStorage, Tx, TxResult } from '@anticrm/core'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, Tx, TxResult } from '@anticrm/core'
 import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
+import type { Pipeline, SessionContext } from '@anticrm/server-core'
 import { decodeToken, Token } from '@anticrm/server-token'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
@@ -28,38 +28,46 @@ class Session {
   constructor (
     private readonly manager: SessionManager,
     private readonly token: Token,
-    private readonly storage: ServerStorage
+    private readonly pipeline: Pipeline
   ) {}
+
+  getUser (): string {
+    return this.token.email
+  }
 
   async ping (): Promise<string> { console.log('ping'); return 'pong!' }
 
   async findAll <T extends Doc>(ctx: MeasureContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
-    return await this.storage.findAll(ctx, _class, query, options)
+    const context = ctx as SessionContext
+    context.userEmail = this.token.email
+    return await this.pipeline.findAll(context, _class, query, options)
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    const [result, derived] = await this.storage.tx(ctx, tx)
+    const context = ctx as SessionContext
+    context.userEmail = this.token.email
+    const [result, derived, target] = await this.pipeline.tx(context, tx)
 
-    this.manager.broadcast(this, this.token, { result: tx })
+    this.manager.broadcast(this, this.token, { result: tx }, target)
     for (const dtx of derived) {
-      this.manager.broadcast(null, this.token, { result: dtx })
+      this.manager.broadcast(null, this.token, { result: dtx }, target)
     }
     return result
   }
 }
 
 interface Workspace {
-  storage: ServerStorage
+  pipeline: Pipeline
   sessions: [Session, WebSocket][]
 }
 
 class SessionManager {
   private readonly workspaces = new Map<string, Workspace>()
 
-  async addSession (ws: WebSocket, token: Token, storageFactory: (ws: string) => Promise<ServerStorage>): Promise<Session> {
+  async addSession (ws: WebSocket, token: Token, pipelineFactory: (ws: string) => Promise<Pipeline>): Promise<Session> {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
-      return await this.createWorkspace(storageFactory, token, ws)
+      return await this.createWorkspace(pipelineFactory, token, ws)
     } else {
       if (token.extra?.model === 'reload') {
         console.log('reloading workspace', JSON.stringify(token))
@@ -70,20 +78,20 @@ class SessionManager {
             this.close(s[1], token.workspace, 0, 'upgrade')
           }
         }
-        return await this.createWorkspace(storageFactory, token, ws)
+        return await this.createWorkspace(pipelineFactory, token, ws)
       }
 
-      const session = new Session(this, token, workspace.storage)
+      const session = new Session(this, token, workspace.pipeline)
       workspace.sessions.push([session, ws])
       return session
     }
   }
 
-  private async createWorkspace (storageFactory: (ws: string) => Promise<ServerStorage>, token: Token, ws: WebSocket): Promise<Session> {
-    const storage = await storageFactory(token.workspace)
-    const session = new Session(this, token, storage)
+  private async createWorkspace (pipelineFactory: (ws: string) => Promise<Pipeline>, token: Token, ws: WebSocket): Promise<Session> {
+    const pipeline = await pipelineFactory(token.workspace)
+    const session = new Session(this, token, pipeline)
     const workspace: Workspace = {
-      storage,
+      pipeline,
       sessions: [[session, ws]]
     }
     this.workspaces.set(token.workspace, workspace)
@@ -101,11 +109,11 @@ class SessionManager {
     if (workspace.sessions.length === 0) {
       if (LOGGING_ENABLED) console.log('no sessions for workspace', workspaceId)
       this.workspaces.delete(workspaceId)
-      workspace.storage.close().catch(err => console.error(err))
+      workspace.pipeline.close().catch(err => console.error(err))
     }
   }
 
-  broadcast (from: Session | null, token: Token, resp: Response<any>): void {
+  broadcast (from: Session | null, token: Token, resp: Response<any>, target?: string): void {
     const workspace = this.workspaces.get(token.workspace)
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
@@ -114,7 +122,13 @@ class SessionManager {
     if (LOGGING_ENABLED) console.log(`server broadcasting to ${workspace.sessions.length} clients...`)
     const msg = serialize(resp)
     for (const session of workspace.sessions) {
-      if (session[0] !== from) { session[1].send(msg) }
+      if (session[0] !== from) {
+        if (target === undefined) {
+          session[1].send(msg)
+        } else if (session[0].getUser() === target) {
+          session[1].send(msg)
+        }
+      }
     }
   }
 }
@@ -142,7 +156,7 @@ async function handleRequest<S extends Session> (ctx: MeasureContext, service: S
  * @param port -
  * @param host -
  */
-export function start (ctx: MeasureContext, storageFactory: (workspace: string) => Promise<ServerStorage>, port: number, host?: string): () => void {
+export function start (ctx: MeasureContext, pipelineFactory: (workspace: string) => Promise<Pipeline>, port: number, host?: string): () => void {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager()
@@ -153,7 +167,7 @@ export function start (ctx: MeasureContext, storageFactory: (workspace: string) 
     const buffer: string[] = []
 
     ws.on('message', (msg: string) => { buffer.push(msg) })
-    const session = await sessions.addSession(ws, token, storageFactory)
+    const session = await sessions.addSession(ws, token, pipelineFactory)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
     ws.on('close', (code: number, reason: string) => sessions.close(ws, token.workspace, code, reason))
