@@ -27,10 +27,10 @@ import type {
   FindOptions,
   FindResult,
   Tx,
-  TxResult,
-  MeasureContext
+  TxResult
 } from '@anticrm/core'
 import { MeasureMetricsContext, toFindResult } from '@anticrm/core'
+import { SessionContext } from '@anticrm/server-core'
 
 describe('server', () => {
   disableLogging()
@@ -39,12 +39,12 @@ describe('server', () => {
     new MeasureMetricsContext('test', {}),
     async () => ({
       findAll: async <T extends Doc>(
-        ctx: MeasureContext,
+        ctx: SessionContext,
         _class: Ref<Class<T>>,
         query: DocumentQuery<T>,
         options?: FindOptions<T>
       ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> => [{}, []],
+      tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> => [{}, [], undefined],
       close: async () => {}
     }),
     3333

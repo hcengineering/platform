@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import chunter, { Message, ThreadMessage } from '@anticrm/chunter'
+import core from '@anticrm/core'
+import chunter, { Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
+import { getClient } from '@anticrm/presentation'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
@@ -62,6 +64,22 @@ async function UnsubscribeComment (object: ThreadMessage): Promise<void> {
   await client.unsubscribe(object.attachedTo)
 }
 
+async function PinMessage (message: ChunterMessage): Promise<void> {
+  const client = getClient()
+
+  await client.updateDoc<Channel>(chunter.class.Channel, core.space.Space, message.space, {
+    $push: { pinned: message._id }
+  })
+}
+
+export async function UnpinMessage (message: ChunterMessage): Promise<void> {
+  const client = getClient()
+
+  await client.updateDoc<Channel>(chunter.class.Channel, core.space.Space, message.space, {
+    $pull: { pinned: message._id }
+  })
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -85,6 +103,8 @@ export default async (): Promise<Resources> => ({
     SubscribeMessage,
     SubscribeComment,
     UnsubscribeMessage,
-    UnsubscribeComment
+    UnsubscribeComment,
+    PinMessage,
+    UnpinMessage
   }
 })

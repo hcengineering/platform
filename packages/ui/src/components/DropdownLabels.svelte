@@ -16,7 +16,7 @@
 <script lang="ts">
   import { IntlString, Asset } from '@anticrm/platform'
   import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
-  import type { AnySvelteComponent, DropdownTextItem, TooltipAligment } from '../types'
+  import type { AnySvelteComponent, DropdownTextItem, TooltipAlignment, ButtonKind, ButtonSize } from '../types'
   import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
@@ -27,11 +27,11 @@
   export let items: DropdownTextItem[]
   export let selected: DropdownTextItem['id'] | undefined = undefined
 
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'no-border'
-  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAligment | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   let container: HTMLElement
   let opened: boolean = false
@@ -73,46 +73,3 @@
     </Button>
   </Tooltip>
 </div>
-
-<!-- <div class="flex-col cursor-pointer"
-  bind:this={btn}
-  on:click|preventDefault={() => {
-    if (!opened) {
-      opened = true
-      showPopup(DropdownLabelsPopup, { placeholder, items, selected }, btn, (result) => {
-        if (result) {
-          selected = result
-          dispatch('selected', result)
-        }
-        opened = false
-      })
-    }
-  }}
->
-  <div class="overflow-label label"><Label label={label} /></div>
-  <div class="flex-row-center space">
-    <span class="mr-1">
-      {#if opened}
-        <IconUp size={'small'} />
-      {:else}
-        <IconDown size={'small'} />
-      {/if}
-    </span>
-    <span class="overflow-label" class:caption-color={selected} class:content-dark-color={!selected}>
-      {#if selectedItem}
-        {selectedItem.label}
-      {:else}
-        <Label label={none} />
-      {/if}
-    </span>
-  </div>
-</div>
-
-<style lang="scss">
-  .label {
-    margin-bottom: .125rem;
-    font-weight: 500;
-    font-size: .75rem;
-    color: var(--theme-content-accent-color);
-  }
-</style> -->

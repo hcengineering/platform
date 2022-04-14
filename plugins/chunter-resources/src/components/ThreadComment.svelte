@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
-  import { AttachmentList } from '@anticrm/attachment-resources'
+  import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
@@ -24,6 +24,7 @@
   import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
+  import { UnpinMessage } from '../index';
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -33,6 +34,7 @@
 
   export let message: WithLookup<ThreadMessage>
   export let employees: Map<Ref<Employee>, Employee>
+  export let isPinned: boolean = false
 
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
@@ -53,14 +55,35 @@
         action: chunter.actionImpl.SubscribeComment
       } as Action)
 
+  $: pinActions = isPinned
+    ? ({
+        label: chunter.string.UnpinMessage,
+        action: chunter.actionImpl.UnpinMessage
+      } as Action)
+    : ({
+        label: chunter.string.PinMessage,
+        action: chunter.actionImpl.PinMessage
+      } as Action)
+
+  $: isEditing = false;
+
+  const editAction = {
+    label: chunter.string.EditMessage,
+    action: () => isEditing = true
+  }
+
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => await client.removeDoc(message._class, message.space, message._id)
+    action: async () => {
+      await client.removeDoc(message._class, message.space, message._id)
+      UnpinMessage(message)
+    }
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.ThreadMessage)
     actions.push(subscribeAction)
+    actions.push(pinActions)
     showPopup(
       Menu,
       {
@@ -73,11 +96,26 @@
               await impl(message)
             }
           })),
-          ...(getCurrentAccount()._id === message.createBy ? [deleteAction] : [])
+          ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },
       ev.target as HTMLElement
     )
+  }
+
+  async function onMessageEdit (event: CustomEvent) {
+    const { message: newContent, attachments: newAttachments } = event.detail
+
+    if (newContent !== message.content || newAttachments !== attachments) {
+      await client.update(
+        message,
+        {
+          content: newContent,
+          attachments: newAttachments
+        }
+      )
+    }
+    isEditing = false
   }
 
   $: employee = getEmployee(message)
@@ -97,8 +135,18 @@
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
     </div>
-    <div class="text"><MessageViewer message={message.content} /></div>
-    {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {#if isEditing}
+      <AttachmentRefInput 
+        space={message.space} 
+        _class={chunter.class.Comment} 
+        objectId={message._id} 
+        content={message.content} 
+        on:message={onMessageEdit} 
+      />
+    {:else}
+      <div class="text"><MessageViewer message={message.content} /></div>
+      {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+    {/if}
     {#if reactions}
       <div class="footer">
         <div><Reactions /></div>

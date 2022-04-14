@@ -31,6 +31,10 @@
     "MarkUnread": "Mark unread",
     "GetNewReplies": "Get notified about new replies",
     "TurnOffReplies": "Turn off notifications for replies",
+    "PinMessage": "Pin message",
+    "UnpinMessage": "Unpin message",
+    "Pinned": "Pinned:",
+    "EditMessage": "Edit message",
     "DeleteMessage": "Delete message"
   }
 }

@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 

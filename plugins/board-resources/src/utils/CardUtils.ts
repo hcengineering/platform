@@ -36,12 +36,12 @@ export function hasDate (card: Card): boolean {
 
 export function addCurrentUser (card: Card, client: Client): void {
   const employee = (getCurrentAccount() as EmployeeAccount).employee
-  card.members = card.members ?? []
+  const members = card.members ?? []
 
-  if (card.members.includes(employee)) {
+  if (members.includes(employee)) {
     return
   }
 
-  card.members.push(employee)
-  updateCard(client, card, 'members', card.members)
+  members.push(employee)
+  updateCard(client, card, 'members', members)
 }

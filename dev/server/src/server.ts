@@ -17,8 +17,7 @@
 import type { Doc, Ref, TxResult } from '@anticrm/core'
 import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
 import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import type { DbConfiguration } from '@anticrm/server-core'
-import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import { createPipeline, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {
@@ -71,6 +70,6 @@ export async function start (port: number, host?: string): Promise<void> {
       },
       workspace: ''
     }
-    return createServerStorage(conf)
+    return createPipeline(conf, [])
   }, port, host)
 }

@@ -25,10 +25,11 @@
   export let withTime: boolean = false
   export let mondayStart: boolean = true
   export let editable: boolean = false
-  export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
+  export let icon: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
+  export let shouldShowLabel: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -54,27 +55,35 @@
 <button
   class="datetime-button"
   class:editable
+  class:dateTimeButtonNoLabel={!shouldShowLabel}
   on:click={() => {
     if (editable && !opened) {
       opened = true
-      showPopup(DatePopup,
-                { currentDate, mondayStart, withTime },
-                undefined,
-                () => { opened = false },
-                (result) => { if (result !== undefined) onChange(result) })
+      showPopup(
+        DatePopup,
+        { currentDate, mondayStart, withTime },
+        undefined,
+        () => {
+          opened = false
+        },
+        (result) => {
+          if (result !== undefined) onChange(result)
+        }
+      )
     }
   }}
 >
   {#if showIcon}
-    <div class="btn-icon {icon}">
-      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
+    <div class="btn-icon {icon}" class:buttonIconNoLabel={!shouldShowLabel}>
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'} />
     </div>
   {/if}
   {#if value !== null && value !== undefined}
-    {#if labelOver !== undefined}
+    {#if shouldShowLabel && labelOver !== undefined}
       <Label label={labelOver} />
-    {:else}
-      {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
+    {:else if shouldShowLabel}
+      {new Date(value).getDate()}
+      {getMonthName(new Date(value), 'short')}
       {#if new Date(value).getFullYear() !== today.getFullYear()}
         {new Date(value).getFullYear()}
       {/if}
@@ -85,7 +94,7 @@
         {new Date(value).getMinutes().toString().padStart(2, '0')}
       {/if}
     {/if}
-  {:else}
+  {:else if shouldShowLabel}
     <Label label={labelNull} />
   {/if}
 </button>
@@ -96,7 +105,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
     font-weight: 400;
     min-width: 1.5rem;
     width: auto;
@@ -106,22 +115,38 @@
     color: var(--accent-color);
     background-color: var(--button-bg-color);
     border: 1px solid transparent;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     box-shadow: var(--button-shadow);
     transition-property: border, background-color, color, box-shadow;
-    transition-duration: .15s;
+    transition-duration: 0.15s;
     cursor: default;
 
+    &.dateTimeButtonNoLabel {
+      padding: 0;
+    }
+
     .btn-icon {
-      margin-right: .375rem;
-      width: .875rem;
-      height: .875rem;
-      transition: color .15s;
+      margin-right: 0.375rem;
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: color 0.15s;
       pointer-events: none;
 
-      &.normal { color: var(--content-color); }
-      &.warning { color: var(--warning-color); }
-      &.overdue { color: var(--error-color); }
+      &.buttonIconNoLabel {
+        margin-right: 0;
+      }
+      &.normal {
+        color: var(--content-color);
+      }
+      &.warning {
+        color: var(--warning-color);
+      }
+      &.critical {
+        color: var(--error-color);
+      }
+      &.overdue {
+        color: var(--error-color);
+      }
     }
 
     &:hover {
@@ -134,15 +159,28 @@
       &:hover {
         background-color: var(--button-bg-hover);
         .btn-icon {
-          &.normal { color: var(--caption-color); }
-          &.warning { color: var(--warning-color); }
-          &.overdue { color: var(--error-color); }
+          &.normal {
+            color: var(--caption-color);
+          }
+          &.warning {
+            color: var(--warning-color);
+          }
+          &.critical {
+            color: var(--error-color);
+          }
+          &.overdue {
+            color: var(--error-color);
+          }
         }
-        .time-divider { background-color: var(--button-border-hover); }
+        .time-divider {
+          background-color: var(--button-border-hover);
+        }
       }
       &:focus-within {
         border-color: var(--primary-edit-border-color);
-        &:hover { background-color: transparent; }
+        &:hover {
+          background-color: transparent;
+        }
       }
     }
     &:disabled {
@@ -151,17 +189,21 @@
 
       &:hover {
         color: var(--content-color);
-        .btn-icon { color: var(--content-color); }
+        .btn-icon {
+          color: var(--content-color);
+        }
       }
     }
     .time-divider {
       flex-shrink: 0;
-      margin: 0 .25rem;
+      margin: 0 0.25rem;
       width: 1px;
       min-width: 1px;
-      height: .75rem;
+      height: 0.75rem;
       background-color: var(--button-border-color);
     }
-    .separator { margin: 0 .1rem; }
+    .separator {
+      margin: 0 0.1rem;
+    }
   }
 </style>

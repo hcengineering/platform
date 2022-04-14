@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '../types'
+  import type { AnySvelteComponent, ButtonKind, ButtonSize } from '../types'
   import Spinner from './Spinner.svelte'
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
@@ -22,8 +22,8 @@
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous' = 'secondary'
-  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'medium'
+  export let kind: ButtonKind = 'secondary'
+  export let size: ButtonSize = 'medium'
   export let shape: 'circle' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
@@ -83,7 +83,8 @@
 <style lang="scss">
   .small {
     height: 1.5rem;
-    line-height: 1.5rem;
+    font-size: .75rem;
+    line-height: .75rem;
     &.only-icon { width: 1.5rem; }
   }
   .medium {

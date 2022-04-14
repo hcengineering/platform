@@ -123,9 +123,9 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       const rectPopup = modalHTML.getBoundingClientRect()
       // Vertical
       if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-        modalHTML.style.top = `calc(${rect.bottom}px + .75rem)`
+        modalHTML.style.top = `calc(${rect.bottom}px + .125rem)`
       } else if (rectPopup.height + 28 < rect.top) {
-        modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .75rem)`
+        modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
       } else {
         modalHTML.style.top = modalHTML.style.bottom = '1rem'
       }

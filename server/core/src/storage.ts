@@ -29,9 +29,7 @@ import core, {
   Hierarchy,
   MeasureContext, Mixin, ModelDb,
   Ref,
-  ServerStorage,
-  Storage,
-  Tx,
+  ServerStorage, Tx,
   TxBulkWrite,
   TxCollectionCUD,
   TxCreateDoc,
@@ -53,12 +51,14 @@ import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } fro
 /**
  * @public
  */
-export interface DbAdapter extends Storage {
+export interface DbAdapter {
   /**
    * Method called after hierarchy is ready to use.
    */
   init: (model: Tx[]) => Promise<void>
   close: () => Promise<void>
+  findAll: <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  tx: (tx: Tx) => Promise<TxResult>
 }
 
 /**
@@ -98,19 +98,21 @@ export interface DbConfiguration {
 
 class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
+  hierarchy: Hierarchy
 
   constructor (
     private readonly domains: Record<string, string>,
     private readonly defaultAdapter: string,
     private readonly adapters: Map<string, DbAdapter>,
-    private readonly hierarchy: Hierarchy,
+    hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
     private readonly storageAdapter: MinioClient | undefined,
-    private readonly modelDb: ModelDb,
+    readonly modelDb: ModelDb,
     private readonly workspace: string,
     options?: ServerStorageOptions
   ) {
+    this.hierarchy = hierarchy
     this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this, options?.skipUpdateAttached ?? false)
   }
 
@@ -134,7 +136,9 @@ class TServerStorage implements ServerStorage {
     if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      return await this.getAdapter(domain).tx(txCUD)
+      const adapter = this.getAdapter(domain)
+      const res = await adapter.tx(txCUD)
+      return res
     } else {
       if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
         const bulkWrite = tx as TxBulkWrite
@@ -144,7 +148,7 @@ class TServerStorage implements ServerStorage {
       } else {
         throw new Error('not implemented (routeTx)')
       }
-      return {}
+      return [{}, false]
     }
   }
 
@@ -357,9 +361,8 @@ class TServerStorage implements ServerStorage {
 
       const triggerFx = new Effects()
       let derived: Tx[] = []
-      let result: TxResult = {}
       // store object
-      result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
+      const result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
       // invoke triggers and store derived objects
       derived = [
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),

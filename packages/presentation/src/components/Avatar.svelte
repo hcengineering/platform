@@ -20,7 +20,7 @@
 
   export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
   let url: string | undefined
   $: if (direct !== undefined) {
@@ -50,7 +50,7 @@
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    background-color: var(--popup-bg-hover);
+    background-color: var(--avatar-bg-color);
     border-radius: 50%;
     pointer-events: none;
 
@@ -61,6 +61,10 @@
     &.no-img { border-color: transparent; }
   }
 
+  .ava-inline {
+    width: .875rem;   // 24
+    height: .875rem;
+  }
   .ava-x-small {
     width: 1.5rem;   // 24
     height: 1.5rem;
@@ -92,6 +96,7 @@
     border-radius: 50%;
   }
 
+  .ava-inline .ava-mask, .ava-inline.no-img,
   .ava-x-small .ava-mask, .ava-x-small.no-img,
   .ava-small .ava-mask, .ava-small.no-img,
   .ava-medium .ava-mask, .ava-medium.no-img { border-style: none; }

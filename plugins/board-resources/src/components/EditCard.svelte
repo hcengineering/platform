@@ -36,20 +36,18 @@
   export let _class: Ref<Class<Card>>
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const query = createQuery()
+  const cardQuery = createQuery()
+  const stateQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
   let handleMove: () => void
 
-  $: _id &&
-    _class &&
-    query.query(_class, { _id }, async (result) => {
+  $: cardQuery.query(_class, { _id }, async (result) => {
       object = result[0]
     })
 
-  $: object &&
-    query.query(task.class.State, { _id: object.state }, async (result) => {
+  $: object?.state && stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
       state = result[0]
     })
 
@@ -104,7 +102,7 @@
           <div class="flex-grow mr-4">
             <div class="flex-row-streach">
               <div class="w-9" />
-              <CardDetails value={object} />
+              <CardDetails bind:value={object} />
             </div>
             <div class="flex-row-streach mt-4 mb-2">
               <div class="w-9">
@@ -128,10 +126,10 @@
             </div>
             <CardAttachments value={object} />
             <!-- TODO checklists -->
-            <CardActivity value={object} />
+            <CardActivity bind:value={object} />
           </div>
 
-          <CardActions value={object} />
+          <CardActions bind:value={object} />
         </div>
       </div>
     </Scroller>

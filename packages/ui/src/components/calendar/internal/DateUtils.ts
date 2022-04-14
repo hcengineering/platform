@@ -78,6 +78,7 @@ export function getMonthName (date: Date, option: 'narrow' | 'short' | 'long' | 
     return new Intl.DateTimeFormat(locale, { month: option }).format(date)
   } catch (err) {
     console.error(err)
+    return ''
   }
 }
 
@@ -99,4 +100,11 @@ export function addZero (value: number): string {
     return `0${value}`
   }
   return `${value}`
+}
+
+export const getDaysDifference = (from: Date, to: Date): number => {
+  const firstDateMs = from.setHours(0, 0, 0, 0)
+  const secondDateMs = to.setHours(0, 0, 0, 0)
+
+  return Math.round(Math.abs(secondDateMs - firstDateMs) / MILLISECONDS_IN_DAY)
 }

@@ -14,6 +14,7 @@
     "Members": "Members",
     "Search": "Search...",
     "Unassigned": "Unassigned",
-    "CreateMore": "Create more"
+    "CreateMore": "Create more",
+    "NumberMembers": "{lenght, plural, =0 {no members} =1 {1 member} other {# members}}"
   }
 }

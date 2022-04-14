@@ -15,7 +15,7 @@
 -->
 
 <script lang="ts">
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
   const fill: string = 'var(--theme-caption-color)'
 </script>
@@ -29,6 +29,10 @@
 <style lang="scss">
   .svg-avatar {
     .op { opacity: .05; }
+  }
+  .inline {
+    width: .75rem;
+    height: .75rem;
   }
   .x-small {
     width: 1rem;
