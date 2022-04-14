@@ -20,11 +20,12 @@
   import { EditBox } from '@anticrm/ui'
 
   import chunter from '../plugin'
+  import EditChannelDescriptionAttachments from './EditChannelDescriptionAttachments.svelte'
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
 
-  export let channel: Channel
+  export let channel: Channel | undefined
 
   const client = getClient()
   const clazz = client.getHierarchy().getClass(_class)
@@ -34,7 +35,7 @@
   function onNameChange (ev: Event) {
     const value = (ev.target as HTMLInputElement).value
     if (value.trim().length > 0) {
-      client.updateDoc(_class, channel.space, channel._id, { name: value })
+      client.updateDoc(_class, channel!.space, channel!._id, { name: value })
     } else {
       // Just refresh value
       query.query(chunter.class.Channel, { _id }, (result) => {
@@ -45,12 +46,12 @@
 
   function onTopicChange (ev: Event) {
     const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel, { topic: newTopic })
+    client.update(channel!, { topic: newTopic })
   }
 
   function onDescriptionChange (ev: Event) {
     const newDescription = (ev.target as HTMLInputElement).value
-    client.update(channel, { description: newDescription })
+    client.update(channel!, { description: newDescription })
   }
 </script>
 
@@ -81,6 +82,6 @@
       focus
       on:change={onDescriptionChange}
     />
-    <!-- TODO: implement Attachments here -->
+    <EditChannelDescriptionAttachments channel={channel} />
   </div>
 {/if}
