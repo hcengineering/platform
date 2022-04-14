@@ -65,6 +65,7 @@
     color: var(--caption-color);
     cursor: pointer;
 
+    &.high { height: 3rem; }
     .icon {
       margin-right: .75rem;
       width: 1rem;
@@ -84,14 +85,13 @@
       text-overflow: ellipsis;
       overflow: hidden;
     }
-    .check {
+    .check, .check-right {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      margin-left: 1rem;
-      width: 1rem;
+      margin-right: .75rem;
       height: 2rem;
     }
+    .check-right { margin: 0 0 0 2rem; }
     &:hover { background-color: var(--popup-bg-hover); }
   }
 }

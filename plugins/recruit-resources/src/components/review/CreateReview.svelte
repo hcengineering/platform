@@ -165,18 +165,6 @@
     placeholder={recruit.string.Location} bind:value={location}
     maxWidth={'37.5rem'} kind={'small-style'}
   />
-  <UserBoxList
-    _class={contact.class.Employee}
-    items={doc.participants}
-    title={calendar.string.Participants}
-    on:open={(evt) => {
-      doc.participants = [...(doc.participants ?? []), evt.detail._id]
-    }}
-    on:delete={(evt) => {
-      doc.participants = doc.participants?.filter((it) => it !== evt.detail._id) ?? [currentUser.employee]
-    }}
-    noItems={calendar.string.NoParticipants}
-  />
   <StyledTextBox
     emphasized
     showButtons={false}
@@ -199,5 +187,14 @@
     />
     <DateRangePresenter bind:value={startDate} labelNull={recruit.string.StartDate} withTime editable on:change={updateStart} />
     <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
+    <UserBoxList
+      _class={contact.class.Employee}
+      items={doc.participants}
+      label={calendar.string.Participants}
+      on:update={(evt) => {
+        doc.participants = evt.detail
+      }}
+      noItems={calendar.string.NoParticipants}
+    />
   </svelte:fragment>
 </Card>

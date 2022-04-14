@@ -18,7 +18,7 @@
   import contact, { Contact, formatName } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import type { TooltipAlignment } from '@anticrm/ui'
+  import type { TooltipAlignment, ButtonKind, ButtonSize } from '@anticrm/ui'
   import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -35,8 +35,8 @@
   export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false
-  export let kind: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'dangerous' = 'no-border'
-  export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
@@ -45,7 +45,6 @@
 
   let selected: Contact | undefined
   let container: HTMLElement
-  let opened: boolean = false
 
   const client = getClient()
 
@@ -62,14 +61,13 @@
 </script>
 
 <div bind:this={container} class="min-w-0">
-  <Tooltip label={label} fill={width === '100%'} direction={labelDirection}>
+  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
       icon={(size === 'x-large' && selected) ? undefined : IconPerson}
       width={width ?? 'min-content'}
       {size} {kind} {justify}
       on:click={() => {
-        if (!opened && !readonly) {
-          opened = true
+        if (!readonly) {
           showPopup(UsersPopup, { _class, allowDeselect, selected: value, titleDeselect, placeholder }, container, (result) => {
             if (result === null) {
               value = null
@@ -79,7 +77,6 @@
               value = result._id
               dispatch('change', value)
             }
-            opened = false
           })
         }
       }}

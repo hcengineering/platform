@@ -72,7 +72,7 @@
     <UserBoxList
       _class={contact.class.Employee}
       items={participants}
-      title={calendar.string.Participants}
+      label={calendar.string.Participants}
       on:open={(evt) => {
         participants.push(evt.detail._id)
         participants = participants

@@ -36,7 +36,7 @@
 
 <div class="selectPopup">
   <div class="header">
-    <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+    <input type='text' bind:value={search} placeholder={phTraslate} on:input={() => { }} on:change/>
   </div>
   <div class="scroll">
     <div class="box">
