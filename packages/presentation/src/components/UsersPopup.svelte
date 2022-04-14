@@ -33,13 +33,14 @@
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
   export let selectedUsers: Ref<Person>[] = []
+  export let ignoreUsers: Ref<Person>[] = []
 
   let search: string = ''
   let objects: Person[] = []
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' } }, result => { objects = result }, { limit: 200 })
+  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } }, result => { objects = result }, { limit: 200 })
 
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
