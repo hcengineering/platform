@@ -15,17 +15,25 @@
 <script lang="ts">
   import { Person } from '@anticrm/contact'
   import type { Class, Doc, Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { ActionIcon, CircleButton, IconAdd, IconClose, Label, ShowMore, showPopup } from '@anticrm/ui'
+  import type { IntlString } from '@anticrm/platform'
+  import { translate } from '@anticrm/platform'
+  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
+  import { ActionIcon, CircleButton, IconAdd, IconClose, Label, Tooltip, showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { UserInfo } from '..'
+  import presentation, { UserInfo, Avatar, CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'
-  import UsersPopup from './UsersPopup.svelte'
+  import Members from './icons/Members.svelte'
 
   export let items: Ref<Person>[] = []
   export let _class: Ref<Class<Doc>>
-  export let title: IntlString
+  export let label: IntlString
   export let noItems: IntlString
+
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
+  export let labelDirection: TooltipAligment | undefined = undefined
 
   let persons: Person[] = []
 
@@ -37,71 +45,45 @@
 
   const dispatch = createEventDispatcher()
 
-  async function addRef (person: Person): Promise<void> {
-    dispatch('open', person)
-  }
   async function addPerson (evt: Event): Promise<void> {
     showPopup(
       UsersPopup,
       {
         _class,
-        title,
+        label,
+        multiSelect: true,
         allowDeselect: false,
-        ignoreUsers: items
+        selectedUsers: items
       },
       evt.target as HTMLElement,
+      () => { },
       (result) => {
-        // We have some value selected
         if (result !== undefined) {
-          addRef(result)
+          items = result
+          dispatch('update', items)
         }
       }
     )
   }
-
-  async function removePerson (person: Person): Promise<void> {
-    dispatch('delete', person)
-  }
 </script>
 
-<div class="flex-row">
-  <ShowMore>
-    <div class="persons-container">
-      <div class="flex flex-reverse">
-        <div class="ml-4">
-          <CircleButton icon={IconAdd} size={'small'} selected on:click={addPerson} />
+<Tooltip {label} fill={width === '100%'} direction={labelDirection}>
+  <Button
+    icon={persons.length === 0 ? Members : undefined}
+    label={persons.length === 0 ? presentation.string.Members : undefined}
+    width={width ?? 'min-content'}
+    {kind} {size} {justify}
+    on:click={addPerson}
+  >
+    <svelte:fragment slot="content">
+      {#if persons.length > 0}
+        <div class="flex-row-center flex-nowrap">
+          <CombineAvatars {_class} bind:items size={'inline'} />
+          {#await translate(presentation.string.NumberMembers, { lenght: persons.length }) then text}
+            <span class="ml-1-5">{text}</span>
+          {/await}
         </div>
-        <div class="person-items">
-          {#if items?.length === 0}
-            <div class="flex flex-grow title-center">
-              <Label label={noItems} />
-            </div>
-          {/if}
-          {#each persons as person}
-            <div class="antiComponentBox flex-center antiComponentBoxFocused">
-              <UserInfo value={person} size={'x-small'} />
-              <div class="ml-1">
-                <ActionIcon icon={IconClose} size={'small'} action={() => removePerson(person)} />
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-    </div>
-  </ShowMore>
-</div>
-
-<style lang="scss">
-  .persons-container {
-    color: var(--theme-caption-color);
-  }
-  .person-items {
-    flex-grow: 1;
-    display: grid;
-    gap: 0.25rem;
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .margin_025 {
-    margin: 0.25rem;
-  }
-</style>
+      {/if}
+    </svelte:fragment>
+  </Button>
+</Tooltip>

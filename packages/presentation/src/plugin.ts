@@ -43,7 +43,8 @@ export default plugin(presentationId, {
     Members: '' as IntlString,
     Search: '' as IntlString,
     Unassigned: '' as IntlString,
-    CreateMore: '' as IntlString
+    CreateMore: '' as IntlString,
+    NumberMembers: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

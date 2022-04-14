@@ -34,13 +34,6 @@
 <label class="checkbox" class:circle class:primary class:checked>
   <input class="chBox" type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    {#if !circle}
-      <path
-        class="back"
-        class:primary
-        d="M4,0h8c2.2,0,4,1.8,4,4v8c0,2.2-1.8,4-4,4H4c-2.2,0-4-1.8-4-4V4C0,1.8,1.8,0,4,0z"
-      />
-    {/if}
     {#if checked}
       {#if symbol === 'minus'}
         <rect class="check" class:primary x="4" y="7.4" width="8" height="1.2" />
@@ -54,12 +47,27 @@
 <style lang="scss">
   .checkbox {
     flex-shrink: 0;
-
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 1rem;
-    height: 1rem;
+    width: .875rem;
+    height: .875rem;
+    border: 1px solid var(--dark-color);
+    border-radius: .25rem;
+
+    &.circle {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+    }
+    &.checked {
+      background-color: var(--accent-color);
+      border-color: transparent;
+    }
+    &.primary.checked {
+      background-color: var(--primary-bg-color);
+      border-color: transparent;
+    }
 
     .chBox {
       position: absolute;
@@ -94,34 +102,12 @@
       }
     }
     .checkSVG {
-      width: 1rem;
-      height: 1rem;
-      border-radius: 0.25rem;
+      width: .875rem;
+      height: .875rem;
 
-      .back {
-        fill: var(--theme-button-bg-hovered);
-      }
       .check {
         visibility: hidden;
         fill: var(--theme-button-bg-enabled);
-      }
-    }
-  }
-
-  .circle {
-    width: 1.25rem;
-    height: 1.25rem;
-    background-color: var(--theme-button-bg-hovered);
-    border: 1px solid var(--theme-bg-focused-color);
-    border-radius: 50%;
-
-    &.checked {
-      background-color: var(--theme-bg-check);
-    }
-    &.primary {
-      border-color: transparent;
-      &.checked {
-        background-color: var(--primary-button-enabled);
       }
     }
   }

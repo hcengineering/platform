@@ -69,11 +69,10 @@
   }
 </script>
 
-<div class="antiPopup">
-  <div class="ap-space" />
-  <div class="ap-scroll"><div class="ap-box">
+<div class="selectPopup">
+  <div class="scroll"><div class="box">
     {#await getItems() then items}
-      <div class="ap-menuItem flex-row-center" on:click={() => { editProfile(items) }}>
+      <div class="menu-item high flex-row-center" on:click={() => { editProfile(items) }}>
         {#if employee}
           <Avatar avatar={employee.avatar} size={'medium'} />
         {/if}
@@ -86,7 +85,7 @@
       </div>
       {#if items}
         {#each filterItems(items) as item }
-          <button class="ap-menuItem" on:click={() => selectCategory(item)}>
+          <button class="menu-item" on:click={() => selectCategory(item)}>
             <div class='mr-2'>
               <Icon icon={item.icon} size={'small'}/>
             </div>
@@ -94,13 +93,13 @@
           </button>
         {/each}
       {/if}
-      <button class="ap-menuItem" on:click={selectWorkspace}>
+      <button class="menu-item" on:click={selectWorkspace}>
         <div class='mr-2'>
           <Icon icon={setting.icon.SelectWorkspace} size={'small'}/>
         </div>
         <Label label={setting.string.SelectWorkspace} />
       </button>
-      <button class="ap-menuItem" on:click={signOut}>
+      <button class="menu-item" on:click={signOut}>
         <div class='mr-2'>
           <Icon icon={setting.icon.Signout} size={'small'}/>
         </div>
@@ -108,5 +107,4 @@
       </button>
     {/await}
   </div></div>
-  <div class="ap-space" />
 </div>

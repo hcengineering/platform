@@ -86,7 +86,7 @@
     <UserBoxList
       _class={contact.class.Employee}
       items={object.participants}
-      title={calendar.string.Participants}
+      label={calendar.string.Participants}
       on:open={(evt) => {
         client.update(object, { $push: { participants: evt.detail._id } })
       }}

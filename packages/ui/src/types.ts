@@ -63,8 +63,9 @@ export interface Tab {
 
 export type TabModel = Tab[]
 
+export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
+export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
 export type PopupAlignment = HTMLElement | EventTarget | null | 'right' | 'top' | 'account' | 'full' | 'content' | 'middle'
-
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 
 export interface LabelAndProps {
