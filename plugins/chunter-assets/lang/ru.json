@@ -26,6 +26,7 @@
     "LastReply": "Последний ответ",
     "RepliesCount": "{replies, plural, =1 {# ответ} =2 {# ответа} =3 {# ответа} =4 {# ответа} other {# ответов}}",
     "Thread": "Обсуждение",
+    "Threads": "Обсуждения",
     "New": "Новое",
     "MarkUnread": "Отметить как непрочитанное",
     "GetNewReplies": "Получать уведомления о новых ответах",
@@ -34,6 +35,8 @@
     "UnpinMessage": "Открепить сообщение",
     "Pinned": "Закреплено:",
     "EditMessage": "Редактировать сообщение",
-    "DeleteMessage": "Удалить сообщение"
+    "DeleteMessage": "Удалить сообщение",
+    "AndYou": "{participants, plural, =0 {Только вы} other {и вы}}",
+    "ShowMoreReplies": "{count, plural, =3 {Показать еще # ответа} =4 {Показать еще # ответа} other {Показать еще # ответов}}"
   }
 }

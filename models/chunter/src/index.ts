@@ -168,6 +168,15 @@ export function createModel (builder: Builder): void {
     icon: chunter.icon.Chunter,
     hidden: false,
     navigatorModel: {
+      specials: [
+        {
+          id: 'threads',
+          label: chunter.string.Threads,
+          icon: chunter.icon.Thread,
+          component: chunter.component.Threads,
+          position: 'top'
+        }
+      ],
       spaces: [
         {
           label: chunter.string.Channels,

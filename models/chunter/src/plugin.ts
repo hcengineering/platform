@@ -26,6 +26,7 @@ export default mergeIds(chunterId, chunter, {
   component: {
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
+    Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent
   },
   action: {

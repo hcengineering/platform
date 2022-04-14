@@ -23,8 +23,8 @@
   export let isNew: boolean = false
 </script>
 
-<div class="w-full text-sm flex-center whitespace-nowrap mb-6" class:flex-reverse={reverse} class:new={isNew}>
-  <Label label={title} {params} />
+<div class="w-full text-sm flex-center whitespace-nowrap" class:flex-reverse={reverse} class:new={isNew}>
+  <div class:ml-8={!reverse} class:mr-4={reverse}><Label label={title} {params} /></div>
   <div class:ml-4={!reverse} class:mr-4={reverse} class:line />
 </div>
 
@@ -33,7 +33,7 @@
     position: relative;
     width: 100%;
     height: 1px;
-    background-color: var(--theme-chat-divider);
+    background-color: var(--theme-dialog-divider);
   }
   .new {
     .line {

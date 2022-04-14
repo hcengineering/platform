@@ -16,7 +16,7 @@
 
 import core, {
   AnyAttribute, ArrOf, AttachedDoc, Class, Client, Collection, Doc, DocumentQuery,
-  FindOptions, getCurrentAccount, Ref, RefTo, Tx, TxOperations, TxResult
+  FindOptions, FindResult, getCurrentAccount, Ref, RefTo, Tx, TxOperations, TxResult
 } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
@@ -62,7 +62,7 @@ export class LiveQuery {
   query<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    callback: (result: T[]) => void,
+    callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): void {
     this.unsubscribe()
