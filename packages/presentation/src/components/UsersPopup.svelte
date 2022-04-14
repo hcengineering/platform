@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   import { Tooltip, CheckBox } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'

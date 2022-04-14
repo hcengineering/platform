@@ -18,9 +18,9 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { ActionIcon, CircleButton, IconAdd, IconClose, Label, Tooltip, showPopup, Button } from '@anticrm/ui'
+  import { Tooltip, showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { UserInfo, Avatar, CombineAvatars, UsersPopup } from '..'
+  import presentation, { CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'
   import Members from './icons/Members.svelte'
 
@@ -33,7 +33,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAligment | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   let persons: Person[] = []
 
