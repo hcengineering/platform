@@ -1,13 +1,25 @@
 <script lang="ts">
   import chunter, { ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
+  import { Ref, Space } from '@anticrm/core'
   import { Avatar, createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { IconClose } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import { UnpinMessage } from '../index'
   import { getTime } from '../utils'
 
-  export let pinnedIds: Ref<ChunterMessage>[]
+  export let space: Ref<Space>
+
+  const pinnedQuery = createQuery()
+  let pinnedIds: Ref<ChunterMessage>[] = []
+  pinnedQuery.query(
+    chunter.class.Channel,
+    { _id: space },
+    (res) => {
+      pinnedIds = res[0]?.pinned ?? []
+    },
+    { limit: 1 }
+  )
 
   const messagesQuery = createQuery()
   let pinnedMessages: ChunterMessage[] = []
@@ -50,8 +62,10 @@
         {/await}
         <div
           class="cross"
-          on:click={() => {
-            dispatch('close', { message: message })
+          on:click={async () => {
+            if (pinnedIds.length === 1)
+              dispatch('close')
+            UnpinMessage(message)
           }}
         >
           <IconClose size="small" />

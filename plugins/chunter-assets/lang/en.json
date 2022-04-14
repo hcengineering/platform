@@ -33,6 +33,7 @@
     "TurnOffReplies": "Turn off notifications for replies",
     "PinMessage": "Pin message",
     "UnpinMessage": "Unpin message",
+    "Pinned": "Pinned:",
     "DeleteMessage": "Delete message"
   }
 }

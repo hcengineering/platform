@@ -1,24 +1,22 @@
 <script lang="ts">
   import { ChunterMessage } from '@anticrm/chunter'
-  import { Ref } from '@anticrm/core'
-  import { showPopup } from '@anticrm/ui'
+  import { Ref, Space } from '@anticrm/core'
+  import { Label, showPopup } from '@anticrm/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
-  import { UnpinMessage } from '../index'
+  import chunter from '../plugin'
 
+  export let space: Ref<Space>
   export let pinnedIds: Ref<ChunterMessage>[]
 
   function showMessages (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
-    showPopup(PinnedMessagesPopup, { pinnedIds }, ev.target, (props) => {
-      if (props) {
-        UnpinMessage(props.message)
-      }
-    })
+    showPopup(PinnedMessagesPopup, { space }, ev.target)
   }
 </script>
 
 {#if pinnedIds.length > 0}
-  <div class="bottom-divider container">
+  <div class="bottom-divider over-underline pt-2 pb-2 container">
     <div on:click={(ev) => showMessages(ev)}>
+      <Label label={chunter.string.Pinned} />
       {pinnedIds.length}
     </div>
   </div>
@@ -26,6 +24,6 @@
 
 <style lang="scss">
   .container {
-    padding-left: 0.5rem;
+    padding-left: 2.5rem;
   }
 </style>
