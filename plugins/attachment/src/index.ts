@@ -58,6 +58,8 @@ export default plugin(attachmentId, {
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
   },
   string: {
-    Files: '' as IntlString
+    Files: '' as IntlString,
+    NoFiles: '' as IntlString,
+    ShowMoreAttachments: '' as IntlString
   }
 })
