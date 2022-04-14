@@ -51,6 +51,7 @@ export default mergeIds(chunterId, chunter, {
     New: '' as IntlString,
     GetNewReplies: '' as IntlString,
     TurnOffReplies: '' as IntlString,
-    DeleteMessage: '' as IntlString
+    DeleteMessage: '' as IntlString,
+    EditMessage: '' as IntlString
   }
 })
