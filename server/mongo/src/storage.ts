@@ -29,17 +29,14 @@ import core, {
   ModelDb,
   Ref,
   ReverseLookups,
-  SortingOrder,
-  Tx,
+  SortingOrder, toFindResult, Tx,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
   TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc,
-  toFindResult,
-  WithLookup
+  TxUpdateDoc, WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
@@ -576,10 +573,6 @@ class MongoAdapter extends MongoAdapterBase {
       }
     }
   }
-
-  override async tx (tx: Tx): Promise<TxResult> {
-    return await super.tx(tx)
-  }
 }
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
@@ -604,7 +597,10 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     throw new Error('Method not implemented.')
   }
 
-  override async tx (tx: Tx): Promise<TxResult> {
+  override async tx (tx: Tx, user: string): Promise<TxResult>
+  override async tx (tx: Tx): Promise<TxResult>
+
+  override async tx (tx: Tx, user?: string): Promise<TxResult> {
     await this.txCollection().insertOne(translateDoc(tx))
     return {}
   }

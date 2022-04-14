@@ -15,12 +15,12 @@
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
   import { tooltipstore as tooltip, closeTooltip, Component } from '..'
-  import type { TooltipAligment } from '..'
+  import type { TooltipAlignment } from '..'
   import Label from './Label.svelte'
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
-  let dir: TooltipAligment
+  let dir: TooltipAlignment
   let rect: DOMRect
   let rectAnchor: DOMRect
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component

@@ -34,6 +34,7 @@
     "PinMessage": "Pin message",
     "UnpinMessage": "Unpin message",
     "Pinned": "Pinned:",
+    "EditMessage": "Edit message",
     "DeleteMessage": "Delete message"
   }
 }

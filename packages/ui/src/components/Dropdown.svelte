@@ -20,7 +20,7 @@
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
   import { showPopup, Button, Tooltip, DropdownPopup } from '..'
-  import type { AnySvelteComponent, ListItem, TooltipAligment } from '../types'
+  import type { AnySvelteComponent, ListItem, TooltipAlignment } from '../types'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString
@@ -32,7 +32,7 @@
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAligment | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   let container: HTMLElement
   let opened: boolean = false

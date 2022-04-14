@@ -56,6 +56,7 @@ export default mergeIds(chunterId, chunter, {
     PinMessage: '' as IntlString,
     UnpinMessage: '' as IntlString,
     Pinned: '' as IntlString,
-    DeleteMessage: '' as IntlString
+    DeleteMessage: '' as IntlString,
+    EditMessage: '' as IntlString
   }
 })

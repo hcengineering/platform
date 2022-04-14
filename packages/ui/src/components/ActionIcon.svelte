@@ -15,14 +15,14 @@
 
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent, TooltipAligment } from '../types'
+  import type { AnySvelteComponent, TooltipAlignment } from '../types'
 
   import Icon from './Icon.svelte'
   import Tooltip from './Tooltip.svelte'
 
   export let label: IntlString = '' as IntlString
   export let labelProps: any = undefined
-  export let direction: TooltipAligment | undefined = undefined
+  export let direction: TooltipAlignment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
   export let action: (ev: Event) => Promise<void> | void = async () => { }

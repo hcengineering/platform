@@ -17,4 +17,5 @@
 export * from './types'
 export * from './fulltext'
 export * from './storage'
+export * from './pipeline'
 export { default } from './plugin'

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { IntlString, Asset } from '@anticrm/platform'
   import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
-  import type { AnySvelteComponent, DropdownTextItem, TooltipAligment } from '../types'
+  import type { AnySvelteComponent, DropdownTextItem, TooltipAlignment } from '../types'
   import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
@@ -31,7 +31,7 @@
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAligment | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   let container: HTMLElement
   let opened: boolean = false
