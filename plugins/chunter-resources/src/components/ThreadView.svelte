@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ThreadMessage, Message } from '@anticrm/chunter'
+  import type { ThreadMessage, Message, ChunterMessage, Channel } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -57,6 +57,9 @@
     createBy: core.class.Account
   }
 
+  const pinnedQuery = createQuery()
+  let pinnedIds: Ref<ChunterMessage>[] = []
+
   $: updateQueries(_id)
 
   function updateQueries (id: Ref<Message>) {
@@ -95,6 +98,15 @@
       {
         lookup
       }
+    )
+  
+    pinnedQuery.query(
+      chunter.class.Channel,
+      { _id: currentSpace },
+      (res) => {
+        pinnedIds = res[0]?.pinned ?? []
+      },
+      { limit: 1 }
     )
   }
 
@@ -182,7 +194,11 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment message={comment} {employees} />
+      <ThreadComment
+        message={comment}
+        {employees}
+        isPinned={pinnedIds.includes(comment._id)}
+      />
     {/each}
   {/if}
 </div>

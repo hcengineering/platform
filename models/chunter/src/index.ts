@@ -35,6 +35,9 @@ export class TChannel extends TSpace implements Channel {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
 
+  @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
+  pinned?: Ref<ChunterMessage>[]
+
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
   topic?: string

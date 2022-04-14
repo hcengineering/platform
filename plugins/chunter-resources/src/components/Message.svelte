@@ -25,6 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { UnpinMessage } from '../index';
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -37,6 +38,7 @@
   export let message: WithLookup<Message>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
+  export let isPinned: boolean = false
 
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -59,6 +61,16 @@
         action: chunter.actionImpl.SubscribeMessage
       } as Action)
 
+  $: pinActions = isPinned
+    ? ({
+        label: chunter.string.UnpinMessage,
+        action: chunter.actionImpl.UnpinMessage
+      } as Action)
+    : ({
+        label: chunter.string.PinMessage,
+        action: chunter.actionImpl.PinMessage
+      } as Action)
+
   $: isEditing = false;
 
   const editAction = {
@@ -68,12 +80,20 @@
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => await client.remove(message)
+    action: async () => {
+      (await client.findAll(chunter.class.ThreadMessage, {attachedTo: message._id})).forEach(c => {
+        UnpinMessage(c)
+      })
+      UnpinMessage(message)
+      await client.remove(message)
+    }
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.Message)
     actions.push(subscribeAction)
+    actions.push(pinActions)
+
     showPopup(
       Menu,
       {

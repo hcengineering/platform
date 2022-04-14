@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import type { Message } from '@anticrm/chunter'
+  import type { ChunterMessage, Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -23,7 +23,9 @@
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MessageComponent from './Message.svelte'
+
   export let space: Ref<Space> | undefined
+  export let pinnedIds: Ref<ChunterMessage>[]
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -111,7 +113,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MessageComponent {message} {employees} on:openThread />
+      <MessageComponent {message} {employees} on:openThread isPinned={pinnedIds.includes(message._id)} />
     {/each}
   {/if}
 </div>

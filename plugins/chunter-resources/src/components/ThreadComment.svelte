@@ -24,6 +24,7 @@
   import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
+  import { UnpinMessage } from '../index';
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -33,6 +34,7 @@
 
   export let message: WithLookup<ThreadMessage>
   export let employees: Map<Ref<Employee>, Employee>
+  export let isPinned: boolean = false
 
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
@@ -53,6 +55,16 @@
         action: chunter.actionImpl.SubscribeComment
       } as Action)
 
+  $: pinActions = isPinned
+    ? ({
+        label: chunter.string.UnpinMessage,
+        action: chunter.actionImpl.UnpinMessage
+      } as Action)
+    : ({
+        label: chunter.string.PinMessage,
+        action: chunter.actionImpl.PinMessage
+      } as Action)
+
   $: isEditing = false;
 
   const editAction = {
@@ -62,12 +74,16 @@
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
-    action: async () => await client.removeDoc(message._class, message.space, message._id)
+    action: async () => {
+      await client.removeDoc(message._class, message.space, message._id)
+      UnpinMessage(message)
+    }
   }
 
   const showMenu = async (ev: Event): Promise<void> => {
     const actions = await getActions(client, message, chunter.class.ThreadMessage)
     actions.push(subscribeAction)
+    actions.push(pinActions)
     showPopup(
       Menu,
       {
