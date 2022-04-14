@@ -37,8 +37,8 @@ export class TBoard extends TSpaceWithStates implements Board {
   background!: string
 }
 
-@Model(board.class.CardLabel, core.class.AttachedDoc)
-@UX(board.string.Labels, board.icon.Card) // TODO: update icon
+@Model(board.class.CardLabel, core.class.AttachedDoc, DOMAIN_MODEL)
+@UX(board.string.Labels)
 export class TCardLabel extends TAttachedDoc implements CardLabel {
   title?: string;
   color!: number;
