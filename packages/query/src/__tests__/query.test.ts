@@ -386,10 +386,10 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect((comment as WithLookup<AttachedComment>).$lookup?.space?._id).toEqual(futureSpace._id)
+              expect(comment.$lookup?.space?._id).toEqual(futureSpace._id)
               resolve(null)
             } else {
-              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toBeUndefined()
+              expect(comment.$lookup?.space).toBeUndefined()
               attempt++
             }
           }
@@ -433,10 +433,10 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(futureSpace._id)
+              expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(futureSpace._id)
               resolve(null)
             } else {
-              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
+              expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
               attempt++
             }
           }
@@ -466,7 +466,7 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect(((comment as WithLookup<AttachedComment>).$lookup as any)?.comments).toHaveLength(attempt++)
+            expect((comment.$lookup as any)?.comments).toHaveLength(attempt++)
           }
           if (attempt === childLength) {
             resolve(null)
@@ -505,10 +505,10 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect((comment as WithLookup<AttachedComment>).$lookup?.space).toBeUndefined()
+              expect(comment.$lookup?.space).toBeUndefined()
               resolve(null)
             } else {
-              expect(((comment as WithLookup<AttachedComment>).$lookup?.space as Doc)?._id).toEqual(futureSpace)
+              expect((comment.$lookup?.space as Doc)?._id).toEqual(futureSpace)
               attempt++
             }
           }
@@ -546,10 +546,10 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect(((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
+              expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
               resolve(null)
             } else {
-              expect((((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id).toEqual(futureSpace)
+              expect(((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id).toEqual(futureSpace)
               attempt++
             }
           }
@@ -586,7 +586,7 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect(((comment as WithLookup<AttachedComment>).$lookup as any)?.comments).toHaveLength(childLength - attempt)
+            expect((comment.$lookup as any)?.comments).toHaveLength(childLength - attempt)
             attempt++
           }
           if (attempt === childLength) {
@@ -624,7 +624,7 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect(((comment as WithLookup<AttachedComment>).$lookup?.space as Space).name).toEqual(attempt.toString())
+            expect((comment.$lookup?.space as Space).name).toEqual(attempt.toString())
           }
           if (attempt > 0) {
             resolve(null)
@@ -665,7 +665,7 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect((((comment as WithLookup<AttachedComment>).$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Space).name).toEqual(attempt.toString())
+            expect(((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Space).name).toEqual(attempt.toString())
           }
           if (attempt > 0) {
             resolve(null)
@@ -700,7 +700,7 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect((((comment as WithLookup<AttachedComment>).$lookup as any)?.comments[0] as AttachedComment).message).toEqual(attempt.toString())
+            expect(((comment.$lookup as any)?.comments[0] as AttachedComment).message).toEqual(attempt.toString())
           }
           if (attempt > 0) {
             resolve(null)

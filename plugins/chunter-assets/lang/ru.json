@@ -35,6 +35,8 @@
     "UnpinMessage": "Открепить сообщение",
     "Pinned": "Закреплено:",
     "EditMessage": "Редактировать сообщение",
-    "DeleteMessage": "Удалить сообщение"
+    "DeleteMessage": "Удалить сообщение",
+    "AndYou": "{participants, plural, =0 {Только вы} other {и вы}}",
+    "ShowMoreReplies": "{count, plural, =3 {Показать еще # ответа} =4 {Показать еще # ответа} other {Показать еще # ответов}}"
   }
 }

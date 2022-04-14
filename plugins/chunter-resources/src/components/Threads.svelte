@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Message } from '@anticrm/chunter'
-  import { getCurrentAccount,Ref } from '@anticrm/core'
+  import { getCurrentAccount, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Label, Scroller } from '@anticrm/ui'
   import chunter from '../plugin'
@@ -30,16 +30,26 @@
   }, (res) => {
     const ids = new Set(res.map((c) => c.attachedTo))
     threads = Array.from(ids)
+  }, {
+    sort: {
+      createOn: SortingOrder.Descending
+    }
   })
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full divide">
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={chunter.string.Threads} /></span>
   </div>
 </div>
 <Scroller>
   {#each threads as thread (thread)}
-    <Thread _id={thread}/>
+    <div class="item"><Thread _id={thread}/></div>
   {/each}
 </Scroller>
+
+<style lang="scss">
+  .item + .item {
+    margin-top: 3rem;
+  }
+</style>

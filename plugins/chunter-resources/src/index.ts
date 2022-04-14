@@ -41,28 +41,27 @@ async function MarkUnread (object: Message): Promise<void> {
 
 async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
   const client = NotificationClientImpl.getClient()
-  const value = object.modifiedOn - 1
-  await client.updateLastView(object.attachedTo, object.attachedToClass, value, true)
+  await client.updateLastView(object.attachedTo, object.attachedToClass, object.createOn - 1, true)
 }
 
 async function SubscribeMessage (object: Message): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.updateLastView(object._id, object._class, undefined, true)
-}
-
-async function SubscribeComment (object: ThreadMessage): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
+  const client = getClient()
+  const notificationClient = NotificationClientImpl.getClient()
+  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
+    await notificationClient.updateLastView(object.attachedTo, object.attachedToClass, undefined, true)
+  } else {
+    await notificationClient.updateLastView(object._id, object._class, undefined, true)
+  }
 }
 
 async function UnsubscribeMessage (object: Message): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.unsubscribe(object._id)
-}
-
-async function UnsubscribeComment (object: ThreadMessage): Promise<void> {
-  const client = NotificationClientImpl.getClient()
-  await client.unsubscribe(object.attachedTo)
+  const client = getClient()
+  const notificationClient = NotificationClientImpl.getClient()
+  if (client.getHierarchy().isDerived(object._class, chunter.class.ThreadMessage)) {
+    await notificationClient.unsubscribe(object.attachedTo)
+  } else {
+    await notificationClient.unsubscribe(object._id)
+  }
 }
 
 async function PinMessage (message: ChunterMessage): Promise<void> {
@@ -103,9 +102,7 @@ export default async (): Promise<Resources> => ({
     MarkUnread,
     MarkCommentUnread,
     SubscribeMessage,
-    SubscribeComment,
     UnsubscribeMessage,
-    UnsubscribeComment,
     PinMessage,
     UnpinMessage
   }

@@ -107,7 +107,7 @@
   let newMessagesPos: number = -1
 </script>
 
-<div class="flex-col vScroll container" bind:this={div}>
+<div class="flex-col vScroll" bind:this={div}>
   {#if messages}
     {#each messages as message, i (message._id)}
       {#if newMessagesPos === i}
@@ -117,10 +117,3 @@
     {/each}
   {/if}
 </div>
-
-<style lang="scss">
-  .container {
-    margin: 1rem 1rem 0;
-    padding: 1.5rem 1.5rem 0px;
-  }
-</style>

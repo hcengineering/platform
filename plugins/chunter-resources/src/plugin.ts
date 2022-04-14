@@ -28,9 +28,7 @@ export default mergeIds(chunterId, chunter, {
   },
   actionImpl: {
     SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    SubscribeComment: '' as Resource<(object: Doc) => Promise<void>>,
     UnsubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    UnsubscribeComment: '' as Resource<(object: Doc) => Promise<void>>,
     PinMessage: '' as Resource<(object: Doc) => Promise<void>>,
     UnpinMessage: '' as Resource<(object: Doc) => Promise<void>>
   },
@@ -58,6 +56,8 @@ export default mergeIds(chunterId, chunter, {
     UnpinMessage: '' as IntlString,
     Pinned: '' as IntlString,
     DeleteMessage: '' as IntlString,
-    EditMessage: '' as IntlString
+    EditMessage: '' as IntlString,
+    AndYou: '' as IntlString,
+    ShowMoreReplies: '' as IntlString
   }
 })

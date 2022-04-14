@@ -15,16 +15,16 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { Message,ThreadMessage } from '@anticrm/chunter'
-  import contact,{ Employee } from '@anticrm/contact'
-  import core,{ generateId,getCurrentAccount,Ref,TxFactory } from '@anticrm/core'
+  import type { Channel, Message, ThreadMessage } from '@anticrm/chunter'
+  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+  import core, { FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { createQuery,getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
-  import ChannelSeparator from './ChannelSeparator.svelte'
+  import ChannelPresenter from './ChannelPresenter.svelte'
   import MsgView from './Message.svelte'
-  import ThreadComment from './ThreadComment.svelte'
 
   const client = getClient()
   const query = createQuery()
@@ -41,9 +41,13 @@
     createBy: core.class.Account
   }
 
-  $: updateQueries(_id)
+  let showAll = false
+  let total = 0
 
-  function updateQueries (id: Ref<Message>) {
+  $: updateQuery(_id)
+  $: updateThreadQuery(_id, showAll)
+
+  function updateQuery (id: Ref<Message>) {
     messageQuery.query(
       chunter.class.Message,
       {
@@ -57,19 +61,33 @@
         }
       }
     )
+  }
 
+  function updateThreadQuery (id: Ref<Message>, showAll: boolean) {
+    const options: FindOptions<ThreadMessage> = {
+      lookup,
+      sort: {
+        createOn: SortingOrder.Descending
+      }
+    }
+    if (!showAll) {
+      options.limit = 4
+    }
     query.query(
       chunter.class.ThreadMessage,
       {
         attachedTo: id
       },
       (res) => {
-        comments = res
+        total = res.total
+        if (!showAll && res.total > 4) {
+          comments = res.splice(0, 2).reverse()
+        } else {
+          comments = res.reverse()
+        }
         notificationClient.updateLastView(id, chunter.class.Message)
       },
-      {
-        lookup,
-      }
+      options
     )
   }
 
@@ -86,6 +104,23 @@
         })
       ))
   )
+
+  async function getParticipants (comments: ThreadMessage[], parent: Message | undefined, employees: Map<Ref<Employee>, Employee>): Promise<string[]> {
+    const refs = new Set(comments.map((p) => p.createBy))
+    if (parent !== undefined) {
+      refs.add(parent.createBy)
+    }
+    refs.delete(getCurrentAccount()._id)
+    const accounts = await client.findAll(contact.class.EmployeeAccount, { _id: { $in: Array.from(refs) as Ref<EmployeeAccount>[] } })
+    const res: string[] = []
+    for (const account of accounts) {
+      const employee = employees.get(account.employee)
+      if (employee !== undefined) {
+        res.push(formatName(employee.name))
+      }
+    }
+    return res
+  }
 
   async function onMessage (event: CustomEvent) {
     if (parent === undefined) return
@@ -116,33 +151,49 @@
     commentId = generateId()
   }
   let comments: ThreadMessage[] = []
+
+  async function getChannel (_id: Ref<Channel>): Promise<Channel | undefined> {
+    return await client.findOne(chunter.class.Channel, { _id })
+  }
 </script>
 
-<div class="header">
+<div class="ml-8 mt-4">
+  {#if parent}
+    {#await getChannel(parent.space) then channel}
+      {#if channel}
+        <ChannelPresenter value={channel} />
+      {/if}
+    {/await}
+    {#await getParticipants(comments, parent, employees) then participants}
+      {participants.join(', ')}
+      <Label label={chunter.string.AndYou} params={{ participants: participants.length }} />
+    {/await}
+  {/if}
 </div>
 <div class="flex-col content">
   {#if parent}
     <MsgView message={parent} {employees} thread />
-    {#if comments.length}
-      <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
+    {#if total > comments.length}
+      <div class="label pb-2 pt-2 pl-8 over-underline" on:click={() => { showAll = true }}><Label label={chunter.string.ShowMoreReplies} params={{ count: total - comments.length }} /></div>
     {/if}
-    {#each comments as comment, i (comment._id)}
-      <ThreadComment message={comment} {employees} />
+    {#each comments as comment (comment._id)}
+      <MsgView message={comment} {employees} thread />
     {/each}
-  {/if}
-</div>
-<div class="ref-input">
-  {#if parent}
-    <AttachmentRefInput space={parent.space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+    <div class="mr-4 ml-4 mb-4 mt-2">
+      <AttachmentRefInput space={parent.space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+    </div>
   {/if}
 </div>
 
 <style lang="scss">
   .content {
     margin: 1rem 1rem 0px;
-    padding: 1.5rem 1.5rem 0px;
+    background-color: var(--theme-border-modal);
+    border-radius: 0.75rem;
+    border: 1px solid var(--theme-zone-border);
   }
-  .ref-input {
-    margin: 1.25rem 2.5rem;
+
+  .label:hover {
+    background-color: var(--board-card-bg-hover);
   }
 </style>

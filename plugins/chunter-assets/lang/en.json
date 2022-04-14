@@ -36,6 +36,8 @@
     "UnpinMessage": "Unpin message",
     "Pinned": "Pinned:",
     "EditMessage": "Edit message",
-    "DeleteMessage": "Delete message"
+    "DeleteMessage": "Delete message",
+    "AndYou": "{participants, plural, =0 {Just you} other {and you}}",
+    "ShowMoreReplies": "Show {count} more replies"
   }
 }
