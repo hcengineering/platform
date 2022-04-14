@@ -1,4 +1,4 @@
-import { AnySvelteComponent, AnyComponent, LabelAndProps, TooltipAligment } from './types'
+import { AnySvelteComponent, AnyComponent, LabelAndProps, TooltipAlignment } from './types'
 import { IntlString } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -15,7 +15,7 @@ export const tooltipstore = writable<LabelAndProps>({
 export function showTooltip (
   label: IntlString | undefined,
   element: HTMLElement,
-  direction?: TooltipAligment,
+  direction?: TooltipAlignment,
   component?: AnySvelteComponent | AnyComponent,
   props?: any,
   anchor?: HTMLElement,

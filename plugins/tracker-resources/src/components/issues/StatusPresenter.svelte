@@ -16,6 +16,7 @@
   import { Ref } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
+  import { Tooltip } from '@anticrm/ui'
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
 
@@ -40,5 +41,7 @@
 </script>
 
 {#if value}
-  <StatusSelector kind={'icon'} shouldShowLabel={false} status={value.status} onStatusChange={handleStatusChanged} />
+  <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
+    <StatusSelector kind={'icon'} shouldShowLabel={false} status={value.status} onStatusChange={handleStatusChanged} />
+  </Tooltip>
 {/if}

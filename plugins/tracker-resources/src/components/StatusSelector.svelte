@@ -52,7 +52,7 @@
   />
 {:else if kind === 'icon'}
   <div class="flex-presenter" on:click={handleStatusEditorOpened}>
-    <div class="icon">
+    <div class="statusIcon">
       <Icon icon={issueStatuses[status].icon} size={'small'} />
     </div>
     {#if shouldShowLabel}
@@ -62,3 +62,10 @@
     {/if}
   </div>
 {/if}
+
+<style lang="scss">
+  .statusIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+</style>
