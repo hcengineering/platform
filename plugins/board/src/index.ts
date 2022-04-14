@@ -42,8 +42,6 @@ export interface BoardView extends SpaceWithStates {
  * @public
  */
 export interface CardLabel extends AttachedDoc {
-  attachedTo: Ref<Board>
-
   title: string
   color: number
 }

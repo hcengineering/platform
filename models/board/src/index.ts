@@ -22,7 +22,7 @@ import { Builder, Collection, Index, Model, Prop, TypeBoolean, TypeMarkup, TypeR
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TDoc } from '@anticrm/model-core'
+import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
@@ -35,6 +35,13 @@ import board from './plugin'
 export class TBoard extends TSpaceWithStates implements Board {
   color!: number
   background!: string
+}
+
+@Model(board.class.CardLabel, core.class.AttachedDoc)
+@UX(board.string.Labels, board.icon.Card) // TODO: update icon
+export class TCardLabel extends TAttachedDoc implements CardLabel {
+  title?: string;
+  color!: number;
 }
 
 @Model(board.class.Card, task.class.Task)
