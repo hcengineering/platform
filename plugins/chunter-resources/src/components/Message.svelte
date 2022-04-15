@@ -21,7 +21,7 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
+  import { ActionIcon, IconMoreH, Menu, showPopup, Label } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -122,15 +122,14 @@
   async function onMessageEdit (event: CustomEvent) {
     const { message: newContent, attachments: newAttachments } = event.detail
 
-    if (newContent !== message.content || newAttachments !== attachments) {
-      await client.update(
+    await client.update(
       message,
         {
           content: newContent,
-          attachments: newAttachments
+          attachments: newAttachments,
+          editedOn: Date.now()
         }
-     )
-    }
+    )
     isEditing = false
   }
 
@@ -155,6 +154,7 @@
     <div class="header">
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
+      {#if message.editedOn}<span><Label label={chunter.string.Edited}/></span>{/if}
     </div>
     {#if isEditing}
       <AttachmentRefInput 

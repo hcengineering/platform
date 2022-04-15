@@ -120,6 +120,7 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
       modifiedBy: message.modifiedBy,
       createBy: message.modifiedBy,
       createOn: message.modifiedOn,
+      editedOn: 0,
       _id: message._id as string as Ref<ThreadMessage>
     })
   }

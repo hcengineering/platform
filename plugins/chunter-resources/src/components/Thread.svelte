@@ -137,6 +137,7 @@
         content: message,
         createBy: me,
         createOn: 0,
+        editedOn: 0,
         attachments
       },
       commentId
