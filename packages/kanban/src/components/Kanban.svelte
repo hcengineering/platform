@@ -17,13 +17,11 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getPlatformColor, ScrollBox } from '@anticrm/ui'
   import { slide } from 'svelte/transition'
-  import { DocWithRank } from '../types'
+  import { DocWithRank, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'
   import KanbanPanel from './KanbanPanel.svelte'
 
-  type StateType = any
   type Item = DocWithRank & { state: StateType; doneState: StateType | null }
-  type TypeState = { _id: StateType; title: string; color: number }
   type ExtItem = { prev?: Item; it: Item; next?: Item }
   type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
 
