@@ -17,7 +17,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
   import { Channel } from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
+  import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
   import { showPopup, IconMoreV, Label } from '@anticrm/ui'
@@ -28,6 +28,8 @@
   let attachments: Attachment[] | undefined
   let selectedRowNumber: number | undefined
   let attachmentsLimit: number | undefined = 5
+  let allAttachmentsShown = false
+  const sort = { modifiedOn: SortingOrder.Descending }
 
   const showMenu = async (ev: MouseEvent, object: Doc, rowNumber: number): Promise<void> => {
     selectedRowNumber = rowNumber
@@ -45,7 +47,14 @@
       (res) => {
         attachments = res
       },
-      attachmentsLimit ? { limit: attachmentsLimit } : undefined
+      attachmentsLimit
+        ? {
+            limit: attachmentsLimit,
+            sort: sort
+          }
+        : {
+            sort: sort
+          }
     )
 </script>
 
@@ -65,12 +74,13 @@
           </div>
         </div>
       {/each}
-      {#if attachmentsLimit && attachments.length === attachmentsLimit}
+      {#if !allAttachmentsShown && attachmentsLimit && attachments.length >= attachmentsLimit}
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
             // TODO: replace this with an external attachments page
             attachmentsLimit = undefined
+            allAttachmentsShown = true
           }}
         >
           <Label label={attachment.string.ShowMoreAttachments} />

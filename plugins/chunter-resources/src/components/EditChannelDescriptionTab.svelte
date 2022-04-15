@@ -82,6 +82,6 @@
       focus
       on:change={onDescriptionChange}
     />
-    <EditChannelDescriptionAttachments channel={channel} />
+    <EditChannelDescriptionAttachments {channel} />
   </div>
 {/if}

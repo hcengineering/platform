@@ -25,7 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { UnpinMessage } from '../index';
+  import { UnpinMessage } from '../index'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -71,17 +71,17 @@
         action: chunter.actionImpl.PinMessage
       } as Action)
 
-  $: isEditing = false;
+  $: isEditing = false
 
   const editAction = {
     label: chunter.string.EditMessage,
-    action: () => isEditing = true
+    action: () => (isEditing = true)
   }
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
     action: async () => {
-      (await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach(c => {
+      ;(await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach((c) => {
         UnpinMessage(c)
       })
       UnpinMessage(message)
@@ -123,13 +123,10 @@
     const { message: newContent, attachments: newAttachments } = event.detail
 
     if (newContent !== message.content || newAttachments !== attachments) {
-      await client.update(
-      message,
-        {
-          content: newContent,
-          attachments: newAttachments
-        }
-     )
+      await client.update(message, {
+        content: newContent,
+        attachments: newAttachments
+      })
     }
     isEditing = false
   }
@@ -157,12 +154,12 @@
       <span>{getTime(message.createOn)}</span>
     </div>
     {#if isEditing}
-      <AttachmentRefInput 
-        space={message.space} 
-        _class={chunter.class.Comment} 
-        objectId={message._id} 
-        content={message.content} 
-        on:message={onMessageEdit} 
+      <AttachmentRefInput
+        space={message.space}
+        _class={chunter.class.Comment}
+        objectId={message._id}
+        content={message.content}
+        on:message={onMessageEdit}
       />
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
