@@ -131,10 +131,6 @@
     min-height: 6rem;
     user-select: none;
 
-    .filter {
-      border-bottom: 1px solid var(--divider-color);
-    }
-
     .label {
       color: var(--theme-caption-color);
       border-bottom: 1px solid var(--divider-color);
