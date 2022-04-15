@@ -16,8 +16,7 @@
   import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { getPlatformColorForText, Label } from '@anticrm/ui'
-import Button from '@anticrm/ui/src/components/Button.svelte'
+  import { getPlatformColorForText, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
@@ -77,7 +76,7 @@ import Button from '@anticrm/ui/src/components/Button.svelte'
 
   $: visibleCategories = categories.filter((it) => categoryKeys.includes(it._id))
 
-  const selectItem = (ev: Event, item: TagCategory): void => {
+  const selectItem = (item: TagCategory): void => {
     if (category === item._id) {
       category = undefined
     } else {
@@ -102,13 +101,13 @@ import Button from '@anticrm/ui/src/components/Button.svelte'
     </div>
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
-        {#each visibleCategories as item, i (item._id)}
+        {#each visibleCategories as item (item._id)}
           <div
             class="categoryElement flex-center"
             label={item.label}
             style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
-            on:click={(ev) => {
-              if (item._id !== category) selectItem(ev, item)
+            on:click={() => {
+              if (item._id !== category) selectItem(item)
             }}
           >
             {item.label} ({categoryCounts.get(item._id)?.length ?? ''})
