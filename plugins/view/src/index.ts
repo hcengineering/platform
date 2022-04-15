@@ -201,7 +201,8 @@ const view = plugin(viewId, {
   },
   component: {
     ObjectPresenter: '' as AnyComponent,
-    EditDoc: '' as AnyComponent
+    EditDoc: '' as AnyComponent,
+    SpacePresenter: '' as AnyComponent
   },
   icon: {
     Table: '' as Asset,
