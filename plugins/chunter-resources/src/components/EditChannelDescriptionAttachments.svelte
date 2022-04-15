@@ -17,7 +17,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
   import { Channel } from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
+  import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
   import { showPopup, IconMoreV, Label } from '@anticrm/ui'
@@ -25,9 +25,11 @@
   export let channel: Channel | undefined
 
   const query = createQuery()
-  let attachments: Attachment[] | undefined
-  let selectedRowNumber: number | undefined
+  let visibleAttachments: Attachment[] | undefined
+  let totalAttachments = 0
   let attachmentsLimit: number | undefined = 5
+  let selectedRowNumber: number | undefined
+  const sort = { modifiedOn: SortingOrder.Descending }
 
   const showMenu = async (ev: MouseEvent, object: Doc, rowNumber: number): Promise<void> => {
     selectedRowNumber = rowNumber
@@ -43,17 +45,25 @@
         space: channel._id
       },
       (res) => {
-        attachments = res
+        visibleAttachments = res
+        totalAttachments = res.total
       },
-      attachmentsLimit ? { limit: attachmentsLimit } : undefined
+      attachmentsLimit
+        ? {
+            limit: attachmentsLimit,
+            sort: sort
+          }
+        : {
+            sort: sort
+          }
     )
 </script>
 
 <div class="group">
   <div class="eGroupTitle"><Label label={attachment.string.Files} /></div>
-  {#if attachments?.length}
+  {#if visibleAttachments?.length}
     <div class="flex-col">
-      {#each attachments as attachment, i}
+      {#each visibleAttachments as attachment, i}
         <div class="flex-between attachmentRow" class:fixed={i === selectedRowNumber}>
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
@@ -65,7 +75,7 @@
           </div>
         </div>
       {/each}
-      {#if attachmentsLimit && attachments.length === attachmentsLimit}
+      {#if attachmentsLimit && visibleAttachments.length < totalAttachments}
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
