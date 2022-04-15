@@ -40,6 +40,8 @@
   export let thread: boolean = false
   export let isPinned: boolean = false
 
+  let refInput: AttachmentRefInput
+
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
 
@@ -163,18 +165,21 @@
       {/if}
     </div>
     {#if isEditing}
-      <AttachmentRefInput 
+      <AttachmentRefInput      
+        bind:this={refInput} 
         space={message.space} 
         _class={chunter.class.Comment} 
         objectId={message._id} 
-        content={message.content} 
+        content={message.content}
+        showSend={false}        
         on:message={onMessageEdit} 
       />
-      <div class="flex-row-reverse">
+      <div class="flex-row-reverse gap-2 reverse">
         <Button
           label={chunter.string.EditCancel}
           on:click={() => isEditing = false}
         />
+        <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
       </div>
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
