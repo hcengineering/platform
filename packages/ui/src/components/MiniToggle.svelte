@@ -50,11 +50,11 @@
       overflow: hidden;
       
       &:checked + .toggle-switch {
-        background-color: var(--primary-bg-color);
-        &:hover { background-color: var(--primary-toggle-hover); }
+        background-color: var(--toggle-on-bg-color);
+        &:hover { background-color: var(--toggle-on-bg-hover); }
         &:before {
           left: 9px;
-          background: var(--white-color);
+          background: var(--toggle-on-sw-color);
         }
       }
       &:not(:disabled) + .toggle-switch { cursor: pointer; }
@@ -71,7 +71,7 @@
       width: 22px;
       height: 14px;
       border-radius: 4.5rem;
-      background-color: var(--button-border-color);
+      background-color: var(--toggle-bg-color);
       transition: left .2s, background-color .2s;
       &:before {
         content: '';
@@ -82,10 +82,11 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--accent-bg-color);
+        background: var(--toggle-sw-color);
         // box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
         transition: all .1s ease-out;
       }
+      &:hover { background-color: var(--toggle-bg-hover); }
     }
 
     &-label {

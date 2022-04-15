@@ -86,14 +86,23 @@
   --button-border-color: #3c3f44;
   --button-border-hover: #45484e;
   --button-shadow: rgb(0 0 0 / 25%) 0px 1px 1px;
+  --button-disabled-color: #313236;
+  --noborder-bg-color: #313236;
+  --noborder-bg-hover: #37383b;
   --primary-bg-color: #5e6ad2;
   --primary-bg-hover: #717ce1;
-  --primary-toggle-hover: #828fff;
   --primary-edit-border-color: #6499ff;
   --primary-shadow: rgb(0 0 0 / 25%) 0px 1px 2px;
   --dangerous-bg-color: #eb5757;
   --dangerous-bg-hover: #ff6464;
   --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px;
+
+  --toggle-sw-color: #27282b;
+  --toggle-on-sw-color: #fff;
+  --toggle-bg-color: #3c3f44;
+  --toggle-bg-hover: #45484e;
+  --toggle-on-bg-color: #5e6ad2;
+  --toggle-on-bg-hover: #828fff;
 
   --theme-bg-color: #18181e;
   --theme-bg-selection: #282830;
@@ -176,111 +185,59 @@
   --theme-text-shadow: 0px 0px 8px rgba(255, 255, 255, 0.25);
 }
 
-/* Grey Theme */
-.theme-grey {
-  --theme-bg-color: #393844;
-  --theme-bg-selection: #454351;
-  --theme-menu-color: #2C2B35;
-  --theme-menu-selection: #37363F;
-  --theme-menu-divider: rgba(255, 255, 255, .05);
-  --theme-scroll-bar: #494852;
-  // --theme-dialog-bg: rgba(31, 31, 37, .8);
-  --theme-dialog-accent: rgba(255, 255, 255, .03);
-  --theme-dialog-divider: rgba(255, 255, 255, .1);
-  --theme-dialog-spec: rgba(47, 47, 53, .6);
-  --theme-dialog-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
-  --theme-border-modal: rgba(0, 0, 0, .2);
-  --theme-chat-selection: radial-gradient(135.96% 3333.35% at -2.36% -27.63%, rgba(210, 183, 156, 0.11) 0%, rgba(204, 196, 184, 0.0785128) 20.8%, rgba(104, 104, 114, 0.11) 100%);
-  --theme-chat-divider: rgb(66, 65, 76);
-  --theme-incoming-msg: rgba(67, 67, 72, .3);
-  --theme-outcoming-msg: rgba(67, 67, 72, .6);
-
-  --theme-card-bg: #282830;
-  --theme-card-bg-dark: rgba(222, 222, 240, .1);
-  --theme-card-divider: rgba(255, 255, 255, .1);
-  --theme-card-shadow: 0px 15px 60px rgba(24, 25, 28, .8);
-  --theme-avatar-border: rgba(255, 255, 255, .1);
-  --theme-msgbox-bg: #45444F;
-  --theme-msgbox-shadow: 0px 20px 70px rgba(0, 0, 0, .4);
-  --theme-zone-bg: rgba(255, 255, 255, .05);
-  --theme-zone-border: rgba(255, 255, 255, .2);
-  --theme-zone-border-lite: rgba(255, 255, 255, .16);
-
-  --theme-bg-accent-color: rgba(255, 255, 255, .03);
-  --theme-bg-accent-hover: rgba(255, 255, 255, .06);
-  --theme-bg-accent-press: rgba(255, 255, 255, .07);
-  --theme-bg-focused-color: rgba(255, 255, 255, .1);
-  --theme-bg-focused-border: rgba(255, 255, 255, .4);
-  --theme-bg-accent-error: rgba(251, 158, 158, .06);
-  --theme-on-color: #4474F6;
-  --theme-off-color: #494853;
-  --theme-bg-check: #F2F2F2;
-  --theme-tooltip-color: #4D4C58;
-  --theme-showmore-color: #484850;
-
-  --theme-button-bg-enabled: #3F3E4A;
-  --theme-button-bg-hovered: #45444F;
-  --theme-button-bg-pressed: #494853;
-  --theme-button-bg-disabled: #41404B;
-  --theme-button-bg-focused: #4D4C57;
-  --theme-button-bg-error: #453E49;
-  --theme-button-border-enabled: rgba(255, 255, 255, .06);
-  --theme-button-border-hovered: rgba(255, 255, 255, .08);
-  --theme-button-border-pressed: rgba(255, 255, 255, .12);
-  --theme-button-border-disabled: rgba(255, 255, 255, .06);
-  --theme-button-border-focused: rgba(255, 255, 255, .4);
-  --theme-button-border-error: rgba(205, 104, 104, .1);
-  --theme-button-trans-primary-disabled: rgba(255, 255, 255, .1);
-  --theme-circle-select: #3F3E4A;
-  --theme-circle-trans: rgba(31, 31, 37, .3);
-  --theme-circle-border: rgba(255, 255, 255, .2);
-
-  --theme-table-bg-color: rgba(255, 255, 255, .02);
-  --theme-table-bg-hover: rgba(255, 255, 255, .04);
-
-  --theme-popup-bg: rgba(222, 222, 240, .2);
-  --theme-popup-bg-hover: rgba(37, 37, 42, .4);
-  --theme-popup-border: transparent;
-  --theme-popup-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
-
-  --theme-caption-color: #fff;
-  --theme-content-accent-color: rgba(255, 255, 255, 0.8);
-  --theme-content-color: rgba(255, 255, 255, 0.6);
-  --theme-content-dark-color: rgba(255, 255, 255, 0.4);
-  --theme-content-trans-color: rgba(255, 255, 255, 0.3);
-
-  --theme-userlink-color: #b92d52;
-  --theme-userlink-hover: #b92d52;
-  --theme-doclink-color: #2d6ab9;
-  --theme-doclink-hover: #2d6ab9;
-  --theme-status-online: #6cd871;
-  --theme-shadow: 0px 4px 8px rgba(15, 15, 15, 0.5);
-}
-
 /* Light Theme */
 .theme-light {
   --body-color: #fff;
   --body-accent: #eee; // HZ
-  --content-color: #6b6f76;
-  --accent-color: #3c4149;
+  --board-bg-color: #f4f5f8;
+  --board-card-bg-color: #fff;
+  --board-card-bg-hover: rgb(252, 252, 252);
+  --board-card-shadow: rgb(0 0 0 / 6%) 0px 0px 1px;
+  --accent-bg-color: #27282b;  // Dark
+  --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
+
+  --dark-color: #90959d;
+  --content-color: #3c4149;
+  --accent-color: #282a30;
   --caption-color: #282a30;
   --white-color: #fff;
+  --caret-color: #6e5ed2;
+  --warning-color: #f2994a;  // Dark
+  --error-color: #eb5757;  // Dark
 
+  --divider-color: #00000010;
   --menu-bg-select: #f0f3f9;
   --menu-icon-hover: #282a30;
-  --divider-color: #00000010;
+  --popup-bg-color: linear-gradient(136.61deg, rgb(255, 255, 255) 13.72%, rgb(255, 255, 255) 74.3%);
+  --popup-bg-hover: #f8f9fb;  // Dark
+  --popup-divider: #eff1f4;
+  --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;  // Dark
+  --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
+  --card-overlay-color: rgba(144, 149, 157, .4);
+  --avatar-bg-color: #4f5358;  // Dark
 
   --button-bg-color: #fff;
   --button-bg-hover: #f4f5f8;
   --button-border-color: #dfe1e4;
   --button-border-hover: #c9cbcd;
   --button-shadow: rgb(0 0 0 / 7%) 0px 1px 1px;
+  --button-disabled-color: #eff1f4;
+  --noborder-bg-color: #eff1f4;
+  --noborder-bg-hover: #f4f5f8;
   --primary-bg-color: #6e79d6;
   --primary-bg-hover: #5c67c7;
+  --primary-edit-border-color: #2161dc;
   --primary-shadow: rgb(0 0 0 / 7%) 0px 1px 2px;
   --dangerous-bg-color: #eb5757;
   --dangerous-bg-hover: #d44e4e;
   --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px;
+
+  --toggle-sw-color: #fff;
+  --toggle-on-sw-color: #fff;
+  --toggle-bg-color: #dfe1e4;
+  --toggle-bg-hover: #c9cbcd;
+  --toggle-on-bg-color: #6e79d6;
+  --toggle-on-bg-hover: #535db3;
 
   --theme-bg-color: #FFFFFF;
   --theme-bg-selection: #F1F1F4;

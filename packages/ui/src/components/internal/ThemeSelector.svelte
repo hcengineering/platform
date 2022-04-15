@@ -4,7 +4,7 @@
 
   const { currentTheme, setTheme } = getContext('theme')
 
-  const themes = ['theme-light', 'theme-grey', 'theme-dark']
+  const themes = ['theme-light', 'theme-dark']
 
   let current = themes.indexOf(currentTheme)
 
