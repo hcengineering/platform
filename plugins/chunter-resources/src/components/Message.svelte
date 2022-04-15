@@ -21,7 +21,7 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, Menu, showPopup, Label } from '@anticrm/ui'
+  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -154,7 +154,13 @@
     <div class="header">
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
-      {#if message.editedOn}<span><Label label={chunter.string.Edited}/></span>{/if}
+      {#if message.editedOn}
+        <span>    
+          <Tooltip label={ui.string.TimeTooltip} props={{ value: getTime(message.editedOn) }}>
+            <Label label={chunter.string.Edited}/>
+          </Tooltip>
+        </span>
+      {/if}
     </div>
     {#if isEditing}
       <AttachmentRefInput 
@@ -213,6 +219,8 @@
       margin-left: 1rem;
 
       .header {
+        display: flex;
+        align-items: center;
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;
