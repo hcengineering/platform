@@ -21,7 +21,7 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip } from '@anticrm/ui'
+  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip, Button } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -170,6 +170,12 @@
         content={message.content} 
         on:message={onMessageEdit} 
       />
+      <div class="flex-row-reverse">
+        <Button
+          label={chunter.string.EditCancel}
+          on:click={() => isEditing = false}
+        />
+      </div>
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
       {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
