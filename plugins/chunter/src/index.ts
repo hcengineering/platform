@@ -111,7 +111,12 @@ export default plugin(chunterId, {
   string: {
     EditUpdate: '' as IntlString,
     EditCancel: '' as IntlString,
-    Comments: '' as IntlString
+    Comments: '' as IntlString,
+    Settings: '' as IntlString,
+    ArchiveChannel: '' as IntlString,
+    UnarchiveChannel: '' as IntlString,
+    ArchiveConfirm: '' as IntlString,
+    UnarchiveConfirm: '' as IntlString
   },
   app: {
     Chunter: '' as Ref<Doc>

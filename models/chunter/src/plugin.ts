@@ -31,11 +31,15 @@ export default mergeIds(chunterId, chunter, {
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
-    MarkUnread: '' as Ref<Action>
+    MarkUnread: '' as Ref<Action>,
+    ArchiveChannel: '' as Ref<Action>,
+    UnarchiveChannel: '' as Ref<Action>
   },
   actionImpl: {
     MarkUnread: '' as Resource<(object: Doc) => Promise<void>>,
-    MarkCommentUnread: '' as Resource<(object: Doc) => Promise<void>>
+    MarkCommentUnread: '' as Resource<(object: Doc) => Promise<void>>,
+    ArchiveChannel: '' as Resource<(object: Doc) => Promise<void>>,
+    UnarchiveChannel: '' as Resource<(object: Doc) => Promise<void>>
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,

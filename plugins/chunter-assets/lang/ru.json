@@ -37,6 +37,11 @@
     "EditMessage": "Редактировать сообщение",
     "DeleteMessage": "Удалить сообщение",
     "AndYou": "{participants, plural, =0 {Только вы} other {и вы}}",
-    "ShowMoreReplies": "{count, plural, =3 {Показать еще # ответа} =4 {Показать еще # ответа} other {Показать еще # ответов}}"
+    "ShowMoreReplies": "{count, plural, =3 {Показать еще # ответа} =4 {Показать еще # ответа} other {Показать еще # ответов}}",
+    "Settings": "Настройки",
+    "ArchiveChannel": "Архивировать канал",
+    "UnarchiveChannel": "Разархивировать канал",
+    "ArchiveConfirm": "Вы действительно хотите архивировать канал?",
+    "UnarchiveConfirm": "Вы действительно хотите разархивировать канал?"
   }
 }
