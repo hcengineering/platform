@@ -105,13 +105,19 @@
       ))
   )
 
-  async function getParticipants (comments: ThreadMessage[], parent: Message | undefined, employees: Map<Ref<Employee>, Employee>): Promise<string[]> {
+  async function getParticipants (
+    comments: ThreadMessage[],
+    parent: Message | undefined,
+    employees: Map<Ref<Employee>, Employee>
+  ): Promise<string[]> {
     const refs = new Set(comments.map((p) => p.createBy))
     if (parent !== undefined) {
       refs.add(parent.createBy)
     }
     refs.delete(getCurrentAccount()._id)
-    const accounts = await client.findAll(contact.class.EmployeeAccount, { _id: { $in: Array.from(refs) as Ref<EmployeeAccount>[] } })
+    const accounts = await client.findAll(contact.class.EmployeeAccount, {
+      _id: { $in: Array.from(refs) as Ref<EmployeeAccount>[] }
+    })
     const res: string[] = []
     for (const account of accounts) {
       const employee = employees.get(account.employee)
@@ -174,13 +180,25 @@
   {#if parent}
     <MsgView message={parent} {employees} thread />
     {#if total > comments.length}
-      <div class="label pb-2 pt-2 pl-8 over-underline" on:click={() => { showAll = true }}><Label label={chunter.string.ShowMoreReplies} params={{ count: total - comments.length }} /></div>
+      <div
+        class="label pb-2 pt-2 pl-8 over-underline"
+        on:click={() => {
+          showAll = true
+        }}
+      >
+        <Label label={chunter.string.ShowMoreReplies} params={{ count: total - comments.length }} />
+      </div>
     {/if}
     {#each comments as comment (comment._id)}
       <MsgView message={comment} {employees} thread />
     {/each}
     <div class="mr-4 ml-4 mb-4 mt-2">
-      <AttachmentRefInput space={parent.space} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+      <AttachmentRefInput
+        space={parent.space}
+        _class={chunter.class.ThreadMessage}
+        objectId={commentId}
+        on:message={onMessage}
+      />
     </div>
   {/if}
 </div>

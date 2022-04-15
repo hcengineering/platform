@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ThreadMessage, Message, ChunterMessage, Channel } from '@anticrm/chunter'
+  import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -98,7 +98,7 @@
         lookup
       }
     )
-  
+
     pinnedQuery.query(
       chunter.class.Channel,
       { _id: currentSpace },
@@ -198,7 +198,12 @@
   {/if}
 </div>
 <div class="ref-input">
-  <AttachmentRefInput space={currentSpace} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+  <AttachmentRefInput
+    space={currentSpace}
+    _class={chunter.class.ThreadMessage}
+    objectId={commentId}
+    on:message={onMessage}
+  />
 </div>
 
 <style lang="scss">
