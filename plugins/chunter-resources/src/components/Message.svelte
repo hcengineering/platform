@@ -25,7 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { UnpinMessage } from '../index';
+  import { UnpinMessage } from '../index'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -73,17 +73,17 @@
         action: chunter.actionImpl.PinMessage
       } as Action)
 
-  $: isEditing = false;
+  $: isEditing = false
 
   const editAction = {
     label: chunter.string.EditMessage,
-    action: () => isEditing = true
+    action: () => (isEditing = true)
   }
 
   const deleteAction = {
     label: chunter.string.DeleteMessage,
     action: async () => {
-      (await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach(c => {
+      ;(await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach((c) => {
         UnpinMessage(c)
       })
       UnpinMessage(message)
@@ -124,14 +124,10 @@
   async function onMessageEdit (event: CustomEvent) {
     const { message: newContent, attachments: newAttachments } = event.detail
 
-    await client.update(
-      message,
-        {
-          content: newContent,
-          attachments: newAttachments,
-          editedOn: Date.now()
-        }
-    )
+    await client.update(message, {
+      content: newContent,
+      attachments: newAttachments
+    })
     isEditing = false
   }
 
@@ -165,14 +161,14 @@
       {/if}
     </div>
     {#if isEditing}
-      <AttachmentRefInput      
-        bind:this={refInput} 
-        space={message.space} 
-        _class={chunter.class.Comment} 
-        objectId={message._id} 
+      <AttachmentRefInput
+        bind:this={refInput}
+        space={message.space}
+        _class={chunter.class.Comment}
+        objectId={message._id}
         content={message.content}
-        showSend={false}        
-        on:message={onMessageEdit} 
+        showSend={false}
+        on:message={onMessageEdit}
       />
       <div class="flex-row-reverse gap-2 reverse">
         <Button
