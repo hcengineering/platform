@@ -26,8 +26,6 @@
 
 {#if value !== undefined}
   <div class="flex-col-stretch h-full w-full">
-    <!-- TODO attachments-->
-    <!-- TODO checklists -->
     <div class="flex-row-streach mt-4 mb-2">
       <div class="w-9">
         <Icon icon={IconActivity} size="large" />

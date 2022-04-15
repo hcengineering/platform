@@ -29,6 +29,7 @@
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardActivity from './editor/CardActivity.svelte'
+  import CardAttachments from './editor/CardAttachments.svelte'
   import CardDetails from './editor/CardDetails.svelte'
 
   export let _id: Ref<Card>
@@ -123,7 +124,7 @@
                 />
               </div>
             </div>
-            <!-- TODO attachments-->
+            <CardAttachments value={object} />
             <!-- TODO checklists -->
             <CardActivity bind:value={object} />
           </div>
