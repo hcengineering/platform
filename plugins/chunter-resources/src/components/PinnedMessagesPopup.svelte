@@ -63,8 +63,7 @@
         <div
           class="cross"
           on:click={async () => {
-            if (pinnedIds.length === 1)
-              dispatch('close')
+            if (pinnedIds.length === 1) dispatch('close')
             UnpinMessage(message)
           }}
         >

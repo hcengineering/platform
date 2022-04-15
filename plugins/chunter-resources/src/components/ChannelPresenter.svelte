@@ -37,10 +37,7 @@
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    href="{link}"
-  >
+  <a class="flex-presenter" href={link}>
     <div class="icon">
       {#if icon}
         <Icon {icon} size={'small'} />

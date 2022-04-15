@@ -25,16 +25,21 @@
 
   let threads: Ref<Message>[] = []
 
-  query.query(chunter.class.ThreadMessage, {
-    createBy: me
-  }, (res) => {
-    const ids = new Set(res.map((c) => c.attachedTo))
-    threads = Array.from(ids)
-  }, {
-    sort: {
-      createOn: SortingOrder.Descending
+  query.query(
+    chunter.class.ThreadMessage,
+    {
+      createBy: me
+    },
+    (res) => {
+      const ids = new Set(res.map((c) => c.attachedTo))
+      threads = Array.from(ids)
+    },
+    {
+      sort: {
+        createOn: SortingOrder.Descending
+      }
     }
-  })
+  )
 </script>
 
 <div class="ac-header full divide">
@@ -44,7 +49,7 @@
 </div>
 <Scroller>
   {#each threads as thread (thread)}
-    <div class="item"><Thread _id={thread}/></div>
+    <div class="item"><Thread _id={thread} /></div>
   {/each}
 </Scroller>
 
