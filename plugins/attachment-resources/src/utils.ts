@@ -14,11 +14,13 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Space } from '@anticrm/core'
+import type { Class, Doc, Ref, Space, TxOperations as Client } from '@anticrm/core'
 import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
+import { getMetadata, setPlatformStatus, unknownError } from '@anticrm/platform'
 
-export async function uploadFile (file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }): Promise<string> {
+import attachment from './plugin'
+
+export async function uploadFile(file: File, opts?: { space: Ref<Space>; attachedTo: Ref<Doc> }): Promise<string> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   if (uploadUrl === undefined) {
@@ -28,12 +30,16 @@ export async function uploadFile (file: File, opts?: { space: Ref<Space>, attach
   const data = new FormData()
   data.append('file', file)
 
-  const params = opts !== undefined
-    ? [['space', opts.space], ['attachedTo', opts.attachedTo]]
-        .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
-        .map(([name, value]) => `${name}=${value}`)
-        .join('&')
-    : ''
+  const params =
+    opts !== undefined
+      ? [
+          ['space', opts.space],
+          ['attachedTo', opts.attachedTo]
+        ]
+          .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
+          .map(([name, value]) => `${name}=${value}`)
+          .join('&')
+      : ''
   const suffix = params === '' ? params : `?${params}`
 
   const url = `${uploadUrl}${suffix}`
@@ -52,7 +58,7 @@ export async function uploadFile (file: File, opts?: { space: Ref<Space>, attach
   return await resp.text()
 }
 
-export async function deleteFile (id: string): Promise<void> {
+export async function deleteFile(id: string): Promise<void> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   const url = `${uploadUrl as string}?file=${id}`
@@ -68,7 +74,33 @@ export async function deleteFile (id: string): Promise<void> {
   }
 }
 
-export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+export async function createAttachments(
+  client: Client,
+  list: FileList,
+  attachTo: { objectClass: Ref<Class<Doc>>; space: Ref<Space>; objectId: Ref<Doc> }
+) {
+  const { objectClass, objectId, space } = attachTo
+  try {
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        const uuid = await uploadFile(file, { space, attachedTo: objectId })
+        console.log('uploaded file uuid', uuid)
+        client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
+          name: file.name,
+          file: uuid,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified
+        })
+      }
+    }
+  } catch (err: any) {
+    setPlatformStatus(unknownError(err))
+  }
+}
+
+export function getType(type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }

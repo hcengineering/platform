@@ -15,63 +15,25 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, Label, Spinner } from '@anticrm/ui'
+
+  import { Label, Spinner } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import attachment from '../plugin'
-  import { uploadFile } from '../utils'
+  import AddAttachment from './AddAttachment.svelte'
+  import AttachmentDroppable from './AttachmentDroppable.svelte'
+
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
-  
+
   export let attachments: number | undefined = undefined
 
   let inputFile: HTMLInputElement
   let loading = 0
-
-  const client = getClient()
-
-  async function createAttachment (file: File) {
-    loading++
-    try {
-      const uuid = await uploadFile(file, { space, attachedTo: objectId })
-      console.log('uploaded file uuid', uuid)
-      client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', {
-        name: file.name,
-        file: uuid,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified
-      })
-    } catch (err: any) {
-      setPlatformStatus(unknownError(err))
-    } finally {
-      loading--
-    }
-  }
-
-  function fileSelected () {
-    const list = inputFile.files
-    if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) createAttachment(file)
-    }
-  }
-
-  function fileDrop (e: DragEvent) {
-    const list = e.dataTransfer?.files
-    if (list === undefined || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) createAttachment(file)
-    }
-  }
-
   let dragover = false
+
 </script>
 
 <div class="attachments-container">
@@ -80,54 +42,31 @@
     {#if loading}
       <Spinner />
     {:else}
-      <CircleButton
-        icon={IconAdd}
-        size={'small'}
-        selected
-        on:click={() => {
-          inputFile.click()
-        }}
-      />
+      <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
     {/if}
-    <input
-      bind:this={inputFile}
-      multiple
-      type="file"
-      name="file"
-      id="file"
-      style="display: none"
-      on:change={fileSelected}
-    />
   </div>
 
-  {#if (attachments === 0) && !loading}
-    <div
-      class="flex-col-center mt-5 zone-container"
-      class:solid={dragover}
-      on:dragover|preventDefault={() => {
-        dragover = true
-      }}
-      on:dragleave={() => {
-        dragover = false
-      }}
-      on:drop|preventDefault|stopPropagation={fileDrop}
-    >
-      <UploadDuo size={'large'} />
-      <div class="text-sm content-dark-color mt-2">
-        <Label label={attachment.string.NoAttachments} />
+  {#if attachments === 0 && !loading}
+    <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
+      <div class="flex-col-center mt-5 zone-container" class:solid={dragover}>
+        <UploadDuo size={'large'} />
+        <div class="text-sm content-dark-color mt-2" style:pointer-events="none">
+          <Label label={attachment.string.NoAttachments} />
+        </div>
+        <div class="text-sm" style:pointer-events={dragover ? 'none' : 'all'}>
+          <div class="over-underline" on:click={() => inputFile.click()}>
+            <Label label={attachment.string.UploadDropFilesHere} />
+          </div>
+        </div>
       </div>
-      <div class="text-sm">
-        <div class='over-underline' on:click={() => inputFile.click()}><Label label={attachment.string.UploadDropFilesHere} /></div>
-      </div>
-    </div>
+    </AttachmentDroppable>
   {:else}
     <Table
       _class={attachment.class.Attachment}
       config={['', 'lastModified']}
       options={{}}
       query={{ attachedTo: objectId }}
-      loadingProps={ { length: attachments ?? 0 } }
-    />
+      loadingProps={{ length: attachments ?? 0 }} />
   {/if}
 </div>
 
@@ -150,6 +89,9 @@
     background: var(--theme-bg-accent-color);
     border: 1px dashed var(--theme-zone-border-lite);
     border-radius: 0.75rem;
-    &.solid { border-style: solid; }
+    &.solid {
+      border-style: solid;
+    }
   }
+
 </style>
