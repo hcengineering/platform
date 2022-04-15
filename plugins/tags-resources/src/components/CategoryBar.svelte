@@ -17,6 +17,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
   import { getPlatformColorForText, Label } from '@anticrm/ui'
+import Button from '@anticrm/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
@@ -87,18 +88,17 @@
 </script>
 
 {#if visibleCategories.length > 0}
-  <div class="flex-between mb-4 header">
+  <div class="flex-between header">
     <div class="flex-row-center buttons">
-      <div
-        class="button flex-center"
-        class:active={category === undefined}
+      <Button
+        label={tags.string.AllCategories}
+        kind={'transparent'}
+        size={'large'}
         on:click={() => {
           category = undefined
           dispatch('change', { category, elements: [] })
         }}
-      >
-        <Label label={tags.string.AllCategories} />
-      </div>
+      />
     </div>
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
@@ -121,20 +121,20 @@
 
 <style lang="scss">
   .categoryElement {
-    padding: 0.5rem 0.75rem;
-    height: 2.5rem;
+    padding: .375rem .75rem;
+    // height: 2.5rem;
     white-space: nowrap;
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.5rem;
+    border-radius: .25rem;
     cursor: pointer;
   }
   .categoryElement + .categoryElement {
-    margin-left: 0.75rem;
+    margin-left: .125rem;
   }
 
   .header {
-    margin-left: 2.5rem;
-    margin-right: 1.75rem;
+    padding: 0 1.75rem 1rem 2.5rem;
+    border-bottom: 1px solid var(--divider-color);
     .buttons {
       padding: 0.125rem 0;
     }

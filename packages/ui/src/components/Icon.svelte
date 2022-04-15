@@ -17,7 +17,7 @@
   import { AnySvelteComponent } from '../types'
 
   export let icon: Asset | AnySvelteComponent
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'full'
+  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'full'
   export let fill = 'currentColor'
   export let filled: boolean = false
 

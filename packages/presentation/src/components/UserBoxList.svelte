@@ -79,7 +79,7 @@
       {#if persons.length > 0}
         <div class="flex-row-center flex-nowrap">
           <CombineAvatars {_class} bind:items size={'inline'} />
-          {#await translate(presentation.string.NumberMembers, { lenght: persons.length }) then text}
+          {#await translate(presentation.string.NumberMembers, { count: persons.length }) then text}
             <span class="ml-1-5">{text}</span>
           {/await}
         </div>

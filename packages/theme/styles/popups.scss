@@ -18,18 +18,20 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: min-content;
+  width: fit-content;
   min-width: 10rem;
-  max-width: 45rem;
-  max-height: 20rem;
+  max-width: 15rem;
+  max-height: 22rem;
   background: var(--popup-bg-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
   will-change: transform;
   
+  &.maxHeight { height: 22rem; }
   .header {
     border-bottom: 1px solid var(--popup-divider);
 
+    &.no-border { border-bottom-color: transparent; }
     input {
       margin: 0;
       padding: .625rem .75rem;
@@ -59,24 +61,32 @@
   .menu-item {
     flex-shrink: 0;
     justify-content: start;
-    padding: 0 .75rem;
-    height: 2rem;
+    padding: .25rem .75rem;
+    min-height: 2rem;
     text-align: left;
     color: var(--caption-color);
     cursor: pointer;
 
     &.high { height: 3rem; }
-    .icon {
+
+    .icon, .color, .tag {
+      flex-shrink: 0;
       margin-right: .75rem;
+    }
+    .icon {
       width: 1rem;
       height: 1rem;
     }
     .color {
-      margin-right: .75rem;
       width: .875rem;
       height: .875rem;
       border: 1px solid rgba(0, 0, 0, .1);
       border-radius: .25rem;
+    }
+    .tag {
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
     }
     .label {
       flex-grow: 1;
@@ -89,10 +99,49 @@
       display: flex;
       align-items: center;
       margin-right: .75rem;
-      height: 2rem;
     }
     .check-right { margin: 0 0 0 2rem; }
     &:hover { background-color: var(--popup-bg-hover); }
+  }
+  .sticky-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    &:not(:first-child)  { margin-top: 1px; }
+  }
+  .menu-group {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 0;
+    transition: height .5s ease;
+
+    &__header {
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .125rem .25rem;
+      min-height: 1.5rem;
+      font-weight: 500;
+      font-size: .75rem;
+      text-align: left;
+      color: var(--accent-color);
+      background-color: var(--button-bg-color);
+      cursor: pointer;
+
+      .icon {
+        width: .25rem;
+        transform-origin: 40% 50%;
+        transform: rotate(0deg);
+        transition: transform .15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      &.show .icon { transform: rotate(90deg); }
+      &:hover { color: var(--caption-color); }
+      &.show + .menu-group { height: auto; }
+    }
   }
 }
 

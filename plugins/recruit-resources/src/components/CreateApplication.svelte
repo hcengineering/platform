@@ -231,22 +231,22 @@
 </Card>
 
 <style lang="scss">
-  .card {
-    align-self: stretch;
-    width: calc(50% - 3rem);
-    min-height: 16rem;
+  // .card {
+  //   align-self: stretch;
+  //   width: calc(50% - 3rem);
+  //   min-height: 16rem;
 
-    &.empty {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: .75rem;
-      color: var(--dark-color);
-      border: 1px solid var(--divider-color);
-      border-radius: .25rem;
-    }
-  }
-  .arrows { width: 4rem; }
+  //   &.empty {
+  //     display: flex;
+  //     justify-content: center;
+  //     align-items: center;
+  //     font-size: .75rem;
+  //     color: var(--dark-color);
+  //     border: 1px solid var(--divider-color);
+  //     border-radius: .25rem;
+  //   }
+  // }
+  // .arrows { width: 4rem; }
   .color {
     margin-right: .375rem;
     width: .875rem;
