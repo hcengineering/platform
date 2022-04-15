@@ -90,6 +90,7 @@ export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
+    Thread: '' as Asset,
     Lock: '' as Asset
   },
   component: {

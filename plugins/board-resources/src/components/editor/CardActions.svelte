@@ -35,7 +35,6 @@
     const automationActions: CardAction[] = []
     const actions: CardAction[] = []
     const result = await getCardActions(client)
-
     for (const action of result) {
       let supported = true
       if (action.supported) {
@@ -78,7 +77,6 @@
   }
 
   fetch()
-
   $: value.members && fetch()
   $: value.isArchived && fetch()
   $: !value.isArchived && fetch()
@@ -107,8 +105,7 @@
                     const handler = await getResource(action.handler)
                     handler(value, client)
                   }
-                }}
-              />
+                }} />
             {/if}
           {/each}
         </div>

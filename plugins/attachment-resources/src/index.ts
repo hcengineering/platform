@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import AddAttachment from './components/AddAttachment.svelte'
+import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
@@ -24,7 +26,7 @@ import Photos from './components/Photos.svelte'
 import { Resources } from '@anticrm/platform'
 import { uploadFile, deleteFile } from './utils'
 
-export { Attachments, AttachmentsPresenter, AttachmentPresenter, AttachmentRefInput, AttachmentList, AttachmentDocList }
+export { AddAttachment, AttachmentDroppable, Attachments, AttachmentsPresenter, AttachmentPresenter, AttachmentRefInput, AttachmentList, AttachmentDocList }
 
 export default async (): Promise<Resources> => ({
   component: {

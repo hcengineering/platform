@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { Message } from '@anticrm/chunter'
+  import type { ChunterMessage, Message } from '@anticrm/chunter'
   import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -35,7 +35,7 @@
   import Reactions from './Reactions.svelte'
   import Replies from './Replies.svelte'
 
-  export let message: WithLookup<Message>
+  export let message: WithLookup<ChunterMessage>
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
   export let isPinned: boolean = false
@@ -81,19 +81,22 @@
   const deleteAction = {
     label: chunter.string.DeleteMessage,
     action: async () => {
-      (await client.findAll(chunter.class.ThreadMessage, {attachedTo: message._id})).forEach(c => {
+      (await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach(c => {
         UnpinMessage(c)
       })
       UnpinMessage(message)
-      await client.remove(message)
+      await client.removeDoc(message._class, message.space, message._id)
     }
   }
 
+  let menuShowed = false
+
   const showMenu = async (ev: Event): Promise<void> => {
-    const actions = await getActions(client, message, chunter.class.Message)
+    const actions = await getActions(client, message, message._class)
     actions.push(subscribeAction)
     actions.push(pinActions)
 
+    menuShowed = true
     showPopup(
       Menu,
       {
@@ -109,7 +112,10 @@
           ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },
-      ev.target as HTMLElement
+      ev.target as HTMLElement,
+      () => {
+        menuShowed = false
+      }
     )
   }
 
@@ -128,7 +134,7 @@
     isEditing = false
   }
 
-  function getEmployee (message: WithLookup<Message>): Employee | undefined {
+  function getEmployee (message: WithLookup<ChunterMessage>): Employee | undefined {
     const employee = (message.$lookup?.createBy as EmployeeAccount).employee
     if (employee !== undefined) {
       return employees.get(employee)
@@ -138,6 +144,9 @@
   function openThread () {
     dispatch('openThread', message._id)
   }
+
+  $: parentMessage = message as Message
+  $: hasReplies = (parentMessage?.replies?.length ?? 0) > 0
 </script>
 
 <div class="container">
@@ -159,24 +168,16 @@
       <div class="text"><MessageViewer message={message.content} /></div>
       {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
     {/if}
-    {#if reactions || message.replies}
+    {#if reactions || (!thread && hasReplies)}
       <div class="footer flex-col">
-        <div>
-          {#if reactions}<Reactions />{/if}
-        </div>
-        {#if !thread}
-          <div>
-            {#if message.replies?.length}<Replies
-                replies={message.replies}
-                lastReply={message.lastReply}
-                on:click={openThread}
-              />{/if}
-          </div>
+        {#if reactions}<Reactions />{/if}
+        {#if !thread && hasReplies}
+          <Replies message={parentMessage} on:click={openThread} />
         {/if}
       </div>
     {/if}
   </div>
-  <div class="buttons">
+  <div class="buttons" class:menuShowed>
     <div class="tool">
       <ActionIcon
         icon={IconMoreH}
@@ -199,8 +200,7 @@
   .container {
     position: relative;
     display: flex;
-    margin-bottom: 2rem;
-    z-index: 1;
+    padding: 2rem;
 
     .avatar {
       min-width: 2.25rem;
@@ -229,6 +229,7 @@
       }
       .text {
         line-height: 150%;
+        user-select: contain;
       }
       .attachments {
         margin-top: 1rem;
@@ -247,8 +248,8 @@
     .buttons {
       position: absolute;
       visibility: hidden;
-      top: -0.5rem;
-      right: -0.5rem;
+      top: 0.5rem;
+      right: 1rem;
       display: flex;
       flex-direction: row-reverse;
       user-select: none;
@@ -256,25 +257,18 @@
       .tool + .tool {
         margin-right: 0.5rem;
       }
+
+      &.menuShowed {
+        visibility: visible;
+      }
     }
 
     &:hover > .buttons {
       visibility: visible;
     }
-    &:hover::before {
-      content: '';
-    }
 
-    &::before {
-      position: absolute;
-      top: -1.25rem;
-      left: -1.25rem;
-      width: calc(100% + 2.5rem);
-      height: calc(100% + 2.5rem);
-      background-color: var(--theme-button-bg-enabled);
-      border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 0.75rem;
-      z-index: -1;
+    &:hover {
+      background-color: var(--board-card-bg-hover);
     }
   }
 </style>

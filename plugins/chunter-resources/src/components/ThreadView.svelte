@@ -26,7 +26,6 @@
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
-  import ThreadComment from './ThreadComment.svelte'
 
   const client = getClient()
   const query = createQuery()
@@ -92,7 +91,7 @@
       },
       (res) => {
         comments = res
-        newMessagesPos = newMessagesStart(comments)
+        newMessagesPos = newMessagesStart(comments, $lastViews)
         notificationClient.updateLastView(id, chunter.class.Message)
       },
       {
@@ -153,8 +152,8 @@
   }
   let comments: ThreadMessage[] = []
 
-  function newMessagesStart (comments: ThreadMessage[]): number {
-    const lastView = $lastViews.get(_id)
+  function newMessagesStart (comments: ThreadMessage[], lastViews: Map<Ref<Doc>, number>): number {
+    const lastView = lastViews.get(_id)
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index]
@@ -165,7 +164,7 @@
 
   $: markUnread($lastViews)
   function markUnread (lastViews: Map<Ref<Doc>, number>) {
-    const newPos = newMessagesStart(comments)
+    const newPos = newMessagesStart(comments, lastViews)
     if (newPos !== -1 || newMessagesPos === -1) {
       newMessagesPos = newPos
     }
@@ -194,11 +193,7 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <ThreadComment
-        message={comment}
-        {employees}
-        isPinned={pinnedIds.includes(comment._id)}
-      />
+      <MsgView message={comment} {employees} thread isPinned={pinnedIds.includes(comment._id)} />
     {/each}
   {/if}
 </div>
@@ -230,10 +225,6 @@
         opacity: 1;
       }
     }
-  }
-  .content {
-    margin: 1rem 1rem 0px;
-    padding: 1.5rem 1.5rem 0px;
   }
   .ref-input {
     margin: 1.25rem 2.5rem;

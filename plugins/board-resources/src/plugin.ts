@@ -54,6 +54,8 @@ export default mergeIds(boardId, board, {
     Checklist: '' as IntlString,
     Dates: '' as IntlString,
     Attachments: '' as IntlString,
+    AddAttachment: '' as IntlString,
+    DropFileToUpload: '' as IntlString,
     CustomFields: '' as IntlString,
     Automation: '' as IntlString,
     AddButton: '' as IntlString,

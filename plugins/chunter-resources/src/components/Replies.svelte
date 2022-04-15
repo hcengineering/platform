@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
-  import { Ref, Timestamp } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import { Label, TimeSince } from '@anticrm/ui'
   import chunter from '../plugin'
 
-  export let replies: Ref<Employee>[] = []
-  export let lastReply: Timestamp = new Date().getTime()
-  $: employees = new Set(replies)
+  export let message: Message
+  $: lastReply = message.lastReply ?? new Date().getTime()
+  $: employees = new Set(message.replies)
 
   const shown: number = 4
   let showReplies: Employee[] = []
@@ -56,9 +57,9 @@
     {/if}
   </div>
   <div class="whitespace-nowrap ml-2 mr-2 over-underline">
-    <Label label={chunter.string.RepliesCount} params={{ replies: replies.length }} />
+    <Label label={chunter.string.RepliesCount} params={{ replies: message.replies?.length ?? 0 }} />
   </div>
-  {#if replies.length > 1}
+  {#if (message.replies?.length ?? 0) > 1}
     <div class="mr-1">
       <Label label={chunter.string.LastReply} />
     </div>

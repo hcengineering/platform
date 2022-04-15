@@ -1,5 +1,5 @@
-//
-// Copyright © 2020 Anticrm Platform Contributors.
+<!--
+// Copyright © 2022 Hardcore Engineering Inc
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,17 +11,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Attachment } from '@anticrm/attachment'
+  import { AttachmentPresenter } from '@anticrm/attachment-resources'
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import chunter, { chunterId } from '@anticrm/chunter'
+  export let value: Attachment
+  // TODO: implement
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(chunter.icon, {
-  Chunter: `${icons}#chunter`,
-  Hashtag: `${icons}#hashtag`,
-  Thread: `${icons}#thread`,
-  Lock: `${icons}#lock`
-})
+</script>
 
-addStringsLoader(chunterId, async (lang: string) => await import(`../lang/${lang}.json`))
+<div>
+  <AttachmentPresenter {value} />
+</div>
