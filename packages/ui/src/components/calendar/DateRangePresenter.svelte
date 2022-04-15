@@ -364,7 +364,7 @@
     white-space: nowrap;
     line-height: 1.5rem;
     color: var(--accent-color);
-    background-color: var(--button-bg-color);
+    background-color: var(--noborder-bg-color);
     border: 1px solid transparent;
     border-radius: .25rem;
     box-shadow: var(--button-shadow);
@@ -392,7 +392,7 @@
       cursor: pointer;
 
       &:hover {
-        background-color: var(--button-bg-hover);
+        background-color: var(--noborder-bg-hover);
         .btn-icon {
           &.normal { color: var(--caption-color); }
           &.warning { color: var(--warning-color); }
@@ -407,7 +407,7 @@
       }
     }
     &:disabled {
-      background-color: #30323655;
+      background-color: var(--button-disabled-color);
       cursor: default;
 
       &:hover {
