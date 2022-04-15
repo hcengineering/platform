@@ -25,10 +25,10 @@
   export let channel: Channel | undefined
 
   const query = createQuery()
-  let attachments: Attachment[] | undefined
-  let selectedRowNumber: number | undefined
+  let visibleAttachments: Attachment[] | undefined
+  let totalAttachments = 0
   let attachmentsLimit: number | undefined = 5
-  let allAttachmentsShown = false
+  let selectedRowNumber: number | undefined
   const sort = { modifiedOn: SortingOrder.Descending }
 
   const showMenu = async (ev: MouseEvent, object: Doc, rowNumber: number): Promise<void> => {
@@ -45,7 +45,8 @@
         space: channel._id
       },
       (res) => {
-        attachments = res
+        visibleAttachments = res
+        totalAttachments = res.total
       },
       attachmentsLimit
         ? {
@@ -60,9 +61,9 @@
 
 <div class="group">
   <div class="eGroupTitle"><Label label={attachment.string.Files} /></div>
-  {#if attachments?.length}
+  {#if visibleAttachments?.length}
     <div class="flex-col">
-      {#each attachments as attachment, i}
+      {#each visibleAttachments as attachment, i}
         <div class="flex-between attachmentRow" class:fixed={i === selectedRowNumber}>
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
@@ -74,13 +75,12 @@
           </div>
         </div>
       {/each}
-      {#if !allAttachmentsShown && attachmentsLimit && attachments.length >= attachmentsLimit}
+      {#if attachmentsLimit && visibleAttachments.length < totalAttachments}
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
             // TODO: replace this with an external attachments page
             attachmentsLimit = undefined
-            allAttachmentsShown = true
           }}
         >
           <Label label={attachment.string.ShowMoreAttachments} />
