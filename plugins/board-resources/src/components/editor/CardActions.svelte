@@ -27,14 +27,13 @@
   export let value: Card
   const client = getClient()
 
-  const suggestedActions: CardAction[] = []
-  const addToCardActions: CardAction[] = []
-  const automationActions: CardAction[] = []
-  const actions: CardAction[] = []
-
   let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
 
   async function fetch() {
+    const suggestedActions: CardAction[] = []
+    const addToCardActions: CardAction[] = []
+    const automationActions: CardAction[] = []
+    const actions: CardAction[] = []
     const result = await getCardActions(client)
     for (const action of result) {
       let supported = true
@@ -77,7 +76,11 @@
     ]
   }
 
-  $: fetch()
+  fetch()
+  $: value.members && fetch()
+  $: value.isArchived && fetch()
+  $: !value.isArchived && fetch()
+
 </script>
 
 {#if value}
