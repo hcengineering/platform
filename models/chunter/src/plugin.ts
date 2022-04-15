@@ -48,6 +48,7 @@ export default mergeIds(chunterId, chunter, {
     Chat: '' as IntlString,
     CreateBy: '' as IntlString,
     Create: '' as IntlString,
+    Edit: '' as IntlString,
     MarkUnread: '' as IntlString,
     LastMessage: '' as IntlString,
     PinnedMessages: '' as IntlString

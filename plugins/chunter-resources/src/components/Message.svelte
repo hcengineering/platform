@@ -21,7 +21,7 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
+  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip, Button } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -39,6 +39,8 @@
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
   export let isPinned: boolean = false
+
+  let refInput: AttachmentRefInput
 
   $: employee = getEmployee(message)
   $: attachments = (message.$lookup?.attachments ?? []) as Attachment[]
@@ -122,12 +124,10 @@
   async function onMessageEdit (event: CustomEvent) {
     const { message: newContent, attachments: newAttachments } = event.detail
 
-    if (newContent !== message.content || newAttachments !== attachments) {
-      await client.update(message, {
-        content: newContent,
-        attachments: newAttachments
-      })
-    }
+    await client.update(message, {
+      content: newContent,
+      attachments: newAttachments
+    })
     isEditing = false
   }
 
@@ -152,15 +152,31 @@
     <div class="header">
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
+      {#if message.editedOn}
+        <span>    
+          <Tooltip label={ui.string.TimeTooltip} props={{ value: getTime(message.editedOn) }}>
+            <Label label={chunter.string.Edited}/>
+          </Tooltip>
+        </span>
+      {/if}
     </div>
     {#if isEditing}
       <AttachmentRefInput
+        bind:this={refInput}
         space={message.space}
         _class={chunter.class.Comment}
         objectId={message._id}
         content={message.content}
+        showSend={false}
         on:message={onMessageEdit}
       />
+      <div class="flex-row-reverse gap-2 reverse">
+        <Button
+          label={chunter.string.EditCancel}
+          on:click={() => isEditing = false}
+        />
+        <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
+      </div>
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
       {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
@@ -210,6 +226,8 @@
       margin-left: 1rem;
 
       .header {
+        display: flex;
+        align-items: center;
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;

@@ -57,6 +57,9 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
 
   @Prop(TypeTimestamp(), chunter.string.Create)
   createOn!: Timestamp
+
+  @Prop(TypeTimestamp(), chunter.string.Edit)
+  editedOn?: Timestamp
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
