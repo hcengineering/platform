@@ -45,7 +45,6 @@
         content: message,
         createOn: 0,
         createBy: me,
-        editedOn: 0,
         attachments
       },
       _id
