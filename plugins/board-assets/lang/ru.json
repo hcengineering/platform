@@ -59,6 +59,12 @@
     "Create": "Создать",
     "CreateDescription": "Можно создать отдельные карточки для каждой строки ({number}) или одну с длинным названием.",
     "CreateSingle": "Создать одну",
-    "CreateMultiple": "Создать несколько ({number})"
+    "CreateMultiple": "Создать несколько ({number})",
+    "StartDate": "Начало",
+    "DueDate": "Срок",
+    "Save": "Сохранить",
+    "Remove": "Удалить",
+    "Cancel": "Закрыть",
+    "NullDate": "М/Д/ГГГГ"
   }
 }

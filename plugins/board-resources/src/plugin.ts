@@ -80,7 +80,13 @@ export default mergeIds(boardId, board, {
     Create: '' as IntlString,
     CreateDescription: '' as IntlString,
     CreateSingle: '' as IntlString,
-    CreateMultiple: '' as IntlString
+    CreateMultiple: '' as IntlString,
+    StartDate: '' as IntlString,
+    DueDate: '' as IntlString,
+    Save: '' as IntlString,
+    Remove: '' as IntlString,
+    Cancel: '' as IntlString,
+    NullDate: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

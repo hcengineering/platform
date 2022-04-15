@@ -99,7 +99,7 @@
       <div class="text-md font-medium">
         <Label label={board.string.Dates} />
       </div>
-      <DatePresenter value={value.date} on:click={dateHandler} />
+      <DatePresenter {value} on:click={dateHandler} />
     </div>
   {/if}
 {/if}
