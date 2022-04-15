@@ -42,7 +42,7 @@ export interface BoardView extends SpaceWithStates {
  * @public
  */
 export interface CardLabel extends AttachedDoc {
-  title?: string
+  title: string
   color: number
 }
 

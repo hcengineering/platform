@@ -40,7 +40,7 @@ export class TBoard extends TSpaceWithStates implements Board {
 @Model(board.class.CardLabel, core.class.AttachedDoc, DOMAIN_MODEL)
 @UX(board.string.Labels)
 export class TCardLabel extends TAttachedDoc implements CardLabel {
-  title?: string;
+  title!: string;
   color!: number;
 }
 
