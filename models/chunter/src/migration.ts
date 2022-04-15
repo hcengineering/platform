@@ -14,31 +14,29 @@
 //
 
 import { Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import core, { Client, Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
+import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
-
-export async function createDeps (client: Client): Promise<void> {
-  const tx = new TxOperations(client, core.account.System)
-
-  await createGeneral(tx)
-  await createRandom(tx)
-}
 
 export async function createGeneral (tx: TxOperations): Promise<void> {
   const createTx = await tx.findOne(core.class.TxCreateDoc, {
     objectId: chunter.space.General
   })
   if (createTx === undefined) {
-    await tx.createDoc(chunter.class.Channel, core.space.Space, {
-      name: 'general',
-      description: 'General Channel',
-      topic: 'General Channel',
-      private: false,
-      archived: false,
-      members: []
-    }, chunter.space.General)
+    await tx.createDoc(
+      chunter.class.Channel,
+      core.space.Space,
+      {
+        name: 'general',
+        description: 'General Channel',
+        topic: 'General Channel',
+        private: false,
+        archived: false,
+        members: []
+      },
+      chunter.space.General
+    )
   }
 }
 
@@ -47,19 +45,26 @@ export async function createRandom (tx: TxOperations): Promise<void> {
     objectId: chunter.space.Random
   })
   if (createTx === undefined) {
-    await tx.createDoc(chunter.class.Channel, core.space.Space, {
-      name: 'random',
-      description: 'Random Talks',
-      topic: 'Random Talks',
-      private: false,
-      archived: false,
-      members: []
-    }, chunter.space.Random)
+    await tx.createDoc(
+      chunter.class.Channel,
+      core.space.Space,
+      {
+        name: 'random',
+        description: 'Random Talks',
+        topic: 'Random Talks',
+        private: false,
+        archived: false,
+        members: []
+      },
+      chunter.space.Random
+    )
   }
 }
 
 export async function setCreate (client: TxOperations): Promise<void> {
-  const messages = (await client.findAll(chunter.class.Message, { })).filter((m) => m.createBy === undefined).map((m) => m._id)
+  const messages = (await client.findAll(chunter.class.Message, {}))
+    .filter((m) => m.createBy === undefined)
+    .map((m) => m._id)
   if (messages.length === 0) return
   const txes = await client.findAll(core.class.TxCreateDoc, { objectId: { $in: messages } })
   const promises = txes.map(async (tx) => {
@@ -77,13 +82,17 @@ export async function migrateMessages (client: MigrationClient): Promise<void> {
     attachedTo: { $exists: false }
   })
   for (const message of messages) {
-    await client.update(DOMAIN_CHUNTER, {
-      _id: message._id
-    }, {
-      attachedTo: message.space,
-      attachedToClass: chunter.class.Channel,
-      collection: 'messages'
-    })
+    await client.update(
+      DOMAIN_CHUNTER,
+      {
+        _id: message._id
+      },
+      {
+        attachedTo: message.space,
+        attachedToClass: chunter.class.Channel,
+        collection: 'messages'
+      }
+    )
   }
 
   const txes = await client.find<TxCreateDoc<Doc>>(DOMAIN_TX, {
@@ -91,13 +100,17 @@ export async function migrateMessages (client: MigrationClient): Promise<void> {
     objectClass: chunter.class.Message
   })
   for (const tx of txes) {
-    await client.update(DOMAIN_TX, {
-      _id: tx._id
-    }, {
-      'attributes.attachedTo': tx.objectSpace,
-      'attributes.attachedToClass': chunter.class.Channel,
-      'attributes.collection': 'messages'
-    })
+    await client.update(
+      DOMAIN_TX,
+      {
+        _id: tx._id
+      },
+      {
+        'attributes.attachedTo': tx.objectSpace,
+        'attributes.attachedToClass': chunter.class.Channel,
+        'attributes.collection': 'messages'
+      }
+    )
   }
 }
 
@@ -130,14 +143,18 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
     'attributes.attachedToClass': chunter.class.Message
   })
   for (const tx of txes) {
-    await client.update(DOMAIN_TX, {
-      _id: tx._id
-    }, {
-      objectClass: chunter.class.ThreadMessage,
-      'attributes.createBy': tx.modifiedBy,
-      'attributes.createOn': tx.modifiedOn,
-      'attributes.content': tx.attributes.message
-    })
+    await client.update(
+      DOMAIN_TX,
+      {
+        _id: tx._id
+      },
+      {
+        objectClass: chunter.class.ThreadMessage,
+        'attributes.createBy': tx.modifiedBy,
+        'attributes.createOn': tx.modifiedOn,
+        'attributes.content': tx.attributes.message
+      }
+    )
   }
 }
 

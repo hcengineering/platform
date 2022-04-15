@@ -22,7 +22,6 @@ import { createModel as attachmentModel } from '@anticrm/model-attachment'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as contactModel } from '@anticrm/model-contact'
 import { createModel as coreModel } from '@anticrm/model-core'
-import { createDemo } from '@anticrm/model-demo'
 import { createModel as gmailModel } from '@anticrm/model-gmail'
 import { createModel as inventoryModel } from '@anticrm/model-inventory'
 import { createModel as leadModel } from '@anticrm/model-lead'
@@ -98,7 +97,6 @@ const builders: [(b: Builder) => void, string][] = [
   [serverGmailModel, 'server-gmail'],
   [serverTelegramModel, 'server-telegram'],
   [trackerModel, 'tracker'],
-  [createDemo, 'demo'],
   [boardModel, 'board']
 ]
 
@@ -124,5 +122,4 @@ builder.createDoc(core.class.Version, core.space.Model, version, core.version.Mo
 export default builder
 
 // Export upgrade procedures
-export { createDeps } from './creation'
 export { migrateOperations } from './migration'

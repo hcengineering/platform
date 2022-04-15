@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +15,7 @@
 
 import { createClient, Client } from '@anticrm/core'
 import { getMetadata, getResource } from '@anticrm/platform'
-import { createDeps } from '@anticrm/model-all'
+import { migrateOperations } from '@anticrm/model-all'
 import { connect } from './connection'
 import clientPlugin from '@anticrm/client'
 
@@ -32,7 +32,9 @@ export default async () => {
       GetClient: async (): Promise<Client> => {
         if (client === undefined) {
           client = await createClient(connect)
-          await createDeps(client)
+          for (const op of migrateOperations) {
+            await op.upgrade(client)
+          }
         }
         // Check if we had dev hook for client.
         const hook = getMetadata(clientPlugin.metadata.ClientHook)

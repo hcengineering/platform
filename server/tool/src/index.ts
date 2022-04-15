@@ -15,7 +15,7 @@
 
 import contact from '@anticrm/contact'
 import core, { DOMAIN_TX, Tx, Client as CoreClient, Domain, IndexKind, DOMAIN_MODEL } from '@anticrm/core'
-import builder, { createDeps, migrateOperations } from '@anticrm/model-all'
+import builder, { migrateOperations } from '@anticrm/model-all'
 import { Client } from 'minio'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
@@ -99,7 +99,9 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
     console.log('creating data...')
     const connection = await connect(transactorUrl, dbName, true)
     try {
-      await createDeps(connection)
+      for (const op of migrateOperations) {
+        await op.upgrade(connection)
+      }
     } catch (e) {
       console.log(e)
     } finally {

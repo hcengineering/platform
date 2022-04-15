@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,20 +13,4 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount } from '@anticrm/contact'
-import core, { generateId } from '@anticrm/core'
-import { Builder } from '@anticrm/model'
-import contact from '@anticrm/model-contact'
-
-export function createDemo (builder: Builder): void {
-  const rosamund = generateId<Employee>()
-  const account = generateId<EmployeeAccount>()
-
-  builder.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
-    email: 'rosamund@hc.engineering',
-    employee: rosamund,
-    name: 'Chen,Rosamund'
-  }, account, account)
-}
-
-export { createDeps } from './creation'
+export { demoOperation } from './migration'

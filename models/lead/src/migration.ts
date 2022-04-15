@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,9 +13,11 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@anticrm/core'
+import { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
+import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
+import task, { KanbanTemplate, createKanban } from '@anticrm/task'
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -39,11 +40,50 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
+  const defaultKanban = {
+    states: [
+      { color: 9, title: 'Incoming' },
+      { color: 10, title: 'Negotation' },
+      { color: 1, title: 'Offer preparing' },
+      { color: 0, title: 'Make a decision' },
+      { color: 11, title: 'Contract conclusion' },
+      { color: 9, title: 'Done' }
+    ],
+    doneStates: [
+      { isWon: true, title: 'Won' },
+      { isWon: false, title: 'Lost' }
+    ]
+  }
+
+  return await createKanbanTemplate(tx, {
+    kanbanId: lead.template.DefaultFunnel,
+    space: lead.space.FunnelTemplates as Ref<Doc> as Ref<Space>,
+    title: 'Default funnel',
+    states: defaultKanban.states,
+    doneStates: defaultKanban.doneStates
+  })
+}
+
+async function createDefaultKanban (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(task.class.Kanban, {
+    attachedTo: lead.space.DefaultFunnel
+  })
+  if (current !== undefined) return
+  const defaultTmpl = await createDefaultKanbanTemplate(tx)
+  await createKanban(tx, lead.space.DefaultFunnel, defaultTmpl)
+}
+
+async function createDefaults (tx: TxOperations): Promise<void> {
+  await createSpace(tx)
+  await createSequence(tx, lead.class.Lead)
+  await createDefaultKanban(tx)
+}
+
 export const leadOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
-    await createSpace(ops)
+    await createDefaults(ops)
   }
 }

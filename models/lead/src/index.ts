@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -26,7 +25,7 @@ import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import type { } from '@anticrm/view'
+import type {} from '@anticrm/view'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -120,8 +119,7 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const leadLookup: Lookup<Lead> =
-  {
+  const leadLookup: Lookup<Lead> = {
     attachedTo: [lead.mixin.Customer, { _id: { channels: contact.class.Channel } }],
     state: task.class.State,
     doneState: task.class.DoneState
@@ -139,7 +137,11 @@ export function createModel (builder: Builder): void {
       '$lookup.attachedTo',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
@@ -186,6 +188,5 @@ export function createModel (builder: Builder): void {
   )
 }
 
-export { createDeps } from './creation'
 export { leadOperation } from './migration'
 export { default } from './plugin'
