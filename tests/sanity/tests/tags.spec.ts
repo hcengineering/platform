@@ -28,7 +28,7 @@ test.describe('recruit tests', () => {
     // Click text=Add/Create Skill Suggested Cancel >> button
     await page.click('.buttons-group button:nth-child(3)')
     // Fill [placeholder="Please\ type\ Skill\ title"]
-    await page.fill('[placeholder="Please\ type\ \ title"]', 's1')
+    await page.fill('[placeholder="Please\\ type\\ \\ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button
     await page.click('text=Create more Create >> button')
     await page.click('button:has-text("Other (1)")')
