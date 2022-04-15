@@ -215,10 +215,6 @@ export function createModel (builder: Builder): void {
     },
     view.action.Move
   )
-
-  builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: view.component.ObjectPresenter
-  })
 }
 
 export default view
