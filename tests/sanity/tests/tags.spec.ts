@@ -24,17 +24,19 @@ test.describe('recruit tests', () => {
     // Fill [placeholder="Appleseed"]
     await page.fill('[placeholder="Appleseed"]', 'Dooliutl')
     // Click .ml-4 .tooltip-trigger .flex-center
-    await page.click('#add-tag')
+    await page.click('button:has-text("Skills")')
     // Click text=Add/Create Skill Suggested Cancel >> button
-    await page.click('#new-tag')
+    await page.click('.buttons-group button:nth-child(3)')
     // Fill [placeholder="Please\ type\ Skill\ title"]
-    await page.fill('[placeholder="Please\\ type\\ Skill\\ title"]', 's1')
+    await page.fill('[placeholder="Please\ type\ \ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button
     await page.click('text=Create more Create >> button')
+    await page.click('button:has-text("Other (1)")')
     // Click text=s1
     await page.click('text=s1')
     // Click :nth-match(:text("Cancel"), 2)
-    await page.click('button:has-text("Cancel")')
+    // await page.click('button:has-text("Cancel")')
+    await page.keyboard.press('Escape')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
   })
@@ -74,11 +76,13 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')
     // Click #add-tag div div
-    await page.click('#add-tag div div')
+    await page.click('button:has-text("Skills")')
+    await page.click('button:has-text("Backend development (1)")')
     // Click text=java
     await page.click('text=java')
     // Click :nth-match(:text("Cancel"), 2)
-    await page.click('button:has-text("Cancel")')
+    // await page.click('button:has-text("Cancel")')
+    await page.keyboard.press('Escape')
     // Click [placeholder="John"]
     await page.click('[placeholder="John"]')
     // Fill [placeholder="John"]
