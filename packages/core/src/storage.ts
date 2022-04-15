@@ -24,6 +24,10 @@ import type { Tx } from './tx'
 export type QuerySelector<T> = {
   $in?: T[]
   $nin?: T[]
+  $gt?: T extends number ? number : never
+  $gte?: T extends number ? number : never
+  $lt?: T extends number ? number : never
+  $lte?: T extends number ? number : never
   $like?: string
   $regex?: string
   $options?: string
@@ -49,11 +53,15 @@ export type DocumentQuery<T extends Doc> = {
 /**
  * @public
  */
-export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null | undefined ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+export type ToClassRefT<T extends object, P extends keyof T> = T[P] extends Ref<infer X> | null | undefined
+  ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>]
+  : never
 /**
  * @public
  */
-export type ToClassRefTA<T extends object, P extends keyof T> = T[P] extends Array<Ref<infer X>> | null | undefined ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>] : never
+export type ToClassRefTA<T extends object, P extends keyof T> = T[P] extends Array<Ref<infer X>> | null | undefined
+  ? Ref<Class<X>> | [Ref<Class<X>>, Lookup<X>]
+  : never
 /**
  * @public
  */

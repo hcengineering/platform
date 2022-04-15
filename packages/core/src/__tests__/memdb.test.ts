@@ -36,13 +36,15 @@ class ClientModel extends ModelDb implements Client {
     return this
   }
 
-  async findOne<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<WithLookup<T> | undefined> {
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
     return (await this.findAll(_class, query, options)).shift()
   }
 
-  async close (): Promise<void> {
-
-  }
+  async close (): Promise<void> {}
 }
 
 async function createModel (): Promise<{ model: ClientModel, hierarchy: Hierarchy, txDb: TxDb }> {
@@ -84,7 +86,13 @@ describe('memdb', () => {
     const result2 = await client.findAll(core.class.Space, {})
     expect(result2).toHaveLength(3)
 
-    await client.createDoc(core.class.Space, core.space.Model, { private: false, name: 'NewSpace', description: '', members: [], archived: false })
+    await client.createDoc(core.class.Space, core.space.Model, {
+      private: false,
+      name: 'NewSpace',
+      description: '',
+      members: [],
+      archived: false
+    })
     const result3 = await client.findAll(core.class.Space, {})
     expect(result3).toHaveLength(4)
   })
@@ -92,7 +100,7 @@ describe('memdb', () => {
   it('should query model', async () => {
     const { model } = await createModel()
     const result = await model.findAll(core.class.Class, {})
-    const names = result.map(d => d._id)
+    const names = result.map((d) => d._id)
     expect(names.includes(core.class.Class)).toBe(true)
     const result2 = await model.findAll(core.class.Class, { _id: undefined })
     expect(result2.length).toBe(0)
@@ -108,7 +116,9 @@ describe('memdb', () => {
     const { model } = await createModel()
     const ops = new TxOperations(model, core.account.System)
 
-    await ops.createMixin<Doc, TestMixin>(core.class.Obj, core.class.Class, core.space.Model, test.mixin.TestMixin, { arr: ['hello'] })
+    await ops.createMixin<Doc, TestMixin>(core.class.Obj, core.class.Class, core.space.Model, test.mixin.TestMixin, {
+      arr: ['hello']
+    })
     const objClass = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
     expect(objClass['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello']))
 
@@ -160,6 +170,24 @@ describe('memdb', () => {
       space: { $in: [core.space.Model, core.space.Tx] }
     })
     expect(multipleParam.length).toBeGreaterThan(5)
+
+    const classes = await model.findAll(core.class.Class, {})
+    const gt = await model.findAll(core.class.Class, {
+      kind: { $gt: 1 }
+    })
+    expect(gt.length).toBe(classes.filter((p) => p.kind > 1).length)
+    const gte = await model.findAll(core.class.Class, {
+      kind: { $gte: 1 }
+    })
+    expect(gte.length).toBe(classes.filter((p) => p.kind >= 1).length)
+    const lt = await model.findAll(core.class.Class, {
+      kind: { $lt: 1 }
+    })
+    expect(lt.length).toBe(classes.filter((p) => p.kind < 1).length)
+    const lte = await model.findAll(core.class.Class, {
+      kind: { $lt: 1 }
+    })
+    expect(lte.length).toBe(classes.filter((p) => p.kind <= 1).length)
   })
 
   it('should query model like params', async () => {
@@ -260,25 +288,51 @@ describe('memdb', () => {
     const spaces = await client.findAll(core.class.Space, {})
     expect(spaces).toHaveLength(2)
 
-    const first = await client.addCollection(test.class.TestComment, core.space.Model, spaces[0]._id, spaces[0]._class, 'comments', {
-      message: 'msg'
-    })
+    const first = await client.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'msg'
+      }
+    )
 
-    const second = await client.addCollection(test.class.TestComment, core.space.Model, first, test.class.TestComment, 'comments', {
-      message: 'msg2'
-    })
+    const second = await client.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      first,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'msg2'
+      }
+    )
 
     await client.addCollection(test.class.TestComment, core.space.Model, spaces[0]._id, spaces[0]._class, 'comments', {
       message: 'msg3'
     })
 
-    const simple = await client.findAll(test.class.TestComment, { _id: first }, { lookup: { attachedTo: spaces[0]._class } })
+    const simple = await client.findAll(
+      test.class.TestComment,
+      { _id: first },
+      { lookup: { attachedTo: spaces[0]._class } }
+    )
     expect(simple[0].$lookup?.attachedTo).toEqual(spaces[0])
 
-    const nested = await client.findAll(test.class.TestComment, { _id: second }, { lookup: { attachedTo: [test.class.TestComment, { attachedTo: spaces[0]._class } as any] } })
+    const nested = await client.findAll(
+      test.class.TestComment,
+      { _id: second },
+      { lookup: { attachedTo: [test.class.TestComment, { attachedTo: spaces[0]._class } as any] } }
+    )
     expect((nested[0].$lookup?.attachedTo as any).$lookup?.attachedTo).toEqual(spaces[0])
 
-    const reverse = await client.findAll(spaces[0]._class, { _id: spaces[0]._id }, { lookup: { _id: { comments: test.class.TestComment } } })
+    const reverse = await client.findAll(
+      spaces[0]._class,
+      { _id: spaces[0]._id },
+      { lookup: { _id: { comments: test.class.TestComment } } }
+    )
     expect((reverse[0].$lookup as any).comments).toHaveLength(2)
   })
 
@@ -306,7 +360,11 @@ describe('memdb', () => {
       text: 'qwe2'
     })
 
-    const results = await client.findAll(test.class.TestMixinTodo, {}, { lookup: { attachedTo: test.mixin.TaskMixinTodos } })
+    const results = await client.findAll(
+      test.class.TestMixinTodo,
+      {},
+      { lookup: { attachedTo: test.mixin.TaskMixinTodos } }
+    )
     expect(results.length).toEqual(2)
     const attached = results[0].$lookup?.attachedTo
     expect(attached).toBeDefined()
