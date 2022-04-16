@@ -59,6 +59,12 @@
     "Create": "Create",
     "CreateDescription": "If you want, we can create a card for every new line ({number}). You can also create one card with a long title.",
     "CreateSingle": "Just one card",
-    "CreateMultiple": "Create {number} cards"
+    "CreateMultiple": "Create {number} cards",
+    "StartDate": "Start date",
+    "DueDate": "Due date",
+    "Save": "Save",
+    "Remove": "Remove",
+    "Cancel": "Cancel",
+    "NullDate": "M/D/YYYY"
   }
 }

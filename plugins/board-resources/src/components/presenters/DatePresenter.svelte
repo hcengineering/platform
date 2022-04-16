@@ -1,25 +1,26 @@
 <script lang="ts">
-  import type { CardDate } from '@anticrm/board'
+  import type { Card } from '@anticrm/board'
+  import { getClient } from '@anticrm/presentation'
   import { CheckBox, DatePresenter } from '@anticrm/ui'
 
-  // TODO: implement
-  export let value: CardDate
+  export let value: Card
 
+  const client = getClient()
+  const {date} = value
+  let isChecked = date?.isChecked
 </script>
 
-{#if value}
+{#if date}
   <div class="flex-presenter flex-gap-1 h-full">
-    <CheckBox checked={value.isChecked} />
-    <div class="flex-center h-full">
+    <CheckBox bind:checked={isChecked} on:value={() => client.update(value, {date: {...date, isChecked}})}/>
+    <div class="flex-center h-full" on:click>
       <div class="flex-row-center background-button-bg-color border-radius-1 w-full">
-        {#if value.startDate && value.dueDate}
-          <DatePresenter bind:value={value.startDate} showIcon={false} />
-          -
-          <DatePresenter bind:value={value.dueDate} withTime={true} showIcon={false} />
-        {:else if value.startDate}
-          <DatePresenter bind:value={value.startDate} />
-        {:else if value.dueDate}
-          <DatePresenter bind:value={value.dueDate} withTime={true} showIcon={false} />
+        {#if date.startDate}
+          <DatePresenter bind:value={date.startDate} />
+        {/if}
+        {#if date.startDate && date.dueDate}-{/if}
+        {#if date.dueDate}
+          <DatePresenter bind:value={date.dueDate} withTime={true} showIcon={false} />
         {/if}
       </div>
     </div>
