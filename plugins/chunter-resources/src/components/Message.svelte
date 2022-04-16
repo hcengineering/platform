@@ -164,7 +164,7 @@
       <AttachmentRefInput
         bind:this={refInput}
         space={message.space}
-        _class={chunter.class.Comment}
+        _class={message._class}
         objectId={message._id}
         content={message.content}
         showSend={false}

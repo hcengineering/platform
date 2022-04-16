@@ -195,7 +195,7 @@
     <div class="mr-4 ml-4 mb-4 mt-2">
       <AttachmentRefInput
         space={parent.space}
-        _class={chunter.class.Comment}
+        _class={chunter.class.ThreadMessage}
         objectId={commentId}
         on:message={onMessage}
       />

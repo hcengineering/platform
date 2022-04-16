@@ -198,7 +198,12 @@
   {/if}
 </div>
 <div class="ref-input">
-  <AttachmentRefInput space={currentSpace} _class={chunter.class.Comment} objectId={commentId} on:message={onMessage} />
+  <AttachmentRefInput
+    space={currentSpace}
+    _class={chunter.class.ThreadMessage}
+    objectId={commentId}
+    on:message={onMessage}
+  />
 </div>
 
 <style lang="scss">
