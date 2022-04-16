@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,10 +13,11 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@anticrm/core'
+import { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createDeps } from './creation'
+import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
+import task, { createKanban, KanbanTemplate } from '@anticrm/task'
 import board from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -40,11 +40,46 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
+  const defaultKanban = {
+    states: [
+      { color: 9, title: 'To do' },
+      { color: 9, title: 'Done' }
+    ],
+    doneStates: [
+      { isWon: true, title: 'Won' },
+      { isWon: false, title: 'Lost' }
+    ]
+  }
+
+  return await createKanbanTemplate(tx, {
+    kanbanId: board.template.DefaultBoard,
+    space: board.space.BoardTemplates as Ref<Doc> as Ref<Space>,
+    title: 'Default board',
+    states: defaultKanban.states,
+    doneStates: defaultKanban.doneStates
+  })
+}
+
+async function createDefaultKanban (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(task.class.Kanban, {
+    attachedTo: board.space.DefaultBoard
+  })
+  if (current !== undefined) return
+  const defaultTmpl = await createDefaultKanbanTemplate(tx)
+  await createKanban(tx, board.space.DefaultBoard, defaultTmpl)
+}
+
+async function createDefaults (tx: TxOperations): Promise<void> {
+  await createSpace(tx)
+  await createSequence(tx, board.class.Card)
+  await createDefaultKanban(tx)
+}
+
 export const boardOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
-    await createSpace(ops)
-    await createDeps(ops)
+    await createDefaults(ops)
   }
 }

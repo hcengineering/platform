@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,7 +17,18 @@
 import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeBoolean, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
+import {
+  Builder,
+  Collection,
+  Index,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeMarkup,
+  TypeRef,
+  TypeString,
+  UX
+} from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -435,6 +445,5 @@ export function createModel (builder: Builder): void {
   )
 }
 
-export { createDeps } from './creation'
 export { boardOperation } from './migration'
 export { default } from './plugin'

@@ -31,10 +31,12 @@ import { templatesOperation } from '@anticrm/model-templates'
 import { viewOperation } from '@anticrm/model-view'
 import { trackerOperation } from '@anticrm/model-tracker'
 import { boardOperation } from '@anticrm/model-board'
+import { demoOperation } from '@anticrm/model-demo'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
   chunterOperation,
+  demoOperation,
   gmailOperation,
   templatesOperation,
   telegramOperation,

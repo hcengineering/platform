@@ -1,5 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,15 +13,47 @@
 // limitations under the License.
 //
 
-import {
-  MigrateOperation, MigrationClient, MigrationUpgradeClient
-} from '@anticrm/model'
-import { createDeps } from './creation'
+import core, { TxOperations } from '@anticrm/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { Team } from '@anticrm/tracker'
+import tracker from './plugin'
+
+async function createDefaultTeam (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(tracker.class.Team, {
+    _id: tracker.team.DefaultTeam
+  })
+
+  const currentDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: tracker.team.DefaultTeam
+  })
+
+  // Create new if not deleted by customers.
+  if (current === undefined && currentDeleted === undefined) {
+    await tx.createDoc<Team>(
+      tracker.class.Team,
+      core.space.Space,
+      {
+        name: 'Default',
+        description: 'Default team',
+        private: false,
+        members: [],
+        archived: false,
+        identifier: 'TSK',
+        sequence: 0
+      },
+      tracker.team.DefaultTeam
+    )
+  }
+}
+
+async function createDefaults (tx: TxOperations): Promise<void> {
+  await createDefaultTeam(tx)
+}
 
 export const trackerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await createDeps(client)
+    const tx = new TxOperations(client, core.account.System)
+    await createDefaults(tx)
   }
 }

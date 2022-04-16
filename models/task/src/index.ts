@@ -1,5 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,11 +18,14 @@ import contact from '@anticrm/contact'
 import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Space, Timestamp } from '@anticrm/core'
 import {
   Builder,
-  Collection, Hidden, Implements,
+  Collection,
+  Hidden,
+  Implements,
   Index,
   Mixin,
   Model,
-  Prop, TypeBoolean,
+  Prop,
+  TypeBoolean,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -37,16 +40,29 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type {
-  DoneState, DoneStateTemplate, Issue, Kanban,
-  KanbanCard, KanbanTemplate, KanbanTemplateSpace, LostState, LostStateTemplate, Project, Sequence, State, StateTemplate, Task,
-  TodoItem, WonState, WonStateTemplate
+  DoneState,
+  DoneStateTemplate,
+  Issue,
+  Kanban,
+  KanbanCard,
+  KanbanTemplate,
+  KanbanTemplateSpace,
+  LostState,
+  LostStateTemplate,
+  Project,
+  Sequence,
+  State,
+  StateTemplate,
+  Task,
+  TodoItem,
+  WonState,
+  WonStateTemplate
 } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
 import type { ActionTarget } from '@anticrm/view'
 import task from './plugin'
 
-export { createDeps, createKanbanTemplate } from './creation'
-export { taskOperation } from './migration'
+export { taskOperation, createKanbanTemplate, createSequence } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
@@ -312,7 +328,11 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
       'modifiedOn'
     ]
@@ -492,11 +512,16 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
-    icon: task.icon.Task,
-    label: task.string.SearchTask,
-    query: task.completion.IssueQuery
-  }, task.completion.IssueCategory)
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: task.icon.Task,
+      label: task.string.SearchTask,
+      query: task.completion.IssueQuery
+    },
+    task.completion.IssueCategory
+  )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: task.class.Task,

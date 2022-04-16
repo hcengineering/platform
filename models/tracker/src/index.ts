@@ -1,5 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,8 +18,12 @@ import contact from '@anticrm/contact'
 import { Domain, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
 import {
   Builder,
-  Collection, Hidden, Index, Model,
-  Prop, TypeDate,
+  Collection,
+  Hidden,
+  Index,
+  Model,
+  Prop,
+  TypeDate,
   TypeMarkup,
   TypeNumber,
   TypeRef,
@@ -35,7 +39,6 @@ import tracker from './plugin'
 
 import workbench from '@anticrm/model-workbench'
 
-export { createDeps } from './creation'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 
@@ -47,17 +50,17 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
 @Model(tracker.class.Team, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Team, tracker.icon.Team, tracker.string.Team)
 export class TTeam extends TSpace implements Team {
-   @Prop(TypeString(), tracker.string.Title)
-   @Index(IndexKind.FullText)
-   reamLogo!: IntlString
+  @Prop(TypeString(), tracker.string.Title)
+  @Index(IndexKind.FullText)
+  reamLogo!: IntlString
 
-   @Prop(TypeString(), tracker.string.Identifier)
-   @Index(IndexKind.FullText)
-   identifier!: IntlString
+  @Prop(TypeString(), tracker.string.Identifier)
+  @Index(IndexKind.FullText)
+  identifier!: IntlString
 
-   @Prop(TypeNumber(), tracker.string.Number)
-   @Hidden()
-   sequence!: number
+  @Prop(TypeNumber(), tracker.string.Number)
+  @Hidden()
+  sequence!: number
 }
 
 /**
@@ -120,28 +123,25 @@ export class TIssue extends TDoc implements Issue {
 @Model(tracker.class.Document, core.class.Doc, DOMAIN_TRACKER)
 @UX(tracker.string.Document, tracker.icon.Document, tracker.string.Document)
 export class TDocument extends TDoc implements Document {
-   @Prop(TypeString(), tracker.string.Title)
-   @Index(IndexKind.FullText)
-   title!: string
+  @Prop(TypeString(), tracker.string.Title)
+  @Index(IndexKind.FullText)
+  title!: string
 
-   @Prop(TypeString(), tracker.string.DocumentIcon)
-   icon!: string | null
+  @Prop(TypeString(), tracker.string.DocumentIcon)
+  icon!: string | null
 
-   @Prop(TypeString(), tracker.string.DocumentColor)
-   color!: number
+  @Prop(TypeString(), tracker.string.DocumentColor)
+  color!: number
 
-   @Prop(TypeMarkup(), tracker.string.Description)
-   @Index(IndexKind.FullText)
-   content!: Markup
+  @Prop(TypeMarkup(), tracker.string.Description)
+  @Index(IndexKind.FullText)
+  content!: Markup
 
-   declare space: Ref<Team>
+  declare space: Ref<Team>
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TTeam,
-    TIssue
-  )
+  builder.createModel(TTeam, TIssue)
 
   builder.createDoc(
     workbench.class.Application,
@@ -213,7 +213,8 @@ export function createModel (builder: Builder): void {
                 component: tracker.component.Projects
               }
             ]
-          }]
+          }
+        ]
       },
       navHeaderComponent: tracker.component.NewIssueHeader
     },
