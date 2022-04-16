@@ -15,26 +15,37 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { TagElement } from '@anticrm/tags'
-  import ui, { ActionIcon, Button, EditWithIcon, IconAdd, IconSearch, Label, showPopup } from '@anticrm/ui'
+  import { translate } from '@anticrm/platform'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  import { TagCategory, TagElement } from '@anticrm/tags'
+  import { CheckBox, Button, Icon, IconAdd, IconClose, Label, showPopup, getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
-  import TagItem from './TagItem.svelte'
+  import IconView from './icons/View.svelte'
+  import IconViewHide from './icons/ViewHide.svelte'
 
   export let targetClass: Ref<Class<Doc>>
-  export let title: string
-  export let caption: IntlString = ui.string.Suggested
+  export let placeholder: IntlString = presentation.string.Search
   export let addRef: (tag: TagElement) => Promise<void>
+  export let removeTag: (tag: TagElement) => Promise<void>
   export let selected: Ref<TagElement>[] = []
+  export let keyLabel: string = ''
 
   let search: string = ''
+  let searchElement: HTMLInputElement
+  let show: boolean = false
   let objects: TagElement[] = []
-  let available: TagElement[] = []
+  let categories: TagCategory[] = []
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
+
+  const client = getClient()
+  client.findAll(tags.class.TagCategory, { targetClass }).then((res) => { categories = res })
+
+  let phTraslate: string = ''
+  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
 
   // TODO: Add $not: {$in: []} query
   $: query.query(
@@ -46,70 +57,141 @@
     { limit: 200 }
   )
 
-  $: available = objects.filter((it) => !selected.includes(it._id))
-
-  let anchor: HTMLElement
   async function createTagElement (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass, keyTitle: title }, anchor)
+    showPopup(CreateTagElement, { targetClass }, 'top')
   }
   async function addTag (element: TagElement): Promise<void> {
     await addRef(element)
     selected = [...selected, element._id]
   }
+
+  const isSelected = (element: TagElement): boolean => {
+    if (selected.filter(p => p === element._id).length > 0) return true
+    return false
+  }
+  const checkSelected = (element: TagElement): void => {
+    if (isSelected(element)) {
+      selected = selected.filter(p => p !== element._id)
+      removeTag(element)
+    } else {
+      selected.push(element._id)
+      addTag(element)
+    }
+    objects = objects
+    categories = categories
+    dispatch('update', selected)
+  }
+  const toggleGroup = (ev: MouseEvent): void => {
+    const el: HTMLElement = ev.currentTarget as HTMLElement
+    el.classList.toggle('show')
+  }
+  const getCount = (cat: TagCategory): string => {
+    const count = objects.filter(el => el.category === cat._id).filter((it) => selected.includes(it._id)).length
+    if (count > 0) return count.toString()
+    return ''
+  }
 </script>
 
-<div class="antiPopup antiPopup-withHeader antiPopup-withTitle">
-  <div class="ap-title">
-    <Label label={tags.string.AddTagTooltip} params={{ word: title }} />
-  </div>
-  <div class="ap-header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={tags.string.SearchCreate} focus>
-      <svelte:fragment slot="extra">
-        <div id='new-tag' class="ml-27" bind:this={anchor}>
-          <ActionIcon
-            label={tags.string.AddNowTooltip}
-            labelProps={{ word: title }}
-            icon={IconAdd}
-            action={createTagElement}
-            size={'small'}
-          />
+<div class="selectPopup maxHeight">
+  <div class="header no-border">
+    <div class="flex-between flex-grow pr-2">
+      <div class="flex-grow">
+        <input bind:this={searchElement} type="text" bind:value={search} placeholder={phTraslate} style="width: 100%;" on:change/>
+      </div>
+      <div class="buttons-group small-gap">
+        <div class="clear-btn" class:show={search !== ''} on:click={() => {
+          search = ''
+          searchElement.focus()
+        }}>
+          {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
-      </svelte:fragment>
-    </EditWithIcon>
-    <div class="ap-caption">
-      <Label label={caption} />
+        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => show = !show} />
+        <Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />
+      </div>
     </div>
   </div>
-  <div class="ap-space" />
-  <div class="ap-scroll">
-    <div class="flex flex-wrap" style={'max-height: 15rem;'}>
-      {#each available as element}
-        <div
-          class="hover-trans"
-          on:click={() => {
-            addTag(element)
-          }}
-        >
-          <div class="flex-between">
-            <TagItem
-              {element}
-              action={IconAdd}
-              on:action={() => {
-                addTag(element)
-              }}
-            />
+  <div class="scroll">
+    <div class="box">
+      {#each categories as cat}
+        {#if objects.filter(el => el.category === cat._id).length > 0}
+          <div class="sticky-wrapper">
+            <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
+              <div class="flex-row-center">
+                <span class="mr-1-5">{cat.label}</span>
+                <div class="icon">
+                  <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0,0L6,3L0,6Z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="flex-row-center text-xs">
+                <span class="content-color mr-1">({objects.filter(el => el.category === cat._id).length})</span>
+                <span class="counter">{getCount(cat)}</span>
+              </div>
+            </button>
+            <div class="menu-group">
+              {#each objects.filter(el => el.category === cat._id) as element}
+                <button class="menu-item" on:click={() => {
+                  checkSelected(element)
+                }}>
+                  <div class="check pointer-events-none">
+                    <CheckBox checked={isSelected(element)} primary />
+                  </div>
+                  <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
+                  {element.title}
+                </button>
+              {/each}
+            </div>
           </div>
-        </div>
+        {/if}
       {/each}
+      {#if objects.length === 0}
+        <div class="empty">
+          <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
+        </div>
+      {/if}
     </div>
-  </div>
-  <div class="ap-footer">
-    <Button
-      label={tags.string.CancelLabel}
-      size={'small'}
-      on:click={() => {
-        dispatch('close')
-      }}
-    />
   </div>
 </div>
+
+<style lang="scss">
+  .clear-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+
+    .icon {
+      width: .625rem;
+      height: .625rem;
+    }
+
+    &.show {
+      color: var(--content-color);
+      background-color: var(--button-border-color);
+      cursor: pointer;
+      &:hover {
+        color: var(--accent-color);
+        background-color: var(--button-border-hover);
+      }
+    }
+  }
+  .counter {
+    padding-right: .125rem;
+    min-width: 1.5rem;
+    text-align: right;
+    font-size: .8125rem;
+    color: var(--caption-color);
+  }
+  .empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: .75rem;
+    color: var(--dark-color);
+    border-top: 1px solid var(--popup-divider);
+  }
+</style>

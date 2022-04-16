@@ -31,6 +31,7 @@
   let modalHTML: HTMLElement
   let componentInstance: any
   let show: boolean = false
+  let height: number
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -61,11 +62,12 @@
     }
   }
   afterUpdate(() => fitPopup())
+  $: if (height) fitPopup()
 </script>
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
-<div class="popup" bind:this={modalHTML} style={`z-index: ${zIndex + 1};`}>
+<div class="popup" bind:this={modalHTML} bind:clientHeight={height} style={`z-index: ${zIndex + 1};`}>
   <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
 </div>
 <div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />

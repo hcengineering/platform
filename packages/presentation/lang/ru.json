@@ -15,6 +15,6 @@
     "Search": "Поиск...",
     "Unassigned": "Не назначен",
     "CreateMore": "Создать еще",
-    "NumberMembers": "{lenght, plural, =0 {нет участников} =1 {1 участик} other {# участника}}"
+    "NumberMembers": "{count, plural, =0 {нет участников} =1 {1 участик} other {# участника}}"
   }
 }

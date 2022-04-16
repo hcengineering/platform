@@ -87,7 +87,8 @@
     "Participants": "Участники",
     "NoParticipants": "Участники не добавлены",
     "PersonsLabel": "{name}",
-    "AddDescription": "Add description"
+    "AddDescription": "Add description",
+    "NumberSkills": "{count, plural, =0 {нет навыков} =1 {1 навык} =2 {2 навыка} other {# навыков}}"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

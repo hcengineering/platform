@@ -415,29 +415,26 @@
   {#if channels.length > 0}
     <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
   {/if}
-  <div class="flex-col">
-    <span class="text-sm fs-bold content-accent-color"><Label label={recruit.string.SkillsLabel} /></span>
-    <div class="flex-grow">
-      <Component
-        is={tags.component.TagsEditor}
-        props={{ items: skills, key, targetClass: recruit.mixin.Candidate, showTitle: false, elements }}
-        on:open={(evt) => {
-          addTagRef(evt.detail)
-        }}
-        on:delete={(evt) => {
-          skills = skills.filter((it) => it._id !== evt.detail)
-        }}
-      />
-    </div>
-  </div>
   <svelte:fragment slot="pool">
-    <div class="flex-between w-full">
-      <span class="ml-2 content-color overflow-label"><Label label={recruit.string.WorkLocationPreferences} /></span>
-      <div class="buttons-group small-gap">
-        <YesNo label={recruit.string.Onsite} bind:value={object.onsite} />
-        <YesNo label={recruit.string.Remote} bind:value={object.remote} />
-      </div>
-    </div>
+    <YesNo label={recruit.string.Onsite} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.onsite} />
+    <YesNo label={recruit.string.Remote} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.remote} />
+    <Component
+      is={tags.component.TagsEditor}
+      props={{
+        items: skills,
+        key,
+        targetClass: recruit.mixin.Candidate,
+        showTitle: false,
+        elements,
+        countLabel: recruit.string.NumberSkills
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        skills = skills.filter((it) => it._id !== evt.detail)
+      }}
+    />
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button

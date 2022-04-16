@@ -42,7 +42,7 @@
     }
   }
 
-  function showCreateDialog (ev: Event) {
+  function showCreateDialog () {
     showPopup(CreateTagElement, { targetClass, keyTitle }, 'top')
   }
   const opt: FindOptions<TagElement> = {
@@ -65,7 +65,7 @@
       updateResultQuery(search, category)
     }}
   />
-  <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
 <CategoryBar

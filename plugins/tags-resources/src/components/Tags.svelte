@@ -63,4 +63,5 @@
   targetClass={_class}
   on:open={(evt) => addRef(evt.detail)}
   on:delete={(evt) => removeTag(evt.detail)}
+  countLabel={key.attr.label}
 />
