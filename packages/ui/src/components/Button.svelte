@@ -126,7 +126,7 @@
       .btn-icon { color: var(--caption-color); }
     }
     &:disabled {
-      color: rgb(var(--accent-color) / 40%);
+      color: rgb(var(--caption-color) / 40%);
       cursor: not-allowed;
     }
 
@@ -144,25 +144,25 @@
         border-color: var(--button-border-hover);
       }
       &:disabled {
-        background-color: #30323655;
-        border-color: #3c3f4455;
+        background-color: var(--button-disabled-color);
+        border-color: transparent;
       }
     }
     &.no-border {
       font-weight: 400;
       color: var(--accent-color);
-      background-color: var(--button-bg-color);
+      background-color: var(--noborder-bg-color);
       box-shadow: var(--button-shadow);
 
       &:hover {
         color: var(--caption-color);
-        background-color: var(--button-bg-hover);
+        background-color: var(--noborder-bg-hover);
 
         .btn-icon { color: var(--caption-color); }
       }
       &:disabled {
         color: var(--content-color);
-        background-color: #30323655;
+        background-color: var(--button-disabled-color);
         cursor: default;
         &:hover {
           color: var(--content-color);
@@ -197,7 +197,7 @@
       border-color: var(--primary-bg-color);
       box-shadow: var(--primary-shadow);
 
-      .btn-icon { color: var(--caption-color); }
+      .btn-icon { color: var(--white-color); }
       &:hover { background-color: var(--primary-bg-hover); }
       &:disabled {
         background-color: #5e6ad255;

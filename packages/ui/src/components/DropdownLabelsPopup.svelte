@@ -41,7 +41,7 @@
         <button class="menu-item flex-between" on:click={() => { dispatch('close', item.id) }}>
           <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
           {#if item.id === selected}
-            <div class="check"><CheckBox checked primary /></div>
+            <div class="check-right"><CheckBox checked primary /></div>
           {/if}
         </button>
       {/each}

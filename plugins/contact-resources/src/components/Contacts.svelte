@@ -39,7 +39,7 @@
   }
 </script>
 
-<div class="antiPanel-component filled">
+<div class="antiPanel-component">
   <div class="ac-header full">
     <div class="ac-header__wrap-title">
       <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'}/></div>

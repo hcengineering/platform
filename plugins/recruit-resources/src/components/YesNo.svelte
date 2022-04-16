@@ -57,7 +57,7 @@
     line-height: 1.5rem;
     white-space: nowrap;
     color: var(--accent-color);
-    background-color: var(--button-bg-color);
+    background-color: var(--noborder-bg-color);
     border: 1px solid transparent;
     border-radius: .25rem;
     box-shadow: var(--button-shadow);
@@ -71,7 +71,7 @@
     }
     &:hover {
       color: var(--caption-color);
-      background-color: var(--button-bg-hover);
+      background-color: var(--noborder-bg-hover);
       transition-duration: 0;
       
       .btn-icon { color: var(--caption-color); }

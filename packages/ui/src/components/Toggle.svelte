@@ -43,11 +43,11 @@
       overflow: hidden;
       
       &:checked + .toggle-switch {
-        background-color: var(--primary-bg-color);
-        &:hover { background-color: var(--primary-toggle-hover); }
+        background-color: var(--toggle-on-bg-color);
+        &:hover { background-color: var(--toggle-on-bg-hover); }
         &:before {
           left: .75rem;
-          background: var(--white-color);
+          background: var(--toggle-on-sw-color);
         }
       }
       &:not(:disabled) + .toggle-switch { cursor: pointer; }
@@ -64,7 +64,7 @@
       width: 2rem;
       height: 1.5rem;
       border-radius: 4.5rem;
-      background-color: var(--button-border-color);
+      background-color: var(--toggle-bg-color);
       transition: left .2s, background-color .2s;
       &:before {
         content: '';
@@ -75,10 +75,11 @@
         width: 1rem;
         height: 1rem;
         border-radius: 50%;
-        background: var(--body-color);
+        background: var(--toggle-sw-color);
         box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
         transition: .15s;
       }
+      &:hover { background-color: var(--toggle-bg-hover); }
     }
   }
 </style>
