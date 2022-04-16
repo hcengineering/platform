@@ -217,7 +217,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: view.component.ObjectPresenter
+    presenter: view.component.SpacePresenter
   })
 }
 

@@ -21,6 +21,7 @@ import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
+import SpacePresenter from './components/SpacePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
@@ -69,6 +70,7 @@ export default async (): Promise<Resources> => ({
     Move: Move
   },
   component: {
+    SpacePresenter,
     StringEditor,
     StringPresenter,
     NumberEditor,
