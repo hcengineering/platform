@@ -49,7 +49,10 @@ const predicates: Record<string, PredicateFactory> = {
   },
 
   $like: (query: string, propertyKey: string): Predicate => {
-    const searchString = query.split('%').map(it => escapeLikeForRegexp(it)).join('.*')
+    const searchString = query
+      .split('%')
+      .map((it) => escapeLikeForRegexp(it))
+      .join('.*')
     const regex = RegExp(`^${searchString}$`, 'i')
 
     return (docs) => execPredicate(docs, propertyKey, (value) => regex.test(value))
@@ -58,11 +61,25 @@ const predicates: Record<string, PredicateFactory> = {
   $regex: (o: { $regex: string, $options: string }, propertyKey: string): Predicate => {
     const re = new RegExp(o.$regex, o.$options)
     return (docs) => execPredicate(docs, propertyKey, (value) => value.match(re) !== null)
+  },
+  $gt: (o, propertyKey) => {
+    return (docs) => execPredicate(docs, propertyKey, (value) => value > o)
+  },
+  $gte: (o, propertyKey) => {
+    return (docs) => execPredicate(docs, propertyKey, (value) => value >= o)
+  },
+  $lt: (o, propertyKey) => {
+    return (docs) => execPredicate(docs, propertyKey, (value) => value < o)
+  },
+  $lte: (o, propertyKey) => {
+    return (docs) => execPredicate(docs, propertyKey, (value) => value <= o)
   }
 }
 
 export function isPredicate (o: Record<string, any>): boolean {
-  if (o === null || typeof o !== 'object') { return false }
+  if (o === null || typeof o !== 'object') {
+    return false
+  }
   const keys = Object.keys(o)
   return keys.length > 0 && keys.every((key) => key.startsWith('$'))
 }
