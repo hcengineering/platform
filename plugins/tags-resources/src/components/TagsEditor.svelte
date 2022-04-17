@@ -30,12 +30,6 @@
   export let showTitle = true
   export let elements: Map<Ref<TagElement>, TagElement>
 
-  export let kind: ButtonKind = 'no-border'
-  export let size: ButtonSize = 'small'
-  export let justify: 'left' | 'center' = 'center'
-  export let width: string | undefined = undefined
-  export let labelDirection: TooltipAlignment | undefined = undefined
-
   const dispatch = createEventDispatcher()
 
   let keyLabel: string = ''
@@ -53,7 +47,6 @@
     showPopup(
       TagsPopup,
       {
-        items,
         targetClass,
         selected: items.map((it) => it.tag),
         keyLabel,

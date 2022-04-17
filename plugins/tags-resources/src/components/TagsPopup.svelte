@@ -25,11 +25,8 @@
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
 
-  export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
   export let placeholder: IntlString = presentation.string.Search
-  export let addRef: (tag: TagElement) => Promise<void>
-  export let removeTag: (tag: Ref<TagReference>) => Promise<void>
   export let selected: Ref<TagElement>[] = []
   export let keyLabel: string = ''
   export let hideAdd: boolean = false
@@ -62,10 +59,6 @@
   async function createTagElement (): Promise<void> {
     showPopup(CreateTagElement, { targetClass }, 'top')
   }
-  async function addTag (element: TagElement): Promise<void> {
-    await addRef(element)
-    selected = [...selected, element._id]
-  }
 
   const isSelected = (element: TagElement): boolean => {
     if (selected.filter(p => p === element._id).length > 0) return true
@@ -76,7 +69,7 @@
       selected = selected.filter(p => p !== element._id)
       dispatch('update', { action: 'remove', tag: element })
     } else {
-      selected.push(element._id)
+      selected = [...selected, element._id]
       dispatch('update', { action: 'add', tag: element })
     }
     objects = objects

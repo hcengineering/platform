@@ -340,8 +340,6 @@
   }
 
   function drop (event: DragEvent) {
-    event.preventDefault()
-    event.stopPropagation()
     dragover = false
     const droppedFile = event.dataTransfer?.files[0]
     if (droppedFile !== undefined) {
@@ -484,21 +482,6 @@
         <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
       {/if}
     </div>
-    <!-- <Button
-      icon={!resume.uuid && loading ? Spinner : IconAttachment}
-      kind={'transparent'}
-      on:click={() => { inputFile.click() }}
-    />
-    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
-    {#if resume.uuid}
-      <Button
-        icon={FileIcon}
-        kind={'link-bordered'}
-        on:click={() => {
-          showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
-        }}
-      ><svelte:fragment slot="content">{resume.name}</svelte:fragment></Button>
-    {/if} -->
     {#if matches.length > 0}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />

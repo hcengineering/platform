@@ -80,12 +80,6 @@
       overflow: hidden;
 
       &:checked + .checkSVG {
-        & .back {
-          fill: var(--theme-bg-check);
-          &.primary {
-            fill: var(--primary-bg-color);
-          }
-        }
         & .check {
           visibility: visible;
           fill: var(--theme-button-bg-enabled);

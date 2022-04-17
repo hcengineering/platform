@@ -26,7 +26,6 @@
   export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
-  export let showTitle = true
   export let elements: Map<Ref<TagElement>, TagElement>
   export let countLabel: IntlString
 
@@ -53,7 +52,6 @@
     showPopup(
       TagsPopup,
       {
-        items,
         targetClass,
         selected: items.map((it) => it.tag),
         keyLabel
