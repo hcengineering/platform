@@ -144,23 +144,16 @@ export class FullTextIndex implements WithFind {
     const { _id, $search, ...mainQuery } = query
     if ($search === undefined) return toFindResult([])
 
-    let skip = 0
     const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>()
     const baseClass = this.hierarchy.getBaseClass(_class)
     const classes = this.hierarchy.getDescendants(baseClass)
     const fullTextLimit = 10000
-    while (true) {
-      const docs = await this.adapter.search(classes, query, fullTextLimit, skip)
-      for (const doc of docs) {
-        ids.add(doc.id)
-        if (doc.attachedTo !== undefined) {
-          ids.add(doc.attachedTo)
-        }
+    const docs = await this.adapter.search(classes, query, fullTextLimit)
+    for (const doc of docs) {
+      ids.add(doc.id)
+      if (doc.attachedTo !== undefined) {
+        ids.add(doc.attachedTo)
       }
-      if (docs.length < fullTextLimit) {
-        break
-      }
-      skip += docs.length
     }
     const resultIds = getResultIds(ids, _id)
     const { limit, ...otherOptions } = options ?? { }
