@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Button, getPlatformColor } from '@anticrm/ui'
+  import { Button, numberToHexColor } from '@anticrm/ui'
   import type { CardLabel } from '@anticrm/board'
 
   export let value: CardLabel
   export let size: 'large' | 'medium'
 
-  const background = getPlatformColor(value.color)
+  const background = numberToHexColor(value.color)
 
 </script>
 
