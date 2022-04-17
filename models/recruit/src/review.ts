@@ -55,14 +55,18 @@ export function createReviewModel (builder: Builder): void {
     {
       label: recruit.string.CreateOpinion,
       icon: recruit.icon.Create,
-      action: recruit.actionImpl.CreateOpinion
+      action: recruit.actionImpl.CreateOpinion,
+      singleInput: true
     },
     recruit.action.CreateOpinion
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Review,
-    action: recruit.action.CreateOpinion
+    action: recruit.action.CreateOpinion,
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 
   builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectEditor, {
@@ -91,13 +95,17 @@ export function createReviewModel (builder: Builder): void {
     {
       label: recruit.string.CreateReview,
       icon: recruit.icon.Create,
-      action: recruit.actionImpl.CreateReview
+      action: recruit.actionImpl.CreateReview,
+      singleInput: true
     },
     recruit.action.CreateReview
   )
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Applicant,
-    action: recruit.action.CreateReview
+    action: recruit.action.CreateReview,
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
@@ -105,6 +113,9 @@ export function createReviewModel (builder: Builder): void {
     action: task.action.ArchiveSpace,
     query: {
       archived: false
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 

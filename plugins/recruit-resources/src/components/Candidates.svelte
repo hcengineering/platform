@@ -13,33 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Component, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
+  import { Button, Component, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { ActionContext, TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
-  
+
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: recruit.mixin.Candidate, descriptor: view.viewlet.Table })
-  
+  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
+    attachTo: recruit.mixin.Candidate,
+    descriptor: view.viewlet.Table
+  })
+
   function showCreateDialog (ev: Event) {
     showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, 'top')
   }
-  
+
   let category: Ref<TagCategory> | undefined = undefined
-  
-  let documentIds:Ref<Doc>[] = []
-  async function updateResultQuery (search: string, documentIds:Ref<Doc>[]): Promise<void> {
-    resultQuery = (search === '') ? { } : { $search: search }
+
+  let documentIds: Ref<Doc>[] = []
+  async function updateResultQuery (search: string, documentIds: Ref<Doc>[]): Promise<void> {
+    resultQuery = search === '' ? {} : { $search: search }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
     }
@@ -49,14 +51,14 @@
   const query = createQuery()
 
   $: query.query(tags.class.TagReference, { tag: { $in: $selectedTagElements } }, (result) => {
-    documentIds = Array.from(new Set<Ref<Doc>>(result.map(it => it.attachedTo)).values())
+    documentIds = Array.from(new Set<Ref<Doc>>(result.map((it) => it.attachedTo)).values())
   })
 
   $: updateResultQuery(search, documentIds)
 
-  function updateCategory (detail: {category: Ref<TagCategory> | null, elements: TagElement[] }) {
+  function updateCategory (detail: { category: Ref<TagCategory> | null; elements: TagElement[] }) {
     category = detail.category ?? undefined
-    selectedTagElements.set(Array.from(detail.elements ?? []).map(it => it._id))
+    selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
   }
 </script>
 
@@ -66,24 +68,40 @@
     <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
   </div>
 
-  <SearchEdit bind:value={search} on:change={() => {
-    updateResultQuery(search, documentIds)
-  }} />
-  <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search, documentIds)
+    }}
+  />
+  <Button
+    icon={IconAdd}
+    label={recruit.string.CandidateCreateLabel}
+    kind={'primary'}
+    on:click={(ev) => showCreateDialog(ev)}
+  />
 </div>
 
-<Component is={tags.component.TagsCategoryBar} props={{ targetClass: recruit.mixin.Candidate, category }} on:change={(evt) => updateCategory(evt.detail) }/>
+<Component
+  is={tags.component.TagsCategoryBar}
+  props={{ targetClass: recruit.mixin.Candidate, category }}
+  on:change={(evt) => updateCategory(evt.detail)}
+/>
 
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 <Scroller>
   {#await tableDescriptor then descr}
     {#if descr}
-      <Table 
+      <TableBrowser
         _class={recruit.mixin.Candidate}
         config={descr.config}
         options={descr.options}
-        query={ resultQuery }
+        query={resultQuery}
         showNotification
-        highlightRows
       />
     {/if}
   {/await}

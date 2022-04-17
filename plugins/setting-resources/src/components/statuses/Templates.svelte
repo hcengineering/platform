@@ -19,7 +19,7 @@
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
-  import { CircleButton, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { CircleButton, eventToHTMLElement, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
 
   export let folder: KanbanTemplateSpace | undefined
@@ -100,7 +100,7 @@
       <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
       <div class="hover-trans"
         on:click|stopPropagation={(ev) => {
-          showPopup(ContextMenu, { object: t }, ev.target, () => {})
+          showPopup(ContextMenu, { object: t }, eventToHTMLElement(ev), () => {})
         }}
       >
         <IconMoreH size={'medium'} />

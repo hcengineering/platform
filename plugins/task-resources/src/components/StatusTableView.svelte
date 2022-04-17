@@ -19,7 +19,7 @@
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
   import { ScrollBox } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
-  import { Table } from '@anticrm/view-resources'
+  import { Table, TableBrowser } from '@anticrm/view-resources'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
@@ -173,7 +173,7 @@
 </div>
 <div class="statustableview-container">
   <ScrollBox vertical stretch noShift>
-    <Table {_class} {query} config={resConfig} {options} showNotification />
+    <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
   </ScrollBox>
 </div>
 

@@ -141,7 +141,8 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.MarkUnread,
-      action: chunter.actionImpl.MarkUnread
+      action: chunter.actionImpl.MarkUnread,
+      singleInput: true
     },
     chunter.action.MarkUnread
   )
@@ -151,14 +152,18 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.MarkUnread,
-      action: chunter.actionImpl.MarkCommentUnread
+      action: chunter.actionImpl.MarkCommentUnread,
+      singleInput: true
     },
     chunter.action.MarkCommentUnread
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: chunter.class.Message,
-    action: chunter.action.MarkUnread
+    action: chunter.action.MarkUnread,
+    context: {
+      mode: 'context'
+    }
   })
 
   builder.createDoc(
@@ -188,6 +193,9 @@ export function createModel (builder: Builder): void {
     action: chunter.action.ArchiveChannel,
     query: {
       archived: false
+    },
+    context: {
+      mode: 'context'
     }
   })
 
@@ -196,12 +204,18 @@ export function createModel (builder: Builder): void {
     action: chunter.action.UnarchiveChannel,
     query: {
       archived: true
+    },
+    context: {
+      mode: 'context'
     }
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: chunter.class.ThreadMessage,
-    action: chunter.action.MarkCommentUnread
+    action: chunter.action.MarkCommentUnread,
+    context: {
+      mode: 'context'
+    }
   })
 
   builder.createDoc(workbench.class.Application, core.space.Model, {

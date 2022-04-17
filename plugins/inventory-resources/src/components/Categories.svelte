@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@anticrm/core'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
   import type { Category } from '@anticrm/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -28,8 +28,8 @@
     resultQuery = (search === '') ? { } : { $search: search }
   }
 
-  function showCreateDialog (ev: Event) {
-    showPopup(CreateCategory, { space: inventory.space.Category }, ev.target as HTMLElement)
+  function showCreateDialog (ev: MouseEvent) {
+    showPopup(CreateCategory, { space: inventory.space.Category }, eventToHTMLElement(ev))
   }
 </script>
 

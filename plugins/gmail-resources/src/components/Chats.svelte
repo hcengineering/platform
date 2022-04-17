@@ -19,7 +19,7 @@
   import gmail from '../plugin'
   import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { ActionIcon, IconShare, Button, ScrollBox, showPopup, Icon, Label } from '@anticrm/ui'
+  import { ActionIcon, IconShare, Button, ScrollBox, showPopup, Icon, Label, eventToHTMLElement } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
@@ -172,7 +172,7 @@
         kind={'primary'}
         size={'small'}
         on:click={(e) => {
-          showPopup(Connect, {}, e.target)
+          showPopup(Connect, {}, eventToHTMLElement(e))
         }}
       />
     </div>

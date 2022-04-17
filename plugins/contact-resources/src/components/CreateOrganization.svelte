@@ -14,18 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  import { getClient, Card } from '@anticrm/presentation'
-
-  import { EditBox, Button, showPopup, IconAdd } from '@anticrm/ui'
-
   import { Channel, Organization } from '@anticrm/contact'
-  import contact from '../plugin'
-  import Company from './icons/Company.svelte'
   import { AttachedData, generateId } from '@anticrm/core'
-  import Channels from './Channels.svelte'
+  import { Card, getClient } from '@anticrm/presentation'
+  import { Button, EditBox, eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import contact from '../plugin'
   import ChannelsView from './ChannelsView.svelte'
+  import Company from './icons/Company.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
@@ -82,7 +78,7 @@
       icon={contact.icon.SocialEdit}
       kind={'transparent'}
       on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
           if (result !== undefined) channels = result
         })
       }

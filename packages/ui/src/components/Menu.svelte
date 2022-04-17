@@ -17,6 +17,7 @@
   import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
+  import ui from '../plugin'
 
   export let actions: Action[] = []
   export let ctx: any = undefined
@@ -31,12 +32,17 @@
   <div class="ap-space" />
   <div class="ap-scroll">
     <div class="ap-box">
+      {#if actions.length === 0}
+      <div class='p-6 error-color'>
+        <Label label={ui.string.NoActionsDefined}/>
+      </div>
+      {/if}
       {#each actions as action}
         <div
           class="ap-menuItem flex-row-center"
-          on:click={() => {
+          on:click={(evt) => {
             dispatch('close')
-            action.action(ctx)
+            action.action(evt, ctx)
           }}
         >
           {#if action.icon}

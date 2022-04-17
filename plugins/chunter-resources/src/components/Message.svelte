@@ -106,9 +106,9 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async () => {
+            action: async (evt: MouseEvent) => {
               const impl = await getResource(a.action)
-              await impl(message)
+              await impl(message, evt)
             }
           })),
           ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])

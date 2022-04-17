@@ -15,15 +15,15 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { SortingOrder, getObjectValue } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Component, CheckBox, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
-  import { buildModel, LoadingProps } from '../utils'
-  import MoreV from './icons/MoreV.svelte'
-  import Menu from './Menu.svelte'
+  import { getObjectValue, SortingOrder } from '@anticrm/core'
   import notification from '@anticrm/notification'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
+  import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import { selectionStore } from '../selection'
+  import { buildModel, LoadingProps } from '../utils'
+  import Menu from './Menu.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -37,12 +37,17 @@
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
 
+  export let selection: number | undefined = undefined
+  export let checked: Doc[] = []
+
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
-  let selectRow: number | undefined = undefined
   let loading = false
 
-  let objects: Doc[]
+  let objects: Doc[] = []
+  const refs: HTMLElement[] = []
+
+  $: refs.length = objects.length
 
   const q = createQuery()
 
@@ -84,9 +89,15 @@
   const client = getClient()
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
-    selectRow = row
-    showPopup(Menu, { object, baseMenuClass }, ev.target as HTMLElement, () => {
-      selectRow = undefined
+    selection = row
+    if (!checkedSet.has(object._id)) {
+      check(objects, false)
+    }
+    const items = $selectionStore.length > 0 ? $selectionStore : object
+    showPopup(Menu, { object: items, baseMenuClass }, {
+      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+    }, () => {
+      selection = undefined
     })
   }
 
@@ -102,16 +113,11 @@
     }
   }
 
-  let checked: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+  $: checkedSet = new Set<Ref<Doc>>(checked.map(it => it._id))
 
-  function check (id: Ref<Doc>, event: CustomEvent<boolean>) {
+  export function check (docs: Doc[], value: boolean) {
     if (!enableChecking) return
-    if (event.detail) {
-      checked.add(id)
-    } else {
-      checked.delete(id)
-    }
-    checked = checked
+    dispatch('check', { docs, value })
   }
 
   function getLoadingLength (props: LoadingProps, options?: FindOptions<Doc>): number {
@@ -119,6 +125,20 @@
       return Math.min(options?.limit, props.length)
     }
     return props.length
+  }
+  function onRow (object: Doc): void {
+    dispatch('row-focus', object)
+  }
+
+  export function scrollSelection (pos: number): void {
+    if (pos !== -1) {
+      const r = refs[pos]
+      if (r !== undefined) {
+        selection = pos
+        onRow(objects[pos])
+        r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      }
+    }
   }
 </script>
 
@@ -133,12 +153,12 @@
         {#if enableChecking || showNotification}
           <th>
             {#if enableChecking && objects?.length > 0}
-              <div class="antiTable-cells__checkCell" class:checkall={checked.size > 0}>
+              <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
                 <CheckBox
                   symbol={'minus'}
-                  checked={objects?.length === checked.size && objects?.length > 0}
+                  checked={objects?.length === checkedSet.size && objects?.length > 0}
                   on:value={(event) => {
-                    objects.map((object) => check(object._id, event))
+                    check(objects, event.detail)
                   }}
                 />
               </div>
@@ -170,7 +190,16 @@
     {#if objects}
       <tbody>
         {#each objects as object, row (object._id)}
-          <tr class="antiTable-body__row" class:checking={checked.has(object._id)} class:fixed={row === selectRow}>
+          <tr
+            class="antiTable-body__row"
+            class:checking={checkedSet.has(object._id)}
+            class:fixed={row === selection}
+            class:selected={row === selection}
+            on:mouseover={() => onRow(object)}
+            on:focus={() => {}}
+            bind:this={refs[row]}
+            on:contextmenu|preventDefault={(ev) => showMenu(ev, object, row)}
+          >
             {#each model as attribute, cell}
               {#if !cell}
                 {#if enableChecking || showNotification}
@@ -180,9 +209,9 @@
                         {#if enableChecking}
                           <div class="antiTable-cells__checkCell">
                             <CheckBox
-                              checked={checked.has(object._id)}
+                              checked={checkedSet.has(object._id)}
                               on:value={(event) => {
-                                check(object._id, event)
+                                check([object], event.detail)
                               }}
                             />
                           </div>
@@ -195,9 +224,9 @@
                     {:else}
                       <div class="antiTable-cells__checkCell">
                         <CheckBox
-                          checked={checked.has(object._id)}
+                          checked={checkedSet.has(object._id)}
                           on:value={(event) => {
-                            check(object._id, event)
+                            check([object], event.detail)
                           }}
                         />
                       </div>
@@ -211,13 +240,13 @@
                       value={getObjectValue(attribute.key, object) ?? ''}
                       {...attribute.props}
                     />
-                    <div
+                    <!-- <div
                       id="context-menu"
                       class="antiTable-cells__firstCell-menuRow"
                       on:click={(ev) => showMenu(ev, object, row)}
                     >
                       <MoreV size={'small'} />
-                    </div>
+                    </div> -->
                   </div>
                 </td>
               {:else}
@@ -236,7 +265,7 @@
     {:else if loadingProps !== undefined}
       <tbody>
         {#each Array(getLoadingLength(loadingProps, options)) as i, row}
-          <tr class="antiTable-body__tr" class:fixed={row === selectRow}>
+          <tr class="antiTable-body__row" class:fixed={row === selection}>
             {#each model as attribute, cell}
               {#if !cell}
                 {#if enableChecking}
