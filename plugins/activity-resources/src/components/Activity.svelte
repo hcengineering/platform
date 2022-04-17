@@ -66,7 +66,7 @@
   {/if}
   <div class="flex-col h-full min-h-0" class:background-bg-accent={!transparent}>
     <Scroller>
-      <div class="p-10">
+      <div class="p-10 select-text">
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx (tx.tx._id)}

@@ -188,7 +188,7 @@
       align-items: center;
       padding: .75rem;
       height: auto;
-      border-top: 1px solid var(--button-bg-color);
+      border-top: 1px solid var(--divider-color);
 
       &.reverse { flex-direction: row-reverse; }
       &__error {

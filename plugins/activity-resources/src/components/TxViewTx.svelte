@@ -17,7 +17,7 @@
   }
 </script>
 
-<div class="flex-row-center flex-grow flex-wrap content">
+<div class="content">
   {#each filterTx([tx, ...tx.txes], core.class.TxCreateDoc) as ctx, i}
     {#if i === 0}
       <div class="mr-2"><IconAdd size={'small'} /></div>
@@ -46,7 +46,12 @@
 
 <style lang="scss">
   .content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    flex-wrap: wrap;
     padding: 1rem;
+    min-width: 0;
     color: var(--theme-caption-color);
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);

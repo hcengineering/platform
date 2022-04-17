@@ -33,6 +33,7 @@
   export let labelProps: any | undefined = undefined
   export let okAction: () => void
   export let canSave: boolean = false
+  export let dragover: boolean = false
   export let size: 'small'| 'medium' = 'small'
   export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create

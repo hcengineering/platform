@@ -21,6 +21,7 @@ import TagsPresenter from './components/TagsPresenter.svelte'
 import TagsItemPresenter from './components/TagsItemPresenter.svelte'
 import TagsView from './components/TagsView.svelte'
 import TagsEditor from './components/TagsEditor.svelte'
+import TagsDropdownEditor from './components/TagsDropdownEditor.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
 import tags from './plugin'
 import TagsCategoryBar from './components/CategoryBar.svelte'
@@ -33,6 +34,7 @@ export default async (): Promise<Resources> => ({
     TagsPresenter,
     TagsView,
     TagsEditor,
+    TagsDropdownEditor,
     TagsItemPresenter,
     CategoryPresenter,
     TagsCategoryBar

@@ -18,17 +18,17 @@
   import { KeyedAttribute } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { ShowMore, Label, CircleButton, Button, showPopup, Tooltip, IconAdd, IconClose } from '@anticrm/ui'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { Button, showPopup, Tooltip } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagsPopup from './TagsPopup.svelte'
-  import TagItem from './TagItem.svelte'
 
   export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
   export let showTitle = true
   export let elements: Map<Ref<TagElement>, TagElement>
+  export let countLabel: IntlString
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -56,8 +56,7 @@
         items,
         targetClass,
         selected: items.map((it) => it.tag),
-        keyLabel,
-        hideAdd: true
+        keyLabel
       },
       evt.target as HTMLElement,
       () => { },
@@ -75,68 +74,22 @@
   }
 </script>
 
-<div class="flex-row">
-  {#if showTitle}
-    <div class="flex-row-center">
-      <div class="title">
-        <Label label={key.attr.label} />
-      </div>
-      <div id='add-tag'>
-        <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
-          <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
-        </Tooltip>
-      </div>
-    </div>
-  {/if}
-  <ShowMore ignore={!showTitle}>
-    <div class:tags-container={showTitle} class:mt-4={showTitle}>
-      <div class="tag-items" class:tag-items-scroll={!showTitle}>
-        {#if items.length === 0}
-          {#if keyLabel}
-          <div class="flex flex-grow title-center">
-            <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
-          </div>
-          {/if}
-        {/if}
-        {#each items as tag}
-          <TagItem
-            {tag}
-            element={elements.get(tag.tag)}
-            action={IconClose}
-            on:action={() => {
-              removeTag(tag._id)
-            }}
-          />
-        {/each}
-      </div>
-    </div>
-  </ShowMore>
-</div>
-
-<style lang="scss">
-  .title {
-    margin-right: 0.75rem;
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
-  }
-  .tags-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-  .tag-items {
-    flex-grow: 1;
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .tag-items-scroll {
-    overflow-y: scroll;
-    max-height: 10rem;
-  }
-  .title-center {
-    align-items: center;
-  }
-</style>
+<Tooltip label={key.attr.label} direction={labelDirection}>
+  <Button
+    icon={tags.icon.Tags}
+    label={items.length > 0 ? undefined : key.attr.label}
+    width={width ?? 'min-content'}
+    {kind} {size} {justify}
+    on:click={addTag}
+  >
+    <svelte:fragment slot="content">
+      {#if items.length > 0}
+        <div class="flex-row-center flex-nowrap">
+          {#await translate(countLabel, { count: items.length }) then text}
+            {text}
+          {/await}
+        </div>
+      {/if}
+    </svelte:fragment>
+  </Button>
+</Tooltip>

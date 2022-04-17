@@ -88,6 +88,7 @@ table {
   --modal-padding: 1.5rem;
 }
 
+p { user-select: text; }
 p:first-child { margin-block-start: 0; } // First and last padding
 p:last-child { margin-block-end: 0; }
 
@@ -446,6 +447,7 @@ a.no-line {
 .cursor-default { cursor: default; }
 
 .pointer-events-none { pointer-events: none; }
+.select-text { user-select: text; }
 
 /* Text */
 

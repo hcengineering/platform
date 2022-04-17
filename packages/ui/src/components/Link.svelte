@@ -50,16 +50,16 @@
 
     .icon {
       margin-right: .25rem;
-      color: var(--theme-content-color);
+      color: var(--content-color);
     }
-    &:hover .icon { color: var(--theme-caption-color); }
-    &:active .icon { color: var(--theme-content-accent-color); }
+    &:hover .icon { color: var(--accent-color); }
+    &:active .icon { color: var(--caption-color); }
   }
   .disabled {
     cursor: not-allowed;
-    color: var(--theme-content-trans-color);
-    .icon { color: var(--theme-content-trans-color); }
-    &:hover .icon { color: var(--theme-content-trans-color); }
-    &:active .icon { color: var(--theme-content-trans-color); }
+    color: var(--dark-color);
+    .icon { color: var(--dark-color); }
+    &:hover .icon { color: var(--dark-color); }
+    &:active .icon { color: var(--dark-color); }
   }
 </style>

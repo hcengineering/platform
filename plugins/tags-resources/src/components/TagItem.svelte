@@ -41,7 +41,7 @@
   >
     {name}
     {#if action}
-      <div class="ml-2">
+      <div class="ml-1">
         <ActionIcon
           icon={action}
           size={'small'}
