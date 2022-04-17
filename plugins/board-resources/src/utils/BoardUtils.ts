@@ -1,6 +1,5 @@
-import { Ref, TxOperations } from '@anticrm/core'
+import core, { Ref, TxOperations } from '@anticrm/core'
 import board, { Board, CardLabel } from '@anticrm/board'
-import core from '@anticrm/model-core'
 import type { KanbanTemplate } from '@anticrm/task'
 import { createKanban } from '@anticrm/task'
 import { hexColorToNumber, FernColor, FlamingoColor, MalibuColor, MoodyBlueColor, SeaBuckthornColor } from '@anticrm/ui'
