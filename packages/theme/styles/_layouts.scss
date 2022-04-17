@@ -88,6 +88,7 @@ table {
   --modal-padding: 1.5rem;
 }
 
+p { user-select: text; }
 p:first-child { margin-block-start: 0; } // First and last padding
 p:last-child { margin-block-end: 0; }
 
@@ -109,8 +110,8 @@ p:last-child { margin-block-end: 0; }
 .inline-flex { display: inline-flex; }
 .flex-grow { flex-grow: 1; }
 .flex-no-shrink { flex-shrink: 0; }
-.flex-wrap { flex-wrap: wrap; }
-.flex-nowrap { flex-wrap: nowrap; }
+.flex-wrap { flex-wrap: wrap !important; }
+.flex-nowrap { flex-wrap: nowrap !important; }
 .flex-baseline {
   display: inline-flex;
   align-items: baseline;
@@ -446,6 +447,7 @@ a.no-line {
 .cursor-default { cursor: default; }
 
 .pointer-events-none { pointer-events: none; }
+.select-text { user-select: text; }
 
 /* Text */
 

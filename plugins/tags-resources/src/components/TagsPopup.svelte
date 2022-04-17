@@ -17,7 +17,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { TagCategory, TagElement } from '@anticrm/tags'
+  import { TagCategory, TagElement, TagReference } from '@anticrm/tags'
   import { CheckBox, Button, Icon, IconAdd, IconClose, Label, showPopup, getPlatformColor } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
@@ -27,10 +27,9 @@
 
   export let targetClass: Ref<Class<Doc>>
   export let placeholder: IntlString = presentation.string.Search
-  export let addRef: (tag: TagElement) => Promise<void>
-  export let removeTag: (tag: TagElement) => Promise<void>
   export let selected: Ref<TagElement>[] = []
   export let keyLabel: string = ''
+  export let hideAdd: boolean = false
 
   let search: string = ''
   let searchElement: HTMLInputElement
@@ -60,10 +59,6 @@
   async function createTagElement (): Promise<void> {
     showPopup(CreateTagElement, { targetClass }, 'top')
   }
-  async function addTag (element: TagElement): Promise<void> {
-    await addRef(element)
-    selected = [...selected, element._id]
-  }
 
   const isSelected = (element: TagElement): boolean => {
     if (selected.filter(p => p === element._id).length > 0) return true
@@ -72,14 +67,14 @@
   const checkSelected = (element: TagElement): void => {
     if (isSelected(element)) {
       selected = selected.filter(p => p !== element._id)
-      removeTag(element)
+      dispatch('update', { action: 'remove', tag: element })
     } else {
-      selected.push(element._id)
-      addTag(element)
+      selected = [...selected, element._id]
+      dispatch('update', { action: 'add', tag: element })
     }
     objects = objects
     categories = categories
-    dispatch('update', selected)
+    dispatch('update', { action: 'selected', selected: selected})
   }
   const toggleGroup = (ev: MouseEvent): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
@@ -106,7 +101,7 @@
           {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
         <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => show = !show} />
-        <Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />
+        {#if !hideAdd}<Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />{/if}
       </div>
     </div>
   </div>

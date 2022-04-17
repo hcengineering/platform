@@ -399,10 +399,7 @@
     dispatch('close')
   }}
 >
-  <div class="flex-row-center">
-    <div class="mr-4">
-      <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
-    </div>
+  <div class="flex-between">
     <div class="flex-col">
       <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
       <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
@@ -411,15 +408,28 @@
       </div>
       <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
     </div>
+    <div class="ml-4">
+      <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
+    </div>
   </div>
   {#if channels.length > 0}
-    <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
+    <ChannelsView value={channels} size={'small'} on:click />
   {/if}
   <svelte:fragment slot="pool">
+    <Button
+      icon={contact.icon.SocialEdit}
+      kind={'no-border'}
+      size={'small'}
+      on:click={(ev) =>
+        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+          if (result !== undefined) channels = result
+        })
+      }
+    />
     <YesNo label={recruit.string.Onsite} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.onsite} />
     <YesNo label={recruit.string.Remote} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.remote} />
     <Component
-      is={tags.component.TagsEditor}
+      is={tags.component.TagsDropdownEditor}
       props={{
         items: skills,
         key,
@@ -437,30 +447,41 @@
     />
   </svelte:fragment>
   <svelte:fragment slot="footer">
-    <Button
-      icon={contact.icon.SocialEdit}
-      kind={'transparent'}
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          if (result !== undefined) channels = result
-        })
-      }
-    />
-    <Button
-      icon={!resume.uuid && loading ? Spinner : IconAttachment}
-      kind={'transparent'}
-      on:click={() => { inputFile.click() }}
-    />
-    <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
-    {#if resume.uuid}
-      <Button
-        icon={FileIcon}
-        kind={'link-bordered'}
-        on:click={() => {
-          showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
-        }}
-      ><svelte:fragment slot="content">{resume.name}</svelte:fragment></Button>
-    {/if}
+    <div
+      class="flex-center resume"
+      class:solid={dragover || resume.uuid}
+      on:dragover|preventDefault={() => {
+        dragover = true
+      }}
+      on:dragleave={() => {
+        dragover = false
+      }}
+      on:drop|preventDefault|stopPropagation={drop}
+    >
+      {#if resume.uuid}
+        <Link
+          label={resume.name}
+          icon={FileIcon}
+          maxLenght={16}
+          on:click={() => {
+            showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
+          }}
+        />
+      {:else}
+        {#if loading}
+          <Link label={'Uploading...'} icon={Spinner} disabled />
+        {:else}
+          <Link
+            label={'Add or drop resume'}
+            icon={FileUpload}
+            on:click={() => {
+              inputFile.click()
+            }}
+          />
+        {/if}
+        <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
+      {/if}
+    </div>
     {#if matches.length > 0}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
@@ -472,3 +493,14 @@
     {/if}
   </svelte:fragment>
 </Card>
+
+<style lang="scss">
+  .resume {
+    padding: .5rem .75rem;
+    background: var(--accent-bg-color);
+    border: 1px dashed var(--divider-color);
+    border-radius: .5rem;
+
+    &.solid { border-style: solid; }
+  }
+</style>
