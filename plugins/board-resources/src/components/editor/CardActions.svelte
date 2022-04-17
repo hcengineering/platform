@@ -29,7 +29,7 @@
 
   let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
 
-  async function fetch() {
+  async function fetch () {
     const suggestedActions: CardAction[] = []
     const addToCardActions: CardAction[] = []
     const automationActions: CardAction[] = []
@@ -80,7 +80,6 @@
   $: value.members && fetch()
   $: value.isArchived && fetch()
   $: !value.isArchived && fetch()
-
 </script>
 
 {#if value}
@@ -105,7 +104,8 @@
                     const handler = await getResource(action.handler)
                     handler(value, client)
                   }
-                }} />
+                }}
+              />
             {/if}
           {/each}
         </div>
