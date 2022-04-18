@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
+  "template": "@anticrm/assets-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",

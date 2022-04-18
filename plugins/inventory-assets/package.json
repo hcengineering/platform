@@ -3,13 +3,15 @@
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
+  "template": "@anticrm/assets-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "format": "prettier --write src && eslint --fix src",
-    "build:watch": "tsc"
+    "build:watch": "tsc",
+    "build:docs": ""
   },
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
