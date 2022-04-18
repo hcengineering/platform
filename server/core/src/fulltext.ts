@@ -172,12 +172,7 @@ export class FullTextIndex implements WithFind {
       const size = options.limit
       while (true) {
         const ids = resultIds.splice(0, size)
-        const orderMap = new Map<Ref<Doc>, number>()
-        for (let index = 0; index < resultIds.length; index++) {
-          orderMap.set(resultIds[index], index)
-        }
         const res = await this.getResult(ctx, _class, ids, mainQuery as DocumentQuery<T>, options)
-        res.sort((a, b) => (orderMap.get(a._id) ?? 0) - (orderMap.get(b._id) ?? 0))
         result.push(...res)
         if (result.length >= size || res.length < size) {
           break
