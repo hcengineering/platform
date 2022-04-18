@@ -28,11 +28,14 @@
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
-  export let issueStatus = IssueStatus.Backlog
+  export let status: IssueStatus = IssueStatus.Backlog
+  export let priority: IssuePriority = IssuePriority.NoPriority
+  export let assignee: Ref<Employee> | null = null
+
   $: _space = space
   $: _parent = parent
 
-  let assignee: Ref<Employee> | null = null
+  let currentAssignee: Ref<Employee> | null = assignee
 
   const object: Data<Issue> = {
     title: '',
@@ -40,8 +43,8 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: issueStatus,
-    priority: IssuePriority.NoPriority,
+    status: status,
+    priority: priority,
     dueDate: null,
     comments: 0
   }
@@ -73,7 +76,7 @@
     const value: Data<Issue> = {
       title: object.title,
       description: object.description,
-      assignee,
+      assignee: currentAssignee,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,
@@ -124,7 +127,14 @@
   }}
 >
   <svelte:fragment slot="space">
-    <Button icon={tracker.icon.Home} label={presentation.string.Save} size={'small'} kind={'no-border'} disabled on:click={() => { }} />
+    <Button
+      icon={tracker.icon.Home}
+      label={presentation.string.Save}
+      size={'small'}
+      kind={'no-border'}
+      disabled
+      on:click={() => {}}
+    />
   </svelte:fragment>
   <EditBox
     bind:value={object.title}
@@ -146,7 +156,7 @@
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
       placeholder={tracker.string.AssignTo}
-      bind:value={assignee}
+      bind:value={currentAssignee}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
     />
@@ -176,6 +186,6 @@
     />
   </svelte:fragment>
   <svelte:fragment slot="footer">
-    <Button icon={IconAttachment} kind={'transparent'} on:click={() => { }} />
+    <Button icon={IconAttachment} kind={'transparent'} on:click={() => {}} />
   </svelte:fragment>
 </Card>
