@@ -17,7 +17,8 @@ import core from '@anticrm/core'
 import chunter, { Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
-import { getClient } from '@anticrm/presentation'
+import { getClient, MessageBox } from '@anticrm/presentation'
+import { getCurrentLocation, navigate, showPopup } from '@anticrm/ui'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
@@ -80,6 +81,50 @@ export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   })
 }
 
+export async function ArchiveChannel (channel: Channel, afterArchive?: () => void): Promise<void> {
+  showPopup(
+    MessageBox,
+    {
+      label: chunter.string.ArchiveChannel,
+      message: chunter.string.ArchiveConfirm
+    },
+    undefined,
+    (result: boolean) => {
+      if (result) {
+        const client = getClient()
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        client.update(channel, { archived: true })
+        if (afterArchive != null) afterArchive()
+
+        const loc = getCurrentLocation()
+        if (loc.path[2] === channel._id) {
+          loc.path.length = 2
+          navigate(loc)
+        }
+      }
+    }
+  )
+}
+
+async function UnarchiveChannel (channel: Channel): Promise<void> {
+  showPopup(
+    MessageBox,
+    {
+      label: chunter.string.UnarchiveChannel,
+      message: chunter.string.UnarchiveConfirm
+    },
+    undefined,
+    (result: boolean) => {
+      if (result) {
+        const client = getClient()
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        client.update(channel, { archived: false })
+      }
+    }
+  )
+}
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -104,6 +149,8 @@ export default async (): Promise<Resources> => ({
     SubscribeMessage,
     UnsubscribeMessage,
     PinMessage,
-    UnpinMessage
+    UnpinMessage,
+    ArchiveChannel,
+    UnarchiveChannel
   }
 })

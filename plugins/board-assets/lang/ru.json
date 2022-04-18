@@ -62,11 +62,16 @@
     "CreateDescription": "Можно создать отдельные карточки для каждой строки ({number}) или одну с длинным названием.",
     "CreateSingle": "Создать одну",
     "CreateMultiple": "Создать несколько ({number})",
+    "MoveCard": "Переместить карточку",
+    "SelectDestination": "Выберите список",
+    "Cancel": "Отмена",
+    "List": "Список",
+    "Position": "Позиция",
+    "Current": "{label} (текущий)",
     "StartDate": "Начало",
     "DueDate": "Срок",
     "Save": "Сохранить",
     "Remove": "Удалить",
-    "Cancel": "Закрыть",
     "NullDate": "М/Д/ГГГГ"
   }
 }

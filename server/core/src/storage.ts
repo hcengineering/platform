@@ -337,6 +337,25 @@ class TServerStorage implements ServerStorage {
     return result
   }
 
+  async processMove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+    const actualTx = this.extractTx(tx)
+    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
+    const rtx = actualTx as TxUpdateDoc<Doc>
+    if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) return []
+    const result: Tx[] = []
+    const factory = new TxFactory(core.account.System)
+    for (const [, attribute] of this.hierarchy.getAllAttributes(rtx.objectClass)) {
+      if (!this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
+      const collection = attribute.type as Collection<AttachedDoc>
+      const allAttached = await this.findAll(ctx, collection.of, { attachedTo: rtx.objectId, space: rtx.objectSpace })
+      const allTx = allAttached.map(({ _class, space, _id }) =>
+        factory.createTxUpdateDoc(_class, space, _id, { space: rtx.operations.space })
+      )
+      result.push(...allTx)
+    }
+    return result
+  }
+
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
@@ -367,6 +386,7 @@ class TServerStorage implements ServerStorage {
       derived = [
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
         ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, tx))),
+        ...(await ctx.with('process-move', { _class }, () => this.processMove(ctx, tx))),
         ...(await ctx.with('process-triggers', {}, (ctx) =>
           this.triggers.apply(tx.modifiedBy, tx, {
             fx: triggerFx.fx,

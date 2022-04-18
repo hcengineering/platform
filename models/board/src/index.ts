@@ -206,6 +206,10 @@ export function createModel (builder: Builder): void {
     presenter: board.component.CardPresenter
   })
 
+  builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: board.component.BoardPresenter
+  })
+
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
