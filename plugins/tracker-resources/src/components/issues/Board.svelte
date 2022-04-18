@@ -1,58 +1,52 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { FindOptions, Ref, WithLookup } from '@anticrm/core'
-  import { Kanban } from '@anticrm/kanban'
+  import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Issue, Team } from '@anticrm/tracker'
   import { Button, Component, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import tracker from '../../plugin'
+  import { getIssueStatuses } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
 
   export let currentSpace: Ref<Team>
 
-  const states = [
-    {
-      _id: IssueStatus.Backlog,
-      title: 'Backlog',
-      color: 0,
-      icon: tracker.icon.StatusBacklog
-    },
-    {
-      _id: IssueStatus.InProgress,
-      title: 'In progress',
-      color: 1,
-      icon: tracker.icon.StatusInProgress
-    },
-    {
-      _id: IssueStatus.Todo,
-      title: 'To do',
-      color: 2,
-      icon: tracker.icon.StatusTodo
-    },
-    {
-      _id: IssueStatus.Done,
-      title: 'Done',
-      color: 3,
-      icon: tracker.icon.StatusDone
-    },
-    {
-      _id: IssueStatus.Canceled,
-      title: 'Canceled',
-      color: 4,
-      icon: tracker.icon.StatusCanceled
-    }
-  ]
   /* eslint-disable no-undef */
 
   const spaceQuery = createQuery()
 
   let currentTeam: Team | undefined
-
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
     currentTeam = res.shift()
   })
+
+  let states: TypeState[] | undefined
+  $: if (states === undefined) {
+    getIssueStatuses(currentSpace).then((statuses) => {
+      states = statuses.map((status) => ({
+        _id: status._id,
+        title: status.name,
+        color: status.color ?? status.$lookup?.category?.color ?? 0
+      }))
+    })
+  }
+
   /* eslint-disable prefer-const */
   /* eslint-disable no-unused-vars */
   let issue: Issue
@@ -68,10 +62,8 @@
   }
 </script>
 
-{#if currentTeam}
-  <div class="flex-between label font-medium w-full p-4">
-    Board
-  </div>
+{#if currentTeam && states}
+  <div class="flex-between label font-medium w-full p-4">Board</div>
   <Kanban
     _class={tracker.class.Issue}
     space={currentSpace}
@@ -83,7 +75,7 @@
     rankFieldName={'rank'}
   >
     <svelte:fragment slot="header" let:state let:count>
-      <div class="header flex-col">        
+      <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full mb-4">
           <div class="flex-row-center gap-2">
             <Icon icon={state.icon} size={'small'} />

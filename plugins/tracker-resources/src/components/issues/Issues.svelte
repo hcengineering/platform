@@ -13,22 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DocumentQuery, Ref } from '@anticrm/core'
+  import type { DocumentQuery, Ref, WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Issue, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
   import { Label, ScrollBox } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
-  import { IntlString } from '@anticrm/platform'
+  import { getIssueStatuses } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let categories = [
-    IssueStatus.InProgress,
-    IssueStatus.Todo,
-    IssueStatus.Backlog,
-    IssueStatus.Done,
-    IssueStatus.Canceled
-  ]
+  export let statusCategories: Set<Ref<IssueStatusCategory>> | undefined = undefined
   export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
@@ -50,9 +45,17 @@
     search === '' ? { space: currentSpace, ...query } : { $search: search, space: currentSpace, ...query }
 
   let currentTeam: Team | undefined
-
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
     currentTeam = res.shift()
+  })
+
+  let categories: WithLookup<IssueStatus>[] = []
+  let filteredCategories: WithLookup<IssueStatus>[] = []
+  $: getIssueStatuses(currentSpace).then((statuses) => {
+    categories = statuses
+    filteredCategories = statusCategories
+      ? statuses.filter((status) => !!statusCategories?.has(status.category))
+      : statuses
   })
 </script>
 
@@ -63,14 +66,15 @@
     </div>
 
     <div class="mt-4">
-      {#each categories as category}
+      {#each filteredCategories as category}
         <CategoryPresenter
-          {category}
+          categoryId={category._id}
+          {categories}
           query={resultQuery}
           {currentSpace}
           {currentTeam}
           on:content={(event) => {
-            issuesMap[category] = event.detail
+            issuesMap[category._id] = event.detail
           }}
         />
       {/each}

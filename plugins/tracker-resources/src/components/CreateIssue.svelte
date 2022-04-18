@@ -22,15 +22,13 @@
   import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
-  import { calcRank } from '../utils'
+  import { calcRank, getIssueStatuses } from '../utils'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
   export let space: Ref<Team>
-  export let parent: Ref<Issue> | undefined
-  export let issueStatus = IssueStatus.Backlog
-  $: _space = space
-  $: _parent = parent
+  export let parent: Ref<Issue> | undefined = undefined
+  export let issueStatus: Ref<IssueStatus> | undefined = undefined
 
   let assignee: Ref<Employee> | null = null
 
@@ -40,7 +38,7 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: issueStatus,
+    status: issueStatus ?? ('' as Ref<IssueStatus>),
     priority: IssuePriority.NoPriority,
     dueDate: null,
     comments: 0
@@ -49,6 +47,26 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const taskId: Ref<Issue> = generateId()
+
+  $: _space = space
+  $: _parent = parent
+  $: if (object.status === '') {
+    getDefaultIssueStatusId(_space).then((statusId) => {
+      if (statusId) {
+        object.status = statusId
+      }
+    })
+  }
+
+  async function getDefaultIssueStatusId (teamId: Ref<Team>) {
+    const team = await client.findOne(
+      tracker.class.Team,
+      { _id: teamId },
+      { lookup: { defaultIssueStatus: tracker.class.IssueStatus } }
+    )
+
+    return team?.$lookup?.defaultIssueStatus?._id
+  }
 
   export function canClose (): boolean {
     return object.title !== ''
@@ -99,12 +117,10 @@
     object.priority = newPriority
   }
 
-  const handleStatusChanged = (newStatus: IssueStatus | undefined) => {
-    if (newStatus === undefined) {
-      return
+  const handleStatusChanged = (statusId: Ref<IssueStatus> | undefined) => {
+    if (statusId !== undefined) {
+      object.status = statusId
     }
-
-    object.status = newStatus
   }
 </script>
 
@@ -124,7 +140,14 @@
   }}
 >
   <svelte:fragment slot="space">
-    <Button icon={tracker.icon.Home} label={presentation.string.Save} size={'small'} kind={'no-border'} disabled on:click={() => { }} />
+    <Button
+      icon={tracker.icon.Home}
+      label={presentation.string.Save}
+      size={'small'}
+      kind={'no-border'}
+      disabled
+      on:click={() => {}}
+    />
   </svelte:fragment>
   <EditBox
     bind:value={object.title}
@@ -140,8 +163,10 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
   <svelte:fragment slot="pool">
-    <StatusSelector bind:status={object.status} onStatusChange={handleStatusChanged} />
-    <PrioritySelector bind:priority={object.priority} onPriorityChange={handlePriorityChanged} />
+    {#await getIssueStatuses(_space) then statuses}
+      <StatusSelector selectedStatusId={object.status} {statuses} onStatusChange={handleStatusChanged} />
+    {/await}
+    <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
@@ -176,6 +201,6 @@
     />
   </svelte:fragment>
   <svelte:fragment slot="footer">
-    <Button icon={IconAttachment} kind={'transparent'} on:click={() => { }} />
+    <Button icon={IconAttachment} kind={'transparent'} on:click={() => {}} />
   </svelte:fragment>
 </Card>

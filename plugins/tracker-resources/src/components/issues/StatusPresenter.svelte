@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
+  import { Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
@@ -21,11 +21,12 @@
   import StatusSelector from '../StatusSelector.svelte'
 
   export let value: Issue
+  export let categories: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
 
   const client = getClient()
 
-  const handleStatusChanged = async (newStatus: IssueStatus | undefined) => {
+  const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
     if (newStatus === undefined) {
       return
     }
@@ -42,6 +43,12 @@
 
 {#if value}
   <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
-    <StatusSelector kind={'icon'} shouldShowLabel={false} status={value.status} onStatusChange={handleStatusChanged} />
+    <StatusSelector
+      kind={'icon'}
+      shouldShowLabel={false}
+      selectedStatusId={value.status}
+      statuses={categories}
+      onStatusChange={handleStatusChanged}
+    />
   </Tooltip>
 {/if}

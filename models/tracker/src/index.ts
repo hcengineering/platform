@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import { Domain, IndexKind, Markup, Ref, DOMAIN_MODEL, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -32,9 +32,9 @@ import {
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
-import core, { DOMAIN_SPACE, TDoc, TSpace } from '@anticrm/model-core'
-import { IntlString } from '@anticrm/platform'
-import { Document, Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
+import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import { Asset, IntlString } from '@anticrm/platform'
+import { Document, Issue, IssuePriority, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
 import tracker from './plugin'
 
 import workbench from '@anticrm/model-workbench'
@@ -43,6 +43,30 @@ export { trackerOperation } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
+
+/**
+ * @public
+ */
+@Model(tracker.class.IssueStatus, core.class.AttachedDoc, DOMAIN_MODEL)
+export class TIssueStatus extends TAttachedDoc implements IssueStatus {
+  name!: string
+  description?: string
+  color?: number
+
+  @Prop(TypeRef(tracker.class.IssueStatusCategory), tracker.string.StatusCategory)
+  category!: Ref<IssueStatusCategory>
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_MODEL)
+export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
+  name!: IntlString
+  icon!: Asset
+  color!: number
+  defaultStatusName!: string
+}
 
 /**
  * @public
@@ -61,6 +85,12 @@ export class TTeam extends TSpace implements Team {
   @Prop(TypeNumber(), tracker.string.Number)
   @Hidden()
   sequence!: number
+
+  @Prop(Collection(tracker.class.IssueStatus), tracker.string.IssueStatuses)
+  issueStatuses!: number
+
+  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
+  defaultIssueStatus!: Ref<IssueStatus>
 }
 
 /**
@@ -77,8 +107,8 @@ export class TIssue extends TDoc implements Issue {
   @Index(IndexKind.FullText)
   description!: Markup
 
-  @Prop(TypeNumber(), tracker.string.Status)
-  status!: IssueStatus
+  @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
+  status!: Ref<IssueStatus>
 
   @Prop(TypeNumber(), tracker.string.Priority)
   priority!: IssuePriority
@@ -141,7 +171,67 @@ export class TDocument extends TDoc implements Document {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTeam, TIssue)
+  builder.createModel(TTeam, TIssue, TIssueStatus, TIssueStatusCategory)
+
+  builder.createDoc(
+    tracker.class.IssueStatusCategory,
+    core.space.Model,
+    {
+      name: tracker.string.CategoryBacklog,
+      icon: tracker.icon.CategoryBacklog,
+      color: 0,
+      defaultStatusName: 'Backlog'
+    },
+    tracker.issueStatusCategory.Backlog
+  )
+
+  builder.createDoc(
+    tracker.class.IssueStatusCategory,
+    core.space.Model,
+    {
+      name: tracker.string.CategoryUnstarted,
+      icon: tracker.icon.CategoryUnstarted,
+      color: 1,
+      defaultStatusName: 'Todo'
+    },
+    tracker.issueStatusCategory.Unstarted
+  )
+
+  builder.createDoc(
+    tracker.class.IssueStatusCategory,
+    core.space.Model,
+    {
+      name: tracker.string.CategoryStarted,
+      icon: tracker.icon.CategoryStarted,
+      color: 2,
+      defaultStatusName: 'In Progress'
+    },
+    tracker.issueStatusCategory.Started
+  )
+
+  builder.createDoc(
+    tracker.class.IssueStatusCategory,
+    core.space.Model,
+    {
+      name: tracker.string.CategoryCompleted,
+      icon: tracker.icon.CategoryCompleted,
+      color: 3,
+      defaultStatusName: 'Done'
+    },
+    tracker.issueStatusCategory.Completed
+  )
+
+  builder.createDoc(
+    tracker.class.IssueStatusCategory,
+    core.space.Model,
+    {
+      name: tracker.string.CategoryCanceled,
+      icon: tracker.icon.CategoryCanceled,
+      color: 4,
+      defaultStatusName: 'Canceled'
+    },
+    tracker.issueStatusCategory.Canceled
+  )
 
   builder.createDoc(
     workbench.class.Application,

@@ -13,10 +13,40 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
+import core, { generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { Team } from '@anticrm/tracker'
+import { IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
 import tracker from './plugin'
+
+interface CreateTeamIssueStatusesArgs {
+  tx: TxOperations
+  teamId: Ref<Team>
+  categories: IssueStatusCategory[]
+  defaultStatusId?: Ref<IssueStatus>
+  defaultCategoryId?: Ref<IssueStatusCategory>
+}
+
+async function createTeamIssueStatuses ({
+  tx,
+  teamId: attachedTo,
+  categories,
+  defaultStatusId,
+  defaultCategoryId = tracker.issueStatusCategory.Backlog
+}: CreateTeamIssueStatusesArgs): Promise<void> {
+  for (const statusCategory of categories) {
+    const { _id: category, defaultStatusName } = statusCategory
+
+    await tx.addCollection(
+      tracker.class.IssueStatus,
+      attachedTo,
+      attachedTo,
+      tracker.class.Team,
+      'issueStatuses',
+      { name: defaultStatusName, category },
+      category === defaultCategoryId ? defaultStatusId : undefined
+    )
+  }
+}
 
 async function createDefaultTeam (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Team, {
@@ -29,6 +59,9 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
 
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
+    const defaultStatusId: Ref<IssueStatus> = generateId()
+    const categories = await tx.findAll(tracker.class.IssueStatusCategory, {})
+
     await tx.createDoc<Team>(
       tracker.class.Team,
       core.space.Space,
@@ -39,10 +72,13 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
         members: [],
         archived: false,
         identifier: 'TSK',
-        sequence: 0
+        sequence: 0,
+        issueStatuses: 0,
+        defaultIssueStatus: defaultStatusId
       },
       tracker.team.DefaultTeam
     )
+    await createTeamIssueStatuses({ tx, teamId: tracker.team.DefaultTeam, categories, defaultStatusId })
   }
 }
 

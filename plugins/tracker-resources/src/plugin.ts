@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -59,6 +59,14 @@ export default mergeIds(trackerId, tracker, {
     Identifier: '' as IntlString,
     Description: '' as IntlString,
     Status: '' as IntlString,
+    DefaultIssueStatus: '' as IntlString,
+    IssueStatuses: '' as IntlString,
+    StatusCategory: '' as IntlString,
+    CategoryBacklog: '' as IntlString,
+    CategoryUnstarted: '' as IntlString,
+    CategoryStarted: '' as IntlString,
+    CategoryCompleted: '' as IntlString,
+    CategoryCanceled: '' as IntlString,
     Number: '' as IntlString,
     Assignee: '' as IntlString,
     AssignTo: '' as IntlString,

@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +13,9 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
+import { FindResult, Ref } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
+import { getClient } from '@anticrm/presentation'
 import { IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
@@ -63,18 +63,20 @@ export const calcRank = (prev?: { rank: string }, next?: { rank: string }): stri
   return a.between(b).toString()
 }
 
-export const issueStatuses: Record<IssueStatus, { icon: Asset, label: IntlString }> = {
-  [IssueStatus.Backlog]: { icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
-  [IssueStatus.Todo]: { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
-  [IssueStatus.InProgress]: { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
-  [IssueStatus.Done]: { icon: tracker.icon.StatusDone, label: tracker.string.Done },
-  [IssueStatus.Canceled]: { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }
-}
-
 export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {
   [IssuePriority.NoPriority]: { icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
   [IssuePriority.Urgent]: { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
   [IssuePriority.High]: { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
   [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
   [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
+}
+
+export async function getIssueStatuses (teamId: Ref<Team>): Promise<FindResult<IssueStatus>> {
+  const client = getClient()
+
+  return await client.findAll(
+    tracker.class.IssueStatus,
+    { attachedTo: teamId },
+    { lookup: { category: tracker.class.IssueStatusCategory } }
+  )
 }

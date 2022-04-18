@@ -21,10 +21,6 @@
     "AddIssue": "Add Issue",
     "NewIssue": "New issue",
     "SaveIssue": "Save issue",
-    "Todo": "Todo",
-    "InProgress": "In Progress",
-    "Done": "Done",
-    "Canceled": "Canceled",
     "SetPriority": "Set priority\u2026",
     "SetStatus": "Set status\u2026",
     "SelectIssue": "Select issue",
@@ -35,6 +31,12 @@
     "Medium": "Medium",
     "Low": "Low",
     "Unassigned": "Unassigned",
+
+    "CategoryBacklog": "Backlog",
+    "CategoryUnstarted": "Unstarted",
+    "CategoryStarted": "Started",
+    "CategoryCompleted": "Completed",
+    "CategoryCanceled": "Canceled",
 
     "Title": "Title",
     "Description": "",

@@ -13,23 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+
   import { IssueStatus } from '@anticrm/tracker'
   import { Button, Icon, Label, showPopup, SelectPopup } from '@anticrm/ui'
-  import { issueStatuses } from '../utils'
   import tracker from '../plugin'
 
-  export let status: IssueStatus
+  export let selectedStatusId: Ref<IssueStatus>
+  export let statuses: WithLookup<IssueStatus>[]
   export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
-  export let onStatusChange: ((newStatus: IssueStatus | undefined) => void) | undefined = undefined
+  export let onStatusChange: ((newStatus: Ref<IssueStatus> | undefined) => void) | undefined = undefined
 
-  const statusesInfo = [
-    IssueStatus.Backlog,
-    IssueStatus.Todo,
-    IssueStatus.InProgress,
-    IssueStatus.Done,
-    IssueStatus.Canceled
-  ].map((s) => ({ id: s, ...issueStatuses[s] }))
+  $: selectedStatus = statuses.find((status) => status._id === selectedStatusId) ?? statuses[0]
+  $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
+  $: selectedStatusLabel = shouldShowLabel ? ((selectedStatus?.name || '') as IntlString) : undefined
+  $: statusesInfo = statuses.map((s) => ({ id: s._id, label: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
 
   const handleStatusEditorOpened = (event: Event) => {
     showPopup(
@@ -43,8 +43,8 @@
 
 {#if kind === 'button'}
   <Button
-    label={shouldShowLabel ? issueStatuses[status].label : undefined}
-    icon={issueStatuses[status].icon}
+    label={selectedStatusLabel}
+    icon={selectedStatusIcon}
     width="min-content"
     size="small"
     kind="no-border"
@@ -52,12 +52,14 @@
   />
 {:else if kind === 'icon'}
   <div class="flex-presenter" on:click={handleStatusEditorOpened}>
-    <div class="statusIcon">
-      <Icon icon={issueStatuses[status].icon} size={'small'} />
-    </div>
-    {#if shouldShowLabel}
+    {#if selectedStatusIcon}
+      <div class="statusIcon">
+        <Icon icon={selectedStatusIcon} size="small" />
+      </div>
+    {/if}
+    {#if selectedStatusLabel}
       <div class="label nowrap">
-        <Label label={issueStatuses[status].label} />
+        <Label label={selectedStatusLabel} />
       </div>
     {/if}
   </div>
