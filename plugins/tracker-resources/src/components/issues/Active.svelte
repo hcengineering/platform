@@ -7,4 +7,8 @@
   export let currentSpace: Ref<Team>
 </script>
 
-<Issues {currentSpace} categories={[IssueStatus.InProgress, IssueStatus.Todo]} title={tracker.string.ActiveIssues} />
+<Issues
+  {currentSpace}
+  includedGroups={{ status: [IssueStatus.InProgress, IssueStatus.Todo] }}
+  title={tracker.string.ActiveIssues}
+/>

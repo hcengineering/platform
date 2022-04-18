@@ -13,59 +13,125 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@anticrm/contact'
   import type { DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Label, ScrollBox } from '@anticrm/ui'
+  import { Issue, Team, IssuesGrouping } from '@anticrm/tracker'
+  import { Button, Label, ScrollBox, IconOptions, showPopup } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
   import { IntlString } from '@anticrm/platform'
+  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
+  import { IssuesGroupByKeys, issuesGroupKeyMap } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let categories = [
-    IssueStatus.InProgress,
-    IssueStatus.Todo,
-    IssueStatus.Backlog,
-    IssueStatus.Done,
-    IssueStatus.Canceled
-  ]
   export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
+  export let groupingKey: IssuesGrouping = IssuesGrouping.Status
+  export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
 
+  const ENTRIES_LIMIT = 200
   const spaceQuery = createQuery()
+  const issuesQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
+  let currentTeam: Team | undefined
+  let issues: Issue[] = []
 
-  $: getTotalIssues = () => {
+  $: totalIssues = getTotalIssues(issuesMap)
+
+  $: resultQuery =
+    search === ''
+      ? { space: currentSpace, ...includedIssuesQuery, ...query }
+      : { $search: search, space: currentSpace, ...includedIssuesQuery, ...query }
+
+  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
+    currentTeam = res.shift()
+  })
+
+  $: groupByKey = issuesGroupKeyMap[groupingKey]
+  $: categories = getCategories(groupByKey, issues)
+  $: displayedCategories = (categories as any[]).filter((x: ReturnType<typeof getCategories>) => {
+    return (
+      groupByKey === undefined || includedGroups[groupByKey] === undefined || includedGroups[groupByKey]?.includes(x)
+    )
+  })
+  $: includedIssuesQuery = getIncludedIssues(includedGroups)
+  
+  const getIncludedIssues = (groups: Partial<Record<IssuesGroupByKeys, Array<any>>>) => {
+    const resultMap: { [p: string]: { $in: any[] } } = {}
+
+    for (const [key, value] of Object.entries(groups)) {
+      resultMap[key] = { $in: value }
+    }
+
+    return resultMap
+  }
+
+  $: issuesQuery.query<Issue>(
+    tracker.class.Issue,
+    { ...includedIssuesQuery },
+    (result) => {
+      issues = result
+    },
+    { limit: ENTRIES_LIMIT, lookup: { assignee: contact.class.Employee } }
+  )
+
+  const getCategories = (key: IssuesGroupByKeys | undefined, elements: Issue[]) => {
+    if (!key) {
+      return [undefined]
+    }
+
+    return Array.from(
+      new Set(
+        elements.map((x) => {
+          return x[key]
+        })
+      )
+    )
+  }
+
+  const getTotalIssues = (map: { [status: string]: number }) => {
     let total = 0
 
-    for (const issuesAmount of Object.values(issuesMap)) {
-      total += issuesAmount
+    for (const amount of Object.values(map)) {
+      total += amount
     }
 
     return total
   }
 
-  $: resultQuery =
-    search === '' ? { space: currentSpace, ...query } : { $search: search, space: currentSpace, ...query }
+  const handleGroupingKeyUpdated = (result: any) => {
+    if (result === undefined) {
+      return
+    }
 
-  let currentTeam: Team | undefined
+    for (const prop of Object.getOwnPropertyNames(issuesMap)) {
+      delete issuesMap[prop]
+    }
 
-  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
-    currentTeam = res.shift()
-  })
+    groupingKey = result
+  }
+
+  const handleOptionsEditorOpened = (event: Event) => {
+    if (!currentSpace) {
+      return
+    }
+
+    showPopup(ViewOptionsPopup, { groupBy: groupingKey }, event.target, undefined, handleGroupingKeyUpdated)
+  }
 </script>
 
 {#if currentTeam}
   <ScrollBox vertical stretch>
-    <div class="fs-title">
-      <Label label={title} params={{ value: getTotalIssues() }} />
+    <div class="fs-title flex-between mt-1 mr-1 ml-1">
+      <Label label={title} params={{ value: totalIssues }} />
+      <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
-
     <div class="mt-4">
-      {#each categories as category}
+      {#each displayedCategories as category}
         <CategoryPresenter
-          {category}
+          groupBy={{ key: groupByKey, group: category }}
           query={resultQuery}
           {currentSpace}
           {currentTeam}
