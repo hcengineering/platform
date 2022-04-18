@@ -98,7 +98,7 @@ export async function ArchiveChannel (channel: Channel, afterArchive?: () => voi
         if (afterArchive != null) afterArchive()
 
         const loc = getCurrentLocation()
-        if (loc.path.includes(channel._id)) {
+        if (loc.path[2] === channel._id) {
           loc.path.length = 2
           navigate(loc)
         }
