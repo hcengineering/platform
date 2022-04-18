@@ -43,7 +43,7 @@
     if (labels.includes(label._id)) {
       labels = labels.filter((l) => l !== label._id)
     } else {
-      labels.push(label._id)
+      labels = [...labels, label._id]
     }
 
     updateCard(client, object, 'labels', labels)
