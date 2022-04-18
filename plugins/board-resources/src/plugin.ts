@@ -51,6 +51,8 @@ export default mergeIds(boardId, board, {
     Suggested: '' as IntlString,
     AddToCard: '' as IntlString,
     Labels: '' as IntlString,
+    CreateLabel: '' as IntlString,
+    SearchLabels: '' as IntlString,
     Checklist: '' as IntlString,
     Dates: '' as IntlString,
     Attachments: '' as IntlString,

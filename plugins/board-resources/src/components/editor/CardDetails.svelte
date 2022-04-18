@@ -37,17 +37,21 @@
   let labelsHandler: () => void
   let dateHandler: () => void
 
-  $: value.members &&
-    value.members.length > 0 &&
+  $: if (value.members && value.members.length > 0) {
     query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
       members = result
     })
+  } else {
+    members = []
+  }
 
-  $: value.labels &&
-    value.labels.length > 0 &&
+  $: if (value.labels && value.labels.length > 0) {
     query.query(board.class.CardLabel, { _id: { $in: value.labels } }, (result) => {
       labels = result
     })
+  } else {
+    labels = []
+  }
 
   getCardActions(client, {
     _id: { $in: [board.cardAction.Dates, board.cardAction.Labels, board.cardAction.Members] }
@@ -65,6 +69,7 @@
       }
     }
   })
+
 </script>
 
 {#if value}
@@ -82,7 +87,7 @@
     </div>
   {/if}
   {#if labels && labels.length > 0}
-    <div class="flex-col mt-4 mr6">
+    <div class="flex-col mt-4 mr-6">
       <div class="text-md font-medium">
         <Label label={board.string.Labels} />
       </div>

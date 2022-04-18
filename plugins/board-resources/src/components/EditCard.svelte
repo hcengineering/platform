@@ -78,7 +78,7 @@
     <Scroller>
       <div class="flex-col-stretch h-full w-165 p-6">
         <!-- TODO cover -->
-        <div class="flex-row-streach">
+        <div class="flex-row-stretch">
           <div class="w-9">
             <Icon icon={board.icon.Card} size="large" />
           </div>
@@ -91,20 +91,20 @@
             />
           </div>
         </div>
-        <div class="flex-row-streach">
+        <div class="flex-row-stretch">
           <div class="w-9" />
           <div>
             <Label label={board.string.InList} />
             <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
           </div>
         </div>
-        <div class="flex-row-streach">
+        <div class="flex-row-stretch">
           <div class="flex-grow mr-4">
-            <div class="flex-row-streach">
+            <div class="flex-row-stretch">
               <div class="w-9" />
               <CardDetails bind:value={object} />
             </div>
-            <div class="flex-row-streach mt-4 mb-2">
+            <div class="flex-row-stretch mt-4 mb-2">
               <div class="w-9">
                 <Icon icon={board.icon.Card} size="large" />
               </div>
@@ -112,7 +112,7 @@
                 <Label label={board.string.Description} />
               </div>
             </div>
-            <div class="flex-row-streach">
+            <div class="flex-row-stretch">
               <div class="w-9" />
               <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
                 <StyledTextBox

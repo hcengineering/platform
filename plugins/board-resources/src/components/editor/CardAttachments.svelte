@@ -38,7 +38,7 @@
 
 {#if value !== undefined && value.attachments !== undefined && value.attachments > 0}
   <div class="flex-col w-full">
-    <div class="flex-row-streach mt-4 mb-2">
+    <div class="flex-row-stretch mt-4 mb-2">
       <div class="w-9">
         <Icon icon={IconAttachment} size="large" />
       </div>
@@ -46,7 +46,7 @@
         <Label label={board.string.Attachments} />
       </div>
     </div>
-    <div class="flex-row-streach">
+    <div class="flex-row-stretch">
       <div class="w-9" />
       <div class="flex-col flex-gap-1 w-full">
         {#each attachments as attach}
