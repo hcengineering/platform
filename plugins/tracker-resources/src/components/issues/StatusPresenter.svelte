@@ -22,11 +22,13 @@
 
   export let value: Issue
   export let currentSpace: Ref<Team> | undefined = undefined
+  export let isEditable: boolean = true
+  export let shouldShowLabel: boolean = false
 
   const client = getClient()
 
   const handleStatusChanged = async (newStatus: IssueStatus | undefined) => {
-    if (newStatus === undefined) {
+    if (!isEditable || newStatus === undefined) {
       return
     }
 
@@ -41,7 +43,23 @@
 </script>
 
 {#if value}
-  <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
-    <StatusSelector kind={'icon'} shouldShowLabel={false} status={value.status} onStatusChange={handleStatusChanged} />
-  </Tooltip>
+  {#if isEditable}
+    <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
+      <StatusSelector
+        kind={'icon'}
+        {isEditable}
+        {shouldShowLabel}
+        status={value.status}
+        onStatusChange={handleStatusChanged}
+      />
+    </Tooltip>
+  {:else}
+    <StatusSelector
+      kind={'icon'}
+      {isEditable}
+      {shouldShowLabel}
+      status={value.status}
+      onStatusChange={handleStatusChanged}
+    />
+  {/if}
 {/if}
