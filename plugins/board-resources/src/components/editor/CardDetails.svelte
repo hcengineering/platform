@@ -37,13 +37,15 @@
   let labelsHandler: () => void
   let dateHandler: () => void
 
-  $: value.members &&
-    value.members.length > 0 &&
+  $: if (value.members && value.members.length > 0) {
     query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
       members = result
     })
+  } else {
+    members = []
+  }
 
-  $: if (value.labels) {
+  $: if (value.labels && value.labels.length > 0) {
     query.query(board.class.CardLabel, { _id: { $in: value.labels } }, (result) => {
       labels = result
     })
