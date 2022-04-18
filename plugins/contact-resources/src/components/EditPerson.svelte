@@ -92,7 +92,7 @@
 </script>
 
 {#if object !== undefined}
-  <div class="flex-row-streach flex-grow">
+  <div class="flex-row-stretch flex-grow">
     <div class="mr-8">
       {#if editable}
         <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />

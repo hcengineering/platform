@@ -26,7 +26,7 @@
 
 {#if value !== undefined}
   <div class="flex-col-stretch h-full w-full">
-    <div class="flex-row-streach mt-4 mb-2">
+    <div class="flex-row-stretch mt-4 mb-2">
       <div class="w-9">
         <Icon icon={IconActivity} size="large" />
       </div>
@@ -42,7 +42,7 @@
         }}
       />
     </div>
-    <div class="flex-row-streach">
+    <div class="flex-row-stretch">
       <div class="w-9" />
       <div class="w-full">
         <Component is={chunter.component.CommentInput} props={{ object: value }} />

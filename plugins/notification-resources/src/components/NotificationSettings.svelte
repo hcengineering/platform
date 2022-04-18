@@ -110,7 +110,7 @@
     <div class="ac-header__icon"><Icon icon={notification.icon.Notifications} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={notification.string.Notifications}/></div>
   </div>
-  <div class="flex-row-streach flex-grow container">
+  <div class="flex-row-stretch flex-grow container">
     <div class="flex-col flex-grow">
       <div class="flex-grow">
         <Grid {column} columnGap={5} rowGap={1.5} >

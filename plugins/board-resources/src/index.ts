@@ -24,12 +24,18 @@ import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import CardLabelsPicker from './components/popups/CardLabelsPicker.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived } from './utils/CardUtils'
 
 async function showDatePickerPopup (object: Card): Promise<void> {
   showPopup(DateRangePicker, { object })
 }
+
+async function showCardLabelsPopup (object: Card): Promise<void> {
+  showPopup(CardLabelsPicker, { object })
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateBoard,
@@ -42,7 +48,8 @@ export default async (): Promise<Resources> => ({
   },
   cardActionHandler: {
     Join: addCurrentUser,
-    Dates: showDatePickerPopup
+    Dates: showDatePickerPopup,
+    Labels: showCardLabelsPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,

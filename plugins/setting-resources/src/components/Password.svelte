@@ -46,7 +46,7 @@
     <div class="ac-header__icon"><Icon icon={setting.icon.Password} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.ChangePassword} /></div>
   </div>
-  <div class="flex-row-streach flex-grow p-10">
+  <div class="flex-row-stretch flex-grow p-10">
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
         <div>
