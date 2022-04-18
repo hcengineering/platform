@@ -43,11 +43,13 @@
       members = result
     })
 
-  $: value.labels &&
-    value.labels.length > 0 &&
+  $: if (value.labels) {
     query.query(board.class.CardLabel, { _id: { $in: value.labels } }, (result) => {
       labels = result
     })
+  } else {
+    labels = []
+  }
 
   getCardActions(client, {
     _id: { $in: [board.cardAction.Dates, board.cardAction.Labels, board.cardAction.Members] }
@@ -65,6 +67,7 @@
       }
     }
   })
+
 </script>
 
 {#if value}
