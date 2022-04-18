@@ -14,18 +14,24 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
 import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
+import { Resources } from '@anticrm/platform'
 import CardPresenter from './components/CardPresenter.svelte'
+import BoardPresenter from './components/BoardPresenter.svelte'
 import CreateBoard from './components/CreateBoard.svelte'
 import CreateCard from './components/CreateCard.svelte'
 import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived } from './utils/CardUtils'
+
+async function showMoveCardPopup (object: Card): Promise<void> {
+  showPopup(MoveView, { object })
+}
 
 async function showDatePickerPopup (object: Card): Promise<void> {
   showPopup(DateRangePicker, { object })
@@ -38,10 +44,12 @@ export default async (): Promise<Resources> => ({
     KanbanCard,
     CardPresenter,
     TemplatesIcon,
-    KanbanView
+    KanbanView,
+    BoardPresenter
   },
   cardActionHandler: {
     Join: addCurrentUser,
+    Move: showMoveCardPopup,
     Dates: showDatePickerPopup
   },
   cardActionSupportedHandler: {

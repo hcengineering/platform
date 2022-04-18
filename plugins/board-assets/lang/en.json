@@ -56,15 +56,20 @@
     "AddACard": "Add a card",
     "AddCard": "Add card",
     "CardTitlePlaceholder": "Enter a title for this card...",
+    "MoveCard": "Move card",
+    "SelectDestination": "Select destination",
     "Create": "Create",
     "CreateDescription": "If you want, we can create a card for every new line ({number}). You can also create one card with a long title.",
     "CreateSingle": "Just one card",
     "CreateMultiple": "Create {number} cards",
+    "Cancel": "Cancel",
+    "List": "List",
+    "Position": "Position",
+    "Current": "{label} (current)",
     "StartDate": "Start date",
     "DueDate": "Due date",
     "Save": "Save",
     "Remove": "Remove",
-    "Cancel": "Cancel",
     "NullDate": "M/D/YYYY"
   }
 }
