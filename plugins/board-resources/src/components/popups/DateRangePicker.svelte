@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Label, Button, DateRangePresenter, CheckBox, Component } from '@anticrm/ui'
-  import { Card } from '@anticrm/board'
+  import { Card, CardDate } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
   import board from '../../plugin'
   import { getClient } from '@anticrm/presentation';
@@ -19,6 +19,13 @@
   let savedDueDate = object.date?.dueDate ?? Date.now()
   let dueDateEnabled = dueDate !== undefined
   $: dueDate && (savedDueDate = dueDate)
+
+  function update () {
+    const date: CardDate = {}
+    if (startDate !== undefined) date.startDate = startDate
+    if (dueDate !== undefined) date.dueDate = dueDate
+    client.update(object, {date})
+  }
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
@@ -70,7 +77,7 @@
       size={'small'}
       kind={'primary'}
       on:click={() => {
-        client.update(object, {date: {startDate, dueDate}})
+        update()
         dispatch('close')
       }}
     />
