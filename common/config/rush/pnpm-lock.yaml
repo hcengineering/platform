@@ -239,7 +239,6 @@ specifiers:
   koa: ^2.13.1
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
-  lodash: ~4.17.21
   mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
   minio: ~7.0.26
@@ -512,7 +511,6 @@ dependencies:
   koa: 2.13.4
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
-  lodash: 4.17.21
   mime-types: 2.1.34
   mini-css-extract-plugin: 2.4.5_webpack@5.65.0
   minio: 7.0.26
@@ -11750,7 +11748,7 @@ packages:
     dev: false
 
   file:projects/board-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-f3lI7n06BvKQoEgO1wZl+7gfeH72bshNqNJkJQ/QjQDh1ZQX6TCxXOGnT4BAbdfxji3QCPQHMleHqQKrEn8caQ==, tarball: file:projects/board-resources.tgz}
+    resolution: {integrity: sha512-nI0XMUXXwKiWWIwh1LHsD6P+VjNPy1M1NN3VBxLzPFsG6TGmEX/RHZhR9a6Ao6YwY783n8TfdrajFABs8IrGPg==, tarball: file:projects/board-resources.tgz}
     id: file:projects/board-resources.tgz
     name: '@rush-temp/board-resources'
     version: 0.0.0
@@ -11763,7 +11761,6 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.2.1_eslint@7.32.0+svelte@3.46.6
-      lodash: 4.17.21
       prettier: 2.5.1
       prettier-plugin-svelte: 2.5.1_prettier@2.5.1+svelte@3.46.6
       sass: 1.45.0
