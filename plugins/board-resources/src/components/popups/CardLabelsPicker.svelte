@@ -24,7 +24,7 @@
     }
 
     const text = search!.toUpperCase()
-    filteredLabels = boardCardLabels.filter((l) => (!l.title || l.title.trim().length <= 0) && l.title.toUpperCase().includes(text))
+    filteredLabels = boardCardLabels.filter((l) => l.title?.toUpperCase().includes(text) ?? false)
   }
 
   async function fetchBoardLabels() {
