@@ -61,6 +61,7 @@
   ) {
     const c = ++qindex
     loading = true
+    objects = []
     q.query(
       _class,
       query,
@@ -123,9 +124,7 @@
 </script>
 
 {#await buildModel({ client, _class, keys: config, options })}
-  {#if !loading}
-    <Loading />
-  {/if}
+  <Loading />
 {:then model}
   <table class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
     <thead class="scroller-thead">
@@ -167,7 +166,7 @@
         {/each}
       </tr>
     </thead>
-    {#if objects}
+    {#if objects.length}
       <tbody>
         {#each objects as object, row (object._id)}
           <tr class="antiTable-body__row" class:checking={checked.has(object._id)} class:fixed={row === selectRow}>
