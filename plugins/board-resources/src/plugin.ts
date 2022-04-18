@@ -19,6 +19,7 @@ import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(boardId, board, {
   string: {
+    Name: '' as IntlString,
     BoardName: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
@@ -53,6 +54,9 @@ export default mergeIds(boardId, board, {
     Labels: '' as IntlString,
     CreateLabel: '' as IntlString,
     SearchLabels: '' as IntlString,
+    SelectColor: '' as IntlString,
+    NoColor: '' as IntlString,
+    NoColorInfo: '' as IntlString,
     Checklist: '' as IntlString,
     Dates: '' as IntlString,
     Attachments: '' as IntlString,
@@ -96,9 +100,6 @@ export default mergeIds(boardId, board, {
     NullDate: '' as IntlString
   },
   component: {
-    CreateCustomer: '' as AnyComponent,
-    CardsPresenter: '' as AnyComponent,
-    BoardPresenter: '' as AnyComponent,
     Boards: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Members: '' as AnyComponent,

@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -44,12 +44,13 @@ export interface BoardView extends SpaceWithStates {
 export interface CardLabel extends AttachedDoc {
   title: string
   color: number
+  isHidden?: boolean
 }
 
 /**
  * @public
  */
-export interface CardDate {
+export interface CardDate extends Obj {
   dueDate?: Timestamp
   isChecked?: boolean
   startDate?: Timestamp
@@ -110,6 +111,7 @@ const boards = plugin(boardId, {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
     CardAction: '' as Ref<Class<CardAction>>,
+    CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {

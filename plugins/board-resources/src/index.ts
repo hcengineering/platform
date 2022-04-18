@@ -25,9 +25,11 @@ import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
-import CardLabelsPicker from './components/popups/CardLabelsPicker.svelte'
+import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
+import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
+import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived } from './utils/CardUtils'
 
 async function showMoveCardPopup (object: Card): Promise<void> {
@@ -39,7 +41,7 @@ async function showDatePickerPopup (object: Card): Promise<void> {
 }
 
 async function showCardLabelsPopup (object: Card): Promise<void> {
-  showPopup(CardLabelsPicker, { object })
+  showPopup(CardLabelsPopup, { object })
 }
 
 export default async (): Promise<Resources> => ({
@@ -49,6 +51,8 @@ export default async (): Promise<Resources> => ({
     EditCard,
     KanbanCard,
     CardPresenter,
+    CardDatePresenter,
+    CardLabelPresenter,
     TemplatesIcon,
     KanbanView,
     BoardPresenter

@@ -12,6 +12,7 @@ export const ChetwodeBlueColor = '#6F7BC5' // dark blue
 export const SalmonColor = '#F28469' // salmon
 export const SeaBuckthornColor = '#F2994A' // orange (warning)
 export const FlamingoColor = '#EB5757' // red (error)
+export const LinkWaterColor = '#C9CBCD'
 
 const blackColors = Object.freeze([
   FeijoaColor,

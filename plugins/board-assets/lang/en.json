@@ -1,5 +1,6 @@
 {
   "string": {
+    "Name": "Name",
     "CreateBoard": "Create board",
     "CreateCard": "Create card",
     "CardName": "Card name",
@@ -32,6 +33,9 @@
     "Labels": "Labels",
     "CreateLabel": "Create a new label",
     "SearchLabels": "Search labels...",
+    "SelectColor": "Select a color",
+    "NoColor": "No color.",
+    "NoColorInfo": "This won't show up on the front of cards.",
     "Checklist": "Checklist",
     "Dates": "Dates",
     "Attachments": "Attachments",

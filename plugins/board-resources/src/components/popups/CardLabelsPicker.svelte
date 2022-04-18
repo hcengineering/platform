@@ -2,20 +2,35 @@
   import { Card, CardLabel } from '@anticrm/board'
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, EditBox, Icon, IconEdit, IconCheck, Label, numberToHexColor, numberToRGB } from '@anticrm/ui'
+  import {
+    Button,
+    EditBox,
+    Icon,
+    IconEdit,
+    IconCheck,
+    IconClose,
+    Label,
+    numberToHexColor,
+    numberToRGB
+  } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import board from '../../plugin'
   import { getBoardLabels } from '../../utils/BoardUtils'
   import { updateCard } from '../../utils/CardUtils'
 
   export let object: Card
+  export let search: string | undefined = undefined
+  export let onEdit: (label: CardLabel) => void
+  export let onCreate: () => void
 
   const client = getClient()
-  let search: string | undefined = undefined
+
   let labels = object.labels ?? []
   let boardCardLabels: CardLabel[] = []
   let filteredLabels: CardLabel[] = []
   let hovered: Ref<CardLabel> | undefined = undefined
+  const dispatch = createEventDispatcher()
 
   function applySearch() {
     if (!search || search.trim().length <= 0) {
@@ -27,14 +42,14 @@
     filteredLabels = boardCardLabels.filter((l) => l.title?.toUpperCase().includes(text) ?? false)
   }
 
-  async function fetchBoardLabels() {
+  async function fetchBoardLabels () {
     if (object.space) {
       boardCardLabels = await getBoardLabels(client, object.space)
       applySearch()
     }
   }
 
-  function toggle(label: CardLabel) {
+  function toggle (label: CardLabel) {
     if (!object) {
       return
     }
@@ -52,13 +67,21 @@
 
 </script>
 
-<div class="antiPopup antiPopup-withHeader antiPopup-withTitle w-85 pb-2">
-  <div class="ap-space" />
-  <div class="fs-title ap-header flex-row-center">
+<div class="antiPopup w-85 pb-2">
+  <div class="relative fs-title flex-center h-9">
     <Label label={board.string.Labels} />
+    <div class="absolute flex-center mr-2 h-full" style:top="0" style:right="0">
+      <Button
+        icon={IconClose}
+        kind="transparent"
+        size="small"
+        on:click={() => {
+          dispatch('close')
+        }} />
+    </div>
   </div>
   <div class="ap-space bottom-divider" />
-  <div class="flex-col ml-4 mt-1 mb-1 mr-2 flex-gap-1">
+  <div class="flex-col ml-4 mt-2 mb-1 mr-2 flex-gap-1">
     <div class="p-2 mt-1 mb-1 border-bg-accent border-radius-1">
       <EditBox
         bind:value={search}
@@ -87,7 +110,7 @@
         <div
           class="relative flex-row-center justify-center border-radius-1 fs-title w-full h-8 mr-2"
           style:background-color={numberToHexColor(label.color)}
-          style:box-shadow={hovered === label._id ? `-0.5rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
+          style:box-shadow={hovered === label._id ? `-0.4rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
           on:click={() => toggle(label)}>
           {label.title ?? ''}
           {#if labels.includes(label._id)}
@@ -96,10 +119,10 @@
             </div>
           {/if}
         </div>
-        <Button icon={IconEdit} kind="transparent" />
+        <Button icon={IconEdit} kind="transparent" on:click={() => onEdit(label)} />
       </div>
     {/each}
     <div class="mt-3" />
-    <Button label={board.string.CreateLabel} kind="no-border" />
+    <Button label={board.string.CreateLabel} kind="no-border" on:click={() => onCreate()} />
   </div>
 </div>
