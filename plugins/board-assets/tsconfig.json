@@ -6,6 +6,7 @@
     "declaration": true,
     "outDir": "./lib",
     "strict": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "lib": [
       "esnext",

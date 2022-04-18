@@ -1,15 +1,8 @@
 {
+  "extends": "./node_modules/@anticrm/platform-rig/profiles/ui/tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "esnext",
-    "module": "esnext",
-    "declaration": true,
+    "rootDir": "./src",
     "outDir": "./lib",
-    "strict": true,
-    "esModuleInterop": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ]
+    "esModuleInterop": true
   }
 }

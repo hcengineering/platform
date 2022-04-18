@@ -33,6 +33,7 @@
   "#replaces": [
     ".eslintrc.js",
     "postcss.config.js",
-    "svelte.config.js"
+    "svelte.config.js",
+    "tsconfig.json"
   ]
 }
