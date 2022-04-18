@@ -161,6 +161,44 @@ export function createModel (builder: Builder): void {
     action: chunter.action.MarkUnread
   })
 
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: chunter.string.ArchiveChannel,
+      icon: view.icon.Archive,
+      action: chunter.actionImpl.ArchiveChannel
+    },
+    chunter.action.ArchiveChannel
+  )
+
+  builder.createDoc(
+    view.class.Action,
+    core.space.Model,
+    {
+      label: chunter.string.UnarchiveChannel,
+      icon: view.icon.Archive,
+      action: chunter.actionImpl.UnarchiveChannel
+    },
+    chunter.action.UnarchiveChannel
+  )
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: chunter.class.Channel,
+    action: chunter.action.ArchiveChannel,
+    query: {
+      archived: false
+    }
+  })
+
+  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+    target: chunter.class.Channel,
+    action: chunter.action.UnarchiveChannel,
+    query: {
+      archived: true
+    }
+  })
+
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: chunter.class.ThreadMessage,
     action: chunter.action.MarkCommentUnread
@@ -172,6 +210,15 @@ export function createModel (builder: Builder): void {
     hidden: false,
     navigatorModel: {
       specials: [
+        {
+          id: 'archive',
+          component: workbench.component.Archive,
+          icon: view.icon.Archive,
+          label: workbench.string.Archive,
+          position: 'top',
+          visibleIf: workbench.function.HasArchiveSpaces,
+          spaceClass: chunter.class.Channel
+        },
         {
           id: 'threads',
           label: chunter.string.Threads,

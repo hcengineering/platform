@@ -23,6 +23,7 @@
 
   import chunter from '../plugin'
   import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
+  import EditChannelSettingsTab from './EditChannelSettingsTab.svelte'
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
@@ -39,7 +40,7 @@
     channel = result[0]
   })
 
-  const tabLabels: IntlString[] = [chunter.string.Channel, chunter.string.Members]
+  const tabLabels: IntlString[] = [chunter.string.Channel, chunter.string.Members, chunter.string.Settings]
   let selectedTabIndex = 0
 </script>
 
@@ -83,9 +84,11 @@
   <Scroller padding>
     {#if selectedTabIndex === 0}
       <EditChannelDescriptionTab {channel} {_id} {_class} />
-    {:else}
+    {:else if selectedTabIndex === 1}
       <!-- Channel members -->
       <Members />
+    {:else if selectedTabIndex === 2}
+      <EditChannelSettingsTab {channel} on:close />
     {/if}
   </Scroller>
 </div>

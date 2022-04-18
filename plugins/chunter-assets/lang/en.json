@@ -39,6 +39,11 @@
     "Edited": "edited",
     "DeleteMessage": "Delete message",
     "AndYou": "{participants, plural, =0 {Just you} other {and you}}",
-    "ShowMoreReplies": "Show {count} more replies"
+    "ShowMoreReplies": "Show {count} more replies",
+    "Settings": "Settings",
+    "ArchiveChannel": "Archive channel",
+    "UnarchiveChannel": "Unarchive channel",
+    "ArchiveConfirm": "Do you want to archive channel?",
+    "UnarchiveConfirm": "Do you want to unarchive channel?"
   }
 }
