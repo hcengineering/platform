@@ -3,7 +3,6 @@
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Button, EditBox, Icon, IconEdit, IconCheck, Label, numberToHexColor, numberToRGB } from '@anticrm/ui'
-  import { isEmpty } from 'lodash'
 
   import board from '../../plugin'
   import { getBoardLabels } from '../../utils/BoardUtils'
@@ -19,13 +18,13 @@
   let hovered: Ref<CardLabel> | undefined = undefined
 
   function applySearch() {
-    if (isEmpty(search)) {
+    if (!search || search.trim().length <= 0) {
       filteredLabels = boardCardLabels
       return
     }
 
     const text = search!.toUpperCase()
-    filteredLabels = boardCardLabels.filter((l) => !isEmpty(l.title) && l.title.toUpperCase().includes(text))
+    filteredLabels = boardCardLabels.filter((l) => (!l.title || l.title.trim().length <= 0) && l.title.toUpperCase().includes(text))
   }
 
   async function fetchBoardLabels() {

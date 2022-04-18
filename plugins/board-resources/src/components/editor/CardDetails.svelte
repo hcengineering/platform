@@ -87,7 +87,7 @@
     </div>
   {/if}
   {#if labels && labels.length > 0}
-    <div class="flex-col mt-4 mr6">
+    <div class="flex-col mt-4 mr-6">
       <div class="text-md font-medium">
         <Label label={board.string.Labels} />
       </div>
