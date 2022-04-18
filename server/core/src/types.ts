@@ -100,6 +100,7 @@ export interface IndexedDoc {
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
 
   [key: string]: any
 }

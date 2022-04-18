@@ -149,21 +149,61 @@ export class FullTextIndex implements WithFind {
     const classes = this.hierarchy.getDescendants(baseClass)
     const fullTextLimit = 10000
     const docs = await this.adapter.search(classes, query, fullTextLimit)
+
     for (const doc of docs) {
-      ids.add(doc.id)
+      if (this.hierarchy.isDerived(doc._class, baseClass)) {
+        ids.add(doc.id)
+      }
       if (doc.attachedTo !== undefined) {
-        ids.add(doc.attachedTo)
+        if (doc.attachedToClass !== undefined && this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
+          if (this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
+            ids.add(doc.attachedTo)
+          }
+        } else {
+          ids.add(doc.attachedTo)
+        }
       }
     }
-    const resultIds = getResultIds(ids, _id)
-    const { limit, ...otherOptions } = options ?? { }
-    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, otherOptions)
-    const total = result.total
-    result.sort((a, b) => resultIds.indexOf(a._id) - resultIds.indexOf(b._id))
-    if (limit !== undefined) {
-      const res = toFindResult(result.splice(0, limit), total)
-      return res
+    const resultIds = Array.from(getResultIds(ids, _id))
+    if (options?.limit === undefined) {
+      return await this.getResult(ctx, _class, resultIds, mainQuery as DocumentQuery<T>, options)
+    } else {
+      const result: T[] = []
+      const size = options.limit
+      while (true) {
+        const ids = resultIds.splice(0, size)
+        const res = await this.getResult(ctx, _class, ids, mainQuery as DocumentQuery<T>, options)
+        result.push(...res)
+        if (result.length >= size || res.length < size) {
+          break
+        }
+      }
+      if (result.length >= size) {
+        const total = await this.getResult(ctx, _class, resultIds, mainQuery as DocumentQuery<T>, { limit: 1 })
+
+        return toFindResult(result, total.total)
+      }
+      return toFindResult(result)
     }
+  }
+
+  private async getResult <T extends Doc>(ctx: MeasureContext,
+    _class: Ref<Class<T>>,
+    ids: Ref<Doc>[],
+    mainQuery: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const orderMap = new Map<Ref<Doc>, number>()
+    for (let index = 0; index < ids.length; index++) {
+      orderMap.set(ids[index], index)
+    }
+
+    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: ids }, ...mainQuery }, options)
+
+    const total = result.total
+
+    result.sort((a, b) => (orderMap.get(a._id) ?? 0) - (orderMap.get(b._id) ?? 0))
+
     return toFindResult(result, total)
   }
 
@@ -222,6 +262,7 @@ export class FullTextIndex implements WithFind {
       modifiedOn: doc.modifiedOn,
       space: doc.space,
       attachedTo: (doc as AttachedDoc).attachedTo,
+      attachedToClass: (doc as AttachedDoc).attachedToClass,
       ...content
     }
     return await this.adapter.index(indexedDoc)
@@ -326,30 +367,30 @@ function isFullTextAttribute (attr: AnyAttribute): boolean {
   )
 }
 
-function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefined): Ref<Doc>[] {
-  let result = []
+function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefined): Set<Ref<Doc>> {
+  const result = new Set<Ref<Doc>>()
   if (_id !== undefined) {
     if (typeof _id === 'string') {
       if (!ids.has(_id)) {
-        return []
+        return new Set()
       } else {
-        result = [_id]
+        result.add(_id)
       }
     } else if (_id.$in !== undefined) {
       for (const id of _id.$in) {
         if (ids.has(id)) {
-          result.push(id)
+          result.add(id)
         }
       }
     } else if (_id.$nin !== undefined) {
-      for (const id of Array.from(ids.values())) {
+      for (const id of ids) {
         if (!_id.$nin.includes(id)) {
-          result.push(id)
+          result.add(id)
         }
       }
     }
   } else {
-    result = Array.from(ids)
+    return ids
   }
   return result
 }
