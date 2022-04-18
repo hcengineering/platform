@@ -1,17 +1,31 @@
+export const FeijoaColor = '#A5D179'
+export const DeYorkColor = '#77C07B'
+export const FernColor = '#60B96E' // green
+export const PuertoRicoColor = '#45AEA3'
+export const MediumTurquoiseColor = '#46CBDE'
+export const SummerSkyColor = '#47BDF6'
+export const MalibuColor = '#5AADF6'
+export const SeagullColor = '#73A6CD'
+export const EastSideColor = '#B977CB' // purple
+export const MoodyBlueColor = '#7C6FCD' // violet
+export const ChetwodeBlueColor = '#6F7BC5' // dark blue
+export const SalmonColor = '#F28469' // salmon
+export const SeaBuckthornColor = '#F2994A' // orange (warning)
+export const FlamingoColor = '#EB5757' // red (error)
 
 const blackColors = Object.freeze([
-  '#A5D179',
-  '#77C07B',
-  '#60B96E',
-  '#45AEA3',
-  '#46CBDE',
-  '#47BDF6',
-  '#5AADF6',
-  '#73A6CD',
-  '#B977CB',
-  '#7C6FCD',
-  '#6F7BC5',
-  '#F28469'
+  FeijoaColor,
+  DeYorkColor,
+  FernColor,
+  PuertoRicoColor,
+  MediumTurquoiseColor,
+  SummerSkyColor,
+  MalibuColor,
+  SeagullColor,
+  EastSideColor,
+  MoodyBlueColor,
+  ChetwodeBlueColor,
+  SalmonColor
 ])
 
 /**
@@ -45,4 +59,18 @@ function hashCode (str: string): number {
  */
 export function getColorNumberByText (str: string): number {
   return hashCode(str)
+}
+
+/**
+ * @public
+ */
+export function hexColorToNumber (hexColor: string): number {
+  return parseInt(hexColor.replace('#', ''), 16)
+}
+
+/**
+ * @public
+ */
+export function numberToHexColor (color: number): string {
+  return `#${color.toString(16)}`
 }

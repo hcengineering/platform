@@ -14,12 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import task, { KanbanTemplate } from '@anticrm/task'
   import { Component, EditBox, Grid, IconFolder } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
+  import { createBoard } from '../utils/BoardUtils'
 
   const dispatch = createEventDispatcher()
 
@@ -33,7 +34,7 @@
 
   const client = getClient()
 
-  async function createBoard (): Promise<void> {
+  async function onCreateBoard (): Promise<void> {
     if (
       templateId !== undefined &&
       (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
@@ -41,21 +42,13 @@
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(board.class.Board, core.space.Space, {
-      name,
-      description,
-      private: false,
-      archived: false,
-      members: []
-    })
-
-    await createKanban(client, id, templateId)
+    await createBoard(client, name, description, templateId)
   }
 </script>
 
 <SpaceCreateCard
   label={board.string.CreateBoard}
-  okAction={createBoard}
+  okAction={onCreateBoard}
   canSave={name.length > 0}
   on:close={() => {
     dispatch('close')
