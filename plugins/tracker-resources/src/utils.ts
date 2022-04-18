@@ -16,7 +16,7 @@
 
 import { Ref } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
+import { IssuePriority, IssueStatus, Team, IssuesGrouping, Issue } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
@@ -77,4 +77,26 @@ export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlSt
   [IssuePriority.High]: { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
   [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
   [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
+}
+
+export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
+  [IssuesGrouping.Status]: tracker.string.Status,
+  [IssuesGrouping.Assignee]: tracker.string.Assignee,
+  [IssuesGrouping.Priority]: tracker.string.Priority,
+  [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
+}
+
+export type IssuesGroupByKeys = 'status' | 'priority' | 'assignee'
+
+export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
+  [IssuesGrouping.Status]: 'status',
+  [IssuesGrouping.Priority]: 'priority',
+  [IssuesGrouping.Assignee]: 'assignee',
+  [IssuesGrouping.NoGrouping]: undefined
+}
+
+export const issuesGroupPresenterMap: Record<IssuesGroupByKeys, AnyComponent | undefined> = {
+  status: tracker.component.StatusPresenter,
+  priority: tracker.component.PriorityPresenter,
+  assignee: tracker.component.AssigneePresenter
 }
