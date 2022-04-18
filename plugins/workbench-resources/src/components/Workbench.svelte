@@ -250,6 +250,40 @@
       }
     }
   }
+
+  let aside: HTMLElement
+  let isResizing: boolean = false
+  let asideWidth: number
+  let componentWidth: number
+  let dX: number
+  let oldX: number
+
+  const resizing = (event: MouseEvent): void => {
+    if (isResizing && aside) {
+      let X = event.clientX - dX
+      const newWidth = asideWidth + oldX - X
+      if (newWidth > 320 && componentWidth - (oldX - X) > 320) {
+        aside.style.width = aside.style.maxWidth = aside.style.minWidth = newWidth + 'px'
+        oldX = X
+      }
+    }
+  }
+  const endResize = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && isResizing) document.removeEventListener('mousemove', resizing)
+    document.removeEventListener('mouseup', endResize)
+    isResizing = false
+  }
+  const startResize = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && !isResizing) {
+      oldX = el.getBoundingClientRect().y
+      dX = event.clientX - oldX
+      document.addEventListener('mouseup', endResize)
+      document.addEventListener('mousemove', resizing)
+      isResizing = true
+    }
+  }
 </script>
 
 {#if client}
@@ -346,7 +380,7 @@
         {/if}
       </div>
     {/if}
-    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel}>
+    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel} bind:clientWidth={componentWidth}>
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} props={{ currentSpace }} />
       {:else if specialComponent}
@@ -361,7 +395,8 @@
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="antiPanel-component antiComponent border-left">
+      <div class="splitter" on:mousedown={startResize} />
+      <div class="antiPanel-component antiComponent aside" bind:clientWidth={asideWidth} bind:this={aside}>
         <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
       </div>
     {/if}
@@ -378,5 +413,35 @@
   .workbench-container {
     display: flex;
     height: 100%;
+  }
+  .splitter {
+    position: relative;
+    width: 1px;
+    min-width: 1px;
+    max-width: 1px;
+    height: 100%;
+    background-color: var(--divider-color);
+    transition: background-color .15s ease-in-out;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: .5rem;
+      height: 100%;
+      border-left: 2px solid transparent;
+      cursor: col-resize;
+      z-index: 1;
+      transition: border-color .15s ease-in-out;
+    }
+    &:hover {
+      transition-duration: 0;
+      background-color: var(--primary-bg-color);
+      &::before {
+        transition-duration: 0;
+        border-left: 2px solid var(--primary-bg-color);
+      }
+    }
   }
 </style>

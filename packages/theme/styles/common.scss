@@ -40,7 +40,12 @@
   max-width: 18rem;
   width: 18rem;
 }
-.antiPanel-component { flex-grow: 1; }
+.antiPanel-component:not(.aside) { flex-grow: 1; }
+.antiPanel-component.aside {
+  min-width: 30rem;
+  width: 30rem;
+  max-width: 30rem;
+}
 
 /* Navigation */
 .antiNav-header {
