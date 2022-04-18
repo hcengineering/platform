@@ -81,7 +81,7 @@ export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   })
 }
 
-export async function ArchiveChannel (channel: Channel, afterArchive?: ()=>void): Promise<void> {
+export async function ArchiveChannel (channel: Channel, afterArchive?: () => void): Promise<void> {
   showPopup(
     MessageBox,
     {
@@ -95,20 +95,12 @@ export async function ArchiveChannel (channel: Channel, afterArchive?: ()=>void)
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         client.update(channel, { archived: true })
-        if (afterArchive)
-          afterArchive()
+        if (afterArchive != null) afterArchive()
 
         const loc = getCurrentLocation()
-
-        if (loc.path.includes(channel._id) ) {
-          const path = loc.path.slice(0, 2)
-          path.push('0')
-        
-          const newloc = {
-            ...loc,
-            path
-          }
-          navigate(newloc)
+        if (loc.path.includes(channel._id)) {
+          loc.path.length = 2
+          navigate(loc)
         }
       }
     }
