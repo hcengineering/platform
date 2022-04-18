@@ -20,8 +20,12 @@
   let dueDateEnabled = dueDate !== undefined
   $: dueDate && (savedDueDate = dueDate)
 
+  function getEmptyDate (): CardDate {
+    return {_class: object.date?._class ?? board.class.CardDate}
+  }
+
   function update () {
-    const date: CardDate = {}
+    const date: CardDate = getEmptyDate()
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
     client.update(object, {date})
@@ -68,7 +72,7 @@
       label={board.string.Remove}
       size={'small'}
       on:click={() => {
-        client.update(object, {date: {}})
+        client.update(object, {date: getEmptyDate()})
         dispatch('close')
       }}
     />

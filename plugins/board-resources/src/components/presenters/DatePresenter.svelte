@@ -10,7 +10,7 @@
   let isChecked = date?.isChecked
 
   function update() {
-    if (isChecked === undefined) return
+    if (isChecked === undefined || date === undefined) return
     client.update(value, { date: { ...date, isChecked } })
   }
 

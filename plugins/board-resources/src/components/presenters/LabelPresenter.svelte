@@ -3,7 +3,7 @@
 import ColorPresenter from './ColorPresenter.svelte'
 
   export let value: CardLabel
-  export let size: 'small' | 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 
 </script>
 
