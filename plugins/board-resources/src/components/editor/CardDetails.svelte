@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardLabel } from '@anticrm/board'
+  import type { Card, CardDate, CardLabel } from '@anticrm/board'
 
   import contact, { Employee } from '@anticrm/contact'
   import { getResource } from '@anticrm/platform'
@@ -51,6 +51,10 @@
     })
   } else {
     labels = []
+  }
+
+  function updateDate (e: CustomEvent<CardDate>) {
+    client.update(value, { date: e.detail })
   }
 
   getCardActions(client, {
@@ -105,7 +109,7 @@
         <Label label={board.string.Dates} />
       </div>
       {#key value.date}
-        <DatePresenter {value} on:click={dateHandler} />
+        <DatePresenter value={value.date} on:click={dateHandler} on:update={updateDate} />
       {/key}
     </div>
   {/if}
