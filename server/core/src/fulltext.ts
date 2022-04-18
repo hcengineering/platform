@@ -156,14 +156,9 @@ export class FullTextIndex implements WithFind {
       }
     }
     const resultIds = getResultIds(ids, _id)
-    const { limit, ...otherOptions } = options ?? { }
-    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, otherOptions)
+    const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
     const total = result.total
     result.sort((a, b) => resultIds.indexOf(a._id) - resultIds.indexOf(b._id))
-    if (limit !== undefined) {
-      const res = toFindResult(result.splice(0, limit), total)
-      return res
-    }
     return toFindResult(result, total)
   }
 
