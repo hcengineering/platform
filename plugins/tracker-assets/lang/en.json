@@ -38,7 +38,7 @@
 
     "Title": "Title",
     "Description": "",
-    "Status": "",
+    "Status": "Status",
     "Number": "Number",
     "Assignee": "Assignee",
     "AssignTo": "Assign to...",
@@ -65,7 +65,10 @@
     "DueDatePopupTitle": "Due on {value}",
     "DueDatePopupOverdueTitle": "Was due on {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Today} =1 {Tomorrow} other {# days remaining}}",
-    "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}"
+    "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
+    "Grouping": "Grouping",
+    "NoGrouping": "No grouping",
+    "NoAssignee": "No assignee"
   },
   "status": {}
 }

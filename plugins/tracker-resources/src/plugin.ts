@@ -81,6 +81,9 @@ export default mergeIds(trackerId, tracker, {
     DueDatePopupOverdueTitle: '' as IntlString,
     DueDatePopupDescription: '' as IntlString,
     DueDatePopupOverdueDescription: '' as IntlString,
+    Grouping: '' as IntlString,
+    NoGrouping: '' as IntlString,
+    NoAssignee: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
