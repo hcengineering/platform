@@ -31,6 +31,7 @@
     "DaysBefore": "{days, plural, =1 {за день} =3 {за # дня} other {за # дней}}",
     "MinutesAfter": "{minutes, plural, =1 {через минуту} other {через # минут}}",
     "HoursAfter": "{hours, plural, =1 {через час} other {через # часа}}",
-    "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}"
+    "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}",
+    "NoActionsDefined": "Нет доступных действий"
   }
 }

@@ -37,7 +37,7 @@ import core, { TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
 import tags from '@anticrm/model-tags'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view from '@anticrm/model-view'
+import view, { actionTarget, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import recruit from './plugin'
@@ -320,6 +320,10 @@ export function createModel (builder: Builder): void {
     card: recruit.component.KanbanCard
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: recruit.component.KanbanCard
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditApplication
   })
@@ -348,25 +352,29 @@ export function createModel (builder: Builder): void {
     validator: recruit.validator.ApplicantValidator
   })
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: recruit.string.CreateApplication,
-      icon: recruit.icon.Create,
-      action: recruit.actionImpl.CreateApplication
-    },
-    recruit.action.CreateApplication
-  )
+  createAction(builder, recruit.action.CreateApplication, recruit.string.CreateAnApplication, recruit.actionImpl.CreateApplication, {
+    icon: recruit.icon.Create,
+    singleInput: true
+  })
+  actionTarget(builder, recruit.action.CreateApplication, contact.class.Person, { mode: ['context', 'browser'] })
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: contact.class.Person,
-    action: recruit.action.CreateApplication
+  createAction(builder, recruit.action.CreateCandidate, recruit.string.CreateCandidate, recruit.actionImpl.CreateCandidate, {
+    icon: recruit.icon.Create,
+    keyBinding: ['c'],
+    singleInput: true
+  })
+
+  actionTarget(builder, recruit.action.CreateCandidate, core.class.Doc, {
+    mode: ['workbench', 'browser'],
+    application: recruit.app.Recruit
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.mixin.Candidate,
-    action: task.action.CreateTask
+    action: task.action.CreateTask,
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 
   builder.createDoc(
@@ -396,6 +404,9 @@ export function createModel (builder: Builder): void {
     action: task.action.ArchiveSpace,
     query: {
       archived: false
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 
@@ -404,6 +415,9 @@ export function createModel (builder: Builder): void {
     action: task.action.UnarchiveSpace,
     query: {
       archived: true
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 
@@ -412,6 +426,9 @@ export function createModel (builder: Builder): void {
     action: task.action.UnarchiveSpace,
     query: {
       archived: true
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 
@@ -421,7 +438,8 @@ export function createModel (builder: Builder): void {
     {
       label: recruit.string.EditVacancy,
       icon: recruit.icon.Vacancy,
-      action: recruit.actionImpl.EditVacancy
+      action: recruit.actionImpl.EditVacancy,
+      singleInput: true
     },
     recruit.action.EditVacancy
   )
@@ -429,7 +447,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: recruit.class.Vacancy,
     action: recruit.action.EditVacancy,
-    query: {}
+    query: {},
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {

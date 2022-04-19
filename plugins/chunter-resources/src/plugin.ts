@@ -14,10 +14,10 @@
 //
 
 import chunter, { chunterId } from '@anticrm/chunter'
-import { Doc } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
+import { ViewAction } from '@anticrm/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -27,10 +27,12 @@ export default mergeIds(chunterId, chunter, {
     EditChannel: '' as AnyComponent
   },
   actionImpl: {
-    SubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    UnsubscribeMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    PinMessage: '' as Resource<(object: Doc) => Promise<void>>,
-    UnpinMessage: '' as Resource<(object: Doc) => Promise<void>>
+    SubscribeMessage: '' as ViewAction,
+    UnsubscribeMessage: '' as ViewAction,
+    PinMessage: '' as ViewAction,
+    UnpinMessage: '' as ViewAction,
+    SubscribeComment: '' as ViewAction,
+    UnsubscribeComment: '' as ViewAction
   },
   string: {
     Channel: '' as IntlString,

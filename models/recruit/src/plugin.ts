@@ -14,27 +14,29 @@
 //
 
 import type { Client, Doc, Ref } from '@anticrm/core'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import type { IntlString, Resource, Status } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action } from '@anticrm/view'
-import { ObjectSearchFactory, ObjectSearchCategory } from '@anticrm/model-presentation'
+import type { Action, ViewAction } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
+    CreateCandidate: '' as Ref<Action>,
     CreateApplication: '' as Ref<Action>,
     EditVacancy: '' as Ref<Action>,
     CreateReview: '' as Ref<Action>,
     CreateOpinion: '' as Ref<Action>
   },
   actionImpl: {
-    CreateApplication: '' as Resource<(object: Doc) => Promise<void>>,
-    EditVacancy: '' as Resource<(object: Doc) => Promise<void>>,
-    CreateReview: '' as Resource<(object: Doc) => Promise<void>>,
-    CreateOpinion: '' as Resource<(object: Doc) => Promise<void>>
+    CreateCandidate: '' as ViewAction,
+    CreateApplication: '' as ViewAction,
+    EditVacancy: '' as ViewAction,
+    CreateReview: '' as ViewAction,
+    CreateOpinion: '' as ViewAction
   },
   string: {
     ApplicationShort: '' as IntlString,

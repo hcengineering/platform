@@ -31,6 +31,7 @@
     "DaysBefore": "{days, plural, =1 {a day before} other {# days before}}",
     "MinutesAfter": "{minutes, plural, =1 {in a minute} other {in # minutes}}",
     "HoursAfter": "{hours, plural, =1 {in an hour} other {in # hours}}",
-    "DaysAfter": "{days, plural, =1 {in a day} other {in # days}}"
+    "DaysAfter": "{days, plural, =1 {in a day} other {in # days}}",
+    "NoActionsDefined": "No actions applicable"
   }
 }

@@ -31,8 +31,9 @@ class ElasticAdapter implements FullTextAdapter {
       bool: {
         must: [
           {
-            query_string: {
+            simple_query_string: {
               query: query.$search,
+              flags: 'OR|PREFIX|PHRASE',
               default_operator: 'and'
             }
           }
@@ -43,11 +44,23 @@ class ElasticAdapter implements FullTextAdapter {
               _class: _classes.map((c) => c.toLowerCase()),
               boost: 10.0
             }
-          },
+          }
+        ],
+        filter: [
           {
-            terms: {
-              attachedToClass: _classes.map((c) => c.toLowerCase()),
-              boost: 5.0
+            bool: {
+              should: [
+                {
+                  terms: {
+                    _class: _classes.map((c) => c.toLowerCase())
+                  }
+                },
+                {
+                  terms: {
+                    attachedToClass: _classes.map((c) => c.toLowerCase())
+                  }
+                }
+              ]
             }
           }
         ]

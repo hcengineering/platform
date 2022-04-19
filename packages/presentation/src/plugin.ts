@@ -17,7 +17,7 @@
 import { Class, Ref } from '@anticrm/core'
 import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { ObjectSearchCategory } from '.'
+import { ObjectSearchCategory } from './types'
 
 /**
  * @public
