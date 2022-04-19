@@ -12,14 +12,77 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter } from '@anticrm/attachment-resources'
+  import type { Attachment } from '@anticrm/attachment'
+  import { PDFViewer, getFileUrl } from '@anticrm/presentation'
+  import { Button, showPopup, TimeSince, closeTooltip } from '@anticrm/ui'
+  import board from '../../plugin'
+  import EditAttachment from '../popups/EditAttachment.svelte';
+  import RemoveAttachment from '../popups/RemoveAttachment.svelte';
 
   export let value: Attachment
-  // TODO: implement
+
+  const maxLenght: number = 30
+  const trimFilename = (fname: string): string => (fname.length > maxLenght)
+    ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
+    : fname
+
+  function iconLabel (name: string): string {
+    const parts = name.split('.')
+    const ext = parts[parts.length - 1]
+    return ext.substring(0, 4).toUpperCase()
+  }
+
+  function openEmbedded (contentType: string) {
+    return contentType.includes('application/pdf') || contentType.startsWith('image/')
+  }
+
+  const handleClick = openEmbedded(value.type)
+  ? () => {
+    closeTooltip();
+    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+  } : undefined
 </script>
 
-<div>
-  <AttachmentPresenter {value} />
+<div class="flex-row-center">
+  {#if openEmbedded(value.type)}
+    <div class="flex-center content mr-2 cursor-pointer" on:click={handleClick}>
+      <img src={getFileUrl(value.file)} alt={value.name} />
+    </div>
+  {:else}
+    <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
+  {/if}
+  <div class="flex-col-centre info">
+    <div class="fs-title">{trimFilename(value.name)}</div>
+    <div class="flex-row-center">
+      <TimeSince value={value.lastModified}/>
+      <Button label={board.string.Edit} on:click={() => {showPopup(EditAttachment, {object: value})}} kind="transparent"/>
+      <Button label={board.string.Delete} on:click={() => {showPopup(RemoveAttachment, {object: value})}} kind="transparent"/>
+    </div>
+  </div>
 </div>
+
+<style lang="scss">
+  .icon {
+    flex-shrink: 0;
+    margin-right: 1rem;
+    width: 8rem;
+    height: 6rem;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-enabled);
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .5rem;
+  }
+  .content {
+    width: 8rem;
+    max-height: 6rem;
+
+    img {
+      max-width: 8rem;
+      max-height: 6rem;
+    }
+  }
+</style>
