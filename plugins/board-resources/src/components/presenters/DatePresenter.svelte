@@ -6,13 +6,11 @@
   export let value: CardDate
   export let isInline: boolean = false
 
-  const client = getClient()
-  const { date } = value
-  let isChecked = date?.isChecked
+  let isChecked = value?.isChecked
   const dispatch = createEventDispatcher()
 
   function check () {
-    if (isInline || isChecked === undefined || date === undefined) return
+    if (isInline || isChecked === undefined || !value) return
     dispatch('update', { ...value, isChecked })
   }
 
