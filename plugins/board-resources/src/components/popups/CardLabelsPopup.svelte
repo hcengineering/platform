@@ -21,7 +21,6 @@
   function close () {
     dispatch('close')
   }
-
 </script>
 
 {#if editMode.isEdit}
@@ -29,12 +28,14 @@
     on:close
     boardRef={object.space}
     object={editMode.object}
-    onBack={() => setEditMode(false, undefined)} />
+    onBack={() => setEditMode(false, undefined)}
+  />
 {:else}
   <CardLabelsPicker
     bind:search
     on:close
     {object}
     onCreate={() => setEditMode(true, undefined)}
-    onEdit={(o) => setEditMode(true, o)} />
+    onEdit={(o) => setEditMode(true, o)}
+  />
 {/if}

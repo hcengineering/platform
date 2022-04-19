@@ -8,6 +8,19 @@
   const color = numberToHexColor(value)
 </script>
 
+{#if value}
+  <div
+    class="color-presenter border-radius-1 min-w-9"
+    class:h-8={size === 'large'}
+    class:h-7={size === 'medium'}
+    class:h-6={size === 'small'}
+    style="--color-presenter-color: {color}; --color-presenter-hoverColor: {hoverColor}"
+    on:click
+  >
+    <slot />
+  </div>
+{/if}
+
 <style lang="scss">
   .color-presenter {
     background-color: var(--color-presenter-color);
@@ -16,15 +29,3 @@
     }
   }
 </style>
-
-{#if value}
-  <div
-    class="color-presenter border-radius-1 min-w-9"
-    class:h-8={size === 'large'}
-    class:h-7={size === 'medium'}
-    class:h-6={size === 'small'}
-    style="--color-presenter-color: {color}; --color-presenter-hoverColor: {hoverColor}"
-    on:click>
-    <slot />
-  </div>
-{/if}

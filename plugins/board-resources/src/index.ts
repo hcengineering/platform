@@ -30,7 +30,15 @@ import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
-import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived, archiveCard, unarchiveCard, deleteCard } from './utils/CardUtils'
+import {
+  addCurrentUser,
+  canAddCurrentUser,
+  isArchived,
+  isUnarchived,
+  archiveCard,
+  unarchiveCard,
+  deleteCard
+} from './utils/CardUtils'
 
 async function showMoveCardPopup (object: Card): Promise<void> {
   showPopup(MoveView, { object })

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, CardLabel } from '@anticrm/board'
-  import { Ref } from '@anticrm/core'
+  import type { Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import {
     Button,
@@ -17,16 +17,14 @@
 
   import board from '../../plugin'
   import { getBoardLabels } from '../../utils/BoardUtils'
-  import { updateCard } from '../../utils/CardUtils'
 
-  export let object: Card
+  export let object: WithLookup<Card>
   export let search: string | undefined = undefined
   export let onEdit: (label: CardLabel) => void
   export let onCreate: () => void
 
   const client = getClient()
 
-  let labels = object.labels ?? []
   let boardCardLabels: CardLabel[] = []
   let filteredLabels: CardLabel[] = []
   let hovered: Ref<CardLabel> | undefined = undefined
@@ -49,18 +47,31 @@
     }
   }
 
-  function toggle (label: CardLabel) {
+  async function fetch () {
     if (!object) {
       return
     }
 
-    if (labels.includes(label._id)) {
-      labels = labels.filter((l) => l !== label._id)
-    } else {
-      labels = [...labels, label._id]
+    object = await client.findOne(object._class, { _id: object._id }) ?? object
+  }
+
+  async function toggle (label: CardLabel) {
+    if (!object) {
+      return
     }
 
-    updateCard(client, object, 'labels', labels)
+    const data = { labels: label._id }
+    if (object?.labels?.includes(label._id)) {
+      await client.update(object, {
+        $pull: data
+      })
+    } else {
+      await client.update(object, {
+        $push: data
+      })
+    }
+
+    fetch()
   }
 
   $: object.space && fetchBoardLabels()
@@ -113,7 +124,7 @@
           style:box-shadow={hovered === label._id ? `-0.4rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
           on:click={() => toggle(label)}>
           {label.title ?? ''}
-          {#if labels.includes(label._id)}
+          {#if object?.labels?.includes(label._id)}
             <div class="absolute flex-center h-full mr-2" style:top="0" style:right="0">
               <Icon icon={IconCheck} size="small" />
             </div>

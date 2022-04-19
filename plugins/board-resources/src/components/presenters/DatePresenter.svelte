@@ -13,7 +13,6 @@
     if (isInline || isChecked === undefined || !value) return
     dispatch('update', { ...value, isChecked })
   }
-
 </script>
 
 {#if value}
