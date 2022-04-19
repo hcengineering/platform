@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, CardLabel } from '@anticrm/board'
-  import type { Ref, WithLookup } from '@anticrm/core'
+  import type { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import {
     Button,
@@ -18,7 +18,7 @@
   import board from '../../plugin'
   import { getBoardLabels } from '../../utils/BoardUtils'
 
-  export let object: WithLookup<Card>
+  export let object: Card
   export let search: string | undefined = undefined
   export let onEdit: (label: CardLabel) => void
   export let onCreate: () => void
@@ -60,14 +60,13 @@
       return
     }
 
-    const data = { labels: label._id }
     if (object?.labels?.includes(label._id)) {
       await client.update(object, {
-        $pull: data
+        $pull: { labels: label._id as any } // TODO: fix as any
       })
     } else {
       await client.update(object, {
-        $push: data
+        $push: { labels: label._id }
       })
     }
 
