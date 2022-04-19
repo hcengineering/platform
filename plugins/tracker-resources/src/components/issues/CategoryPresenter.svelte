@@ -6,11 +6,12 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import IssuesList from './IssuesList.svelte'
-  import { IssuesGroupByKeys, issuesGroupPresenterMap } from '../../utils'
+  import { IssuesGroupByKeys, IssuesOrderByKeys, issuesGroupPresenterMap, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
 
   export let query: DocumentQuery<Issue>
   export let groupBy: { key: IssuesGroupByKeys | undefined; group: Issue[IssuesGroupByKeys] | undefined }
+  export let orderBy: IssuesOrderByKeys
   export let currentSpace: Ref<Team> | undefined = undefined
   export let currentTeam: Team
 
@@ -71,7 +72,7 @@
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
       ]}
-      {options}
+      options={{ ...options, sort: { [orderBy]: issuesSortOrderMap[orderBy] } }}
       query={{ ...query, ...grouping }}
       on:content={(evt) => {
         issuesAmount = evt.detail.length

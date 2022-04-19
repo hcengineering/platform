@@ -36,7 +36,6 @@
 
   const DOCS_MAX_AMOUNT = 200
   const liveQuery = createQuery()
-  const sort = { modifiedOn: SortingOrder.Descending }
 
   let selectedIssueIds = new Set<Ref<Doc>>()
   let selectedRowIndex: number | undefined
@@ -61,7 +60,7 @@
         dispatch('content', docObjects)
         isLoading = false
       },
-      { sort, ...options, limit: DOCS_MAX_AMOUNT }
+      { ...options, limit: DOCS_MAX_AMOUNT }
     )
   }
 
