@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,7 +15,6 @@
 
 import { Attachment } from '@anticrm/attachment'
 import core, {
-  Account,
   AttachedDoc,
   Class,
   Doc, DocumentQuery,
@@ -39,32 +37,33 @@ import core, {
 import { createElasticAdapter } from '@anticrm/elastic'
 import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
+import { addLocation } from '@anticrm/platform'
+import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverCalendarId } from '@anticrm/server-calendar'
+import { serverChunterId } from '@anticrm/server-chunter'
+import { serverContactId } from '@anticrm/server-contact'
 import {
   createServerStorage,
   DbAdapter,
   DbConfiguration,
   FullTextAdapter,
+  FullTextIndex,
   IndexedDoc,
   TxAdapter
 } from '@anticrm/server-core'
-import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverContactId } from '@anticrm/server-contact'
-import { serverNotificationId } from '@anticrm/server-notification'
-import { serverSettingId } from '@anticrm/server-setting'
-import { serverChunterId } from '@anticrm/server-chunter'
+import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
+import { serverNotificationId } from '@anticrm/server-notification'
 import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverTaskId } from '@anticrm/server-task'
+import { serverSettingId } from '@anticrm/server-setting'
 import { serverTagsId } from '@anticrm/server-tags'
-import { serverCalendarId } from '@anticrm/server-calendar'
-import { serverGmailId } from '@anticrm/server-gmail'
+import { serverTaskId } from '@anticrm/server-task'
 import { serverTelegramId } from '@anticrm/server-telegram'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
 import { listMinioObjects } from './minio'
-import { addLocation } from '@anticrm/platform'
 
 export async function rebuildElastic (
   mongoUrl: string,
@@ -112,20 +111,22 @@ export class ElasticTool {
   elastic!: FullTextAdapter & {close: () => Promise<void>}
   storage!: ServerStorage
   db!: Db
+  fulltext!: FullTextIndex
+
   constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
     addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
     addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
     addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
-    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/server-chunter-resources'))
-    addLocation(serverInventoryId, () => import(/* webpackChunkName: "server-inventory" */ '@anticrm/server-inventory-resources'))
-    addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
-    addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
-    addLocation(serverSettingId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-setting-resources'))
-    addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
-    addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
-    addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
-    addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
-    addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))
+    addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
+    addLocation(serverInventoryId, () => import('@anticrm/server-inventory-resources'))
+    addLocation(serverLeadId, () => import('@anticrm/server-lead-resources'))
+    addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
+    addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))
+    addLocation(serverTaskId, () => import('@anticrm/server-task-resources'))
+    addLocation(serverTagsId, () => import('@anticrm/server-tags-resources'))
+    addLocation(serverCalendarId, () => import('@anticrm/server-calendar-resources'))
+    addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
+    addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
     this.mongoClient = new MongoClient(mongoUrl)
   }
 
@@ -135,6 +136,7 @@ export class ElasticTool {
     this.db = this.mongoClient.db(this.dbName)
     this.elastic = await createElasticAdapter(this.elasticUrl, this.dbName)
     this.storage = await createStorage(this.mongoUrl, this.elasticUrl, this.dbName)
+    this.fulltext = new FullTextIndex(this.storage.hierarchy, this.elastic, this.storage, true)
 
     return async () => {
       await this.mongoClient.close()
@@ -161,7 +163,7 @@ export class ElasticTool {
       _class: doc._class,
       space: doc.space,
       modifiedOn: doc.modifiedOn,
-      modifiedBy: 'core:account:System' as Ref<Account>,
+      modifiedBy: core.account.System,
       attachedTo: doc.attachedTo,
       data: buffer.toString('base64')
     }
@@ -196,90 +198,69 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const data = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
     const m = newMetrics()
     const metricsCtx = new MeasureMetricsContext('elastic', {}, m)
-    console.log('replay elastic transactions', data.length)
-    let pos = 0
-    let p = Date.now()
 
     const isCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCreateDoc
-    const isMixinTx = (tx: Tx): boolean => tx._class === core.class.TxMixin || (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin)
     const isCollectionCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
 
-    const tdata = data.filter(tx => isCreateTx(tx) || isMixinTx(tx) || isCollectionCreateTx(tx))
+    const createTxes = data.filter((tx) => isCreateTx(tx))
+    const collectionTxes = data.filter((tx) => isCollectionCreateTx(tx))
     const removedDocument = new Set<Ref<Doc>>()
-    for (const tx of tdata) {
-      pos++
-      if (pos % 5000 === 0) {
-        console.log('replay elastic transactions', pos, tdata.length, Date.now() - p)
-        p = Date.now()
-      }
-      if (isCreateTx(tx)) {
-        const createTx = tx as TxCreateDoc<Doc>
-        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
-        if (docSnapshot !== undefined) {
-          // If there is no doc, then it is removed, not need to do something with elastic.
-          const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
-          try {
-            const newTx: TxCreateDoc<Doc> = {
-              ...createTx,
-              attributes: docData,
-              modifiedBy,
-              modifiedOn,
-              objectSpace: space // <- it could be moved, let's take actual one.
-            }
-            await tool.storage.tx(metricsCtx, newTx)
-          } catch (err: any) {
-            console.error('failed to replay tx', tx, err.message)
-          }
-        } else {
-          removedDocument.add(createTx.objectId)
-        }
-      }
 
-      // We need process mixins.
-      if (isMixinTx(tx)) {
+    const startCreate = Date.now()
+    console.log('replay elastic create transactions', createTxes.length)
+    await Promise.all(createTxes.map(async (tx) => {
+      const createTx = tx as TxCreateDoc<Doc>
+      const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
+      if (docSnapshot !== undefined) {
+        // If there is no doc, then it is removed, not need to do something with elastic.
+        const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
         try {
-          let deleted = false
-          if (tx._class === core.class.TxMixin) {
-            deleted = removedDocument.has((tx as TxMixin<Doc, Doc>).objectId)
+          const newTx: TxCreateDoc<Doc> = {
+            ...createTx,
+            attributes: docData,
+            modifiedBy,
+            modifiedOn,
+            objectSpace: space // <- it could be moved, let's take actual one.
           }
-          if (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin) {
-            deleted = removedDocument.has((tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId)
+          await tool.fulltext.tx(metricsCtx, newTx)
+        } catch (err: any) {
+          console.error('failed to replay tx', tx, err.message)
+        }
+      } else {
+        removedDocument.add(createTx.objectId)
+      }
+    }))
+    console.log('replay elastic create transactions done', Date.now() - startCreate)
+
+    const startCollection = Date.now()
+    console.log('replay elastic collection transactions', collectionTxes.length)
+    await Promise.all(collectionTxes.map(async (tx) => {
+      const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
+      const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
+      if (docSnapshot !== undefined) {
+        // If there is no doc, then it is removed, not need to do something with elastic.
+        const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
+        try {
+          const newTx: TxCreateDoc<AttachedDoc> = {
+            ...createTx,
+            attributes: data,
+            modifiedBy,
+            modifiedOn,
+            objectSpace: space // <- it could be moved, let's take actual one.
           }
-          if (!deleted) {
-            await tool.storage.tx(metricsCtx, tx)
-          }
+          collTx.tx = newTx
+          collTx.modifiedBy = modifiedBy
+          collTx.modifiedOn = modifiedOn
+          collTx.objectSpace = space
+          await tool.fulltext.tx(metricsCtx, collTx)
         } catch (err: any) {
           console.error('failed to replay tx', tx, err.message)
         }
       }
+    }))
+    console.log('replay elastic collection transactions done', Date.now() - startCollection)
 
-      // We need process collection creations.
-      if (isCollectionCreateTx(tx)) {
-        const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
-        const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
-        const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
-        if (docSnapshot !== undefined) {
-          // If there is no doc, then it is removed, not need to do something with elastic.
-          const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
-          try {
-            const newTx: TxCreateDoc<AttachedDoc> = {
-              ...createTx,
-              attributes: data,
-              modifiedBy,
-              modifiedOn,
-              objectSpace: space // <- it could be moved, let's take actual one.
-            }
-            collTx.tx = newTx
-            collTx.modifiedBy = modifiedBy
-            collTx.modifiedOn = modifiedOn
-            collTx.objectSpace = space
-            await tool.storage.tx(metricsCtx, collTx)
-          } catch (err: any) {
-            console.error('failed to replay tx', tx, err.message)
-          }
-        }
-      }
-    }
     let apos = 0
     if (await minio.bucketExists(dbName)) {
       const minioObjects = await listMinioObjects(minio, dbName)

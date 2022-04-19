@@ -170,13 +170,15 @@ export class FullTextIndex implements WithFind {
     } else {
       const result: T[] = []
       const size = options.limit
+      let start = 0
       while (true) {
-        const ids = resultIds.splice(0, size)
+        const ids = resultIds.slice(start, start + size)
         const res = await this.getResult(ctx, _class, ids, mainQuery as DocumentQuery<T>, options)
         result.push(...res)
         if (result.length >= size || res.length < size) {
           break
         }
+        start += size
       }
       if (result.length >= size) {
         const total = await this.getResult(ctx, _class, resultIds, mainQuery as DocumentQuery<T>, { limit: 1 })
