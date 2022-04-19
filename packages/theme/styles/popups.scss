@@ -28,6 +28,10 @@
   will-change: transform;
   
   &.maxHeight { height: 22rem; }
+  &.autoHeight {
+    max-height: calc(100vh - 2rem);
+    height: auto;
+  }
   .header {
     border-bottom: 1px solid var(--popup-divider);
 

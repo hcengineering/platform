@@ -264,7 +264,6 @@
       // Create skills
       await elementsPromise
 
-
       const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
       const categoriesMap = new Map(Array.from(categories.map((it) => [it._id, it])))
 
@@ -433,6 +432,7 @@
         targetClass: recruit.mixin.Candidate,
         showTitle: false,
         elements,
+        newElements,
         countLabel: recruit.string.NumberSkills
       }}
       on:open={(evt) => {

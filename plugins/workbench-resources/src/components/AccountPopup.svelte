@@ -69,7 +69,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup autoHeight">
   <div class="scroll"><div class="box">
     {#await getItems() then items}
       <div class="menu-item high flex-row-center" on:click={() => { editProfile(items) }}>

@@ -25,6 +25,7 @@
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
 
+  export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
   export let placeholder: IntlString = presentation.string.Search
   export let selected: Ref<TagElement>[] = []
@@ -51,7 +52,7 @@
     tags.class.TagElement,
     { title: { $like: '%' + search + '%' }, targetClass },
     (result) => {
-      objects = result
+      objects = newElements.concat(result)
     },
     { limit: 200 }
   )
