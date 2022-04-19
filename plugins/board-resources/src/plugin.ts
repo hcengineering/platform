@@ -93,7 +93,9 @@ export default mergeIds(boardId, board, {
     DueDate: '' as IntlString,
     Save: '' as IntlString,
     Remove: '' as IntlString,
-    NullDate: '' as IntlString
+    NullDate: '' as IntlString,
+    ViewProfile: '' as IntlString,
+    RemoveFromCard: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
