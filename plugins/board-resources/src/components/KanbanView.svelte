@@ -23,7 +23,7 @@
   import KanbanCard from './KanbanCard.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
   import AddCard from './add-card/AddCard.svelte'
-  
+
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
   export let search: string
@@ -59,11 +59,7 @@
   const client = getClient()
 
   async function addItem (title: any) {
-    const lastOne = await client.findOne(
-      task.class.State,
-      { space },
-      { sort: { rank: SortingOrder.Descending } }
-    )
+    const lastOne = await client.findOne(task.class.State, { space }, { sort: { rank: SortingOrder.Descending } })
     await client.createDoc(task.class.State, space, {
       title,
       color: 9,
@@ -73,17 +69,29 @@
   /* eslint-disable no-undef */
 </script>
 
-<KanbanUI {_class} {space} {search} {options} query={{ doneState: null }} states={states}
-  fieldName={'state'} rankFieldName={'rank'}>
-  <svelte:fragment slot='card' let:object let:dragged>
+<KanbanUI
+  {_class}
+  {space}
+  {search}
+  {options}
+  query={{ doneState: null }}
+  {states}
+  fieldName={'state'}
+  rankFieldName={'rank'}
+>
+  <svelte:fragment slot="card" let:object let:dragged>
     <KanbanCard object={castObject(object)} {dragged} />
   </svelte:fragment>
 
-  <svelte:fragment slot='additionalPanel'>
-    <KanbanPanelEmpty on:add={(e) => { addItem(e.detail) }} />
+  <svelte:fragment slot="additionalPanel">
+    <KanbanPanelEmpty
+      on:add={(e) => {
+        addItem(e.detail)
+      }}
+    />
   </svelte:fragment>
 
   <svelte:fragment slot="afterCard" let:space={targetSpace} let:state={targetState}>
-    <AddCard space={targetSpace} state={targetState}/>
+    <AddCard space={targetSpace} state={targetState} />
   </svelte:fragment>
 </KanbanUI>

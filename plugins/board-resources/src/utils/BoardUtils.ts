@@ -36,7 +36,12 @@ export async function createBoardLabels (client: TxOperations, boardRef: Ref<Boa
   ])
 }
 
-export async function createCardLabel (client: TxOperations, boardRef: Ref<Board>, color: string, title?: string): Promise<void> {
+export async function createCardLabel (
+  client: TxOperations,
+  boardRef: Ref<Board>,
+  color: string,
+  title?: string
+): Promise<void> {
   await client.createDoc(board.class.CardLabel, core.space.Model, {
     attachedTo: boardRef,
     attachedToClass: board.class.Board,

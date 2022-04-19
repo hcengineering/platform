@@ -17,7 +17,7 @@
   let filteredLabels: CardLabel[] = []
   let hovered: Ref<CardLabel> | undefined = undefined
 
-  function applySearch() {
+  function applySearch () {
     if (!search || search.trim().length <= 0) {
       filteredLabels = boardCardLabels
       return
@@ -27,14 +27,14 @@
     filteredLabels = boardCardLabels.filter((l) => l.title?.toUpperCase().includes(text) ?? false)
   }
 
-  async function fetchBoardLabels() {
+  async function fetchBoardLabels () {
     if (object.space) {
       boardCardLabels = await getBoardLabels(client, object.space)
       applySearch()
     }
   }
 
-  function toggle(label: CardLabel) {
+  function toggle (label: CardLabel) {
     if (!object) {
       return
     }
