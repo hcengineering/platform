@@ -67,6 +67,11 @@ async function createReview (object: Doc): Promise<void> {
   showPopup(CreateReview, { application: object._id, preserveApplication: true })
 }
 
+async function createCandidate (object: Doc|undefined, evt: Event): Promise<void> {
+  evt.preventDefault()
+  showPopup(CreateCandidate, { })
+}
+
 export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
   if (applicant.attachedTo === undefined) {
     return new Status(Severity.INFO, recruit.status.CandidateRequired, {})
@@ -133,7 +138,8 @@ export default async (): Promise<Resources> => ({
     CreateApplication: createApplication,
     EditVacancy: editVacancy,
     CreateReview: createReview,
-    CreateOpinion: createOpinion
+    CreateOpinion: createOpinion,
+    CreateCandidate: createCandidate
   },
   validator: {
     ApplicantValidator: applicantValidator,

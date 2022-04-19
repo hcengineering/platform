@@ -15,32 +15,37 @@
 
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
-  import type { Asset, Resource } from '@anticrm/platform'
+  import type { Asset } from '@anticrm/platform'
   import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Action, Menu } from '@anticrm/ui'
-  import { getActions } from '../utils'
+  import { ViewAction } from '@anticrm/view'
+  import { getActions } from '../actions'
 
-  export let object: Doc
+  export let object: Doc | Doc[]
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let actions: Action[] = []
 
   const client = getClient()
   
-  async function invokeAction (action: Resource<(object: Doc) => Promise<void>>) {
+  async function invokeAction (evt: Event, action: ViewAction) {
     const impl = await getResource(action)
-    await impl(object)
+    await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt)
   }
+  let loaded = 0
 
-  getActions(client, object, baseMenuClass).then(result => {
+  getActions(client, object, baseMenuClass, !Array.isArray(object) || object.length === 1).then(result => {
     actions = result.map(a => ({
       label: a.label,
       icon: a.icon as Asset,
-      action: async () => { invokeAction(a.action) }
+      action: async (evt: Event) => { invokeAction(evt, a.action) }
     }))
+    loaded = 1
   })
 
 </script>
 
-<Menu {actions} on:close/>
+{#if loaded}
+  <Menu {actions} on:close/>
+{/if}
 

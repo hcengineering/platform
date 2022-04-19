@@ -2,12 +2,12 @@
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Icon, IconAdd, Scroller, Tooltip, Button, showPopup, Label } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import IssuesList from './IssuesList.svelte'
   import { issueStatuses } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import IssuesList from './IssuesList.svelte'
 
   export let query: DocumentQuery<Issue>
   export let category: IssueStatus
@@ -24,12 +24,12 @@
 
   let issuesAmount = 0
 
-  const handleNewIssueAdded = (event: Event) => {
+  const handleNewIssueAdded = (event: MouseEvent) => {
     if (!currentSpace) {
       return
     }
 
-    showPopup(CreateIssue, { space: currentSpace, issueStatus: category }, event.target)
+    showPopup(CreateIssue, { space: currentSpace, issueStatus: category }, eventToHTMLElement(event))
   }
 </script>
 

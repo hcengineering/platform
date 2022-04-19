@@ -4,7 +4,7 @@
   import { Kanban } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button, Component, eventToHTMLElement, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
@@ -96,7 +96,7 @@
                 icon={IconAdd}
                 kind={'transparent'}
                 on:click={(evt) => {
-                  showPopup(CreateIssue, { space: currentSpace, issueStatus: state._id }, evt.target)
+                  showPopup(CreateIssue, { space: currentSpace, issueStatus: state._id }, eventToHTMLElement(evt))
                 }}
               />
             </Tooltip>

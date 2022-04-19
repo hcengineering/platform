@@ -130,14 +130,18 @@ export function createModel (builder: Builder): void {
     {
       label: calendar.string.RemindMeAt,
       icon: calendar.icon.Reminder,
-      action: calendar.actionImpl.SaveEventReminder
+      action: calendar.actionImpl.SaveEventReminder,
+      singleInput: true
     },
     calendar.action.SaveEventReminder
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: calendar.class.Event,
-    action: calendar.action.SaveEventReminder
+    action: calendar.action.SaveEventReminder,
+    context: {
+      mode: 'context'
+    }
   })
 
   builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.AttributePresenter, {

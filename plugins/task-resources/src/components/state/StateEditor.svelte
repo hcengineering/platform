@@ -18,7 +18,7 @@
   import { Ref } from '@anticrm/core'
   import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
-  import { showPopup, Button, SelectPopup } from '@anticrm/ui'
+  import { showPopup, Button, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
@@ -45,7 +45,7 @@
         showPopup(
           StatesPopup,
           { space: state.space },
-          ev.currentTarget,
+          eventToHTMLElement(ev),
           (result) => {
             if (result && result._id !== value) {
               value = result._id

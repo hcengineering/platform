@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Ref, Space } from '@anticrm/core'
-  import { Button, IconSearch, showPopup } from '@anticrm/ui'
+  import { Button, showPopup } from '@anticrm/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
   export let currentSpace: Ref<Space>
 
-  async function newIssue(target: EventTarget | null): Promise<void> {
+  async function newIssue (target: EventTarget | null): Promise<void> {
     showPopup(CreateIssue, { space: currentSpace }, 'top')
   }
 </script>

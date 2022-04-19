@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@anticrm/core'
-  import { Icon, CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { CircleButton, eventToHTMLElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import inventory from '../plugin'
   import CreateVariant from './CreateVariant.svelte'
@@ -23,7 +23,7 @@
 
   export let variants: number
 
-  const create = (ev: MouseEvent): void => { showPopup(CreateVariant, { product: objectId }, ev.target as HTMLElement) }
+  const create = (ev: MouseEvent): void => { showPopup(CreateVariant, { product: objectId }, eventToHTMLElement(ev)) }
 </script>
 
 <div class="variants-container">

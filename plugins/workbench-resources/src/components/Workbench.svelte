@@ -36,6 +36,7 @@
     DatePickerPopup,
     TooltipInstance
   } from '@anticrm/ui'
+  import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy } from 'svelte'
   import workbench from '../plugin'
@@ -253,6 +254,7 @@
 </script>
 
 {#if client}
+  <ActionHandler/>
   <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path
@@ -326,6 +328,12 @@
         </div>
       </div>
     </div>
+    <ActionContext
+      context={{
+        mode: 'workbench',
+        application: currentApplication?._id
+      }}
+    />
     {#if currentApplication && navigatorModel && navigator && visibileNav}
       <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
         {#if currentApplication}
@@ -366,8 +374,20 @@
       </div>
     {/if}
   </div>
-  <PanelInstance {contentPanel} />
-  <Popup />
+  <PanelInstance {contentPanel} >
+    <svelte:fragment slot='panel-header'>
+      <ActionContext
+        context={{ mode: 'panel' }}
+      />
+    </svelte:fragment>
+  </PanelInstance>
+  <Popup>
+    <svelte:fragment slot='popup-header'>
+      <ActionContext
+        context={{ mode: 'popup' }}
+      />
+    </svelte:fragment>
+  </Popup>
   <TooltipInstance />
   <DatePickerPopup />
 {:else}

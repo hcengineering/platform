@@ -14,27 +14,12 @@
 // limitations under the License.
 //
 
-import core, {
-  AttachedDoc,
-  Class,
-  ClassifierKind,
-  Client,
-  Collection,
-  Doc,
-  FindResult,
-  Hierarchy,
-  Lookup,
-  matchQuery,
-  Mixin,
-  Obj,
-  Ref,
-  TxOperations
-} from '@anticrm/core'
+import core, { AttachedDoc, Class, Client, Doc, Hierarchy, Lookup, Obj, Ref, TxOperations } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
-import { ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
-import type { Action, ActionTarget, BuildModelOptions } from '@anticrm/view'
+import { AnyComponent, ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
+import type { BuildModelOptions } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 import plugin from './plugin'
 
@@ -74,6 +59,22 @@ export async function getObjectPresenter (
     props: preserveKey.props,
     sortingKey
   }
+}
+
+/**
+ * @public
+ */
+export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent> {
+  const clazz = client.getHierarchy().getClass(_class)
+  const presenterMixin = client.getHierarchy().as(clazz, view.mixin.PreviewPresenter)
+  if (presenterMixin.presenter === undefined) {
+    if (clazz.extends !== undefined) {
+      return await getObjectPreview(client, clazz.extends)
+    } else {
+      throw new Error('object presenter not found for ' + _class)
+    }
+  }
+  return presenterMixin?.presenter
 }
 
 async function getAttributePresenter (
@@ -171,59 +172,14 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
   return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
 }
 
-function filterActions (
-  client: Client,
-  doc: Doc,
-  targets: ActionTarget[],
-  derived: Ref<Class<Doc>> = core.class.Doc
-): Array<Ref<Action>> {
-  const result: Array<Ref<Action>> = []
-  const hierarchy = client.getHierarchy()
-  const clazz = hierarchy.getClass(doc._class)
-  const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
-  const ignore = ignoreActions?.actions ?? []
-  for (const target of targets) {
-    if (ignore.includes(target.action)) {
-      continue
-    }
-    if (target.query !== undefined) {
-      const r = matchQuery([doc], target.query, doc._class, hierarchy)
-      if (r.length === 0) {
-        continue
-      }
-    }
-    if (hierarchy.isDerived(doc._class, target.target) && client.getHierarchy().isDerived(target.target, derived)) {
-      result.push(target.action)
-    }
-  }
-  return result
-}
-
-/**
- * @public
- *
- * Find all action contributions applicable for specified _class.
- * If derivedFrom is specifie, only actions applicable to derivedFrom class will be used.
- * So if we have contribution for Doc, Space and we ask for SpaceWithStates and derivedFrom=Space,
- * we won't recieve Doc contribution but recieve Space ones.
- */
-export async function getActions (
-  client: Client,
-  doc: Doc,
-  derived: Ref<Class<Doc>> = core.class.Doc
-): Promise<FindResult<Action>> {
-  const targets = await client.findAll(view.class.ActionTarget, {})
-  return await client.findAll(view.class.Action, { _id: { $in: filterActions(client, doc, targets, derived) } })
-}
-
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
-  const hierarchy = client.getHierarchy()
-  const promises: Array<Promise<any>> = []
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
-    await client.removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection).catch(err => console.error(err))
+    await client
+      .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
+      .catch((err) => console.error(err))
   } else {
-    await client.removeDoc(object._class, object.space, object._id).catch(err => console.error(err))
+    await client.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
   }
 }
 
@@ -236,7 +192,13 @@ export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
   `
 }
 
-async function getLookupPresenter<T extends Doc> (client: Client, _class: Ref<Class<T>>, key: BuildModelKey, preserveKey: BuildModelKey, lookup: Lookup<T>): Promise<AttributeModel> {
+async function getLookupPresenter<T extends Doc> (
+  client: Client,
+  _class: Ref<Class<T>>,
+  key: BuildModelKey,
+  preserveKey: BuildModelKey,
+  lookup: Lookup<T>
+): Promise<AttributeModel> {
   const lookupClass = getLookupClass(key.key, lookup, _class)
   const lookupProperty = getLookupProperty(key.key)
   const lookupKey = { ...key, key: lookupProperty[0] }
@@ -245,7 +207,13 @@ async function getLookupPresenter<T extends Doc> (client: Client, _class: Ref<Cl
   return model
 }
 
-function getLookupLabel<T extends Doc> (client: Client, _class: Ref<Class<T>>, lookupClass: Ref<Class<Doc>>, key: BuildModelKey, attrib: string): IntlString {
+function getLookupLabel<T extends Doc> (
+  client: Client,
+  _class: Ref<Class<T>>,
+  lookupClass: Ref<Class<Doc>>,
+  key: BuildModelKey,
+  attrib: string
+): IntlString {
   if (key.label !== undefined) return key.label
   if (key.key === '') {
     try {
@@ -260,7 +228,11 @@ function getLookupLabel<T extends Doc> (client: Client, _class: Ref<Class<T>>, l
   }
 }
 
-function getLookupClass<T extends Doc> (key: string, lookup: Lookup<T>, parent: Ref<Class<T>>): [Ref<Class<Doc>>, Ref<Class<Doc>>] {
+function getLookupClass<T extends Doc> (
+  key: string,
+  lookup: Lookup<T>,
+  parent: Ref<Class<T>>
+): [Ref<Class<Doc>>, Ref<Class<Doc>>] {
   const _class = getLookup(key, lookup, parent)
   if (_class === undefined) {
     throw new Error('lookup class does not provided for ' + key)
@@ -277,7 +249,11 @@ function getLookupProperty (key: string): [string, string] {
   return [result, prev]
 }
 
-function getLookup (key: string, lookup: Lookup<any>, parent: Ref<Class<Doc>>): [Ref<Class<Doc>>, Ref<Class<Doc>>] | undefined {
+function getLookup (
+  key: string,
+  lookup: Lookup<any>,
+  parent: Ref<Class<Doc>>
+): [Ref<Class<Doc>>, Ref<Class<Doc>>] | undefined {
   const parts = key.split('$lookup.').filter((p) => p.length > 0)
   const currentKey = parts[0].split('.').filter((p) => p.length > 0)[0]
   const current = (lookup as any)[currentKey]

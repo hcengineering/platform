@@ -18,7 +18,7 @@
   import { Class, Ref } from '@anticrm/core'
   import { AttributeEditor, getClient } from '@anticrm/presentation'
   import type { DoneState, State } from '@anticrm/task'
-  import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor } from '@anticrm/ui'
+  import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor, eventToHTMLElement } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@anticrm/view-resources'
   import Circles from './Circles.svelte'
@@ -106,7 +106,7 @@
           <div class="flex-grow caption-color"><AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title"/></div>
           <div class="tool hover-trans"
             on:click={(ev) => {
-              showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
+              showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, eventToHTMLElement(ev), () => {})
             }}
           >
             <IconMoreH size={'medium'} />
@@ -131,7 +131,7 @@
           {#if wonStates.length > 1}
             <div class="tool hover-trans"
               on:click={(ev) => {
-                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
+                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, eventToHTMLElement(ev), () => {})
               }}
             >
               <IconMoreH size={'medium'} />
@@ -157,7 +157,7 @@
           {#if lostStates.length > 1}
             <div class="tool hover-trans"
               on:click={(ev) => {
-                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, ev.target, () => {})
+                showPopup(StatusesPopup, { onDelete: () => dispatch('delete', { state }) }, eventToHTMLElement(ev), () => {})
               }}
             >
               <IconMoreH size={'medium'} />
