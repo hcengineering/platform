@@ -60,7 +60,7 @@
         </div>
       </div>
     {/if}
-    <div class="flex-col">
+    <div class="flex-col flex-grow">
       <slot />
     </div>
   </div>

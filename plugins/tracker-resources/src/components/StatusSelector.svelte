@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, Icon, Label, showPopup, SelectPopup } from '@anticrm/ui'
+  import { Button, Icon, Label, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import { issueStatuses } from '../utils'
   import tracker from '../plugin'
 
@@ -32,15 +32,14 @@
     IssueStatus.Canceled
   ].map((s) => ({ id: s, ...issueStatuses[s] }))
 
-  const handleStatusEditorOpened = (event: Event) => {
+  const handleStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
-
     showPopup(
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
-      event.currentTarget,
+      eventToHTMLElement(event),
       onStatusChange
     )
   }

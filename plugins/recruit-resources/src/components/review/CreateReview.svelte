@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import calendar from '@anticrm/calendar'
   import type { Contact, EmployeeAccount, Organization, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { OrganizationSelector } from '@anticrm/contact-resources'
@@ -22,11 +23,10 @@
   import type { Candidate, Review } from '@anticrm/recruit'
   import task, { SpaceWithStates } from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { DateRangePicker, Grid, Status as StatusControl, EditBox, Row, DateRangePresenter } from '@anticrm/ui'
+  import { DateRangePresenter, EditBox, Status as StatusControl } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
-  import calendar from '@anticrm/calendar'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Person>

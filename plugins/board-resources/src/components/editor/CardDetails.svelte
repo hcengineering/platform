@@ -37,6 +37,24 @@
   let labelsHandler: () => void
   let dateHandler: () => void
 
+  $: membersIds = members?.map(m => m._id) ?? []
+
+  const getMenuItems = (member: Employee) => {
+    return [
+      [{
+        title: board.string.ViewProfile,
+        handler: () => console.log('TODO: implement')
+      }],
+      [{
+        title: board.string.RemoveFromCard,
+        handler: () => {
+          const newMembers = membersIds.filter((m) => m !== member._id)
+          client.update(value, { members: newMembers })
+        }
+      }]
+    ]
+  }
+
   $: if (value.members && value.members.length > 0) {
     query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
       members = result
@@ -80,7 +98,7 @@
       </div>
       <div class="flex-row-center flex-gap-1">
         {#each members as member}
-          <MemberPresenter value={member} size="large" />
+          <MemberPresenter value={member} size="large" menuItems={getMenuItems(member)} />
         {/each}
         <Button icon={IconAdd} shape="circle" kind="no-border" size="large" on:click={membersHandler} />
       </div>

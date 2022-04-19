@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import { Channel } from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref } from '@anticrm/core'
+  import type { AttachedData,Doc,Ref } from '@anticrm/core'
   import presentation from '@anticrm/presentation'
-  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { CircleButton,eventToHTMLElement,IconAdd,Label,showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import ChannelsView from './ChannelsView.svelte'
   import contact from '../plugin'
+  import ChannelsView from './ChannelsView.svelte'
 
   export let integrations: Set<Ref<Doc>> | undefined = undefined
 
@@ -36,7 +36,7 @@
       size={'small'}
       selected
       on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
           if (result !== undefined) {
             dispatch('change', result)
           }
@@ -53,7 +53,7 @@
         size={'small'}
         selected
         on:click={(ev) =>
-          showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+          showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
             if (result !== undefined) {
               dispatch('change', result)
             }

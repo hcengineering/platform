@@ -14,7 +14,19 @@
 // limitations under the License.
 //
 
-import type { AnyAttribute, Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Obj, Ref, Space, UXObject } from '@anticrm/core'
+import type {
+  AnyAttribute,
+  Class,
+  Client,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  Mixin,
+  Obj,
+  Ref,
+  Space,
+  UXObject
+} from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
@@ -80,18 +92,57 @@ export interface Viewlet extends Doc {
 
 /**
  * @public
+ *
+ *  "Alt + K" =\> Alt and K should be pressed together
+ *  "J T" - J and then T shold be pressed.
+ */
+export type KeyBinding = string
+
+/**
+ * @public
+ */
+export type ViewAction = Resource<(doc: Doc | Doc[] | undefined, evt: Event) => Promise<void>>
+/**
+ * @public
  */
 export interface Action extends Doc, UXObject {
-  action: Resource<(doc: Doc) => Promise<void>>
+  keyBinding?: KeyBinding[]
+  action: ViewAction
+
+  // If specified, action could be used only with one item selected.
+  // By default it is treated as false
+  singleInput?: boolean
 }
 
 /**
+ * Define action to 'object' mapping.
  * @public
  */
 export interface ActionTarget<T extends Doc = Doc> extends Doc {
   target: Ref<Class<T>>
   action: Ref<Action>
   query?: DocumentQuery<T>
+  context: ViewContext
+}
+
+/**
+ * @public
+ *  workbench - global actions per application or entire workbench.
+ *  browser - actions for list/table/kanban browsing.
+ *  editor - actions for selected editor context.
+ *  context - only for context menu actions.
+ */
+export type ViewContextType = 'context' | 'workbench' | 'browser' | 'editor' | 'panel' | 'popup' | 'context'
+
+/**
+ * @public
+ */
+export interface ViewContext {
+  mode: ViewContextType | ViewContextType[]
+  // Active application
+  application?: Ref<Doc>
+  // Optional groupping
+  group?: string
 }
 
 /**
@@ -113,6 +164,13 @@ export interface HTMLPresenter extends Class<Doc> {
  */
 export interface TextPresenter extends Class<Doc> {
   presenter: Resource<(doc: Doc) => string>
+}
+
+/**
+ * @public
+ */
+export interface PreviewPresenter extends Class<Doc> {
+  presenter: AnyComponent
 }
 
 /**
@@ -188,7 +246,8 @@ const view = plugin(viewId, {
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
-    TextPresenter: '' as Ref<Mixin<TextPresenter>>
+    TextPresenter: '' as Ref<Mixin<TextPresenter>>,
+    PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>
   },
   class: {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,

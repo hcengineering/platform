@@ -16,10 +16,10 @@
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import presentation, { getClient, UserBox, Card } from '@anticrm/presentation'
+  import presentation, { getClient, UserBox, Card, MessageBox } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment, eventToHTMLElement } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { calcRank } from '../utils'
@@ -54,7 +54,21 @@
   const taskId: Ref<Issue> = generateId()
 
   export function canClose (): boolean {
-    return object.title !== ''
+    // if (object.title !== undefined) {
+    //   showPopup(
+    //     MessageBox,
+    //     {
+    //       label: 'Close create dialog',
+    //       message: 'Do you sure to cloase create dialog'
+    //     },
+    //     undefined,
+    //     (result?: boolean) => {
+    //       if (result === true) {
+    //       }
+    //     }
+    //   )
+    // }
+    return object.title === ''
   }
 
   async function createIssue () {
@@ -181,7 +195,7 @@
       size="small"
       kind="transparent"
       on:click={(ev) => {
-        showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
+        showPopup(SelectPopup, { value: moreActions }, eventToHTMLElement(ev))
       }}
     />
   </svelte:fragment>

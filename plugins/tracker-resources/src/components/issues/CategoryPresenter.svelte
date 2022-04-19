@@ -2,12 +2,12 @@
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Issue, Team } from '@anticrm/tracker'
-  import { Component, IconAdd, Scroller, Tooltip, Button, showPopup } from '@anticrm/ui'
+  import { Component, Button, eventToHTMLElement, IconAdd, Scroller, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import IssuesList from './IssuesList.svelte'
   import { IssuesGroupByKeys, IssuesOrderByKeys, issuesGroupPresenterMap, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import IssuesList from './IssuesList.svelte'
 
   export let query: DocumentQuery<Issue>
   export let groupBy: { key: IssuesGroupByKeys | undefined; group: Issue[IssuesGroupByKeys] | undefined }
@@ -27,12 +27,12 @@
   $: grouping = groupBy.key !== undefined && groupBy.group !== undefined ? { [groupBy.key]: groupBy.group } : {}
   $: headerComponent = groupBy.key !== undefined ? issuesGroupPresenterMap[groupBy.key] : null
 
-  const handleNewIssueAdded = (event: Event) => {
+  const handleNewIssueAdded = (event: MouseEvent) => {
     if (!currentSpace) {
       return
     }
 
-    showPopup(CreateIssue, { space: currentSpace, ...grouping }, event.target)
+    showPopup(CreateIssue, { space: currentSpace, ...grouping }, eventToHTMLElement(event))
   }
 </script>
 

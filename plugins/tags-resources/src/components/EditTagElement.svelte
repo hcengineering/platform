@@ -16,7 +16,7 @@
   import core, { Data, DocumentUpdate } from '@anticrm/core'
   import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import { DropdownLabels, EditBox, getPlatformColor, showPopup } from '@anticrm/ui'
+  import { DropdownLabels, EditBox, eventToHTMLElement, getPlatformColor, showPopup } from '@anticrm/ui'
   import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -107,7 +107,7 @@
           class="color"
           style={getTagStyle(getPlatformColor(data.color))}
           on:click={(evt) => {
-            showPopup(ColorsPopup, {}, evt.target, (col) => {
+            showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
               if (col != null) {
                 data.color = col
               }

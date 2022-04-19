@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { TagElement } from '@anticrm/tags'
-  import { showPopup } from '@anticrm/ui'
+  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
   import EditTagElement from './EditTagElement.svelte'
   import TagItem from './TagItem.svelte'
 
@@ -28,7 +28,7 @@
     <div
       class="over-underline"
       on:click={(evt) => {
-        showPopup(EditTagElement, { value, keyTitle }, evt.target)
+        showPopup(EditTagElement, { value, keyTitle }, eventToHTMLElement(evt))
       }}
     >
       <TagItem element={value} />

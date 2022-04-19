@@ -86,7 +86,9 @@ test.describe('contact tests', () => {
 
     // Click #context-menu svg
     await page.hover(`td:has-text("${first} ${last}")`)
-    await page.click('#context-menu')
+    await page.click(`td:has-text("${first} ${last}")`, {
+      button: 'right'
+    })
     await page.click('text="Delete"')
     // Click text=Ok
     await page.click('text=Ok')

@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Space } from '@anticrm/core'
+import type { Ref, Space } from '@anticrm/core'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action } from '@anticrm/view'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
+import type { Action, ViewAction } from '@anticrm/view'
 
 export default mergeIds(taskId, task, {
   action: {
@@ -33,12 +33,12 @@ export default mergeIds(taskId, task, {
     UnarchiveSpace: '' as Ref<Action>
   },
   actionImpl: {
-    CreateTask: '' as Resource<(object: Doc) => Promise<void>>,
-    EditStatuses: '' as Resource<(object: Doc) => Promise<void>>,
-    TodoItemMarkDone: '' as Resource<(object: Doc) => Promise<void>>,
-    TodoItemMarkUnDone: '' as Resource<(object: Doc) => Promise<void>>,
-    ArchiveSpace: '' as Resource<(object: Doc) => Promise<void>>,
-    UnarchiveSpace: '' as Resource<(object: Doc) => Promise<void>>
+    CreateTask: '' as ViewAction,
+    EditStatuses: '' as ViewAction,
+    TodoItemMarkDone: '' as ViewAction,
+    TodoItemMarkUnDone: '' as ViewAction,
+    ArchiveSpace: '' as ViewAction,
+    UnarchiveSpace: '' as ViewAction
   },
   component: {
     ProjectView: '' as AnyComponent,
