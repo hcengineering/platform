@@ -1,6 +1,6 @@
 {
   "string": {
-    "EditBoxPlaceholder": "placeholder",
+    "EditBoxPlaceholder": "Type text...",
     "Ok": "Ok",
     "Cancel": "Cancel",
     "Minutes": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",

@@ -2,7 +2,19 @@ import core, { Ref, TxOperations } from '@anticrm/core'
 import board, { Board, CardLabel } from '@anticrm/board'
 import type { KanbanTemplate } from '@anticrm/task'
 import { createKanban } from '@anticrm/task'
-import { hexColorToNumber, FernColor, FlamingoColor, MalibuColor, MoodyBlueColor, SeaBuckthornColor } from '@anticrm/ui'
+import {
+  hexColorToNumber,
+  FernColor,
+  FlamingoColor,
+  MalibuColor,
+  MediumTurquoiseColor,
+  MoodyBlueColor,
+  SeaBuckthornColor,
+  FeijoaColor,
+  EastSideColor,
+  SalmonColor,
+  SeagullColor
+} from '@anticrm/ui'
 
 export async function createBoard (
   client: TxOperations,
@@ -26,27 +38,44 @@ export async function getBoardLabels (client: TxOperations, boardRef: Ref<Board>
   return await client.findAll(board.class.CardLabel, { attachedTo: boardRef })
 }
 
+export function getBoardAvailableColors (): string[] {
+  return [
+    FernColor,
+    SeaBuckthornColor,
+    FlamingoColor,
+    MalibuColor,
+    MoodyBlueColor,
+    FeijoaColor,
+    EastSideColor,
+    MediumTurquoiseColor,
+    SalmonColor,
+    SeagullColor
+  ]
+}
+
 export async function createBoardLabels (client: TxOperations, boardRef: Ref<Board>): Promise<void> {
   await Promise.all([
-    createCardLabel(client, boardRef, FernColor),
-    createCardLabel(client, boardRef, SeaBuckthornColor),
-    createCardLabel(client, boardRef, FlamingoColor),
-    createCardLabel(client, boardRef, MalibuColor),
-    createCardLabel(client, boardRef, MoodyBlueColor)
+    createCardLabel(client, boardRef, hexColorToNumber(FernColor)),
+    createCardLabel(client, boardRef, hexColorToNumber(SeaBuckthornColor)),
+    createCardLabel(client, boardRef, hexColorToNumber(FlamingoColor)),
+    createCardLabel(client, boardRef, hexColorToNumber(MalibuColor)),
+    createCardLabel(client, boardRef, hexColorToNumber(MoodyBlueColor))
   ])
 }
 
 export async function createCardLabel (
   client: TxOperations,
   boardRef: Ref<Board>,
-  color: string,
-  title?: string
+  color: number,
+  title?: string,
+  isHidden?: boolean
 ): Promise<void> {
   await client.createDoc(board.class.CardLabel, core.space.Model, {
     attachedTo: boardRef,
     attachedToClass: board.class.Board,
-    collection: '',
-    color: hexColorToNumber(color),
-    title: title ?? ''
+    collection: 'labels',
+    color,
+    title: title ?? '',
+    isHidden: isHidden ?? false
   })
 }

@@ -28,6 +28,9 @@ export default mergeIds(boardId, board, {
     CreateCard: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
+    CardLabelPresenter: '' as AnyComponent,
+    CardDatePresenter: '' as AnyComponent,
+    BoardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Cards: '' as AnyComponent,
     KanbanView: '' as AnyComponent

@@ -3,7 +3,7 @@
   import { getFirstName, getLastName } from '@anticrm/contact'
   import { Button, showPopup } from '@anticrm/ui'
   import type { IntlString } from '@anticrm/platform'
-  import EditMember from '../popups/EditMember.svelte';
+  import EditMember from '../popups/EditMember.svelte'
 
   export let value: Employee
   export let size: 'large' | 'medium'

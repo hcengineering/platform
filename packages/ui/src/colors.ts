@@ -12,6 +12,7 @@ export const ChetwodeBlueColor = '#6F7BC5' // dark blue
 export const SalmonColor = '#F28469' // salmon
 export const SeaBuckthornColor = '#F2994A' // orange (warning)
 export const FlamingoColor = '#EB5757' // red (error)
+export const LinkWaterColor = '#C9CBCD'
 
 const blackColors = Object.freeze([
   FeijoaColor,
@@ -65,6 +66,9 @@ export function getColorNumberByText (str: string): number {
  * @public
  */
 export function hexColorToNumber (hexColor: string): number {
+  if (hexColor === undefined || hexColor === null) {
+    return 0
+  }
   return parseInt(hexColor.replace('#', ''), 16)
 }
 
@@ -72,6 +76,9 @@ export function hexColorToNumber (hexColor: string): number {
  * @public
  */
 export function numberToHexColor (color: number): string {
+  if (color === undefined || color === null) {
+    return ''
+  }
   return `#${color.toString(16)}`
 }
 
@@ -79,10 +86,13 @@ export function numberToHexColor (color: number): string {
  * @public
  */
 export function numberToRGB (color: number, alpha?: number): string {
+  if (color === undefined || color === null) {
+    return ''
+  }
   const hex = color.toString(16)
-  const r = parseInt(hex.slice(0, 2), 16)
-  const g = parseInt(hex.slice(2, 4), 16)
-  const b = parseInt(hex.slice(4, 6), 16)
+  const r = hex.length >= 2 ? parseInt(hex.slice(0, 2), 16) : 0
+  const g = hex.length >= 4 ? parseInt(hex.slice(2, 4), 16) : 0
+  const b = hex.length >= 6 ? parseInt(hex.slice(4, 6), 16) : 0
 
   return `rgba(${r}, ${g}, ${b}, ${alpha === undefined ? '1' : alpha})`
 }

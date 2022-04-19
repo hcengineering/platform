@@ -1,21 +1,34 @@
 <script lang="ts">
   import { Card, CardLabel } from '@anticrm/board'
-  import { Ref } from '@anticrm/core'
+  import type { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, EditBox, Icon, IconEdit, IconCheck, Label, numberToHexColor, numberToRGB } from '@anticrm/ui'
+  import {
+    Button,
+    EditBox,
+    Icon,
+    IconEdit,
+    IconCheck,
+    IconClose,
+    Label,
+    numberToHexColor,
+    numberToRGB
+  } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import board from '../../plugin'
   import { getBoardLabels } from '../../utils/BoardUtils'
-  import { updateCard } from '../../utils/CardUtils'
 
   export let object: Card
+  export let search: string | undefined = undefined
+  export let onEdit: (label: CardLabel) => void
+  export let onCreate: () => void
 
   const client = getClient()
-  let search: string | undefined = undefined
-  let labels = object.labels ?? []
+
   let boardCardLabels: CardLabel[] = []
   let filteredLabels: CardLabel[] = []
   let hovered: Ref<CardLabel> | undefined = undefined
+  const dispatch = createEventDispatcher()
 
   function applySearch () {
     if (!search || search.trim().length <= 0) {
@@ -34,31 +47,51 @@
     }
   }
 
-  function toggle (label: CardLabel) {
+  async function fetch () {
     if (!object) {
       return
     }
 
-    if (labels.includes(label._id)) {
-      labels = labels.filter((l) => l !== label._id)
-    } else {
-      labels = [...labels, label._id]
+    object = await client.findOne(object._class, { _id: object._id }) ?? object
+  }
+
+  async function toggle (label: CardLabel) {
+    if (!object) {
+      return
     }
 
-    updateCard(client, object, 'labels', labels)
+    if (object?.labels?.includes(label._id)) {
+      await client.update(object, {
+        $pull: { labels: label._id as any } // TODO: fix as any
+      })
+    } else {
+      await client.update(object, {
+        $push: { labels: label._id }
+      })
+    }
+
+    fetch()
   }
 
   $: object.space && fetchBoardLabels()
 
 </script>
 
-<div class="antiPopup antiPopup-withHeader antiPopup-withTitle w-85 pb-2">
-  <div class="ap-space" />
-  <div class="fs-title ap-header flex-row-center">
+<div class="antiPopup w-85 pb-2">
+  <div class="relative fs-title flex-center h-9">
     <Label label={board.string.Labels} />
+    <div class="absolute flex-center mr-2 h-full" style:top="0" style:right="0">
+      <Button
+        icon={IconClose}
+        kind="transparent"
+        size="small"
+        on:click={() => {
+          dispatch('close')
+        }} />
+    </div>
   </div>
   <div class="ap-space bottom-divider" />
-  <div class="flex-col ml-4 mt-1 mb-1 mr-2 flex-gap-1">
+  <div class="flex-col ml-4 mt-2 mb-1 mr-2 flex-gap-1">
     <div class="p-2 mt-1 mb-1 border-bg-accent border-radius-1">
       <EditBox
         bind:value={search}
@@ -87,19 +120,19 @@
         <div
           class="relative flex-row-center justify-center border-radius-1 fs-title w-full h-8 mr-2"
           style:background-color={numberToHexColor(label.color)}
-          style:box-shadow={hovered === label._id ? `-0.5rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
+          style:box-shadow={hovered === label._id ? `-0.4rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
           on:click={() => toggle(label)}>
           {label.title ?? ''}
-          {#if labels.includes(label._id)}
+          {#if object?.labels?.includes(label._id)}
             <div class="absolute flex-center h-full mr-2" style:top="0" style:right="0">
               <Icon icon={IconCheck} size="small" />
             </div>
           {/if}
         </div>
-        <Button icon={IconEdit} kind="transparent" />
+        <Button icon={IconEdit} kind="transparent" on:click={() => onEdit(label)} />
       </div>
     {/each}
     <div class="mt-3" />
-    <Button label={board.string.CreateLabel} kind="no-border" />
+    <Button label={board.string.CreateLabel} kind="no-border" on:click={() => onCreate()} />
   </div>
 </div>

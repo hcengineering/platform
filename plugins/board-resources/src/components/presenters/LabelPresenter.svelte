@@ -1,18 +1,13 @@
 <script lang="ts">
-  import { Button, numberToHexColor } from '@anticrm/ui'
   import type { CardLabel } from '@anticrm/board'
+  import ColorPresenter from './ColorPresenter.svelte'
 
   export let value: CardLabel
-  export let size: 'large' | 'medium'
-
-  const background = numberToHexColor(value.color)
-
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 </script>
 
 {#if value}
-  <div style:background class="border-radius-1">
-    <Button {size} kind="transparent" on:click>
-      <div class="flex-center h-full w-full min-w-4" slot="content">{value.title ?? ''}</div>
-    </Button>
-  </div>
+  <ColorPresenter value={value.color} {size} on:click>
+    <div class="flex-center h-full w-full fs-title text-sm pr-1 pl-1">{value.title ?? ''}</div>
+  </ColorPresenter>
 {/if}

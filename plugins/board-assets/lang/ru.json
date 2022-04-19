@@ -1,5 +1,6 @@
 {
   "string": {
+    "Name": "Название",
     "CreateBoard": "Создать",
     "CreateCard": "Создать",
     "CardName": "Название",
@@ -32,6 +33,9 @@
     "Labels": "Метки",
     "CreateLabel": "Создать",
     "SearchLabels": "Поиск...",
+    "SelectColor": "Выберите цвет",
+    "NoColor": "Без цвета.",
+    "NoColorInfo": "Не будет показываться на доске.",
     "Checklist": "Списки",
     "Dates": "Дата",
     "Attachments": "Прикрепленное",

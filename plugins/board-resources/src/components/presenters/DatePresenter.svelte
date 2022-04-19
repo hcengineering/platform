@@ -10,7 +10,7 @@
   const dispatch = createEventDispatcher()
 
   function check () {
-    if (isInline || isChecked === undefined) return
+    if (isInline || isChecked === undefined || !value) return
     dispatch('update', { ...value, isChecked })
   }
 </script>
