@@ -252,6 +252,7 @@
   }
 
   let aside: HTMLElement
+  let cover: HTMLElement
   let isResizing: boolean = false
   let asideWidth: number
   let componentWidth: number
@@ -272,6 +273,7 @@
     const el: HTMLElement = event.currentTarget as HTMLElement
     if (el && isResizing) document.removeEventListener('mousemove', resizing)
     document.removeEventListener('mouseup', endResize)
+    cover.style.display = 'none'
     isResizing = false
   }
   const startResize = (event: MouseEvent): void => {
@@ -281,6 +283,7 @@
       dX = event.clientX - oldX
       document.addEventListener('mouseup', endResize)
       document.addEventListener('mousemove', resizing)
+      cover.style.display = 'block'
       isResizing = true
     }
   }
@@ -395,12 +398,13 @@
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="splitter" on:mousedown={startResize} />
+      <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
       <div class="antiPanel-component antiComponent aside" bind:clientWidth={asideWidth} bind:this={aside}>
         <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
       </div>
     {/if}
   </div>
+  <div bind:this={cover} class="cover" />
   <PanelInstance {contentPanel} />
   <Popup />
   <TooltipInstance />
@@ -413,6 +417,16 @@
   .workbench-container {
     display: flex;
     height: 100%;
+  }
+
+  .cover {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
   }
   .splitter {
     position: relative;
@@ -435,7 +449,7 @@
       z-index: 1;
       transition: border-color .15s ease-in-out;
     }
-    &:hover {
+    &:hover, &.hovered {
       transition-duration: 0;
       background-color: var(--primary-bg-color);
       &::before {
