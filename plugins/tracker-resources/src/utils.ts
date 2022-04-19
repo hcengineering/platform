@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
+import { Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { IssuePriority, IssueStatus, Team, IssuesGrouping, Issue } from '@anticrm/tracker'
+import { IssuePriority, IssueStatus, Team, IssuesGrouping, IssuesOrdering, Issue } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
@@ -86,13 +86,35 @@ export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
   [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
 }
 
-export type IssuesGroupByKeys = 'status' | 'priority' | 'assignee'
+export const issuesOrderByOptions: Record<IssuesOrdering, IntlString> = {
+  [IssuesOrdering.Status]: tracker.string.Status,
+  [IssuesOrdering.Priority]: tracker.string.Priority,
+  [IssuesOrdering.LastUpdated]: tracker.string.LastUpdated,
+  [IssuesOrdering.DueDate]: tracker.string.DueDate
+}
+
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' >
+export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
   [IssuesGrouping.Status]: 'status',
   [IssuesGrouping.Priority]: 'priority',
   [IssuesGrouping.Assignee]: 'assignee',
   [IssuesGrouping.NoGrouping]: undefined
+}
+
+export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
+  [IssuesOrdering.Status]: 'status',
+  [IssuesOrdering.Priority]: 'priority',
+  [IssuesOrdering.LastUpdated]: 'modifiedOn',
+  [IssuesOrdering.DueDate]: 'dueDate'
+}
+
+export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
+  status: SortingOrder.Ascending,
+  priority: SortingOrder.Ascending,
+  modifiedOn: SortingOrder.Descending,
+  dueDate: SortingOrder.Descending
 }
 
 export const issuesGroupPresenterMap: Record<IssuesGroupByKeys, AnyComponent | undefined> = {

@@ -13,20 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssuesGrouping } from '@anticrm/tracker'
+  import { IssuesGrouping, IssuesOrdering } from '@anticrm/tracker'
   import { Label } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { issuesGroupByOptions } from '../../utils'
+  import { issuesGroupByOptions, issuesOrderByOptions } from '../../utils'
   import DropdownNative from '../DropdownNative.svelte'
   import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
   export let groupBy: IssuesGrouping | undefined = undefined
+  export let orderBy: IssuesOrdering | undefined = undefined
 
   const groupByItems = issuesGroupByOptions
+  const orderByItems = issuesOrderByOptions
 
-  $: dispatch('update', groupBy)
+  $: dispatch('update', { groupBy, orderBy })
 </script>
 
 <div class="root">
@@ -37,6 +39,14 @@
       </div>
       <div class="dropdownContainer">
         <DropdownNative items={groupByItems} bind:selected={groupBy} />
+      </div>
+    </div>
+    <div class="viewOption">
+      <div class="label">
+        <Label label={tracker.string.Ordering} />
+      </div>
+      <div class="dropdownContainer">
+        <DropdownNative items={orderByItems} bind:selected={orderBy} />
       </div>
     </div>
   </div>

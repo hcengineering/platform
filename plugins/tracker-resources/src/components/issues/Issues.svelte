@@ -16,19 +16,20 @@
   import contact from '@anticrm/contact'
   import type { DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, Team, IssuesGrouping } from '@anticrm/tracker'
+  import { Issue, Team, IssuesGrouping, IssuesOrdering } from '@anticrm/tracker'
   import { Button, Label, ScrollBox, IconOptions, showPopup } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
   import { IntlString } from '@anticrm/platform'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
-  import { IssuesGroupByKeys, issuesGroupKeyMap } from '../../utils'
+  import { IssuesGroupByKeys, issuesGroupKeyMap, issuesOrderKeyMap } from '../../utils'
 
   export let currentSpace: Ref<Team>
   export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
   export let groupingKey: IssuesGrouping = IssuesGrouping.Status
+  export let orderingKey: IssuesOrdering = IssuesOrdering.LastUpdated
   export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
 
   const ENTRIES_LIMIT = 200
@@ -101,7 +102,7 @@
     return total
   }
 
-  const handleGroupingKeyUpdated = (result: any) => {
+  const handleOptionsUpdated = (result: {orderBy: IssuesOrdering; groupBy: IssuesGrouping} | undefined) => {
     if (result === undefined) {
       return
     }
@@ -110,7 +111,8 @@
       delete issuesMap[prop]
     }
 
-    groupingKey = result
+    groupingKey = result.groupBy
+    orderingKey = result.orderBy
   }
 
   const handleOptionsEditorOpened = (event: Event) => {
@@ -118,7 +120,7 @@
       return
     }
 
-    showPopup(ViewOptionsPopup, { groupBy: groupingKey }, event.target, undefined, handleGroupingKeyUpdated)
+    showPopup(ViewOptionsPopup, { groupBy: groupingKey, orderBy: orderingKey }, event.target, undefined, handleOptionsUpdated)
   }
 </script>
 
@@ -132,6 +134,7 @@
       {#each displayedCategories as category}
         <CategoryPresenter
           groupBy={{ key: groupByKey, group: category }}
+          orderBy={issuesOrderKeyMap[orderingKey]}
           query={resultQuery}
           {currentSpace}
           {currentTeam}

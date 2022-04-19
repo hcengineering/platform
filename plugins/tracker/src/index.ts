@@ -62,6 +62,16 @@ export enum IssuesGrouping {
 /**
  * @public
  */
+export enum IssuesOrdering {
+  Status = 'status',
+  Priority = 'priority',
+  LastUpdated = 'lastUpdated',
+  DueDate = 'dueDate'
+}
+
+/**
+ * @public
+ */
 export interface Issue extends Doc {
   title: string
   description: Markup

@@ -51,7 +51,7 @@
     "Labels": "Labels",
     "Project": "Project",
     "Space": "",
-    "DueDate": "Set due date\u2026",
+    "SetDueDate": "Set due date\u2026",
     "ModificationDate": "Updated {value}",
     "Team": "",
     "Issue": "",
@@ -67,8 +67,11 @@
     "DueDatePopupDescription": "{value, plural, =0 {Today} =1 {Tomorrow} other {# days remaining}}",
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
     "Grouping": "Grouping",
+    "Ordering": "Ordering",
     "NoGrouping": "No grouping",
-    "NoAssignee": "No assignee"
+    "NoAssignee": "No assignee",
+    "LastUpdated": "Last updated",
+    "DueDate": "Due date"
   },
   "status": {}
 }
