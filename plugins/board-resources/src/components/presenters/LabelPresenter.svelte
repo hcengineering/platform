@@ -1,10 +1,9 @@
 <script lang="ts">
   import type { CardLabel } from '@anticrm/board'
-import ColorPresenter from './ColorPresenter.svelte'
+  import ColorPresenter from './ColorPresenter.svelte'
 
   export let value: CardLabel
   export let size: 'small' | 'medium' | 'large' = 'medium'
-
 </script>
 
 {#if value}
