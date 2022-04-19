@@ -28,7 +28,7 @@ import KanbanView from './components/KanbanView.svelte'
 import CardLabelsPicker from './components/popups/CardLabelsPicker.svelte'
 import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived } from './utils/CardUtils'
+import { addCurrentUser, canAddCurrentUser, isArchived, isUnarchived, archiveCard, unarchiveCard, deleteCard } from './utils/CardUtils'
 
 async function showMoveCardPopup (object: Card): Promise<void> {
   showPopup(MoveView, { object })
@@ -57,7 +57,10 @@ export default async (): Promise<Resources> => ({
     Join: addCurrentUser,
     Move: showMoveCardPopup,
     Dates: showDatePickerPopup,
-    Labels: showCardLabelsPopup
+    Labels: showCardLabelsPopup,
+    Archive: archiveCard,
+    SendToBoard: unarchiveCard,
+    Delete: deleteCard
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,
