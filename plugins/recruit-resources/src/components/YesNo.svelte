@@ -17,7 +17,6 @@
   import type { IntlString } from '@anticrm/platform'
   import type { TooltipAlignment } from '@anticrm/ui'
   import { Label, Tooltip } from '@anticrm/ui'
-  import recruit from '../plugin'
 
   export let label: IntlString
   export let tooltip: IntlString

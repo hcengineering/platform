@@ -16,7 +16,7 @@
   import { Class, Data, Doc, generateId, Ref } from '@anticrm/core'
   import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
-  import { DropdownLabels, EditBox, getColorNumberByText, getPlatformColor, showPopup, Button, IconFolder } from '@anticrm/ui'
+  import { Button, DropdownLabels, EditBox, eventToHTMLElement, getColorNumberByText, getPlatformColor, IconFolder, showPopup } from '@anticrm/ui'
   import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -99,7 +99,7 @@
         size={'medium'}
         kind={'link-bordered'}
         on:click={(evt) => {
-          showPopup(ColorsPopup, {}, evt.target, (col) => {
+          showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
             if (col != null) {
               color = col
               colorSet = true

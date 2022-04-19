@@ -85,9 +85,9 @@
       result.push({
         icon: act.icon ?? IconEdit,
         label: act.label,
-        action: async () => {
+        action: async (evt: Event) => {
           const impl = await getResource(act.action)
-          await impl(space)
+          await impl(space, evt)
         }
       })
     }

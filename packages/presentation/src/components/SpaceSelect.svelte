@@ -16,7 +16,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 
-  import { Label, showPopup, IconFolder, Button } from '@anticrm/ui'
+  import { Label, showPopup, IconFolder, Button, eventToHTMLElement } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
@@ -43,7 +43,7 @@
   size={'small'}
   kind={'no-border'}
   on:click={(ev) => {
-    showPopup(SpacesPopup, { _class, spaceQuery }, ev.target, (result) => {
+    showPopup(SpacesPopup, { _class, spaceQuery }, eventToHTMLElement(ev), (result) => {
       if (result) {
         value = result._id
       }

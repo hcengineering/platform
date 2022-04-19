@@ -15,8 +15,8 @@
 <script lang="ts">
   import { TxUpdateDoc } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Integration,IntegrationType } from '@anticrm/setting'
-  import { Button,showPopup } from '@anticrm/ui'
+  import { Integration, IntegrationType } from '@anticrm/setting'
+  import { Button, eventToHTMLElement, showPopup } from '@anticrm/ui'
   import setting from '../../plugin'
 
   export let tx: TxUpdateDoc<Integration>
@@ -37,11 +37,11 @@
   async function reconnect (res: any): Promise<void> {
     if (res?.value) {
       if (doc === undefined) return
-        await client.update(doc, {
-          disabled: false
-        })
-      }
+      await client.update(doc, {
+        disabled: false
+      })
     }
+  }
 </script>
 
 <div class='flex-center'>
@@ -50,7 +50,7 @@
     kind={'primary'}
     on:click={(e) => {
       if (type?.reconnectComponent) {
-        showPopup(type.reconnectComponent, {}, e.target, reconnect)
+        showPopup(type.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
       }
     }}
   />

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup, Icon, Label } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, Icon, Label, eventToHTMLElement } from '@anticrm/ui'
   import { issuePriorities } from '../utils'
   import tracker from '../plugin'
 
@@ -31,11 +31,11 @@
     IssuePriority.Low
   ].map((p) => ({ id: p, ...issuePriorities[p] }))
 
-  const handlePriorityEditorOpened = (event: Event) => {
+  const handlePriorityEditorOpened = (event: MouseEvent) => {
     showPopup(
       SelectPopup,
       { value: prioritiesInfo, placeholder: tracker.string.SetPriority, searchable: true },
-      event.currentTarget,
+      eventToHTMLElement(event),
       onPriorityChange
     )
   }

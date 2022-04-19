@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from '@anticrm/core'
+import type { Ref } from '@anticrm/core'
 import { inventoryId } from '@anticrm/inventory'
 import inventory from '@anticrm/inventory-resources/src/plugin'
-import { mergeIds, Resource } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Action } from '@anticrm/view'
+import { Action, ViewAction } from '@anticrm/view'
 
 export default mergeIds(inventoryId, inventory, {
   action: {
     CreateSubcategory: '' as Ref<Action>
   },
   actionImpl: {
-    CreateSubcategory: '' as Resource<(object: Doc) => Promise<void>>
+    CreateSubcategory: '' as ViewAction
   },
   component: {
     Categories: '' as AnyComponent,

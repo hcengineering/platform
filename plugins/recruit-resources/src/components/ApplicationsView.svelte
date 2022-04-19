@@ -23,7 +23,7 @@
   import task from '@anticrm/task'
   import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
 
@@ -59,7 +59,7 @@
     }
   }
 
-  function showCreateDialog (ev: Event) {
+  function showCreateDialog () {
     showPopup(CreateApplication, { }, 'top')
   }
 
@@ -75,16 +75,15 @@
   </div>
 
   <SearchEdit bind:value={search} on:change={() => { updateResultQuery(search) }} />
-  <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
 <Scroller>
-  <Table
+  <TableBrowser
     _class={recruit.class.Applicant}
     {config}
     {options}
     query={ resultQuery }
     showNotification
-    highlightRows
   />
 </Scroller>

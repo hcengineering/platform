@@ -21,13 +21,14 @@
 
   export let label: IntlString
   export let message: IntlString
+  export let params: Record<string, any> = {}
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="msgbox-container">
   <div class="overflow-label fs-title mb-4"><Label {label} /></div>
-  <div class="message"><Label label={message} /></div>
+  <div class="message"><Label label={message} {params} /></div>
   <div class="footer">
     <Button focus label={presentation.string.Ok} size={'small'} kind={'primary'} on:click={() => dispatch('close', true)} />
     <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />

@@ -17,7 +17,7 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { Issue, Team } from '@anticrm/tracker'
   import { Avatar, UsersPopup, getClient } from '@anticrm/presentation'
-  import { showPopup, Tooltip } from '@anticrm/ui'
+  import { eventToHTMLElement, showPopup, Tooltip } from '@anticrm/ui'
 
   import tracker from '../../plugin'
 
@@ -46,7 +46,7 @@
     await client.update(currentIssue, { assignee: newAssignee })
   }
 
-  const handleAssigneeEditorOpened = async (event: Event) => {
+  const handleAssigneeEditorOpened = async (event: MouseEvent) => {
     showPopup(
       UsersPopup,
       {
@@ -55,7 +55,7 @@
         allowDeselect: true,
         placeholder: tracker.string.AssignTo
       },
-      event.target,
+      eventToHTMLElement(event),
       handleAssigneeChanged
     )
   }

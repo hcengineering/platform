@@ -14,16 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Data, FindResult, generateId } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-
-  import { getClient, Card, EditableAvatar } from '@anticrm/presentation'
-
   import attachment from '@anticrm/attachment'
-  import { EditBox, IconInfo, Label, Button, showPopup } from '@anticrm/ui'
-
   import { Channel, combineName, findPerson, Person } from '@anticrm/contact'
+  import { AttachedData, Data, generateId } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
+  import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
+  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, showPopup } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsView from './ChannelsView.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
@@ -124,7 +121,7 @@
       icon={contact.icon.SocialEdit}
       kind={'transparent'}
       on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
           if (result !== undefined) channels = result
         })
       }

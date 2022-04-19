@@ -21,9 +21,7 @@
     Account,
     AttachedData,
     Data,
-    Doc,
-    FindResult,
-    generateId, MixinData,
+    Doc, generateId, MixinData,
     Ref,
     TxProcessor
   } from '@anticrm/core'
@@ -42,17 +40,16 @@
   import { recognizeDocument } from '@anticrm/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
-    Component,
+    Button, Component,
     EditBox,
+    eventToHTMLElement,
     getColorNumberByText,
     IconFile as FileIcon,
     IconInfo,
     Label,
     Link,
     showPopup,
-    Spinner,
-    Button,
-    IconAttachment
+    Spinner
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -420,7 +417,7 @@
       kind={'no-border'}
       size={'small'}
       on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
+        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
           if (result !== undefined) channels = result
         })
       }

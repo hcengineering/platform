@@ -16,7 +16,8 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import { Scroller } from '@anticrm/ui'
-  import Table from './Table.svelte'
+  import { TableBrowser } from '..'
+  import ActionContext from './ActionContext.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -29,6 +30,18 @@
   $: resultQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
 </script>
 
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 <Scroller>
-  <Table {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification highlightRows />
+  <TableBrowser
+    {_class}
+    {config}
+    {options}
+    query={resultQuery}
+    {baseMenuClass}
+    showNotification
+  />
 </Scroller>

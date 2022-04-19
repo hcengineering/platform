@@ -182,3 +182,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
   }
   return show
 }
+
+export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
+  return evt.target as HTMLElement
+}
