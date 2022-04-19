@@ -72,6 +72,8 @@
     "DueDate": "Срок",
     "Save": "Сохранить",
     "Remove": "Удалить",
-    "NullDate": "М/Д/ГГГГ"
+    "NullDate": "М/Д/ГГГГ",
+    "ViewProfile": "Перейти в профиль",
+    "RemoveFromCard": "Удалить из карточки"
   }
 }
