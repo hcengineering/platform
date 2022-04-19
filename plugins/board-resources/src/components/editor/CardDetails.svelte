@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardLabel } from '@anticrm/board'
+  import type { Card, CardDate, CardLabel } from '@anticrm/board'
 
   import contact, { Employee } from '@anticrm/contact'
   import { getResource } from '@anticrm/platform'
@@ -37,6 +37,24 @@
   let labelsHandler: () => void
   let dateHandler: () => void
 
+  $: membersIds = members?.map(m => m._id) ?? []
+
+  const getMenuItems = (member: Employee) => {
+    return [
+      [{
+        title: board.string.ViewProfile,
+        handler: () => console.log('TODO: implement')
+      }],
+      [{
+        title: board.string.RemoveFromCard,
+        handler: () => {
+          const newMembers = membersIds.filter((m) => m !== member._id)
+          client.update(value, { members: newMembers })
+        }
+      }]
+    ]
+  }
+
   $: if (value.members && value.members.length > 0) {
     query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
       members = result
@@ -51,6 +69,10 @@
     })
   } else {
     labels = []
+  }
+
+  function updateDate (e: CustomEvent<CardDate>) {
+    client.update(value, { date: e.detail })
   }
 
   getCardActions(client, {
@@ -69,7 +91,6 @@
       }
     }
   })
-
 </script>
 
 {#if value}
@@ -80,7 +101,7 @@
       </div>
       <div class="flex-row-center flex-gap-1">
         {#each members as member}
-          <MemberPresenter value={member} size="large" />
+          <MemberPresenter value={member} size="large" menuItems={getMenuItems(member)} />
         {/each}
         <Button icon={IconAdd} shape="circle" kind="no-border" size="large" on:click={membersHandler} />
       </div>
@@ -105,7 +126,7 @@
         <Label label={board.string.Dates} />
       </div>
       {#key value.date}
-        <DatePresenter {value} on:click={dateHandler} />
+        <DatePresenter value={value.date} on:click={dateHandler} on:update={updateDate} />
       {/key}
     </div>
   {/if}

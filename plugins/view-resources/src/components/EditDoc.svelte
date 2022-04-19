@@ -29,6 +29,7 @@
   import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
+  import ActionContext from './ActionContext.svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
 
   export let _id: Ref<Doc>
@@ -238,6 +239,9 @@
     })
   }
 </script>
+<ActionContext context={{
+  mode: 'editor'
+}}/>
 
 {#if object !== undefined && title !== undefined}
   <Panel
@@ -302,7 +306,7 @@
         {/each}
       </div>
     {/if}
-    {#each collectionEditors as collection, i}
+    {#each collectionEditors as collection}
       {#if collection.editor}
         <div class="mt-14">
           <Component
@@ -321,7 +325,6 @@
     {/each}
   </Panel>
 {/if}
-
 <style lang="scss">
   .main-editor {
     display: flex;

@@ -205,9 +205,10 @@
 
 <style lang="scss">
   .content {
+    overflow: hidden;
     margin: 1rem 1rem 0px;
     background-color: var(--theme-border-modal);
-    border-radius: 0.75rem;
+    border-radius: .75rem;
     border: 1px solid var(--theme-zone-border);
   }
 

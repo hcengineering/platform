@@ -6,8 +6,6 @@
   import view from '@anticrm/view'
   import contact from '../plugin'
 
-  export let targetElement: HTMLElement
-
   const client = getClient()
 
   const actions: Action[] = []

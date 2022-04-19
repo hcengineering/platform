@@ -17,16 +17,13 @@
   import contact from '@anticrm/contact'
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, getClient, UserBox, createQuery, AttributeEditor } from '@anticrm/presentation'
+  import { Card, createQuery, getClient, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
-  import ui, { Status as StatusControl, Label, Button, ColorPopup, showPopup, getPlatformColor } from '@anticrm/ui'
+  import ui, { Button, ColorPopup, eventToHTMLElement, getPlatformColor, showPopup, Status as StatusControl } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import CandidateCard from './CandidateCard.svelte'
-  import VacancyCard from './VacancyCard.svelte'
-  import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
@@ -141,7 +138,7 @@
       task.class.State,
       { space: doc.space },
       (res) => {
-        states = res.map(s => { return { id: s._id, label: s.title, color: s.color} })
+        states = res.map(s => { return { id: s._id, label: s.title, color: s.color } })
         selectedState = res.filter(s => s._id === doc.state)[0] ?? res[0]
       },
       { sort: { rank: SortingOrder.Ascending } }
@@ -209,7 +206,7 @@
           showPopup(
             ColorPopup,
             { value: states, searchable: true, placeholder: ui.string.SearchDots },
-            ev.currentTarget,
+            eventToHTMLElement(ev),
             (result) => {
               if (result && result.id !== doc.state) {
                 doc.state = result.id

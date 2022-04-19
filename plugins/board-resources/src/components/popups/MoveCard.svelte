@@ -4,7 +4,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Class, Client, Doc, DocumentUpdate, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
-  import { Card } from '@anticrm/board';
+  import { Card } from '@anticrm/board'
   import view from '@anticrm/view'
   import board from '../../plugin'
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
@@ -51,15 +51,15 @@
     }
   }
 
-  $: validate({...object, ...selected}, object._class)
+  $: validate({ ...object, ...selected }, object._class)
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
-  <div class="ap-space"/>
+  <div class="ap-space" />
   <div class="fs-title ap-header flex-row-center">
-    <Label label={board.string.MoveCard}/>
+    <Label label={board.string.MoveCard} />
   </div>
-  <div class="ap-space bottom-divider"/>
+  <div class="ap-space bottom-divider" />
   <StatusControl {status} />
   <div class="ap-title">
     <Label label={board.string.SelectDestination} />
@@ -92,7 +92,7 @@
     <Button
       label={board.string.Move}
       size={'small'}
-      disabled={status !== OK || object.state === selected.state && object.rank === selected.rank}
+      disabled={status !== OK || (object.state === selected.state && object.rank === selected.rank)}
       kind={'primary'}
       on:click={move}
     />

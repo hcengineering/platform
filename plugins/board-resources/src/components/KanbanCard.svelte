@@ -38,7 +38,7 @@
   }
 
   function canDropAttachment (e: DragEvent): boolean {
-    return !!e.dataTransfer?.items && e.dataTransfer?.items.length > 0;
+    return !!e.dataTransfer?.items && e.dataTransfer?.items.length > 0
   }
 
 </script>

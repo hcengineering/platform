@@ -27,6 +27,7 @@
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
   export let elements: Map<Ref<TagElement>, TagElement>
+  export let newElements: TagElement[] = []
   export let countLabel: IntlString
 
   export let kind: ButtonKind = 'no-border'
@@ -52,6 +53,7 @@
     showPopup(
       TagsPopup,
       {
+        newElements,
         targetClass,
         selected: items.map((it) => it.tag),
         keyLabel

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, Scroller, showPopup, IconAdd } from '@anticrm/ui'
+  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, Scroller, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
   import { Table } from '@anticrm/view-resources'
@@ -30,8 +30,8 @@
     descriptor: view.viewlet.Table
   })
 
-  function showCreateDialog (ev: Event) {
-    showPopup(CreateProduct, { space: inventory.space.Products }, ev.target as HTMLElement)
+  function showCreateDialog (ev: MouseEvent) {
+    showPopup(CreateProduct, { space: inventory.space.Products }, eventToHTMLElement(ev))
   }
 </script>
 

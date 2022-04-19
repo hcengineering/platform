@@ -26,13 +26,18 @@ import { onDestroy } from 'svelte'
 let liveQuery: LQ
 let client: TxOperations
 
+const txListeners: Array<((tx: Tx) => void)> = []
+
+export function addTxListener (l: (tx: Tx) => void): void {
+  txListeners.push(l)
+}
+
 class UIClient extends TxOperations implements Client {
   constructor (client: Client, private readonly liveQuery: LQ) {
     super(client, getCurrentAccount()._id)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    // return Promise.all([super.tx(tx), this.liveQuery.tx(tx)]) as unknown as Promise<void>
     return await super.tx(tx)
   }
 }
@@ -46,6 +51,8 @@ export function setClient (_client: Client): void {
   client = new UIClient(_client, liveQuery)
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
+
+    txListeners.forEach(it => it(tx))
   }
 }
 

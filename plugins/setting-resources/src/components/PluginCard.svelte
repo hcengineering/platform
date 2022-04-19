@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { Button, Component, Label, Link } from '@anticrm/ui'
+  import { Button, Component, eventToHTMLElement, Label, Link } from '@anticrm/ui'
   import { getResource } from '@anticrm/platform'
   import { showPopup } from '@anticrm/ui'
   import type { Integration, IntegrationType } from '@anticrm/setting'
@@ -78,7 +78,7 @@
           kind={'primary'}
           on:click={(e) => {
             if (integrationType.reconnectComponent) {
-              showPopup(integrationType.reconnectComponent, {}, e.target, reconnect)
+              showPopup(integrationType.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
             }
           }}
         />
@@ -90,7 +90,7 @@
         label={setting.string.Add}
         kind={'primary'}
         on:click={(e) => {
-          showPopup(integrationType.createComponent, {}, e.target, close)
+          showPopup(integrationType.createComponent, {}, eventToHTMLElement(e), close)
         }}
       />
       <Link label={'Learn more'} />

@@ -106,7 +106,7 @@
   class:small-gap={size === 'small'}
   class:normal-gap={size !== 'small'}
 >
-  {#each displayItems as item,i}
+  {#each displayItems as item}
     <div class='channel-item'>
       <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
         <CircleButton

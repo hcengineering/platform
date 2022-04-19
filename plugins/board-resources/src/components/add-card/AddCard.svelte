@@ -28,7 +28,7 @@
   let anchorRef: HTMLDivElement
   const client = getClient()
 
-  async function addCard(title: string) {
+  async function addCard (title: string) {
     const newCardId = generateId() as Ref<BoardCard>
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
@@ -58,7 +58,7 @@
     return client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)
   }
 
-  async function addCards(title: string, checkNewLine: boolean = false) {
+  async function addCards (title: string, checkNewLine: boolean = false) {
     if (!checkNewLine) {
       return addCard(title.replace('\n', ' '))
     }

@@ -133,7 +133,10 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: inventory.class.Category,
-    action: inventory.action.CreateSubcategory
+    action: inventory.action.CreateSubcategory,
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 
   builder.createDoc(
@@ -142,7 +145,8 @@ export function createModel (builder: Builder): void {
     {
       label: inventory.string.CreateSubcategory,
       icon: inventory.icon.Categories,
-      action: inventory.actionImpl.CreateSubcategory
+      action: inventory.actionImpl.CreateSubcategory,
+      singleInput: true
     },
     inventory.action.CreateSubcategory
   )

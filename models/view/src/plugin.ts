@@ -13,20 +13,45 @@
 // limitations under the License.
 //
 
+import { Ref } from '@anticrm/core'
 import { IntlString, mergeIds } from '@anticrm/platform'
-import type { Ref, Doc } from '@anticrm/core'
-import type { Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import view, { viewId, Action } from '@anticrm/view'
+import view, { Action, ViewAction, viewId } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {
   action: {
     Delete: '' as Ref<Action>,
-    Move: '' as Ref<Action>
+    Move: '' as Ref<Action>,
+    MoveLeft: '' as Ref<Action>,
+    MoveRight: '' as Ref<Action>,
+    MoveUp: '' as Ref<Action>,
+    MoveDown: '' as Ref<Action>,
+
+    SelectItem: '' as Ref<Action>,
+    SelectItemAll: '' as Ref<Action>,
+    SelectItemNone: '' as Ref<Action>,
+    SelectUp: '' as Ref<Action>,
+    SelectDown: '' as Ref<Action>,
+
+    ShowPreview: '' as Ref<Action>,
+    ShowActions: '' as Ref<Action>
   },
   actionImpl: {
-    Delete: '' as Resource<(doc: Doc) => Promise<void>>,
-    Move: '' as Resource<(doc: Doc) => Promise<void>>
+    Delete: '' as ViewAction,
+    Move: '' as ViewAction,
+    MoveLeft: '' as ViewAction,
+    MoveRight: '' as ViewAction,
+    MoveUp: '' as ViewAction,
+    MoveDown: '' as ViewAction,
+
+    SelectItem: '' as ViewAction,
+    SelectItemAll: '' as ViewAction,
+    SelectItemNone: '' as ViewAction,
+    SelectUp: '' as ViewAction,
+    SelectDown: '' as ViewAction,
+
+    ShowPreview: '' as ViewAction,
+    ShowActions: '' as ViewAction
   },
   component: {
     StringEditor: '' as AnyComponent,
@@ -47,6 +72,18 @@ export default mergeIds(viewId, view, {
     Table: '' as IntlString,
     Delete: '' as IntlString,
     Move: '' as IntlString,
-    Role: '' as IntlString
+    Role: '' as IntlString,
+    // Keybaord actions
+    MoveUp: '' as IntlString,
+    MoveDown: '' as IntlString,
+    MoveLeft: '' as IntlString,
+    MoveRight: '' as IntlString,
+    SelectItem: '' as IntlString,
+    SelectItemAll: '' as IntlString,
+    SelectItemNone: '' as IntlString,
+    SelectUp: '' as IntlString,
+    SelectDown: '' as IntlString,
+    ShowPreview: '' as IntlString,
+    ShowActions: '' as IntlString
   }
 })

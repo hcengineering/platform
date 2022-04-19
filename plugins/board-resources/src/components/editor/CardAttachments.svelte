@@ -28,12 +28,11 @@
 
   let inputFile: HTMLInputElement
 
-  async function fetch() {
+  async function fetch () {
     attachments = await client.findAll(attachment.class.Attachment, { space: value.space, attachedTo: value._id })
   }
 
   $: value?.attachments && value.attachments > 0 && fetch()
-
 </script>
 
 {#if value !== undefined && value.attachments !== undefined && value.attachments > 0}
@@ -55,7 +54,7 @@
         <div class="mt-2">
           <AddAttachment bind:inputFile objectClass={value._class} objectId={value._id} space={value.space}>
             <svelte:fragment slot="control" let:click>
-              <Button label={board.string.AddAttachment} kind="no-border" on:click={click}/>
+              <Button label={board.string.AddAttachment} kind="no-border" on:click={click} />
             </svelte:fragment>
           </AddAttachment>
         </div>

@@ -18,7 +18,6 @@
 
   export let value: Attachment
   // TODO: implement
-
 </script>
 
 <div>

@@ -22,7 +22,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { ActionIcon, Button, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
+  import { ActionIcon, Button, eventToHTMLElement, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -222,7 +222,7 @@
         label={telegram.string.Connect}
         kind={'primary'}
         on:click={(e) => {
-          showPopup(Connect, {}, e.target, onConnectClose)
+          showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
         }}
       />
     </div>
@@ -232,7 +232,7 @@
         label={setting.string.Reconnect}
         kind={'primary'}
         on:click={(e) => {
-          showPopup(Reconnect, {}, e.target, onReconnect)
+          showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
         }}
       />
     </div>

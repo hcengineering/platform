@@ -32,7 +32,7 @@
   let hovered: Ref<CardLabel> | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  function applySearch() {
+  function applySearch () {
     if (!search || search.trim().length <= 0) {
       filteredLabels = boardCardLabels
       return

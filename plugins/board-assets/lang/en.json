@@ -76,6 +76,8 @@
     "DueDate": "Due date",
     "Save": "Save",
     "Remove": "Remove",
-    "NullDate": "M/D/YYYY"
+    "NullDate": "M/D/YYYY",
+    "ViewProfile": "View profile",
+    "RemoveFromCard": "Remove from card"
   }
 }
