@@ -238,9 +238,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.03rem;
-      border-radius: 0.25rem;
-      background-color: rgba(247, 248, 248, 0.5);
       opacity: 0;
 
       &:hover {
