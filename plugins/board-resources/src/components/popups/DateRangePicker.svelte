@@ -21,7 +21,7 @@
   $: dueDate && (savedDueDate = dueDate)
 
   function getEmptyDate (): CardDate {
-    return {_class: object.date?._class ?? board.class.CardDate}
+    return { _class: object.date?._class ?? board.class.CardDate }
   }
 
   function update () {
@@ -82,7 +82,7 @@
       label={board.string.Remove}
       size={'small'}
       on:click={() => {
-        client.update(object, {date: getEmptyDate()})
+        client.update(object, { date: getEmptyDate() })
         dispatch('close')
       }}
     />

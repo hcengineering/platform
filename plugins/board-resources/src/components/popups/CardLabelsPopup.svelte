@@ -14,11 +14,11 @@
   let search: string | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  function setEditMode(isEdit: boolean, object?: CardLabel) {
+  function setEditMode (isEdit: boolean, object?: CardLabel) {
     editMode = { isEdit, object }
   }
 
-  function close() {
+  function close () {
     dispatch('close')
   }
 

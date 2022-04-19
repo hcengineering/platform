@@ -35,7 +35,7 @@
   const dispatch = createEventDispatcher()
   const colorGroups: number[][] = getBoardAvailableColors().reduce(
     (result: number[][], currentValue: string) => {
-      let last = result[result.length - 1]
+      const last = result[result.length - 1]
       if (last.length >= 5) {
         result.push([hexColorToNumber(currentValue)])
       } else {
@@ -51,7 +51,7 @@
   }
 
   async function save () {
-    const {color, isHidden} = selected
+    const { color, isHidden } = selected
     if (!color) {
       return
     }
@@ -60,7 +60,7 @@
       await client.update(object, {
         color,
         title: title ?? '',
-        isHidden: isHidden ?? false,
+        isHidden: isHidden ?? false
       })
     } else {
       await createCardLabel(client, boardRef, color, title, isHidden)
