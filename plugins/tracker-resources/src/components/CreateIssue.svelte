@@ -90,7 +90,7 @@
   }
 
   const moreActions: Array<{ icon: Asset; label: IntlString }> = [
-    { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
+    { icon: tracker.icon.DueDate, label: tracker.string.SetDueDate },
     { icon: tracker.icon.Parent, label: tracker.string.Parent }
   ]
 
