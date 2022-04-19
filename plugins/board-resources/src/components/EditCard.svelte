@@ -44,10 +44,11 @@
   let handleMove: () => void
 
   $: cardQuery.query(_class, { _id }, async (result) => {
-      object = result[0]
-    })
+    object = result[0]
+  })
 
-  $: object?.state && stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
+  $: object?.state &&
+    stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
       state = result[0]
     })
 
@@ -62,7 +63,7 @@
     }
   })
 
-  function change(field: string, value: any) {
+  function change (field: string, value: any) {
     if (object) {
       updateCard(client, object, field, value)
     }

@@ -9,7 +9,7 @@
   let isChecked = value?.isChecked
   const dispatch = createEventDispatcher()
 
-  function check() {
+  function check () {
     if (isInline || isChecked === undefined) return
     dispatch('update', { ...value, isChecked })
   }

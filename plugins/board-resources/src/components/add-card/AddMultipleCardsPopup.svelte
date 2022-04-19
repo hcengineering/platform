@@ -41,12 +41,12 @@
 
   .close-icon {
     position: absolute;
-    top: .75rem;
-    right: .75rem;
+    top: 0.75rem;
+    right: 0.75rem;
   }
 
   .header {
-    padding-bottom: .5rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--divider-color);
   }
 </style>

@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   import { Button, TextArea, ActionIcon, IconClose } from '@anticrm/ui'
   import board from '../../plugin'
 
@@ -10,7 +10,7 @@
   let inputRef: TextArea
   let openedContainerRef: HTMLDivElement
 
-  async function addCard() {
+  async function addCard () {
     if (!title) {
       inputRef.focus()
       return
@@ -21,7 +21,7 @@
     title = ''
   }
 
-  async function onClickOutside(e: any) {
+  async function onClickOutside (e: any) {
     if (openedContainerRef && !openedContainerRef.contains(e.target) && !e.defaultPrevented && isEditing) {
       if (title) {
         await onAdd(title)
@@ -33,12 +33,12 @@
 
   const onKeydown = (e: any) => {
     if (e.detail.key !== 'Enter') {
-      return;
+      return
     }
 
     e.detail.preventDefault()
     addCard()
-  };
+  }
 
   $: if (inputRef && !title) {
     isEditing = true
@@ -46,23 +46,23 @@
   }
 </script>
 
-<svelte:window on:click={onClickOutside}/>
+<svelte:window on:click={onClickOutside} />
 <div bind:this={openedContainerRef}>
-    <div class="card-container">
+  <div class="card-container">
     <TextArea
-        placeholder={board.string.CardTitlePlaceholder}
-        bind:this={inputRef}
-        bind:value={title}
-        on:keydown={onKeydown}
-        noFocusBorder={true}
+      placeholder={board.string.CardTitlePlaceholder}
+      bind:this={inputRef}
+      bind:value={title}
+      on:keydown={onKeydown}
+      noFocusBorder={true}
     />
-    </div>
-    <div class="flex-row-center mt-3">
+  </div>
+  <div class="flex-row-center mt-3">
     <Button label={board.string.AddCard} kind="no-border" on:click={addCard} />
     <div class="ml-2" on:click={onClose}>
-        <ActionIcon icon={IconClose} size={'large'} action={onClose} />
+      <ActionIcon icon={IconClose} size={'large'} action={onClose} />
     </div>
-    </div>
+  </div>
 </div>
 
 <style lang="scss">

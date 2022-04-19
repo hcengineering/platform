@@ -73,7 +73,6 @@
       }
     }
   })
-
 </script>
 
 {#if value}
