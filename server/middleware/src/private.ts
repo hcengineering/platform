@@ -17,14 +17,16 @@ import core, { Tx, Doc, Ref, Class, DocumentQuery, FindOptions, ServerStorage, A
 import platform, { PlatformError, Severity, Status } from '@anticrm/platform'
 import { Middleware, SessionContext, TxMiddlewareResult, FindAllMiddlewareResult } from '@anticrm/server-core'
 import { DOMAIN_PREFERENCE } from '@anticrm/server-preference'
+import { BaseMiddleware } from './base'
 
 /**
  * @public
  */
-export class PrivateMiddleware implements Middleware {
+export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   private readonly targetDomains = [DOMAIN_PREFERENCE]
 
-  private constructor (private readonly storage: ServerStorage, private readonly next?: Middleware) {
+  private constructor (storage: ServerStorage, next?: Middleware) {
+    super(storage, next)
   }
 
   static create (storage: ServerStorage, next?: Middleware): PrivateMiddleware {
@@ -48,14 +50,7 @@ export class PrivateMiddleware implements Middleware {
     return [res[0], res[1], res[2] ?? target]
   }
 
-  private async provideTx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    if (this.next !== undefined) {
-      return await this.next.tx(ctx, tx)
-    }
-    return [ctx, tx, undefined]
-  }
-
-  async findAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
+  override async findAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
     let newQuery = query
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
@@ -66,13 +61,6 @@ export class PrivateMiddleware implements Middleware {
       }
     }
     return await this.provideFindAll(ctx, _class, newQuery, options)
-  }
-
-  private async provideFindAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
-    if (this.next !== undefined) {
-      return await this.next.findAll(ctx, _class, query, options)
-    }
-    return [ctx, _class, query, options]
   }
 
   private async getUser (ctx: SessionContext): Promise<Ref<Account>> {

@@ -9,6 +9,10 @@ export function updateCard (client: Client, card: Card, field: string, value: an
   client.update(card, { [field]: value })
 }
 
+export function deleteCard (card: Card, client: Client): void {
+  client.remove(card)
+}
+
 export function isArchived (card: Card): boolean {
   return !!card.isArchived
 }
@@ -44,4 +48,12 @@ export function addCurrentUser (card: Card, client: Client): void {
 
   members.push(employee)
   updateCard(client, card, 'members', members)
+}
+
+export function archiveCard (card: Card, client: Client): void {
+  updateCard(client, card, 'isArchived', true)
+}
+
+export function unarchiveCard (card: Card, client: Client): void {
+  updateCard(client, card, 'isArchived', false)
 }

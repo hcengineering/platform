@@ -27,7 +27,7 @@ import {
   TxResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
-import { PrivateMiddleware } from '@anticrm/middleware'
+import { PrivateMiddleware, ModifiedMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
@@ -103,6 +103,7 @@ export function start (
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
   const middlewares: MiddlewareCreator[] = [
+    ModifiedMiddleware.create,
     PrivateMiddleware.create
   ]
 
