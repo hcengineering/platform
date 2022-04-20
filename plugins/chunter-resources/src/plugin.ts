@@ -14,7 +14,8 @@
 //
 
 import chunter, { chunterId } from '@anticrm/chunter'
-import type { IntlString } from '@anticrm/platform'
+import type { Client, Space } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewAction } from '@anticrm/view'
@@ -26,6 +27,9 @@ export default mergeIds(chunterId, chunter, {
     ChannelHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
     EditChannel: '' as AnyComponent
+  },
+  function: {
+    GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>
   },
   actionImpl: {
     SubscribeMessage: '' as ViewAction,

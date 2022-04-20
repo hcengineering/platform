@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
-  import { classIcon } from '../utils'
+  import { classIcon, getDmName } from '../utils'
   import Header from './Header.svelte'
 
   export let spaceId: Ref<Channel | DirectMessage> | undefined
@@ -35,15 +35,21 @@
     if (channel === undefined) return
     showPanel(chunter.component.EditChannel, channel._id, channel._class, 'right')
   }
+
+  async function getName () {
+    return channel?._class === chunter.class.DirectMessage ? getDmName(client, channel) : channel?.name
+  }
 </script>
 
 <div class="ac-header divide full">
   {#if channel}
-    <Header
-      icon={classIcon(client, channel._class)}
-      label={channel.name}
-      description={'topic' in channel ? channel.topic : ''}
-      on:click={onSpaceEdit}
-    />
+    {#await getName() then name}
+      <Header
+        icon={classIcon(client, channel._class)}
+        label={name || ''}
+        description={'topic' in channel ? channel.topic : ''}
+        on:click={onSpaceEdit}
+      />
+    {/await}
   {/if}
 </div>

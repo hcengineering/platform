@@ -1,5 +1,5 @@
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import { Account, Class, Client, Obj, Ref } from '@anticrm/core'
+import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
+import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
 
 export async function getUser (
@@ -34,4 +34,18 @@ export function isToday (time: number): boolean {
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
+}
+
+export async function getDmName (client: Client, dm: Space): Promise<string> {
+  const myAccId = getCurrentAccount()._id
+
+  const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, {
+    _id: { $in: dm.members as Array<Ref<EmployeeAccount>> }
+  })
+
+  const name = (dm.members.length > 1 ? employeeAccounts.filter((a) => a._id !== myAccId) : employeeAccounts)
+    .map((a) => formatName(a.name))
+    .join(', ')
+
+  return name
 }

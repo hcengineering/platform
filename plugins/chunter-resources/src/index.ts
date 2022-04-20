@@ -34,6 +34,8 @@ import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 
+import { getDmName } from './utils'
+
 export { CommentsPresenter }
 
 async function MarkUnread (object: Message): Promise<void> {
@@ -139,6 +141,9 @@ export default async (): Promise<Resources> => ({
     EditChannel,
     Threads,
     ThreadView
+  },
+  function: {
+    GetDmName: getDmName
   },
   activity: {
     TxCommentCreate,

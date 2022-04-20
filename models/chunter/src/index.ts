@@ -165,6 +165,10 @@ export function createModel (builder: Builder): void {
     })
   })
 
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {
+    getName: chunter.function.GetDmName
+  })
+
   builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,

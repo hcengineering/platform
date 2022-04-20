@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import contact, { Employee, formatName } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import core, { getCurrentAccount, Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard, UserBoxList } from '@anticrm/presentation'
 
@@ -30,7 +30,7 @@
   function createDirectMessage () {
     client.findAll(contact.class.EmployeeAccount, { employee: { $in: employeeIds } }).then((employeeAccounts) => {
       client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-        name: employeeAccounts.map((ea) => formatName(ea.name)).join(', '),
+        name: '',
         description: '',
         private: false,
         archived: false,

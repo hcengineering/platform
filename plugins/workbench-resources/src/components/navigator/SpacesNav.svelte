@@ -110,6 +110,20 @@
 
     return lastView < value
   }
+
+  async function getName (space: Space) {
+    const clazz = hierarchy.getClass(space._class)
+    const nameMixin = hierarchy.as(clazz, view.mixin.SpaceName)
+
+    if (nameMixin.getName) {
+      const getSpaceName = await getResource(nameMixin.getName);
+      const name = await getSpaceName(client, space)
+
+      return name
+    }
+
+    return space.name
+  }
 </script>
 
 <TreeNode label={model.label} parent actions={async () => [addSpace]} indent={'ml-2'}>
@@ -130,18 +144,20 @@
         {/each}
       </TreeNode>
     {:else}
-      <TreeItem
-        indent={'ml-4'}
-        _id={space._id}
-        title={space.name}
-        icon={classIcon(client, space._class)}
-        selected={currentSpace === space._id}
-        actions={() => getActions(space)}
-        bold={isChanged(space, $lastViews)}
-        on:click={() => {
-          selectSpace(space._id)
-        }}
-      />
+      {#await getName(space) then name}
+        <TreeItem
+          indent={'ml-4'}
+          _id={space._id}
+          title={name}
+          icon={classIcon(client, space._class)}
+          selected={currentSpace === space._id}
+          actions={() => getActions(space)}
+          bold={isChanged(space, $lastViews)}
+          on:click={() => {
+            selectSpace(space._id)
+          }}
+        />
+      {/await}
     {/if}
   {/each}
 </TreeNode>
