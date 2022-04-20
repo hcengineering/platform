@@ -22,6 +22,7 @@
   import { Button, EditBox, eventToHTMLElement, IconInfo, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
+  import { ChannelsDropdown } from '..'
   import ChannelsView from './ChannelsView.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
 
@@ -102,29 +103,18 @@
     {/if}
   </svelte:fragment>
   <div class="flex-row-center">
-    <div class="mr-4">
-      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} on:remove={removeAvatar} />
-    </div>
-    <div class="flex-col">
+    <div class="flex-grow flex-col">
       <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
       <EditBox placeholder={contact.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
       <div class="mt-1">
         <EditBox placeholder={contact.string.PersonLocationPlaceholder} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
       </div>
     </div>
+    <div class="ml-4">
+      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} on:remove={removeAvatar} />
+    </div>
   </div>
-  {#if channels.length > 0}
-    <div class="ml-22"><ChannelsView value={channels} size={'small'} on:click /></div>
-  {/if}
-  <svelte:fragment slot="footer">
-    <Button
-      icon={contact.icon.SocialEdit}
-      kind={'transparent'}
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
-          if (result !== undefined) channels = result
-        })
-      }
-    />
+  <svelte:fragment slot="pool">
+    <ChannelsDropdown bind:value={channels} />
   </svelte:fragment>
 </Card>

@@ -1,0 +1,184 @@
+<!--
+// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2021 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import type { Channel, ChannelProvider } from '@anticrm/contact'
+  import contact from '@anticrm/contact'
+  import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
+  import type { Asset, IntlString } from '@anticrm/platform'
+  import { AnyComponent, showPopup, Tooltip, Button, Menu } from '@anticrm/ui'
+  import type { Action, ButtonKind, ButtonSize } from '@anticrm/ui'
+  import presentation from '@anticrm/presentation'
+  import { getChannelProviders } from '../utils'
+  import ChannelsPopup from './ChannelsPopup.svelte'
+  import ChannelEditor from './ChannelEditor.svelte'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
+
+  export let value: AttachedData<Channel>[] | Channel | null
+  export let editable = true
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let length: 'short' | 'full' = 'full'
+  export let reverse: boolean = false
+  export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+
+  interface Item {
+    label: IntlString
+    icon: Asset
+    value: string
+    presenter?: AnyComponent
+    placeholder: IntlString
+    provider: Ref<ChannelProvider>
+    integration: boolean
+    notification: boolean
+  }
+
+  function getProvider (
+    item: AttachedData<Channel>,
+    map: Map<Ref<ChannelProvider>, ChannelProvider>,
+    lastViews: Map<Ref<Doc>, Timestamp>
+  ): any | undefined {
+    const provider = map.get(item.provider)
+    if (provider) {
+      const notification = (item as Channel)._id !== undefined ? isNew((item as Channel), lastViews) : false
+      return {
+        label: provider.label,
+        icon: provider.icon as Asset,
+        value: item.value,
+        presenter: provider.presenter,
+        placeholder: provider.placeholder,
+        provider: provider._id,
+        notification,
+        integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
+      }
+    } else {
+      console.log('provider not found: ', item.provider)
+    }
+  }
+
+  function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+    const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
+    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+  }
+
+  async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
+    if (value === null) {
+      displayItems = []
+      return
+    }
+    const result = []
+    const map = await getChannelProviders()
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const provider = getProvider(item, map, lastViews)
+        if (provider !== undefined) {
+          result.push(provider)
+        }
+      }
+    } else {
+      const provider = getProvider(value, map, lastViews)
+      if (provider !== undefined) {
+        result.push(provider)
+      }
+    }
+    displayItems = result
+    updateMenu()
+  }
+
+  $: if (value) update(value, $lastViews)
+
+  let providers: Map<Ref<ChannelProvider>, ChannelProvider>
+  let displayItems: Item[] = []
+  let actions: Action[] = []
+  let addBtn: HTMLButtonElement
+
+  function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
+    return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
+  }
+  
+  getChannelProviders().then(pr => providers = pr)
+
+  const updateMenu = (): void => {
+    actions = []
+    providers.forEach(pr => {
+      if (displayItems.filter(it => it.provider === pr._id).length == 0) {
+        actions.push({
+          icon: pr.icon ?? contact.icon.SocialEdit,
+          label: pr.label,
+          action: async () => {
+            const provider = getProvider({ provider: pr._id, value: '' }, providers, $lastViews)
+            if (provider !== undefined) {
+              if (displayItems.filter(it => it.provider === pr._id).length === 0) {
+                displayItems = [...displayItems, provider]
+              }
+            }
+          }
+        })
+      }
+    })
+  }
+  $: if (providers) updateMenu()
+
+  const editChannel = (channel: Item, n: number, ev: MouseEvent): void => {
+    showPopup(
+      ChannelEditor,
+      { value: channel.value, placeholder: channel.placeholder },
+      ev.target as HTMLElement,
+      result => {
+        if (result !== undefined) {
+          if (result == null || result === '') {
+            displayItems = displayItems.filter((it, i) => i !== n)
+          } else {
+            displayItems[n].value = result
+            value = filterUndefined(displayItems)
+          }
+          updateMenu()
+          if (actions.length > 0 && addBtn) addBtn.click()
+        }
+        value = filterUndefined(displayItems)
+      }
+    )
+  }
+  const showMenu = (ev: MouseEvent): void => {
+    showPopup(Menu, { actions }, ev.target as HTMLElement)
+  }
+</script>
+
+{#each displayItems as item, i}
+  {#if item.value === ''}
+    <Button
+      icon={item.icon} {kind} {size} click={item.value === ''}
+      on:click={(ev) => { if (editable) editChannel(item, i, ev) }}
+    />
+  {:else}
+    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined}>
+      <Button
+        icon={item.icon} {kind} {size} click={item.value === ''}
+        on:click={(ev) => { if (editable) editChannel(item, i, ev) }}
+      />
+    </Tooltip>
+  {/if}
+{/each}
+{#if actions.length > 0}
+  <Button
+    bind:input={addBtn}
+    icon={contact.icon.SocialEdit}
+    label={presentation.string.AddSocialLinks}
+    {kind} {size}
+    on:click={showMenu}
+  />
+{/if}
