@@ -23,6 +23,6 @@
 
 <Issues
   {currentSpace}
-  statusCategories={new Set([tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started])}
+  statusCategories={[tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started]}
   title={tracker.string.ActiveIssues}
 />

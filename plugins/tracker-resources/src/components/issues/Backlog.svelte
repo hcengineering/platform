@@ -21,4 +21,4 @@
   export let currentSpace: Ref<Team>
 </script>
 
-<Issues title={tracker.string.BacklogIssues} {currentSpace} statusCategories={new Set([tracker.issueStatusCategory.Backlog])} />
+<Issues title={tracker.string.BacklogIssues} {currentSpace} statusCategories={[tracker.issueStatusCategory.Backlog]} />

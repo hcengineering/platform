@@ -23,7 +23,7 @@
   import { getIssueStatuses } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let statusCategories: Set<Ref<IssueStatusCategory>> | undefined = undefined
+  export let statusCategories: Ref<IssueStatusCategory>[] | undefined = undefined
   export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
@@ -54,7 +54,7 @@
   $: getIssueStatuses(currentSpace).then((statuses) => {
     categories = statuses
     filteredCategories = statusCategories
-      ? statuses.filter((status) => !!statusCategories?.has(status.category))
+      ? statuses.filter((status) => !!statusCategories?.includes(status.category))
       : statuses
   })
 </script>
