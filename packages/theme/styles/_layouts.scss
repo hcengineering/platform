@@ -106,6 +106,16 @@ p:last-child { margin-block-end: 0; }
   line-height: 200%;
 }
 
+.float-left-box {
+  box-sizing: border-box;
+  width: 100%;
+  float: left;
+}
+
+.float-left {
+  float: left;
+}
+
 /* Flex */
 .flex { display: flex; }
 .inline-flex { display: inline-flex; }
@@ -342,6 +352,7 @@ p:last-child { margin-block-end: 0; }
 .pt-3 { padding-top: .75rem; }
 .pt-4 { padding-top: 1rem; }
 .pb-2 { padding-bottom: .5rem; }
+.pb-3 { padding-bottom: .75rem; }
 .pb-4 { padding-bottom: 1rem; }
 
 .p-1 { padding: .25rem; }
@@ -391,6 +402,7 @@ p:last-child { margin-block-end: 0; }
 
 .h-full { height: 100%; }
 .h-2 { height: .5rem; }
+.h-4 { height: 1rem; }
 .h-6 { height: 1.5rem; }
 .h-7 { height: 1.75rem; }
 .h-8 { height: 2rem; }
