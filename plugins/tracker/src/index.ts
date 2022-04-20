@@ -34,7 +34,7 @@ export interface IssueStatus extends AttachedDoc {
  */
 export interface IssueStatusCategory extends Doc {
   icon: Asset
-  name: string
+  label: IntlString
   color: number
   defaultStatusName: string
 }

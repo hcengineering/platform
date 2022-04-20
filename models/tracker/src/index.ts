@@ -62,7 +62,7 @@ export class TIssueStatus extends TAttachedDoc implements IssueStatus {
  */
 @Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_TRACKER)
 export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
-  name!: IntlString
+  label!: IntlString
   icon!: Asset
   color!: number
   defaultStatusName!: string
@@ -177,7 +177,7 @@ export function createModel (builder: Builder): void {
     tracker.class.IssueStatusCategory,
     core.space.Model,
     {
-      name: tracker.string.CategoryBacklog,
+      label: tracker.string.CategoryBacklog,
       icon: tracker.icon.CategoryBacklog,
       color: 0,
       defaultStatusName: 'Backlog'
@@ -189,7 +189,7 @@ export function createModel (builder: Builder): void {
     tracker.class.IssueStatusCategory,
     core.space.Model,
     {
-      name: tracker.string.CategoryUnstarted,
+      label: tracker.string.CategoryUnstarted,
       icon: tracker.icon.CategoryUnstarted,
       color: 1,
       defaultStatusName: 'Todo'
@@ -201,7 +201,7 @@ export function createModel (builder: Builder): void {
     tracker.class.IssueStatusCategory,
     core.space.Model,
     {
-      name: tracker.string.CategoryStarted,
+      label: tracker.string.CategoryStarted,
       icon: tracker.icon.CategoryStarted,
       color: 2,
       defaultStatusName: 'In Progress'
@@ -213,7 +213,7 @@ export function createModel (builder: Builder): void {
     tracker.class.IssueStatusCategory,
     core.space.Model,
     {
-      name: tracker.string.CategoryCompleted,
+      label: tracker.string.CategoryCompleted,
       icon: tracker.icon.CategoryCompleted,
       color: 3,
       defaultStatusName: 'Done'
@@ -225,7 +225,7 @@ export function createModel (builder: Builder): void {
     tracker.class.IssueStatusCategory,
     core.space.Model,
     {
-      name: tracker.string.CategoryCanceled,
+      label: tracker.string.CategoryCanceled,
       icon: tracker.icon.CategoryCanceled,
       color: 4,
       defaultStatusName: 'Canceled'
