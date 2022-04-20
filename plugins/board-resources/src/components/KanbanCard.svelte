@@ -17,11 +17,14 @@
   import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import type { WithLookup } from '@anticrm/core'
+  import contact, { Employee } from '@anticrm/contact'
+  import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
+  import { getClient, UserBoxList } from '@anticrm/presentation'
   import { ActionIcon, Component, IconMoreH, Label, showPanel, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
+  import { updateCard } from '../utils/CardUtils'
   import CardLabels from './editor/CardLabels.svelte'
 
   export let object: WithLookup<Card>
@@ -29,6 +32,8 @@
 
   let loadingAttachment = 0
   let dragoverAttachment = false
+
+  const client = getClient()
 
   function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
@@ -40,6 +45,10 @@
 
   function canDropAttachment (e: DragEvent): boolean {
     return !!e.dataTransfer?.items && e.dataTransfer?.items.length > 0
+  }
+
+  function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
+    updateCard(client, object, 'members', e.detail)
   }
 
 </script>
@@ -61,7 +70,7 @@
         style:pointer-events="none"
         class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title" />
     {/if}
-    <CardLabels bind:value={object} isInline={true}/>
+    <CardLabels bind:value={object} isInline={true} />
     <div class="flex-between mb-4" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
       <div class="flex-col">
         <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
@@ -92,6 +101,9 @@
           </div>
         {/if}
       </div>
+      {#if (object.members?.length ?? 0) > 0}
+        <UserBoxList _class={contact.class.Employee} items={object.members} label={board.string.Members} on:update={updateMembers} />
+      {/if}
     </div>
   </div>
 </AttachmentDroppable>
