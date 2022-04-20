@@ -78,6 +78,10 @@
     "Remove": "Remove",
     "NullDate": "M/D/YYYY",
     "ViewProfile": "View profile",
-    "RemoveFromCard": "Remove from card"
+    "RemoveFromCard": "Remove from card",
+    "LinkName": "Link name",
+    "Edit": "Edit",
+    "Update": "Update",
+    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo."
   }
 }
