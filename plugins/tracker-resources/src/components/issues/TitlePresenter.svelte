@@ -16,8 +16,22 @@
   import type { Issue } from '@anticrm/tracker'
 
   export let value: Issue
+  export let shouldUseMargin: boolean = false
 </script>
 
 {#if value}
-  <span class="label nowrap" title={value.title}>{value.title}</span>
+  <span class="titleLabel" class:mTitleLabelWithMargin={shouldUseMargin} title={value.title}>{value.title}</span>
 {/if}
+
+<style lang="scss">
+  .titleLabel {
+    flex-shrink: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &.mTitleLabelWithMargin {
+      margin-left: 0.5rem;
+    }
+  }
+</style>
