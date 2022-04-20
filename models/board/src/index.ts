@@ -425,7 +425,7 @@ export function createModel (builder: Builder): void {
       label: board.string.Watch,
       position: 130,
       type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Watch
+      component: board.component.WatchCard
     },
     board.cardAction.Watch
   )

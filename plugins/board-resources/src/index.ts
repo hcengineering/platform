@@ -36,6 +36,7 @@ import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import EditMembersView from './components/popups/EditMembers.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
+import WatchCard from './components/WatchCard.svelte'
 import {
   addCurrentUser,
   canAddCurrentUser,
@@ -87,7 +88,8 @@ export default async (): Promise<Resources> => ({
     CardLabelPresenter,
     TemplatesIcon,
     KanbanView,
-    BoardPresenter
+    BoardPresenter,
+    WatchCard
   },
   cardActionHandler: {
     Join: addCurrentUser,
