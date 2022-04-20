@@ -103,7 +103,8 @@ export default mergeIds(boardId, board, {
     LinkName: '' as IntlString,
     Edit: '' as IntlString,
     Update: '' as IntlString,
-    DeleteAttachment: '' as IntlString
+    DeleteAttachment: '' as IntlString,
+    SearchMembers: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

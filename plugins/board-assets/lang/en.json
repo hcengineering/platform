@@ -82,6 +82,7 @@
     "LinkName": "Link name",
     "Edit": "Edit",
     "Update": "Update",
-    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo."
+    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo.",
+    "SearchMembers": "Search members"
   }
 }
