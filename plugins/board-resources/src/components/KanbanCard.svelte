@@ -22,6 +22,7 @@
   import { ActionIcon, Component, IconMoreH, Label, showPanel, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
+  import CardLabels from './editor/CardLabels.svelte'
 
   export let object: WithLookup<Card>
   export let dragged: boolean
@@ -60,6 +61,7 @@
         style:pointer-events="none"
         class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title" />
     {/if}
+    <CardLabels bind:value={object} isInline={true}/>
     <div class="flex-between mb-4" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
       <div class="flex-col">
         <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
