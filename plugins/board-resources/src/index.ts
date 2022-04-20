@@ -14,9 +14,14 @@
 // limitations under the License.
 //
 
+import board from './plugin'
+import { UsersPopup } from '@anticrm/presentation'
+import { Ref } from '@anticrm/core'
+import contact, { Employee } from '@anticrm/contact'
 import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
 import { Resources } from '@anticrm/platform'
+import { TxOperations } from '@anticrm/core'
 import CardPresenter from './components/CardPresenter.svelte'
 import BoardPresenter from './components/BoardPresenter.svelte'
 import CreateBoard from './components/CreateBoard.svelte'
@@ -28,6 +33,7 @@ import KanbanView from './components/KanbanView.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
+import EditMembersView from './components/popups/EditMembers.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import {
@@ -52,6 +58,24 @@ async function showCardLabelsPopup (object: Card): Promise<void> {
   showPopup(CardLabelsPopup, { object })
 }
 
+async function showEditMembersPopup(object: Card, client: TxOperations): Promise<void> {
+  showPopup(
+    UsersPopup,
+    {
+      _class: contact.class.Employee,
+      multiSelect: true,
+      allowDeselect: true,
+      selectedUsers: object?.members ?? [],
+      placeholder: board.string.SearchMembers
+    },
+    undefined,
+    () => {},
+    (result: Ref<Employee>[]) => {
+      client.update(object, { members: result })
+    }
+  )
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateBoard,
@@ -72,7 +96,8 @@ export default async (): Promise<Resources> => ({
     Labels: showCardLabelsPopup,
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
-    Delete: deleteCard
+    Delete: deleteCard,
+    Members: showEditMembersPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,

@@ -9,16 +9,16 @@
   export let size: 'large' | 'medium'
   export let menuItems: { title: IntlString; handler: () => void }[][]
 
-  const firstName = getFirstName(value.name)
-  const lastName = getLastName(value.name)
-  const nameLabel = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase()
-  const formattedName = formatName(value.name)
-
   const openPopup = () => {
     const onClose = () => closePopup()
 
     const closePopup = showPopup(EditMember, { member: value, menuItems, onClose })
   }
+
+  $: firstName = getFirstName(value.name)
+  $: lastName = getLastName(value.name)
+  $: nameLabel = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase()
+  $: formattedName = formatName(value.name)
 </script>
 
 {#if value}
