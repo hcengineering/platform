@@ -22,6 +22,7 @@ import { ViewAction } from '@anticrm/view'
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
+    CreateDirectMessage: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
     EditChannel: '' as AnyComponent
@@ -36,14 +37,19 @@ export default mergeIds(chunterId, chunter, {
   },
   string: {
     Channel: '' as IntlString,
+    DirectMessage: '' as IntlString,
     Channels: '' as IntlString,
+    DirectMessages: '' as IntlString,
     CreateChannel: '' as IntlString,
+    NewDirectMessage: '' as IntlString,
     ChannelName: '' as IntlString,
     ChannelNamePlaceholder: '' as IntlString,
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
+    About: '' as IntlString,
     Members: '' as IntlString,
+    NoMembers: '' as IntlString,
     In: '' as IntlString,
     Replies: '' as IntlString,
     Topic: '' as IntlString,

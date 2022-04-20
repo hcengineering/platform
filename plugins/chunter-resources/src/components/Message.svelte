@@ -153,9 +153,9 @@
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
       {#if message.editedOn}
-        <span>    
+        <span>
           <Tooltip label={ui.string.TimeTooltip} props={{ value: getTime(message.editedOn) }}>
-            <Label label={chunter.string.Edited}/>
+            <Label label={chunter.string.Edited} />
           </Tooltip>
         </span>
       {/if}
@@ -171,10 +171,7 @@
         on:message={onMessageEdit}
       />
       <div class="flex-row-reverse gap-2 reverse">
-        <Button
-          label={chunter.string.EditCancel}
-          on:click={() => isEditing = false}
-        />
+        <Button label={chunter.string.EditCancel} on:click={() => (isEditing = false)} />
         <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
       </div>
     {:else}

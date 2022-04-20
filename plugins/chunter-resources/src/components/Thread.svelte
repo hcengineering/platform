@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { Channel, Message, ThreadMessage } from '@anticrm/chunter'
+  import type { ChunterSpace, Message, ThreadMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -152,14 +152,14 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, parent.space, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, parent.space, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }
   let comments: ThreadMessage[] = []
 
-  async function getChannel (_id: Ref<Channel>): Promise<Channel | undefined> {
-    return await client.findOne(chunter.class.Channel, { _id })
+  async function getChannel (_id: Ref<ChunterSpace>): Promise<ChunterSpace | undefined> {
+    return await client.findOne(chunter.class.ChunterSpace, { _id })
   }
 </script>
 
@@ -208,7 +208,7 @@
     overflow: hidden;
     margin: 1rem 1rem 0px;
     background-color: var(--theme-border-modal);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--theme-zone-border);
   }
 

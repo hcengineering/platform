@@ -73,7 +73,7 @@
       (res) => {
         messages = res
         newMessagesPos = newMessagesStart(messages)
-        notificationClient.updateLastView(space, chunter.class.Channel)
+        notificationClient.updateLastView(space, chunter.class.ChunterSpace)
       },
       {
         lookup: {

@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@anticrm/chunter'
+  import type { ChunterSpace } from '@anticrm/chunter'
   import { Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { getCurrentLocation, Icon, locationToUrl } from '@anticrm/ui'
   import chunter from '../plugin'
 
-  export let value: Channel
+  export let value: ChunterSpace
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon

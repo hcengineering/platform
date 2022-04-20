@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
+  import { ChunterSpace } from '@anticrm/chunter'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
@@ -25,10 +25,10 @@
   import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
   import EditChannelSettingsTab from './EditChannelSettingsTab.svelte'
 
-  export let _id: Ref<Channel>
-  export let _class: Ref<Class<Channel>>
+  export let _id: Ref<ChunterSpace>
+  export let _class: Ref<Class<ChunterSpace>>
 
-  let channel: Channel
+  let channel: ChunterSpace
 
   const dispatch = createEventDispatcher()
 
@@ -36,11 +36,15 @@
   const clazz = client.getHierarchy().getClass(_class)
 
   const query = createQuery()
-  $: query.query(chunter.class.Channel, { _id }, (result) => {
+  $: query.query(chunter.class.ChunterSpace, { _id }, (result) => {
     channel = result[0]
   })
 
-  const tabLabels: IntlString[] = [chunter.string.Channel, chunter.string.Members, chunter.string.Settings]
+  const tabLabels: IntlString[] = [
+    chunter.string.About,
+    chunter.string.Members,
+    ...(_class === chunter.class.Channel ? [chunter.string.Settings] : [])
+  ]
   let selectedTabIndex = 0
 </script>
 

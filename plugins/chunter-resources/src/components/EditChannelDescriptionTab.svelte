@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
+  import { ChunterSpace, Channel } from '@anticrm/chunter'
   import type { Class, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { EditBox } from '@anticrm/ui'
@@ -22,10 +22,10 @@
   import chunter from '../plugin'
   import EditChannelDescriptionAttachments from './EditChannelDescriptionAttachments.svelte'
 
-  export let _id: Ref<Channel>
-  export let _class: Ref<Class<Channel>>
+  export let _id: Ref<ChunterSpace>
+  export let _class: Ref<Class<ChunterSpace>>
 
-  export let channel: Channel | undefined
+  export let channel: ChunterSpace | undefined
 
   const client = getClient()
   const clazz = client.getHierarchy().getClass(_class)
@@ -38,15 +38,22 @@
       client.updateDoc(_class, channel!.space, channel!._id, { name: value })
     } else {
       // Just refresh value
-      query.query(chunter.class.Channel, { _id }, (result) => {
+      query.query(chunter.class.ChunterSpace, { _id }, (result) => {
         channel = result[0]
       })
     }
   }
 
+  function isCommonChannel (channel?: ChunterSpace): channel is Channel {
+    return channel?._class === chunter.class.Channel
+  }
+
   function onTopicChange (ev: Event) {
+    if (!isCommonChannel(channel)) {
+      return
+    }
     const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel!, { topic: newTopic })
+    client.update(channel, { topic: newTopic })
   }
 
   function onDescriptionChange (ev: Event) {
@@ -57,31 +64,33 @@
 
 {#if channel}
   <div class="flex-col flex-gap-3">
-    <EditBox
-      label={clazz.label}
-      icon={clazz.icon}
-      bind:value={channel.name}
-      placeholder={clazz.label}
-      maxWidth="39rem"
-      focus
-      on:change={onNameChange}
-    />
-    <EditBox
-      label={chunter.string.Topic}
-      bind:value={channel.topic}
-      placeholder={chunter.string.Topic}
-      maxWidth="39rem"
-      focus
-      on:change={onTopicChange}
-    />
-    <EditBox
-      label={chunter.string.ChannelDescription}
-      bind:value={channel.description}
-      placeholder={chunter.string.ChannelDescription}
-      maxWidth="39rem"
-      focus
-      on:change={onDescriptionChange}
-    />
+    {#if isCommonChannel(channel)}
+      <EditBox
+        label={clazz.label}
+        icon={clazz.icon}
+        bind:value={channel.name}
+        placeholder={clazz.label}
+        maxWidth="39rem"
+        focus
+        on:change={onNameChange}
+      />
+      <EditBox
+        label={chunter.string.Topic}
+        bind:value={channel.topic}
+        placeholder={chunter.string.Topic}
+        maxWidth="39rem"
+        focus
+        on:change={onTopicChange}
+      />
+      <EditBox
+        label={chunter.string.ChannelDescription}
+        bind:value={channel.description}
+        placeholder={chunter.string.ChannelDescription}
+        maxWidth="39rem"
+        focus
+        on:change={onDescriptionChange}
+      />
+    {/if}
     <EditChannelDescriptionAttachments {channel} />
   </div>
 {/if}

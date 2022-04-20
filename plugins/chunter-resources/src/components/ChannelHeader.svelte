@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
+  import { Channel, DirectMessage } from '@anticrm/chunter'
   import type { Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { showPanel } from '@anticrm/ui'
@@ -21,13 +21,13 @@
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
 
-  export let spaceId: Ref<Channel> | undefined
+  export let spaceId: Ref<Channel | DirectMessage> | undefined
 
   const client = getClient()
   const query = createQuery()
-  let channel: Channel | undefined
+  let channel: Channel | DirectMessage | undefined
 
-  $: query.query(chunter.class.Channel, { _id: spaceId }, (result) => {
+  $: query.query(chunter.class.ChunterSpace, { _id: spaceId }, (result) => {
     channel = result[0]
   })
 
@@ -42,7 +42,7 @@
     <Header
       icon={classIcon(client, channel._class)}
       label={channel.name}
-      description={channel.topic}
+      description={'topic' in channel ? channel.topic : ''}
       on:click={onSpaceEdit}
     />
   {/if}
