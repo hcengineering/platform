@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, getObjectValue } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, Loading, showPopup, Spinner, IconMoreV, Tooltip } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'

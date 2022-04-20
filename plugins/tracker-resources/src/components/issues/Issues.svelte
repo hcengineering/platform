@@ -17,7 +17,7 @@
   import type { DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, Team, IssuesGrouping, IssuesOrdering } from '@anticrm/tracker'
-  import { Button, Label, ScrollBox, IconOptions, showPopup } from '@anticrm/ui'
+  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
   import { IntlString } from '@anticrm/platform'
@@ -58,7 +58,7 @@
     )
   })
   $: includedIssuesQuery = getIncludedIssues(includedGroups)
-  
+
   const getIncludedIssues = (groups: Partial<Record<IssuesGroupByKeys, Array<any>>>) => {
     const resultMap: { [p: string]: { $in: any[] } } = {}
 
@@ -102,7 +102,7 @@
     return total
   }
 
-  const handleOptionsUpdated = (result: {orderBy: IssuesOrdering; groupBy: IssuesGrouping} | undefined) => {
+  const handleOptionsUpdated = (result: { orderBy: IssuesOrdering; groupBy: IssuesGrouping } | undefined) => {
     if (result === undefined) {
       return
     }
@@ -115,12 +115,18 @@
     orderingKey = result.orderBy
   }
 
-  const handleOptionsEditorOpened = (event: Event) => {
+  const handleOptionsEditorOpened = (event: MouseEvent) => {
     if (!currentSpace) {
       return
     }
 
-    showPopup(ViewOptionsPopup, { groupBy: groupingKey, orderBy: orderingKey }, event.target, undefined, handleOptionsUpdated)
+    showPopup(
+      ViewOptionsPopup,
+      { groupBy: groupingKey, orderBy: orderingKey },
+      eventToHTMLElement(event),
+      undefined,
+      handleOptionsUpdated
+    )
   }
 </script>
 
