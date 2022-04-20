@@ -102,7 +102,12 @@
         {/if}
       </div>
       {#if (object.members?.length ?? 0) > 0}
-        <UserBoxList _class={contact.class.Employee} items={object.members} label={board.string.Members} on:update={updateMembers} />
+        <UserBoxList
+          _class={contact.class.Employee}
+          items={object.members}
+          label={board.string.Members}
+          noItems={board.string.Members}
+          on:update={updateMembers} />
       {/if}
     </div>
   </div>
