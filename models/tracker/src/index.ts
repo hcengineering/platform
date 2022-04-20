@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, IndexKind, Markup, Ref, DOMAIN_MODEL, Timestamp } from '@anticrm/core'
+import { Domain, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -47,7 +47,7 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
 /**
  * @public
  */
-@Model(tracker.class.IssueStatus, core.class.AttachedDoc, DOMAIN_MODEL)
+@Model(tracker.class.IssueStatus, core.class.AttachedDoc, DOMAIN_TRACKER)
 export class TIssueStatus extends TAttachedDoc implements IssueStatus {
   name!: string
   description?: string
@@ -60,7 +60,7 @@ export class TIssueStatus extends TAttachedDoc implements IssueStatus {
 /**
  * @public
  */
-@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_MODEL)
+@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_TRACKER)
 export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
   name!: IntlString
   icon!: Asset
