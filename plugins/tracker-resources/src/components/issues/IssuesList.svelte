@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, getObjectValue } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, Loading, showPopup, Spinner, IconMoreV, Tooltip } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
@@ -36,7 +35,6 @@
 
   const DOCS_MAX_AMOUNT = 200
   const liveQuery = createQuery()
-  const sort = { modifiedOn: SortingOrder.Descending }
 
   let selectedIssueIds = new Set<Ref<Doc>>()
   let selectedRowIndex: number | undefined
@@ -61,7 +59,7 @@
         dispatch('content', docObjects)
         isLoading = false
       },
-      { sort, ...options, limit: DOCS_MAX_AMOUNT }
+      { ...options, limit: DOCS_MAX_AMOUNT }
     )
   }
 
@@ -239,9 +237,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.03rem;
-      border-radius: 0.25rem;
-      background-color: rgba(247, 248, 248, 0.5);
       opacity: 0;
 
       &:hover {

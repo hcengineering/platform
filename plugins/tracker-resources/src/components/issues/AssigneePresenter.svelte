@@ -20,18 +20,60 @@
   import { eventToHTMLElement, showPopup, Tooltip } from '@anticrm/ui'
 
   import tracker from '../../plugin'
+  import { IntlString, translate } from '@anticrm/platform'
+  import { onMount } from 'svelte'
 
   export let value: WithLookup<Issue>
   export let currentSpace: Ref<Team> | undefined = undefined
-
-  $: employee = value?.$lookup?.assignee as Employee | undefined
-  $: avatar = employee?.avatar
-  $: formattedName = employee?.name ? formatName(employee.name) : ''
+  export let isEditable: boolean = true
+  export let shouldShowLabel: boolean = false
+  export let defaultName: IntlString | undefined = undefined
 
   const client = getClient()
 
+  let defaultNameString: string = ''
+  let assignee: Employee | undefined = undefined
+
+  $: employee = (value?.$lookup?.assignee ?? assignee) as Employee | undefined
+  $: avatar = employee?.avatar
+  $: formattedName = employee?.name ? formatName(employee.name) : defaultNameString
+  $: label = employee ? tracker.string.AssignedTo : tracker.string.AssignTo
+
+  $: findEmployeeById(value.assignee)
+  $: getDefaultNameString = async () => {
+    if (!defaultName) {
+      return
+    }
+
+    const result = await translate(defaultName, {})
+
+    if (!result) {
+      return
+    }
+
+    defaultNameString = result
+  }
+
+  onMount(() => {
+    getDefaultNameString()
+  })
+
+  const findEmployeeById = async (id: Ref<Employee> | null) => {
+    if (!id) {
+      return undefined
+    }
+
+    const current = await client.findOne(contact.class.Employee, { _id: id })
+
+    if (current === undefined) {
+      return
+    }
+
+    assignee = current
+  }
+
   const handleAssigneeChanged = async (result: Employee | null | undefined) => {
-    if (result === undefined) {
+    if (!isEditable || result === undefined) {
       return
     }
 
@@ -47,6 +89,9 @@
   }
 
   const handleAssigneeEditorOpened = async (event: MouseEvent) => {
+    if (!isEditable) {
+      return
+    }
     showPopup(
       UsersPopup,
       {
@@ -61,10 +106,36 @@
   }
 </script>
 
-<Tooltip label={employee ? tracker.string.AssignedTo : tracker.string.AssignTo} props={{ value: formattedName }}>
-  <div class="flex-presenter" on:click={handleAssigneeEditorOpened}>
+{#if isEditable}
+  <Tooltip {label} props={{ value: formattedName }}>
+    <div class="flex-presenter" on:click={handleAssigneeEditorOpened}>
+      <div class="icon">
+        <Avatar size={'x-small'} {avatar} />
+      </div>
+      {#if shouldShowLabel}
+        <div class="label nowrap ml-2">
+          {formattedName}
+        </div>
+      {/if}
+    </div>
+  </Tooltip>
+{:else}
+  <div class="presenter">
     <div class="icon">
       <Avatar size={'x-small'} {avatar} />
     </div>
+    {#if shouldShowLabel}
+      <div class="label nowrap ml-2">
+        {formattedName}
+      </div>
+    {/if}
   </div>
-</Tooltip>
+{/if}
+
+<style lang="scss">
+  .presenter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+</style>

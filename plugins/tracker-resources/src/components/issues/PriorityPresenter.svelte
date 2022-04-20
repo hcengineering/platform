@@ -22,11 +22,13 @@
 
   export let value: Issue
   export let currentSpace: Ref<Team> | undefined = undefined
+  export let isEditable: boolean = true
+  export let shouldShowLabel: boolean = false
 
   const client = getClient()
 
   const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
-    if (newPriority === undefined) {
+    if (!isEditable || newPriority === undefined) {
       return
     }
 
@@ -41,12 +43,22 @@
 </script>
 
 {#if value}
-  <Tooltip direction={'bottom'} label={tracker.string.SetPriority}>
+  {#if isEditable}
+    <Tooltip direction={'bottom'} label={tracker.string.SetPriority}>
+      <PrioritySelector
+        kind={'icon'}
+        {isEditable}
+        {shouldShowLabel}
+        priority={value.priority}
+        onPriorityChange={handlePriorityChanged}
+      />
+    </Tooltip>
+  {:else}
     <PrioritySelector
       kind={'icon'}
-      shouldShowLabel={false}
+      {isEditable}
+      {shouldShowLabel}
       priority={value.priority}
-      onPriorityChange={handlePriorityChanged}
     />
-  </Tooltip>
+  {/if}
 {/if}
