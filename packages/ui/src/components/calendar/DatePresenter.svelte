@@ -30,6 +30,8 @@
   export let labelNull: IntlString = ui.string.NoDate
   export let showIcon = true
   export let shouldShowLabel: boolean = true
+  export let size: 'x-small' | 'small' = 'small'
+  export let kind: 'transparent' | 'primary' = 'primary'
 
   const dispatch = createEventDispatcher()
 
@@ -56,6 +58,10 @@
   class="datetime-button"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
+  class:primary={kind === 'primary'}
+  class:h-6={size === 'small'}
+  class:h-3={size === 'x-small'}
+  class:text-xs={size === 'x-small'}
   on:click={() => {
     if (editable && !opened) {
       opened = true
@@ -75,7 +81,7 @@
 >
   {#if showIcon}
     <div class="btn-icon {icon}" class:buttonIconNoLabel={!shouldShowLabel}>
-      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'} />
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size="full" />
     </div>
   {/if}
   {#if value !== null && value !== undefined}
@@ -105,21 +111,23 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 0.5rem;
     font-weight: 400;
-    min-width: 1.5rem;
     width: auto;
-    height: 1.5rem;
     white-space: nowrap;
-    line-height: 1.5rem;
     color: var(--accent-color);
-    background-color: var(--noborder-bg-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    box-shadow: var(--button-shadow);
-    transition-property: border, background-color, color, box-shadow;
-    transition-duration: 0.15s;
+    
     cursor: default;
+
+    &.primary {
+      padding: 0 0.5rem;
+      min-width: 1.5rem;
+      background-color: var(--noborder-bg-color);
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      box-shadow: var(--button-shadow);
+      transition-property: border, background-color, color, box-shadow;
+      transition-duration: 0.15s;
+    }
 
     &.dateTimeButtonNoLabel {
       padding: 0;
