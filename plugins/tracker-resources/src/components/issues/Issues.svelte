@@ -51,12 +51,17 @@
 
   let categories: WithLookup<IssueStatus>[] = []
   let filteredCategories: WithLookup<IssueStatus>[] = []
-  $: getIssueStatuses(currentSpace).then((statuses) => {
-    categories = statuses
-    filteredCategories = statusCategories
-      ? statuses.filter((status) => !!statusCategories?.includes(status.category))
-      : statuses
-  })
+  $: updateCatgegories(currentSpace, statusCategories)
+  
+  async function updateCatgegories (space: Ref<Team>, issueStatusCategories?: Ref<IssueStatusCategory>[]) {
+    const issueStatuses = await getIssueStatuses(space)
+    const issueStatusCats = statusCategories && new Set(issueStatusCategories)
+  
+    categories = issueStatuses
+    filteredCategories = issueStatusCats
+      ? issueStatuses.filter((status) => issueStatusCats.has(status.category))
+      : issueStatuses
+  }
 </script>
 
 {#if currentTeam}

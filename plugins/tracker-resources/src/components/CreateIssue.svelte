@@ -38,7 +38,7 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: issueStatus ?? ('' as Ref<IssueStatus>),
+    status: '' as Ref<IssueStatus>,
     priority: IssuePriority.NoPriority,
     dueDate: null,
     comments: 0
@@ -50,22 +50,24 @@
 
   $: _space = space
   $: _parent = parent
-  $: if (object.status === '') {
-    getDefaultIssueStatusId(_space).then((statusId) => {
-      if (statusId) {
-        object.status = statusId
-      }
-    })
-  }
+  $: updateIssueStatusId(space, issueStatus)
 
-  async function getDefaultIssueStatusId (teamId: Ref<Team>) {
+  async function updateIssueStatusId (teamId: Ref<Team>, status?: Ref<IssueStatus>) {
+    if (status !== undefined) {
+      object.status = status
+      return
+    }
+
     const team = await client.findOne(
       tracker.class.Team,
       { _id: teamId },
       { lookup: { defaultIssueStatus: tracker.class.IssueStatus } }
     )
+    const teamDefaultIssueStatusId = team?.$lookup?.defaultIssueStatus?._id
 
-    return team?.$lookup?.defaultIssueStatus?._id
+    if (teamDefaultIssueStatusId) {
+      object.status = teamDefaultIssueStatusId
+    }
   }
 
   export function canClose (): boolean {
@@ -73,6 +75,10 @@
   }
 
   async function createIssue () {
+    if (!object.status) {
+      return
+    }
+
     const lastOne = await client.findOne<Issue>(
       tracker.class.Issue,
       { status: object.status },

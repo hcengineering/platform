@@ -37,19 +37,20 @@
   })
 
   let states: TypeState[] | undefined
-  $: if (states === undefined) {
-    getIssueStatuses(currentSpace).then((statuses) => {
-      states = statuses.map((status) => ({
-        _id: status._id,
-        title: status.name,
-        color: status.color ?? status.$lookup?.category?.color ?? 0
-      }))
-    })
-  }
+  $: updateStates(currentSpace)
 
   /* eslint-disable prefer-const */
   /* eslint-disable no-unused-vars */
   let issue: Issue
+
+  async function updateStates (space: Ref<Team>) {
+    const issueStatuses = await getIssueStatuses(space)
+    states = issueStatuses.map((status) => ({
+      _id: status._id,
+      title: status.name,
+      color: status.color ?? status.$lookup?.category?.color ?? 0
+    }))
+  }
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
