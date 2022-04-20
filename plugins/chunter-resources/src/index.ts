@@ -32,6 +32,8 @@ import CreateChannel from './components/CreateChannel.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
+import SavedMessages from './components/SavedMessages.svelte'
+import preference from '@anticrm/preference'
 
 export { CommentsPresenter }
 
@@ -125,6 +127,25 @@ async function UnarchiveChannel (channel: Channel): Promise<void> {
     }
   )
 }
+
+export async function AddToSaved (message: ChunterMessage): Promise<void> {
+  const client = getClient()
+
+  await client.createDoc(chunter.class.SavedMessages, preference.space.Preference, {
+    savedMessageId: message._id,
+    attachedTo: message.space
+  })
+}
+
+export async function DeleteFromSaved (message: ChunterMessage): Promise<void> {
+  const client = getClient()
+
+  const current = await client.findOne(chunter.class.SavedMessages, { savedMessageId: message._id })
+  if (current !== undefined) {
+    await client.remove(current)
+  }
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -136,7 +157,8 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     EditChannel,
     Threads,
-    ThreadView
+    ThreadView,
+    SavedMessages
   },
   activity: {
     TxCommentCreate,

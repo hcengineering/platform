@@ -123,6 +123,13 @@
       ))
   )
 
+  const preferenceQuery = createQuery()
+  let savedIds: Ref<ChunterMessage>[] = []
+
+  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedIds = res.map((r) => r.savedMessageId)
+  })
+
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
@@ -193,7 +200,13 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MsgView message={comment} {employees} thread isPinned={pinnedIds.includes(comment._id)} />
+      <MsgView
+        message={comment}
+        {employees}
+        thread
+        isPinned={pinnedIds.includes(comment._id)}
+        isSaved={savedIds.includes(comment._id)}
+      />
     {/each}
   {/if}
 </div>
