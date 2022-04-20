@@ -31,6 +31,7 @@
   export let loading: boolean = false
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
+  export let highlight: boolean = false
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
@@ -57,16 +58,19 @@
   class:only-icon={iconOnly}
   class:border-radius-1={shape !== 'circle'}
   class:border-radius-4={shape === 'circle'}
+  class:highlight
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click
+  on:focus
+  on:blur
 >
   {#if icon && !loading}
     <div class="btn-icon pointer-events-none"
-      class:mr-1={!iconOnly && kind === 'no-border'}
-      class:mr-2={!iconOnly && kind !== 'no-border'}
+      class:mr-1={!iconOnly && (kind === 'no-border' || shape === 'circle')}
+      class:mr-2={!iconOnly && kind !== 'no-border' && shape !== 'circle'}
       class:resetIconSize
     >
       <Icon {icon} size={'small'}/>
@@ -124,12 +128,14 @@
       transition: color .15s;
       pointer-events: none;
     }
+    &.highlight { box-shadow: inset 0 0 0 1px var(--primary-bg-color); }
     &:hover {
       color: var(--accent-color);
       transition-duration: 0;
       
       .btn-icon { color: var(--caption-color); }
     }
+    &:focus { border-color: var(--primary-edit-border-color) }
     &:disabled {
       color: rgb(var(--caption-color) / 40%);
       cursor: not-allowed;

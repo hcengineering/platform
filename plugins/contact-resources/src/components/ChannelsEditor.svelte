@@ -16,16 +16,23 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
   import contact from '../plugin'
   import Channels from './Channels.svelte'
   import ChannelsView from './ChannelsView.svelte'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let attachedTo: Ref<Doc>
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
   export let editable = true
+
+  export let kind: ButtonKind = 'link-bordered'
+  export let size: ButtonSize = 'small'
+  export let length: 'short' | 'full' = 'full'
+  export let shape: 'circle' | undefined = 'circle'
 
   let channels: Channel[] = []
 
@@ -98,15 +105,16 @@
   }
 </script>
 
-{#if editable}
-  <Channels
-    {channels}
-    {integrations}
-    on:change={(e) => {
-      save(e.detail)
-    }}
-    on:click
-  />
-{:else}
-  <ChannelsView value={channels} size={'small'} {integrations} on:click />
-{/if}
+<ChannelsDropdown
+  value={channels}
+  {kind}
+  {size}
+  {length}
+  {integrations}
+  {editable}
+  {shape}
+  on:change={(e) => {
+    if (editable) save(e.detail)
+  }}
+  on:click
+/>

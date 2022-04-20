@@ -251,10 +251,16 @@ p:last-child { margin-block-end: 0; }
   grid-auto-flow: column;
   justify-content: start;
   align-items: center;
-  column-gap: .75rem;
+  gap: .75rem;
 
   &.reverse { direction: rtl; }
-  &.small-gap { column-gap: .5rem; }
+  &.small-gap { gap: .5rem; }
+  &.xsmall-gap { gap: .375rem; }
+  &.xxsmall-gap { gap: .25rem; }
+  &.short {
+    grid-template-columns: repeat(4, min-content);
+    grid-auto-flow: row;
+  }
 }
 
 .gap-1, .gap-1-5, .gap-2 {
@@ -588,6 +594,7 @@ a.no-line {
 .background-bg-accent { background-color: var(--theme-bg-accent-color); }
 .background-bg-accent-normal { background-color: var(--theme-bg-accent-normal); }
 
+.dark-color { color: var(--dark-color); }
 .content-color { color: var(--content-color); }
 .content-trans-color { color: var(--theme-content-trans-color); }
 .content-accent-color { color: var(--accent-color); }
