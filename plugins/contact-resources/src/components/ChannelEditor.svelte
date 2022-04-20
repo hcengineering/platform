@@ -16,11 +16,11 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import contact from '../plugin'
+  import contact from '@anticrm/contact'
   import { Button, Icon, IconClose, IconBlueCheck, Label } from '@anticrm/ui'
 
   export let value: string = ''
-  export let placeholder: IntlString = contact.string.AtPlaceHolder
+  export let placeholder: IntlString
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
