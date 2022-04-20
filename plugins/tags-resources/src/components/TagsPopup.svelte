@@ -19,7 +19,7 @@
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { TagCategory, TagElement, TagReference } from '@anticrm/tags'
   import { CheckBox, Button, Icon, IconAdd, IconClose, Label, showPopup, getPlatformColor } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
@@ -86,6 +86,7 @@
     if (count > 0) return count.toString()
     return ''
   }
+  onMount(() => { if (searchElement) searchElement.focus() })
 </script>
 
 <div class="selectPopup maxHeight">

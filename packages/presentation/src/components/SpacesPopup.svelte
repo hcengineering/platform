@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { translate } from '@anticrm/platform'
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
   import { createQuery } from '../utils'
@@ -27,16 +27,18 @@
   let objects: Space[] = []
   let phTraslate: string = ''
   $: translate(presentation.string.Search, {}).then(res => { phTraslate = res })
+  let input: HTMLInputElement
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, result => { objects = result })
   afterUpdate(() => { dispatch('update', Date.now()) })
+  onMount(() => { if (input) input.focus() })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input type='text' bind:value={search} placeholder={phTraslate} on:input={() => { }} on:change/>
+    <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:input={() => { }} on:change/>
   </div>
   <div class="scroll">
     <div class="box">
