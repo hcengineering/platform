@@ -49,6 +49,7 @@ input {
   background-color: transparent;
   outline: none;
   color: var(--caption-color);
+  &::placeholder { color: var(--dark-color); }
   &.wrong-input { background-color: var(--system-error-color) !important; }
 }
 audio, canvas, embed, iframe, img, object, svg, video {
