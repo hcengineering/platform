@@ -99,10 +99,10 @@
                 label={action.label}
                 kind={action.kind ?? 'no-border'}
                 justify="left"
-                on:click={async () => {
+                on:click={async (e) => {
                   if (action.handler) {
                     const handler = await getResource(action.handler)
-                    handler(value, client)
+                    handler(value, client, e)
                   }
                 }}
               />

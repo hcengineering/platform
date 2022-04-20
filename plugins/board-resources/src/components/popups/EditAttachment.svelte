@@ -2,12 +2,12 @@
   import { createEventDispatcher } from 'svelte'
   import { Label, Button, ActionIcon, IconClose, EditBox } from '@anticrm/ui'
   import board from '../../plugin'
-  import { getClient } from '@anticrm/presentation';
-  import { Attachment } from '@anticrm/attachment';
+  import { getClient } from '@anticrm/presentation'
+  import { Attachment } from '@anticrm/attachment'
 
   export let object: Attachment
 
-  let {name} = object
+  let { name } = object
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -19,8 +19,8 @@
     <div class="flex-center flex-grow">
       <Label label={board.string.Edit}/>
     </div>
-    <div class="close-icon">
-      <ActionIcon icon={IconClose} size={'small'} action={() => {dispatch("close")}} />
+    <div class="close-icon mr-1">
+      <ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} />
     </div>
   </div>
   <div class="ap-space bottom-divider"/>
@@ -36,7 +36,7 @@
       kind={'primary'}
       on:click={() => {
         if (!name) return
-        client.update(object, {name})
+        client.update(object, { name })
         dispatch('close')
       }}
     />

@@ -20,6 +20,7 @@ import { Ref } from '@anticrm/core'
 import contact, { Employee } from '@anticrm/contact'
 import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
+import type { TxOperations as Client } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { TxOperations } from '@anticrm/core'
 import CardPresenter from './components/CardPresenter.svelte'
@@ -46,17 +47,18 @@ import {
   unarchiveCard,
   deleteCard
 } from './utils/CardUtils'
+import { getPopupAlignment } from './utils/PopupUtils'
 
-async function showMoveCardPopup (object: Card): Promise<void> {
-  showPopup(MoveView, { object })
+async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(MoveView, { object }, getPopupAlignment(e))
 }
 
-async function showDatePickerPopup (object: Card): Promise<void> {
-  showPopup(DateRangePicker, { object })
+async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(DateRangePicker, { object }, getPopupAlignment(e))
 }
 
-async function showCardLabelsPopup (object: Card): Promise<void> {
-  showPopup(CardLabelsPopup, { object })
+async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
 }
 
 async function showEditMembersPopup(object: Card, client: TxOperations): Promise<void> {
