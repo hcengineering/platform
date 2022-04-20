@@ -42,6 +42,7 @@
     "@anticrm/task-resources": "~0.6.0",
     "@anticrm/core": "~0.6.16",
     "@anticrm/notification": "~0.6.0",
+    "@anticrm/notification-resources": "~0.6.0",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/platform": "~0.6.5",
     "@anticrm/presentation": "~0.6.2",
