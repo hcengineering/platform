@@ -18,6 +18,7 @@
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import { Button, showPopup, TimeSince, closeTooltip } from '@anticrm/ui'
   import board from '../../plugin'
+import { getPopupAlignment } from '../../utils/PopupUtils';
   import EditAttachment from '../popups/EditAttachment.svelte';
   import RemoveAttachment from '../popups/RemoveAttachment.svelte';
 
@@ -57,8 +58,8 @@
     <div class="fs-title">{trimFilename(value.name)}</div>
     <div class="flex-row-center">
       <TimeSince value={value.lastModified}/>
-      <Button label={board.string.Edit} on:click={() => {showPopup(EditAttachment, {object: value})}} kind="transparent"/>
-      <Button label={board.string.Delete} on:click={() => {showPopup(RemoveAttachment, {object: value})}} kind="transparent"/>
+      <Button label={board.string.Edit} on:click={(e) => {showPopup(EditAttachment, {object: value}, getPopupAlignment(e))}} kind="transparent"/>
+      <Button label={board.string.Delete} on:click={(e) => {showPopup(RemoveAttachment, {object: value}, getPopupAlignment(e))}} kind="transparent"/>
     </div>
   </div>
 </div>

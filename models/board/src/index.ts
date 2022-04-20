@@ -117,7 +117,7 @@ export class TCardAction extends TDoc implements CardAction {
   label!: IntlString
   position!: number
   type!: string
-  handler?: Resource<(card: Card, client: Client) => void>
+  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
 

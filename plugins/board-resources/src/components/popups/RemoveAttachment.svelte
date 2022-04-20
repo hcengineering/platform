@@ -17,7 +17,7 @@
     <div class="flex-center flex-grow">
       <Label label={board.string.Delete} />
     </div>
-    <div class="close-icon">
+    <div class="close-icon mr-1">
       <ActionIcon icon={IconClose} size={'small'} action={() => {dispatch("close")}} />
     </div>
   </div>
