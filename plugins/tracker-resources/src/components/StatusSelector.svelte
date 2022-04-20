@@ -22,6 +22,7 @@
   export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
   export let onStatusChange: ((newStatus: IssueStatus | undefined) => void) | undefined = undefined
+  export let isEditable: boolean = true
 
   const statusesInfo = [
     IssueStatus.Backlog,
@@ -32,6 +33,9 @@
   ].map((s) => ({ id: s, ...issueStatuses[s] }))
 
   const handleStatusEditorOpened = (event: MouseEvent) => {
+    if (!isEditable) {
+      return
+    }
     showPopup(
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
@@ -51,12 +55,12 @@
     on:click={handleStatusEditorOpened}
   />
 {:else if kind === 'icon'}
-  <div class="flex-presenter" on:click={handleStatusEditorOpened}>
+  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
     <div class="statusIcon">
       <Icon icon={issueStatuses[status].icon} size={'small'} />
     </div>
     {#if shouldShowLabel}
-      <div class="label nowrap">
+      <div class="label nowrap ml-2">
         <Label label={issueStatuses[status].label} />
       </div>
     {/if}
@@ -64,6 +68,12 @@
 {/if}
 
 <style lang="scss">
+  .presenter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
   .statusIcon {
     width: 1rem;
     height: 1rem;

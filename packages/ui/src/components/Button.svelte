@@ -32,6 +32,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let focus: boolean = false
+  export let click: boolean = false
   export let title: string | undefined = undefined
 
   export let input: HTMLButtonElement | undefined = undefined
@@ -42,6 +43,10 @@
     if (focus && input) {
       input.focus()
       focus = false
+    }
+    if (click && input) {
+      input.click()
+      click = false
     }
   })
 </script>
@@ -128,6 +133,8 @@
     &:disabled {
       color: rgb(var(--caption-color) / 40%);
       cursor: not-allowed;
+
+      .btn-icon { opacity: .5; }
     }
 
     &.jf-left { justify-content: flex-start; }

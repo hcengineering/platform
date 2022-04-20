@@ -99,7 +99,11 @@ export default mergeIds(boardId, board, {
     Remove: '' as IntlString,
     NullDate: '' as IntlString,
     ViewProfile: '' as IntlString,
-    RemoveFromCard: '' as IntlString
+    RemoveFromCard: '' as IntlString,
+    LinkName: '' as IntlString,
+    Edit: '' as IntlString,
+    Update: '' as IntlString,
+    DeleteAttachment: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

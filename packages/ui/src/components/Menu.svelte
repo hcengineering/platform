@@ -39,14 +39,14 @@
       {/if}
       {#each actions as action}
         <div
-          class="ap-menuItem flex-row-center"
+          class="ap-menuItem flex-row-center withIcon"
           on:click={(evt) => {
             dispatch('close')
             action.action(evt, ctx)
           }}
         >
           {#if action.icon}
-            <Icon icon={action.icon} size={'small'} />
+            <div class="icon"><Icon icon={action.icon} size={'small'} /></div>
           {/if}
           <div class="ml-3 pr-1"><Label label={action.label} /></div>
         </div>
@@ -55,3 +55,10 @@
   </div>
   <div class="ap-space" />
 </div>
+
+<style lang="scss">
+  .withIcon {
+    .icon { color: var(--content-color); }
+    &:hover .icon { color: var(--accent-color); }
+  }
+</style>

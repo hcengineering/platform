@@ -22,6 +22,7 @@ import Channels from './components/Channels.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
 import ChannelsView from './components/ChannelsView.svelte'
+import ChannelsDropdown from './components/ChannelsDropdown.svelte'
 import ContactPresenter from './components/ContactPresenter.svelte'
 import Contacts from './components/Contacts.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
@@ -38,7 +39,7 @@ import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svel
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationSelector from './components/OrganizationSelector.svelte'
 
-export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector }
+export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector, ChannelsDropdown }
 
 async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
   return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({

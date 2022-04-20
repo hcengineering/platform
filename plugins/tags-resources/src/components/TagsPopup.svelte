@@ -151,29 +151,6 @@
 </div>
 
 <style lang="scss">
-  .clear-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: .75rem;
-    height: .75rem;
-    border-radius: 50%;
-
-    .icon {
-      width: .625rem;
-      height: .625rem;
-    }
-
-    &.show {
-      color: var(--content-color);
-      background-color: var(--button-border-color);
-      cursor: pointer;
-      &:hover {
-        color: var(--accent-color);
-        background-color: var(--button-border-hover);
-      }
-    }
-  }
   .counter {
     padding-right: .125rem;
     min-width: 1.5rem;
