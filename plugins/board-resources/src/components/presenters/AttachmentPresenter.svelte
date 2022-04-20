@@ -12,22 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import { Button, showPopup, TimeSince, closeTooltip } from '@anticrm/ui'
   import board from '../../plugin'
-import { getPopupAlignment } from '../../utils/PopupUtils';
-  import EditAttachment from '../popups/EditAttachment.svelte';
-  import RemoveAttachment from '../popups/RemoveAttachment.svelte';
+  import { getPopupAlignment } from '../../utils/PopupUtils'
+  import EditAttachment from '../popups/EditAttachment.svelte'
+  import RemoveAttachment from '../popups/RemoveAttachment.svelte'
 
   export let value: Attachment
 
   const maxLenght: number = 30
-  const trimFilename = (fname: string): string => (fname.length > maxLenght)
-    ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-    : fname
+  const trimFilename = (fname: string): string =>
+    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -40,10 +38,11 @@ import { getPopupAlignment } from '../../utils/PopupUtils';
   }
 
   const handleClick = openEmbedded(value.type)
-  ? () => {
-    closeTooltip();
-    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
-  } : undefined
+    ? () => {
+        closeTooltip()
+        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+      }
+    : undefined
 </script>
 
 <div class="flex-row-center">
@@ -52,14 +51,26 @@ import { getPopupAlignment } from '../../utils/PopupUtils';
       <img src={getFileUrl(value.file)} alt={value.name} />
     </div>
   {:else}
-    <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">{iconLabel(value.name)}</div></a>
+    <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">
+        {iconLabel(value.name)}
+      </div></a>
   {/if}
   <div class="flex-col-centre info">
     <div class="fs-title">{trimFilename(value.name)}</div>
-    <div class="flex-row-center">
-      <TimeSince value={value.lastModified}/>
-      <Button label={board.string.Edit} on:click={(e) => {showPopup(EditAttachment, {object: value}, getPopupAlignment(e))}} kind="transparent"/>
-      <Button label={board.string.Delete} on:click={(e) => {showPopup(RemoveAttachment, {object: value}, getPopupAlignment(e))}} kind="transparent"/>
+    <div class="flex-row-center flex-gap-1">
+      <TimeSince value={value.lastModified} />
+      <Button
+        label={board.string.Edit}
+        on:click={(e) => {
+          showPopup(EditAttachment, { object: value }, getPopupAlignment(e))
+        }}
+        kind="transparent" />
+      <Button
+        label={board.string.Delete}
+        on:click={(e) => {
+          showPopup(RemoveAttachment, { object: value }, getPopupAlignment(e))
+        }}
+        kind="transparent" />
     </div>
   </div>
 </div>
@@ -74,8 +85,8 @@ import { getPopupAlignment } from '../../utils/PopupUtils';
     font-size: 1rem;
     color: var(--primary-button-color);
     background-color: var(--primary-button-enabled);
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
   }
   .content {
     width: 8rem;
