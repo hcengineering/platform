@@ -52,7 +52,6 @@
         <div class="mr-2">
           <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
         </div>
-        <ActionIcon label={undefined} icon={IconMoreH} size={'small'} />
       {/if}
     </div>
   </div>

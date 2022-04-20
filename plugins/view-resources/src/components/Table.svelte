@@ -93,8 +93,9 @@
     selection = row
     if (!checkedSet.has(object._id)) {
       check(objects, false)
+      checked = []
     }
-    const items = $selectionStore.length > 0 ? $selectionStore : object
+    const items = checked.length > 0 ? checked : object
     showPopup(Menu, { object: items, baseMenuClass }, {
       getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
     }, () => {
