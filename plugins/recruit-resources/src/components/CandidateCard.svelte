@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import contact, { Channel, formatName } from '@anticrm/contact'
-  import { ChannelsView } from '@anticrm/contact-resources'
+  import { ChannelsEditor } from '@anticrm/contact-resources'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import type { Candidate } from '@anticrm/recruit'
   import { Component, Label, showPanel } from '@anticrm/ui'
@@ -54,9 +54,11 @@
         <Component is={chunter.component.CommentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
         <Component is={attachment.component.AttachmentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
       </div>
-      <div class='flex flex-grow'>
-        <ChannelsView value={channels} size={'small'} length={'short'} on:click />
-      </div>
+      {#if channels[0]}
+        <div class='flex flex-grow'>
+          <ChannelsEditor attachedTo={channels[0].attachedTo} attachedClass={channels[0].attachedToClass} length={'short'} editable={false} />
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
@@ -95,7 +97,7 @@
     }
     .footer { 
       margin-top: 1.5rem;
-      overflow: hidden;
+      // overflow: hidden;
     }
   }
 </style>
