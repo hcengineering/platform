@@ -20,7 +20,7 @@
   import { Button, EditBox, eventToHTMLElement, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
-  import ChannelsView from './ChannelsView.svelte'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
 
   export function canClose (): boolean {
@@ -70,18 +70,7 @@
       maxWidth={'37.5rem'} kind={'large-style'} focus
     />
   </div>
-  {#if channels.length > 0}
-    <ChannelsView value={channels} size={'small'} on:click />
-  {/if}
-  <svelte:fragment slot="footer">
-    <Button
-      icon={contact.icon.SocialEdit}
-      kind={'transparent'}
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, eventToHTMLElement(ev), (result) => {
-          if (result !== undefined) channels = result
-        })
-      }
-    />
+  <svelte:fragment slot="pool">
+    <ChannelsDropdown bind:value={channels} editable />
   </svelte:fragment>
 </Card>

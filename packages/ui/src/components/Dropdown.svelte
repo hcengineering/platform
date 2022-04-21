@@ -19,7 +19,7 @@
 
   import Label from './Label.svelte'
   import Icon from './Icon.svelte'
-  import { showPopup, Button, Tooltip, DropdownPopup } from '..'
+  import { showPopup, Button, Tooltip, DropdownPopup, closePopup } from '..'
   import type { AnySvelteComponent, ListItem, TooltipAlignment, ButtonKind, ButtonSize } from '../types'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined

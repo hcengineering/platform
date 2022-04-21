@@ -99,21 +99,21 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1}>
-    <EditBox
-      label={lead.string.LeadName}
-      bind:value={title}
-      icon={lead.icon.Lead}
-      placeholder={lead.string.LeadPlaceholder}
-      maxWidth={'16rem'}
-      focus
-    />
+  <EditBox
+    label={lead.string.LeadName}
+    bind:value={title}
+    icon={lead.icon.Lead}
+    placeholder={lead.string.LeadPlaceholder}
+    maxWidth={'16rem'}
+    focus
+  />
+  <svelte:fragment slot="pool">
     <UserBox
       _class={contact.class.Contact}
       label={lead.string.Customer}
       placeholder={lead.string.SelectCustomer}
       bind:value={customer}
-      kind={'link'} size={'x-large'} justify={'left'} width={'100%'} labelDirection={'left'}
+      kind={'no-border'} size={'small'}
     />
-  </Grid>
+  </svelte:fragment>
 </Card>
