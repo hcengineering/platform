@@ -303,7 +303,7 @@ export class FullTextIndex implements WithFind {
       const isMixinAttr = this.hierarchy.isMixin(attr.attributeOf)
       if (isMixinAttr) {
         attrs[(attr.attributeOf as string) + '.' + attr.name] =
-          ((doc as any)[attr.attributeOf] ?? {})[attr.name]?.toString() ?? ''
+          (doc as any)[attr.attributeOf]?.[attr.name]?.toString() ?? ''
       } else {
         attrs[attr.name] = (doc as any)[attr.name]?.toString() ?? ''
       }
