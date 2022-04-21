@@ -21,11 +21,11 @@
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, IconEdit, Label, showPanel, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { Button, Component, EditBox, IconEdit, Label, showPanel, showPopup } from '@anticrm/ui'
   import board from '../plugin'
-  import { hasDate } from '../utils/CardUtils'
+  import { hasDate, updateCard } from '../utils/CardUtils'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
+  import CardInlineActions from './editor/CardInlineActions.svelte'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
 
@@ -37,9 +37,20 @@
   let ref: HTMLElement
 
   const client = getClient()
+  let isEditMode = false
 
-  function showMenu (): void {
-    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, { h: 'right', v: 'top' }))
+  function exitEditMode (): void {
+    isEditMode = false
+  }
+
+  function enterEditMode (): void {
+    isEditMode = true
+    showPopup(
+      CardInlineActions,
+      { value: object },
+      getElementPopupAlignment(ref, { h: 'right', v: 'top' }),
+      exitEditMode
+    )
   }
 
   function showCard () {
@@ -80,22 +91,34 @@
     <div class="ml-1">
       <CardLabels bind:value={object} isInline={true} />
     </div>
-    <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
-      <Button icon={IconEdit} kind="transparent" on:click={showMenu}/>
-    </div>
-    <div class="flex-between pb-2 ml-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'} on:click={showCard}>
-      <div class="flex-row-center w-full" >
-        <div class="fs-title cursor-pointer">{object.title}</div>
-        <div class="ml-2">
-          <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-        </div>
+    {#if !isEditMode}
+      <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
+        <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
       </div>
+    {/if}
+    <div class="flex-between pb-2 ml-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'} on:click={showCard}>
+      {#if isEditMode}
+        <div class="fs-title text-lg">
+          <EditBox
+            bind:value={object.title}
+            maxWidth="39rem"
+            focus
+            on:change={() => updateCard(client, object, 'title', object?.title)} />
+        </div>
+      {:else}
+        <div class="flex-row-center w-full">
+          <div class="fs-title cursor-pointer">{object.title}</div>
+          <div class="ml-2">
+            <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+          </div>
+        </div>
+      {/if}
     </div>
     <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
       <div class="float-left-box">
         {#if object.date && hasDate(object)}
           <div class="float-left ml-1">
-          <DatePresenter value={object.date} isInline={true} size="x-small" on:update={updateDate} />
+            <DatePresenter value={object.date} isInline={true} size="x-small" on:update={updateDate} />
           </div>
         {/if}
         {#if (object.attachments ?? 0) > 0}

@@ -342,7 +342,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
-      isInline: false,
+      isInline: true,
       label: board.string.Cover,
       position: 70,
       type: board.cardActionType.Cover,
