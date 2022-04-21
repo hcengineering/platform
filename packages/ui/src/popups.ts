@@ -128,7 +128,6 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
     if (alignment.position.h === 'right') {
       modalHTML.style.left = `calc(${rect.right}px + .125rem)`
     } else if (alignment.position.h === 'left') {
-      console.log(rect.left)
       modalHTML.style.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
     }
   } else {
