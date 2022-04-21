@@ -116,7 +116,7 @@
   {space}
   {search}
   {options}
-  query={{ doneState: null }}
+  query={{ doneState: null, isArchived: {$nin: [true]} }}
   {states}
   fieldName={'state'}
   rankFieldName={'rank'}
