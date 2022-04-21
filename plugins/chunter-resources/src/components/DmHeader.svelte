@@ -13,37 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
+  import { DirectMessage } from '@anticrm/chunter'
   import type { Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
-  import { classIcon } from '../utils'
+  import { classIcon, getDmName } from '../utils'
   import Header from './Header.svelte'
 
-  export let spaceId: Ref<Channel> | undefined
+  export let spaceId: Ref<DirectMessage> | undefined
 
   const client = getClient()
   const query = createQuery()
-  let channel: Channel | undefined
+  let dm: DirectMessage | undefined
 
-  $: query.query(chunter.class.Channel, { _id: spaceId }, (result) => {
-    channel = result[0]
+  $: query.query(chunter.class.DirectMessage, { _id: spaceId }, (result) => {
+    dm = result[0]
   })
 
   async function onSpaceEdit (): Promise<void> {
-    if (channel === undefined) return
-    showPanel(chunter.component.EditChannel, channel._id, channel._class, 'right')
+    if (dm === undefined) return
+    showPanel(chunter.component.EditChannel, dm._id, dm._class, 'right')
   }
 </script>
 
 <div class="ac-header divide full">
-  {#if channel}
-    <Header
-      icon={classIcon(client, channel._class)}
-      label={channel.name}
-      description={channel.topic}
-      on:click={onSpaceEdit}
-    />
+  {#if dm}
+    {#await getDmName(client, dm) then name}
+      <Header icon={classIcon(client, dm._class)} label={name} description={''} on:click={onSpaceEdit} />
+    {/await}
   {/if}
 </div>

@@ -155,10 +155,6 @@ export function createModel (builder: Builder): void {
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
       editor: chunter.component.EditChannel
     })
-
-    builder.mixin(spaceClass, core.class.Class, view.mixin.SpaceHeader, {
-      header: chunter.component.ChannelHeader
-    })
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {
@@ -171,6 +167,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.ChannelPresenter
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.DmHeader
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.ChannelHeader
   })
 
   builder.createDoc(

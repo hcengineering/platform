@@ -26,6 +26,7 @@ import ChannelPresenter from './components/ChannelPresenter.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
+import DmHeader from './components/DmHeader.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
@@ -135,6 +136,7 @@ export default async (): Promise<Resources> => ({
     CreateChannel,
     CreateDirectMessage,
     ChannelHeader,
+    DmHeader,
     ChannelView,
     CommentPresenter,
     CommentsPresenter,
