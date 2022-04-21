@@ -15,7 +15,7 @@
   const preferenceQuery = createQuery()
 
   preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
-    savedIds = res.map((r) => r.savedMessageId)
+    savedIds = res.map((r) => r.attachedTo)
   })
 
   $: savedIds &&

@@ -87,7 +87,7 @@ export interface Backlink extends Comment {
  * @public
  */
 export interface SavedMessages extends Preference {
-  savedMessageId: Ref<ChunterMessage>
+  attachedTo: Ref<ChunterMessage>
 }
 
 /**

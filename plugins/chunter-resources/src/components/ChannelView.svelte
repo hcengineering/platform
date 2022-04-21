@@ -79,7 +79,7 @@
   const preferenceQuery = createQuery()
   let savedIds: Ref<ChunterMessage>[] = []
   preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
-    savedIds = res.map((r) => r.savedMessageId)
+    savedIds = res.map((r) => r.attachedTo)
   })
 </script>
 

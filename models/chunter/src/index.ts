@@ -103,8 +103,8 @@ export class TBacklink extends TComment implements Backlink {
 
 @Model(chunter.class.SavedMessages, preference.class.Preference)
 export class TSavedMessages extends TPreference implements SavedMessages {
-  @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.SavedMessages)
-  savedMessageId!: Ref<ChunterMessage>
+  @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
+  attachedTo!: Ref<ChunterMessage>
 }
 
 export function createModel (builder: Builder): void {

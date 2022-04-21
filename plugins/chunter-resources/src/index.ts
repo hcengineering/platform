@@ -132,15 +132,14 @@ export async function AddToSaved (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   await client.createDoc(chunter.class.SavedMessages, preference.space.Preference, {
-    savedMessageId: message._id,
-    attachedTo: message.space
+    attachedTo: message._id
   })
 }
 
 export async function DeleteFromSaved (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
-  const current = await client.findOne(chunter.class.SavedMessages, { savedMessageId: message._id })
+  const current = await client.findOne(chunter.class.SavedMessages, { attachedTo: message._id })
   if (current !== undefined) {
     await client.remove(current)
   }
