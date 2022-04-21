@@ -32,7 +32,7 @@
       client.createDoc(chunter.class.DirectMessage, core.space.Space, {
         name: '',
         description: '',
-        private: false,
+        private: true,
         archived: false,
         members: [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)]
       })
