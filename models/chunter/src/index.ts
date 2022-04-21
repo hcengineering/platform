@@ -148,10 +148,6 @@ export function createModel (builder: Builder): void {
       }
     })
 
-    builder.mixin(spaceClass, core.class.Class, view.mixin.AttributePresenter, {
-      presenter: chunter.component.ChannelPresenter
-    })
-
     builder.mixin(spaceClass, core.class.Class, notification.mixin.SpaceLastEdit, {
       lastEditField: 'lastMessage'
     })
@@ -167,6 +163,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {
     getName: chunter.function.GetDmName
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.DmPresenter
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.ChannelPresenter
   })
 
   builder.createDoc(

@@ -23,6 +23,7 @@ import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
+import DmPresenter from './components/DmPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import CommentInput from './components/CommentInput.svelte'
@@ -138,6 +139,7 @@ export default async (): Promise<Resources> => ({
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    DmPresenter,
     EditChannel,
     Threads,
     ThreadView

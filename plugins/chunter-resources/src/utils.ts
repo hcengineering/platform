@@ -1,6 +1,9 @@
 import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
 import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
+import { getCurrentLocation, locationToUrl } from '@anticrm/ui'
+
+import chunter from './plugin'
 
 export async function getUser (
   client: Client,
@@ -48,4 +51,15 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
     .join(', ')
 
   return name
+}
+
+export function getSpaceLink (id: Ref<Space>): string {
+  const loc = getCurrentLocation()
+
+  loc.path[1] = chunter.app.Chunter
+  loc.path[2] = id
+  loc.path.length = 3
+  loc.fragment = undefined
+
+  return locationToUrl(loc)
 }

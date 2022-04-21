@@ -24,6 +24,7 @@
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
+  import DmPresenter from './DmPresenter.svelte'
   import MsgView from './Message.svelte'
 
   const client = getClient()
@@ -166,8 +167,10 @@
 <div class="ml-8 mt-4">
   {#if parent}
     {#await getChannel(parent.space) then channel}
-      {#if channel}
+      {#if channel?._class === chunter.class.Channel}
         <ChannelPresenter value={channel} />
+      {:else if channel}
+        <DmPresenter dm={channel} />
       {/if}
     {/await}
     {#await getParticipants(comments, parent, employees) then participants}
