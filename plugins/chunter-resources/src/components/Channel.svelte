@@ -26,6 +26,7 @@
 
   export let space: Ref<Space> | undefined
   export let pinnedIds: Ref<ChunterMessage>[]
+  export let savedIds: Ref<ChunterMessage>[]
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -113,7 +114,13 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MessageComponent {message} {employees} on:openThread isPinned={pinnedIds.includes(message._id)} />
+      <MessageComponent
+        {message}
+        {employees}
+        on:openThread
+        isPinned={pinnedIds.includes(message._id)}
+        isSaved={savedIds.includes(message._id)}
+      />
     {/each}
   {/if}
 </div>

@@ -22,7 +22,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
-    "@rushstack/heft": "^0.41.1"
+    "@rushstack/heft": "^0.44.13"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.16",
@@ -39,6 +39,7 @@
     "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/model-notification": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/model-preference": "~0.6.0"
   }
 }

@@ -75,6 +75,12 @@
     },
     { limit: 1 }
   )
+
+  const preferenceQuery = createQuery()
+  let savedIds: Ref<ChunterMessage>[] = []
+  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedIds = res.map((r) => r.attachedTo)
+  })
 </script>
 
 <PinnedMessages {space} {pinnedIds} />
@@ -84,6 +90,7 @@
     openThread(e.detail)
   }}
   {pinnedIds}
+  {savedIds}
 />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />

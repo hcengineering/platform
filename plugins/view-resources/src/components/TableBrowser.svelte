@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { BuildModelKey } from '@anticrm/view'
+import { onMount } from 'svelte'
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
@@ -45,7 +46,12 @@
       }
     }
   )
+  
+  onMount(() => {
+    (document.activeElement as HTMLElement)?.blur()
+  })
 </script>
+
 
 <ActionContext
   context={{
