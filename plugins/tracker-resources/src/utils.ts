@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-import { FindResult, Ref } from '@anticrm/core'
+import { FindResult, Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import { getClient } from '@anticrm/presentation'
 import { IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
-import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
-import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import tracker from './plugin'
 
 export interface NavigationItem {
@@ -36,33 +34,6 @@ export interface Selection {
   currentSpecial?: string
 }
 
-/**
- * @public
- */
-export const genRanks = (count: number): Generator<string, void, unknown> =>
-  (function * () {
-    const sys = new LexoNumeralSystem36()
-    const base = 36
-    const max = base ** 6
-    const gap = LexoDecimal.parse(Math.trunc(max / (count + 2)).toString(base), sys)
-    let cur = LexoDecimal.parse('0', sys)
-
-    for (let i = 0; i < count; i++) {
-      cur = cur.add(gap)
-      yield new LexoRank(LexoRankBucket.BUCKET_0, cur).toString()
-    }
-  })()
-
-/**
- * @public
- */
-export const calcRank = (prev?: { rank: string }, next?: { rank: string }): string => {
-  const a = prev?.rank !== undefined ? LexoRank.parse(prev.rank) : LexoRank.min()
-  const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
-
-  return a.between(b).toString()
-}
-
 export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {
   [IssuePriority.NoPriority]: { icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
   [IssuePriority.Urgent]: { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
@@ -77,6 +48,9 @@ export async function getIssueStatuses (teamId: Ref<Team>): Promise<FindResult<I
   return await client.findAll(
     tracker.class.IssueStatus,
     { attachedTo: teamId },
-    { lookup: { category: tracker.class.IssueStatusCategory } }
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
   )
 }

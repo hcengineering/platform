@@ -15,7 +15,7 @@
 
 import core, { generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
+import { IssueStatus, IssueStatusCategory, Team, genRanks } from '@anticrm/tracker'
 import tracker from './plugin'
 
 enum DeprecatedIssueStatus {
@@ -49,8 +49,11 @@ async function createTeamIssueStatuses ({
   defaultStatusId,
   defaultCategoryId = tracker.issueStatusCategory.Backlog
 }: CreateTeamIssueStatusesArgs): Promise<void> {
-  for (const statusCategory of categories) {
+  const issueStatusRanks = [...genRanks(categories.length)]
+
+  for (const [i, statusCategory] of categories.entries()) {
     const { _id: category, defaultStatusName } = statusCategory
+    const rank = issueStatusRanks[i]
 
     await tx.addCollection(
       tracker.class.IssueStatus,
@@ -58,7 +61,7 @@ async function createTeamIssueStatuses ({
       attachedTo,
       tracker.class.Team,
       'issueStatuses',
-      { name: defaultStatusName, category },
+      { name: defaultStatusName, category, rank },
       category === defaultCategoryId ? defaultStatusId : undefined
     )
   }

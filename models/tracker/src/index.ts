@@ -55,6 +55,10 @@ export class TIssueStatus extends TAttachedDoc implements IssueStatus {
 
   @Prop(TypeRef(tracker.class.IssueStatusCategory), tracker.string.StatusCategory)
   category!: Ref<IssueStatusCategory>
+
+  @Prop(TypeString(), tracker.string.Rank)
+  @Hidden()
+  rank!: string
 }
 
 /**
@@ -66,6 +70,7 @@ export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
   icon!: Asset
   color!: number
   defaultStatusName!: string
+  order!: number
 }
 
 /**
@@ -180,7 +185,8 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CategoryBacklog,
       icon: tracker.icon.CategoryBacklog,
       color: 0,
-      defaultStatusName: 'Backlog'
+      defaultStatusName: 'Backlog',
+      order: 0
     },
     tracker.issueStatusCategory.Backlog
   )
@@ -192,7 +198,8 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CategoryUnstarted,
       icon: tracker.icon.CategoryUnstarted,
       color: 1,
-      defaultStatusName: 'Todo'
+      defaultStatusName: 'Todo',
+      order: 1
     },
     tracker.issueStatusCategory.Unstarted
   )
@@ -204,7 +211,8 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CategoryStarted,
       icon: tracker.icon.CategoryStarted,
       color: 2,
-      defaultStatusName: 'In Progress'
+      defaultStatusName: 'In Progress',
+      order: 2
     },
     tracker.issueStatusCategory.Started
   )
@@ -216,7 +224,8 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CategoryCompleted,
       icon: tracker.icon.CategoryCompleted,
       color: 3,
-      defaultStatusName: 'Done'
+      defaultStatusName: 'Done',
+      order: 3
     },
     tracker.issueStatusCategory.Completed
   )
@@ -228,7 +237,8 @@ export function createModel (builder: Builder): void {
       label: tracker.string.CategoryCanceled,
       icon: tracker.icon.CategoryCanceled,
       color: 4,
-      defaultStatusName: 'Canceled'
+      defaultStatusName: 'Canceled',
+      order: 4
     },
     tracker.issueStatusCategory.Canceled
   )

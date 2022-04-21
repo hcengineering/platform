@@ -27,6 +27,7 @@ export interface IssueStatus extends AttachedDoc {
   description?: string
   color?: number
   category: Ref<IssueStatusCategory>
+  rank: string
 }
 
 /**
@@ -37,6 +38,7 @@ export interface IssueStatusCategory extends Doc {
   label: IntlString
   color: number
   defaultStatusName: string
+  order: number
 }
 
 /**
@@ -135,6 +137,8 @@ export interface Project extends Doc {
  * @public
  */
 export const trackerId = 'tracker' as Plugin
+
+export * from './utils'
 
 export default plugin(trackerId, {
   class: {
