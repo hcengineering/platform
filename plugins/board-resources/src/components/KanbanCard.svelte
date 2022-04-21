@@ -25,7 +25,7 @@
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
   import { hasDate } from '../utils/CardUtils'
-  import { getElementPopupAlignment } from '../utils/PopupUtils';
+  import { getElementPopupAlignment } from '../utils/PopupUtils'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
 
@@ -39,7 +39,7 @@
   const client = getClient()
 
   function showMenu (): void {
-    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, {h: 'right', v: 'top'}))
+    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, { h: 'right', v: 'top' }))
   }
 
   function showCard () {
