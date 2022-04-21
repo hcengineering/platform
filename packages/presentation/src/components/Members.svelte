@@ -14,23 +14,99 @@
 -->
 
 <script lang="ts">
-  // import { Class, Doc, Ref, Space } from '@anticrm/core'
-  // import { getClient } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
-  // import { Table } from '@anticrm/view-resources'
+  import contact,{ Employee,EmployeeAccount } from '@anticrm/contact'
+  import { Account,DocumentQuery,Ref,SortingOrder,Space } from '@anticrm/core'
+  import { translate } from '@anticrm/platform'
+  import { Label,Scroller,SearchEdit } from '@anticrm/ui'
   import presentation from '../plugin'
+  import { getClient } from '../utils'
+  import UserInfo from './UserInfo.svelte'
 
-  // const client = getClient()
+  export let space: Space
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  $: label = hierarchy.getClass(space._class).label
+  let spaceClass = ''
+  $: { translate(label, {}).then((p) => spaceClass = p.toLowerCase()) }
+  let search: string = ''
+  $: isSearch = search.trim().length
+  let members: Set<Ref<Employee>> = new Set<Ref<Employee>>()
+
+  async function getUsers (accounts: Ref<Account>[], search: string): Promise<Employee[]> {
+    const query: DocumentQuery<EmployeeAccount> = isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<EmployeeAccount>[] } }
+    const employess = await client.findAll(contact.class.EmployeeAccount, query)
+    members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.employee))
+    return await client.findAll(contact.class.Employee, {
+      _id: { $in: employess.map((e) => e.employee) }
+    }, { sort: { name: SortingOrder.Descending } })
+  }
+
+  async function add (employee: Ref<Employee>): Promise<void> {
+    const account = await client.findOne(contact.class.EmployeeAccount, { employee })
+    if (account === undefined) return
+    await client.update(space, {
+      $push: {
+        members: account._id
+      }
+    })
+  }
 
 </script>
 
-<div class="flex-col">
-  <div class="flex-row-center">
-    <span class="title"><Label label={presentation.string.Members} /></span>
-  </div>
-  <!-- TODO: implement Members -->
+<div class="flex-col h-full">
+  <div class="ml-8 mr-8 mb-6 mt-4"><SearchEdit bind:value={search} /></div>
+  {#await getUsers(space.members, search) then users}
+    {@const current = users.filter((p) => members.has(p._id))}
+    {@const foreign = users.filter((p) => !members.has(p._id))}
+    {#if isSearch && !foreign.length && !current.length}
+      <div class="fs-title flex-center mt-10">
+        <Label label={presentation.string.NoMatchesFound} />
+      </div>
+    {:else}
+      <Scroller>
+        {#if isSearch}
+          <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
+          {#if !current.length}
+            <div class="fs-title pl-8 mb-4 mt-4">
+              <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
+            </div>
+          {/if}
+        {/if}
+        {#each current as person}
+          <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
+        {/each}
+        {#if foreign.length}
+        <div class="mt-4 notIn h-full">
+          <div class="divider w-full mb-4" />
+          <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }}  /></div>
+          {#each foreign as person}
+            <div class="item flex-between">
+              <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
+              <div class="over-underline" on:click={() => add(person._id)}><Label label={presentation.string.Add} /></div>
+            </div>
+          {/each}
+        </div>
+        {/if}
+      </Scroller>
+    {/if}
+  {/await}
 </div>
 
 <style lang="scss">
+  .notIn {
+    background-color: var(--theme-bg-accent-color);
+  }
 
+  .divider {
+    background-color: var(--theme-dialog-divider);
+    height: 1px;
+  }
+
+  .item {
+    color: var(--caption-color);
+    cursor: pointer;
+    padding: 0.5rem 2rem;
+
+    &:hover, &:focus { background-color: var(--popup-bg-hover); }
+  }
 </style>

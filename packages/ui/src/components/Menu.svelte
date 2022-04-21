@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { createEventDispatcher, afterUpdate, onMount } from 'svelte'
   import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
@@ -23,8 +23,26 @@
   export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()
+  let btns: HTMLButtonElement[] = []
+
+  const keyDown = (ev: KeyboardEvent, n: number): void => {
+    if (ev.key === 'ArrowDown') {
+      if (n === btns.length - 1) btns[0].focus()
+      else btns[n + 1].focus()
+    }
+    if (ev.key === 'ArrowUp') {
+      if (n === 0) btns[btns.length - 1].focus()
+      else btns[n - 1].focus()
+    }
+    if (ev.key === 'ArrowLeft' && ev.altKey) dispatch('update', 'left')
+    if (ev.key === 'ArrowRight' && ev.altKey) dispatch('update', 'right')
+  }
+
   afterUpdate(() => {
     dispatch('update', Date.now())
+  })
+  onMount(() => {
+    if (btns[0]) btns[0].focus()
   })
 </script>
 
@@ -37,9 +55,15 @@
         <Label label={ui.string.NoActionsDefined}/>
       </div>
       {/if}
-      {#each actions as action}
-        <div
+      {#each actions as action, i}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          bind:this={btns[i]}
           class="ap-menuItem flex-row-center withIcon"
+          on:keydown={(evt) => keyDown(evt, i)}
+          on:mouseover={(evt) => {
+            evt.currentTarget.focus()
+          }}
           on:click={(evt) => {
             dispatch('close')
             action.action(evt, ctx)
@@ -49,7 +73,7 @@
             <div class="icon"><Icon icon={action.icon} size={'small'} /></div>
           {/if}
           <div class="ml-3 pr-1"><Label label={action.label} /></div>
-        </div>
+        </button>
       {/each}
     </div>
   </div>
@@ -58,7 +82,9 @@
 
 <style lang="scss">
   .withIcon {
+    margin: 0;
+
     .icon { color: var(--content-color); }
-    &:hover .icon { color: var(--accent-color); }
+    &:focus .icon { color: var(--accent-color); }
   }
 </style>

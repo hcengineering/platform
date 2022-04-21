@@ -96,7 +96,7 @@
 
 <style lang="scss">
   .group {
-    border: 1px solid var(--theme-bg-focused-border);
+    border: 1px solid var(--theme-button-border-hovered);
     border-radius: 12px;
     padding: 16px 0;
   }

@@ -25,7 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { UnpinMessage } from '../index'
+  import { AddToSaved, DeleteFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -39,6 +39,7 @@
   export let employees: Map<Ref<Employee>, Employee>
   export let thread: boolean = false
   export let isPinned: boolean = false
+  export let isSaved: boolean = false
 
   let refInput: AttachmentRefInput
 
@@ -85,6 +86,7 @@
     action: async () => {
       ;(await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach((c) => {
         UnpinMessage(c)
+        DeleteFromSaved(c)
       })
       UnpinMessage(message)
       await client.removeDoc(message._class, message.space, message._id)
@@ -140,6 +142,11 @@
 
   function openThread () {
     dispatch('openThread', message._id)
+  }
+
+  function addToSaved () {
+    if (isSaved) DeleteFromSaved(message)
+    else AddToSaved(message)
   }
 
   $: parentMessage = message as Message
@@ -200,7 +207,14 @@
     {#if !thread}
       <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
     {/if}
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
+    <div class="tool book">
+      <ActionIcon
+        icon={Bookmark}
+        size={'medium'}
+        action={addToSaved}
+        label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
+      />
+    </div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>

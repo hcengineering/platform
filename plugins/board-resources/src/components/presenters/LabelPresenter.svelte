@@ -3,11 +3,15 @@
   import ColorPresenter from './ColorPresenter.svelte'
 
   export let value: CardLabel
-  export let size: 'small' | 'medium' | 'large' = 'medium'
+  export let isHovered: boolean = false
+  export let size: 'tiny' | 'x-small' | 'small' | 'medium' | 'large' = 'medium'
+
 </script>
 
 {#if value}
-  <ColorPresenter value={value.color} {size} on:click>
-    <div class="flex-center h-full w-full fs-title text-sm pr-1 pl-1">{value.title ?? ''}</div>
+  <ColorPresenter value={value.color} {isHovered} {size} on:click>
+    {#if size !== 'tiny'}
+      <div class="flex-center h-full w-full fs-title text-sm pr-1 pl-1">{value.title ?? ''}</div>
+    {/if}
   </ColorPresenter>
 {/if}

@@ -112,14 +112,8 @@
             <AttributeEditor maxWidth="20rem" _class={contact.class.Person} object={employee} key="city" />
           </div>
         </div>
-
         <div class="separator" />
-
-        <div class="flex-between mt-3">
-          <div class="flex-row-center">
-            <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} />
-          </div>
-        </div>
+        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} />
       </div>
     </div>
   {/if}

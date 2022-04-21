@@ -14,8 +14,13 @@
 // limitations under the License.
 //
 
+import board from './plugin'
+import { UsersPopup } from '@anticrm/presentation'
+import { Ref } from '@anticrm/core'
+import contact, { Employee } from '@anticrm/contact'
 import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
+import type { TxOperations as Client } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import CardPresenter from './components/CardPresenter.svelte'
 import BoardPresenter from './components/BoardPresenter.svelte'
@@ -25,11 +30,13 @@ import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
+import WatchCard from './components/WatchCard.svelte'
 import {
   addCurrentUser,
   canAddCurrentUser,
@@ -39,17 +46,40 @@ import {
   unarchiveCard,
   deleteCard
 } from './utils/CardUtils'
+import { getPopupAlignment } from './utils/PopupUtils'
 
-async function showMoveCardPopup (object: Card): Promise<void> {
-  showPopup(MoveView, { object })
+async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(MoveView, { object }, getPopupAlignment(e))
 }
 
-async function showDatePickerPopup (object: Card): Promise<void> {
-  showPopup(DateRangePicker, { object })
+async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(DateRangePicker, { object }, getPopupAlignment(e))
 }
 
-async function showCardLabelsPopup (object: Card): Promise<void> {
-  showPopup(CardLabelsPopup, { object })
+async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
+}
+
+async function showEditMembersPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(
+    UsersPopup,
+    {
+      _class: contact.class.Employee,
+      multiSelect: true,
+      allowDeselect: true,
+      selectedUsers: object?.members ?? [],
+      placeholder: board.string.SearchMembers
+    },
+    getPopupAlignment(e),
+    () => {},
+    (result: Array<Ref<Employee>>) => {
+      client.update(object, { members: result })
+    }
+  )
+}
+
+async function showAttachmentsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
 }
 
 export default async (): Promise<Resources> => ({
@@ -63,16 +93,19 @@ export default async (): Promise<Resources> => ({
     CardLabelPresenter,
     TemplatesIcon,
     KanbanView,
-    BoardPresenter
+    BoardPresenter,
+    WatchCard
   },
   cardActionHandler: {
     Join: addCurrentUser,
     Move: showMoveCardPopup,
     Dates: showDatePickerPopup,
     Labels: showCardLabelsPopup,
+    Attachments: showAttachmentsPopup,
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
-    Delete: deleteCard
+    Delete: deleteCard,
+    Members: showEditMembersPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,

@@ -16,6 +16,7 @@
   import { Class, Doc, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { CircleButton, IconAdd } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import { createAttachments } from '../utils'
 
   export let loading: number = 0
@@ -26,6 +27,7 @@
   export let space: Ref<Space>
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function fileSelected() {
     const list = inputFile.files
@@ -37,6 +39,8 @@
     } finally {
       loading--
     }
+
+    dispatch('attached')
   }
 
   function openFile() {

@@ -62,6 +62,9 @@ export default mergeIds(boardId, board, {
     Attachments: '' as IntlString,
     AddAttachment: '' as IntlString,
     DropFileToUpload: '' as IntlString,
+    AttachFrom: '' as IntlString,
+    AttachmentTip: '' as IntlString,
+    Computer: '' as IntlString,
     CustomFields: '' as IntlString,
     Automation: '' as IntlString,
     AddButton: '' as IntlString,
@@ -72,6 +75,7 @@ export default mergeIds(boardId, board, {
     Copy: '' as IntlString,
     MakeTemplate: '' as IntlString,
     Watch: '' as IntlString,
+    Unwatch: '' as IntlString,
     Archive: '' as IntlString,
     SendToBoard: '' as IntlString,
     Delete: '' as IntlString,
@@ -103,7 +107,8 @@ export default mergeIds(boardId, board, {
     LinkName: '' as IntlString,
     Edit: '' as IntlString,
     Update: '' as IntlString,
-    DeleteAttachment: '' as IntlString
+    DeleteAttachment: '' as IntlString,
+    SearchMembers: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

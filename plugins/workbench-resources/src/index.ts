@@ -19,9 +19,10 @@ import { Resources } from '@anticrm/platform'
 import Archive from './components/Archive.svelte'
 import { Space } from '@anticrm/core'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
+import SpaceBrowser from './components/SpaceBrowser.svelte'
 
-function hasArchiveSpaces (spaces: Space[]): boolean {
-  return spaces.find(sp => sp.archived) !== undefined
+function hasArchiveSpaces(spaces: Space[]): boolean {
+  return spaces.find((sp) => sp.archived) !== undefined
 }
 
 export default async (): Promise<Resources> => ({
@@ -29,7 +30,8 @@ export default async (): Promise<Resources> => ({
     WorkbenchApp,
     ApplicationPresenter,
     Archive,
-    SpacePanel
+    SpacePanel,
+    SpaceBrowser
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces

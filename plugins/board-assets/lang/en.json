@@ -41,6 +41,9 @@
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",
     "DropFileToUpload": "Drop files to upload.",
+    "AttachFrom": "Attach from...",
+    "AttachmentTip": "Tip: You can drag and drop files onto cards to upload them.",
+    "Computer": "Computer",
     "CustomFields": "Custom Fields",
     "Automation": "Automation",
     "AddButton": "Add Button",
@@ -51,6 +54,7 @@
     "Copy": "Copy",
     "MakeTemplate": "Make Template",
     "Watch": "Watch",
+    "Unwatch": "Unwatch",
     "Archive": "Archive",
     "SendToBoard": "Send to board",
     "Delete": "Delete",
@@ -82,6 +86,7 @@
     "LinkName": "Link name",
     "Edit": "Edit",
     "Update": "Update",
-    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo."
+    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo.",
+    "SearchMembers": "Search members"
   }
 }

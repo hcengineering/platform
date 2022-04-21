@@ -29,5 +29,13 @@
 </script>
 
 <Tooltip label={tracker.string.ModificationDate} props={{ value: fullModificationDate }}>
-  <span class="nowrap">{shortModificationDate}</span>
+  <span class="modificationDateLabel">{shortModificationDate}</span>
 </Tooltip>
+
+<style lang="scss">
+  .modificationDateLabel {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+</style>

@@ -15,22 +15,42 @@
 -->
 <script lang="ts">
   import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import type { Card } from '@anticrm/board'
+  import type { Card, CardDate } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import type { WithLookup } from '@anticrm/core'
+  import contact, { Employee } from '@anticrm/contact'
+  import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
-  import { ActionIcon, Component, IconMoreH, Label, showPanel, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { getClient, UserBoxList } from '@anticrm/presentation'
+  import { Button, Component, EditBox, IconEdit, Label, showPanel, showPopup } from '@anticrm/ui'
   import board from '../plugin'
+  import { hasDate, updateCard } from '../utils/CardUtils'
+  import { getElementPopupAlignment } from '../utils/PopupUtils'
+  import CardInlineActions from './editor/CardInlineActions.svelte'
+  import CardLabels from './editor/CardLabels.svelte'
+  import DatePresenter from './presenters/DatePresenter.svelte'
 
   export let object: WithLookup<Card>
   export let dragged: boolean
 
   let loadingAttachment = 0
   let dragoverAttachment = false
+  let ref: HTMLElement
 
-  function showMenu (ev?: Event): void {
-    showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+  const client = getClient()
+  let isEditMode = false
+
+  function exitEditMode (): void {
+    isEditMode = false
+  }
+
+  function enterEditMode (): void {
+    isEditMode = true
+    showPopup(
+      CardInlineActions,
+      { value: object },
+      getElementPopupAlignment(ref, { h: 'right', v: 'top' }),
+      exitEditMode
+    )
   }
 
   function showCard () {
@@ -39,6 +59,14 @@
 
   function canDropAttachment (e: DragEvent): boolean {
     return !!e.dataTransfer?.items && e.dataTransfer?.items.length > 0
+  }
+
+  function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
+    client.update(object, { members: e.detail })
+  }
+
+  function updateDate (e: CustomEvent<CardDate>) {
+    client.update(object, { date: e.detail })
   }
 
 </script>
@@ -50,7 +78,7 @@
   objectId={object._id}
   space={object.space}
   canDrop={canDropAttachment}>
-  <div class="relative flex-col pt-2 pb-2 pr-4 pl-4">
+  <div class="relative flex-col pt-2 pb-1 pr-2 pl-2" bind:this={ref}>
     {#if dragoverAttachment}
       <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
         <Label label={board.string.DropFileToUpload} />
@@ -60,36 +88,60 @@
         style:pointer-events="none"
         class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title" />
     {/if}
-    <div class="flex-between mb-4" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-      <div class="flex-col">
-        <div class="fs-title cursor-pointer" on:click={showCard}>{object.title}</div>
-      </div>
-      <div class="flex-row-center">
-        <div class="mr-2">
-          <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
-        </div>
-        <ActionIcon
-          label={board.string.More}
-          action={(evt) => {
-            showMenu(evt)
-          }}
-          icon={IconMoreH}
-          size="small" />
-      </div>
+    <div class="ml-1">
+      <CardLabels bind:value={object} isInline={true} />
     </div>
-    <div class="flex-between" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-      <div class="flex-row-center">
+    {#if !isEditMode}
+      <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
+        <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
+      </div>
+    {/if}
+    <div class="flex-between pb-2 ml-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'} on:click={showCard}>
+      {#if isEditMode}
+        <div class="fs-title text-lg">
+          <EditBox
+            bind:value={object.title}
+            maxWidth="39rem"
+            focus
+            on:change={() => updateCard(client, object, 'title', object?.title)} />
+        </div>
+      {:else}
+        <div class="flex-row-center w-full">
+          <div class="fs-title cursor-pointer">{object.title}</div>
+          <div class="ml-2">
+            <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+          </div>
+        </div>
+      {/if}
+    </div>
+    <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
+      <div class="float-left-box">
+        {#if object.date && hasDate(object)}
+          <div class="float-left ml-1">
+            <DatePresenter value={object.date} isInline={true} size="x-small" on:update={updateDate} />
+          </div>
+        {/if}
         {#if (object.attachments ?? 0) > 0}
-          <div class="step-lr75">
-            <AttachmentsPresenter value={object} />
+          <div class="float-left">
+            <AttachmentsPresenter value={object} size="small" />
           </div>
         {/if}
         {#if (object.comments ?? 0) > 0}
-          <div class="step-lr75">
+          <div class="float-left">
             <CommentsPresenter value={object} />
           </div>
         {/if}
       </div>
     </div>
+    {#if (object.members?.length ?? 0) > 0}
+      <div class="flex justify-end mt-1 mb-2" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
+        <UserBoxList
+          _class={contact.class.Employee}
+          items={object.members}
+          label={board.string.Members}
+          noItems={board.string.Members}
+          on:update={updateMembers} />
+      </div>
+    {/if}
   </div>
 </AttachmentDroppable>

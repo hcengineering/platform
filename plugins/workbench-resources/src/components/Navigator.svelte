@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
@@ -46,9 +45,14 @@
       core.class.Space,
       {
         _class: { $in: getSpecialSpaceClass(model) }
+        // temp disabled, need way for default spaces
+        // members: getCurrentAccount()._id
       },
-      (result) => { spaces = result },
-      { sort: { name: SortingOrder.Ascending } })
+      (result) => {
+        spaces = result
+      },
+      { sort: { name: SortingOrder.Ascending } }
+    )
   }
 
   let topSpecials: SpecialNavModel[] = []
@@ -59,10 +63,14 @@
   const preferenceQuery = createQuery()
 
   preferenceQuery.query(preferece.class.SpacePreference, {}, (res) => {
-    preferences = new Map(res.map((r) => { return [r.attachedTo, r] }))
+    preferences = new Map(
+      res.map((r) => {
+        return [r.attachedTo, r]
+      })
+    )
   })
 
-  async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
+  async function update(model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
     if (model.specials !== undefined) {
       topSpecials = await getSpecials(model.specials, 'top', spaces)
       bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
@@ -76,7 +84,11 @@
 
   $: if (model) update(model, spaces, preferences)
 
-  async function getSpecials (specials: SpecialNavModel[], state: 'top' | 'bottom', spaces: Space[]): Promise<SpecialNavModel[]> {
+  async function getSpecials(
+    specials: SpecialNavModel[],
+    state: 'top' | 'bottom',
+    spaces: Space[]
+  ): Promise<SpecialNavModel[]> {
     const result: SpecialNavModel[] = []
     for (const sp of specials) {
       if ((sp.position ?? 'top') === state) {
@@ -99,13 +111,25 @@
   <Scroller>
     {#if model.specials}
       {#each topSpecials as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
+        <SpecialElement
+          label={special.label}
+          icon={special.icon}
+          on:click={() => dispatch('special', special.id)}
+          selected={special.id === currentSpecial}
+          indent={'ml-2'}
+        />
       {/each}
-    {#if topSpecials.length > 0 && bottomSpecials.length > 0}
-      <TreeSeparator />
-    {/if}
+      {#if topSpecials.length > 0 && bottomSpecials.length > 0}
+        <TreeSeparator />
+      {/if}
       {#each bottomSpecials as special}
-        <SpecialElement label={special.label} icon={special.icon} on:click={() => dispatch('special', special.id)} selected={special.id === currentSpecial} indent={'ml-2'} />
+        <SpecialElement
+          label={special.label}
+          icon={special.icon}
+          on:click={() => dispatch('special', special.id)}
+          selected={special.id === currentSpecial}
+          indent={'ml-2'}
+        />
       {/each}
     {/if}
 
@@ -116,7 +140,14 @@
     {/if}
 
     {#each model.spaces as m (m.label)}
-      <SpacesNav spaces={shownSpaces.filter(it => hierarchy.isDerived(it._class, m.spaceClass))} {currentSpace} model={m} on:space {currentSpecial}/>
+      <SpacesNav
+        spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
+        {currentSpace}
+        hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
+        model={m}
+        on:space
+        {currentSpecial}
+      />
     {/each}
     <div class="antiNav-space" />
   </Scroller>

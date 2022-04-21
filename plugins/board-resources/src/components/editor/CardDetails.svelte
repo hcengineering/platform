@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardDate, CardLabel } from '@anticrm/board'
+  import type { Card, CardDate } from '@anticrm/board'
 
   import contact, { Employee } from '@anticrm/contact'
   import { getResource } from '@anticrm/platform'
@@ -25,17 +24,15 @@
   import { getCardActions } from '../../utils/CardActionUtils'
   import { hasDate } from '../../utils/CardUtils'
   import DatePresenter from '../presenters/DatePresenter.svelte'
-  import LabelPresenter from '../presenters/LabelPresenter.svelte'
   import MemberPresenter from '../presenters/MemberPresenter.svelte'
+  import CardLabels from './CardLabels.svelte'
 
   export let value: Card
   const query = createQuery()
   const client = getClient()
   let members: Employee[]
-  let labels: CardLabel[]
-  let membersHandler: () => void
-  let labelsHandler: () => void
-  let dateHandler: () => void
+  let membersHandler: (e: Event) => void
+  let dateHandler: (e: Event) => void
 
   $: membersIds = members?.map(m => m._id) ?? []
 
@@ -63,30 +60,20 @@
     members = []
   }
 
-  $: if (value.labels && value.labels.length > 0) {
-    query.query(board.class.CardLabel, { _id: { $in: value.labels } }, (result) => {
-      labels = result
-    })
-  } else {
-    labels = []
-  }
-
   function updateDate (e: CustomEvent<CardDate>) {
     client.update(value, { date: e.detail })
   }
 
   getCardActions(client, {
-    _id: { $in: [board.cardAction.Dates, board.cardAction.Labels, board.cardAction.Members] }
+    _id: { $in: [board.cardAction.Dates, board.cardAction.Members] }
   }).then(async (result) => {
     for (const action of result) {
       if (action.handler) {
         const handler = await getResource(action.handler)
         if (action._id === board.cardAction.Dates) {
-          dateHandler = () => handler(value, client)
-        } else if (action._id === board.cardAction.Labels) {
-          labelsHandler = () => handler(value, client)
+          dateHandler = (e) => handler(value, client, e)
         } else if (action._id === board.cardAction.Members) {
-          membersHandler = () => handler(value, client)
+          membersHandler = (e) => handler(value, client, e)
         }
       }
     }
@@ -107,17 +94,12 @@
       </div>
     </div>
   {/if}
-  {#if labels && labels.length > 0}
+  {#if value.labels && value.labels.length > 0}
     <div class="flex-col mt-4 mr-6">
       <div class="text-md font-medium">
         <Label label={board.string.Labels} />
       </div>
-      <div class="flex-row-center flex-gap-1">
-        {#each labels as label}
-          <LabelPresenter value={label} size="large" on:click={labelsHandler} />
-        {/each}
-        <Button icon={IconAdd} kind="no-border" size="large" on:click={labelsHandler} />
-      </div>
+      <CardLabels {value} />
     </div>
   {/if}
   {#if value.date && hasDate(value)}

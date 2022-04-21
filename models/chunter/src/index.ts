@@ -21,6 +21,7 @@ import type {
   ChunterMessage,
   Comment,
   Message,
+  SavedMessages,
   ThreadMessage,
   DirectMessage
 } from '@anticrm/chunter'
@@ -46,6 +47,7 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
 import notification from '@anticrm/model-notification'
+import preference, { TPreference } from '@anticrm/model-preference'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -128,6 +130,12 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
+@Model(chunter.class.SavedMessages, preference.class.Preference)
+export class TSavedMessages extends TPreference implements SavedMessages {
+  @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
+  attachedTo!: Ref<ChunterMessage>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TChunterSpace,
@@ -137,7 +145,8 @@ export function createModel (builder: Builder): void {
     TChunterMessage,
     TComment,
     TBacklink,
-    TDirectMessage
+    TDirectMessage,
+    TSavedMessages
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
@@ -286,6 +295,20 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
+            id: 'spaceBrowser',
+            component: workbench.component.SpaceBrowser,
+            icon: workbench.icon.Search,
+            label: chunter.string.ChannelBrowser,
+            position: 'top',
+            spaceClass: chunter.class.Channel,
+            componentProps: {
+              _class: chunter.class.Channel,
+              label: chunter.string.ChannelBrowser,
+              createItemDialog: chunter.component.CreateChannel,
+              createItemLabel: chunter.string.CreateChannel
+            }
+          },
+          {
             id: 'archive',
             component: workbench.component.Archive,
             icon: view.icon.Archive,
@@ -300,6 +323,12 @@ export function createModel (builder: Builder): void {
             icon: chunter.icon.Thread,
             component: chunter.component.Threads,
             position: 'top'
+          },
+          {
+            id: 'savedMessages',
+            label: chunter.string.SavedMessages,
+            icon: chunter.icon.Bookmark,
+            component: chunter.component.SavedMessages
           }
         ],
         spaces: [

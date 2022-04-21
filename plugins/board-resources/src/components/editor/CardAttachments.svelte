@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
-  import { AddAttachment } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
+  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Button, Icon, IconAttachment, Label } from '@anticrm/ui'
   import AttachmentPresenter from '../presenters/AttachmentPresenter.svelte'
@@ -25,12 +25,20 @@
   export let value: Card
   const client = getClient()
   let attachments: Attachment[] = []
-
-  let inputFile: HTMLInputElement
+  let addAttachment: (e: Event) => void
 
   async function fetch () {
     attachments = await client.findAll(attachment.class.Attachment, { space: value.space, attachedTo: value._id })
   }
+
+  client.findOne(board.class.CardAction, { _id: board.cardAction.Attachments }).then(async (action) => {
+    if (action && action.handler) {
+      const handler = await getResource(action.handler)
+      addAttachment = (e) => {
+        handler(value, client, e)
+      }
+    }
+  })
 
   $: value?.attachments && value.attachments > 0 && fetch()
 </script>
@@ -52,11 +60,7 @@
           <AttachmentPresenter value={attach} />
         {/each}
         <div class="mt-2">
-          <AddAttachment bind:inputFile objectClass={value._class} objectId={value._id} space={value.space}>
-            <svelte:fragment slot="control" let:click>
-              <Button label={board.string.AddAttachment} kind="no-border" on:click={click} />
-            </svelte:fragment>
-          </AddAttachment>
+          <Button label={board.string.AddAttachment} kind="no-border" on:click={addAttachment} />
         </div>
       </div>
     </div>

@@ -15,11 +15,18 @@
 -->
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
-  import ChannelsView from './ChannelsView.svelte'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
   import { showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Channel[] | Channel | null
+
+  export let editable = false
+  export let kind: ButtonKind = 'link-bordered'
+  export let size: ButtonSize = 'small'
+  export let length: 'short' | 'full' = 'short'
+  export let shape: 'circle' | undefined = 'circle'
 
   function click (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
@@ -37,4 +44,12 @@
   }
 </script>
 
-<ChannelsView {value} size={'small'} length={'short'} on:click={click} />
+<ChannelsDropdown
+  bind:value
+  {length}
+  {kind}
+  {size}
+  {shape}
+  {editable}
+  on:click={click}
+/>

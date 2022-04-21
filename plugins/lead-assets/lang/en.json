@@ -20,6 +20,7 @@
     "Assignee": "Assignee",
     "Title": "Title",
     "LeadPlaceholder": "The simple lead",
-    "ManageFunnelStatuses": "Manage funnel statuses"
+    "ManageFunnelStatuses": "Manage funnel statuses",
+    "FunnelBrowser": "Funnel browser"
   }
 }

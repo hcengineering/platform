@@ -117,7 +117,7 @@ export class TCardAction extends TDoc implements CardAction {
   label!: IntlString
   position!: number
   type!: string
-  handler?: Resource<(card: Card, client: Client) => void>
+  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
@@ -342,7 +342,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
-      isInline: false,
+      isInline: true,
       label: board.string.Cover,
       position: 70,
       type: board.cardActionType.Cover,
@@ -425,7 +425,7 @@ export function createModel (builder: Builder): void {
       label: board.string.Watch,
       position: 130,
       type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Watch
+      component: board.component.WatchCard
     },
     board.cardAction.Watch
   )

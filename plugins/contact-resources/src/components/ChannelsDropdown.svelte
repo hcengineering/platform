@@ -14,11 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnyComponent, showPopup, Tooltip, Button, Menu } from '@anticrm/ui'
+  import { AnyComponent, showPopup, Tooltip, Button, Menu, Label, closePopup } from '@anticrm/ui'
   import type { Action, ButtonKind, ButtonSize } from '@anticrm/ui'
   import presentation from '@anticrm/presentation'
   import { getChannelProviders } from '../utils'
@@ -27,14 +28,17 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let value: AttachedData<Channel>[] | Channel | null
-  export let editable = true
+  export let editable = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
-  export let reverse: boolean = false
+  export let shape: 'circle' | undefined = undefined
+  // export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
+  const dispatch = createEventDispatcher()
 
   interface Item {
     label: IntlString
@@ -105,6 +109,7 @@
   let displayItems: Item[] = []
   let actions: Action[] = []
   let addBtn: HTMLButtonElement
+  let btns: HTMLButtonElement[] = []
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
     return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
@@ -133,6 +138,15 @@
   }
   $: if (providers) updateMenu()
 
+  const dropItem = (n: number): void => {
+    displayItems = displayItems.filter((it, i) => i !== n)
+  }
+  const saveItems = (): void => {
+    value = filterUndefined(displayItems)
+    dispatch('change', value)
+    updateMenu()
+  }
+
   const editChannel = (channel: Item, n: number, ev: MouseEvent): void => {
     showPopup(
       ChannelEditor,
@@ -140,45 +154,129 @@
       ev.target as HTMLElement,
       result => {
         if (result !== undefined) {
-          if (result == null || result === '') {
-            displayItems = displayItems.filter((it, i) => i !== n)
-          } else {
-            displayItems[n].value = result
-            value = filterUndefined(displayItems)
-          }
-          updateMenu()
-          if (actions.length > 0 && addBtn) addBtn.click()
+          if (result == null || result === '') dropItem(n)
+          else displayItems[n].value = result
+        } else if (displayItems[n].value === '') dropItem(n)
+        saveItems()
+        if (actions.length > 0 && addBtn) {
+          if (result === undefined) addBtn.focus()
+          else addBtn.click()
         }
-        value = filterUndefined(displayItems)
+      },
+      result => {
+        if (result != undefined) {
+          if (result === 'left') {
+            closePopup()
+            if (displayItems[n].value === '') {
+              dropItem(n)
+              saveItems()
+            }
+            if (n === 0) addBtn.click()
+            else btns[n - 1].click()
+          } else if (result === 'right') {
+            closePopup()
+            if (displayItems[n].value === '') {
+              dropItem(n)
+              saveItems()
+              if (n === displayItems.length) addBtn.click()
+              else btns[n + 1].click()
+            } else {
+              if (n === displayItems.length - 1) addBtn.click()
+              else btns[n + 1].click()
+            }
+          }
+        }
       }
     )
   }
   const showMenu = (ev: MouseEvent): void => {
-    showPopup(Menu, { actions }, ev.target as HTMLElement)
+    showPopup(Menu, { actions }, ev.target as HTMLElement, () => {}, result => {
+      if (result != undefined && displayItems.length > 0) {
+        if (result === 'left') {
+          closePopup()
+          btns[displayItems.length - 1].click()
+        } else if (result === 'right') {
+          closePopup()
+          btns[0].click()
+        }
+      }
+    })
   }
+  let copied: boolean = false
 </script>
 
-{#each displayItems as item, i}
-  {#if item.value === ''}
-    <Button
-      icon={item.icon} {kind} {size} click={item.value === ''}
-      on:click={(ev) => { if (editable) editChannel(item, i, ev) }}
-    />
-  {:else}
-    <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined}>
+<div
+  class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border' ? 'xsmall-gap' : 'xxsmall-gap'}"
+  class:short={displayItems.length > 4 && length === 'short'}
+>
+  {#each displayItems as item, i}
+    {#if item.value === ''}
       <Button
-        icon={item.icon} {kind} {size} click={item.value === ''}
+        icon={item.icon} {kind} {size} {shape} click={item.value === ''}
         on:click={(ev) => { if (editable) editChannel(item, i, ev) }}
       />
-    </Tooltip>
+    {:else}
+      <div class="tooltip-container">
+        <div class="tooltip">{item.value}{#if copied}<span class="ml-1 text-sm dark-color">(copied)</span>{/if}</div>
+        <Button
+          bind:input={btns[i]}
+          icon={item.icon} {kind} {size} {shape}
+          highlight={item.integration || item.notification}
+          on:click={(ev) => {
+            if (item.integration || item.notification) dispatch('click', item)
+            if (editable) editChannel(item, i, ev)
+            if (!copied && !editable) {
+              navigator.clipboard.writeText(item.value)
+              copied = true
+              setTimeout(() => { copied = false }, 1000)
+            }
+          }}
+        />
+      </div>
+    {/if}
+  {/each}
+  {#if actions.length > 0 && editable}
+    <Button
+      bind:input={addBtn}
+      icon={contact.icon.SocialEdit}
+      label={presentation.string.AddSocialLinks}
+      {kind} {size} {shape}
+      on:click={showMenu}
+    />
   {/if}
-{/each}
-{#if actions.length > 0}
-  <Button
-    bind:input={addBtn}
-    icon={contact.icon.SocialEdit}
-    label={presentation.string.AddSocialLinks}
-    {kind} {size}
-    on:click={showMenu}
-  />
-{/if}
+</div>
+
+<style lang="scss">
+  .tooltip-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+    min-height: 0;
+    width: min-content;
+
+    .tooltip {
+      position: absolute;
+      padding: .25rem .5rem;
+      bottom: 100%;
+      left: 50%;
+      width: auto;
+      background-color: var(--accent-bg-color);
+      border: 1px solid var(--button-border-color);
+      border-radius: .25rem;
+      transform-origin: center center;
+      transform: translate(-50%, -.25rem) scale(.9);
+      opacity: 0;
+      box-shadow: var(--accent-shadow);
+      transition-property: transform, opacity;
+      transition-duration: .15s;
+      transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+    &:hover .tooltip {
+      transform: translate(-50%, -.5rem) scale(1);
+      opacity: 1;
+    }
+  }
+</style>

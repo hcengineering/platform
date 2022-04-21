@@ -85,14 +85,15 @@
     {/each}
     <div class="ac-tabs__empty" />
   </div>
-  <Scroller padding>
+  {#if channel}
     {#if selectedTabIndex === 0}
-      <EditChannelDescriptionTab {channel} {_id} {_class} />
+      <Scroller padding>
+        <EditChannelDescriptionTab {channel} on:close />
+      </Scroller>
     {:else if selectedTabIndex === 1}
-      <!-- Channel members -->
-      <Members />
+      <Members space={channel} />
     {:else if selectedTabIndex === 2}
       <EditChannelSettingsTab {channel} on:close />
     {/if}
-  </Scroller>
+  {/if}
 </div>
