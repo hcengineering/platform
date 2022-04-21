@@ -49,6 +49,8 @@
     "AddToSaved": "Add to saved",
     "RemoveFromSaved": "Remove from saved",
     "EmptySavedHeader": "Add messages to come back to later",
-    "EmptySavedText": "Tick off your to-dos or save something for another time. Only you can see your saved items, so use them however you like."
+    "EmptySavedText": "Tick off your to-dos or save something for another time. Only you can see your saved items, so use them however you like.",
+    "LeaveChannel": "Leave channel",
+    "ChannelBrowser": "Channel browser"
   }
 }

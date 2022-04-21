@@ -20,6 +20,7 @@
     "Assignee": "Назначена",
     "Title": "Загаловок",
     "LeadPlaceholder": "Простая сделка",
-    "ManageFunnelStatuses": "Управление статусами воронки"
+    "ManageFunnelStatuses": "Управление статусами воронки",
+    "FunnelBrowser": "Браузер воронок"
   }
 }
