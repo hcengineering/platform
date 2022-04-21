@@ -1,16 +1,23 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { FindOptions, Ref, WithLookup } from '@anticrm/core'
+  import { Class, Doc, FindOptions, Ref, WithLookup } from '@anticrm/core'
   import { Kanban } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { Button, Component, eventToHTMLElement, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { focusStore, ListSelectionProvider, selectionStore } from '@anticrm/view-resources'
+  import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
+  import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
+  import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+import AssigneePresenter from './AssigneePresenter.svelte';
   import IssuePresenter from './IssuePresenter.svelte'
+import PriorityPresenter from './PriorityPresenter.svelte';
 
   export let currentSpace: Ref<Team>
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
   const states = [
     {
@@ -66,13 +73,51 @@
       assignee: contact.class.Employee
     }
   }
+
+  let kanbanUI: Kanban
+  const listProvider = new ListSelectionProvider(
+    (pos, dir) => {
+      if (dir === 'vertical') {
+        // Select next
+        kanbanUI.selectStatePosition(pos, 'down')
+      } else {
+        kanbanUI.selectStatePosition(pos, 'right')
+      }
+    },
+    (pos, dir) => {
+      // Select prev
+      if (dir === 'vertical') {
+        kanbanUI.selectStatePosition(pos, 'up')
+      } else {
+        kanbanUI.selectStatePosition(pos, 'left')
+      }
+    }
+  )
+  onMount(() => {
+    (document.activeElement as HTMLElement)?.blur()
+  })
+
+  const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
+    ev.preventDefault()
+    showPopup(Menu, { object: items, baseMenuClass }, {
+      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+    }, () => {
+      // selection = undefined
+    })
+  }
 </script>
 
 {#if currentTeam}
+  <ActionContext
+    context={{
+      mode: 'browser'
+    }}
+  />
   <div class="flex-between label font-medium w-full p-4">
     Board
   </div>
   <Kanban
+    bind:this={kanbanUI}
     _class={tracker.class.Issue}
     space={currentSpace}
     search=""
@@ -81,6 +126,19 @@
     query={{}}
     fieldName={'status'}
     rankFieldName={'rank'}
+    on:content={(evt) => {
+      listProvider.update(evt.detail)
+    }}
+    on:obj-focus={(evt) => {
+      listProvider.updateFocus(evt.detail)
+    }}
+    selection={listProvider.current($focusStore)}
+
+    checked={$selectionStore ?? []}
+    on:check={(evt) => {
+      listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+    }}
+    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
       <div class="header flex-col">        
@@ -100,26 +158,25 @@
                 }}
               />
             </Tooltip>
-            <Button icon={IconMoreH} kind={'transparent'} />
           </div>
         </div>
       </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
-      <div class="flex-row h-18 pt-2 pb-2 pr-4 pl-4">
+      <div class="flex-row pt-2 pb-2 pr-4 pl-4">
         <div class="flex-between mb-2">
           <IssuePresenter value={object} {currentTeam} />
           {#if issue.$lookup?.assignee}
-            <Component
-              is={view.component.ObjectPresenter}
-              props={{ value: issue.$lookup.assignee, props: { showLabel: false } }}
-            />
+          <AssigneePresenter value={issue} {currentSpace} isEditable={true}/>
           {/if}
         </div>
         <span class="fs-bold title">
           {object.title}
         </span>
+        <div class='flex gap-2 mt-2 mb-2'>
+          <PriorityPresenter value={issue} {currentSpace} isEditable={true}/>
+        </div>
       </div>
     </svelte:fragment>
   </Kanban>

@@ -64,14 +64,12 @@ export async function getObjectPresenter (
 /**
  * @public
  */
-export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent> {
+export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent|undefined> {
   const clazz = client.getHierarchy().getClass(_class)
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.PreviewPresenter)
   if (presenterMixin.presenter === undefined) {
     if (clazz.extends !== undefined) {
       return await getObjectPreview(client, clazz.extends)
-    } else {
-      throw new Error('object presenter not found for ' + _class)
     }
   }
   return presenterMixin?.presenter

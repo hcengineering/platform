@@ -1,12 +1,13 @@
 <script lang="ts">
-  import core,{ Class,Doc,Ref,TxRemoveDoc } from '@anticrm/core'
+  import core, { Class, Doc, Ref, TxRemoveDoc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import { addTxListener,getClient } from '@anticrm/presentation'
-  import { AnyComponent,Component } from '@anticrm/ui'
-  import { Action,ViewContext } from '@anticrm/view'
+  import { addTxListener, getClient } from '@anticrm/presentation'
+  import { AnyComponent, Component } from '@anticrm/ui'
+  import { Action, ViewContext } from '@anticrm/view'
+  import { fly } from 'svelte/transition'
   import { getContextActions } from '../actions'
   import { contextStore } from '../context'
-  import { focusStore,previewDocument,selectionStore } from '../selection'
+  import { focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview } from '../utils'
 
   const client = getClient()
@@ -47,7 +48,7 @@
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
-    if (targetTagName === 'input' || targetTagName === 'button') {
+    if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
       return
     }
     lastKey = evt
@@ -63,19 +64,17 @@
   }
 
   let presenter: AnyComponent | undefined
-  $: if ($previewDocument !== undefined) {
-    getObjectPreview(client, $previewDocument._class).then(p => {
-      presenter = p
-    })
-  } else {
-    presenter = undefined
+  async function updatePreviewPresenter (doc?: Doc): Promise<void> {
+    presenter = doc !== undefined ? await getObjectPreview(client, doc._class) : undefined
   }
+  
+  $: updatePreviewPresenter($previewDocument)
 </script>
 
 <svelte:window on:keydown={handleKeys} />
 
 {#if $previewDocument !== undefined && presenter }
-  <div style:position="fixed" style:right={'0'} style:top={'10rem'} style:z-index={'50000'}>
+  <div transition:fly|local style:position="fixed" style:right={'0'} style:top={'10rem'} style:z-index={'50000'}>
     <div class='antiPanel p-10'>
       <Component is={presenter} props={{ object: $previewDocument }} />
     </div>

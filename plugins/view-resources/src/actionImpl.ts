@@ -95,7 +95,12 @@ function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
 }
 
 function ShowPreview (doc: Doc | undefined, evt: Event): void {
-  previewDocument.set(doc)
+  previewDocument.update(old => {
+    if (old?._id === doc?._id) {
+      return undefined
+    }
+    return doc
+  })
   evt.preventDefault()
 }
 /**
