@@ -189,9 +189,9 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       modalHTML.style.top = `calc(${rect.top}px)`
-      modalHTML.style.height = `${rect.height}px`
+      modalHTML.style.height = `${Math.min(rect.height, window.innerHeight - rect.top)}px`
       modalHTML.style.left = `calc(${rect.left}px)`
-      modalHTML.style.width = `${rect.width}px`
+      modalHTML.style.width = `${Math.min(rect.width, window.innerWidth - rect.left)}px`
     } else if (element === 'middle') {
       if (contentPanel !== undefined) {
         const rect = contentPanel.getBoundingClientRect()

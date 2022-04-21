@@ -26,11 +26,14 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
+  import { AnyComponent, Button, Component, IconDown, IconUp, Label, PopupAlignment, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import ActionContext from './ActionContext.svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
+  import { selectNextItem, selectPrevItem } from '../actionImpl'
+  import { tick } from 'svelte'
+  import { focusStore } from '../selection'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -238,6 +241,17 @@
       headerLoading = false
     })
   }
+  async function next (pn: boolean): Promise<void> {
+    if (pn) {
+      selectNextItem('vertical')
+    } else {
+      selectPrevItem('vertical')
+    }
+    await tick()
+    if ($focusStore.focus !== undefined) {
+      showPanel(view.component.EditDoc, $focusStore.focus._id, $focusStore.focus._class, 'content')
+    }
+  }
 </script>
 <ActionContext context={{
   mode: 'editor'
@@ -255,6 +269,12 @@
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="navigate-actions">
+      <div class="tool flex-row-center gap-1 mr-4">
+        <Button icon={IconDown} kind={'no-border'} on:click={() => next(true)}/>
+        <Button icon={IconUp} kind={'no-border'} on:click={() => next(false)}/>
+      </div>
+    </svelte:fragment>
     <div class="w-full" slot="subtitle">
       {#if !headerLoading}
         {#if headerEditor !== undefined}

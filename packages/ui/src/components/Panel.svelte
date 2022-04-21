@@ -26,16 +26,28 @@
   export let rightSection: boolean = false
   export let reverseCommands = false
   export let showHeader = true
+  export let innerWidth: number = 0
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<div class="antiPanel antiComponent">
-  <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>
+<div class="antiPanel antiComponent" bind:clientWidth={innerWidth}>  
+  <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>    
     {#if showHeader}
       <div class="ac-header short mirror divide">
-        <div class="ac-header__wrap-title">
+        <div class="tool flex-row-center">
+          <ActionIcon
+            icon={IconClose}
+            size={'medium'}
+            action={() => {
+              dispatch('close')
+            }} />
+        </div>
+        {#if $$slots['navigate-actions']}
+          <slot name="navigate-actions" />
+        {/if}
+        <div class="ac-header__wrap-title flex-grow">
           {#if icon}
             <div class="ac-header__icon">
               <Icon {icon} size={'large'} />
@@ -50,6 +62,20 @@
           <div class="flex">
             <slot name="commands" />
           </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="ac-header short mirror divide">
+        <div class="tool flex-row-center">
+          <ActionIcon
+            icon={IconClose}
+            size={'medium'}
+            action={() => {
+              dispatch('close')
+            }} />
+        </div>
+        {#if $$slots['navigate-actions']}
+          <slot name="navigate-actions" />
         {/if}
       </div>
     {/if}
@@ -69,21 +95,13 @@
     <slot name="rightSection" />
   {/if}
 
-  <div class="ad-tools" class:grow-reverse={reverseCommands}>
+  <div class="ad-tools flex-row-center flex-grow h-4" class:grow-reverse={reverseCommands}>
     {#if !rightSection && $$slots.commands}
       <div class="flex">
         <slot name="commands" />
       </div>
     {/if}
     <slot name="actions" />
-    <div class="tool">
-      <ActionIcon
-        icon={IconClose}
-        size={'medium'}
-        action={() => {
-          dispatch('close')
-        }} />
-    </div>
   </div>
 </div>
 

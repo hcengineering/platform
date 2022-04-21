@@ -32,7 +32,7 @@
     <a
       class="flex-presenter"
       class:inline-presenter={inline}
-      href="#{getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'full')}"
+      href="#{getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}"
     >
       <div class="icon">
         <Avatar size={avatarSize} avatar={value?.avatar} />
