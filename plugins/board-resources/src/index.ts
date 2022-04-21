@@ -16,7 +16,7 @@
 
 import board from './plugin'
 import { UsersPopup } from '@anticrm/presentation'
-import { Ref, TxOperations } from '@anticrm/core'
+import { Ref } from '@anticrm/core'
 import contact, { Employee } from '@anticrm/contact'
 import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
@@ -34,7 +34,6 @@ import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveView from './components/popups/MoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import EditMembersView from './components/popups/EditMembers.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import WatchCard from './components/WatchCard.svelte'
@@ -61,7 +60,7 @@ async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Pr
   showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
 }
 
-async function showEditMembersPopup (object: Card, client: TxOperations, e?: Event): Promise<void> {
+async function showEditMembersPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(
     UsersPopup,
     {
@@ -73,13 +72,13 @@ async function showEditMembersPopup (object: Card, client: TxOperations, e?: Eve
     },
     getPopupAlignment(e),
     () => {},
-    (result: Ref<Employee>[]) => {
+    (result: Array<Ref<Employee>>) => {
       client.update(object, { members: result })
     }
   )
 }
 
-async function showAttachmentsPopup (object: Card, client: TxOperations, e?: Event): Promise<void> {
+async function showAttachmentsPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
 }
 
