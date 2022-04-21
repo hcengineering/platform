@@ -110,7 +110,7 @@
   <Tooltip {label} props={{ value: formattedName }}>
     <div class="flex-presenter" on:click={handleAssigneeEditorOpened}>
       <div class="icon">
-        <Avatar size={'x-small'} {avatar} />
+        <Avatar size={'tiny'} {avatar} />
       </div>
       {#if shouldShowLabel}
         <div class="label nowrap ml-2">
@@ -122,7 +122,7 @@
 {:else}
   <div class="presenter">
     <div class="icon">
-      <Avatar size={'x-small'} {avatar} />
+      <Avatar size={'tiny'} {avatar} />
     </div>
     {#if shouldShowLabel}
       <div class="label nowrap ml-2">

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Avatar from './icons/Avatar.svelte'
 
@@ -20,7 +19,7 @@
 
   export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
-  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 
   let url: string | undefined
   $: if (direct !== undefined) {
@@ -37,11 +36,11 @@
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
-      <img class="ava-{size} ava-blur" src={url} alt={''}/>
+      <img class="ava-{size} ava-blur" src={url} alt={''} />
     {/if}
-    <img class="ava-{size} ava-mask" src={url} alt={''}/>
+    <img class="ava-{size} ava-mask" src={url} alt={''} />
   {:else}
-    <Avatar {size}/>
+    <Avatar {size} />
   {/if}
 </div>
 
@@ -58,31 +57,39 @@
       object-fit: cover;
       border: 2px solid var(--theme-avatar-border);
     }
-    &.no-img { border-color: transparent; }
+    &.no-img {
+      border-color: transparent;
+    }
   }
 
   .ava-inline {
-    width: .875rem;   // 24
-    height: .875rem;
+    width: 0.875rem; // 24
+    height: 0.875rem;
   }
+
+  .ava-tiny {
+    width: 1.13rem; // ~18
+    height: 1.13rem;
+  }
+
   .ava-x-small {
-    width: 1.5rem;   // 24
+    width: 1.5rem; // 24
     height: 1.5rem;
   }
   .ava-small {
-    width: 2rem;     // 32
+    width: 2rem; // 32
     height: 2rem;
   }
   .ava-medium {
-    width: 2.25rem;  // 36
+    width: 2.25rem; // 36
     height: 2.25rem;
   }
   .ava-large {
-    width: 4.5rem;   // 72
+    width: 4.5rem; // 72
     height: 4.5rem;
   }
   .ava-x-large {
-    width: 7.5rem;   // 120
+    width: 7.5rem; // 120
     height: 7.5rem;
   }
 
@@ -96,8 +103,14 @@
     border-radius: 50%;
   }
 
-  .ava-inline .ava-mask, .ava-inline.no-img,
-  .ava-x-small .ava-mask, .ava-x-small.no-img,
-  .ava-small .ava-mask, .ava-small.no-img,
-  .ava-medium .ava-mask, .ava-medium.no-img { border-style: none; }
+  .ava-inline .ava-mask,
+  .ava-inline.no-img,
+  .ava-x-small .ava-mask,
+  .ava-x-small.no-img,
+  .ava-small .ava-mask,
+  .ava-small.no-img,
+  .ava-medium .ava-mask,
+  .ava-medium.no-img {
+    border-style: none;
+  }
 </style>

@@ -51,7 +51,7 @@
         />
         <span class="eLabelCounter ml-2">{issuesAmount}</span>
       </div>
-      <div class="flex mr-1">
+      <div class="flex">
         <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
           <Button icon={IconAdd} kind={'transparent'} on:click={handleNewIssueAdded} />
         </Tooltip>
@@ -91,7 +91,8 @@
   .categoryHeader {
     height: 2.5rem;
     background-color: var(--theme-table-bg-hover);
-    padding-left: 2.3rem;
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
   }
 
   .label {
