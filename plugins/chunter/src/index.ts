@@ -17,6 +17,7 @@ import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@a
 import type { Employee } from '@anticrm/contact'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
+import type { Preference } from '@anticrm/preference'
 import { AnyComponent } from '@anticrm/ui'
 
 /**
@@ -85,6 +86,13 @@ export interface Backlink extends Comment {
 /**
  * @public
  */
+export interface SavedMessages extends Preference {
+  attachedTo: Ref<ChunterMessage>
+}
+
+/**
+ * @public
+ */
 export const chunterId = 'chunter' as Plugin
 
 export default plugin(chunterId, {
@@ -92,7 +100,8 @@ export default plugin(chunterId, {
     Chunter: '' as Asset,
     Hashtag: '' as Asset,
     Thread: '' as Asset,
-    Lock: '' as Asset
+    Lock: '' as Asset,
+    Bookmark: '' as Asset
   },
   component: {
     CommentInput: '' as AnyComponent,
@@ -104,7 +113,8 @@ export default plugin(chunterId, {
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
     Backlink: '' as Ref<Class<Backlink>>,
     Comment: '' as Ref<Class<Comment>>,
-    Channel: '' as Ref<Class<Channel>>
+    Channel: '' as Ref<Class<Channel>>,
+    SavedMessages: '' as Ref<Class<SavedMessages>>
   },
   space: {
     Backlinks: '' as Ref<Space>
