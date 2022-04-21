@@ -21,11 +21,13 @@ import workbench, { workbenchId } from '@anticrm/workbench'
 export default mergeIds(workbenchId, workbench, {
   component: {
     ApplicationPresenter: '' as AnyComponent,
-    Archive: '' as AnyComponent
+    Archive: '' as AnyComponent,
+    SpaceBrowser: '' as AnyComponent
   },
   string: {
     Archive: '' as IntlString,
-    Application: '' as IntlString
+    Application: '' as IntlString,
+    SpaceBrowser: '' as IntlString
   },
   function: {
     HasArchiveSpaces: '' as Resource<(spaces: Space[]) => boolean>

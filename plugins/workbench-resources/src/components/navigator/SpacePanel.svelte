@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Class, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, Members } from '@anticrm/presentation'
   import { ActionIcon, EditBox, Grid, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
@@ -37,24 +36,32 @@
   const clazz = client.getHierarchy().getClass(_class)
 
   const query = createQuery()
-  $: query.query(core.class.Space, { _id }, result => { space = result[0] })
+  $: query.query(core.class.Space, { _id }, (result) => {
+    space = result[0]
+  })
 
   const tabs: IntlString[] = [workbench.string.General, workbench.string.Members]
   let selected = 0
 
-  function onNameChange (ev: Event) {
+  function onNameChange(ev: Event) {
     const value = (ev.target as HTMLInputElement).value
     if (value.trim().length > 0) {
       client.updateDoc(_class, space.space, space._id, { name: value })
     } else {
       // Just refresh value
-      query.query(core.class.Space, { _id }, result => { space = result[0] })
+      query.query(core.class.Space, { _id }, (result) => {
+        space = result[0]
+      })
     }
   }
-
 </script>
 
-<div class="antiOverlay" on:click={() => { dispatch('close') }}/>
+<div
+  class="antiOverlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="antiDialogs antiComponent">
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-title">
@@ -63,12 +70,25 @@
       {/if}
       <div class="ac-header__title"><Label label={clazz.label} /></div>
     </div>
-    <div class="tool"><ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} /></div>
+    <div class="tool">
+      <ActionIcon
+        icon={IconClose}
+        size={'small'}
+        action={() => {
+          dispatch('close')
+        }}
+      />
+    </div>
   </div>
   <div class="ac-tabs">
     {#each tabs as tab, i}
-      <div class="ac-tabs__tab" class:selected={i === selected}
-           on:click={() => { selected = i }}>
+      <div
+        class="ac-tabs__tab"
+        class:selected={i === selected}
+        on:click={() => {
+          selected = i
+        }}
+      >
         <Label label={tab} />
       </div>
     {/each}
@@ -78,13 +98,21 @@
     {#if selected === 0}
       {#if space}
         <Grid column={1} rowGap={1.5}>
-          <EditBox label={clazz.label} icon={clazz.icon} bind:value={space.name} placeholder={clazz.label} maxWidth="39rem" focus on:change={onNameChange}/>
+          <EditBox
+            label={clazz.label}
+            icon={clazz.icon}
+            bind:value={space.name}
+            placeholder={clazz.label}
+            maxWidth="39rem"
+            focus
+            on:change={onNameChange}
+          />
           <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
           <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
         </Grid>
       {/if}
     {:else}
-      <Label label={workbench.string.Members} />
+      <Members {space} />
     {/if}
   </Scroller>
 </div>

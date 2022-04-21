@@ -43,7 +43,7 @@ export { default as TableBrowser } from './components/TableBrowser.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup, Menu }
+export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter }
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,

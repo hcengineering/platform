@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
-import { workbenchId } from '@anticrm/workbench'
+import { addStringsLoader, loadMetadata } from '@anticrm/platform'
+import workbench, { workbenchId } from '@anticrm/workbench'
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(workbench.icon, {
+  Search: `${icons}#search`
+})
 
 addStringsLoader(workbenchId, async (lang: string) => await import(`../lang/${lang}.json`))

@@ -15,34 +15,17 @@
 -->
 <script lang="ts">
   import { Channel } from '@anticrm/chunter'
-  import type { Class, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { EditBox } from '@anticrm/ui'
-
+  import { getCurrentAccount } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import { Button, EditBox } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
   import EditChannelDescriptionAttachments from './EditChannelDescriptionAttachments.svelte'
 
-  export let _id: Ref<Channel>
-  export let _class: Ref<Class<Channel>>
-
-  export let channel: Channel | undefined
+  export let channel: Channel
 
   const client = getClient()
-  const clazz = client.getHierarchy().getClass(_class)
-
-  const query = createQuery()
-
-  function onNameChange (ev: Event) {
-    const value = (ev.target as HTMLInputElement).value
-    if (value.trim().length > 0) {
-      client.updateDoc(_class, channel!.space, channel!._id, { name: value })
-    } else {
-      // Just refresh value
-      query.query(chunter.class.Channel, { _id }, (result) => {
-        channel = result[0]
-      })
-    }
-  }
+  const dispatch = createEventDispatcher()
 
   function onTopicChange (ev: Event) {
     const newTopic = (ev.target as HTMLInputElement).value
@@ -53,19 +36,17 @@
     const newDescription = (ev.target as HTMLInputElement).value
     client.update(channel!, { description: newDescription })
   }
+
+  async function leaveChannel (): Promise<void> {
+    await client.update(channel, {
+      $pull: { members: getCurrentAccount()._id }
+    })
+    dispatch('close')
+  }
 </script>
 
 {#if channel}
   <div class="flex-col flex-gap-3">
-    <EditBox
-      label={clazz.label}
-      icon={clazz.icon}
-      bind:value={channel.name}
-      placeholder={clazz.label}
-      maxWidth="39rem"
-      focus
-      on:change={onNameChange}
-    />
     <EditBox
       label={chunter.string.Topic}
       bind:value={channel.topic}
@@ -81,6 +62,14 @@
       maxWidth="39rem"
       focus
       on:change={onDescriptionChange}
+    />
+    <Button
+      label={chunter.string.LeaveChannel}
+      justify={'left'}
+      size={'x-large'}
+      on:click={() => {
+        leaveChannel()
+      }}
     />
     <EditChannelDescriptionAttachments {channel} />
   </div>

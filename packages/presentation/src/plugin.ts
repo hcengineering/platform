@@ -44,7 +44,12 @@ export default plugin(presentationId, {
     Search: '' as IntlString,
     Unassigned: '' as IntlString,
     CreateMore: '' as IntlString,
-    NumberMembers: '' as IntlString
+    NumberMembers: '' as IntlString,
+    InThis: '' as IntlString,
+    NoMatchesInThis: '' as IntlString,
+    NoMatchesFound: '' as IntlString,
+    NotInThis: '' as IntlString,
+    Add: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

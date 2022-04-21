@@ -19,7 +19,7 @@
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
+  import { AttributesBar, createQuery, getClient, Members } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { ActionIcon, Component, EditBox, Grid, Icon, IconClose, Label, Scroller, ToggleWithLabel } from '@anticrm/ui'
@@ -104,9 +104,7 @@
         </div>
       </Scroller>
     {:else if selected === 1}
-      <Scroller padding>
-        <ToggleWithLabel label={recruit.string.ThisVacancyIsPrivate} description={recruit.string.MakePrivateDescription}/>
-      </Scroller>
+      <Members space={object} />
     {:else if selected === 2}
       <Component is={activity.component.Activity} props={{ object, transparent: true }} />
     {/if}
