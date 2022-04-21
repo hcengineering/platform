@@ -6,8 +6,9 @@ export function getPopupAlignment (e?: Event): PopupAlignment | undefined {
   }
   const target = e.target as HTMLElement
   if (target.getBoundingClientRect) {
+    const result = target.getBoundingClientRect()
     return {
-      getBoundingClientRect: () => target.getBoundingClientRect()
+      getBoundingClientRect: () => result
     }
   }
 
