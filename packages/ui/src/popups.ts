@@ -1,4 +1,4 @@
-import { AnySvelteComponent, AnyComponent, PopupAlignment } from './types'
+import { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -30,7 +30,7 @@ export function showPopup (
   const id = `${popupId++}`
   const closePopupOp = (): void => {
     popupstore.update((popups) => {
-      const pos = popups.findIndex(p => p.id === id)
+      const pos = popups.findIndex((p) => p.id === id)
       if (pos !== -1) {
         popups.splice(pos, 1)
       }
@@ -38,7 +38,9 @@ export function showPopup (
     })
   }
   if (typeof component === 'string') {
-    getResource(component).then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp })).catch((err) => console.log(err))
+    getResource(component)
+      .then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp }))
+      .catch((err) => console.log(err))
   } else {
     addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp })
   }
@@ -107,6 +109,51 @@ export function closeDatePopup (): void {
 /**
  * @public
  *
+ * Place element based on position and element.
+ *
+ * return boolean to show or not modal overlay.
+ */
+export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: PopupPositionElement): boolean {
+  const rect = alignment.getBoundingClientRect()
+  const rectPopup = modalHTML.getBoundingClientRect()
+  modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
+  modalHTML.style.maxHeight = modalHTML.style.height = ''
+  if (alignment.position) {
+    if (alignment.position.v === 'top') {
+      modalHTML.style.top = `${rect.top}px`
+    } else if (alignment.position.v === 'bottom') {
+      modalHTML.style.top = `${rect.bottom - rectPopup.height}px`
+    }
+
+    if (alignment.position.h === 'right') {
+      modalHTML.style.left = `calc(${rect.right}px + .125rem)`
+    } else if (alignment.position.h === 'left') {
+      console.log(rect.left)
+      modalHTML.style.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
+    }
+  } else {
+    // Vertical
+    if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
+      modalHTML.style.top = `calc(${rect.bottom}px + .125rem)`
+    } else if (rectPopup.height + 28 < rect.top) {
+      modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
+    } else {
+      modalHTML.style.top = modalHTML.style.bottom = '1rem'
+    }
+
+    // Horizontal
+    if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
+      modalHTML.style.right = `${document.body.clientWidth - rect.right}px`
+    } else {
+      modalHTML.style.left = `${rect.left}px`
+    }
+  }
+  return false
+}
+
+/**
+ * @public
+ *
  * Place element based on position and underline content element.
  *
  * return boolean to show or not modal overlay.
@@ -118,24 +165,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
     modalHTML.style.maxHeight = modalHTML.style.height = ''
     if (typeof element !== 'string') {
-      const el = element as HTMLElement
-      const rect = el.getBoundingClientRect()
-      const rectPopup = modalHTML.getBoundingClientRect()
-      // Vertical
-      if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-        modalHTML.style.top = `calc(${rect.bottom}px + .125rem)`
-      } else if (rectPopup.height + 28 < rect.top) {
-        modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
-      } else {
-        modalHTML.style.top = modalHTML.style.bottom = '1rem'
-      }
-
-      // Horizontal
-      if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
-        modalHTML.style.right = `${document.body.clientWidth - rect.right}px`
-      } else {
-        modalHTML.style.left = `${rect.left}px`
-      }
+      return fitPopupPositionedElement(modalHTML, element)
     } else if (element === 'right' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`

@@ -21,10 +21,11 @@
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, IconEdit, IconMoreH, Label, showPanel, showPopup } from '@anticrm/ui'
+  import { Button, Component, IconEdit, Label, showPanel, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
   import { hasDate } from '../utils/CardUtils'
+  import { getElementPopupAlignment } from '../utils/PopupUtils';
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
 
@@ -33,11 +34,12 @@
 
   let loadingAttachment = 0
   let dragoverAttachment = false
+  let ref: HTMLElement
 
   const client = getClient()
 
-  function showMenu (ev?: Event): void {
-    showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+  function showMenu (): void {
+    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, {h: 'right', v: 'top'}))
   }
 
   function showCard () {
@@ -65,7 +67,7 @@
   objectId={object._id}
   space={object.space}
   canDrop={canDropAttachment}>
-  <div class="relative flex-col pt-2 pb-1 pr-2 pl-2">
+  <div class="relative flex-col pt-2 pb-1 pr-2 pl-2" bind:this={ref}>
     {#if dragoverAttachment}
       <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
         <Label label={board.string.DropFileToUpload} />
