@@ -62,6 +62,8 @@ export default mergeIds(boardId, board, {
     Attachments: '' as IntlString,
     AddAttachment: '' as IntlString,
     DropFileToUpload: '' as IntlString,
+    AttachmentTip: '' as IntlString,
+    Computer: '' as IntlString,
     CustomFields: '' as IntlString,
     Automation: '' as IntlString,
     AddButton: '' as IntlString,

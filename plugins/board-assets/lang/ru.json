@@ -41,6 +41,8 @@
     "Attachments": "Прикрепленное",
     "AddAttachment": "Прикрепить",
     "DropFileToUpload": "Добавьте файлы.",
+    "AttachmentTip": "Совет: Вы можете перетаскивать файлы на карточки, чтобы прикрепить их.",
+    "Computer": "Компьютер",
     "CustomFields": "Дополнительно",
     "Automation": "Автоматизация",
     "AddButton": "Добавить",

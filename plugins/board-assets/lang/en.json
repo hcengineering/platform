@@ -41,6 +41,8 @@
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",
     "DropFileToUpload": "Drop files to upload.",
+    "AttachmentTip": "Tip: You can drag and drop files onto cards to upload them.",
+    "Computer": "Computer",
     "CustomFields": "Custom Fields",
     "Automation": "Automation",
     "AddButton": "Add Button",
