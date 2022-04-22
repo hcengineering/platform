@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -64,7 +64,7 @@ export class TIssueStatus extends TAttachedDoc implements IssueStatus {
 /**
  * @public
  */
-@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_TRACKER)
+@Model(tracker.class.IssueStatusCategory, core.class.Doc, DOMAIN_MODEL)
 export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
   label!: IntlString
   icon!: Asset
