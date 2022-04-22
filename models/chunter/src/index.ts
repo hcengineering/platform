@@ -332,9 +332,9 @@ export function createModel (builder: Builder): void {
           },
           {
             id: 'fileBrowser',
-            label: chunter.string.FileBrowser,
-            icon: chunter.icon.FileBrowser,
-            component: chunter.component.FileBrowser
+            label: attachment.string.FileBrowser,
+            icon: attachment.icon.FileBrowser,
+            component: attachment.component.FileBrowser
           }
         ],
         spaces: [

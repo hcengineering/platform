@@ -20,7 +20,7 @@ import { getMetadata, setPlatformStatus, unknownError } from '@anticrm/platform'
 
 import attachment from './plugin'
 
-export async function uploadFile(file: File, opts?: { space: Ref<Space>; attachedTo: Ref<Doc> }): Promise<string> {
+export async function uploadFile (file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }): Promise<string> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   if (uploadUrl === undefined) {
@@ -58,7 +58,7 @@ export async function uploadFile(file: File, opts?: { space: Ref<Space>; attache
   return await resp.text()
 }
 
-export async function deleteFile(id: string): Promise<void> {
+export async function deleteFile (id: string): Promise<void> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   const url = `${uploadUrl as string}?file=${id}`
@@ -74,10 +74,10 @@ export async function deleteFile(id: string): Promise<void> {
   }
 }
 
-export async function createAttachments(
+export async function createAttachments (
   client: Client,
   list: FileList,
-  attachTo: { objectClass: Ref<Class<Doc>>; space: Ref<Space>; objectId: Ref<Doc> }
+  attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> }
 ) {
   const { objectClass, objectId, space } = attachTo
   try {
@@ -100,7 +100,7 @@ export async function createAttachments(
   }
 }
 
-export function getType(type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }

@@ -27,7 +27,6 @@ export default mergeIds(chunterId, chunter, {
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
-    FileBrowser: '' as AnyComponent,
     Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     SavedMessages: '' as AnyComponent

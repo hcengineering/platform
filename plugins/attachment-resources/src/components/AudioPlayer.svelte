@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { getFileUrl } from '@anticrm/presentation'
@@ -23,8 +22,8 @@
   export let value: Attachment
 
   let time = 0
-	let duration = Number.POSITIVE_INFINITY
-	let paused = true
+  let duration = Number.POSITIVE_INFINITY
+  let paused = true
 
   function buttonClick () {
     paused = !paused
@@ -33,16 +32,16 @@
   $: icon = !paused ? Pause : Play
 </script>
 
-<div class='container flex-between'>
+<div class="container flex-between">
   <div>
-    <CircleButton size='x-large' on:click={buttonClick} {icon} />
+    <CircleButton size="x-large" on:click={buttonClick} {icon} />
   </div>
-  <div class='w-full ml-4'>
+  <div class="w-full ml-4">
     <Progress bind:value={time} max={Number.isFinite(duration) ? duration : 100} editable />
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getFileUrl(value.file)} type={value.type}>
+  <source src={getFileUrl(value.file)} type={value.type} />
 </audio>
 
 <style lang="scss">

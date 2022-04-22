@@ -2,6 +2,7 @@
   "string": {
     "UploadDropFilesHere": "Upload or drop files here",
     "NoAttachments": "There are no attachments for this",
+    "NoParticipants": "No participants added",
     "AddAttachment": "uploaded an attachment",
     "Attachments": "Attachments",
     "Photos": "Photos",
@@ -13,6 +14,28 @@
     "Size": "Size",
     "Photo": "Photo",
     "Date": "Date",
-    "Name": "Name"
+    "Name": "Name",
+    "FileBrowser": "File browser",
+    "FileBrowserFileCounter": "{results, plural, =1 {# result} other {# results}}",
+    "FileBrowserFilterFrom": "From",
+    "FileBrowserFilterIn": "In",
+    "FileBrowserFilterDate": "Date",
+    "FileBrowserFilterFileType": "File type",
+    "FileBrowserSortNewest": "Newest file",
+    "FileBrowserSortOldest": "Oldest file",
+    "FileBrowserSortAZ": "A to Z",
+    "FileBrowserSortZA": "Z to A",
+    "FileBrowserDateFilterAny": "Any time",
+    "FileBrowserDateFilterToday": "Today",
+    "FileBrowserDateFilterYesterday": "Yesterday",
+    "FileBrowserDateFilter7Days": "Last 7 days",
+    "FileBrowserDateFilter30Days": "Last 30 days",
+    "FileBrowserDateFilter3Months": "Last 3 months",
+    "FileBrowserDateFilter12Months": "Last 12 months",
+    "FileBrowserTypeFilterAny": "Any file type",
+    "FileBrowserTypeFilterImages": "Images",
+    "FileBrowserTypeFilterAudio": "Audio",
+    "FileBrowserTypeFilterVideos": "Videos",
+    "FileBrowserTypeFilterPDFs": "PDFs"
   }
 }

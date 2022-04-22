@@ -109,7 +109,6 @@ export const chunterId = 'chunter' as Plugin
 export default plugin(chunterId, {
   icon: {
     Chunter: '' as Asset,
-    FileBrowser: '' as Asset, // TODO: replace
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,

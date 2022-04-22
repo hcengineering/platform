@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter } from '@anticrm/attachment-resources'
-  import type { Channel } from '@anticrm/chunter'
+  import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Doc, getCurrentAccount, Ref, SortingOrder, SortingQuery } from '@anticrm/core'
+  import { Doc, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
-  import { getClient, UserBox, UserBoxList } from '@anticrm/presentation'
-  import { DropdownLabels, IconMoreV, Label, Menu as UIMenu, showPopup } from '@anticrm/ui'
+  import { getClient, UserBoxList } from '@anticrm/presentation'
+  import { DropdownLabelsIntl, IconMoreV, Label, Menu as UIMenu, showPopup } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
-  import chunter from '../plugin'
+  import { AttachmentPresenter } from '..'
+  import attachment from '../plugin'
 
   enum SortMode {
     NewestFile,
@@ -33,104 +32,95 @@
   }
 
   const msInDay = 24 * 60 * 60 * 1000
+  const getBeginningOfToday = () => {
+    const date = new Date()
+    date.setUTCHours(0, 0, 0, 0)
+    return date.getTime()
+  }
   const dateObjects = [
     {
-      id: '00',
-      label: chunter.string.FileBrowserDateFilter0,
+      id: 'dateAny',
+      label: attachment.string.FileBrowserDateFilterAny,
       getDate: () => {
         return undefined
       }
     },
     {
-      id: '01',
-      label: chunter.string.FileBrowserDateFilter1,
+      id: 'dateToday',
+      label: attachment.string.FileBrowserDateFilterToday,
       getDate: () => {
-        return { $gt: Date.now() - msInDay }
+        return { $gte: getBeginningOfToday() }
       }
     },
     {
-      id: '02',
-      label: chunter.string.FileBrowserDateFilter2,
+      id: 'dateYesterday',
+      label: attachment.string.FileBrowserDateFilterYesterday,
       getDate: () => {
-        return { $lt: Date.now() - msInDay, $gt: Date.now() - 2 * msInDay }
+        return { $gte: getBeginningOfToday() - msInDay, $lt: getBeginningOfToday() }
       }
     },
     {
-      id: '03',
-      label: chunter.string.FileBrowserDateFilter3,
+      id: 'date7Days',
+      label: attachment.string.FileBrowserDateFilter7Days,
       getDate: () => {
-        return { $gt: Date.now() - msInDay * 7 }
+        return { $gte: getBeginningOfToday() - msInDay * 6 }
       }
     },
     {
-      id: '04',
-      label: chunter.string.FileBrowserDateFilter4,
+      id: 'date30Days',
+      label: attachment.string.FileBrowserDateFilter30Days,
       getDate: () => {
-        return { $gt: Date.now() - msInDay * 30 }
+        return { $gte: getBeginningOfToday() - msInDay * 29 }
       }
     },
     {
-      id: '05',
-      label: chunter.string.FileBrowserDateFilter5,
+      id: 'date3Months',
+      label: attachment.string.FileBrowserDateFilter3Months,
       getDate: () => {
-        return { $gt: Date.now() - msInDay * 91 }
+        return { $gte: getBeginningOfToday() - msInDay * 90 }
       }
     },
     {
-      id: '06',
-      label: chunter.string.FileBrowserDateFilter6,
+      id: 'date12Months',
+      label: attachment.string.FileBrowserDateFilter12Months,
       getDate: () => {
-        return { $gt: Date.now() - msInDay * 365 }
-      }
-    },
-    {
-      id: '07',
-      label: '(Last 10 secs - debug option)',
-      getDate: () => {
-        return { $gt: Date.now() - 1000 * 10 }
-      }
-    },
-    {
-      id: '08',
-      label: '(Prev 10 secs - debug option)',
-      getDate: () => {
-        return { $lt: Date.now() - 1000 * 10, $gt: Date.now() - 1000 * 40 }
+        return { $gte: getBeginningOfToday() - msInDay * 364 }
       }
     }
   ]
 
   const fileTypeObjects = [
     {
-      id: '00',
-      label: chunter.string.FileBrowserTypeFilter0,
+      id: 'typeAny',
+      label: attachment.string.FileBrowserTypeFilterAny,
       getType: () => {
         return undefined
       }
     },
     {
-      id: '01',
-      label: chunter.string.FileBrowserTypeFilter1,
+      id: 'typeImage',
+      label: attachment.string.FileBrowserTypeFilterImages,
       getType: () => {
         return { $like: '%image/%' }
       }
     },
     {
-      id: '02',
-      label: chunter.string.FileBrowserTypeFilter2,
+      id: 'typeAudio',
+      label: attachment.string.FileBrowserTypeFilterAudio,
       getType: () => {
         return { $like: '%audio/%' }
       }
     },
     {
-      id: '03',
-      label: chunter.string.FileBrowserTypeFilter3,
+      id: 'typeVideo',
+      label: attachment.string.FileBrowserTypeFilterVideos,
       getType: () => {
         return { $like: '%video/%' }
       }
     },
     {
-      id: '04',
-      label: chunter.string.FileBrowserTypeFilter4,
+      id: 'typePDF',
+      label: attachment.string.FileBrowserTypeFilterPDFs,
       getType: () => {
         return 'application/pdf'
       }
@@ -138,17 +128,17 @@
   ]
 
   const client = getClient()
-  export let channel: Channel | undefined
+  export let space: Space | undefined
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
-  let assignee: Ref<Employee> | null = null
+  const assignee: Ref<Employee> | null = null
 
   let attachments: Attachment[] = []
   let selectedFileNumber: number | undefined
 
   let selectedSort: SortMode = SortMode.NewestFile
-  let selectedDateId = '00'
-  let selectedFileTypeId = '00'
+  let selectedDateId = 'dateAny'
+  let selectedFileTypeId = 'typeAny'
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
     selectedFileNumber = fileNumber
@@ -195,13 +185,13 @@
   const sortModeToString = (sortMode: SortMode): IntlString<{}> => {
     switch (sortMode) {
       case SortMode.NewestFile:
-        return chunter.string.FileBrowserSortNewest
+        return attachment.string.FileBrowserSortNewest
       case SortMode.OldestFile:
-        return chunter.string.FileBrowserSortOldest
+        return attachment.string.FileBrowserSortOldest
       case SortMode.AscendingAlphabetical:
-        return chunter.string.FileBrowserSortAZ
+        return attachment.string.FileBrowserSortAZ
       case SortMode.DescendingAlphabetical:
-        return chunter.string.FileBrowserSortZA
+        return attachment.string.FileBrowserSortZA
     }
   }
 
@@ -221,7 +211,7 @@
   $: fetch(selectedSort, selectedFileTypeId, selectedDateId)
 
   async function fetch (selectedSort_: SortMode, selectedFileTypeId_: string, selectedDateId_: string) {
-    const spaceQuery = channel && { space: channel._id }
+    const spaceQuery = space && { space: space._id }
     const fileType = fileTypeObjects.find((o) => o.id === selectedFileTypeId_)?.getType()
     const typeQuery = fileType && { type: fileType }
     const date = dateObjects.find((o) => o.id === selectedDateId_)?.getDate()
@@ -239,7 +229,7 @@
 
 <div class="ac-header full divide">
   <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={chunter.string.FileBrowser} /></span>
+    <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
   </div>
 </div>
 <div class="filterBlockContainer">
@@ -247,30 +237,30 @@
     <UserBoxList
       _class={contact.class.Employee}
       items={participants}
-      label={chunter.string.FileBrowserFilterFrom}
+      label={attachment.string.FileBrowserFilterFrom}
       on:update={(evt) => {
         participants = evt.detail
       }}
-      noItems={chunter.string.AndYou}
+      noItems={attachment.string.NoParticipants}
     />
   </div>
   <!-- TODO: wait for In filter -->
+  <!-- <div class="simpleFilterButton">
+    <UserBox _class={contact.class.Employee} label={attachment.string.FileBrowserFilterIn} bind:value={assignee} />
+  </div> -->
   <div class="simpleFilterButton">
-    <UserBox _class={contact.class.Employee} label={chunter.string.FileBrowserFilterIn} bind:value={assignee} />
-  </div>
-  <div class="simpleFilterButton">
-    <DropdownLabels
+    <DropdownLabelsIntl
       items={dateObjects}
-      placeholder={chunter.string.FileBrowserFilterDate}
-      label={chunter.string.FileBrowserFilterDate}
+      placeholder={attachment.string.FileBrowserFilterDate}
+      label={attachment.string.FileBrowserFilterDate}
       bind:selected={selectedDateId}
     />
   </div>
   <div class="simpleFilterButton">
-    <DropdownLabels
+    <DropdownLabelsIntl
       items={fileTypeObjects}
-      placeholder={chunter.string.FileBrowserFilterFileType}
-      label={chunter.string.FileBrowserFilterFileType}
+      placeholder={attachment.string.FileBrowserFilterFileType}
+      label={attachment.string.FileBrowserFilterFileType}
       bind:selected={selectedFileTypeId}
     />
   </div>
@@ -278,7 +268,7 @@
 <div class="group">
   <div class="groupHeader">
     <div class="eGroupHeaderCount">
-      <Label label={chunter.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
+      <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
     </div>
     <div class="eGroupHeaderSortMenu" on:click={(event) => showSortMenu(event)}>
       {'Sort: '}
