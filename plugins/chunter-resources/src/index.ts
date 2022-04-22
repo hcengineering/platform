@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
+import { Attachment } from '@anticrm/attachment'
 import core from '@anticrm/core'
 import chunter, { Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
+import preference from '@anticrm/preference'
 import { getClient, MessageBox } from '@anticrm/presentation'
 import { getCurrentLocation, navigate, showPopup } from '@anticrm/ui'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
@@ -33,7 +35,6 @@ import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
-import preference from '@anticrm/preference'
 
 export { CommentsPresenter }
 
@@ -128,7 +129,7 @@ async function UnarchiveChannel (channel: Channel): Promise<void> {
   )
 }
 
-export async function AddToSaved (message: ChunterMessage): Promise<void> {
+export async function AddMessageToSaved (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   await client.createDoc(chunter.class.SavedMessages, preference.space.Preference, {
@@ -136,10 +137,27 @@ export async function AddToSaved (message: ChunterMessage): Promise<void> {
   })
 }
 
-export async function DeleteFromSaved (message: ChunterMessage): Promise<void> {
+export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(chunter.class.SavedMessages, { attachedTo: message._id })
+  if (current !== undefined) {
+    await client.remove(current)
+  }
+}
+
+export async function AddAttachmentToSaved (attachment: Attachment): Promise<void> {
+  const client = getClient()
+
+  await client.createDoc(chunter.class.SavedAttachments, preference.space.Preference, {
+    attachedTo: attachment._id
+  })
+}
+
+export async function DeleteAttachmentFromSaved (attachment: Attachment): Promise<void> {
+  const client = getClient()
+
+  const current = await client.findOne(chunter.class.SavedAttachments, { attachedTo: attachment._id })
   if (current !== undefined) {
     await client.remove(current)
   }
@@ -172,6 +190,8 @@ export default async (): Promise<Resources> => ({
     PinMessage,
     UnpinMessage,
     ArchiveChannel,
-    UnarchiveChannel
+    UnarchiveChannel,
+    AddAttachmentToSaved,
+    DeleteAttachmentFromSaved
   }
 })

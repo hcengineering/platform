@@ -15,16 +15,21 @@
 
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
+  import { Ref } from '@anticrm/core';
+  import { Action } from '@anticrm/view';
   import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let attachments: Attachment[] = []
+  export let savedAttachmentsIds: Ref<Attachment>[] = []
+  export let saveAttachmentAction: Action | undefined
+  export let unsaveAttachmentAction: Action | undefined
 </script>
 
 {#if attachments.length}
   <div class='container'>
     {#each attachments as attachment}
       <div class='item'>
-        <AttachmentPreview value={attachment} />
+        <AttachmentPreview value={attachment} {saveAttachmentAction} {unsaveAttachmentAction} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
       </div>
     {/each}
   </div>

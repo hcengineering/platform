@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { Channel, Message, ThreadMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
@@ -30,6 +30,7 @@
   const query = createQuery()
   const messageQuery = createQuery()
 
+  export let savedAttachmentsIds: Ref<Attachment>[]
   export let _id: Ref<Message>
   let parent: Message | undefined
   let commentId = generateId() as Ref<ThreadMessage>
@@ -178,7 +179,7 @@
 </div>
 <div class="flex-col content">
   {#if parent}
-    <MsgView message={parent} {employees} thread />
+    <MsgView message={parent} {employees} thread {savedAttachmentsIds} />
     {#if total > comments.length}
       <div
         class="label pb-2 pt-2 pl-8 over-underline"
@@ -190,7 +191,7 @@
       </div>
     {/if}
     {#each comments as comment (comment._id)}
-      <MsgView message={comment} {employees} thread />
+      <MsgView message={comment} {employees} thread {savedAttachmentsIds} />
     {/each}
     <div class="mr-4 ml-4 mb-4 mt-2">
       <AttachmentRefInput
@@ -208,7 +209,7 @@
     overflow: hidden;
     margin: 1rem 1rem 0px;
     background-color: var(--theme-border-modal);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--theme-zone-border);
   }
 

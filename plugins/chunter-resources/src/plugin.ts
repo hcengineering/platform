@@ -32,7 +32,9 @@ export default mergeIds(chunterId, chunter, {
     PinMessage: '' as ViewAction,
     UnpinMessage: '' as ViewAction,
     SubscribeComment: '' as ViewAction,
-    UnsubscribeComment: '' as ViewAction
+    UnsubscribeComment: '' as ViewAction,
+    AddAttachmentToSaved: '' as ViewAction,
+    DeleteAttachmentFromSaved: '' as ViewAction
   },
   string: {
     Channel: '' as IntlString,
@@ -65,6 +67,7 @@ export default mergeIds(chunterId, chunter, {
     AddToSaved: '' as IntlString,
     RemoveFromSaved: '' as IntlString,
     EmptySavedHeader: '' as IntlString,
-    EmptySavedText: '' as IntlString
+    EmptySavedText: '' as IntlString,
+    SharedBy: '' as IntlString
   }
 })

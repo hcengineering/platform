@@ -16,15 +16,41 @@
 
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
+  import { getResource } from '@anticrm/platform';
   import { getFileUrl, PDFViewer } from '@anticrm/presentation'
+  import { showPopup, closeTooltip, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
+  import { Action } from '@anticrm/view'
   import { getType } from '../utils'
-  import { showPopup, closeTooltip } from '@anticrm/ui'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
 
   export let value: Attachment
+  export let isSaved: boolean = false 
+  export let saveAttachmentAction: Action | undefined
+  export let unsaveAttachmentAction: Action | undefined
 
   $: type = getType(value.type)
+
+  const showMenu = (ev: Event) => {
+    if (!saveAttachmentAction || !unsaveAttachmentAction)
+      return
+    const savedAction = isSaved ? unsaveAttachmentAction : saveAttachmentAction
+
+    showPopup(
+      Menu,
+      {
+        actions: [{
+          label: savedAction.label,
+          icon: savedAction.icon,
+          action: async (evt: MouseEvent) => {
+            const impl = await getResource(savedAction.action)
+            await impl(value, evt)
+          }
+        }]
+      },
+      ev.target as HTMLElement
+    )
+  }
 </script>
 
 <div class="flex-row-center">
@@ -48,8 +74,19 @@
       </video>
     </div>
   {:else}
-    <div class='container'>
+    <div class='flex container'>
       <AttachmentPresenter {value} />
+      {#if saveAttachmentAction && unsaveAttachmentAction}
+        <div class='more'>
+          <ActionIcon
+            icon={IconMoreH}
+            size={'small'}
+            action={(e) => {
+              showMenu(e)
+            }}
+          />
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
@@ -59,7 +96,18 @@
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: 0.75rem;
-    padding: 0.5rem
+    padding: 0.5rem;
+
+    .more {
+      margin-left: 0.5rem;
+      visibility: hidden;
+    }
+  }
+
+  .container:hover {
+    .more {
+      visibility: visible;
+    }
   }
 
   .content {

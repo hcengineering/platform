@@ -14,7 +14,8 @@
 //
 
 import activity from '@anticrm/activity'
-import type { Backlink, Channel, ChunterMessage, Comment, Message, SavedMessages, ThreadMessage } from '@anticrm/chunter'
+import { Attachment } from '@anticrm/attachment'
+import type { Backlink, Channel, ChunterMessage, Comment, Message, SavedAttachments, SavedMessages, ThreadMessage } from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
@@ -107,8 +108,14 @@ export class TSavedMessages extends TPreference implements SavedMessages {
   attachedTo!: Ref<ChunterMessage>
 }
 
+@Model(chunter.class.SavedAttachments, preference.class.Preference)
+export class TSavedAttachments extends TPreference implements SavedAttachments {
+  @Prop(TypeRef(attachment.class.Attachment), chunter.string.SavedAttachments)
+  attachedTo!: Ref<Attachment>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TThreadMessage, TChunterMessage, TComment, TBacklink, TSavedMessages)
+  builder.createModel(TChannel, TMessage, TThreadMessage, TChunterMessage, TComment, TBacklink, TSavedMessages, TSavedAttachments)
   builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
     view: {
       class: chunter.class.Message

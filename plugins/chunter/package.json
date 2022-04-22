@@ -30,6 +30,7 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/contact": "~0.6.5",
     "@anticrm/core": "~0.6.16",
-    "@anticrm/preference": "~0.6.0"
+    "@anticrm/preference": "~0.6.0",
+    "@anticrm/attachment": "~0.6.1"
   }
 }
