@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
+  import { Channel, ChunterSpace } from '@anticrm/chunter'
   import { getCurrentAccount } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Button, EditBox } from '@anticrm/ui'
@@ -22,14 +22,21 @@
   import chunter from '../plugin'
   import EditChannelDescriptionAttachments from './EditChannelDescriptionAttachments.svelte'
 
-  export let channel: Channel
+  export let channel: ChunterSpace
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  function isCommonChannel (channel?: ChunterSpace): channel is Channel {
+    return channel?._class === chunter.class.Channel
+  }
+
   function onTopicChange (ev: Event) {
+    if (!isCommonChannel(channel)) {
+      return
+    }
     const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel!, { topic: newTopic })
+    client.update(channel, { topic: newTopic })
   }
 
   function onDescriptionChange (ev: Event) {
@@ -47,6 +54,7 @@
 
 {#if channel}
   <div class="flex-col flex-gap-3">
+    {#if isCommonChannel(channel)}
     <EditBox
       label={chunter.string.Topic}
       bind:value={channel.topic}
@@ -71,6 +79,7 @@
         leaveChannel()
       }}
     />
+    {/if}
     <EditChannelDescriptionAttachments {channel} />
   </div>
 {/if}

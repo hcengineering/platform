@@ -100,7 +100,7 @@
     )
 
     pinnedQuery.query(
-      chunter.class.Channel,
+      chunter.class.ChunterSpace,
       { _id: currentSpace },
       (res) => {
         pinnedIds = res[0]?.pinned ?? []
@@ -153,7 +153,7 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, currentSpace, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }

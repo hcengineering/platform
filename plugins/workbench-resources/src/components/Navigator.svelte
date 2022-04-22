@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space } from '@anticrm/core'
+  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Scroller } from '@anticrm/ui'
@@ -34,6 +34,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
+  const myAccId = getCurrentAccount()._id
 
   let spaces: Space[] = []
   let starred: Space[] = []
@@ -77,7 +78,7 @@
       topSpecials = []
       bottomSpecials = []
     }
-    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id))
+    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id) && (!sp.members.length || sp.members.includes(myAccId)))
     starred = spaces.filter((sp) => preferences.has(sp._id))
   }
 

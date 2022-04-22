@@ -16,12 +16,14 @@
 import activity from '@anticrm/activity'
 import type {
   Backlink,
+  ChunterSpace,
   Channel,
   ChunterMessage,
   Comment,
   Message,
   SavedMessages,
-  ThreadMessage
+  ThreadMessage,
+  DirectMessage
 } from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
@@ -50,19 +52,26 @@ import preference, { TPreference } from '@anticrm/model-preference'
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
 
-@Model(chunter.class.Channel, core.class.Space)
-@UX(chunter.string.Channel, chunter.icon.Hashtag)
-export class TChannel extends TSpace implements Channel {
+@Model(chunter.class.ChunterSpace, core.class.Space)
+export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
 
   @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
   pinned?: Ref<ChunterMessage>[]
+}
 
+@Model(chunter.class.Channel, chunter.class.ChunterSpace)
+@UX(chunter.string.Channel, chunter.icon.Hashtag)
+export class TChannel extends TChunterSpace implements Channel {
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
   topic?: string
 }
+
+@Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
+@UX(chunter.string.DirectMessage, contact.icon.Person)
+export class TDirectMessage extends TChunterSpace implements DirectMessage {}
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
 export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
@@ -128,23 +137,49 @@ export class TSavedMessages extends TPreference implements SavedMessages {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TThreadMessage, TChunterMessage, TComment, TBacklink, TSavedMessages)
-  builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: chunter.class.Message
-    }
+  builder.createModel(
+    TChunterSpace,
+    TChannel,
+    TMessage,
+    TThreadMessage,
+    TChunterMessage,
+    TComment,
+    TBacklink,
+    TDirectMessage,
+    TSavedMessages
+  )
+  const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
+
+  spaceClasses.forEach((spaceClass) => {
+    builder.mixin(spaceClass, core.class.Class, workbench.mixin.SpaceView, {
+      view: {
+        class: chunter.class.Message
+      }
+    })
+
+    builder.mixin(spaceClass, core.class.Class, notification.mixin.SpaceLastEdit, {
+      lastEditField: 'lastMessage'
+    })
+
+    builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
+      editor: chunter.component.EditChannel
+    })
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {
+    getName: chunter.function.GetDmName
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.DmPresenter
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.ChannelPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.SpaceLastEdit, {
-    lastEditField: 'lastMessage'
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectEditor, {
-    editor: chunter.component.EditChannel
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.DmHeader
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.SpaceHeader, {
@@ -308,6 +343,12 @@ export function createModel (builder: Builder): void {
             spaceClass: chunter.class.Channel,
             addSpaceLabel: chunter.string.CreateChannel,
             createComponent: chunter.component.CreateChannel
+          },
+          {
+            label: chunter.string.DirectMessages,
+            spaceClass: chunter.class.DirectMessage,
+            addSpaceLabel: chunter.string.NewDirectMessage,
+            createComponent: chunter.component.CreateDirectMessage
           }
         ],
         aside: chunter.component.ThreadView
