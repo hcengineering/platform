@@ -34,14 +34,28 @@ import {
   Hierarchy
 } from '@anticrm/core'
 import { SessionContext } from '@anticrm/server-core'
+import { genMinModel } from './minmodel'
 
 describe('server', () => {
   disableLogging()
 
+  async function getModelDb (): Promise<ModelDb> {
+    const txes = genMinModel()
+    const hierarchy = new Hierarchy()
+    for (const tx of txes) {
+      hierarchy.tx(tx)
+    }
+    const modelDb = new ModelDb(hierarchy)
+    for (const tx of txes) {
+      await modelDb.tx(tx)
+    }
+    return modelDb
+  }
+
   start(
     new MeasureMetricsContext('test', {}),
     async () => ({
-      modelDb: new ModelDb(new Hierarchy()),
+      modelDb: await getModelDb(),
       findAll: async <T extends Doc>(
         ctx: SessionContext,
         _class: Ref<Class<T>>,
