@@ -36,7 +36,7 @@
   }
 </script>
 
-<div class="category" class:visible={issuesAmount > 0}>
+<div class="category">
   {#if headerComponent}
     <div class="header categoryHeader flex-between label">
       <div class="flex-row-center gap-2">
@@ -81,13 +81,6 @@
 </div>
 
 <style lang="scss">
-  .category {
-    display: none;
-    &.visible {
-      display: block;
-    }
-  }
-
   .categoryHeader {
     height: 2.5rem;
     background-color: var(--theme-table-bg-hover);
