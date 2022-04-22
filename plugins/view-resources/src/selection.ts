@@ -62,7 +62,6 @@ export function updateFocus (selection?: FocusSelection): void {
       cur.focus = selection?.focus
       cur.provider = selection?.provider
       ;(cur as any).now = now
-      console.log('update focus', selection?.focus)
       previewDocument.update(old => {
         if (old !== undefined) {
           return selection?.focus

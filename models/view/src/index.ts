@@ -289,6 +289,9 @@ export function createModel (builder: Builder): void {
     singleInput: true
   })
   actionTarget(builder, view.action.ShowPreview, core.class.Doc, { mode: 'browser' })
+
+  createAction(builder, view.action.Edit, view.string.Edit, view.actionImpl.Edit, { keyBinding: ['Enter'], singleInput: true })
+  actionTarget(builder, view.action.Edit, core.class.Doc, { mode: ['browser', 'context'] })
 }
 
 export default view

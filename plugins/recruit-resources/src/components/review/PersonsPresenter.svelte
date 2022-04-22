@@ -28,7 +28,7 @@
   $: persons = Array.isArray(value) ? value : [value]
 
   async function onClick (p: Person) {
-    showPanel(view.component.EditDoc, p._id, Hierarchy.mixinOrClass(p), 'full')
+    showPanel(view.component.EditDoc, p._id, Hierarchy.mixinOrClass(p), 'content')
   }
 </script>
 

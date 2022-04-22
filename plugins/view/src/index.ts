@@ -130,6 +130,9 @@ export interface ActionTarget<T extends Doc = Doc> extends Doc {
   action: Ref<Action>
   query?: DocumentQuery<T>
   context: ViewContext
+
+  // If specified, will be used instead of action from Action.
+  override?: ViewAction
 }
 
 /**

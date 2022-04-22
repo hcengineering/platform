@@ -70,6 +70,9 @@
   afterUpdate(() => {
     if (props) fitPopup(props, contentPanel)
   })
+  export function fitPopupInstance (): void {
+    if (props) fitPopup(props, contentPanel)
+  }
 </script>
 
 <svelte:window

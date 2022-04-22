@@ -45,7 +45,7 @@
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
     <div class="name lines-limit-2" class:over-underline={!disabled} on:click={() => {
-      if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+      if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
     }}>{formatName(candidate.name)}</div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>

@@ -1,6 +1,6 @@
-import { Doc } from '@anticrm/core'
+import { Doc, Hierarchy } from '@anticrm/core'
 import { getClient, MessageBox } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
+import { showPanel, showPopup } from '@anticrm/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
 import { FocusSelection, focusStore, SelectDirection, selectionStore, previewDocument } from './selection'
@@ -37,6 +37,10 @@ focusStore.subscribe((it) => {
 })
 
 function selPrev (doc: Doc | undefined, evt: Event, dir: SelectDirection): void {
+  selectPrevItem(dir)
+  evt.preventDefault()
+}
+export function selectPrevItem (dir: SelectDirection): void {
   if ($focusStore.provider?.prev !== undefined) {
     $focusStore.provider?.prev(dir)
     previewDocument.update(old => {
@@ -44,10 +48,15 @@ function selPrev (doc: Doc | undefined, evt: Event, dir: SelectDirection): void 
         return $focusStore.focus
       }
     })
-    evt.preventDefault()
   }
 }
+
 function selNext (doc: Doc|undefined, evt: Event, dir: SelectDirection): void {
+  selectNextItem(dir)
+  evt.preventDefault()
+}
+
+export function selectNextItem (dir: SelectDirection): void {
   if ($focusStore.provider?.next !== undefined) {
     $focusStore.provider?.next(dir)
     previewDocument.update(old => {
@@ -55,7 +64,6 @@ function selNext (doc: Doc|undefined, evt: Event, dir: SelectDirection): void {
         return $focusStore.focus
       }
     })
-    evt.preventDefault()
   }
 }
 
@@ -103,6 +111,12 @@ function ShowPreview (doc: Doc | undefined, evt: Event): void {
   })
   evt.preventDefault()
 }
+
+function Edit (doc: Doc, evt: Event): void {
+  evt.preventDefault()
+  showPanel(view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
+}
+
 /**
  * @public
  */
@@ -117,5 +131,6 @@ export const actionImpl = {
   SelectItemNone,
   SelectItemAll,
   ShowActions,
-  ShowPreview
+  ShowPreview,
+  Edit
 }
