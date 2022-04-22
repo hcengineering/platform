@@ -15,9 +15,8 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref, WithLookup } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Icon, IconAdd, Scroller, Tooltip, Button, showPopup, Label } from '@anticrm/ui'
+  import { Icon, IconAdd, Scroller, Tooltip, Button, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
@@ -40,7 +39,6 @@
 
   $: category = categories.find((c) => c._id === categoryId)
   $: categoryIcon = category?.$lookup?.category?.icon
-  $: categoryLabel = (category?.name || '') as IntlString // TODO: replace with <span>
 
   let issuesAmount = 0
 
@@ -59,7 +57,9 @@
       {#if categoryIcon}
         <Icon icon={categoryIcon} size={'small'} />
       {/if}
-      <span class="lines-limit-2"><Label label={categoryLabel} /></span>
+      {#if category?.name}
+        <span class="lines-limit-2">{category?.name}</span>
+      {/if}
       <span class="eLabelCounter ml-2">{issuesAmount}</span>
     </div>
     <div class="flex mr-1">

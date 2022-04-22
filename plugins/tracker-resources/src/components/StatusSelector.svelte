@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
 
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, Icon, Label, showPopup, SelectPopup } from '@anticrm/ui'
+  import { Button, Icon, showPopup, SelectPopup } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let selectedStatusId: Ref<IssueStatus>
@@ -28,8 +27,8 @@
 
   $: selectedStatus = statuses.find((status) => status._id === selectedStatusId) ?? statuses[0]
   $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
-  $: selectedStatusLabel = shouldShowLabel ? ((selectedStatus?.name || '') as IntlString) : undefined
-  $: statusesInfo = statuses.map((s) => ({ id: s._id, label: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
+  $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
+  $: statusesInfo = statuses.map((s) => ({ id: s._id, text: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
 
   const handleStatusEditorOpened = (event: Event) => {
     showPopup(
@@ -43,13 +42,18 @@
 
 {#if kind === 'button'}
   <Button
-    label={selectedStatusLabel}
     icon={selectedStatusIcon}
     width="min-content"
     size="small"
     kind="no-border"
     on:click={handleStatusEditorOpened}
-  />
+  >
+  <svelte:fragment slot="content">
+    {#if selectedStatusLabel}
+      <span class="nowrap">{selectedStatusLabel}</span>
+    {/if}
+  </svelte:fragment>
+</Button>
 {:else if kind === 'icon'}
   <div class="flex-presenter" on:click={handleStatusEditorOpened}>
     {#if selectedStatusIcon}
@@ -58,9 +62,7 @@
       </div>
     {/if}
     {#if selectedStatusLabel}
-      <div class="label nowrap">
-        <Label label={selectedStatusLabel} />
-      </div>
+      <div class="label nowrap">{selectedStatusLabel}</div>
     {/if}
   </div>
 {/if}
