@@ -72,6 +72,15 @@ export enum IssuesOrdering {
 /**
  * @public
  */
+export enum IssuesDateModificationPeriod {
+  All = 'all',
+  PastWeek = 'pastWeek',
+  PastMonth = 'pastMonth',
+}
+
+/**
+ * @public
+ */
 export interface Issue extends Doc {
   title: string
   description: Markup

@@ -68,10 +68,15 @@
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
     "Grouping": "Grouping",
     "Ordering": "Ordering",
+    "CompletedIssues": "Completed issues",
+    "ShowEmptyGroups": "Show empty groups",
     "NoGrouping": "No grouping",
     "NoAssignee": "No assignee",
     "LastUpdated": "Last updated",
-    "DueDate": "Due date"
+    "DueDate": "Due date",
+    "All": "All",
+    "PastWeek": "Past week",
+    "PastMonth": "Past month"
   },
   "status": {}
 }
