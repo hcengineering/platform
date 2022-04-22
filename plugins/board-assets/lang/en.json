@@ -2,6 +2,7 @@
   "string": {
     "Name": "Name",
     "CreateBoard": "Create board",
+    "OpenCard": "Open Card",
     "CreateCard": "Create card",
     "CardName": "Card name",
     "Cards": "Cards",

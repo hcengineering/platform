@@ -21,13 +21,13 @@
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, EditBox, IconEdit, Label, showPanel, showPopup } from '@anticrm/ui'
+  import { Button, Component, EditBox, IconEdit, Label, showPopup } from '@anticrm/ui'
   import board from '../plugin'
-  import { hasDate, updateCard } from '../utils/CardUtils'
-  import { getElementPopupAlignment } from '../utils/PopupUtils'
   import CardInlineActions from './editor/CardInlineActions.svelte'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
+  import { hasDate, openCardPanel, updateCard } from '../utils/CardUtils'
+  import { getElementPopupAlignment } from '../utils/PopupUtils'
 
   export let object: WithLookup<Card>
   export let dragged: boolean
@@ -54,7 +54,7 @@
   }
 
   function showCard () {
-    showPanel(board.component.EditCard, object._id, object._class, 'middle')
+    openCardPanel(object)
   }
 
   function canDropAttachment (e: DragEvent): boolean {

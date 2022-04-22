@@ -1,5 +1,5 @@
-import core, { Ref, TxOperations } from '@anticrm/core'
 import board, { Board, CardLabel } from '@anticrm/board'
+import core, { Ref, TxOperations } from '@anticrm/core'
 import type { KanbanTemplate } from '@anticrm/task'
 import { createKanban } from '@anticrm/task'
 import {
