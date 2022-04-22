@@ -12,21 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import Label from './Label.svelte'
 
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
   export let on: boolean = false
 </script>
 
 <div class="flex-row-center">
   <label class="mini-toggle">
-    <input class="chBox" type="checkbox" bind:checked={on} on:change>
-    <span class="toggle-switch"></span>
+    <input class="chBox" type="checkbox" bind:checked={on} on:change />
+    <span class="toggle-switch" />
   </label>
-  <span class="mini-toggle-label" on:click={() => { on = !on }}><Label {label} /></span>
+  {#if label}
+    <span
+      class="mini-toggle-label"
+      on:click={() => {
+        on = !on
+      }}
+    >
+      <Label {label} />
+    </span>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -48,19 +56,25 @@
       padding: 0;
       clip: rect(0 0 0 0);
       overflow: hidden;
-      
+
       &:checked + .toggle-switch {
         background-color: var(--toggle-on-bg-color);
-        &:hover { background-color: var(--toggle-on-bg-hover); }
+        &:hover {
+          background-color: var(--toggle-on-bg-hover);
+        }
         &:before {
           left: 9px;
           background: var(--toggle-on-sw-color);
         }
       }
-      &:not(:disabled) + .toggle-switch { cursor: pointer; }
+      &:not(:disabled) + .toggle-switch {
+        cursor: pointer;
+      }
       &:disabled + .toggle-switch {
         filter: grayscale(70%);
-        &:before { background: #eee; }
+        &:before {
+          background: #eee;
+        }
       }
       // &:focus-within + .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
     }
@@ -72,7 +86,7 @@
       height: 14px;
       border-radius: 4.5rem;
       background-color: var(--toggle-bg-color);
-      transition: left .2s, background-color .2s;
+      transition: left 0.2s, background-color 0.2s;
       &:before {
         content: '';
         position: absolute;
@@ -84,14 +98,16 @@
         border-radius: 50%;
         background: var(--toggle-sw-color);
         // box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
-        transition: all .1s ease-out;
+        transition: all 0.1s ease-out;
       }
-      &:hover { background-color: var(--toggle-bg-hover); }
+      &:hover {
+        background-color: var(--toggle-bg-hover);
+      }
     }
 
     &-label {
-      margin-left: .375rem;
-      font-size: .75rem;
+      margin-left: 0.375rem;
+      font-size: 0.75rem;
       color: var(--content-color);
       cursor: pointer;
     }
