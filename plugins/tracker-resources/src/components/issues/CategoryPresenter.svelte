@@ -49,7 +49,7 @@
       return
     }
 
-    showPopup(CreateIssue, { space: currentSpace, issueStatus: category?._id }, event.target)
+    showPopup(CreateIssue, { space: currentSpace, issueStatus: categoryId }, event.target)
   }
 </script>
 
@@ -83,7 +83,7 @@
         { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
       ]}
       {options}
-      query={{ ...query, status: category }}
+      query={{ ...query, status: categoryId }}
       on:content={(evt) => {
         issuesAmount = evt.detail.length
         dispatch('content', issuesAmount)
