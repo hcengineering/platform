@@ -16,8 +16,8 @@
 
 import { Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { IssuePriority, IssueStatus, Team, IssuesGrouping, IssuesOrdering, Issue } from '@anticrm/tracker'
-import { AnyComponent } from '@anticrm/ui'
+import { IssuePriority, IssueStatus, Team, IssuesGrouping, IssuesOrdering, Issue, IssuesDateModificationPeriod } from '@anticrm/tracker'
+import { AnyComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import tracker from './plugin'
@@ -93,6 +93,12 @@ export const issuesOrderByOptions: Record<IssuesOrdering, IntlString> = {
   [IssuesOrdering.DueDate]: tracker.string.DueDate
 }
 
+export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationPeriod, IntlString> = {
+  [IssuesDateModificationPeriod.All]: tracker.string.All,
+  [IssuesDateModificationPeriod.PastWeek]: tracker.string.PastWeek,
+  [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
+}
+
 export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' >
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate'>
 
@@ -121,4 +127,27 @@ export const issuesGroupPresenterMap: Record<IssuesGroupByKeys, AnyComponent | u
   status: tracker.component.StatusPresenter,
   priority: tracker.component.PriorityPresenter,
   assignee: tracker.component.AssigneePresenter
+}
+
+export const defaultIssueCategories: Partial<Record<IssuesGroupByKeys, Array<Issue[IssuesGroupByKeys]> | undefined>> = {
+  status: [IssueStatus.InProgress, IssueStatus.Todo, IssueStatus.Backlog, IssueStatus.Done, IssueStatus.Canceled],
+  priority: [IssuePriority.NoPriority, IssuePriority.Urgent, IssuePriority.High, IssuePriority.Medium, IssuePriority.Low]
+}
+
+export const getIssuesModificationDatePeriodTime = (
+  period: IssuesDateModificationPeriod | null
+): number => {
+  const today = new Date(Date.now())
+
+  switch (period) {
+    case IssuesDateModificationPeriod.PastWeek: {
+      return today.getTime() - MILLISECONDS_IN_WEEK
+    }
+    case IssuesDateModificationPeriod.PastMonth: {
+      return today.getTime() - getMillisecondsInMonth(today)
+    }
+    default: {
+      return 0
+    }
+  }
 }
