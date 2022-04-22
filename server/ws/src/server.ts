@@ -14,7 +14,6 @@
 //
 
 import core, {
-  Account,
   Class,
   Doc,
   DocumentQuery,
@@ -23,9 +22,8 @@ import core, {
   MeasureContext,
   ModelDb,
   Ref,
-  Tx,
-  TxCreateDoc,
-  TxFactory,
+  Space,
+  Tx, TxFactory,
   TxResult
 } from '@anticrm/core'
 import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
@@ -116,81 +114,40 @@ class SessionManager {
 
       const session = new Session(this, token, workspace.pipeline)
       workspace.sessions.push([session, ws])
-      await this.setOnline(ctx, session)
+      await this.setStatus(ctx, session, true)
       return session
     }
   }
 
-  private async setOnline (ctx: MeasureContext, session: Session): Promise<void> {
-    const user = (
-      await session.modelDb.findAll(
-        core.class.Account,
-        {
-          email: session.getUser()
-        },
-        { limit: 1 }
-      )
-    )[0]
-    if (user === undefined || user.online === true) return
-    const txFactory = new TxFactory(user._id)
-    const tx = txFactory.createTxUpdateDoc(user._class, user.space, user._id, {
-      online: true
-    })
-    tx.space = core.space.DerivedTx
-    const createTx = (
-      await session.findAll<TxCreateDoc<Account>>(
-        ctx,
-        core.class.TxCreateDoc,
-        {
-          objectId: user._id
-        },
-        { limit: 1 }
-      )
-    )[0]
-    const attributes = createTx.attributes
-    attributes.online = true
-    const txUpdate = txFactory.createTxUpdateDoc(createTx._class, createTx.space, createTx._id, {
-      attributes
-    })
-    txUpdate.space = core.space.DerivedTx
-    await session.tx(ctx, tx)
-    await session.tx(ctx, txUpdate)
-  }
-
-  private async setOffline (ctx: MeasureContext, session: Session): Promise<void> {
-    const user = (
-      await session.modelDb.findAll(
-        core.class.Account,
-        {
-          email: session.getUser()
-        },
-        { limit: 1 }
-      )
-    )[0]
-    if (user === undefined || user.online === false) return
-    const txFactory = new TxFactory(user._id)
-    const tx = txFactory.createTxUpdateDoc(user._class, user.space, user._id, {
-      online: false
-    })
-    tx.space = core.space.DerivedTx
-    const createTx = (
-      await session.findAll<TxCreateDoc<Account>>(
-        ctx,
-        core.class.TxCreateDoc,
-        {
-          objectId: user._id
-        },
-        { limit: 1 }
-      )
-    )[0]
-    const attributes = createTx.attributes
-    attributes.online = false
-    const txUpdate = txFactory.createTxUpdateDoc(createTx._class, createTx.space, createTx._id, {
-      attributes
-    })
-    txUpdate.space = core.space.DerivedTx
-    await session.tx(ctx, tx)
-    await session.tx(ctx, txUpdate)
+  private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+    try {
+      const user = (
+        await session.modelDb.findAll(
+          core.class.Account,
+          {
+            email: session.getUser()
+          },
+          { limit: 1 }
+        )
+      )[0]
+      if (user === undefined) return
+      const status = (await session.findAll(ctx, core.class.UserStatus, { modifiedBy: user._id }, { limit: 1 }))[0]
+      const txFactory = new TxFactory(user._id)
+      if (status === undefined) {
+        const tx = txFactory.createTxCreateDoc(core.class.UserStatus, user._id as string as Ref<Space>, {
+          online
+        })
+        tx.space = core.space.DerivedTx
+        await session.tx(ctx, tx)
+      } else if (status.online !== online) {
+        const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
+          online
+        })
+        tx.space = core.space.DerivedTx
+        await session.tx(ctx, tx)
+      }
+    } catch {
+    }
   }
 
   private async createWorkspace (
@@ -206,7 +163,7 @@ class SessionManager {
       sessions: [[session, ws]]
     }
     this.workspaces.set(token.workspace, workspace)
-    await this.setOnline(ctx, session)
+    await this.setStatus(ctx, session, true)
     return session
   }
 
@@ -224,7 +181,7 @@ class SessionManager {
       const user = session[0].getUser()
       const another = workspace.sessions.findIndex((p) => p[0].getUser() === user)
       if (another === -1) {
-        await this.setOffline(ctx, session[0])
+        await this.setStatus(ctx, session[0], false)
       }
       if (workspace.sessions.length === 0) {
         if (LOGGING_ENABLED) console.log('no sessions for workspace', workspaceId)

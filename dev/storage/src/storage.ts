@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import type { Tx, Ref, Doc, Class, DocumentQuery, FindResult, FindOptions, TxResult } from '@anticrm/core'
-import { ModelDb, TxDb, Hierarchy } from '@anticrm/core'
-import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-
+import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxResult } from '@anticrm/core'
+import { Hierarchy, TxDb } from '@anticrm/core'
 import builder from '@anticrm/model-all'
+import type { TxAdapter } from '@anticrm/server-core'
 
 class InMemoryTxAdapter implements TxAdapter {
   private readonly txdb: TxDb
@@ -47,40 +46,9 @@ class InMemoryTxAdapter implements TxAdapter {
   async close (): Promise<void> {}
 }
 
-class InMemoryAdapter implements DbAdapter {
-  private readonly modeldb: ModelDb
-
-  constructor (hierarchy: Hierarchy) {
-    this.modeldb = new ModelDb(hierarchy)
-  }
-
-  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
-    return await this.modeldb.findAll(_class, query, options)
-  }
-
-  async tx (tx: Tx): Promise<TxResult> {
-    return await this.modeldb.tx(tx)
-  }
-
-  async init (model: Tx[]): Promise<void> {
-    for (const tx of model) {
-      await this.modeldb.tx(tx)
-    }
-  }
-
-  async close (): Promise<void> {}
-}
-
 /**
  * @public
  */
 export async function createInMemoryTxAdapter (hierarchy: Hierarchy, url: string, workspace: string): Promise<TxAdapter> {
   return new InMemoryTxAdapter(hierarchy)
-}
-
-/**
- * @public
- */
-export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<DbAdapter> {
-  return new InMemoryAdapter(hierarchy)
 }
