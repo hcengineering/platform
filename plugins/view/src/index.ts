@@ -62,6 +62,13 @@ export interface SpaceHeader extends Class<Doc> {
 /**
  * @public
  */
+export interface SpaceName extends Class<Doc> {
+  getName: Resource<(client: Client, space: Space) => Promise<string>>
+}
+
+/**
+ * @public
+ */
 export interface ObjectEditorHeader extends Class<Doc> {
   editor: AnyComponent
 }
@@ -244,6 +251,7 @@ const view = plugin(viewId, {
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
+    SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
     TextPresenter: '' as Ref<Mixin<TextPresenter>>,

@@ -23,11 +23,22 @@ import { AnyComponent } from '@anticrm/ui'
 /**
  * @public
  */
-export interface Channel extends Space {
+export interface ChunterSpace extends Space {
   lastMessage?: Timestamp
   pinned?: Ref<ChunterMessage>[]
+}
+
+/**
+ * @public
+ */
+export interface Channel extends ChunterSpace {
   topic?: string
 }
+
+/**
+ * @public
+ */
+export interface DirectMessage extends ChunterSpace {}
 
 /**
  * @public
@@ -113,8 +124,10 @@ export default plugin(chunterId, {
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
     Backlink: '' as Ref<Class<Backlink>>,
     Comment: '' as Ref<Class<Comment>>,
+    ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
-    SavedMessages: '' as Ref<Class<SavedMessages>>
+    SavedMessages: '' as Ref<Class<SavedMessages>>,
+    DirectMessage: '' as Ref<Class<DirectMessage>>
   },
   space: {
     Backlinks: '' as Ref<Space>

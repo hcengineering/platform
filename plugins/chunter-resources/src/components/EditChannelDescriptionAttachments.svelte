@@ -16,13 +16,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
-  import { Channel } from '@anticrm/chunter'
+  import { ChunterSpace } from '@anticrm/chunter'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
   import { showPopup, IconMoreV, Label } from '@anticrm/ui'
 
-  export let channel: Channel | undefined
+  export let channel: ChunterSpace | undefined
 
   const query = createQuery()
   let visibleAttachments: Attachment[] | undefined

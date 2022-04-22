@@ -31,7 +31,17 @@ export default plugin(serverChunterId, {
     ChunterTrigger: '' as Resource<TriggerFunc>
   },
   function: {
-    CommentRemove: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>,
+    CommentRemove: '' as Resource<
+    (
+      doc: Doc,
+      hiearachy: Hierarchy,
+      findAll: <T extends Doc>(
+        clazz: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ) => Promise<FindResult<T>>
+    ) => Promise<Doc[]>
+    >,
     ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
     ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
   }

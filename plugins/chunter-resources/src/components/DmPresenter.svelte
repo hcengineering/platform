@@ -13,26 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@anticrm/chunter'
+  import type { DirectMessage } from '@anticrm/chunter'
   import { getClient } from '@anticrm/presentation'
   import { Icon } from '@anticrm/ui'
 
-  import { getSpaceLink } from '../utils'
+  import { getSpaceLink, getDmName } from '../utils'
 
-  export let value: Channel
+  export let dm: DirectMessage
   const client = getClient()
 
-  $: icon = client.getHierarchy().getClass(value._class).icon
-  $: link = getSpaceLink(value._id)
+  $: icon = client.getHierarchy().getClass(dm._class).icon
+  $: link = getSpaceLink(dm._id)
 </script>
 
-{#if value}
-  <a class="flex-presenter" href={link}>
-    <div class="icon">
-      {#if icon}
-        <Icon {icon} size={'small'} />
-      {/if}
-    </div>
-    <span class="label">{value.name}</span>
-  </a>
+{#if dm}
+  {#await getDmName(client, dm) then name}
+    <a class="flex-presenter" href={link}>
+      <div class="icon">
+        {#if icon}
+          <Icon {icon} size={'small'} />
+        {/if}
+      </div>
+      <span class="label">{name}</span>
+    </a>
+  {/await}
 {/if}
