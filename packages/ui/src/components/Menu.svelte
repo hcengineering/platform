@@ -66,7 +66,7 @@
           }}
           on:click={(evt) => {
             dispatch('close')
-            action.action(evt, ctx)
+            action.action(ctx, evt)
           }}
         >
           {#if action.icon}
