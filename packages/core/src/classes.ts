@@ -245,6 +245,7 @@ export interface Space extends Doc {
  */
 export interface Account extends Doc {
   email: string
+  online?: boolean
 }
 
 /**

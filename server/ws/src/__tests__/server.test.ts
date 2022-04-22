@@ -19,7 +19,7 @@ import { start, disableLogging } from '../server'
 import { generateToken } from '@anticrm/server-token'
 import WebSocket from 'ws'
 
-import type {
+import {
   Doc,
   Ref,
   Class,
@@ -27,9 +27,12 @@ import type {
   FindOptions,
   FindResult,
   Tx,
-  TxResult
+  TxResult,
+  ModelDb,
+  MeasureMetricsContext,
+  toFindResult,
+  Hierarchy
 } from '@anticrm/core'
-import { MeasureMetricsContext, toFindResult } from '@anticrm/core'
 import { SessionContext } from '@anticrm/server-core'
 
 describe('server', () => {
@@ -38,6 +41,7 @@ describe('server', () => {
   start(
     new MeasureMetricsContext('test', {}),
     async () => ({
+      modelDb: new ModelDb(new Hierarchy()),
       findAll: async <T extends Doc>(
         ctx: SessionContext,
         _class: Ref<Class<T>>,
