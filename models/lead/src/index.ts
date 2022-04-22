@@ -89,7 +89,7 @@ export function createModel (builder: Builder): void {
             icon: workbench.icon.Search,
             label: lead.string.FunnelBrowser,
             position: 'top',
-            spaceClass: chunter.class.Channel,
+            spaceClass: lead.class.Funnel,
             componentProps: {
               _class: lead.class.Funnel,
               label: lead.string.FunnelBrowser,
