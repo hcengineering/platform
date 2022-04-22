@@ -89,7 +89,7 @@
   {:else}
     <slot name='panel-header'/>
     <div class="panel-instance" class:bg={props.element === 'content'} bind:this={modalHTML}>
-      <div class="p-2 w-full h-full">
+      <div class="panel-container" class:padding={props.element === 'content'}>
         <svelte:component
           this={component}
           bind:this={componentInstance}
@@ -117,8 +117,14 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
-    &.bg {
-      background-color: var(--theme-bg-color);
+
+    &.bg { background-color: var(--body-color); }
+    .panel-container {
+      padding: .5rem;
+      width: 100%;
+      height: 100%;
+
+      &.padding { padding: .75rem; }
     }
   }
   .modal-overlay {
@@ -128,8 +134,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    &.show {
-      background: rgba(0, 0, 0, 0.5);
-    }   
+
+    &.show { background: rgba(0, 0, 0, .5); }
   }
 </style>

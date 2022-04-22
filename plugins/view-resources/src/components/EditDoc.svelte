@@ -26,7 +26,7 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Button, Component, IconDown, IconUp, Label, PopupAlignment, showPanel } from '@anticrm/ui'
+  import { AnyComponent, Button, Component, IconDownOutline, IconUpOutline, Label, PopupAlignment, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import ActionContext from './ActionContext.svelte'
@@ -270,10 +270,8 @@
     }}
   >
     <svelte:fragment slot="navigate-actions">
-      <div class="tool flex-row-center gap-1 mr-4">
-        <Button icon={IconDown} kind={'no-border'} on:click={() => next(true)}/>
-        <Button icon={IconUp} kind={'no-border'} on:click={() => next(false)}/>
-      </div>
+      <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={() => next(true)}/>
+      <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={() => next(false)}/>
     </svelte:fragment>
     <div class="w-full" slot="subtitle">
       {#if !headerLoading}
