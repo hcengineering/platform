@@ -14,14 +14,13 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { FindOptions, Ref, WithLookup } from '@anticrm/core'
+  import { FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, Team } from '@anticrm/tracker'
   import { Button, Component, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import tracker from '../../plugin'
-  import { getIssueStatuses } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
 
@@ -30,6 +29,7 @@
   /* eslint-disable no-undef */
 
   const spaceQuery = createQuery()
+  const statusesQuery = createQuery()
 
   let currentTeam: Team | undefined
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
@@ -37,20 +37,20 @@
   })
 
   let states: TypeState[] | undefined
-  $: updateStates(currentSpace)
-
-  /* eslint-disable prefer-const */
-  /* eslint-disable no-unused-vars */
-  let issue: Issue
-
-  async function updateStates (space: Ref<Team>) {
-    const issueStatuses = await getIssueStatuses(space)
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: currentSpace }, (issueStatuses) => {
     states = issueStatuses.map((status) => ({
       _id: status._id,
       title: status.name,
       color: status.color ?? status.$lookup?.category?.color ?? 0
     }))
-  }
+  }, {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
+
+  /* eslint-disable prefer-const */
+  /* eslint-disable no-unused-vars */
+  let issue: Issue
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>

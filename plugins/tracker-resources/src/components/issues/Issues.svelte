@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DocumentQuery, Ref, WithLookup } from '@anticrm/core'
+  import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
   import { Label, ScrollBox } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
-  import { getIssueStatuses } from '../../utils'
 
   export let currentSpace: Ref<Team>
   export let statusCategories: Ref<IssueStatusCategory>[] | undefined = undefined
@@ -29,6 +28,7 @@
   export let search: string = ''
 
   const spaceQuery = createQuery()
+  const categoriesQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
 
   $: getTotalIssues = () => {
@@ -51,17 +51,17 @@
 
   let categories: WithLookup<IssueStatus>[] = []
   let filteredCategories: WithLookup<IssueStatus>[] = []
-  $: updateCatgegories(currentSpace, statusCategories)
+  $: categoriesQuery.query(tracker.class.IssueStatus, { attachedTo: currentSpace }, (statuses) => {
+    const issueStatusCats = statusCategories && new Set(statusCategories)
   
-  async function updateCatgegories (space: Ref<Team>, issueStatusCategories?: Ref<IssueStatusCategory>[]) {
-    const issueStatuses = await getIssueStatuses(space)
-    const issueStatusCats = statusCategories && new Set(issueStatusCategories)
-  
-    categories = issueStatuses
+    categories = statuses
     filteredCategories = issueStatusCats
-      ? issueStatuses.filter((status) => issueStatusCats.has(status.category))
-      : issueStatuses
-  }
+      ? statuses.filter((status) => issueStatusCats.has(status.category))
+      : statuses
+  }, {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
 </script>
 
 {#if currentTeam}

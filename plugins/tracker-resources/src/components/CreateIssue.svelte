@@ -14,15 +14,14 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
+  import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import presentation, { getClient, UserBox, Card } from '@anticrm/presentation'
+  import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
-  import { getIssueStatuses } from '../utils'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
@@ -31,6 +30,7 @@
   export let issueStatus: Ref<IssueStatus> | undefined = undefined
 
   let assignee: Ref<Employee> | null = null
+  let issueStatuses: WithLookup<IssueStatus>[] = []
 
   const object: Data<Issue> = {
     title: '',
@@ -46,11 +46,18 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const statusesQuery = createQuery()
   const taskId: Ref<Issue> = generateId()
 
   $: _space = space
   $: _parent = parent
   $: updateIssueStatusId(space, issueStatus)
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => {
+    issueStatuses = statuses
+  }, {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
 
   async function updateIssueStatusId (teamId: Ref<Team>, status?: Ref<IssueStatus>) {
     if (status !== undefined) {
@@ -169,9 +176,7 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
   <svelte:fragment slot="pool">
-    {#await getIssueStatuses(_space) then statuses}
-      <StatusSelector selectedStatusId={object.status} {statuses} onStatusChange={handleStatusChanged} />
-    {/await}
+    <StatusSelector selectedStatusId={object.status} statuses={issueStatuses} onStatusChange={handleStatusChanged} />
     <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}

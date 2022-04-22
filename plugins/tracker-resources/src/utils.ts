@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { FindResult, Ref, SortingOrder } from '@anticrm/core'
+import { Ref } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { getClient } from '@anticrm/presentation'
-import { IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
+import { IssuePriority, Team } from '@anticrm/tracker'
 import { AnyComponent } from '@anticrm/ui'
 import tracker from './plugin'
 
@@ -40,17 +39,4 @@ export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlSt
   [IssuePriority.High]: { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
   [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
   [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
-}
-
-export async function getIssueStatuses (teamId: Ref<Team>): Promise<FindResult<IssueStatus>> {
-  const client = getClient()
-
-  return await client.findAll(
-    tracker.class.IssueStatus,
-    { attachedTo: teamId },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
 }
