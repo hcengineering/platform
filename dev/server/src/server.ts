@@ -16,8 +16,8 @@
 
 import type { Doc, Ref, TxResult } from '@anticrm/core'
 import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
-import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createPipeline, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
+import { createInMemoryAdapter, createPipeline, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {

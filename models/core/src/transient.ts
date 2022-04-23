@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,9 +13,12 @@
 // limitations under the License.
 //
 
-export * from './adapter'
-export * from './types'
-export * from './fulltext'
-export * from './storage'
-export * from './pipeline'
-export { default } from './plugin'
+import { DOMAIN_TRANSIENT, UserStatus } from '@anticrm/core'
+import { Model } from '@anticrm/model'
+import core from './component'
+import { TDoc } from './core'
+
+@Model(core.class.UserStatus, core.class.Doc, DOMAIN_TRANSIENT)
+export class TUserStatus extends TDoc implements UserStatus {
+  online!: boolean
+}
