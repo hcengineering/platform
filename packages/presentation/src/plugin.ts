@@ -17,7 +17,7 @@
 import { Class, Ref } from '@anticrm/core'
 import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { ObjectSearchCategory } from '.'
+import { ObjectSearchCategory } from './types'
 
 /**
  * @public
@@ -44,7 +44,12 @@ export default plugin(presentationId, {
     Search: '' as IntlString,
     Unassigned: '' as IntlString,
     CreateMore: '' as IntlString,
-    NumberMembers: '' as IntlString
+    NumberMembers: '' as IntlString,
+    InThis: '' as IntlString,
+    NoMatchesInThis: '' as IntlString,
+    NoMatchesFound: '' as IntlString,
+    NotInThis: '' as IntlString,
+    Add: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

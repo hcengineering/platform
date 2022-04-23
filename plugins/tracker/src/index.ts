@@ -66,6 +66,35 @@ export enum IssuePriority {
 /**
  * @public
  */
+export enum IssuesGrouping {
+  Status = 'status',
+  Assignee = 'assignee',
+  Priority = 'priority',
+  NoGrouping = 'noGrouping'
+}
+
+/**
+ * @public
+ */
+export enum IssuesOrdering {
+  Status = 'status',
+  Priority = 'priority',
+  LastUpdated = 'lastUpdated',
+  DueDate = 'dueDate'
+}
+
+/**
+ * @public
+ */
+export enum IssuesDateModificationPeriod {
+  All = 'all',
+  PastWeek = 'pastWeek',
+  PastMonth = 'pastMonth',
+}
+
+/**
+ * @public
+ */
 export interface Issue extends Doc {
   title: string
   description: Markup

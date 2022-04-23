@@ -25,16 +25,31 @@
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
+  $: issueName = `${currentTeam.identifier}-${value.number}`
+  
   const handleIssueEditorOpened = () => {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>
 
 {#if value && shortLabel}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
+  <div class="flex-presenter issuePresenterRoot" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />
     </div>
-    <span class="label nowrap">{currentTeam.identifier}-{value.number}</span>
+    <span title={issueName} class="label nowrap issueLabel">{issueName}</span>
   </div>
 {/if}
+
+<style lang="scss">
+  .issuePresenterRoot {
+    max-width: 5rem;
+  }
+
+  .issueLabel {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+</style>

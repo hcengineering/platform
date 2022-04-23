@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup, Icon, Label } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, Icon, Label, eventToHTMLElement } from '@anticrm/ui'
   import { issuePriorities } from '../utils'
   import tracker from '../plugin'
 
@@ -22,6 +22,7 @@
   export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
   export let onPriorityChange: ((newPriority: IssuePriority | undefined) => void) | undefined = undefined
+  export let isEditable: boolean = true
 
   const prioritiesInfo = [
     IssuePriority.NoPriority,
@@ -31,11 +32,14 @@
     IssuePriority.Low
   ].map((p) => ({ id: p, ...issuePriorities[p] }))
 
-  const handlePriorityEditorOpened = (event: Event) => {
+  const handlePriorityEditorOpened = (event: MouseEvent) => {
+    if (!isEditable) {
+      return
+    }
     showPopup(
       SelectPopup,
       { value: prioritiesInfo, placeholder: tracker.string.SetPriority, searchable: true },
-      event.currentTarget,
+      eventToHTMLElement(event),
       onPriorityChange
     )
   }
@@ -51,12 +55,12 @@
     on:click={handlePriorityEditorOpened}
   />
 {:else if kind === 'icon'}
-  <div class="flex-presenter" on:click={handlePriorityEditorOpened}>
-    <div class="priorityIcon">
+  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handlePriorityEditorOpened}>
+    <div class="priorityIcon" class:mPriorityIconEditable={isEditable}>
       <Icon icon={issuePriorities[priority].icon} size={'small'} />
     </div>
     {#if shouldShowLabel}
-      <div class="label nowrap">
+      <div class="label nowrap ml-2">
         <Label label={issuePriorities[priority].label} />
       </div>
     {/if}
@@ -64,13 +68,21 @@
 {/if}
 
 <style lang="scss">
+  .presenter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
   .priorityIcon {
     width: 1rem;
     height: 1rem;
     color: var(--theme-content-dark-color);
 
-    &:hover {
-      color: var(--theme-caption-color);
+    &.mPriorityIconEditable {
+      &:hover {
+        color: var(--theme-caption-color);
+      }
     }
   }
 </style>

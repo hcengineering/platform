@@ -15,15 +15,13 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
-  import { ChannelsView } from '@anticrm/contact-resources'
+  import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
   import {
     Account,
     AttachedData,
     Data,
-    Doc,
-    FindResult,
-    generateId, MixinData,
+    Doc, generateId, MixinData,
     Ref,
     TxProcessor
   } from '@anticrm/core'
@@ -50,9 +48,7 @@
     Label,
     Link,
     showPopup,
-    Spinner,
-    Button,
-    IconAttachment
+    Spinner
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -267,7 +263,6 @@
       // Create skills
       await elementsPromise
 
-
       const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
       const categoriesMap = new Map(Array.from(categories.map((it) => [it._id, it])))
 
@@ -412,20 +407,8 @@
       <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
     </div>
   </div>
-  {#if channels.length > 0}
-    <ChannelsView value={channels} size={'small'} on:click />
-  {/if}
   <svelte:fragment slot="pool">
-    <Button
-      icon={contact.icon.SocialEdit}
-      kind={'no-border'}
-      size={'small'}
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          if (result !== undefined) channels = result
-        })
-      }
-    />
+    <ChannelsDropdown bind:value={channels} editable />
     <YesNo label={recruit.string.Onsite} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.onsite} />
     <YesNo label={recruit.string.Remote} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.remote} />
     <Component
@@ -436,6 +419,7 @@
         targetClass: recruit.mixin.Candidate,
         showTitle: false,
         elements,
+        newElements,
         countLabel: recruit.string.NumberSkills
       }}
       on:open={(evt) => {

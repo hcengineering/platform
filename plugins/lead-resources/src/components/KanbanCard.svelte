@@ -33,7 +33,7 @@
   }
 
   function showLead () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'full')
+    showPanel(view.component.EditDoc, object._id, object._class, 'content')
   }
 </script>
 

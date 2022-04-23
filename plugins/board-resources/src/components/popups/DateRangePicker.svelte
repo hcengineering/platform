@@ -4,7 +4,7 @@
   import { Card, CardDate } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
   import board from '../../plugin'
-  import { getClient } from '@anticrm/presentation';
+  import { getClient } from '@anticrm/presentation'
 
   export let object: Card
 
@@ -20,40 +20,54 @@
   let dueDateEnabled = dueDate !== undefined
   $: dueDate && (savedDueDate = dueDate)
 
+  function getEmptyDate (): CardDate {
+    return { _class: object.date?._class ?? board.class.CardDate }
+  }
+
   function update () {
-    const date: CardDate = {}
+    const date: CardDate = getEmptyDate()
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
-    client.update(object, {date})
+    client.update(object, { date })
   }
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
-  <div class="ap-space"/>
+  <div class="ap-space" />
   <div class="fs-title ap-header flex-row-center">
-    <Label label={board.string.Dates}/>
+    <Label label={board.string.Dates} />
   </div>
-  <div class="ap-space bottom-divider"/>
-    <div class="ap-category">
-      <div class="categoryItem flex-center whitespace-nowrap">
-        <Label label={board.string.StartDate}/>
-      </div>
+  <div class="ap-space bottom-divider" />
+  <div class="ap-category">
+    <div class="categoryItem flex-center whitespace-nowrap">
+      <Label label={board.string.StartDate} />
+    </div>
     <div class="categoryItem p-2 flex-center">
-      <CheckBox bind:checked={startDateEnabled} on:value={() => {startDate = startDateEnabled ? savedStartDate : undefined}}/>
+      <CheckBox
+        bind:checked={startDateEnabled}
+        on:value={() => {
+          startDate = startDateEnabled ? savedStartDate : undefined
+        }}
+      />
     </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={startDate} editable={startDateEnabled} labelNull={board.string.NullDate}/>
+      <DateRangePresenter bind:value={startDate} editable={startDateEnabled} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-category">
     <div class="categoryItem flex-center whitespace-nowrap">
-      <Label label={board.string.DueDate}/>
+      <Label label={board.string.DueDate} />
     </div>
     <div class="categoryItem p-2 flex-center">
-      <CheckBox bind:checked={dueDateEnabled} on:value={() => {dueDate = dueDateEnabled ? savedDueDate : undefined}}/>
+      <CheckBox
+        bind:checked={dueDateEnabled}
+        on:value={() => {
+          dueDate = dueDateEnabled ? savedDueDate : undefined
+        }}
+      />
     </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={dueDate} editable={dueDateEnabled} labelNull={board.string.NullDate}/>
+      <DateRangePresenter bind:value={dueDate} editable={dueDateEnabled} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-footer">
@@ -68,7 +82,7 @@
       label={board.string.Remove}
       size={'small'}
       on:click={() => {
-        client.update(object, {date: {}})
+        client.update(object, { date: getEmptyDate() })
         dispatch('close')
       }}
     />

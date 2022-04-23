@@ -21,13 +21,15 @@
   import StatusSelector from '../StatusSelector.svelte'
 
   export let value: Issue
-  export let categories: WithLookup<IssueStatus>[]
+  export let statuses: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
+  export let isEditable: boolean = true
+  export let shouldShowLabel: boolean = false
 
   const client = getClient()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
-    if (newStatus === undefined) {
+    if (!isEditable || newStatus === undefined) {
       return
     }
 
@@ -42,13 +44,25 @@
 </script>
 
 {#if value}
-  <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
+  {#if isEditable}
+    <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
+      <StatusSelector
+        kind={'icon'}
+        {isEditable}
+        {shouldShowLabel}
+        {statuses}
+        selectedStatusId={value.status}
+        onStatusChange={handleStatusChanged}
+      />
+    </Tooltip>
+  {:else}
     <StatusSelector
       kind={'icon'}
-      shouldShowLabel={false}
+      {isEditable}
+      {shouldShowLabel}
+      {statuses}
       selectedStatusId={value.status}
-      statuses={categories}
       onStatusChange={handleStatusChanged}
     />
-  </Tooltip>
+  {/if}
 {/if}

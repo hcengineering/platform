@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChunterMessage } from '@anticrm/chunter'
   import { Ref, Space } from '@anticrm/core'
-  import { Label, showPopup } from '@anticrm/ui'
+  import { eventToHTMLElement, Label, showPopup } from '@anticrm/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import chunter from '../plugin'
 
@@ -9,7 +9,7 @@
   export let pinnedIds: Ref<ChunterMessage>[]
 
   function showMessages (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
-    showPopup(PinnedMessagesPopup, { space }, ev.target)
+    showPopup(PinnedMessagesPopup, { space }, eventToHTMLElement(ev))
   }
 </script>
 

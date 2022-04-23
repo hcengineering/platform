@@ -40,7 +40,7 @@
 
     "Title": "Title",
     "Description": "",
-    "Status": "",
+    "Status": "Status",
     "Number": "Number",
     "Assignee": "Assignee",
     "AssignTo": "Assign to...",
@@ -53,7 +53,7 @@
     "Labels": "Labels",
     "Project": "Project",
     "Space": "",
-    "DueDate": "Set due date\u2026",
+    "SetDueDate": "Set due date\u2026",
     "ModificationDate": "Updated {value}",
     "Team": "",
     "Issue": "",
@@ -67,7 +67,18 @@
     "DueDatePopupTitle": "Due on {value}",
     "DueDatePopupOverdueTitle": "Was due on {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Today} =1 {Tomorrow} other {# days remaining}}",
-    "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}"
+    "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
+    "Grouping": "Grouping",
+    "Ordering": "Ordering",
+    "CompletedIssues": "Completed issues",
+    "ShowEmptyGroups": "Show empty groups",
+    "NoGrouping": "No grouping",
+    "NoAssignee": "No assignee",
+    "LastUpdated": "Last updated",
+    "DueDate": "Due date",
+    "All": "All",
+    "PastWeek": "Past week",
+    "PastMonth": "Past month"
   },
   "status": {}
 }

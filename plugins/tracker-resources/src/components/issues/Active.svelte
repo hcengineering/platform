@@ -14,15 +14,18 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { Team } from '@anticrm/tracker'
+  import { Team, IssuesDateModificationPeriod } from '@anticrm/tracker'
   import tracker from '../../plugin'
   import Issues from './Issues.svelte'
 
   export let currentSpace: Ref<Team>
+
+  const completedIssuesPeriod: IssuesDateModificationPeriod | null = null
 </script>
 
 <Issues
   {currentSpace}
-  statusCategories={[tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started]}
+  {completedIssuesPeriod}
+  includedGroups={{ status: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] }}
   title={tracker.string.ActiveIssues}
 />

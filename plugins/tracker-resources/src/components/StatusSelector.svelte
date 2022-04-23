@@ -16,7 +16,7 @@
   import { Ref, WithLookup } from '@anticrm/core'
 
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, Icon, showPopup, SelectPopup } from '@anticrm/ui'
+  import { Button, Icon, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let selectedStatusId: Ref<IssueStatus>
@@ -24,17 +24,21 @@
   export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
   export let onStatusChange: ((newStatus: Ref<IssueStatus> | undefined) => void) | undefined = undefined
+  export let isEditable: boolean = true
 
   $: selectedStatus = statuses.find((status) => status._id === selectedStatusId) ?? statuses[0]
   $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
   $: statusesInfo = statuses.map((s) => ({ id: s._id, text: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
 
-  const handleStatusEditorOpened = (event: Event) => {
+  const handleStatusEditorOpened = (event: MouseEvent) => {
+    if (!isEditable) {
+      return
+    }
     showPopup(
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
-      event.currentTarget,
+      eventToHTMLElement(event),
       onStatusChange
     )
   }
@@ -55,19 +59,25 @@
   </svelte:fragment>
 </Button>
 {:else if kind === 'icon'}
-  <div class="flex-presenter" on:click={handleStatusEditorOpened}>
+  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
     {#if selectedStatusIcon}
       <div class="statusIcon">
-        <Icon icon={selectedStatusIcon} size="small" />
+        <Icon icon={selectedStatusIcon} size={'small'} />
       </div>
     {/if}
     {#if selectedStatusLabel}
-      <div class="label nowrap">{selectedStatusLabel}</div>
+      <div class="label nowrap ml-2">{selectedStatusLabel}</div>
     {/if}
   </div>
 {/if}
 
 <style lang="scss">
+  .presenter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
   .statusIcon {
     width: 1rem;
     height: 1rem;

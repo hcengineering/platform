@@ -13,73 +13,224 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@anticrm/contact'
   import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
-  import { Label, ScrollBox } from '@anticrm/ui'
+  import {
+    Issue,
+    Team,
+    IssuesGrouping,
+    IssuesOrdering,
+    IssuesDateModificationPeriod,
+    IssueStatus
+  } from '@anticrm/tracker'
+  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
+  import { IntlString } from '@anticrm/platform'
+  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
+  import {
+    IssuesGroupByKeys,
+    issuesGroupKeyMap,
+    issuesOrderKeyMap,
+    defaultIssueCategories,
+    getIssuesModificationDatePeriodTime
+  } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let statusCategories: Ref<IssueStatusCategory>[] | undefined = undefined
   export let title: IntlString = tracker.string.AllIssues
   export let query: DocumentQuery<Issue> = {}
   export let search: string = ''
+  export let groupingKey: IssuesGrouping = IssuesGrouping.Status
+  export let orderingKey: IssuesOrdering = IssuesOrdering.LastUpdated
+  export let completedIssuesPeriod: IssuesDateModificationPeriod | null = IssuesDateModificationPeriod.All
+  export let shouldShowEmptyGroups: boolean | undefined = false
+  export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
 
+  const ENTRIES_LIMIT = 200
   const spaceQuery = createQuery()
-  const categoriesQuery = createQuery()
+  const issuesQuery = createQuery()
+  const statusesQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
+  let currentTeam: Team | undefined
+  let issues: Issue[] = []
+  let statusesById: ReadonlyMap<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
 
-  $: getTotalIssues = () => {
+  $: totalIssues = getTotalIssues(issuesMap)
+
+  $: baseQuery = {
+    space: currentSpace,
+    ...includedIssuesQuery,
+    ...filteredIssuesQuery,
+    ...query
+  }
+
+  $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
+
+  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
+    currentTeam = res.shift()
+  })
+
+  $: groupByKey = issuesGroupKeyMap[groupingKey]
+  $: categories = getCategories(groupByKey, issues, !!shouldShowEmptyGroups)
+  $: displayedCategories = (categories as any[]).filter((x) => {
+    if (groupByKey === undefined || includedGroups[groupByKey] === undefined) {
+      return true
+    }
+
+    if (groupByKey === 'status') {
+      const category = statusesById.get((x as Ref<IssueStatus>))?.$lookup?.category
+
+      return !!(category && includedGroups.status?.includes(category._id))
+    }
+
+    return includedGroups[groupByKey]?.includes(x)
+  })
+  $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups)
+  $: filteredIssuesQuery = getModifiedOnIssuesFilterQuery(issues, completedIssuesPeriod)
+  $: statuses = [...statusesById.values()]
+
+  const getIncludedIssuesQuery = (groups: Partial<Record<IssuesGroupByKeys, Array<any>>>) => {
+    const resultMap: { [p: string]: { $in: any[] } } = {}
+
+    for (const [key, value] of Object.entries(groups)) {
+      resultMap[key] = { $in: value }
+    }
+
+    return resultMap
+  }
+
+  const getModifiedOnIssuesFilterQuery = (
+    currentIssues: WithLookup<Issue>[],
+    period: IssuesDateModificationPeriod | null
+  ) => {
+    const filter: { _id: { $in: Array<Ref<Issue>> } } = { _id: { $in: [] } }
+
+    if (!period || period === IssuesDateModificationPeriod.All) {
+      return {}
+    }
+
+    for (const issue of currentIssues) {
+      if (
+        issue.$lookup?.status?.category === tracker.issueStatusCategory.Completed &&
+        issue.modifiedOn < getIssuesModificationDatePeriodTime(period)
+      ) {
+        continue
+      }
+
+      filter._id.$in.push(issue._id)
+    }
+
+    return filter
+  }
+
+  $: issuesQuery.query<Issue>(
+    tracker.class.Issue,
+    { ...includedIssuesQuery },
+    (result) => {
+      issues = result
+    },
+    { limit: ENTRIES_LIMIT, lookup: { assignee: contact.class.Employee } }
+  )
+
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    { attachedTo: currentSpace },
+    (issueStatuses) => {
+      statusesById = new Map(issueStatuses.map((status) => [status._id, status]))
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
+
+  const getCategories = (key: IssuesGroupByKeys | undefined, elements: Issue[], shouldShowAll: boolean) => {
+    if (!key) {
+      return [undefined] // No grouping
+    }
+
+    const existingCategories = Array.from(
+      new Set(
+        elements.map((x) => {
+          return x[key]
+        })
+      )
+    )
+
+    return shouldShowAll ? defaultIssueCategories[key] ?? existingCategories : existingCategories
+  }
+
+  const getTotalIssues = (map: { [status: string]: number }) => {
     let total = 0
 
-    for (const issuesAmount of Object.values(issuesMap)) {
-      total += issuesAmount
+    for (const amount of Object.values(map)) {
+      total += amount
     }
 
     return total
   }
 
-  $: resultQuery =
-    search === '' ? { space: currentSpace, ...query } : { $search: search, space: currentSpace, ...query }
+  const handleOptionsUpdated = (
+    result:
+      | {
+          orderBy: IssuesOrdering
+          groupBy: IssuesGrouping
+          completedIssuesPeriod: IssuesDateModificationPeriod
+          shouldShowEmptyGroups: boolean
+        }
+      | undefined
+  ) => {
+    if (result === undefined) {
+      return
+    }
 
-  let currentTeam: Team | undefined
-  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
-    currentTeam = res.shift()
-  })
+    for (const prop of Object.getOwnPropertyNames(issuesMap)) {
+      delete issuesMap[prop]
+    }
 
-  let categories: WithLookup<IssueStatus>[] = []
-  let filteredCategories: WithLookup<IssueStatus>[] = []
-  $: categoriesQuery.query(tracker.class.IssueStatus, { attachedTo: currentSpace }, (statuses) => {
-    const issueStatusCats = statusCategories && new Set(statusCategories)
-  
-    categories = statuses
-    filteredCategories = issueStatusCats
-      ? statuses.filter((status) => issueStatusCats.has(status.category))
-      : statuses
-  }, {
-    lookup: { category: tracker.class.IssueStatusCategory },
-    sort: { rank: SortingOrder.Ascending }
-  })
+    groupingKey = result.groupBy
+    orderingKey = result.orderBy
+    completedIssuesPeriod = result.completedIssuesPeriod
+    shouldShowEmptyGroups = result.shouldShowEmptyGroups
+
+    if (result.groupBy === IssuesGrouping.Assignee || result.groupBy === IssuesGrouping.NoGrouping) {
+      shouldShowEmptyGroups = undefined
+    }
+  }
+
+  const handleOptionsEditorOpened = (event: MouseEvent) => {
+    if (!currentSpace) {
+      return
+    }
+
+    showPopup(
+      ViewOptionsPopup,
+      { groupBy: groupingKey, orderBy: orderingKey, completedIssuesPeriod, shouldShowEmptyGroups },
+      eventToHTMLElement(event),
+      undefined,
+      handleOptionsUpdated
+    )
+  }
 </script>
 
 {#if currentTeam}
   <ScrollBox vertical stretch>
-    <div class="fs-title">
-      <Label label={title} params={{ value: getTotalIssues() }} />
+    <div class="fs-title flex-between mt-1 mr-1 ml-1">
+      <Label label={title} params={{ value: totalIssues }} />
+      <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
-
     <div class="mt-4">
-      {#each filteredCategories as category}
+      {#each displayedCategories as category}
         <CategoryPresenter
-          categoryId={category._id}
-          {categories}
+          groupBy={{ key: groupByKey, group: category }}
+          orderBy={issuesOrderKeyMap[orderingKey]}
           query={resultQuery}
+          {statuses}
           {currentSpace}
           {currentTeam}
           on:content={(event) => {
-            issuesMap[category._id] = event.detail
+            issuesMap[category] = event.detail
           }}
         />
       {/each}

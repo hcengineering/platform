@@ -48,7 +48,10 @@
     }
 
     if (componentInstance && componentInstance.canClose) {
-      if (!componentInstance.canClose()) return
+      if (!componentInstance.canClose()) {
+        console.log('CANT CLOSE')
+        return
+      }
     }
     _close()
   }
@@ -67,6 +70,9 @@
   afterUpdate(() => {
     if (props) fitPopup(props, contentPanel)
   })
+  export function fitPopupInstance (): void {
+    if (props) fitPopup(props, contentPanel)
+  }
 </script>
 
 <svelte:window
@@ -81,6 +87,7 @@
   {#if !component}
     <Spinner />
   {:else}
+    <slot name='panel-header'/>
     <div class="panel-instance" class:bg={props.element === 'content'} bind:this={modalHTML}>
       <div class="p-2 w-full h-full">
         <svelte:component

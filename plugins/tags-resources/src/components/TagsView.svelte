@@ -17,7 +17,7 @@
   import { IntlString, translate } from '@anticrm/platform'
   import { TagCategory, TagElement } from '@anticrm/tags'
   import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import { TableBrowser } from '@anticrm/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'
@@ -77,7 +77,7 @@
   }}
 />
 <Scroller>
-  <Table
+  <TableBrowser
     _class={tags.class.TagElement}
     config={[
       {
@@ -103,6 +103,5 @@
     options={opt}
     query={resultQuery}
     showNotification
-    highlightRows
   />
 </Scroller>

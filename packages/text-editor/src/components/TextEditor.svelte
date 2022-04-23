@@ -130,7 +130,7 @@
 <style lang="scss" global>
   .ProseMirror {
     overflow-y: auto;
-    max-height: 5.5rem;
+    max-height: 40vh;
     outline: none;
     line-height: 150%;
     p:not(:last-child) {

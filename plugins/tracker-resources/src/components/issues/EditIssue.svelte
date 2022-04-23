@@ -73,7 +73,7 @@
         <IssuePresenter value={object} {currentTeam} />
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="actions">
+    <svelte:fragment slot="navigate-actions">
       <div class="tool flex gap-1">
         <Button icon={IconDown}/>
         <Button icon={IconUp}/>

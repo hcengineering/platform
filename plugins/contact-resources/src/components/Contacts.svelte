@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { ActionContext, TableBrowser } from '@anticrm/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 
@@ -27,41 +26,55 @@
   let resultQuery: DocumentQuery<Doc> = {}
 
   function updateResultQuery (search: string): void {
-    resultQuery = (search === '') ? { } : { $search: search }
+    resultQuery = search === '' ? {} : { $search: search }
   }
 
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: contact.class.Contact, descriptor: view.viewlet.Table })
-
+  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
+    attachTo: contact.class.Contact,
+    descriptor: view.viewlet.Table
+  })
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
   }
 </script>
 
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 <div class="antiPanel-component">
   <div class="ac-header full">
     <div class="ac-header__wrap-title">
-      <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'}/></div>
-      <span class="ac-header__title"><Label label={contact.string.Contacts}/></span>
+      <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
     </div>
-    
-    <SearchEdit bind:value={search} on:change={() => {
-      updateResultQuery(search)
-    }}/>
-    <Button icon={IconAdd} label={contact.string.ContactCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)}/>
+
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search)
+      }}
+    />
+    <Button
+      icon={IconAdd}
+      label={contact.string.ContactCreateLabel}
+      kind={'primary'}
+      on:click={(ev) => showCreateDialog(ev)}
+    />
   </div>
 
   <Scroller>
     {#await tableDescriptor then descr}
       {#if descr}
-        <Table 
+        <TableBrowser          
           _class={contact.class.Contact}
           config={descr.config}
           options={descr.options}
-          query={ resultQuery }
+          query={resultQuery}
           showNotification
-          highlightRows
         />
       {/if}
     {/await}

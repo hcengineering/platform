@@ -14,34 +14,64 @@
 //
 
 import activity from '@anticrm/activity'
-import type { Backlink, Channel, ChunterMessage, Comment, Message, ThreadMessage } from '@anticrm/chunter'
+import type {
+  Backlink,
+  ChunterSpace,
+  Channel,
+  ChunterMessage,
+  Comment,
+  Message,
+  SavedMessages,
+  ThreadMessage,
+  DirectMessage
+} from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { ArrOf, Builder, Collection, Index, Model, Prop, TypeMarkup, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Index,
+  Model,
+  Prop,
+  TypeMarkup,
+  TypeRef,
+  TypeString,
+  TypeTimestamp,
+  UX
+} from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
 import notification from '@anticrm/model-notification'
+import preference, { TPreference } from '@anticrm/model-preference'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
 
-@Model(chunter.class.Channel, core.class.Space)
-@UX(chunter.string.Channel, chunter.icon.Hashtag)
-export class TChannel extends TSpace implements Channel {
+@Model(chunter.class.ChunterSpace, core.class.Space)
+export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
   lastMessage?: Timestamp
 
   @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
   pinned?: Ref<ChunterMessage>[]
+}
 
+@Model(chunter.class.Channel, chunter.class.ChunterSpace)
+@UX(chunter.string.Channel, chunter.icon.Hashtag)
+export class TChannel extends TChunterSpace implements Channel {
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
   topic?: string
 }
+
+@Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
+@UX(chunter.string.DirectMessage, contact.icon.Person)
+export class TDirectMessage extends TChunterSpace implements DirectMessage {}
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
 export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
@@ -100,35 +130,72 @@ export class TBacklink extends TComment implements Backlink {
   backlinkClass!: Ref<Class<Doc>>
 }
 
+@Model(chunter.class.SavedMessages, preference.class.Preference)
+export class TSavedMessages extends TPreference implements SavedMessages {
+  @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
+  attachedTo!: Ref<ChunterMessage>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TChannel, TMessage, TThreadMessage, TChunterMessage, TComment, TBacklink)
-  builder.mixin(chunter.class.Channel, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: chunter.class.Message
-    }
+  builder.createModel(
+    TChunterSpace,
+    TChannel,
+    TMessage,
+    TThreadMessage,
+    TChunterMessage,
+    TComment,
+    TBacklink,
+    TDirectMessage,
+    TSavedMessages
+  )
+  const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
+
+  spaceClasses.forEach((spaceClass) => {
+    builder.mixin(spaceClass, core.class.Class, workbench.mixin.SpaceView, {
+      view: {
+        class: chunter.class.Message
+      }
+    })
+
+    builder.mixin(spaceClass, core.class.Class, notification.mixin.SpaceLastEdit, {
+      lastEditField: 'lastMessage'
+    })
+
+    builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
+      editor: chunter.component.EditChannel
+    })
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceName, {
+    getName: chunter.function.GetDmName
+  })
+
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: chunter.component.DmPresenter
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.ChannelPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.SpaceLastEdit, {
-    lastEditField: 'lastMessage'
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectEditor, {
-    editor: chunter.component.EditChannel
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
+    header: chunter.component.DmHeader
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.SpaceHeader, {
     header: chunter.component.ChannelHeader
   })
 
-  builder.createDoc(view.class.ViewletDescriptor, core.space.Model, {
-    label: chunter.string.Chat,
-    icon: view.icon.Table,
-    component: chunter.component.ChannelView
-  }, chunter.viewlet.Chat)
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: chunter.string.Chat,
+      icon: view.icon.Table,
+      component: chunter.component.ChannelView
+    },
+    chunter.viewlet.Chat
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: chunter.class.Message,
@@ -141,7 +208,8 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.MarkUnread,
-      action: chunter.actionImpl.MarkUnread
+      action: chunter.actionImpl.MarkUnread,
+      singleInput: true
     },
     chunter.action.MarkUnread
   )
@@ -151,14 +219,18 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.MarkUnread,
-      action: chunter.actionImpl.MarkCommentUnread
+      action: chunter.actionImpl.MarkCommentUnread,
+      singleInput: true
     },
     chunter.action.MarkCommentUnread
   )
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: chunter.class.Message,
-    action: chunter.action.MarkUnread
+    action: chunter.action.MarkUnread,
+    context: {
+      mode: 'context'
+    }
   })
 
   builder.createDoc(
@@ -188,6 +260,9 @@ export function createModel (builder: Builder): void {
     action: chunter.action.ArchiveChannel,
     query: {
       archived: false
+    },
+    context: {
+      mode: 'context'
     }
   })
 
@@ -196,93 +271,150 @@ export function createModel (builder: Builder): void {
     action: chunter.action.UnarchiveChannel,
     query: {
       archived: true
+    },
+    context: {
+      mode: 'context'
     }
   })
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: chunter.class.ThreadMessage,
-    action: chunter.action.MarkCommentUnread
+    action: chunter.action.MarkCommentUnread,
+    context: {
+      mode: 'context'
+    }
   })
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: chunter.string.ApplicationLabelChunter,
-    icon: chunter.icon.Chunter,
-    hidden: false,
-    navigatorModel: {
-      specials: [
-        {
-          id: 'archive',
-          component: workbench.component.Archive,
-          icon: view.icon.Archive,
-          label: workbench.string.Archive,
-          position: 'top',
-          visibleIf: workbench.function.HasArchiveSpaces,
-          spaceClass: chunter.class.Channel
-        },
-        {
-          id: 'threads',
-          label: chunter.string.Threads,
-          icon: chunter.icon.Thread,
-          component: chunter.component.Threads,
-          position: 'top'
-        }
-      ],
-      spaces: [
-        {
-          label: chunter.string.Channels,
-          spaceClass: chunter.class.Channel,
-          addSpaceLabel: chunter.string.CreateChannel,
-          createComponent: chunter.component.CreateChannel
-        }
-      ],
-      aside: chunter.component.ThreadView
-    }
-  }, chunter.app.Chunter)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: chunter.string.ApplicationLabelChunter,
+      icon: chunter.icon.Chunter,
+      hidden: false,
+      navigatorModel: {
+        specials: [
+          {
+            id: 'spaceBrowser',
+            component: workbench.component.SpaceBrowser,
+            icon: workbench.icon.Search,
+            label: chunter.string.ChannelBrowser,
+            position: 'top',
+            spaceClass: chunter.class.Channel,
+            componentProps: {
+              _class: chunter.class.Channel,
+              label: chunter.string.ChannelBrowser,
+              createItemDialog: chunter.component.CreateChannel,
+              createItemLabel: chunter.string.CreateChannel
+            }
+          },
+          {
+            id: 'archive',
+            component: workbench.component.Archive,
+            icon: view.icon.Archive,
+            label: workbench.string.Archive,
+            position: 'top',
+            visibleIf: workbench.function.HasArchiveSpaces,
+            spaceClass: chunter.class.Channel
+          },
+          {
+            id: 'threads',
+            label: chunter.string.Threads,
+            icon: chunter.icon.Thread,
+            component: chunter.component.Threads,
+            position: 'top'
+          },
+          {
+            id: 'savedMessages',
+            label: chunter.string.SavedMessages,
+            icon: chunter.icon.Bookmark,
+            component: chunter.component.SavedMessages
+          }
+        ],
+        spaces: [
+          {
+            label: chunter.string.Channels,
+            spaceClass: chunter.class.Channel,
+            addSpaceLabel: chunter.string.CreateChannel,
+            createComponent: chunter.component.CreateChannel
+          },
+          {
+            label: chunter.string.DirectMessages,
+            spaceClass: chunter.class.DirectMessage,
+            addSpaceLabel: chunter.string.NewDirectMessage,
+            createComponent: chunter.component.CreateDirectMessage
+          }
+        ],
+        aside: chunter.component.ThreadView
+      }
+    },
+    chunter.app.Chunter
+  )
 
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter
   })
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Comment,
-    icon: chunter.icon.Chunter,
-    txClass: core.class.TxCreateDoc,
-    component: chunter.activity.TxCommentCreate,
-    label: chunter.string.LeftComment,
-    display: 'content',
-    editable: true,
-    hideOnRemove: true
-  }, chunter.ids.TxCommentCreate)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Comment,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxCommentCreate,
+      label: chunter.string.LeftComment,
+      display: 'content',
+      editable: true,
+      hideOnRemove: true
+    },
+    chunter.ids.TxCommentCreate
+  )
 
   // We need to define this one, to hide default attached object removed case
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Comment,
-    icon: chunter.icon.Chunter,
-    txClass: core.class.TxRemoveDoc,
-    display: 'inline',
-    hideOnRemove: true
-  }, chunter.ids.TxCommentRemove)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Comment,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxRemoveDoc,
+      display: 'inline',
+      hideOnRemove: true
+    },
+    chunter.ids.TxCommentRemove
+  )
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Backlink,
-    icon: chunter.icon.Chunter,
-    txClass: core.class.TxCreateDoc,
-    component: chunter.activity.TxBacklinkCreate,
-    label: chunter.string.MentionedIn,
-    labelComponent: chunter.activity.TxBacklinkReference,
-    display: 'emphasized',
-    editable: false,
-    hideOnRemove: true
-  }, chunter.ids.TxCommentCreate)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Backlink,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxCreateDoc,
+      component: chunter.activity.TxBacklinkCreate,
+      label: chunter.string.MentionedIn,
+      labelComponent: chunter.activity.TxBacklinkReference,
+      display: 'emphasized',
+      editable: false,
+      hideOnRemove: true
+    },
+    chunter.ids.TxCommentCreate
+  )
 
   // We need to define this one, to hide default attached object removed case
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: chunter.class.Backlink,
-    icon: chunter.icon.Chunter,
-    txClass: core.class.TxRemoveDoc,
-    display: 'inline',
-    hideOnRemove: true
-  }, chunter.ids.TxBacklinkRemove)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Backlink,
+      icon: chunter.icon.Chunter,
+      txClass: core.class.TxRemoveDoc,
+      display: 'inline',
+      hideOnRemove: true
+    },
+    chunter.ids.TxBacklinkRemove
+  )
 }
 
 export { chunterOperation } from './migration'

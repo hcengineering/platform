@@ -1,5 +1,6 @@
 {
   "string": {
+    "Name": "Name",
     "CreateBoard": "Create board",
     "CreateCard": "Create card",
     "CardName": "Card name",
@@ -32,11 +33,17 @@
     "Labels": "Labels",
     "CreateLabel": "Create a new label",
     "SearchLabels": "Search labels...",
+    "SelectColor": "Select a color",
+    "NoColor": "No color.",
+    "NoColorInfo": "This won't show up on the front of cards.",
     "Checklist": "Checklist",
     "Dates": "Dates",
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",
     "DropFileToUpload": "Drop files to upload.",
+    "AttachFrom": "Attach from...",
+    "AttachmentTip": "Tip: You can drag and drop files onto cards to upload them.",
+    "Computer": "Computer",
     "CustomFields": "Custom Fields",
     "Automation": "Automation",
     "AddButton": "Add Button",
@@ -47,6 +54,7 @@
     "Copy": "Copy",
     "MakeTemplate": "Make Template",
     "Watch": "Watch",
+    "Unwatch": "Unwatch",
     "Archive": "Archive",
     "SendToBoard": "Send to board",
     "Delete": "Delete",
@@ -72,6 +80,13 @@
     "DueDate": "Due date",
     "Save": "Save",
     "Remove": "Remove",
-    "NullDate": "M/D/YYYY"
+    "NullDate": "M/D/YYYY",
+    "ViewProfile": "View profile",
+    "RemoveFromCard": "Remove from card",
+    "LinkName": "Link name",
+    "Edit": "Edit",
+    "Update": "Update",
+    "DeleteAttachment": "Deleting an attachment is permanent. There is no undo.",
+    "SearchMembers": "Search members"
   }
 }

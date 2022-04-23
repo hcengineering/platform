@@ -19,12 +19,13 @@
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { TagCategory, TagElement, TagReference } from '@anticrm/tags'
   import { CheckBox, Button, Icon, IconAdd, IconClose, Label, showPopup, getPlatformColor } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
 
+  export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
   export let placeholder: IntlString = presentation.string.Search
   export let selected: Ref<TagElement>[] = []
@@ -51,7 +52,7 @@
     tags.class.TagElement,
     { title: { $like: '%' + search + '%' }, targetClass },
     (result) => {
-      objects = result
+      objects = newElements.concat(result)
     },
     { limit: 200 }
   )
@@ -85,6 +86,7 @@
     if (count > 0) return count.toString()
     return ''
   }
+  onMount(() => { if (searchElement) searchElement.focus() })
 </script>
 
 <div class="selectPopup maxHeight">
@@ -150,29 +152,6 @@
 </div>
 
 <style lang="scss">
-  .clear-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: .75rem;
-    height: .75rem;
-    border-radius: 50%;
-
-    .icon {
-      width: .625rem;
-      height: .625rem;
-    }
-
-    &.show {
-      color: var(--content-color);
-      background-color: var(--button-border-color);
-      cursor: pointer;
-      &:hover {
-        color: var(--accent-color);
-        background-color: var(--button-border-hover);
-      }
-    }
-  }
   .counter {
     padding-right: .125rem;
     min-width: 1.5rem;

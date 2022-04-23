@@ -16,20 +16,21 @@
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Icon, IconAdd, Scroller, Tooltip, Button, showPopup } from '@anticrm/ui'
+  import { Component, Button, eventToHTMLElement, IconAdd, Scroller, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { IssuesGroupByKeys, IssuesOrderByKeys, issuesGroupPresenterMap, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import IssuesList from './IssuesList.svelte'
 
   export let query: DocumentQuery<Issue>
-  export let categoryId: Ref<IssueStatus>
-  export let categories: WithLookup<IssueStatus>[]
+  export let groupBy: { key: IssuesGroupByKeys | undefined; group: Issue[IssuesGroupByKeys] | undefined }
+  export let orderBy: IssuesOrderByKeys
+  export let statuses: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
   export let currentTeam: Team
 
   const dispatch = createEventDispatcher()
-
   const options: FindOptions<Issue> = {
     lookup: {
       assignee: contact.class.Employee,
@@ -37,53 +38,57 @@
     }
   }
 
-  $: category = categories.find((c) => c._id === categoryId)
-  $: categoryIcon = category?.$lookup?.category?.icon
-
   let issuesAmount = 0
 
-  const handleNewIssueAdded = (event: Event) => {
+  $: grouping = groupBy.key !== undefined && groupBy.group !== undefined ? { [groupBy.key]: groupBy.group } : {}
+  $: headerComponent = groupBy.key !== undefined ? issuesGroupPresenterMap[groupBy.key] : null
+
+  const handleNewIssueAdded = (event: MouseEvent) => {
     if (!currentSpace) {
       return
     }
 
-    showPopup(CreateIssue, { space: currentSpace, issueStatus: categoryId }, event.target)
+    showPopup(CreateIssue, { space: currentSpace, ...grouping }, eventToHTMLElement(event))
   }
 </script>
 
-<div class="category" class:visible={issuesAmount > 0}>
-  <div class="header categoryHeader flex-between label">
-    <div class="flex-row-center gap-2">
-      {#if categoryIcon}
-        <Icon icon={categoryIcon} size={'small'} />
-      {/if}
-      {#if category?.name}
-        <span class="lines-limit-2">{category?.name}</span>
-      {/if}
-      <span class="eLabelCounter ml-2">{issuesAmount}</span>
+<div class="category">
+  {#if headerComponent}
+    <div class="header categoryHeader flex-between label">
+      <div class="flex-row-center gap-2">
+        <Component
+          is={headerComponent}
+          props={{
+            isEditable: false,
+            shouldShowLabel: true,
+            value: grouping,
+            defaultName: groupBy.key === 'assignee' ? tracker.string.NoAssignee : undefined,
+            statuses: groupBy.key === 'status' ? statuses : undefined
+          }}
+        />
+        <span class="eLabelCounter ml-2">{issuesAmount}</span>
+      </div>
+      <div class="flex mr-1">
+        <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
+          <Button icon={IconAdd} kind={'transparent'} on:click={handleNewIssueAdded} />
+        </Tooltip>
+      </div>
     </div>
-    <div class="flex mr-1">
-      <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
-        <Button icon={IconAdd} kind={'transparent'} on:click={handleNewIssueAdded} />
-      </Tooltip>
-    </div>
-  </div>
+  {/if}
   <Scroller>
     <IssuesList
       _class={tracker.class.Issue}
-      leftItemsConfig={[
+      itemsConfig={[
         { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-        { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace, categories } },
-        { key: '', presenter: tracker.component.TitlePresenter }
-      ]}
-      rightItemsConfig={[
+        { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace, statuses } },
+        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
       ]}
-      {options}
-      query={{ ...query, status: categoryId }}
+      options={{ ...options, sort: { [orderBy]: issuesSortOrderMap[orderBy] } }}
+      query={{ ...query, ...grouping }}
       on:content={(evt) => {
         issuesAmount = evt.detail.length
         dispatch('content', issuesAmount)
@@ -93,17 +98,10 @@
 </div>
 
 <style lang="scss">
-  .category {
-    display: none;
-    &.visible {
-      display: block;
-    }
-  }
-
   .categoryHeader {
     height: 2.5rem;
     background-color: var(--theme-table-bg-hover);
-    padding-left: 2rem;
+    padding-left: 2.3rem;
   }
 
   .label {

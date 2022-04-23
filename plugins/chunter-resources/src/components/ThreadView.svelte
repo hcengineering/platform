@@ -100,7 +100,7 @@
     )
 
     pinnedQuery.query(
-      chunter.class.Channel,
+      chunter.class.ChunterSpace,
       { _id: currentSpace },
       (res) => {
         pinnedIds = res[0]?.pinned ?? []
@@ -122,6 +122,13 @@
         })
       ))
   )
+
+  const preferenceQuery = createQuery()
+  let savedIds: Ref<ChunterMessage>[] = []
+
+  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedIds = res.map((r) => r.attachedTo)
+  })
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
@@ -146,7 +153,7 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, currentSpace, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }
@@ -193,7 +200,13 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MsgView message={comment} {employees} thread isPinned={pinnedIds.includes(comment._id)} />
+      <MsgView
+        message={comment}
+        {employees}
+        thread
+        isPinned={pinnedIds.includes(comment._id)}
+        isSaved={savedIds.includes(comment._id)}
+      />
     {/each}
   {/if}
 </div>

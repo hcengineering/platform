@@ -29,7 +29,12 @@ export default mergeIds(workbenchId, workbench, {
     Archived: '' as IntlString,
     Open: '' as IntlString,
     General: '' as IntlString,
-    Members: '' as IntlString
+    Members: '' as IntlString,
+    View: '' as IntlString,
+    Leave: '' as IntlString,
+    Joined: '' as IntlString,
+    Join: '' as IntlString,
+    BrowseSpaces: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent

@@ -23,7 +23,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
-    "@rushstack/heft": "^0.41.1",
+    "@rushstack/heft": "^0.44.13",
     "typescript": "^4.3.5",
     "svelte-check": "^2.2.10"
   },

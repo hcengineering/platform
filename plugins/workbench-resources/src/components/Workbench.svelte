@@ -36,8 +36,9 @@
     DatePickerPopup,
     TooltipInstance
   } from '@anticrm/ui'
+  import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, tick } from 'svelte'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
@@ -74,10 +75,16 @@
     apps = result
   })
 
+  let panelInstance: PanelInstance
+
   let visibileNav: boolean = true
   async function toggleNav (): Promise<void> {
     visibileNav = !visibileNav
     closeTooltip()
+    if (currentApplication && navigatorModel && navigator) {
+      await tick()
+      panelInstance.fitPopupInstance()
+    }
   }
 
   const account = getCurrentAccount() as EmployeeAccount
@@ -250,9 +257,47 @@
       }
     }
   }
+
+  let aside: HTMLElement
+  let cover: HTMLElement
+  let isResizing: boolean = false
+  let asideWidth: number
+  let componentWidth: number
+  let dX: number
+  let oldX: number
+
+  const resizing = (event: MouseEvent): void => {
+    if (isResizing && aside) {
+      const X = event.clientX - dX
+      const newWidth = asideWidth + oldX - X
+      if (newWidth > 320 && componentWidth - (oldX - X) > 320) {
+        aside.style.width = aside.style.maxWidth = aside.style.minWidth = newWidth + 'px'
+        oldX = X
+      }
+    }
+  }
+  const endResize = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && isResizing) document.removeEventListener('mousemove', resizing)
+    document.removeEventListener('mouseup', endResize)
+    cover.style.display = 'none'
+    isResizing = false
+  }
+  const startResize = (event: MouseEvent): void => {
+    const el: HTMLElement = event.currentTarget as HTMLElement
+    if (el && !isResizing) {
+      oldX = el.getBoundingClientRect().y
+      dX = event.clientX - oldX
+      document.addEventListener('mouseup', endResize)
+      document.addEventListener('mousemove', resizing)
+      cover.style.display = 'block'
+      isResizing = true
+    }
+  }
 </script>
 
 {#if client}
+  <ActionHandler/>
   <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path
@@ -274,16 +319,16 @@
     </clipPath>
   </svg>
   <div class="workbench-container">
-    <div class="antiPanel-application" on:click={toggleNav}>
+    <div class="antiPanel-application">
       <div class="flex-col mt-1">
         <!-- <ActivityStatus status="active" /> -->
-        <AppItem
-          icon={TopMenu}
-          label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-          selected={!visibileNav}
-          action={toggleNav}
-          notify={false}
-        />
+          <AppItem
+            icon={TopMenu}
+            label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!visibileNav}
+            action={toggleNav}
+            notify={false}
+          />
       </div>
       <Applications
         {apps}
@@ -326,6 +371,12 @@
         </div>
       </div>
     </div>
+    <ActionContext
+      context={{
+        mode: 'workbench',
+        application: currentApplication?._id
+      }}
+    />
     {#if currentApplication && navigatorModel && navigator && visibileNav}
       <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
         {#if currentApplication}
@@ -346,7 +397,7 @@
         {/if}
       </div>
     {/if}
-    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel}>
+    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel} bind:clientWidth={componentWidth}>
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} props={{ currentSpace }} />
       {:else if specialComponent}
@@ -361,13 +412,27 @@
       {/if}
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="antiPanel-component antiComponent border-left">
+      <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+      <div class="antiPanel-component antiComponent aside" bind:clientWidth={asideWidth} bind:this={aside}>
         <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
       </div>
     {/if}
   </div>
-  <PanelInstance {contentPanel} />
-  <Popup />
+  <div bind:this={cover} class="cover" />
+  <PanelInstance bind:this={panelInstance} {contentPanel} >
+    <svelte:fragment slot='panel-header'>
+      <ActionContext
+        context={{ mode: 'panel' }}
+      />
+    </svelte:fragment>
+  </PanelInstance>
+  <Popup>
+    <svelte:fragment slot='popup-header'>
+      <ActionContext
+        context={{ mode: 'popup' }}
+      />
+    </svelte:fragment>
+  </Popup>
   <TooltipInstance />
   <DatePickerPopup />
 {:else}
@@ -378,5 +443,45 @@
   .workbench-container {
     display: flex;
     height: 100%;
+  }
+
+  .cover {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+  }
+  .splitter {
+    position: relative;
+    width: 1px;
+    min-width: 1px;
+    max-width: 1px;
+    height: 100%;
+    background-color: var(--divider-color);
+    transition: background-color .15s ease-in-out;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: .5rem;
+      height: 100%;
+      border-left: 2px solid transparent;
+      cursor: col-resize;
+      z-index: 1;
+      transition: border-color .15s ease-in-out;
+    }
+    &:hover, &.hovered {
+      transition-duration: 0;
+      background-color: var(--primary-bg-color);
+      &::before {
+        transition-duration: 0;
+        border-left: 2px solid var(--primary-bg-color);
+      }
+    }
   }
 </style>

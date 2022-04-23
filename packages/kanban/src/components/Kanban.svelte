@@ -16,13 +16,13 @@
   import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, Space } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getPlatformColor, ScrollBox } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { DocWithRank, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'
-  import KanbanPanel from './KanbanPanel.svelte'
 
   type Item = DocWithRank & { state: StateType; doneState: StateType | null }
-  type ExtItem = { prev?: Item; it: Item; next?: Item }
+  type ExtItem = { prev?: Item; it: Item; next?: Item, pos: number }
   type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
 
   export let _class: Ref<Class<Item>>
@@ -33,6 +33,10 @@
   export let query: DocumentQuery<Item> = {}
   export let fieldName: string
   export let rankFieldName: string
+  export let selection: number | undefined = undefined
+  export let checked: Doc[] = []
+
+  const dispatch = createEventDispatcher()
 
   let objects: Item[] = []
 
@@ -52,6 +56,8 @@
     }
   )
 
+  $: dispatch('content', objects)
+
   function getStateObjects (
     objects: Item[],
     state: TypeState,
@@ -59,7 +65,7 @@
   ): ExtItem[] {
     const stateCards = objects.filter((it) => (it as any)[fieldName] === state._id)
     stateCards.sort((a, b) => (a as any)[rankFieldName]?.localeCompare((b as any)[rankFieldName]))
-    return stateCards.map((it, idx, arr) => ({ it, prev: arr[idx - 1], next: arr[idx + 1] }))
+    return stateCards.map((it, idx, arr) => ({ it, prev: arr[idx - 1], next: arr[idx + 1], pos: objects.findIndex(pi => pi._id === it._id) }))
   }
 
   async function updateItem (item: Item, update: DocumentUpdate<Item>) {
@@ -160,6 +166,7 @@
     dragCardInitialRank = (object.it as any)[rankFieldName]
     dragCard = object.it
     isDragging = true
+    dispatch('obj-focus', object.it)
   }
   // eslint-disable-next-line
   let dragged: boolean = false
@@ -170,54 +177,143 @@
 
   // eslint-disable-next-line no-unused-vars
   let stateObjects: ExtItem[]
+
+  const stateRefs: HTMLElement[] = []
+
+  $: stateRefs.length = states.length
+
+  function scrollInto (statePos: number): void {
+    stateRefs[statePos].scrollIntoView({ behavior: 'auto', block: 'nearest' })
+  }
+
+  export function selectStatePosition (pos: number, direction: 'up' | 'down' | 'left' | 'right'): void {
+    const obj = objects[pos]
+    if (obj === undefined) {
+      return
+    }
+    const fState = (obj as any)[fieldName]
+    let objState = states.findIndex((it) => it._id === fState)
+    if (objState === -1) {
+      return
+    }
+    const stateObjs = getStateObjects(objects, states[objState])
+    const statePos = stateObjs.findIndex((it) => it.it._id === obj._id)
+    if (statePos === undefined) {
+      return
+    }
+    switch (direction) {
+      case 'up':
+        scrollInto(objState)
+        dispatch('obj-focus', (stateObjs[statePos - 1] ?? stateObjs[0]).it)
+        break
+      case 'down':
+        scrollInto(objState)
+        dispatch('obj-focus', (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it)
+        break
+      case 'left':
+        while (objState > 0) {
+          objState--
+          const nstateObjs = getStateObjects(objects, states[objState])
+          if (nstateObjs.length > 0) {
+            scrollInto(objState)
+            dispatch('obj-focus', (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it)
+            break
+          }
+        }
+        break
+      case 'right':
+        while (objState < states.length - 1) {
+          objState++
+          const nstateObjs = getStateObjects(objects, states[objState])
+          if (nstateObjs.length > 0) {
+            scrollInto(objState)
+            dispatch('obj-focus', (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it)
+            break
+          }
+        }
+        break
+    }
+  }
+
+  $: checkedSet = new Set<Ref<Doc>>(checked.map(it => it._id))
+  
+  export function check (docs: Doc[], value: boolean) {
+    dispatch('check', { docs, value })
+  }
+  const showMenu = async (evt: MouseEvent, object: ExtItem): Promise<void> => {
+    selection = object.pos
+    if (!checkedSet.has(object.it._id)) {
+      check(objects, false)
+      checked = []
+    }
+    dispatch('contextmenu', { evt: evt, objects: checked.length > 0 ? checked : object.it })
+  }
 </script>
 
 <div class="flex-col kanban-container">
   <div class="scrollable">
     <ScrollBox>
       <div class="kanban-content">
-        {#each states as state}
+        {#each states as state, si}
           {@const stateObjects = getStateObjects(objects, state, dragCard)}
-          <KanbanPanel
-            label={state.title}
-            color={getPlatformColor(state.color)}
+
+          <div
+            class="panel-container step-lr75"
+            bind:this={stateRefs[si]}
             on:dragover={(event) => panelDragOver(event, state)}
             on:drop={() => {
               move(state._id)
               isDragging = false
             }}
-            customHeader={$$slots.header !== undefined}
-          >            
-            <svelte:fragment slot='header'>
-              <slot name="header" state={toAny(state)} count={stateObjects.length}/>
-            </svelte:fragment>
-            <slot name="beforeCard" {state} />
-            {#each stateObjects as object}
-              {@const dragged = isDragging && object.it._id === dragCard?._id}
-              <div
-                transition:slideD|local={{ isDragging }}
-                class="step-tb75"
-                on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-                on:drop|preventDefault={(evt) => cardDrop(evt, object)}
-              >
-                <div
-                  class="card-container"
-                  draggable={true}
-                  class:draggable={true}
-                  on:dragstart
-                  on:dragend
-                  class:dragged={dragged}
-                  on:dragstart={() => onDragStart(object, state)}
-                  on:dragend={() => {
-                    isDragging = false
-                  }}
-                >
-                  <slot name="card" object={toAny(object.it)} dragged={dragged} />
+          >
+            {#if $$slots.header !== undefined}
+              <slot name="header" state={toAny(state)} count={stateObjects.length} />
+            {:else}
+              <div class="header">
+                <div class="bar" style="background-color: {getPlatformColor(state.color)}" />
+                <div class="flex-between label">
+                  <div>
+                    <span class="lines-limit-2">{state.title}</span>
+                  </div>
                 </div>
               </div>
-            {/each}
-            <slot name="afterCard" {space} {state} />
-          </KanbanPanel>
+            {/if}
+            <div class="scroll" on:dragover on:drop>
+              <ScrollBox vertical>
+                <slot name="beforeCard" {state} />
+                {#each stateObjects as object}
+                  {@const dragged = isDragging && object.it._id === dragCard?._id}
+                  <div                                               
+                    transition:slideD|local={{ isDragging }}
+                    class="step-tb75"
+                    on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
+                    on:drop|preventDefault={(evt) => cardDrop(evt, object)}                    
+                  >
+                    <div
+                      class="card-container"
+                      class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
+                      class:checked={checkedSet.has(object.it._id)}
+                      on:mouseover={() => dispatch('obj-focus', object.it)}
+                      on:focus={() => {}}
+                      on:contextmenu={(evt) => showMenu(evt, object)}
+                      draggable={true}
+                      class:draggable={true}
+                      on:dragstart
+                      on:dragend
+                      class:dragged
+                      on:dragstart={() => onDragStart(object, state)}
+                      on:dragend={() => {
+                        isDragging = false
+                      }}
+                    >
+                      <slot name="card" object={toAny(object.it)} {dragged} />
+                    </div>
+                  </div>
+                {/each}
+                <slot name="afterCard" {space} {state} />
+              </ScrollBox>
+            </div>
+          </div>
         {/each}
         <slot name="additionalPanel" />
       </div>
@@ -245,17 +341,57 @@
   }
   .card-container {
     background-color: var(--board-card-bg-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     user-select: none;
 
-    &:hover { 
-      background-color: var(--board-card-bg-hover); 
+    &.checked { 
+      background-color: var(--theme-bg-checked);
     }
+
+    &.selection {
+      background-color: var(--theme-bg-checked-hover); 
+    }
+
+
     &.draggable {
       cursor: grab;
     }
     &.dragged {
       background-color: var(--board-bg-color);
+    }
+  }
+  .panel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 20rem;
+    height: 100%;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      height: 4rem;
+      min-height: 4rem;
+      user-select: none;
+
+      .bar {
+        height: 0.375rem;
+        border-radius: 0.25rem;
+      }
+      .label {
+        padding: 0 0.5rem 0 1rem;
+        height: 100%;
+        font-weight: 500;
+        color: var(--theme-caption-color);
+      }
+    }
+
+    .scroll {
+      min-height: 0;
+      height: 100%;
     }
   }
 </style>

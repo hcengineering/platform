@@ -93,7 +93,7 @@
     )
   }
 
-  function showCreateDialog (ev: Event) {
+  function showCreateDialog () {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
   }
   const applicationSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0)) ?? 0
@@ -111,7 +111,7 @@
       vquery = search
     }}
   />
-  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 <Scroller>
   <Table

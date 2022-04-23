@@ -13,62 +13,40 @@
 // limitations under the License.
 //
 
-import type { Doc } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-import { getClient, MessageBox } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
+import { actionImpl } from './actionImpl'
 import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
+import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import EditDoc from './components/EditDoc.svelte'
+import HTMLPresenter from './components/HTMLPresenter.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
+import Menu from './components/Menu.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
+import ObjectPresenter from './components/ObjectPresenter.svelte'
+import RolePresenter from './components/RolePresenter.svelte'
 import Table from './components/Table.svelte'
-import Menu from './components/Menu.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
-import { deleteObject } from './utils'
-import MoveView from './components/Move.svelte'
-import EditDoc from './components/EditDoc.svelte'
-import RolePresenter from './components/RolePresenter.svelte'
-import ObjectPresenter from './components/ObjectPresenter.svelte'
-import HTMLPresenter from './components/HTMLPresenter.svelte'
-import ColorsPopup from './components/ColorsPopup.svelte'
-import view from './plugin'
 
+export { getActions } from './actions'
+export { default as ActionContext } from './components/ActionContext.svelte'
+export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
-export { buildModel, getActions, getObjectPresenter, LoadingProps, getCollectionCounter } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup, Menu }
-
-function Delete (object: Doc): void {
-  showPopup(
-    MessageBox,
-    {
-      label: view.string.DeleteObject,
-      message: view.string.DeleteObjectConfirm
-    },
-    undefined,
-    (result?: boolean) => {
-      if (result === true) {
-        deleteObject(getClient(), object).catch(err => console.error(err))
-      }
-    }
-  )
-}
-
-async function Move (object: Doc): Promise<void> {
-  showPopup(MoveView, { object })
-}
+export { default as TableBrowser } from './components/TableBrowser.svelte'
+export * from './context'
+export * from './selection'
+export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
+export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter }
 
 export default async (): Promise<Resources> => ({
-  actionImpl: {
-    Delete: Delete,
-    Move: Move
-  },
+  actionImpl: actionImpl,
   component: {
     SpacePresenter,
     StringEditor,

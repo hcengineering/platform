@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, getObjectValue } from '@anticrm/core'
-  import { SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, Loading, showPopup, Spinner, IconMoreV, Tooltip } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
@@ -24,8 +23,7 @@
 
   export let _class: Ref<Class<Doc>>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let leftItemsConfig: (BuildModelKey | string)[]
-  export let rightItemsConfig: (BuildModelKey | string)[] | undefined = undefined
+  export let itemsConfig: (BuildModelKey | string)[]
   export let options: FindOptions<Doc> | undefined = undefined
   export let query: DocumentQuery<Doc>
 
@@ -36,7 +34,6 @@
 
   const DOCS_MAX_AMOUNT = 200
   const liveQuery = createQuery()
-  const sort = { modifiedOn: SortingOrder.Descending }
 
   let selectedIssueIds = new Set<Ref<Doc>>()
   let selectedRowIndex: number | undefined
@@ -61,7 +58,7 @@
         dispatch('content', docObjects)
         isLoading = false
       },
-      { sort, ...options, limit: DOCS_MAX_AMOUNT }
+      { ...options, limit: DOCS_MAX_AMOUNT }
     )
   }
 
@@ -94,16 +91,9 @@
 
     return props.length
   }
-
-  const buildItemModels = async () => {
-    const leftModels = await buildModel({ client, _class, keys: leftItemsConfig, options })
-    const rightModels = rightItemsConfig && (await buildModel({ client, _class, keys: rightItemsConfig, options }))
-
-    return { leftModels, rightModels }
-  }
 </script>
 
-{#await buildItemModels()}
+{#await buildModel({ client, _class, keys: itemsConfig, options })}
   {#if !isLoading}
     <Loading />
   {/if}
@@ -116,78 +106,68 @@
           class:mListGridChecked={selectedIssueIds.has(docObject._id)}
           class:mListGridFixed={rowIndex === selectedRowIndex}
         >
-          <div class="modelsContainer">
-            {#each itemModels.leftModels as attributeModel, attributeModelIndex}
-              {#if attributeModelIndex === 0}
-                <div class="gridElement">
-                  <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                    <div class="eListGridCheckBox ml-2">
-                      <CheckBox
-                        checked={selectedIssueIds.has(docObject._id)}
-                        on:value={(event) => {
-                          handleIssueSelected(docObject._id, event)
-                        }}
-                      />
-                    </div>
-                  </Tooltip>
-                  <div class="priorityPresenter">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      {...attributeModel.props}
+          {#each itemModels as attributeModel, attributeModelIndex}
+            {#if attributeModelIndex === 0}
+              <div class="gridElement">
+                <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
+                  <div class="eListGridCheckBox ml-2">
+                    <CheckBox
+                      checked={selectedIssueIds.has(docObject._id)}
+                      on:value={(event) => {
+                        handleIssueSelected(docObject._id, event)
+                      }}
                     />
                   </div>
-                </div>
-              {:else if attributeModelIndex === 1}
-                <div class="issuePresenter">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                  <div
-                    id="context-menu"
-                    class="eIssuePresenterContextMenu"
-                    on:click={(event) => showMenu(event, docObject, rowIndex)}
-                  >
-                    <IconMoreV size={'small'} />
-                  </div>
-                </div>
-              {:else}
-                <div class="gridElement">
+                </Tooltip>
+                <div class="priorityPresenter">
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
                     {...attributeModel.props}
                   />
                 </div>
-              {/if}
-            {/each}
-          </div>
-          {#if itemModels.rightModels}
-            <div class="modelsContainer">
-              {#each itemModels.rightModels as attributeModel}
-                <div class="gridElement">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
+              </div>
+            {:else if attributeModelIndex === 1}
+              <div class="issuePresenter">
+                <svelte:component
+                  this={attributeModel.presenter}
+                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                  {...attributeModel.props}
+                />
+                <div
+                  id="context-menu"
+                  class="eIssuePresenterContextMenu"
+                  on:click={(event) => showMenu(event, docObject, rowIndex)}
+                >
+                  <IconMoreV size={'small'} />
                 </div>
-              {/each}
-            </div>
-          {/if}
+              </div>
+            {:else if attributeModelIndex === 3}
+              <svelte:component
+                this={attributeModel.presenter}
+                value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                {...attributeModel.props}
+              />
+              <div class="filler" />
+            {:else}
+              <div class="gridElement">
+                <svelte:component
+                  this={attributeModel.presenter}
+                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                  {...attributeModel.props}
+                />
+              </div>
+            {/if}
+          {/each}
         </div>
       {/each}
     {:else if loadingProps !== undefined}
       {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
         <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
-          <div class="modelsContainer">
-            <div class="gridElement">
-              <CheckBox checked={false} />
-              <div class="ml-4">
-                <Spinner size="small" />
-              </div>
+          <div class="gridElement">
+            <CheckBox checked={false} />
+            <div class="ml-4">
+              <Spinner size="small" />
             </div>
           </div>
         </div>
@@ -208,7 +188,6 @@
   .listGrid {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
@@ -239,9 +218,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.03rem;
-      border-radius: 0.25rem;
-      background-color: rgba(247, 248, 248, 0.5);
       opacity: 0;
 
       &:hover {
@@ -250,9 +226,9 @@
     }
   }
 
-  .modelsContainer {
+  .filler {
     display: flex;
-    align-items: center;
+    flex-grow: 1;
   }
 
   .gridElement {
@@ -273,6 +249,8 @@
   .issuePresenter {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    width: 5.5rem;
     margin-left: 0.5rem;
 
     .eIssuePresenterContextMenu {

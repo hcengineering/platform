@@ -390,7 +390,8 @@ export function createModel (builder: Builder): void {
     {
       label: task.string.CreateTask,
       icon: task.icon.Task,
-      action: task.actionImpl.CreateTask
+      action: task.actionImpl.CreateTask,
+      singleInput: true
     },
     task.action.CreateTask
   )
@@ -401,7 +402,8 @@ export function createModel (builder: Builder): void {
     {
       label: task.string.EditStates,
       icon: view.icon.Statuses,
-      action: task.actionImpl.EditStatuses
+      action: task.actionImpl.EditStatuses,
+      singleInput: true
     },
     task.action.EditStatuses
   )
@@ -433,6 +435,9 @@ export function createModel (builder: Builder): void {
     action: task.action.EditStatuses,
     query: {
       archived: false
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 
@@ -498,6 +503,9 @@ export function createModel (builder: Builder): void {
     action: task.action.TodoItemMarkDone,
     query: {
       done: false
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
@@ -505,6 +513,9 @@ export function createModel (builder: Builder): void {
     action: task.action.TodoItemMarkUnDone,
     query: {
       done: true
+    },
+    context: {
+      mode: ['context', 'browser']
     }
   })
 
@@ -521,6 +532,9 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target: task.class.Task,
-    action: view.action.Move
+    action: view.action.Move,
+    context: {
+      mode: ['context', 'browser']
+    }
   })
 }

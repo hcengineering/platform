@@ -12,6 +12,6 @@
     "Table": "Таблица",
     "Role": "Роль",
     "DeleteObject": "Удалить объект",
-    "DeleteObjectConfirm": "Вы действительно хотите удалить этот объект?"
+    "DeleteObjectConfirm": "Вы действительно хотите удалить {count, plural, =1 {этот обьект} other {эти # обьекта}}?"
   }
 }

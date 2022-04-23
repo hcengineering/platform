@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Channel } from '@anticrm/chunter'
   import { Button } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte'
   import { ArchiveChannel } from '../index'
   import chunter from '../plugin'
 
@@ -11,10 +11,11 @@
 </script>
 
 {#if channel}
-  <div class="flex-col flex-gap-3">
+  <div class="mt-4 ml-8 mr-8 flex-col p-4">
     <Button
       label={chunter.string.ArchiveChannel}
       justify={'left'}
+      size={'x-large'}
       on:click={() => {
         ArchiveChannel(channel, () => dispatch('close'))
       }}

@@ -1,5 +1,6 @@
 {
   "string": {
+    "Name": "Название",
     "CreateBoard": "Создать",
     "CreateCard": "Создать",
     "CardName": "Название",
@@ -32,11 +33,17 @@
     "Labels": "Метки",
     "CreateLabel": "Создать",
     "SearchLabels": "Поиск...",
+    "SelectColor": "Выберите цвет",
+    "NoColor": "Без цвета.",
+    "NoColorInfo": "Не будет показываться на доске.",
     "Checklist": "Списки",
     "Dates": "Дата",
     "Attachments": "Прикрепленное",
     "AddAttachment": "Прикрепить",
     "DropFileToUpload": "Добавьте файлы.",
+    "AttachFrom": "Добавить из...",
+    "AttachmentTip": "Совет: Вы можете перетаскивать файлы на карточки, чтобы прикрепить их.",
+    "Computer": "Компьютер",
     "CustomFields": "Дополнительно",
     "Automation": "Автоматизация",
     "AddButton": "Добавить",
@@ -47,6 +54,7 @@
     "Copy": "Копировать",
     "MakeTemplate": "Шаблон",
     "Watch": "Отслеживать",
+    "Unwatch": "Не отслеживать",
     "Archive": "Архивировать",
     "SendToBoard": "Вернуть",
     "Delete": "Удалить",
@@ -72,6 +80,13 @@
     "DueDate": "Срок",
     "Save": "Сохранить",
     "Remove": "Удалить",
-    "NullDate": "М/Д/ГГГГ"
+    "NullDate": "М/Д/ГГГГ",
+    "ViewProfile": "Перейти в профиль",
+    "RemoveFromCard": "Удалить из карточки",
+    "LinkName": "Имя ссылки",
+    "Edit": "Изменить",
+    "Update": "Обновить",
+    "DeleteAttachment": "Удаление вложения необратимо. Отмена невозможна.",
+    "SearchMembers": "Поиск участников"
   }
 }

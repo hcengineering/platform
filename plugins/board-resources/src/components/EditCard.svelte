@@ -41,28 +41,29 @@
 
   let object: Card | undefined
   let state: State | undefined
-  let handleMove: () => void
+  let handleMove: (e: Event) => void
 
   $: cardQuery.query(_class, { _id }, async (result) => {
-      object = result[0]
-    })
+    object = result[0]
+  })
 
-  $: object?.state && stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
+  $: object?.state &&
+    stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
       state = result[0]
     })
 
   getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
     if (result[0]?.handler) {
       const handler = await getResource(result[0].handler)
-      handleMove = () => {
+      handleMove = (e) => {
         if (object) {
-          handler(object, client)
+          handler(object, client, e)
         }
       }
     }
   })
 
-  function change(field: string, value: any) {
+  function change (field: string, value: any) {
     if (object) {
       updateCard(client, object, field, value)
     }

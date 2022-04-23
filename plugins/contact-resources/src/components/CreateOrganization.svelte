@@ -14,18 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  import { getClient, Card } from '@anticrm/presentation'
-
-  import { EditBox, Button, showPopup, IconAdd } from '@anticrm/ui'
-
   import { Channel, Organization } from '@anticrm/contact'
-  import contact from '../plugin'
-  import Company from './icons/Company.svelte'
   import { AttachedData, generateId } from '@anticrm/core'
-  import Channels from './Channels.svelte'
-  import ChannelsView from './ChannelsView.svelte'
+  import { Card, getClient } from '@anticrm/presentation'
+  import { Button, EditBox, eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import contact from '../plugin'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
+  import Company from './icons/Company.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
@@ -74,18 +70,7 @@
       maxWidth={'37.5rem'} kind={'large-style'} focus
     />
   </div>
-  {#if channels.length > 0}
-    <ChannelsView value={channels} size={'small'} on:click />
-  {/if}
-  <svelte:fragment slot="footer">
-    <Button
-      icon={contact.icon.SocialEdit}
-      kind={'transparent'}
-      on:click={(ev) =>
-        showPopup(contact.component.SocialEditor, { values: channels }, ev.target, (result) => {
-          if (result !== undefined) channels = result
-        })
-      }
-    />
+  <svelte:fragment slot="pool">
+    <ChannelsDropdown bind:value={channels} editable />
   </svelte:fragment>
 </Card>

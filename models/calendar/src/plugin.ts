@@ -16,11 +16,11 @@
 import { TxViewlet } from '@anticrm/activity'
 import { calendarId } from '@anticrm/calendar'
 import calendar from '@anticrm/calendar-resources/src/plugin'
-import { Doc, Ref } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
+import { Ref } from '@anticrm/core'
+import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import { Action, ViewletDescriptor } from '@anticrm/view'
+import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {
@@ -33,7 +33,7 @@ export default mergeIds(calendarId, calendar, {
     SaveEventReminder: '' as Ref<Action>
   },
   actionImpl: {
-    SaveEventReminder: '' as Resource<(object: Doc) => Promise<void>>
+    SaveEventReminder: '' as ViewAction
   },
   string: {
     ApplicationLabelCalendar: '' as IntlString,

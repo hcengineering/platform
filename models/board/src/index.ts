@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -32,13 +32,20 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
+import core, { TAttachedDoc, TDoc, TObj } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import board from './plugin'
+
+/**
+ * @public
+ */
+export function TypeCardDate (): Type<CardDate> {
+  return { _class: board.class.CardDate, label: board.string.Dates }
+}
 
 @Model(board.class.Board, task.class.SpaceWithStates)
 @UX(board.string.Board, board.icon.Board)
@@ -47,11 +54,20 @@ export class TBoard extends TSpaceWithStates implements Board {
   background!: string
 }
 
+@Model(board.class.CardDate, core.class.Obj, DOMAIN_MODEL)
+@UX(board.string.Dates)
+export class TCardDate extends TObj implements CardDate {
+  dueDate?: Timestamp
+  isChecked?: boolean
+  startDate?: Timestamp
+}
+
 @Model(board.class.CardLabel, core.class.AttachedDoc, DOMAIN_MODEL)
 @UX(board.string.Labels)
 export class TCardLabel extends TAttachedDoc implements CardLabel {
-  title!: string;
-  color!: number;
+  title!: string
+  color!: number
+  isHidden?: boolean
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -64,6 +80,7 @@ export class TCard extends TTask implements Card {
   @Prop(TypeBoolean(), board.string.IsArchived)
   isArchived?: boolean
 
+  @Prop(TypeCardDate(), board.string.Dates)
   date?: CardDate
 
   @Prop(TypeMarkup(), board.string.Description)
@@ -100,12 +117,12 @@ export class TCardAction extends TDoc implements CardAction {
   label!: IntlString
   position!: number
   type!: string
-  handler?: Resource<(card: Card, client: Client) => void>
+  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardAction)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction)
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -204,6 +221,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(board.class.Card, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.CardPresenter
+  })
+
+  builder.mixin(board.class.CardLabel, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: board.component.CardLabelPresenter
+  })
+
+  builder.mixin(board.class.CardDate, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: board.component.CardDatePresenter
   })
 
   builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
@@ -317,7 +342,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
-      isInline: false,
+      isInline: true,
       label: board.string.Cover,
       position: 70,
       type: board.cardActionType.Cover,
@@ -400,7 +425,7 @@ export function createModel (builder: Builder): void {
       label: board.string.Watch,
       position: 130,
       type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Watch
+      component: board.component.WatchCard
     },
     board.cardAction.Watch
   )

@@ -1,0 +1,84 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import { BuildModelKey } from '@anticrm/view'
+import { onMount } from 'svelte'
+  import { ActionContext } from '..'
+  import { focusStore, ListSelectionProvider, selectionStore } from '../selection'
+  import { LoadingProps } from '../utils'
+  import Table from './Table.svelte'
+
+  export let _class: Ref<Class<Doc>>
+  export let query: DocumentQuery<Doc>
+  export let showNotification: boolean = false
+  export let options: FindOptions<Doc> | undefined = undefined
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
+  export let config: (BuildModelKey | string)[]
+
+  // If defined, will show a number of dummy items before real data will appear.
+  export let loadingProps: LoadingProps | undefined = undefined
+
+  let table: Table
+  const listProvider = new ListSelectionProvider(
+    (pos, dir) => {
+      if (dir === 'vertical') {
+        // Select next
+        table.scrollSelection(pos + 1)
+      }
+    },
+    (pos, dir) => {
+      // Select prev
+      if (dir === 'vertical') {
+        table.scrollSelection(pos - 1)
+      }
+    }
+  )
+  
+  onMount(() => {
+    (document.activeElement as HTMLElement)?.blur()
+  })
+</script>
+
+
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
+
+<Table
+  bind:this={table}
+  {_class}
+  {config}
+  {options}
+  {query}
+  {showNotification}
+  {baseMenuClass}
+  {loadingProps}
+  highlightRows={true}
+  enableChecking
+  checked={$selectionStore ?? []}
+  selection={listProvider.current($focusStore)}
+  on:row-focus={(evt) => {
+    listProvider.updateFocus(evt.detail)
+  }}
+  on:content={(evt) => {
+    listProvider.update(evt.detail)
+  }}
+  on:check={(evt) => {
+    listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+  }}
+/>

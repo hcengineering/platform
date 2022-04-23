@@ -16,7 +16,7 @@
   import core from '@anticrm/core'
   import { Icon, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { TableBrowser } from '@anticrm/view-resources'
   import { NavigatorModel } from '@anticrm/workbench'
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
@@ -30,7 +30,7 @@
     <div class="fs-title"><Label label={workbench.string.Archived}/></div>
   </div>
   {#if model}
-    <Table
+    <TableBrowser
       _class={core.class.Space}
       config={['', '$lookup._class.label', 'modifiedOn']}
       options={{

@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
@@ -44,12 +44,13 @@ export interface BoardView extends SpaceWithStates {
 export interface CardLabel extends AttachedDoc {
   title: string
   color: number
+  isHidden?: boolean
 }
 
 /**
  * @public
  */
-export interface CardDate {
+export interface CardDate extends Obj {
   dueDate?: Timestamp
   isChecked?: boolean
   startDate?: Timestamp
@@ -90,7 +91,7 @@ export interface CardAction extends Doc {
   label: IntlString
   position: number
   type: string
-  handler?: Resource<(card: Card, client: Client) => void>
+  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
@@ -110,6 +111,7 @@ const boards = plugin(boardId, {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
     CardAction: '' as Ref<Class<CardAction>>,
+    CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>
   },
   icon: {
@@ -146,22 +148,22 @@ const boards = plugin(boardId, {
     Delete: '' as Ref<CardAction>
   },
   cardActionHandler: {
-    Cover: '' as Resource<(card: Card, client: Client) => void>,
-    Join: '' as Resource<(card: Card, client: Client) => void>,
-    Members: '' as Resource<(card: Card, client: Client) => void>,
-    Labels: '' as Resource<(card: Card, client: Client) => void>,
-    Checklist: '' as Resource<(card: Card, client: Client) => void>,
-    Dates: '' as Resource<(card: Card, client: Client) => void>,
-    Attachments: '' as Resource<(card: Card, client: Client) => void>,
-    CustomFields: '' as Resource<(card: Card, client: Client) => void>,
-    AddButton: '' as Resource<(card: Card, client: Client) => void>,
-    Move: '' as Resource<(card: Card, client: Client) => void>,
-    Copy: '' as Resource<(card: Card, client: Client) => void>,
-    MakeTemplate: '' as Resource<(card: Card, client: Client) => void>,
-    Watch: '' as Resource<(card: Card, client: Client) => void>,
-    Archive: '' as Resource<(card: Card, client: Client) => void>,
-    SendToBoard: '' as Resource<(card: Card, client: Client) => void>,
-    Delete: '' as Resource<(card: Card, client: Client) => void>
+    Cover: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Join: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Members: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Labels: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Checklist: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Dates: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Attachments: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    CustomFields: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    AddButton: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Move: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Copy: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    MakeTemplate: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Watch: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Archive: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    SendToBoard: '' as Resource<(card: Card, client: Client, e?: Event) => void>,
+    Delete: '' as Resource<(card: Card, client: Client, e?: Event) => void>
   },
   cardActionSupportedHandler: {
     Join: '' as Resource<(card: Card, client: Client) => boolean>,

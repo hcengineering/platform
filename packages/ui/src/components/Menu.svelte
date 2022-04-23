@@ -13,17 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { createEventDispatcher, afterUpdate, onMount } from 'svelte'
   import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
+  import ui from '../plugin'
 
   export let actions: Action[] = []
   export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()
+  let btns: HTMLButtonElement[] = []
+
+  const keyDown = (ev: KeyboardEvent, n: number): void => {
+    if (ev.key === 'ArrowDown') {
+      if (n === btns.length - 1) btns[0].focus()
+      else btns[n + 1].focus()
+    }
+    if (ev.key === 'ArrowUp') {
+      if (n === 0) btns[btns.length - 1].focus()
+      else btns[n - 1].focus()
+    }
+    if (ev.key === 'ArrowLeft' && ev.altKey) dispatch('update', 'left')
+    if (ev.key === 'ArrowRight' && ev.altKey) dispatch('update', 'right')
+  }
+
   afterUpdate(() => {
     dispatch('update', Date.now())
+  })
+  onMount(() => {
+    if (btns[0]) btns[0].focus()
   })
 </script>
 
@@ -31,21 +50,41 @@
   <div class="ap-space" />
   <div class="ap-scroll">
     <div class="ap-box">
-      {#each actions as action}
-        <div
-          class="ap-menuItem flex-row-center"
-          on:click={() => {
+      {#if actions.length === 0}
+      <div class='p-6 error-color'>
+        <Label label={ui.string.NoActionsDefined}/>
+      </div>
+      {/if}
+      {#each actions as action, i}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          bind:this={btns[i]}
+          class="ap-menuItem flex-row-center withIcon"
+          on:keydown={(evt) => keyDown(evt, i)}
+          on:mouseover={(evt) => {
+            evt.currentTarget.focus()
+          }}
+          on:click={(evt) => {
             dispatch('close')
-            action.action(ctx)
+            action.action(evt, ctx)
           }}
         >
           {#if action.icon}
-            <Icon icon={action.icon} size={'small'} />
+            <div class="icon"><Icon icon={action.icon} size={'small'} /></div>
           {/if}
           <div class="ml-3 pr-1"><Label label={action.label} /></div>
-        </div>
+        </button>
       {/each}
     </div>
   </div>
   <div class="ap-space" />
 </div>
+
+<style lang="scss">
+  .withIcon {
+    margin: 0;
+
+    .icon { color: var(--content-color); }
+    &:focus .icon { color: var(--accent-color); }
+  }
+</style>

@@ -19,17 +19,19 @@
   import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment } from '@anticrm/ui'
+  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment, eventToHTMLElement } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
   export let space: Ref<Team>
-  export let parent: Ref<Issue> | undefined = undefined
+  export let parent: Ref<Issue> | undefined
   export let issueStatus: Ref<IssueStatus> | undefined = undefined
+  export let priority: IssuePriority = IssuePriority.NoPriority
+  export let assignee: Ref<Employee> | null = null
 
-  let assignee: Ref<Employee> | null = null
+  let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] = []
 
   const object: Data<Issue> = {
@@ -39,7 +41,7 @@
     number: 0,
     rank: '',
     status: '' as Ref<IssueStatus>,
-    priority: IssuePriority.NoPriority,
+    priority: priority,
     dueDate: null,
     comments: 0
   }
@@ -78,7 +80,21 @@
   }
 
   export function canClose (): boolean {
-    return object.title !== ''
+    // if (object.title !== undefined) {
+    //   showPopup(
+    //     MessageBox,
+    //     {
+    //       label: 'Close create dialog',
+    //       message: 'Do you sure to cloase create dialog'
+    //     },
+    //     undefined,
+    //     (result?: boolean) => {
+    //       if (result === true) {
+    //       }
+    //     }
+    //   )
+    // }
+    return object.title === ''
   }
 
   async function createIssue () {
@@ -104,7 +120,7 @@
     const value: Data<Issue> = {
       title: object.title,
       description: object.description,
-      assignee,
+      assignee: currentAssignee,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,
@@ -118,7 +134,7 @@
   }
 
   const moreActions: Array<{ icon: Asset; label: IntlString }> = [
-    { icon: tracker.icon.DueDate, label: tracker.string.DueDate },
+    { icon: tracker.icon.DueDate, label: tracker.string.SetDueDate },
     { icon: tracker.icon.Parent, label: tracker.string.Parent }
   ]
 
@@ -182,7 +198,7 @@
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
       placeholder={tracker.string.AssignTo}
-      bind:value={assignee}
+      bind:value={currentAssignee}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
     />
@@ -207,7 +223,7 @@
       size="small"
       kind="transparent"
       on:click={(ev) => {
-        showPopup(SelectPopup, { value: moreActions }, ev.currentTarget)
+        showPopup(SelectPopup, { value: moreActions }, eventToHTMLElement(ev))
       }}
     />
   </svelte:fragment>

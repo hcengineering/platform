@@ -40,7 +40,7 @@
       space,
       {
         attachedTo: space,
-        attachedToClass: chunter.class.Channel,
+        attachedToClass: chunter.class.ChunterSpace,
         collection: 'messages',
         content: message,
         createOn: 0,
@@ -50,11 +50,11 @@
       _id
     )
     tx.attributes.createOn = tx.modifiedOn
-    await notificationClient.updateLastView(space, chunter.class.Channel, tx.modifiedOn, true)
+    await notificationClient.updateLastView(space, chunter.class.ChunterSpace, tx.modifiedOn, true)
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, space, chunter.class.Channel, _id, message)
+    await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
 
     _id = generateId()
   }
@@ -68,13 +68,19 @@
   const pinnedQuery = createQuery()
   let pinnedIds: Ref<ChunterMessage>[] = []
   pinnedQuery.query(
-    chunter.class.Channel,
+    chunter.class.ChunterSpace,
     { _id: space },
     (res) => {
       pinnedIds = res[0]?.pinned ?? []
     },
     { limit: 1 }
   )
+
+  const preferenceQuery = createQuery()
+  let savedIds: Ref<ChunterMessage>[] = []
+  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedIds = res.map((r) => r.attachedTo)
+  })
 </script>
 
 <PinnedMessages {space} {pinnedIds} />
@@ -84,6 +90,7 @@
     openThread(e.detail)
   }}
   {pinnedIds}
+  {savedIds}
 />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />

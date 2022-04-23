@@ -32,18 +32,26 @@
 
   let innerWidth = 0
 
-  $: allowFullSize = innerWidth > 900 && position === 'full'
+  $: allowFullSize = innerWidth > 900 && (position === 'full' || position === 'content')
   $: isFullSize = allowFullSize && fullSize
 </script>
-<svelte:window bind:innerWidth />
-<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize}>
+
+<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize} bind:innerWidth>
   <svelte:fragment slot="subtitle">
     <slot name="subtitle" />
   </svelte:fragment>
+  <svelte:fragment slot='navigate-actions'>
+    <slot name='navigate-actions'/>
+  </svelte:fragment>
   <svelte:fragment slot="commands">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-    <div class="ml-2">
-      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+    <div class='flex-row-center'>
+      <slot name="actions" />
+    </div>
+    <div class='flex-row-center flex-grow gap-2'>
+      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+      <div class="ml-2">
+        <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+      </div>
     </div>
   </svelte:fragment>
 
@@ -65,7 +73,7 @@
           }}
         />
       </div>
-    {/if}
+    {/if}    
   </svelte:fragment>
   {#if isFullSize}
     <Scroller>
@@ -77,4 +85,3 @@
     </Component>
   {/if}
 </Panel>
-
