@@ -22,7 +22,8 @@
     IssuesGrouping,
     IssuesOrdering,
     IssuesDateModificationPeriod,
-    IssueStatus
+    IssueStatus,
+    IssueStatusCategory
   } from '@anticrm/tracker'
   import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import CategoryPresenter from './CategoryPresenter.svelte'
@@ -79,22 +80,26 @@
     }
 
     if (groupByKey === 'status') {
-      const category = statusesById.get((x as Ref<IssueStatus>))?.$lookup?.category
+      const category = statusesById.get(x as Ref<IssueStatus>)?.category
 
-      return !!(category && includedGroups.status?.includes(category._id))
+      return !!(category && includedGroups.status?.includes(category))
     }
 
     return includedGroups[groupByKey]?.includes(x)
   })
-  $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups)
+  $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups, statuses)
   $: filteredIssuesQuery = getModifiedOnIssuesFilterQuery(issues, completedIssuesPeriod)
   $: statuses = [...statusesById.values()]
 
-  const getIncludedIssuesQuery = (groups: Partial<Record<IssuesGroupByKeys, Array<any>>>) => {
+  const getIncludedIssuesQuery = (
+    groups: Partial<Record<IssuesGroupByKeys, Array<any>>>,
+    issueStatuses: IssueStatus[]
+  ) => {
     const resultMap: { [p: string]: { $in: any[] } } = {}
 
     for (const [key, value] of Object.entries(groups)) {
-      resultMap[key] = { $in: value }
+      const includedCategories = key === 'status' ? filterIssueStatuses(issueStatuses, value) : value
+      resultMap[key] = { $in: includedCategories }
     }
 
     return resultMap
@@ -159,6 +164,15 @@
     )
 
     return shouldShowAll ? defaultIssueCategories[key] ?? existingCategories : existingCategories
+  }
+
+  function filterIssueStatuses (
+    issueStatuses: IssueStatus[],
+    issueStatusCategories: Ref<IssueStatusCategory>[]
+  ): Ref<IssueStatus>[] {
+    const statusCategories = new Set(issueStatusCategories)
+
+    return issueStatuses.filter((status) => statusCategories.has(status.category)).map((s) => s._id)
   }
 
   const getTotalIssues = (map: { [status: string]: number }) => {
