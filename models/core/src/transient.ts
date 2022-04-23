@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,26 +11,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import AttachmentPreview from './AttachmentPreview.svelte'
+//
 
-  export let attachments: Attachment[] = []
-</script>
+import { DOMAIN_TRANSIENT, UserStatus } from '@anticrm/core'
+import { Model } from '@anticrm/model'
+import core from './component'
+import { TDoc } from './core'
 
-{#if attachments.length}
-  <div class="container">
-    {#each attachments as attachment}
-      <div class="item">
-        <AttachmentPreview value={attachment} />
-      </div>
-    {/each}
-  </div>
-{/if}
-
-<style lang="scss">
-  .item {
-    padding: 0.5rem;
-  }
-</style>
+@Model(core.class.UserStatus, core.class.Doc, DOMAIN_TRANSIENT)
+export class TUserStatus extends TDoc implements UserStatus {
+  online!: boolean
+}

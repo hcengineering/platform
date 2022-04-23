@@ -109,7 +109,7 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
     case core.class.TxMixin: {
       const tx = actualTx as TxCUD<Doc>
       const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-      if (!control.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
+      if (doc !== undefined && !control.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
         const resTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy)
         if (resTx !== undefined) {
           result.push(resTx)

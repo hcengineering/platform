@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Doc } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
@@ -22,13 +21,12 @@
 
   export let objectId: Ref<Doc>
   export let attachments: number
-
 </script>
 
-<Table 
+<Table
   _class={attachment.class.Attachment}
   config={['', 'lastModified']}
-  options={ {} }
-  query={ { attachedTo: objectId } }
+  options={{}}
+  query={{ attachedTo: objectId }}
   loadingProps={{ length: attachments }}
 />

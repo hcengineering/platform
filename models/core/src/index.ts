@@ -33,6 +33,7 @@ import {
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
+import { TUserStatus } from './transient'
 import {
   TTx,
   TTxBulkWrite,
@@ -83,6 +84,7 @@ export function createModel (builder: Builder): void {
     TVersion,
     TTypeNumber,
     TTypeIntlString,
-    TPluginConfiguration
+    TPluginConfiguration,
+    TUserStatus
   )
 }

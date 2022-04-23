@@ -118,6 +118,7 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
   const rectPopup = modalHTML.getBoundingClientRect()
   modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
   modalHTML.style.maxHeight = modalHTML.style.height = ''
+  modalHTML.style.maxWidth = modalHTML.style.width = ''
   if (alignment.position) {
     if (alignment.position.v === 'top') {
       modalHTML.style.top = `${rect.top}px`
@@ -188,10 +189,10 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      modalHTML.style.top = `calc(${rect.top}px)`
-      modalHTML.style.height = `${Math.min(rect.height, window.innerHeight - rect.top)}px`
-      modalHTML.style.left = `calc(${rect.left}px)`
-      modalHTML.style.width = `${Math.min(rect.width, window.innerWidth - rect.left)}px`
+      modalHTML.style.top = `${rect.top + 1}px`
+      modalHTML.style.height = `${Math.min(rect.height - 1, window.innerHeight - rect.top - 1)}px`
+      modalHTML.style.left = `${rect.left + 1}px`
+      modalHTML.style.width = `${Math.min(rect.width - 1, window.innerWidth - rect.left - 1)}px`
     } else if (element === 'middle') {
       if (contentPanel !== undefined) {
         const rect = contentPanel.getBoundingClientRect()

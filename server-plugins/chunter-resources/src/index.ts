@@ -109,6 +109,10 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
     objectId: rmTx.objectId
   }, { limit: 1 }))[0]
 
+  if (createTx === undefined) {
+    return []
+  }
+
   const comment = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<ThreadMessage>)
 
   const comments = await control.findAll(chunter.class.ThreadMessage, {
@@ -149,7 +153,7 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
     _id: message.space
   }, { limit: 1 }))[0]
 
-  if (channel.lastMessage === undefined || channel.lastMessage < message.createOn) {
+  if (channel?.lastMessage === undefined || channel.lastMessage < message.createOn) {
     const res = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
       lastMessage: message.createOn
     })
@@ -173,13 +177,17 @@ export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<T
     objectId: rmTx.objectId
   }, { limit: 1 }))[0]
 
+  if (createTx === undefined) {
+    return []
+  }
+
   const message = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Message>)
 
   const channel = (await control.findAll(chunter.class.ChunterSpace, {
     _id: message.space
   }, { limit: 1 }))[0]
 
-  if (channel.lastMessage === message.createOn) {
+  if (channel?.lastMessage === message.createOn) {
     const messages = await control.findAll(chunter.class.Message, {
       attachedTo: channel._id
     })
