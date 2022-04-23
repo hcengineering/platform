@@ -16,14 +16,12 @@
   import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, Space } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getPlatformColor, ScrollBox } from '@anticrm/ui'
-  import { createEventDispatcher, tick } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
-  import { DocWithRank } from '../types'
+  import { DocWithRank, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'
 
-  type StateType = any
   type Item = DocWithRank & { state: StateType; doneState: StateType | null }
-  type TypeState = { _id: StateType; title: string; color: number }
   type ExtItem = { prev?: Item; it: Item; next?: Item, pos: number }
   type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
 

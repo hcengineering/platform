@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,10 +15,15 @@
 
 import { Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
-import { IssuePriority, IssueStatus, Team, IssuesGrouping, IssuesOrdering, Issue, IssuesDateModificationPeriod } from '@anticrm/tracker'
+import {
+  IssuePriority,
+  Team,
+  IssuesGrouping,
+  IssuesOrdering,
+  Issue,
+  IssuesDateModificationPeriod
+} from '@anticrm/tracker'
 import { AnyComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
-import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
-import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import tracker from './plugin'
 
 export interface NavigationItem {
@@ -34,41 +38,6 @@ export interface NavigationItem {
 export interface Selection {
   currentTeam?: Ref<Team>
   currentSpecial?: string
-}
-
-/**
- * @public
- */
-export const genRanks = (count: number): Generator<string, void, unknown> =>
-  (function * () {
-    const sys = new LexoNumeralSystem36()
-    const base = 36
-    const max = base ** 6
-    const gap = LexoDecimal.parse(Math.trunc(max / (count + 2)).toString(base), sys)
-    let cur = LexoDecimal.parse('0', sys)
-
-    for (let i = 0; i < count; i++) {
-      cur = cur.add(gap)
-      yield new LexoRank(LexoRankBucket.BUCKET_0, cur).toString()
-    }
-  })()
-
-/**
- * @public
- */
-export const calcRank = (prev?: { rank: string }, next?: { rank: string }): string => {
-  const a = prev?.rank !== undefined ? LexoRank.parse(prev.rank) : LexoRank.min()
-  const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
-
-  return a.between(b).toString()
-}
-
-export const issueStatuses: Record<IssueStatus, { icon: Asset, label: IntlString }> = {
-  [IssueStatus.Backlog]: { icon: tracker.icon.StatusBacklog, label: tracker.string.Backlog },
-  [IssueStatus.Todo]: { icon: tracker.icon.StatusTodo, label: tracker.string.Todo },
-  [IssueStatus.InProgress]: { icon: tracker.icon.StatusInProgress, label: tracker.string.InProgress },
-  [IssueStatus.Done]: { icon: tracker.icon.StatusDone, label: tracker.string.Done },
-  [IssueStatus.Canceled]: { icon: tracker.icon.StatusCanceled, label: tracker.string.Canceled }
 }
 
 export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {
@@ -99,7 +68,7 @@ export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationP
   [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
 }
 
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' >
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee'>
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
@@ -130,7 +99,6 @@ export const issuesGroupPresenterMap: Record<IssuesGroupByKeys, AnyComponent | u
 }
 
 export const defaultIssueCategories: Partial<Record<IssuesGroupByKeys, Array<Issue[IssuesGroupByKeys]> | undefined>> = {
-  status: [IssueStatus.InProgress, IssueStatus.Todo, IssueStatus.Backlog, IssueStatus.Done, IssueStatus.Canceled],
   priority: [IssuePriority.NoPriority, IssuePriority.Urgent, IssuePriority.High, IssuePriority.Medium, IssuePriority.Low]
 }
 

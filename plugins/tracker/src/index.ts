@@ -14,10 +14,32 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { Class, Doc, Markup, Ref, Space, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+
+/**
+ * @public
+ */
+export interface IssueStatus extends AttachedDoc {
+  name: string
+  description?: string
+  color?: number
+  category: Ref<IssueStatusCategory>
+  rank: string
+}
+
+/**
+ * @public
+ */
+export interface IssueStatusCategory extends Doc {
+  icon: Asset
+  label: IntlString
+  color: number
+  defaultStatusName: string
+  order: number
+}
 
 /**
  * @public
@@ -26,16 +48,8 @@ export interface Team extends Space {
   teamLogo?: string | null
   identifier: string // Team identifier
   sequence: number
-}
-/**
- * @public
- */
-export enum IssueStatus {
-  Backlog,
-  Todo,
-  InProgress,
-  Done,
-  Canceled
+  issueStatuses: number
+  defaultIssueStatus: Ref<IssueStatus>
 }
 
 /**
@@ -84,7 +98,7 @@ export enum IssuesDateModificationPeriod {
 export interface Issue extends Doc {
   title: string
   description: Markup
-  status: IssueStatus
+  status: Ref<IssueStatus>
   priority: IssuePriority
 
   number: number
@@ -153,16 +167,27 @@ export interface Project extends Doc {
  */
 export const trackerId = 'tracker' as Plugin
 
+export * from './utils'
+
 export default plugin(trackerId, {
   class: {
     Team: '' as Ref<Class<Team>>,
     Issue: '' as Ref<Class<Issue>>,
     Document: '' as Ref<Class<Document>>,
-    Project: '' as Ref<Class<Project>>
+    Project: '' as Ref<Class<Project>>,
+    IssueStatus: '' as Ref<Class<IssueStatus>>,
+    IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>
   },
   component: {
     Tracker: '' as AnyComponent,
     TrackerApp: '' as AnyComponent
+  },
+  issueStatusCategory: {
+    Backlog: '' as Ref<IssueStatusCategory>,
+    Unstarted: '' as Ref<IssueStatusCategory>,
+    Started: '' as Ref<IssueStatusCategory>,
+    Completed: '' as Ref<IssueStatusCategory>,
+    Canceled: '' as Ref<IssueStatusCategory>
   },
   icon: {
     TrackerApplication: '' as Asset,
@@ -183,11 +208,12 @@ export default plugin(trackerId, {
     DueDate: '' as Asset,
     Parent: '' as Asset,
 
-    StatusBacklog: '' as Asset,
-    StatusTodo: '' as Asset,
-    StatusInProgress: '' as Asset,
-    StatusDone: '' as Asset,
-    StatusCanceled: '' as Asset,
+    CategoryBacklog: '' as Asset,
+    CategoryUnstarted: '' as Asset,
+    CategoryStarted: '' as Asset,
+    CategoryCompleted: '' as Asset,
+    CategoryCanceled: '' as Asset,
+
     PriorityNoPriority: '' as Asset,
     PriorityUrgent: '' as Asset,
     PriorityHigh: '' as Asset,
