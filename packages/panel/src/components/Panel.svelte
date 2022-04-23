@@ -19,7 +19,7 @@
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import { ActionIcon, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
+  import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
   import { PopupAlignment } from '@anticrm/ui'
 
   export let title: string
@@ -40,18 +40,14 @@
   <svelte:fragment slot="subtitle">
     <slot name="subtitle" />
   </svelte:fragment>
-  <svelte:fragment slot='navigate-actions'>
-    <slot name='navigate-actions'/>
+  <svelte:fragment slot="navigate-actions">
+    <slot name="navigate-actions" />
   </svelte:fragment>
   <svelte:fragment slot="commands">
-    <div class='flex-row-center'>
+    <div class="buttons-group xsmall-gap">
       <slot name="actions" />
-    </div>
-    <div class='flex-row-center flex-grow gap-2'>
       <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-      <div class="ml-2">
-        <Component is={notification.component.LastViewEditor} props={{ value: object }} />
-      </div>
+      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
     </div>
   </svelte:fragment>
 
@@ -64,15 +60,14 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if allowFullSize}
-      <div class="tool">
-        <ActionIcon
-          icon={IconExpand}
-          size={'medium'}
-          action={() => {
-            fullSize = !fullSize
-          }}
-        />
-      </div>
+      <Button
+        icon={IconExpand}
+        size={'medium'}
+        kind={'transparent'}
+        on:click={() => {
+          fullSize = !fullSize
+        }}
+      />
     {/if}    
   </svelte:fragment>
   {#if isFullSize}

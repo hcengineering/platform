@@ -16,7 +16,7 @@
   import { EmployeeAccount } from '@anticrm/contact'
   import { Doc,getCurrentAccount } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { ActionIcon,showPopup } from '@anticrm/ui'
+  import { Button, showPopup, Tooltip } from '@anticrm/ui'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
   import DocRemindersPopup from './DocRemindersPopup.svelte'
@@ -45,8 +45,11 @@
   }
 </script>
 
-{#if isEvent}
-  <ActionIcon size='medium' label={calendar.string.RemindMeAt} icon={calendar.icon.Reminder} action={(e) => click(e)} />
-{:else}
-  <ActionIcon size='medium' label={calendar.string.Reminders} icon={calendar.icon.Reminder} action={(e) => click(e)} />
-{/if}
+<Tooltip label={isEvent ? calendar.string.RemindMeAt : calendar.string.Reminders}>
+  <Button
+    size={'medium'}
+    kind={'transparent'}
+    icon={calendar.icon.Reminder}
+    on:click={(e) => click(e)}
+  />
+</Tooltip>

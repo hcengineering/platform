@@ -585,6 +585,9 @@ a.no-line {
 }
 
 /* Backgrounds & Colors */
+.background-body-color { background-color: var(--body-color); }
+.background-accent-bg-color { background-color: var(--accent-bg-color); }
+
 .background-theme-content-accent { background-color: var(--theme-content-accent-color); }
 .background-theme-bg-color { background-color: var(--theme-bg-color); }
 .background-highlight-red { background-color: var(--highlight-red); }
