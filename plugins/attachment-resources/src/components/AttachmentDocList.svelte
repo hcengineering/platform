@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import type { Doc } from '@anticrm/core'
@@ -29,9 +28,13 @@
 
   function updateQuery (value: Doc & { attachments?: number }): void {
     if (value && value.attachments && value.attachments > 0) {
-      query.query(attachment.class.Attachment, {
-        attachedTo: value._id
-      }, (res) => attachments = res)
+      query.query(
+        attachment.class.Attachment,
+        {
+          attachedTo: value._id
+        },
+        (res) => (attachments = res)
+      )
     } else {
       attachments = []
     }

@@ -47,7 +47,8 @@ export default plugin(attachmentId, {
     AttachmentsPresenter: '' as AnyComponent
   },
   icon: {
-    Attachment: '' as Asset
+    Attachment: '' as Asset,
+    FileBrowser: '' as Asset
   },
   class: {
     Attachment: '' as Ref<Class<Attachment>>,
@@ -60,6 +61,7 @@ export default plugin(attachmentId, {
   string: {
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
+    NoParticipants: '' as IntlString,
     ShowMoreAttachments: '' as IntlString
   }
 })

@@ -55,30 +55,30 @@
 {#if channel}
   <div class="flex-col flex-gap-3">
     {#if isCommonChannel(channel)}
-    <EditBox
-      label={chunter.string.Topic}
-      bind:value={channel.topic}
-      placeholder={chunter.string.Topic}
-      maxWidth="39rem"
-      focus
-      on:change={onTopicChange}
-    />
-    <EditBox
-      label={chunter.string.ChannelDescription}
-      bind:value={channel.description}
-      placeholder={chunter.string.ChannelDescription}
-      maxWidth="39rem"
-      focus
-      on:change={onDescriptionChange}
-    />
-    <Button
-      label={chunter.string.LeaveChannel}
-      justify={'left'}
-      size={'x-large'}
-      on:click={() => {
-        leaveChannel()
-      }}
-    />
+      <EditBox
+        label={chunter.string.Topic}
+        bind:value={channel.topic}
+        placeholder={chunter.string.Topic}
+        maxWidth="39rem"
+        focus
+        on:change={onTopicChange}
+      />
+      <EditBox
+        label={chunter.string.ChannelDescription}
+        bind:value={channel.description}
+        placeholder={chunter.string.ChannelDescription}
+        maxWidth="39rem"
+        focus
+        on:change={onDescriptionChange}
+      />
+      <Button
+        label={chunter.string.LeaveChannel}
+        justify={'left'}
+        size={'x-large'}
+        on:click={() => {
+          leaveChannel()
+        }}
+      />
     {/if}
     <EditChannelDescriptionAttachments {channel} />
   </div>

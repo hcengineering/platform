@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import AttachmentPreview from './AttachmentPreview.svelte'
@@ -21,9 +20,9 @@
 </script>
 
 {#if attachments.length}
-  <div class='container'>
+  <div class="container">
     {#each attachments as attachment}
-      <div class='item'>
+      <div class="item">
         <AttachmentPreview value={attachment} />
       </div>
     {/each}

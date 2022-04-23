@@ -18,7 +18,8 @@ import attachment, { attachmentId } from '@anticrm/attachment'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(attachment.icon, {
-  Attachment: `${icons}#chunter`
+  Attachment: `${icons}#chunter`,
+  FileBrowser: `${icons}#fileBrowser`
 })
 
 addStringsLoader(attachmentId, async (lang: string) => await import(`../lang/${lang}.json`))
