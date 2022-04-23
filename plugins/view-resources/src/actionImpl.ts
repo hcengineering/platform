@@ -36,29 +36,10 @@ focusStore.subscribe((it) => {
   $focusStore = it
 })
 
-function selPrev (doc: Doc | undefined, evt: Event, dir: SelectDirection): void {
-  selectPrevItem(dir)
-  evt.preventDefault()
-}
-export function selectPrevItem (dir: SelectDirection): void {
-  if ($focusStore.provider?.prev !== undefined) {
-    $focusStore.provider?.prev(dir)
-    previewDocument.update(old => {
-      if (old !== undefined) {
-        return $focusStore.focus
-      }
-    })
-  }
-}
-
-function selNext (doc: Doc|undefined, evt: Event, dir: SelectDirection): void {
-  selectNextItem(dir)
-  evt.preventDefault()
-}
-
-export function selectNextItem (dir: SelectDirection): void {
-  if ($focusStore.provider?.next !== undefined) {
-    $focusStore.provider?.next(dir)
+export function select (evt: Event|undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+  if ($focusStore.provider?.select !== undefined) {
+    $focusStore.provider?.select(offset, of, direction)
+    evt?.preventDefault()
     previewDocument.update(old => {
       if (old !== undefined) {
         return $focusStore.focus
@@ -93,10 +74,10 @@ function SelectItemAll (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-const MoveUp = (doc: Doc | undefined, evt: Event): void => selPrev(doc, evt, 'vertical')
-const MoveDown = (doc: Doc | undefined, evt: Event): void => selNext(doc, evt, 'vertical')
-const MoveLeft = (doc: Doc | undefined, evt: Event): void => selPrev(doc, evt, 'horizontal')
-const MoveRight = (doc: Doc | undefined, evt: Event): void => selNext(doc, evt, 'horizontal')
+const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'vertical')
+const MoveDown = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'vertical')
+const MoveLeft = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'horizontal')
+const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'horizontal')
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
@@ -112,7 +93,7 @@ function ShowPreview (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-function Edit (doc: Doc, evt: Event): void {
+function Open (doc: Doc, evt: Event): void {
   evt.preventDefault()
   showPanel(view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
 }
@@ -132,5 +113,5 @@ export const actionImpl = {
   SelectItemAll,
   ShowActions,
   ShowPreview,
-  Edit
+  Open
 }

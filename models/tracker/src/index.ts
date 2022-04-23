@@ -33,11 +33,10 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
 import { Document, Issue, IssuePriority, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
 import tracker from './plugin'
-
-import workbench from '@anticrm/model-workbench'
 
 export { trackerOperation } from './migration'
 export { default } from './plugin'

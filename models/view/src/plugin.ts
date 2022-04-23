@@ -37,7 +37,7 @@ export default mergeIds(viewId, view, {
     ShowActions: '' as Ref<Action>,
 
     // Edit document
-    Edit: '' as Ref<Action>
+    Open: '' as Ref<Action>
   },
   actionImpl: {
     Delete: '' as ViewAction,
@@ -56,7 +56,7 @@ export default mergeIds(viewId, view, {
     ShowPreview: '' as ViewAction,
     ShowActions: '' as ViewAction,
 
-    Edit: '' as ViewAction
+    Open: '' as ViewAction
   },
   component: {
     StringEditor: '' as AnyComponent,
@@ -90,6 +90,6 @@ export default mergeIds(viewId, view, {
     SelectDown: '' as IntlString,
     ShowPreview: '' as IntlString,
     ShowActions: '' as IntlString,
-    Edit: '' as IntlString
+    Open: '' as IntlString
   }
 })

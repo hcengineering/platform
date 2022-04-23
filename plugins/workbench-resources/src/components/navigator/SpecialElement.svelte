@@ -49,7 +49,7 @@
   </span>
   {#each actions as action}
     <div class="an-element__tool">
-      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={action.action} />
+      <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(evt) => action.action({}, evt)} />
     </div>
   {/each}
   {#if notifications > 0}

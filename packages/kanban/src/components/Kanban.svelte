@@ -186,7 +186,26 @@
     stateRefs[statePos].scrollIntoView({ behavior: 'auto', block: 'nearest' })
   }
 
-  export function selectStatePosition (pos: number, direction: 'up' | 'down' | 'left' | 'right'): void {
+  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
+    let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
+    if (pos === -1) {
+      for (const st of states) {
+        const stateObjs = getStateObjects(objects, st)
+        if (stateObjs.length > 0) {
+          pos = objects.findIndex(it => it._id === stateObjs[0].it._id)
+          console.log('SELECT', '#1', pos)
+          break
+        }
+      }
+    }
+
+    if (pos < 0) {
+      pos = 0
+    }
+    if (pos >= objects.length) {
+      pos = objects.length - 1
+    }
+
     const obj = objects[pos]
     if (obj === undefined) {
       return
@@ -201,16 +220,13 @@
     if (statePos === undefined) {
       return
     }
-    switch (direction) {
-      case 'up':
+  
+    if (offset === -1) {
+      if (dir === undefined || dir === 'vertical') {
         scrollInto(objState)
         dispatch('obj-focus', (stateObjs[statePos - 1] ?? stateObjs[0]).it)
-        break
-      case 'down':
-        scrollInto(objState)
-        dispatch('obj-focus', (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it)
-        break
-      case 'left':
+        return
+      } else {
         while (objState > 0) {
           objState--
           const nstateObjs = getStateObjects(objects, states[objState])
@@ -220,8 +236,14 @@
             break
           }
         }
-        break
-      case 'right':
+      }
+    }
+    if (offset === 1) {
+      if (dir === undefined || dir === 'vertical') {
+        scrollInto(objState)
+        dispatch('obj-focus', (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it)
+        return
+      } else {
         while (objState < states.length - 1) {
           objState++
           const nstateObjs = getStateObjects(objects, states[objState])
@@ -231,7 +253,11 @@
             break
           }
         }
-        break
+      }
+    }
+    if (offset === 0) {
+      scrollInto(objState)
+      dispatch('obj-focus', obj)
     }
   }
 

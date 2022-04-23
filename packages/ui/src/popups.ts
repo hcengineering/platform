@@ -119,7 +119,7 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
   modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
   modalHTML.style.maxHeight = modalHTML.style.height = ''
   modalHTML.style.maxWidth = modalHTML.style.width = ''
-  if (alignment.position) {
+  if (alignment.position !== undefined) {
     if (alignment.position.v === 'top') {
       modalHTML.style.top = `${rect.top}px`
     } else if (alignment.position.v === 'bottom') {
@@ -171,6 +171,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
       modalHTML.style.bottom = '0.75rem'
       modalHTML.style.right = '0.75rem'
+      modalHTML.style.maxWidth = '50%'
       show = true
     } else if (element === 'top') {
       modalHTML.style.top = '15vh'

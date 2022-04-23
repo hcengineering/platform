@@ -19,7 +19,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { Issue, Team } from '@anticrm/tracker'
   import { Button, eventToHTMLElement, Icon, IconAdd, showPopup, Tooltip } from '@anticrm/ui'
-  import { focusStore, ListSelectionProvider, selectionStore } from '@anticrm/view-resources'
+  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
@@ -70,21 +70,8 @@ import PriorityPresenter from './PriorityPresenter.svelte'
 
   let kanbanUI: Kanban
   const listProvider = new ListSelectionProvider(
-    (pos, dir) => {
-      if (dir === 'vertical') {
-        // Select next
-        kanbanUI.selectStatePosition(pos, 'down')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'right')
-      }
-    },
-    (pos, dir) => {
-      // Select prev
-      if (dir === 'vertical') {
-        kanbanUI.selectStatePosition(pos, 'up')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'left')
-      }
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+      kanbanUI.select(offset, of, dir)
     }
   )
   onMount(() => {

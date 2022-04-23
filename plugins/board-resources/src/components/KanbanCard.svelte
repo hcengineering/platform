@@ -30,7 +30,6 @@
   import DatePresenter from './presenters/DatePresenter.svelte'
 
   export let object: WithLookup<Card>
-  export let dragged: boolean
 
   let loadingAttachment = 0
   let dragoverAttachment = false

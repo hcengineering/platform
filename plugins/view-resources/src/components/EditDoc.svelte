@@ -26,14 +26,12 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Button, Component, IconDownOutline, IconUpOutline, Label, PopupAlignment, showPanel } from '@anticrm/ui'
+  import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import ActionContext from './ActionContext.svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
-  import { selectNextItem, selectPrevItem } from '../actionImpl'
-  import { tick } from 'svelte'
-  import { focusStore } from '../selection'
+  import ActionContext from './ActionContext.svelte'
+  import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -241,17 +239,6 @@
       headerLoading = false
     })
   }
-  async function next (pn: boolean): Promise<void> {
-    if (pn) {
-      selectNextItem('vertical')
-    } else {
-      selectPrevItem('vertical')
-    }
-    await tick()
-    if ($focusStore.focus !== undefined) {
-      showPanel(view.component.EditDoc, $focusStore.focus._id, $focusStore.focus._class, 'content')
-    }
-  }
 </script>
 <ActionContext context={{
   mode: 'editor'
@@ -270,8 +257,7 @@
     }}
   >
     <svelte:fragment slot="navigate-actions">
-      <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={() => next(true)}/>
-      <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={() => next(false)}/>
+      <UpDownNavigator element={object}/>
     </svelte:fragment>
     <div class="w-full" slot="subtitle">
       {#if !headerLoading}
