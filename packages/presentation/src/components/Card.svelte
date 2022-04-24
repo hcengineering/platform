@@ -15,14 +15,13 @@
 -->
 
 <script lang="ts">
+  import type { Class, DocumentQuery, Ref, Space } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-
+  import { Button, IconClose, Label, MiniToggle } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
-
-  import { Button, Label, IconClose, MiniToggle } from '@anticrm/ui'
-  import SpaceSelect from './SpaceSelect.svelte'
   import presentation from '..'
+  import { getClient } from '../utils'
+  import SpaceSelect from './SpaceSelect.svelte'
 
   export let spaceClass: Ref<Class<Space>> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
@@ -37,6 +36,13 @@
   export let okLabel: IntlString = presentation.string.Create
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
+
+  $: if (space === undefined && spaceClass !== undefined) {
+    client.findOne(spaceClass, { ...(spaceQuery ?? {}) }).then((res) => {
+      space = res?._id
+    })
+  }
 </script>
 
 <form class="antiCard dialog" on:submit|preventDefault={ () => {} }>
