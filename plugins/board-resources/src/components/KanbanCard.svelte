@@ -117,7 +117,7 @@
       <div class="float-left-box">
         {#if object.date && hasDate(object)}
           <div class="float-left ml-1">
-            <DatePresenter value={object.date} isInline={true} size="x-small" on:update={updateDate} />
+            <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
           </div>
         {/if}
         {#if (object.attachments ?? 0) > 0}

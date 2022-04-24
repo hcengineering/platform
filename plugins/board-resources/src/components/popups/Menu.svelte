@@ -31,7 +31,7 @@
     <div class="ap-space bottom-divider"/>
     {#if archivedCards}
         {#each archivedCards as card}
-            <KanbanCard object={card} dragged={false}/>
+            <KanbanCard object={card}/>
             <div class="flex-center flex-gap-2 w-full">
                 <Button label={board.string.SendToBoard}
                     on:click={async (e) => {
