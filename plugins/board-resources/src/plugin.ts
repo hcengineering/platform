@@ -108,12 +108,16 @@ export default mergeIds(boardId, board, {
     Edit: '' as IntlString,
     Update: '' as IntlString,
     DeleteAttachment: '' as IntlString,
-    SearchMembers: '' as IntlString
+    SearchMembers: '' as IntlString,
+    DeleteCard: '' as IntlString,
+    Menu: '' as IntlString,
+    ToArchive: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Members: '' as AnyComponent,
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    BoardHeader: '' as AnyComponent
   }
 })

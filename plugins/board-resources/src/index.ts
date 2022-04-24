@@ -32,24 +32,29 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
 import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
-import MoveView from './components/popups/MoveCard.svelte'
+import MoveCard from './components/popups/MoveCard.svelte'
+import DeleteCard from './components/popups/RemoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import WatchCard from './components/WatchCard.svelte'
+import BoardHeader from './components/BoardHeader.svelte'
 import {
   addCurrentUser,
   canAddCurrentUser,
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard,
-  deleteCard
+  unarchiveCard
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
 
 async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
-  showPopup(MoveView, { object }, getPopupAlignment(e))
+  showPopup(MoveCard, { object }, getPopupAlignment(e))
+}
+
+async function showDeleteCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(DeleteCard, { object }, getPopupAlignment(e))
 }
 
 async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
@@ -94,7 +99,8 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     BoardPresenter,
-    WatchCard
+    WatchCard,
+    BoardHeader
   },
   cardActionHandler: {
     Join: addCurrentUser,
@@ -104,7 +110,7 @@ export default async (): Promise<Resources> => ({
     Attachments: showAttachmentsPopup,
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
-    Delete: deleteCard,
+    Delete: showDeleteCardPopup,
     Members: showEditMembersPopup
   },
   cardActionSupportedHandler: {
