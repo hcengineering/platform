@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Doc, ServerStorage, Timestamp, Tx, TxCreateDoc } from '@anticrm/core'
+import core, { AttachedDoc, Doc, ServerStorage, Timestamp, Tx, TxCollectionCUD, TxCreateDoc } from '@anticrm/core'
 import { Middleware, SessionContext, TxMiddlewareResult } from '@anticrm/server-core'
 import { BaseMiddleware } from './base'
 
@@ -36,6 +36,10 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
       if (createTx.attributes.createOn !== undefined) {
         createTx.attributes.createOn = tx.modifiedOn
       }
+    }
+    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+      const coltx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      coltx.tx.modifiedOn = tx.modifiedOn
     }
     const res = await this.provideTx(ctx, tx)
     return [res[0], res[1], res[2]]
