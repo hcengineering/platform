@@ -280,7 +280,8 @@ const view = plugin(viewId, {
     MoreH: '' as Asset,
     Move: '' as Asset,
     Archive: '' as Asset,
-    Statuses: '' as Asset
+    Statuses: '' as Asset,
+    Open: '' as Asset
   }
 })
 export default view

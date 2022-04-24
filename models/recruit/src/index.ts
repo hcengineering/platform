@@ -457,6 +457,9 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
   createReviewModel(builder)
+
+  actionTarget(builder, view.action.Open, recruit.class.Vacancy, { mode: ['browser', 'context'] })
+  actionTarget(builder, view.action.Open, recruit.class.Applicant, { mode: ['browser', 'context'] })
 }
 
 export { recruitOperation } from './migration'

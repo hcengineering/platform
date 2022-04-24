@@ -26,7 +26,6 @@
   import notification from '@anticrm/notification'
 
   export let object: WithLookup<Lead>
-  export let dragged: boolean
 
   function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)

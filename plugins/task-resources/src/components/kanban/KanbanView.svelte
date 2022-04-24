@@ -21,7 +21,7 @@
   import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
   import task from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, selectionStore } from '@anticrm/view-resources'
+  import { ActionContext, focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import KanbanDragDone from './KanbanDragDone.svelte'
@@ -66,22 +66,10 @@
   /* eslint-disable no-undef */
 
   let kanbanUI: KanbanUI
+  let objects: Doc[] = []
   const listProvider = new ListSelectionProvider(
-    (pos, dir) => {
-      if (dir === 'vertical') {
-        // Select next
-        kanbanUI.selectStatePosition(pos, 'down')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'right')
-      }
-    },
-    (pos, dir) => {
-      // Select prev
-      if (dir === 'vertical') {
-        kanbanUI.selectStatePosition(pos, 'up')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'left')
-      }
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+      kanbanUI.select(offset, of, dir)
     }
   )
   onMount(() => {
@@ -96,7 +84,6 @@
       // selection = undefined
     })
   }
-  
 </script>
 
 {#await cardPresenter then presenter}
@@ -118,6 +105,7 @@
     rankFieldName={'rank'}
     on:content={(evt) => {
       listProvider.update(evt.detail)
+      objects = evt.detail
     }}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)

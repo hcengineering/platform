@@ -127,10 +127,6 @@
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
-
-    &.fill {
-      background-color: var(--body-color);
-    }
   }
   .p-activity {
     padding: 1.5rem 2.5rem 2.5rem;

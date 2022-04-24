@@ -16,7 +16,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label, getPlatformColor } from '..'
+  import { getPlatformColor } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined

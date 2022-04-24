@@ -23,7 +23,7 @@
   export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()
-  let btns: HTMLButtonElement[] = []
+  const btns: HTMLButtonElement[] = []
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
     if (ev.key === 'ArrowDown') {

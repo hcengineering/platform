@@ -42,7 +42,7 @@ export interface AnySvelteComponentWithProps {
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
-  action: (props: any, ev?: Event) => Promise<void>
+  action: (props: any, ev: Event) => Promise<void>
 }
 
 export interface IPopupItem {

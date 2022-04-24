@@ -9,12 +9,13 @@ import { writable } from 'svelte/store'
 export type SelectDirection = 'vertical' | 'horizontal'
 
 export interface SelectionFocusProvider {
+  // -1 - previous
+  // 0 - selec of as current
+  // 1 - next
   // * If vertical, next will return item under.
   // * If horizontal, next will return item on right.
-  next?: (direction?: SelectDirection) => void
-  // * If vertical, next will return item amove.
-  // * If horizontal, next will return item on left.
-  prev?: (vertical?: SelectDirection) => void
+  // of - document offset from we requesting.
+  select?: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void
 
   // Update documents content
   update: (docs: Doc[]) => void
@@ -89,8 +90,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   _docs: Doc[] = []
   _current?: FocusSelection
   constructor (
-    private readonly selectNext: (cur: number, direction?: SelectDirection) => void,
-    private readonly selectPrev: (cur: number, direction?: SelectDirection) => void
+    private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void
   ) {
     const unsubscribe = focusStore.subscribe((doc) => {
       this._current = doc
@@ -101,29 +101,21 @@ export class ListSelectionProvider implements SelectionFocusProvider {
     })
   }
 
-  next (direction?: SelectDirection): void {
-    this.selectNext(this.current(this._current) ?? 0, direction)
-  }
-
-  prev (direction?: SelectDirection): void {
-    this.selectPrev(this.current(this._current) ?? this._docs.length - 1, direction)
+  select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+    this.delegate(offset, of, direction)
   }
 
   update (docs: Doc[]): void {
     this._docs = docs
 
     if (this._docs.length > 0) {
-      if (this._current === undefined) {
-        updateFocus({
-          focus: this._docs[0],
-          provider: this
-        })
+      if (this._current?.focus === undefined) {
+        this.delegate(0, undefined, 'vertical')
       } else {
         // Check if we don't have object, we need to select first one.
-        if (this._docs.findIndex((it) => it._id === this._current?.focus?._id) === -1) {
-          updateFocus({ focus: this._docs[0], provider: this })
-        }
+        this.delegate(0, this._current?.focus, 'vertical')
       }
+      updateFocus({ focus: this._current?.focus, provider: this })
     }
   }
 
