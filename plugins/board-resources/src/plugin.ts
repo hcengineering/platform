@@ -112,7 +112,10 @@ export default mergeIds(boardId, board, {
     SearchMembers: '' as IntlString,
     DeleteCard: '' as IntlString,
     Menu: '' as IntlString,
-    ToArchive: '' as IntlString
+    ToArchive: '' as IntlString,
+    CopyCard: '' as IntlString,
+    AlsoCopy: '' as IntlString,
+    CopyTo: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

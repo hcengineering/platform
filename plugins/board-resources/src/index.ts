@@ -31,6 +31,7 @@ import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
 import DeleteCard from './components/popups/RemoveCard.svelte'
+import CopyCard from './components/popups/CopyCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
@@ -54,6 +55,10 @@ async function showMoveCardPopup (object: Card, client: Client, e?: Event): Prom
 
 async function showDeleteCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(DeleteCard, { object }, getPopupAlignment(e))
+}
+
+async function showCopyCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CopyCard, { object, client }, getPopupAlignment(e))
 }
 
 async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
@@ -110,7 +115,8 @@ export default async (): Promise<Resources> => ({
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
     Delete: showDeleteCardPopup,
-    Members: showEditMembersPopup
+    Members: showEditMembersPopup,
+    Copy: showCopyCardPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,
