@@ -21,7 +21,7 @@
 
   import board from '../../plugin'
   import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
-  import { openCardPanel } from '../../utils/CardUtils';
+  import { openCardPanel } from '../../utils/CardUtils'
 
   export let value: Card
   const client = getClient()
