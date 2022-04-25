@@ -14,9 +14,8 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink } from '@anticrm/chunter'
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-import core, { AttachedDoc, Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxCUD, TxProcessor } from '@anticrm/core'
+import core, { AttachedDoc, Backlink, Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxCUD, TxProcessor } from '@anticrm/core'
 import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
@@ -52,7 +51,7 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
 
   if (
     ptx.tx._class !== core.class.TxCreateDoc ||
-    !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
+    !hierarchy.isDerived(ptx.tx.objectClass, core.class.Backlink) ||
     !hierarchy.isDerived(ptx.objectClass, contact.class.Employee)
   ) {
     return []

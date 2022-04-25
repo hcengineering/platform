@@ -1,5 +1,6 @@
 import { Asset, IntlString, Resource } from '@anticrm/platform'
 import { Doc } from '@anticrm/core'
+import { AnySvelteComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -23,4 +24,13 @@ export interface RefInputActionItem extends Doc {
   action: Resource<RefInputAction>
 
   order?: number
+}
+/**
+ * @public
+ */
+export interface RefAction {
+  label: IntlString
+  icon: Asset | AnySvelteComponent
+  action: RefInputAction
+  order: number
 }

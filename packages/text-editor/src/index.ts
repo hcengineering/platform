@@ -22,8 +22,10 @@ export { default as ReferenceInput } from './components/ReferenceInput.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
+
 export { default } from './plugin'
 export * from './types'
+export * from './actions'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

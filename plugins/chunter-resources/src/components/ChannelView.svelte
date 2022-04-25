@@ -15,11 +15,10 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { ChunterMessage, Message } from '@anticrm/chunter'
-  import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
+  import { createBacklinks, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
-  import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import Channel from './Channel.svelte'
   import PinnedMessages from './PinnedMessages.svelte'

@@ -15,11 +15,11 @@
 <script lang="ts">
   import type { Comment } from '@anticrm/chunter'
   import type { TxCreateDoc } from '@anticrm/core'
+  import { updateBacklinks } from '@anticrm/core'
   import { getClient, MessageViewer } from '@anticrm/presentation'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
 

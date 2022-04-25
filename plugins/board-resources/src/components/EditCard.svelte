@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { StyledTextBox } from '@anticrm/text-editor'
+  import { ReferenceInput } from '@anticrm/text-editor'
   import { EditBox, Icon, Label, Panel, Scroller } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
@@ -115,11 +115,10 @@
             </div>
             <div class="flex-row-stretch">
               <div class="w-9" />
-              <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
-                <StyledTextBox
-                  alwaysEdit={true}
-                  showButtons={false}
-                  placeholder={board.string.DescriptionPlaceholder}
+              <div class="p-2 w-full">
+                <ReferenceInput
+                  showSend={false}
+                  actions={[]}
                   bind:content={object.description}
                   on:value={(evt) => change('description', evt.detail)}
                 />

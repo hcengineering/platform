@@ -1,37 +1,8 @@
-import { Backlink } from '@anticrm/chunter'
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import { Account, Class, Client, Data, Doc, DocumentQuery, Ref, TxOperations } from '@anticrm/core'
-import chunter from './plugin'
 
-export async function getUser (
-  client: Client,
-  user: Ref<EmployeeAccount> | Ref<Account>
-): Promise<EmployeeAccount | undefined> {
-  return await client.findOne(contact.class.EmployeeAccount, { _id: user as Ref<EmployeeAccount> })
-}
-
-export function getTime (time: number): string {
-  let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
-  if (!isToday(time)) {
-    options = {
-      month: 'numeric',
-      day: 'numeric',
-      ...options
-    }
-  }
-
-  return new Date(time).toLocaleString('default', options)
-}
-
-export function isToday (time: number): boolean {
-  const current = new Date()
-  const target = new Date(time)
-  return (
-    current.getDate() === target.getDate() &&
-    current.getMonth() === target.getMonth() &&
-    current.getFullYear() === target.getFullYear()
-  )
-}
+import { Backlink, Class, Data, Doc, Ref } from './classes'
+import plugin from './component'
+import { TxOperations } from './operations'
+import { DocumentQuery } from './storage'
 
 function extractBacklinks (
   backlinkId: Ref<Doc>,
@@ -94,8 +65,8 @@ export async function createBacklinks (
   for (const backlink of backlinks) {
     const { attachedTo, attachedToClass, collection, ...adata } = backlink
     await client.addCollection(
-      chunter.class.Backlink,
-      chunter.space.Backlinks,
+      plugin.class.Backlink,
+      plugin.space.Backlinks,
       attachedTo,
       attachedToClass,
       collection,
@@ -114,7 +85,7 @@ export async function updateBacklinks (
   if (attachedDocId !== undefined) {
     q.attachedDocId = attachedDocId
   }
-  const current = await client.findAll(chunter.class.Backlink, q)
+  const current = await client.findAll(plugin.class.Backlink, q)
   const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
 
   // We need to find ones we need to remove, and ones we need to update.
@@ -139,8 +110,8 @@ export async function updateBacklinks (
   for (const backlink of backlinks) {
     const { attachedTo, attachedToClass, collection, ...adata } = backlink
     await client.addCollection(
-      chunter.class.Backlink,
-      chunter.space.Backlinks,
+      plugin.class.Backlink,
+      plugin.space.Backlinks,
       attachedTo,
       attachedToClass,
       collection,

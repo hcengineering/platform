@@ -15,7 +15,6 @@
 
 import activity from '@anticrm/activity'
 import type {
-  Backlink,
   ChunterSpace,
   Channel,
   ChunterMessage,
@@ -26,7 +25,7 @@ import type {
   DirectMessage
 } from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
-import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Account, Class, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
 import {
   ArrOf,
@@ -123,13 +122,6 @@ export class TComment extends TAttachedDoc implements Comment {
   attachments?: number
 }
 
-@Model(chunter.class.Backlink, chunter.class.Comment)
-@UX(chunter.string.Reference, chunter.icon.Chunter)
-export class TBacklink extends TComment implements Backlink {
-  backlinkId!: Ref<Doc>
-  backlinkClass!: Ref<Class<Doc>>
-}
-
 @Model(chunter.class.SavedMessages, preference.class.Preference)
 export class TSavedMessages extends TPreference implements SavedMessages {
   @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
@@ -144,7 +136,6 @@ export function createModel (builder: Builder): void {
     TThreadMessage,
     TChunterMessage,
     TComment,
-    TBacklink,
     TDirectMessage,
     TSavedMessages
   )
@@ -395,7 +386,7 @@ export function createModel (builder: Builder): void {
     activity.class.TxViewlet,
     core.space.Model,
     {
-      objectClass: chunter.class.Backlink,
+      objectClass: core.class.Backlink,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxCreateDoc,
       component: chunter.activity.TxBacklinkCreate,
@@ -413,7 +404,7 @@ export function createModel (builder: Builder): void {
     activity.class.TxViewlet,
     core.space.Model,
     {
-      objectClass: chunter.class.Backlink,
+      objectClass: core.class.Backlink,
       icon: chunter.icon.Chunter,
       txClass: core.class.TxRemoveDoc,
       display: 'inline',

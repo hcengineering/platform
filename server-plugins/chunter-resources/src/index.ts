@@ -61,7 +61,7 @@ export async function CommentRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T
   }
 
   const comment = doc as Comment
-  const result = await findAll(chunter.class.Backlink, { backlinkId: comment.attachedTo, backlinkClass: comment.attachedToClass, attachedDocId: comment._id })
+  const result = await findAll(core.class.Backlink, { backlinkId: comment.attachedTo, backlinkClass: comment.attachedToClass, attachedDocId: comment._id })
   return result
 }
 

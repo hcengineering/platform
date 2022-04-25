@@ -16,6 +16,7 @@
 import {
   Account,
   AnyAttribute, ArrOf, AttachedDoc,
+  Backlink,
   Class,
   ClassifierKind, Collection, Doc,
   Domain, DOMAIN_MODEL, IndexKind, Interface, Mixin,
@@ -66,6 +67,13 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
 
   @Prop(TypeString(), 'Collection' as IntlString)
   collection!: string
+}
+
+@Model(core.class.Backlink, core.class.AttachedDoc)
+export class TBacklink extends TAttachedDoc implements Backlink {
+  message!: string
+  backlinkId!: Ref<Doc>
+  backlinkClass!: Ref<Class<Doc>>
 }
 
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)

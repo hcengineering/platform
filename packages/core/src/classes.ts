@@ -267,3 +267,21 @@ export interface Version extends Doc {
   minor: number
   patch: number
 }
+
+/**
+ * @public
+ */
+export interface Backlink extends AttachedDoc {
+  // A target document
+  // attachedTo <- target document we point to
+  // A target document class
+  // attachedToClass
+
+  message: string
+  // Source document we have reference from, it should be parent document for Comment/Message.
+  backlinkId: Ref<Doc>
+  // Source document class
+  backlinkClass: Ref<Class<Doc>>
+  // Reference to comment documentId
+  attachedDocId?: Ref<Doc>
+}

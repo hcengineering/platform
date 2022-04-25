@@ -15,10 +15,9 @@
 -->
 <script lang="ts">
   import { Comment } from '@anticrm/chunter'
-  import { Doc, generateId, Ref } from '@anticrm/core'
+  import { createBacklinks, Doc, generateId, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
 
   const client = getClient()

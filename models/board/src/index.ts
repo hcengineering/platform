@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp } from '@anticrm/core'
+import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -85,7 +85,7 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)
-  description!: string
+  description!: Markup
 
   @Prop(Collection(board.class.CardLabel), board.string.Labels)
   labels?: Ref<CardLabel>[]
