@@ -316,8 +316,8 @@ export function createModel (builder: Builder): void {
             position: 'top'
           },
           {
-            id: 'savedMessages',
-            label: chunter.string.SavedMessages,
+            id: 'savedItems',
+            label: chunter.string.SavedItems,
             icon: chunter.icon.Bookmark,
             component: chunter.component.SavedMessages
           },

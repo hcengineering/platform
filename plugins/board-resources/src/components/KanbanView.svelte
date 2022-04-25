@@ -26,6 +26,7 @@
   import AddCard from './add-card/AddCard.svelte'
   import KanbanCard from './KanbanCard.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
+  import ListHeader from './ListHeader.svelte'
 
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
@@ -45,7 +46,7 @@
   $: if (kanban !== undefined) {
     statesQuery.query(
       task.class.State,
-      { space: kanban.space },
+      { space: kanban.space, isArchived: { $nin: [true] } },
       (result) => {
         states = result
       },
@@ -130,6 +131,10 @@
         addItem(e.detail)
       }}
     />
+  </svelte:fragment>
+
+  <svelte:fragment slot="header" let:state>
+    <ListHeader {state}/>
   </svelte:fragment>
 
   <svelte:fragment slot="afterCard" let:space={targetSpace} let:state={targetState}>
