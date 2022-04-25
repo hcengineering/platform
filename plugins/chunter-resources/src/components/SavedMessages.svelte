@@ -80,7 +80,7 @@
   function openMessage (message: ChunterMessage) {
     const loc = getCurrentLocation()
 
-    if (message.attachedToClass === chunter.class.Channel) {
+    if (message.attachedToClass === chunter.class.ChunterSpace) {
       loc.path.length = 3
       loc.path[2] = message.attachedTo
     } else if (message.attachedToClass === chunter.class.Message) {
