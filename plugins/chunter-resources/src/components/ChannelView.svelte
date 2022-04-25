@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { ChunterMessage, Message } from '@anticrm/chunter'
+  import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
   import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
@@ -25,6 +26,7 @@
   import PinnedMessages from './PinnedMessages.svelte'
 
   export let space: Ref<Space>
+  let chunterSpace: ChunterSpace
 
   const client = getClient()
   const _class = chunter.class.Message
@@ -50,6 +52,26 @@
       _id
     )
     tx.attributes.createOn = tx.modifiedOn
+
+    if (
+      chunterSpace._class === chunter.class.DirectMessage &&
+      !chunterSpace.lastMessage &&
+      chunterSpace.members.length !== 1
+    ) {
+      await Promise.all(
+        chunterSpace.members
+          .filter((accId) => accId !== me)
+          .map((accId) =>
+            client.createDoc(notification.class.LastView, space, {
+              user: accId,
+              lastView: 0,
+              attachedTo: space,
+              attachedToClass: chunterSpace._class,
+              collection: 'lastViews'
+            })
+          )
+      )
+    }
     await notificationClient.updateLastView(space, chunter.class.ChunterSpace, tx.modifiedOn, true)
     await client.tx(tx)
 
@@ -72,6 +94,7 @@
     { _id: space },
     (res) => {
       pinnedIds = res[0]?.pinned ?? []
+      chunterSpace = res[0]
     },
     { limit: 1 }
   )
