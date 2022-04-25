@@ -38,6 +38,7 @@ export default plugin(presentationId, {
     NotSelected: '' as IntlString,
     Deselect: '' as IntlString,
     AddSocialLinks: '' as IntlString,
+    EditSocialLinks: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString,
     Members: '' as IntlString,
