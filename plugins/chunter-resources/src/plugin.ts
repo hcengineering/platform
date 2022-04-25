@@ -77,6 +77,7 @@ export default mergeIds(chunterId, chunter, {
     RemoveFromSaved: '' as IntlString,
     EmptySavedHeader: '' as IntlString,
     EmptySavedText: '' as IntlString,
+    SharedBy: '' as IntlString,
     LeaveChannel: '' as IntlString,
     ChannelBrowser: '' as IntlString
   }

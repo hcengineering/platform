@@ -14,11 +14,12 @@
 //
 
 import activity from '@anticrm/activity'
-import type { Attachment, Photo } from '@anticrm/attachment'
-import { Domain, IndexKind } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import type { Attachment, Photo, SavedAttachments } from '@anticrm/attachment'
+import { Domain, IndexKind, Ref } from '@anticrm/core'
+import { Builder, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
+import preference, { TPreference } from '@anticrm/model-preference'
 import attachment from './plugin'
 
 export { attachmentOperation } from './migration'
@@ -50,8 +51,14 @@ export class TAttachment extends TAttachedDoc implements Attachment {
 @UX(attachment.string.Photo)
 export class TPhoto extends TAttachment implements Photo {}
 
+@Model(attachment.class.SavedAttachments, preference.class.Preference)
+export class TSavedAttachments extends TPreference implements SavedAttachments {
+  @Prop(TypeRef(attachment.class.Attachment), attachment.string.SavedAttachments)
+  attachedTo!: Ref<Attachment>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttachment, TPhoto)
+  builder.createModel(TAttachment, TPhoto, TSavedAttachments)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: attachment.component.AttachmentPresenter

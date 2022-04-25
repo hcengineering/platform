@@ -13,43 +13,116 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
+  import { getResource } from '@anticrm/platform'
   import { getFileUrl, PDFViewer } from '@anticrm/presentation'
+  import { showPopup, closeTooltip, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
+  import { Action } from '@anticrm/view'
   import { getType } from '../utils'
-  import { showPopup, closeTooltip } from '@anticrm/ui'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
+  import attachment from '../plugin'
 
   export let value: Attachment
+  export let isSaved: boolean = false
 
   $: type = getType(value.type)
+
+  $: saveAttachmentAction = isSaved
+    ? ({
+        label: attachment.string.RemoveAttachmentFromSaved,
+        action: attachment.actionImpl.DeleteAttachmentFromSaved
+      } as Action)
+    : ({
+        label: attachment.string.AddAttachmentToSaved,
+        action: attachment.actionImpl.AddAttachmentToSaved
+      } as Action)
+
+  const showMenu = (ev: Event) => {
+    showPopup(
+      Menu,
+      {
+        actions: [
+          {
+            label: saveAttachmentAction.label,
+            icon: saveAttachmentAction.icon,
+            action: async (evt: MouseEvent) => {
+              const impl = await getResource(saveAttachmentAction.action)
+              await impl(value, evt)
+            }
+          }
+        ]
+      },
+      ev.target as HTMLElement
+    )
+  }
 </script>
 
 <div class="flex-row-center">
   {#if type === 'image'}
-    <div class='content flex-center cursor-pointer' on:click={() => {
-      closeTooltip()
-      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
-    }}>
+    <div
+      class="content flex-center buttonContainer cursor-pointer"
+      on:click={() => {
+        closeTooltip()
+        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+      }}
+    >
       <img src={getFileUrl(value.file)} alt={value.name} />
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {:else if type === 'audio'}
-    <AudioPlayer {value} />
+    <div class="buttonContainer">
+      <AudioPlayer {value} />
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
+    </div>
   {:else if type === 'video'}
-    <div class='content flex-center'>
+    <div class="content buttonContainer flex-center">
       <video controls>
-        <source src={getFileUrl(value.file)} type={value.type}>
+        <source src={getFileUrl(value.file)} type={value.type} />
         <track kind="captions" label={value.name} />
-        <div class='container'>
+        <div class="container">
           <AttachmentPresenter {value} />
         </div>
       </video>
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {:else}
-    <div class='container'>
+    <div class="flex container buttonContainer">
       <AttachmentPresenter {value} />
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {/if}
 </div>
@@ -59,14 +132,29 @@
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: 0.75rem;
-    padding: 0.5rem
+    padding: 0.5rem;
+  }
+
+  .buttonContainer {
+    align-items: flex-start;
+    .more {
+      margin-left: 0.5rem;
+      visibility: hidden;
+    }
+  }
+
+  .buttonContainer:hover {
+    .more {
+      visibility: visible;
+    }
   }
 
   .content {
     max-width: 20rem;
     max-height: 20rem;
 
-    img, video {
+    img,
+    video {
       max-width: 20rem;
       max-height: 20rem;
       border-radius: 0.75rem;

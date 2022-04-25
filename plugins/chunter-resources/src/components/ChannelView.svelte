@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
   import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
@@ -99,10 +100,16 @@
     { limit: 1 }
   )
 
-  const preferenceQuery = createQuery()
-  let savedIds: Ref<ChunterMessage>[] = []
-  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
-    savedIds = res.map((r) => r.attachedTo)
+  const savedMessagesQuery = createQuery()
+  let savedMessagesIds: Ref<ChunterMessage>[] = []
+  savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedMessagesIds = res.map((r) => r.attachedTo)
+  })
+
+  const savedAttachmentsQuery = createQuery()
+  let savedAttachmentsIds: Ref<Attachment>[] = []
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
+    savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
 </script>
 
@@ -113,7 +120,8 @@
     openThread(e.detail)
   }}
   {pinnedIds}
-  {savedIds}
+  {savedMessagesIds}
+  {savedAttachmentsIds}
 />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />

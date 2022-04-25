@@ -43,6 +43,7 @@
     "@anticrm/panel": "~0.6.0",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/login": "~0.6.1",
-    "filesize": "^8.0.3"
+    "filesize": "^8.0.3",
+    "@anticrm/preference": "~0.6.0"
   }
 }

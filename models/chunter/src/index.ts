@@ -16,9 +16,9 @@
 import activity from '@anticrm/activity'
 import type {
   Backlink,
-  ChunterSpace,
   Channel,
   ChunterMessage,
+  ChunterSpace,
   Comment,
   Message,
   SavedMessages,

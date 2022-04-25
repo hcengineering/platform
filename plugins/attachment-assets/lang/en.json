@@ -36,6 +36,8 @@
     "FileBrowserTypeFilterImages": "Images",
     "FileBrowserTypeFilterAudio": "Audio",
     "FileBrowserTypeFilterVideos": "Videos",
-    "FileBrowserTypeFilterPDFs": "PDFs"
+    "FileBrowserTypeFilterPDFs": "PDFs",
+    "AddAttachmentToSaved": "Add attachment to saved",
+    "RemoveAttachmentFromSaved": "Remove attachment from saved"
   }
 }
