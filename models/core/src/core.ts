@@ -69,7 +69,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   collection!: string
 }
 
-@Model(core.class.Backlink, core.class.AttachedDoc)
+@Model(core.class.Backlink, core.class.AttachedDoc, DOMAIN_MODEL)
 export class TBacklink extends TAttachedDoc implements Backlink {
   message!: string
   backlinkId!: Ref<Doc>

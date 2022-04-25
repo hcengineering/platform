@@ -29,6 +29,7 @@ export * from './query'
 export * from './server'
 export * from './storage'
 export * from './tx'
+export * from './backlinks'
 export * from './utils'
 
 addStringsLoader(coreId, async (lang: string) => {
