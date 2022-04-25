@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { Data, generateId, Ref } from '@anticrm/core'
+  import { Data, Ref } from '@anticrm/core'
   import { DatePresenter, EditBox } from '@anticrm/ui'
   import {  Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import {  IntlString } from '@anticrm/platform'
@@ -42,7 +42,7 @@
   }
 
   async function onSave(){
-    await client.createDoc(plugin.class.Project, space, object, generateId())
+    await client.createDoc(plugin.class.Project, space, object)
   }
 </script>
 

@@ -196,13 +196,13 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(contact.class.Employee), tracker.string.Members)
   members!: Ref<Employee>[]
 
-  @Prop(TypeString(), tracker.string.Project)
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments!: number
 
-  @Prop(TypeString(), tracker.string.Project)
+  @Prop(Collection(tracker.class.Document), tracker.string.Document)
   documents!: number
 
-  @Prop(TypeString(), tracker.string.Project)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number;
 
   @Prop(TypeDate(true), tracker.string.Project)
