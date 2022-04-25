@@ -50,13 +50,13 @@
     "UnarchiveChannel": "Unarchive channel",
     "ArchiveConfirm": "Do you want to archive channel?",
     "UnarchiveConfirm": "Do you want to unarchive channel?",
-    "SavedMessages": "Saved messages",
     "AddToSaved": "Add to saved",
     "RemoveFromSaved": "Remove from saved",
     "EmptySavedHeader": "Add messages to come back to later",
     "EmptySavedText": "Tick off your to-dos or save something for another time. Only you can see your saved items, so use them however you like.",
     "SharedBy": "Shared by {name} {time}",
     "LeaveChannel": "Leave channel",
-    "ChannelBrowser": "Channel browser"
+    "ChannelBrowser": "Channel browser",
+    "SavedItems": "Saved items"
   }
 }

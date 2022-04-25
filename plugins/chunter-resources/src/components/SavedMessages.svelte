@@ -114,6 +114,11 @@
   }
 </script>
 
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title">
+    <span class="ac-header__title"><Label label={chunter.string.SavedItems} /></span>
+  </div>
+</div>
 <Scroller>
   {#if savedMessages.length > 0 || savedAttachments.length > 0}
     {#each savedMessages as message}
