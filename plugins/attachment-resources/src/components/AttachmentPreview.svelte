@@ -55,16 +55,40 @@
 
 <div class="flex-row-center">
   {#if type === 'image'}
-    <div class='content flex-center cursor-pointer' on:click={() => {
+    <div class='content flex-center buttonContainer cursor-pointer' on:click={() => {
       closeTooltip()
       showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
     }}>
       <img src={getFileUrl(value.file)} alt={value.name} />
+      {#if saveAttachmentAction && unsaveAttachmentAction}
+        <div class='more'>
+          <ActionIcon
+            icon={IconMoreH}
+            size={'small'}
+            action={(e) => {
+              showMenu(e)
+            }}
+          />
+        </div>
+      {/if}
     </div>
   {:else if type === 'audio'}
-    <AudioPlayer {value} />
+    <div class="buttonContainer">
+      <AudioPlayer {value} />
+      {#if saveAttachmentAction && unsaveAttachmentAction}
+        <div class='more'>
+          <ActionIcon
+            icon={IconMoreH}
+            size={'small'}
+            action={(e) => {
+              showMenu(e)
+            }}
+          />
+        </div>
+      {/if}
+    </div>
   {:else if type === 'video'}
-    <div class='content flex-center'>
+    <div class='content buttonContainer flex-center'>
       <video controls>
         <source src={getFileUrl(value.file)} type={value.type}>
         <track kind="captions" label={value.name} />
@@ -72,9 +96,20 @@
           <AttachmentPresenter {value} />
         </div>
       </video>
+      {#if saveAttachmentAction && unsaveAttachmentAction}
+        <div class='more'>
+          <ActionIcon
+            icon={IconMoreH}
+            size={'small'}
+            action={(e) => {
+              showMenu(e)
+            }}
+          />
+        </div>
+      {/if}
     </div>
   {:else}
-    <div class='flex container'>
+    <div class='flex container buttonContainer'>
       <AttachmentPresenter {value} />
       {#if saveAttachmentAction && unsaveAttachmentAction}
         <div class='more'>
@@ -97,14 +132,17 @@
     border: 1px solid var(--theme-bg-accent-color);
     border-radius: 0.75rem;
     padding: 0.5rem;
+  }
 
+  .buttonContainer {
+    align-items: flex-start;
     .more {
       margin-left: 0.5rem;
       visibility: hidden;
     }
   }
 
-  .container:hover {
+  .buttonContainer:hover {
     .more {
       visibility: visible;
     }
