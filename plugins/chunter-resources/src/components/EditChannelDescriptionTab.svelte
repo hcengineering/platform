@@ -14,74 +14,72 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
-  import type { Class, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { EditBox } from '@anticrm/ui'
-
+  import { Channel, ChunterSpace } from '@anticrm/chunter'
+  import { getCurrentAccount } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import { Button, EditBox } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
   import EditChannelDescriptionAttachments from './EditChannelDescriptionAttachments.svelte'
 
-  export let _id: Ref<Channel>
-  export let _class: Ref<Class<Channel>>
-
-  export let channel: Channel | undefined
+  export let channel: ChunterSpace
 
   const client = getClient()
-  const clazz = client.getHierarchy().getClass(_class)
+  const dispatch = createEventDispatcher()
 
-  const query = createQuery()
-
-  function onNameChange (ev: Event) {
-    const value = (ev.target as HTMLInputElement).value
-    if (value.trim().length > 0) {
-      client.updateDoc(_class, channel!.space, channel!._id, { name: value })
-    } else {
-      // Just refresh value
-      query.query(chunter.class.Channel, { _id }, (result) => {
-        channel = result[0]
-      })
-    }
+  function isCommonChannel (channel?: ChunterSpace): channel is Channel {
+    return channel?._class === chunter.class.Channel
   }
 
   function onTopicChange (ev: Event) {
+    if (!isCommonChannel(channel)) {
+      return
+    }
     const newTopic = (ev.target as HTMLInputElement).value
-    client.update(channel!, { topic: newTopic })
+    client.update(channel, { topic: newTopic })
   }
 
   function onDescriptionChange (ev: Event) {
     const newDescription = (ev.target as HTMLInputElement).value
     client.update(channel!, { description: newDescription })
   }
+
+  async function leaveChannel (): Promise<void> {
+    await client.update(channel, {
+      $pull: { members: getCurrentAccount()._id }
+    })
+    dispatch('close')
+  }
 </script>
 
 {#if channel}
   <div class="flex-col flex-gap-3">
-    <EditBox
-      label={clazz.label}
-      icon={clazz.icon}
-      bind:value={channel.name}
-      placeholder={clazz.label}
-      maxWidth="39rem"
-      focus
-      on:change={onNameChange}
-    />
-    <EditBox
-      label={chunter.string.Topic}
-      bind:value={channel.topic}
-      placeholder={chunter.string.Topic}
-      maxWidth="39rem"
-      focus
-      on:change={onTopicChange}
-    />
-    <EditBox
-      label={chunter.string.ChannelDescription}
-      bind:value={channel.description}
-      placeholder={chunter.string.ChannelDescription}
-      maxWidth="39rem"
-      focus
-      on:change={onDescriptionChange}
-    />
+    {#if isCommonChannel(channel)}
+      <EditBox
+        label={chunter.string.Topic}
+        bind:value={channel.topic}
+        placeholder={chunter.string.Topic}
+        maxWidth="39rem"
+        focus
+        on:change={onTopicChange}
+      />
+      <EditBox
+        label={chunter.string.ChannelDescription}
+        bind:value={channel.description}
+        placeholder={chunter.string.ChannelDescription}
+        maxWidth="39rem"
+        focus
+        on:change={onDescriptionChange}
+      />
+      <Button
+        label={chunter.string.LeaveChannel}
+        justify={'left'}
+        size={'x-large'}
+        on:click={() => {
+          leaveChannel()
+        }}
+      />
+    {/if}
     <EditChannelDescriptionAttachments {channel} />
   </div>
 {/if}

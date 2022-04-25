@@ -28,7 +28,7 @@
 
   const client = getClient()
   let labels: CardLabel[]
-  let labelsHandler: () => void
+  let labelsHandler: (e: Event) => void
   let isCompact: boolean = false
   let isHovered: boolean = false
 
@@ -46,7 +46,7 @@
     }).then(async (result) => {
       if (result?.[0]?.handler) {
         const handler = await getResource(result[0].handler)
-        labelsHandler = () => handler(value, client)
+        labelsHandler = (e: Event) => handler(value, client, e)
       }
     })
   }

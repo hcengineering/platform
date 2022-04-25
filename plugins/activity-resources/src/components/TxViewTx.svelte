@@ -12,8 +12,12 @@
   function filterTx (dtx: DisplayTx[], _class: Ref<Class<Doc>>): DisplayTx[] {
     return dtx.filter((it) => it.tx._class === _class)
   }
-  function getProps (props: any, edit: boolean): any {
-    return { ...props, edit }
+  function getProps (ctx: DisplayTx, edit: boolean): any {
+    if (viewlet?.pseudo) {
+      return { value: ctx.doc }
+    }
+    const dprops = getDTxProps(ctx)
+    return { ...dprops, edit }
   }
 </script>
 
@@ -24,9 +28,9 @@
     {/if}
     <div class="mr-2">
       {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+        <Component is={viewlet?.component} props={getProps(ctx, edit)} on:close={onCancelEdit} />
       {:else}
-        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+        <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} on:close={onCancelEdit} />
       {/if}
     </div>
   {/each}
@@ -36,9 +40,9 @@
     {/if}
     <div class="mr-2">
       {#if typeof viewlet?.component === 'string'}
-        <Component is={viewlet?.component} props={getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+        <Component is={viewlet?.component} props={getProps(ctx, edit)} on:close={onCancelEdit} />
       {:else}
-        <svelte:component this={viewlet?.component} {...getProps(getDTxProps(ctx), edit)} on:close={onCancelEdit} />
+        <svelte:component this={viewlet?.component} {...getProps(ctx, edit)} on:close={onCancelEdit} />
       {/if}
     </div>
   {/each}

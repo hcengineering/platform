@@ -1,4 +1,4 @@
-import { AnySvelteComponent, AnyComponent, PopupAlignment } from './types'
+import { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -30,7 +30,7 @@ export function showPopup (
   const id = `${popupId++}`
   const closePopupOp = (): void => {
     popupstore.update((popups) => {
-      const pos = popups.findIndex(p => p.id === id)
+      const pos = popups.findIndex((p) => p.id === id)
       if (pos !== -1) {
         popups.splice(pos, 1)
       }
@@ -38,7 +38,9 @@ export function showPopup (
     })
   }
   if (typeof component === 'string') {
-    getResource(component).then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp })).catch((err) => console.log(err))
+    getResource(component)
+      .then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp }))
+      .catch((err) => console.log(err))
   } else {
     addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp })
   }
@@ -107,79 +109,121 @@ export function closeDatePopup (): void {
 /**
  * @public
  *
+ * Place element based on position and element.
+ *
+ * return boolean to show or not modal overlay.
+ */
+export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: PopupPositionElement, newProps: Record<string, string|number>): boolean {
+  const rect = alignment.getBoundingClientRect()
+  const rectPopup = modalHTML.getBoundingClientRect()
+  newProps.left = newProps.right = newProps.top = newProps.bottom = ''
+  newProps.maxHeight = newProps.height = ''
+  newProps.maxWidth = newProps.width = ''
+  if (alignment.position !== undefined) {
+    if (alignment.position.v === 'top') {
+      newProps.top = `${rect.top}px`
+    } else if (alignment.position.v === 'bottom') {
+      newProps.top = `${rect.bottom - rectPopup.height}px`
+    }
+
+    if (alignment.position.h === 'right') {
+      newProps.left = `calc(${rect.right}px + .125rem)`
+    } else if (alignment.position.h === 'left') {
+      newProps.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
+    }
+  } else {
+    // Vertical
+    if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
+      newProps.top = `calc(${rect.bottom}px + .125rem)`
+    } else if (rectPopup.height + 28 < rect.top) {
+      newProps.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
+    } else {
+      newProps.top = modalHTML.style.bottom = '1rem'
+    }
+
+    // Horizontal
+    if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
+      newProps.right = `${document.body.clientWidth - rect.right}px`
+    } else {
+      newProps.left = `${rect.left}px`
+    }
+  }
+  return false
+}
+
+function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElement): void {
+  for (const [k, v] of Object.entries(values)) {
+    const old = (modalHTML.style as any)[k]
+    if (old !== v) {
+      (modalHTML.style as any)[k] = v
+    }
+  }
+}
+
+/**
+ * @public
+ *
  * Place element based on position and underline content element.
  *
  * return boolean to show or not modal overlay.
  */
 export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
   let show = true
+  const newProps: Record<string, string|number> = {}
   if (element != null) {
     show = false
-    modalHTML.style.left = modalHTML.style.right = modalHTML.style.top = modalHTML.style.bottom = ''
-    modalHTML.style.maxHeight = modalHTML.style.height = ''
+    newProps.left = newProps.right = newProps.top = newProps.bottom = ''
+    newProps.maxHeight = newProps.height = ''
     if (typeof element !== 'string') {
-      const el = element as HTMLElement
-      const rect = el.getBoundingClientRect()
-      const rectPopup = modalHTML.getBoundingClientRect()
-      // Vertical
-      if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-        modalHTML.style.top = `calc(${rect.bottom}px + .125rem)`
-      } else if (rectPopup.height + 28 < rect.top) {
-        modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
-      } else {
-        modalHTML.style.top = modalHTML.style.bottom = '1rem'
-      }
-
-      // Horizontal
-      if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
-        modalHTML.style.right = `${document.body.clientWidth - rect.right}px`
-      } else {
-        modalHTML.style.left = `${rect.left}px`
-      }
+      const result = fitPopupPositionedElement(modalHTML, element, newProps)
+      applyStyle(newProps, modalHTML)
+      return result
     } else if (element === 'right' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      modalHTML.style.top = `calc(${rect.top}px + 0.5rem)`
-      modalHTML.style.bottom = '0.75rem'
-      modalHTML.style.right = '0.75rem'
+      newProps.top = `calc(${rect.top}px + 0.5rem)`
+      newProps.bottom = '0.75rem'
+      newProps.right = '0.75rem'
+      newProps.maxWidth = '50%'
       show = true
     } else if (element === 'top') {
-      modalHTML.style.top = '15vh'
-      modalHTML.style.left = '50%'
-      modalHTML.style.transform = 'translateX(-50%)'
+      newProps.top = '15vh'
+      newProps.left = '50%'
+      newProps.transform = 'translateX(-50%)'
       show = true
     } else if (element === 'account') {
-      modalHTML.style.bottom = '2.75rem'
-      modalHTML.style.left = '5rem'
+      newProps.bottom = '2.75rem'
+      newProps.left = '5rem'
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      modalHTML.style.top = `calc(${rect.top}px + 0.25rem)`
-      modalHTML.style.bottom = '0.25rem'
-      modalHTML.style.left = '0.25rem'
-      modalHTML.style.right = '0.25rem'
+      newProps.top = `calc(${rect.top}px + 0.25rem)`
+      newProps.bottom = '0.25rem'
+      newProps.left = '0.25rem'
+      newProps.right = '0.25rem'
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      modalHTML.style.top = `calc(${rect.top}px)`
-      modalHTML.style.height = `${rect.height}px`
-      modalHTML.style.left = `calc(${rect.left}px)`
-      modalHTML.style.width = `${rect.width}px`
+      newProps.top = `${rect.top + 1}px`
+      newProps.height = `${Math.min(rect.height - 1, window.innerHeight - rect.top - 1)}px`
+      newProps.left = `${rect.left + 1}px`
+      newProps.width = `${Math.min(rect.width - 1, window.innerWidth - rect.left - 1)}px`
     } else if (element === 'middle') {
       if (contentPanel !== undefined) {
         const rect = contentPanel.getBoundingClientRect()
-        modalHTML.style.top = `calc(${rect.top}px)`
+        newProps.top = `calc(${rect.top}px)`
       } else {
-        modalHTML.style.top = '15%'
+        newProps.top = '15%'
       }
-      modalHTML.style.bottom = '0.75rem'
-      modalHTML.style.left = '50%'
-      modalHTML.style.transform = 'translateX(-50%)'
+      newProps.bottom = '0.75rem'
+      newProps.left = '50%'
+      newProps.transform = 'translateX(-50%)'
     }
   } else {
-    modalHTML.style.top = '50%'
-    modalHTML.style.left = '50%'
-    modalHTML.style.transform = 'translate(-50%, -50%)'
+    newProps.top = '50%'
+    newProps.left = '50%'
+    newProps.transform = 'translate(-50%, -50%)'
     show = true
   }
+  applyStyle(newProps, modalHTML)
   return show
 }
 

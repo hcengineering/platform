@@ -21,10 +21,6 @@
     "AddIssue": "Add Issue",
     "NewIssue": "New issue",
     "SaveIssue": "Save issue",
-    "Todo": "Todo",
-    "InProgress": "In Progress",
-    "Done": "Done",
-    "Canceled": "Canceled",
     "SetPriority": "Set priority\u2026",
     "SetStatus": "Set status\u2026",
     "SelectIssue": "Select issue",
@@ -35,6 +31,12 @@
     "Medium": "Medium",
     "Low": "Low",
     "Unassigned": "Unassigned",
+
+    "CategoryBacklog": "Backlog",
+    "CategoryUnstarted": "Unstarted",
+    "CategoryStarted": "Started",
+    "CategoryCompleted": "Completed",
+    "CategoryCanceled": "Canceled",
 
     "Title": "Title",
     "Description": "",
@@ -68,10 +70,15 @@
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
     "Grouping": "Grouping",
     "Ordering": "Ordering",
+    "CompletedIssues": "Completed issues",
+    "ShowEmptyGroups": "Show empty groups",
     "NoGrouping": "No grouping",
     "NoAssignee": "No assignee",
     "LastUpdated": "Last updated",
-    "DueDate": "Due date"
+    "DueDate": "Due date",
+    "All": "All",
+    "PastWeek": "Past week",
+    "PastMonth": "Past month"
   },
   "status": {}
 }

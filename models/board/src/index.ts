@@ -131,6 +131,9 @@ export function createModel (builder: Builder): void {
       // createItemLabel: board.string.CardCreateLabel
     }
   })
+  builder.mixin(board.class.Board, core.class.Class, view.mixin.SpaceHeader, {
+    header: board.component.BoardHeader
+  })
 
   builder.createDoc(
     workbench.class.Application,
@@ -342,7 +345,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
-      isInline: false,
+      isInline: true,
       label: board.string.Cover,
       position: 70,
       type: board.cardActionType.Cover,
@@ -435,7 +438,7 @@ export function createModel (builder: Builder): void {
     {
       icon: board.icon.Card,
       isInline: true,
-      label: board.string.Archive,
+      label: board.string.ToArchive,
       position: 140,
       type: board.cardActionType.Action,
       handler: board.cardActionHandler.Archive,

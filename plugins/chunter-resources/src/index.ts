@@ -15,7 +15,7 @@
 
 import { Attachment } from '@anticrm/attachment'
 import core from '@anticrm/core'
-import chunter, { Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
+import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
@@ -25,22 +25,29 @@ import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
+import DmPresenter from './components/DmPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
+import DmHeader from './components/DmHeader.svelte'
 import CommentInput from './components/CommentInput.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
+import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 
+import { getDmName } from './utils'
+
+export { default as Header } from './components/Header.svelte'
+export { classIcon } from './utils'
 export { CommentsPresenter }
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
-  await client.updateLastView(object.space, chunter.class.Channel, object.createOn - 1, true)
+  await client.updateLastView(object.space, chunter.class.ChunterSpace, object.createOn - 1, true)
 }
 
 async function MarkCommentUnread (object: ThreadMessage): Promise<void> {
@@ -71,7 +78,7 @@ async function UnsubscribeMessage (object: Message): Promise<void> {
 async function PinMessage (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
-  await client.updateDoc<Channel>(chunter.class.Channel, core.space.Space, message.space, {
+  await client.updateDoc<ChunterSpace>(chunter.class.ChunterSpace, core.space.Space, message.space, {
     $push: { pinned: message._id }
   })
 }
@@ -79,7 +86,7 @@ async function PinMessage (message: ChunterMessage): Promise<void> {
 export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
-  await client.updateDoc<Channel>(chunter.class.Channel, core.space.Space, message.space, {
+  await client.updateDoc<ChunterSpace>(chunter.class.ChunterSpace, core.space.Space, message.space, {
     $pull: { pinned: message._id }
   })
 }
@@ -167,15 +174,21 @@ export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
     CreateChannel,
+    CreateDirectMessage,
     ChannelHeader,
+    DmHeader,
     ChannelView,
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    DmPresenter,
     EditChannel,
     Threads,
     ThreadView,
     SavedMessages
+  },
+  function: {
+    GetDmName: getDmName
   },
   activity: {
     TxCommentCreate,

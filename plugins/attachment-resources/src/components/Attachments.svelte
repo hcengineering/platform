@@ -33,7 +33,6 @@
   let inputFile: HTMLInputElement
   let loading = 0
   let dragover = false
-
 </script>
 
 <div class="attachments-container">
@@ -66,7 +65,8 @@
       config={['', 'lastModified']}
       options={{}}
       query={{ attachedTo: objectId }}
-      loadingProps={{ length: attachments ?? 0 }} />
+      loadingProps={{ length: attachments ?? 0 }}
+    />
   {/if}
 </div>
 
@@ -93,5 +93,4 @@
       border-style: solid;
     }
   }
-
 </style>

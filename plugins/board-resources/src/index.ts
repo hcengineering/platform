@@ -22,7 +22,6 @@ import { showPopup } from '@anticrm/ui'
 import { Card } from '@anticrm/board'
 import type { TxOperations as Client } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-import { TxOperations } from '@anticrm/core'
 import CardPresenter from './components/CardPresenter.svelte'
 import BoardPresenter from './components/BoardPresenter.svelte'
 import CreateBoard from './components/CreateBoard.svelte'
@@ -31,26 +30,31 @@ import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
-import MoveView from './components/popups/MoveCard.svelte'
+import MoveCard from './components/popups/MoveCard.svelte'
+import DeleteCard from './components/popups/RemoveCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import EditMembersView from './components/popups/EditMembers.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import WatchCard from './components/WatchCard.svelte'
+import BoardHeader from './components/BoardHeader.svelte'
 import {
   addCurrentUser,
   canAddCurrentUser,
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard,
-  deleteCard
+  unarchiveCard
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
 
 async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
-  showPopup(MoveView, { object }, getPopupAlignment(e))
+  showPopup(MoveCard, { object }, getPopupAlignment(e))
+}
+
+async function showDeleteCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(DeleteCard, { object }, getPopupAlignment(e))
 }
 
 async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
@@ -61,7 +65,7 @@ async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Pr
   showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
 }
 
-async function showEditMembersPopup(object: Card, client: TxOperations): Promise<void> {
+async function showEditMembersPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(
     UsersPopup,
     {
@@ -71,12 +75,16 @@ async function showEditMembersPopup(object: Card, client: TxOperations): Promise
       selectedUsers: object?.members ?? [],
       placeholder: board.string.SearchMembers
     },
-    undefined,
+    getPopupAlignment(e),
     () => {},
-    (result: Ref<Employee>[]) => {
+    (result: Array<Ref<Employee>>) => {
       client.update(object, { members: result })
     }
   )
+}
+
+async function showAttachmentsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
 }
 
 export default async (): Promise<Resources> => ({
@@ -91,16 +99,18 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     BoardPresenter,
-    WatchCard
+    WatchCard,
+    BoardHeader
   },
   cardActionHandler: {
     Join: addCurrentUser,
     Move: showMoveCardPopup,
     Dates: showDatePickerPopup,
     Labels: showCardLabelsPopup,
+    Attachments: showAttachmentsPopup,
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
-    Delete: deleteCard,
+    Delete: showDeleteCardPopup,
     Members: showEditMembersPopup
   },
   cardActionSupportedHandler: {

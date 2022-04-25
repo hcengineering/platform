@@ -14,7 +14,8 @@
 //
 
 import chunter, { chunterId } from '@anticrm/chunter'
-import type { IntlString } from '@anticrm/platform'
+import type { Client, Space } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewAction } from '@anticrm/view'
@@ -22,9 +23,14 @@ import { ViewAction } from '@anticrm/view'
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
+    CreateDirectMessage: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
+    DmHeader: '' as AnyComponent,
     ChannelView: '' as AnyComponent,
     EditChannel: '' as AnyComponent
+  },
+  function: {
+    GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>
   },
   actionImpl: {
     SubscribeMessage: '' as ViewAction,
@@ -38,14 +44,19 @@ export default mergeIds(chunterId, chunter, {
   },
   string: {
     Channel: '' as IntlString,
+    DirectMessage: '' as IntlString,
     Channels: '' as IntlString,
+    DirectMessages: '' as IntlString,
     CreateChannel: '' as IntlString,
+    NewDirectMessage: '' as IntlString,
     ChannelName: '' as IntlString,
     ChannelNamePlaceholder: '' as IntlString,
     ChannelDescription: '' as IntlString,
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
+    About: '' as IntlString,
     Members: '' as IntlString,
+    NoMembers: '' as IntlString,
     In: '' as IntlString,
     Replies: '' as IntlString,
     Topic: '' as IntlString,
@@ -68,6 +79,8 @@ export default mergeIds(chunterId, chunter, {
     RemoveFromSaved: '' as IntlString,
     EmptySavedHeader: '' as IntlString,
     EmptySavedText: '' as IntlString,
-    SharedBy: '' as IntlString
+    SharedBy: '' as IntlString,
+    LeaveChannel: '' as IntlString,
+    ChannelBrowser: '' as IntlString
   }
 })

@@ -107,6 +107,9 @@ export default plugin(workbenchId, {
   component: {
     WorkbenchApp: '' as AnyComponent
   },
+  icon: {
+    Search: '' as Asset
+  },
   metadata: {
     PlatformTitle: '' as Metadata<string>,
     ExcludedApplications: '' as Metadata<Ref<Application>[]>

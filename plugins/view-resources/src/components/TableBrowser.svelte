@@ -15,8 +15,9 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { BuildModelKey } from '@anticrm/view'
+  import { onMount } from 'svelte'
   import { ActionContext } from '..'
-  import { focusStore, ListSelectionProvider, selectionStore } from '../selection'
+  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
   import Table from './Table.svelte'
 
@@ -32,20 +33,19 @@
 
   let table: Table
   const listProvider = new ListSelectionProvider(
-    (pos, dir) => {
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
       if (dir === 'vertical') {
         // Select next
-        table.scrollSelection(pos + 1)
-      }
-    },
-    (pos, dir) => {
-      // Select prev
-      if (dir === 'vertical') {
-        table.scrollSelection(pos - 1)
+        table.select(offset, of, dir)
       }
     }
   )
+  
+  onMount(() => {
+    (document.activeElement as HTMLElement)?.blur()
+  })
 </script>
+
 
 <ActionContext
   context={{

@@ -468,10 +468,6 @@ export function createModel (builder: Builder): void {
     task.viewlet.Kanban
   )
 
-  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: task.component.DoneStatePresenter
-  })
-
   builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.AttributeEditor, {
     editor: task.component.Todos
   })

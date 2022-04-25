@@ -227,6 +227,11 @@ export interface ArrOf<T extends PropertyType> extends Type<T[]> {
  */
 export const DOMAIN_MODEL = 'model' as Domain
 
+/**
+ * @public
+ */
+export const DOMAIN_TRANSIENT = 'transient' as Domain
+
 // S P A C E
 
 /**
@@ -245,6 +250,13 @@ export interface Space extends Doc {
  */
 export interface Account extends Doc {
   email: string
+}
+
+/**
+ * @public
+ */
+export interface UserStatus extends Doc {
+  online: boolean
 }
 
 /**

@@ -39,8 +39,8 @@
 
   let title: string = ''
   let description: string = ''
-  let startDate: number | null = null
-  let dueDate: number | null = null
+  let startDate: number = Date.now()
+  let dueDate: number = Date.now() + 30 * 60 * 1000
   let location: string = ''
   let company: Ref<Organization> | undefined = undefined
 
@@ -68,7 +68,7 @@
   const hierarchy = client.getHierarchy()
 
   export function canClose (): boolean {
-    return candidate === undefined
+    return (!preserveCandidate ? candidate === undefined : true) && title.length === 0
   }
 
   let spaceLabel: string = ''

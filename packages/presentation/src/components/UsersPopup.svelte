@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import { Tooltip, CheckBox } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'
@@ -37,6 +37,7 @@
 
   let search: string = ''
   let objects: Person[] = []
+  let input: HTMLInputElement
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -55,11 +56,12 @@
     objects = objects
     dispatch('update', selectedUsers)
   }
+  onMount(() => { if (input) input.focus() })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input type='text' bind:value={search} placeholder={phTraslate} on:change/>
+    <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:change/>
   </div>
   <div class="scroll">
     <div class="box">

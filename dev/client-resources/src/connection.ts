@@ -14,10 +14,9 @@
 //
 
 import { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxHander, TxResult, DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
-import { createInMemoryAdapter, createInMemoryTxAdapter } from '@anticrm/dev-storage'
+import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { protoDeserialize, protoSerialize, setMetadata } from '@anticrm/platform'
-import type { DbConfiguration } from '@anticrm/server-core'
-import { createServerStorage, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import { createInMemoryAdapter, createServerStorage, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import devmodel from '@anticrm/devmodel'
 
 class ServerStorageWrapper implements ClientConnection {

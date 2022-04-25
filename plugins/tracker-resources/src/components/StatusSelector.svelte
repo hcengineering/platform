@@ -13,24 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref, WithLookup } from '@anticrm/core'
+
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, Icon, Label, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
-  import { issueStatuses } from '../utils'
+  import { Button, Icon, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import tracker from '../plugin'
 
-  export let status: IssueStatus
+  export let selectedStatusId: Ref<IssueStatus>
+  export let statuses: WithLookup<IssueStatus>[]
   export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
-  export let onStatusChange: ((newStatus: IssueStatus | undefined) => void) | undefined = undefined
+  export let onStatusChange: ((newStatus: Ref<IssueStatus> | undefined) => void) | undefined = undefined
   export let isEditable: boolean = true
 
-  const statusesInfo = [
-    IssueStatus.Backlog,
-    IssueStatus.Todo,
-    IssueStatus.InProgress,
-    IssueStatus.Done,
-    IssueStatus.Canceled
-  ].map((s) => ({ id: s, ...issueStatuses[s] }))
+  $: selectedStatus = statuses.find((status) => status._id === selectedStatusId) ?? statuses[0]
+  $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
+  $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
+  $: statusesInfo = statuses.map((s) => ({ id: s._id, text: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
 
   const handleStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
@@ -47,22 +46,27 @@
 
 {#if kind === 'button'}
   <Button
-    label={shouldShowLabel ? issueStatuses[status].label : undefined}
-    icon={issueStatuses[status].icon}
+    icon={selectedStatusIcon}
     width="min-content"
     size="small"
     kind="no-border"
     on:click={handleStatusEditorOpened}
-  />
+  >
+  <svelte:fragment slot="content">
+    {#if selectedStatusLabel}
+      <span class="nowrap">{selectedStatusLabel}</span>
+    {/if}
+  </svelte:fragment>
+</Button>
 {:else if kind === 'icon'}
   <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
-    <div class="statusIcon">
-      <Icon icon={issueStatuses[status].icon} size={'small'} />
-    </div>
-    {#if shouldShowLabel}
-      <div class="label nowrap ml-2">
-        <Label label={issueStatuses[status].label} />
+    {#if selectedStatusIcon}
+      <div class="statusIcon">
+        <Icon icon={selectedStatusIcon} size={'small'} />
       </div>
+    {/if}
+    {#if selectedStatusLabel}
+      <div class="label nowrap ml-2">{selectedStatusLabel}</div>
     {/if}
   </div>
 {/if}

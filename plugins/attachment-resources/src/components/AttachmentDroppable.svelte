@@ -28,7 +28,7 @@
 
   const client = getClient()
 
-  async function fileDrop(e: DragEvent) {
+  async function fileDrop (e: DragEvent) {
     dragover = false
 
     if (canDrop && !canDrop(e)) {

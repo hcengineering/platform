@@ -11,10 +11,11 @@
 </script>
 
 {#if channel}
-  <div class="flex-col flex-gap-3">
+  <div class="mt-4 ml-8 mr-8 flex-col p-4">
     <Button
       label={chunter.string.ArchiveChannel}
       justify={'left'}
+      size={'x-large'}
       on:click={() => {
         ArchiveChannel(channel, () => dispatch('close'))
       }}

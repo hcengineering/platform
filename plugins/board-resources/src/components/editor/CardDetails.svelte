@@ -31,8 +31,8 @@
   const query = createQuery()
   const client = getClient()
   let members: Employee[]
-  let membersHandler: () => void
-  let dateHandler: () => void
+  let membersHandler: (e: Event) => void
+  let dateHandler: (e: Event) => void
 
   $: membersIds = members?.map(m => m._id) ?? []
 
@@ -71,9 +71,9 @@
       if (action.handler) {
         const handler = await getResource(action.handler)
         if (action._id === board.cardAction.Dates) {
-          dateHandler = () => handler(value, client)
+          dateHandler = (e) => handler(value, client, e)
         } else if (action._id === board.cardAction.Members) {
-          membersHandler = () => handler(value, client)
+          membersHandler = (e) => handler(value, client, e)
         }
       }
     }

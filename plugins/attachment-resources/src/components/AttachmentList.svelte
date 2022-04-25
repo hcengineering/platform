@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { Ref } from '@anticrm/core';
@@ -26,7 +25,7 @@
 </script>
 
 {#if attachments.length}
-  <div class='container'>
+  <div class="container">
     {#each attachments as attachment}
       <div class='item'>
         <AttachmentPreview value={attachment} {saveAttachmentAction} {unsaveAttachmentAction} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />

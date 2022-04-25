@@ -16,18 +16,18 @@
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
-  import { Channel } from '@anticrm/chunter'
+  import { ChunterSpace } from '@anticrm/chunter'
   import { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
-  import { showPopup, IconMoreV, Label } from '@anticrm/ui'
+  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate } from '@anticrm/ui'
 
-  export let channel: Channel | undefined
+  export let channel: ChunterSpace | undefined
 
   const query = createQuery()
   let visibleAttachments: Attachment[] | undefined
   let totalAttachments = 0
-  let attachmentsLimit: number | undefined = 5
+  const ATTACHEMNTS_LIMIT = 5
   let selectedRowNumber: number | undefined
   const sort = { modifiedOn: SortingOrder.Descending }
 
@@ -48,14 +48,10 @@
         visibleAttachments = res
         totalAttachments = res.total
       },
-      attachmentsLimit
-        ? {
-            limit: attachmentsLimit,
-            sort: sort
-          }
-        : {
-            sort: sort
-          }
+      {
+        limit: ATTACHEMNTS_LIMIT,
+        sort: sort
+      }
     )
 </script>
 
@@ -75,12 +71,13 @@
           </div>
         </div>
       {/each}
-      {#if attachmentsLimit && visibleAttachments.length < totalAttachments}
+      {#if visibleAttachments.length < totalAttachments}
         <div
           class="showMoreAttachmentsButton"
           on:click={() => {
-            // TODO: replace this with an external attachments page
-            attachmentsLimit = undefined
+            const loc = getCurrentLocation()
+            loc.path[2] = 'fileBrowser'
+            navigate(loc)
           }}
         >
           <Label label={attachment.string.ShowMoreAttachments} />
@@ -96,7 +93,7 @@
 
 <style lang="scss">
   .group {
-    border: 1px solid var(--theme-bg-focused-border);
+    border: 1px solid var(--theme-button-border-hovered);
     border-radius: 12px;
     padding: 16px 0;
   }

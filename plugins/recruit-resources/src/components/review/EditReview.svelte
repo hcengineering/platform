@@ -56,7 +56,7 @@
     />
     <div class="clear-mins" on:click={() => {
       if (candidate !== undefined) {
-        showPanel(view.component.EditDoc, candidate._id, candidate._class, 'full')
+        showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
       }
     }}>
       <UserBox

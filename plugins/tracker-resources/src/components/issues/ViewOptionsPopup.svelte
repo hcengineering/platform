@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssuesGrouping, IssuesOrdering } from '@anticrm/tracker'
-  import { Label } from '@anticrm/ui'
+  import { IssuesGrouping, IssuesOrdering, IssuesDateModificationPeriod } from '@anticrm/tracker'
+  import { Label, MiniToggle } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { issuesGroupByOptions, issuesOrderByOptions } from '../../utils'
+  import { issuesGroupByOptions, issuesOrderByOptions, issuesDateModificationPeriodOptions } from '../../utils'
   import DropdownNative from '../DropdownNative.svelte'
   import { createEventDispatcher } from 'svelte'
 
@@ -24,20 +24,23 @@
 
   export let groupBy: IssuesGrouping | undefined = undefined
   export let orderBy: IssuesOrdering | undefined = undefined
+  export let completedIssuesPeriod: IssuesDateModificationPeriod | null = null
+  export let shouldShowEmptyGroups: boolean | undefined = false
 
   const groupByItems = issuesGroupByOptions
   const orderByItems = issuesOrderByOptions
+  const dateModificationPeriodItems = issuesDateModificationPeriodOptions
 
-  $: dispatch('update', { groupBy, orderBy })
+  $: dispatch('update', { groupBy, orderBy, completedIssuesPeriod, shouldShowEmptyGroups })
 </script>
 
 <div class="root">
-  <div class="sortingContainer">
+  <div class="groupContainer">
     <div class="viewOption">
       <div class="label">
         <Label label={tracker.string.Grouping} />
       </div>
-      <div class="dropdownContainer">
+      <div class="optionContainer">
         <DropdownNative items={groupByItems} bind:selected={groupBy} />
       </div>
     </div>
@@ -45,10 +48,32 @@
       <div class="label">
         <Label label={tracker.string.Ordering} />
       </div>
-      <div class="dropdownContainer">
+      <div class="optionContainer">
         <DropdownNative items={orderByItems} bind:selected={orderBy} />
       </div>
     </div>
+  </div>
+  <div class="groupContainer">
+    {#if completedIssuesPeriod}
+      <div class="viewOption">
+        <div class="label">
+          <Label label={tracker.string.CompletedIssues} />
+        </div>
+        <div class="optionContainer">
+          <DropdownNative items={dateModificationPeriodItems} bind:selected={completedIssuesPeriod} />
+        </div>
+      </div>
+    {/if}
+    {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
+      <div class="viewOption">
+        <div class="label">
+          <Label label={tracker.string.ShowEmptyGroups} />
+        </div>
+        <div class="optionContainer">
+          <MiniToggle bind:on={shouldShowEmptyGroups} />
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -60,7 +85,7 @@
     background-color: var(--board-card-bg-color);
   }
 
-  .sortingContainer {
+  .groupContainer {
     padding: 0.5rem 1rem;
     border-bottom: 1px solid var(--popup-divider);
   }
@@ -77,7 +102,7 @@
     color: var(--theme-content-dark-color);
   }
 
-  .dropdownContainer {
+  .optionContainer {
     display: flex;
     align-items: center;
     justify-content: flex-end;

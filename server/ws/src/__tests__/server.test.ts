@@ -19,7 +19,7 @@ import { start, disableLogging } from '../server'
 import { generateToken } from '@anticrm/server-token'
 import WebSocket from 'ws'
 
-import type {
+import {
   Doc,
   Ref,
   Class,
@@ -27,17 +27,35 @@ import type {
   FindOptions,
   FindResult,
   Tx,
-  TxResult
+  TxResult,
+  ModelDb,
+  MeasureMetricsContext,
+  toFindResult,
+  Hierarchy
 } from '@anticrm/core'
-import { MeasureMetricsContext, toFindResult } from '@anticrm/core'
 import { SessionContext } from '@anticrm/server-core'
+import { genMinModel } from './minmodel'
 
 describe('server', () => {
   disableLogging()
 
+  async function getModelDb (): Promise<ModelDb> {
+    const txes = genMinModel()
+    const hierarchy = new Hierarchy()
+    for (const tx of txes) {
+      hierarchy.tx(tx)
+    }
+    const modelDb = new ModelDb(hierarchy)
+    for (const tx of txes) {
+      await modelDb.tx(tx)
+    }
+    return modelDb
+  }
+
   start(
     new MeasureMetricsContext('test', {}),
     async () => ({
+      modelDb: await getModelDb(),
       findAll: async <T extends Doc>(
         ctx: SessionContext,
         _class: Ref<Class<T>>,

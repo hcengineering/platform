@@ -125,7 +125,14 @@
 
       <div class="flex-between">
         <div class="flex-row-center">
-          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {editable} {integrations} on:click />
+          <ChannelsEditor
+            attachedTo={object._id}
+            attachedClass={object._class}
+            {editable}
+            {integrations}
+            shape={'circle'}
+            on:click
+          />
         </div>
 
         <div class="flex-row-center">

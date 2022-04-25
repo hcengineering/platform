@@ -57,14 +57,14 @@
 
 {#if fullSize || transparent}
   {#if transparent !== undefined && !transparent}
-    <div class="ac-header short mirror-tool divide">
+    <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
         <div class="flex-center icon"><IconActivity size={'small'} /></div>
         <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
     </div>
   {/if}
-  <div class="flex-col h-full min-h-0" class:background-bg-accent={!transparent}>
+  <div class="flex-col h-full min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text">
         {#if txes}
@@ -127,10 +127,6 @@
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
-
-    &.fill {
-      background-color: var(--body-color);
-    }
   }
   .p-activity {
     padding: 1.5rem 2.5rem 2.5rem;

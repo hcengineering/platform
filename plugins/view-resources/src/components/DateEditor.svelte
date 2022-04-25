@@ -22,7 +22,6 @@
   export let value: number | null | undefined
   // export let label: IntlString
   export let onChange: (value: any) => void
-  // export let attributeType: TypeDate | undefined
 </script>
 
 <DateRangePresenter {value} withTime editable on:change={(res) => { if (res.detail !== undefined) onChange(res.detail) }} />

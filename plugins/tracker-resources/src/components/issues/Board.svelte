@@ -1,58 +1,59 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { FindOptions, Ref, WithLookup } from '@anticrm/core'
-  import { Kanban } from '@anticrm/kanban'
+  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Component, eventToHTMLElement, Icon, IconAdd, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Issue, Team } from '@anticrm/tracker'
+  import { Button, eventToHTMLElement, Icon, IconAdd, showPopup, Tooltip } from '@anticrm/ui'
+  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
+  import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
+  import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
+import PriorityPresenter from './PriorityPresenter.svelte'
 
   export let currentSpace: Ref<Team>
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
-  const states = [
-    {
-      _id: IssueStatus.Backlog,
-      title: 'Backlog',
-      color: 0,
-      icon: tracker.icon.StatusBacklog
-    },
-    {
-      _id: IssueStatus.InProgress,
-      title: 'In progress',
-      color: 1,
-      icon: tracker.icon.StatusInProgress
-    },
-    {
-      _id: IssueStatus.Todo,
-      title: 'To do',
-      color: 2,
-      icon: tracker.icon.StatusTodo
-    },
-    {
-      _id: IssueStatus.Done,
-      title: 'Done',
-      color: 3,
-      icon: tracker.icon.StatusDone
-    },
-    {
-      _id: IssueStatus.Canceled,
-      title: 'Canceled',
-      color: 4,
-      icon: tracker.icon.StatusCanceled
-    }
-  ]
   /* eslint-disable no-undef */
 
   const spaceQuery = createQuery()
+  const statusesQuery = createQuery()
 
   let currentTeam: Team | undefined
-
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
     currentTeam = res.shift()
   })
+
+  let states: TypeState[] | undefined
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: currentSpace }, (issueStatuses) => {
+    states = issueStatuses.map((status) => ({
+      _id: status._id,
+      title: status.name,
+      color: status.color ?? status.$lookup?.category?.color ?? 0
+    }))
+  }, {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
+
   /* eslint-disable prefer-const */
   /* eslint-disable no-unused-vars */
   let issue: Issue
@@ -66,13 +67,38 @@
       assignee: contact.class.Employee
     }
   }
+
+  let kanbanUI: Kanban
+  const listProvider = new ListSelectionProvider(
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+      kanbanUI.select(offset, of, dir)
+    }
+  )
+  onMount(() => {
+    (document.activeElement as HTMLElement)?.blur()
+  })
+
+  const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
+    ev.preventDefault()
+    showPopup(Menu, { object: items, baseMenuClass }, {
+      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+    }, () => {
+      // selection = undefined
+    })
+  }
 </script>
 
-{#if currentTeam}
+{#if currentTeam && states}
+  <ActionContext
+    context={{
+      mode: 'browser'
+    }}
+  />
   <div class="flex-between label font-medium w-full p-4">
     Board
   </div>
   <Kanban
+    bind:this={kanbanUI}
     _class={tracker.class.Issue}
     space={currentSpace}
     search=""
@@ -81,9 +107,22 @@
     query={{}}
     fieldName={'status'}
     rankFieldName={'rank'}
+    on:content={(evt) => {
+      listProvider.update(evt.detail)
+    }}
+    on:obj-focus={(evt) => {
+      listProvider.updateFocus(evt.detail)
+    }}
+    selection={listProvider.current($focusStore)}
+
+    checked={$selectionStore ?? []}
+    on:check={(evt) => {
+      listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+    }}
+    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
-      <div class="header flex-col">        
+      <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full mb-4">
           <div class="flex-row-center gap-2">
             <Icon icon={state.icon} size={'small'} />
@@ -100,26 +139,25 @@
                 }}
               />
             </Tooltip>
-            <Button icon={IconMoreH} kind={'transparent'} />
           </div>
         </div>
       </div>
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
-      <div class="flex-row h-18 pt-2 pb-2 pr-4 pl-4">
+      <div class="flex-row pt-2 pb-2 pr-4 pl-4">
         <div class="flex-between mb-2">
           <IssuePresenter value={object} {currentTeam} />
           {#if issue.$lookup?.assignee}
-            <Component
-              is={view.component.ObjectPresenter}
-              props={{ value: issue.$lookup.assignee, props: { showLabel: false } }}
-            />
+          <AssigneePresenter value={issue} {currentSpace} isEditable={true}/>
           {/if}
         </div>
         <span class="fs-bold title">
           {object.title}
         </span>
+        <div class='flex gap-2 mt-2 mb-2'>
+          <PriorityPresenter value={issue} {currentSpace} isEditable={true}/>
+        </div>
       </div>
     </svelte:fragment>
   </Kanban>
@@ -130,10 +168,6 @@
     height: 6rem;
     min-height: 6rem;
     user-select: none;
-
-    .filter {
-      border-bottom: 1px solid var(--divider-color);
-    }
 
     .label {
       color: var(--theme-caption-color);

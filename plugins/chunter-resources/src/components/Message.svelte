@@ -109,7 +109,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (evt: MouseEvent) => {
+            action: async (ctx:any, evt: MouseEvent) => {
               const impl = await getResource(a.action)
               await impl(message, evt)
             }

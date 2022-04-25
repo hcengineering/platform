@@ -29,8 +29,9 @@
   import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import ActionContext from './ActionContext.svelte'
   import { getCollectionCounter, getMixinStyle } from '../utils'
+  import ActionContext from './ActionContext.svelte'
+  import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -255,6 +256,9 @@
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="navigate-actions">
+      <UpDownNavigator element={object}/>
+    </svelte:fragment>
     <div class="w-full" slot="subtitle">
       {#if !headerLoading}
         {#if headerEditor !== undefined}

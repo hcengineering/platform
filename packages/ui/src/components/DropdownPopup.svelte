@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import type { AnySvelteComponent, ListItem } from '../types'
   import plugin from '../plugin'
@@ -29,16 +29,37 @@
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
   const dispatch = createEventDispatcher()
+  let btns: HTMLButtonElement[] = []
+  let searchInput: HTMLInputElement
+
+  const keyDown = (ev: KeyboardEvent, n: number): void => {
+    if (ev.key === 'ArrowDown') {
+      if (n === btns.length - 1) btns[0].focus()
+      else btns[n + 1].focus()
+    } else if (ev.key === 'ArrowUp') {
+      if (n === 0) btns[btns.length - 1].focus()
+      else btns[n - 1].focus()
+    } else searchInput.focus()
+  }
+
+  onMount(() => { if (searchInput) searchInput.focus() })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+    <input bind:this={searchInput} type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
   </div>
   <div class="scroll">
     <div class="box">
-      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="menu-item flex-between" on:click={() => { dispatch('close', item) }}>
+      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          bind:this={btns[i]}
+          class="menu-item flex-between"
+          on:mouseover={(ev) => ev.currentTarget.focus()}
+          on:keydown={(ev) => keyDown(ev, i)}
+          on:click={() => { dispatch('close', item) }}
+        >
           <div class="flex-center img" class:image={item.image}>
             {#if item.image}
               <img src={item.image} alt={item.label} />

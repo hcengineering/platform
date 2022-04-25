@@ -19,7 +19,6 @@
   import { DateRangePresenter } from '@anticrm/ui'
 
   export let value: number | null | undefined
-  // export let attributeType: TypeDate | undefined
 </script>
 
 <DateRangePresenter {value} />

@@ -3,17 +3,22 @@
     "ApplicationLabelChunter": "Чат",
     "LeftComment": "оставил(а) комментарий",
     "Channels": "Каналы",
+    "DirectMessages": "Личные сообщения",
     "CreateChannel": "Создать канал",
+    "NewDirectMessage": "Создать личное сообщение",
     "ChannelName": "Название",
     "ChannelNamePlaceholder": "Канал",
     "ChannelDescription": "Описание",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
     "Channel": "Канал ",
+    "DirectMessage": "Личное сообщение",
     "EditUpdate": "Сохранить...",
     "EditCancel": "Отменить",
     "Comments" : "Комментарии",
+    "About": "Информация",
     "Members": "Участники",
+    "NoMembers": "Нет участников",
     "MentionedIn": "упомянул(а) ",
     "ContactInfo": "Контактная информация",
     "Content": "Содержимое",
@@ -49,6 +54,8 @@
     "RemoveFromSaved": "Удалить из сохраненных",
     "EmptySavedHeader": "Добавляйте сообщения и файлы, чтобы вернуться к ним позже",
     "EmptySavedText": "Пометьте свои задачи или сохраните что-нибудь на потом. Только вы можете просматривать свои сохраненные объекты, поэтому используйте их как угодно.",
-    "SharedBy": "Доступ открыт {name} {time}"
+    "SharedBy": "Доступ открыт {name} {time}",
+    "LeaveChannel": "Покинуть канал",
+    "ChannelBrowser": "Браузер каналов"
   }
 }

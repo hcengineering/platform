@@ -14,28 +14,25 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Data, generateId, Ref, SortingOrder } from '@anticrm/core'
+  import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import presentation, { getClient, UserBox, Card, MessageBox } from '@anticrm/presentation'
-  import { Issue, IssuePriority, IssueStatus, Team } from '@anticrm/tracker'
+  import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
+  import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment, eventToHTMLElement } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
-  import { calcRank } from '../utils'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
-  export let status: IssueStatus = IssueStatus.Backlog
+  export let issueStatus: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
 
-  $: _space = space
-  $: _parent = parent
-
   let currentAssignee: Ref<Employee> | null = assignee
+  let issueStatuses: WithLookup<IssueStatus>[] = []
 
   const object: Data<Issue> = {
     title: '',
@@ -43,7 +40,7 @@
     assignee: null,
     number: 0,
     rank: '',
-    status: status,
+    status: '' as Ref<IssueStatus>,
     priority: priority,
     dueDate: null,
     comments: 0
@@ -51,7 +48,36 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const statusesQuery = createQuery()
   const taskId: Ref<Issue> = generateId()
+
+  $: _space = space
+  $: _parent = parent
+  $: updateIssueStatusId(space, issueStatus)
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => {
+    issueStatuses = statuses
+  }, {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
+
+  async function updateIssueStatusId (teamId: Ref<Team>, status?: Ref<IssueStatus>) {
+    if (status !== undefined) {
+      object.status = status
+      return
+    }
+
+    const team = await client.findOne(
+      tracker.class.Team,
+      { _id: teamId },
+      { lookup: { defaultIssueStatus: tracker.class.IssueStatus } }
+    )
+    const teamDefaultIssueStatusId = team?.$lookup?.defaultIssueStatus?._id
+
+    if (teamDefaultIssueStatusId) {
+      object.status = teamDefaultIssueStatusId
+    }
+  }
 
   export function canClose (): boolean {
     // if (object.title !== undefined) {
@@ -72,6 +98,10 @@
   }
 
   async function createIssue () {
+    if (!object.status) {
+      return
+    }
+
     const lastOne = await client.findOne<Issue>(
       tracker.class.Issue,
       { status: object.status },
@@ -116,12 +146,10 @@
     object.priority = newPriority
   }
 
-  const handleStatusChanged = (newStatus: IssueStatus | undefined) => {
-    if (newStatus === undefined) {
-      return
+  const handleStatusChanged = (statusId: Ref<IssueStatus> | undefined) => {
+    if (statusId !== undefined) {
+      object.status = statusId
     }
-
-    object.status = newStatus
   }
 </script>
 
@@ -164,8 +192,8 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
   <svelte:fragment slot="pool">
-    <StatusSelector bind:status={object.status} onStatusChange={handleStatusChanged} />
-    <PrioritySelector bind:priority={object.priority} onPriorityChange={handlePriorityChanged} />
+    <StatusSelector selectedStatusId={object.status} statuses={issueStatuses} onStatusChange={handleStatusChanged} />
+    <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
