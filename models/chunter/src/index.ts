@@ -15,9 +15,9 @@
 
 import activity from '@anticrm/activity'
 import type {
-  ChunterSpace,
   Channel,
   ChunterMessage,
+  ChunterSpace,
   Comment,
   Message,
   SavedMessages,

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
@@ -122,11 +122,17 @@
       ))
   )
 
-  const preferenceQuery = createQuery()
-  let savedIds: Ref<ChunterMessage>[] = []
+  const savedMessagesQuery = createQuery()
+  let savedMessagesIds: Ref<ChunterMessage>[] = []
 
-  preferenceQuery.query(chunter.class.SavedMessages, {}, (res) => {
-    savedIds = res.map((r) => r.attachedTo)
+  savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedMessagesIds = res.map((r) => r.attachedTo)
+  })
+
+  const savedAttachmentsQuery = createQuery()
+  let savedAttachmentsIds: Ref<Attachment>[] = []
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
+    savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
 
   async function onMessage (event: CustomEvent) {
@@ -191,7 +197,7 @@
 </div>
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
-    <MsgView {message} {employees} thread />
+    <MsgView {message} {employees} thread isSaved={savedMessagesIds.includes(message._id)} {savedAttachmentsIds} />
     {#if comments.length}
       <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}
@@ -204,7 +210,8 @@
         {employees}
         thread
         isPinned={pinnedIds.includes(comment._id)}
-        isSaved={savedIds.includes(comment._id)}
+        isSaved={savedMessagesIds.includes(comment._id)}
+        {savedAttachmentsIds}
       />
     {/each}
   {/if}

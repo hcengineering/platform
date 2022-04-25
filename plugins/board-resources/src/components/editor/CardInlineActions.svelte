@@ -17,13 +17,22 @@
   import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Button, Component } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
 
+  import board from '../../plugin'
   import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
+  import { openCardPanel } from '../../utils/CardUtils';
 
   export let value: Card
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   let actions: CardAction[] = []
+
+  function openCard () {
+    openCardPanel(value)
+    dispatch('close')
+  }
 
   async function fetch () {
     actions = []
@@ -46,6 +55,7 @@
 
 {#if value && !value.isArchived}
   <div class="flex-col flex-gap-1">
+    <Button icon={board.icon.Card} label={board.string.OpenCard} kind="no-border" justify="left" on:click={openCard} />
     {#each actions as action}
       {#if action.component}
         <Component is={action.component} props={{ object: value, isInline: true }}>
