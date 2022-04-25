@@ -37,12 +37,14 @@ import type {
   TextPresenter,
   ViewAction,
   ViewContext,
+  ViewContextType,
   Viewlet,
   ViewletDescriptor
 } from '@anticrm/view'
 import view from './plugin'
 
 export { viewOperation } from './migration'
+export { ViewAction }
 
 export function createAction (
   builder: Builder,
@@ -73,12 +75,22 @@ export function actionTarget (
   builder: Builder,
   action: Ref<Action>,
   target: Ref<Class<Doc>>,
-  context: ViewContext
+  options: {
+    mode: ViewContextType | ViewContextType[]
+    application?: Ref<Doc>
+    group?: string
+    override?: ViewAction
+  }
 ): void {
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target,
     action,
-    context
+    context: {
+      mode: options.mode,
+      application: options.application,
+      group: options.group
+    },
+    override: options.override
   })
 }
 
@@ -289,6 +301,15 @@ export function createModel (builder: Builder): void {
     singleInput: true
   })
   actionTarget(builder, view.action.ShowPreview, core.class.Doc, { mode: 'browser' })
+
+  createAction(builder, view.action.Open, view.string.Open, view.actionImpl.Open, {
+    icon: view.icon.Open,
+    keyBinding: ['Enter'],
+    singleInput: true
+  })
+
+  // Should be contributed via individual plugins.
+  // actionTarget(builder, view.action.Open, core.class.Doc, { mode: ['browser', 'context'] })
 }
 
 export default view

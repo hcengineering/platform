@@ -40,6 +40,8 @@ import preference from '@anticrm/preference'
 
 import { getDmName } from './utils'
 
+export { default as Header } from './components/Header.svelte'
+export { classIcon } from './utils'
 export { CommentsPresenter }
 
 async function MarkUnread (object: Message): Promise<void> {

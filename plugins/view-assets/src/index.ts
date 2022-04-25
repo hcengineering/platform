@@ -23,7 +23,8 @@ loadMetadata(view.icon, {
   Move: `${icons}#move`,
   MoreH: `${icons}#more-h`,
   Archive: `${icons}#archive`,
-  Statuses: `${icons}#statuses`
+  Statuses: `${icons}#statuses`,
+  Open: `${icons}#open`
 })
 
 addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))

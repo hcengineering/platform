@@ -257,11 +257,15 @@
     width: min-content;
 
     .tooltip {
+      overflow: hidden;
       position: absolute;
       padding: .25rem .5rem;
       bottom: 100%;
       left: 50%;
       width: auto;
+      min-width: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
       background-color: var(--accent-bg-color);
       border: 1px solid var(--button-border-color);
       border-radius: .25rem;

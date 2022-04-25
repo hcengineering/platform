@@ -1,6 +1,6 @@
-import { Doc } from '@anticrm/core'
+import { Doc, Hierarchy } from '@anticrm/core'
 import { getClient, MessageBox } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
+import { showPanel, showPopup } from '@anticrm/ui'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
 import { FocusSelection, focusStore, SelectDirection, selectionStore, previewDocument } from './selection'
@@ -36,26 +36,15 @@ focusStore.subscribe((it) => {
   $focusStore = it
 })
 
-function selPrev (doc: Doc | undefined, evt: Event, dir: SelectDirection): void {
-  if ($focusStore.provider?.prev !== undefined) {
-    $focusStore.provider?.prev(dir)
+export function select (evt: Event|undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+  if ($focusStore.provider?.select !== undefined) {
+    $focusStore.provider?.select(offset, of, direction)
+    evt?.preventDefault()
     previewDocument.update(old => {
       if (old !== undefined) {
         return $focusStore.focus
       }
     })
-    evt.preventDefault()
-  }
-}
-function selNext (doc: Doc|undefined, evt: Event, dir: SelectDirection): void {
-  if ($focusStore.provider?.next !== undefined) {
-    $focusStore.provider?.next(dir)
-    previewDocument.update(old => {
-      if (old !== undefined) {
-        return $focusStore.focus
-      }
-    })
-    evt.preventDefault()
   }
 }
 
@@ -85,10 +74,10 @@ function SelectItemAll (doc: Doc | undefined, evt: Event): void {
   evt.preventDefault()
 }
 
-const MoveUp = (doc: Doc | undefined, evt: Event): void => selPrev(doc, evt, 'vertical')
-const MoveDown = (doc: Doc | undefined, evt: Event): void => selNext(doc, evt, 'vertical')
-const MoveLeft = (doc: Doc | undefined, evt: Event): void => selPrev(doc, evt, 'horizontal')
-const MoveRight = (doc: Doc | undefined, evt: Event): void => selNext(doc, evt, 'horizontal')
+const MoveUp = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'vertical')
+const MoveDown = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'vertical')
+const MoveLeft = (doc: Doc | undefined, evt: Event): void => select(evt, -1, doc, 'horizontal')
+const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc, 'horizontal')
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
@@ -103,6 +92,12 @@ function ShowPreview (doc: Doc | undefined, evt: Event): void {
   })
   evt.preventDefault()
 }
+
+function Open (doc: Doc, evt: Event): void {
+  evt.preventDefault()
+  showPanel(view.component.EditDoc, doc._id, Hierarchy.mixinOrClass(doc), 'content')
+}
+
 /**
  * @public
  */
@@ -117,5 +112,6 @@ export const actionImpl = {
   SelectItemNone,
   SelectItemAll,
   ShowActions,
-  ShowPreview
+  ShowPreview,
+  Open
 }

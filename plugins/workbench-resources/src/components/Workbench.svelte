@@ -38,7 +38,7 @@
   } from '@anticrm/ui'
   import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, tick } from 'svelte'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
@@ -75,10 +75,16 @@
     apps = result
   })
 
+  let panelInstance: PanelInstance
+
   let visibileNav: boolean = true
   async function toggleNav (): Promise<void> {
     visibileNav = !visibileNav
     closeTooltip()
+    if (currentApplication && navigatorModel && navigator) {
+      await tick()
+      panelInstance.fitPopupInstance()
+    }
   }
 
   const account = getCurrentAccount() as EmployeeAccount
@@ -262,7 +268,7 @@
 
   const resizing = (event: MouseEvent): void => {
     if (isResizing && aside) {
-      let X = event.clientX - dX
+      const X = event.clientX - dX
       const newWidth = asideWidth + oldX - X
       if (newWidth > 320 && componentWidth - (oldX - X) > 320) {
         aside.style.width = aside.style.maxWidth = aside.style.minWidth = newWidth + 'px'
@@ -313,16 +319,16 @@
     </clipPath>
   </svg>
   <div class="workbench-container">
-    <div class="antiPanel-application" on:click={toggleNav}>
+    <div class="antiPanel-application">
       <div class="flex-col mt-1">
         <!-- <ActivityStatus status="active" /> -->
-        <AppItem
-          icon={TopMenu}
-          label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-          selected={!visibileNav}
-          action={toggleNav}
-          notify={false}
-        />
+          <AppItem
+            icon={TopMenu}
+            label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!visibileNav}
+            action={toggleNav}
+            notify={false}
+          />
       </div>
       <Applications
         {apps}
@@ -413,7 +419,7 @@
     {/if}
   </div>
   <div bind:this={cover} class="cover" />
-  <PanelInstance {contentPanel} >
+  <PanelInstance bind:this={panelInstance} {contentPanel} >
     <svelte:fragment slot='panel-header'>
       <ActionContext
         context={{ mode: 'panel' }}

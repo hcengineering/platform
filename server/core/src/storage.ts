@@ -43,43 +43,11 @@ import core, {
 } from '@anticrm/core'
 import { getResource } from '@anticrm/platform'
 import type { Client as MinioClient } from 'minio'
+import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { FullTextIndex } from './fulltext'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } from './types'
-
-/**
- * @public
- */
-export interface DbAdapter {
-  /**
-   * Method called after hierarchy is ready to use.
-   */
-  init: (model: Tx[]) => Promise<void>
-  close: () => Promise<void>
-  findAll: <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
-  tx: (tx: Tx) => Promise<TxResult>
-}
-
-/**
- * @public
- */
-export interface TxAdapter extends DbAdapter {
-  getModel: () => Promise<Tx[]>
-}
-
-/**
- * @public
- */
-export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb) => Promise<DbAdapter>
-
-/**
- * @public
- */
-export interface DbAdapterConfiguration {
-  factory: DbAdapterFactory
-  url: string
-}
 
 /**
  * @public

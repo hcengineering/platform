@@ -36,11 +36,11 @@ loadMetadata(tracker.icon, {
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
 
-  StatusBacklog: `${icons}#status-backlog`,
-  StatusTodo: `${icons}#status-todo`,
-  StatusInProgress: `${icons}#status-inprogress`,
-  StatusDone: `${icons}#status-done`,
-  StatusCanceled: `${icons}#status-canceled`,
+  CategoryBacklog: `${icons}#status-backlog`,
+  CategoryUnstarted: `${icons}#status-todo`,
+  CategoryStarted: `${icons}#status-inprogress`,
+  CategoryCompleted: `${icons}#status-done`,
+  CategoryCanceled: `${icons}#status-canceled`,
   PriorityNoPriority: `${icons}#priority-nopriority`,
   PriorityUrgent: `${icons}#priority-urgent`,
   PriorityHigh: `${icons}#priority-high`,

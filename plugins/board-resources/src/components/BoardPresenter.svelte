@@ -27,7 +27,7 @@
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'full')}"
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >
     <div class="icon">
       <Icon icon={board.icon.Board} size={'small'} />

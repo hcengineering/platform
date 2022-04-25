@@ -16,7 +16,6 @@
   import { createEventDispatcher } from 'svelte'
   import TimeShiftPresenter from './TimeShiftPresenter.svelte'
 
-  export let value: number
   export let direction: 'before' | 'after'
   export let minutes: number[] = [5, 15, 30]
   export let hours: number[] = [1, 2, 4]

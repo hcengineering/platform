@@ -32,6 +32,7 @@
     "@anticrm/contact": "~0.6.5",
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/attachment": "~0.6.1",
-    "@anticrm/task": "~0.6.0"
+    "@anticrm/task": "~0.6.0",
+    "lexorank": "~1.0.4"
   }
 }

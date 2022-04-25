@@ -19,16 +19,7 @@
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import {
-    Component,
-    Icon, IconEdit,
-    IconMoreH,
-    Label,
-    Menu,
-    ShowMore,
-    showPopup,
-    TimeSince
-  } from '@anticrm/ui'
+  import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
@@ -60,7 +51,7 @@
 
   const client = getClient()
 
-  function getProps (props: any, edit: boolean): any {
+  function getProps(props: any, edit: boolean): any {
     return { ...props, edit }
   }
 
@@ -96,7 +87,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (evt: Event) => {
+            action: async (ctx:any, evt: Event) => {
               const impl = await getResource(a.action)
               await impl(tx.doc as Doc, evt)
             }
@@ -110,7 +101,7 @@
     edit = false
     props = getProps(props, edit)
   }
-  function isMessageType (attr?: AnyAttribute): boolean {
+  function isMessageType(attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
 
@@ -181,11 +172,11 @@
                   {/if}
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
+                      <svelte:component this={m.presenter} {value} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
+                      <svelte:component this={m.presenter} {value} />
                     </div>
                   {/if}
                 {/if}
@@ -206,11 +197,11 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
+                      <svelte:component this={m.presenter} {value} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} attributeType={m.attribute?.type} />
+                      <svelte:component this={m.presenter} {value} />
                     </div>
                   {/if}
                 {/if}
@@ -223,12 +214,10 @@
                   <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
                 </div>
               </ShowMore>
-            {:else} 
-              {#if typeof viewlet.component === 'string'}
-                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-              {:else}
-                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
-              {/if}
+            {:else if typeof viewlet.component === 'string'}
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
+            {:else}
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
             {/if}
           {/if}
         </div>
@@ -242,14 +231,12 @@
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap">
-                <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
+                <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
               </div>
+            {:else if typeof viewlet.component === 'string'}
+              <Component is={viewlet.component} {props} on:close={onCancelEdit} />
             {:else}
-              {#if typeof viewlet.component === 'string'}
-                <Component is={viewlet.component} {props} on:close={onCancelEdit} />
-              {:else}
-                <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
-              {/if}
+              <svelte:component this={viewlet.component} {...props} on:close={onCancelEdit} />
             {/if}
           </ShowMore>
         </div>

@@ -21,7 +21,7 @@
   import { Avatar } from '@anticrm/presentation'
   import type { Applicant } from '@anticrm/recruit'
   import task, { TodoItem } from '@anticrm/task'
-  import { ActionIcon, Component, IconMoreH, showPanel, Tooltip } from '@anticrm/ui'
+  import { Component, showPanel, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
@@ -29,7 +29,7 @@
   export let dragged: boolean
 
   function showCandidate () {
-    showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'full')
+    showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'content')
   }
 
   $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []

@@ -30,7 +30,6 @@
   import { getElementPopupAlignment } from '../utils/PopupUtils'
 
   export let object: WithLookup<Card>
-  export let dragged: boolean
 
   let loadingAttachment = 0
   let dragoverAttachment = false
@@ -118,7 +117,7 @@
       <div class="float-left-box">
         {#if object.date && hasDate(object)}
           <div class="float-left ml-1">
-            <DatePresenter value={object.date} isInline={true} size="x-small" on:update={updateDate} />
+            <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
           </div>
         {/if}
         {#if (object.attachments ?? 0) > 0}

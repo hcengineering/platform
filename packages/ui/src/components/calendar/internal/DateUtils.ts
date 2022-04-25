@@ -12,8 +12,10 @@
 // limitations under the License.
 
 export const DAYS_IN_WEEK = 7
-export const MILLISECONDS_IN_DAY = 86400000
+
 export const MILLISECONDS_IN_MINUTE = 60000
+export const MILLISECONDS_IN_DAY = 86400000
+export const MILLISECONDS_IN_WEEK = DAYS_IN_WEEK * MILLISECONDS_IN_DAY
 
 export function firstDay (date: Date, mondayStart: boolean): Date {
   const firstDayOfMonth = new Date(date)
@@ -107,4 +109,8 @@ export const getDaysDifference = (from: Date, to: Date): number => {
   const secondDateMs = to.setHours(0, 0, 0, 0)
 
   return Math.round(Math.abs(secondDateMs - firstDateMs) / MILLISECONDS_IN_DAY)
+}
+
+export const getMillisecondsInMonth = (date: Date): number => {
+  return daysInMonth(date) * MILLISECONDS_IN_DAY
 }

@@ -49,6 +49,7 @@
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
     if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
+      console.log('no keyboard because', targetTagName, evt.target)
       return
     }
     lastKey = evt

@@ -18,6 +18,7 @@ import {
   Doc,
   DocumentQuery,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   DOMAIN_TX,
   FindOptions,
   FindResult,
@@ -34,7 +35,7 @@ import { serverAttachmentId } from '@anticrm/server-attachment'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverContactId } from '@anticrm/server-contact'
-import { createPipeline, DbAdapter, DbConfiguration, MiddlewareCreator } from '@anticrm/server-core'
+import { createInMemoryAdapter, createPipeline, DbAdapter, DbConfiguration, MiddlewareCreator } from '@anticrm/server-core'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
@@ -113,6 +114,7 @@ export function start (
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
+          [DOMAIN_TRANSIENT]: 'InMemory',
           [DOMAIN_MODEL]: 'Null'
         },
         defaultAdapter: 'Mongo',
@@ -127,6 +129,10 @@ export function start (
           },
           Null: {
             factory: createNullAdapter,
+            url: ''
+          },
+          InMemory: {
+            factory: createInMemoryAdapter,
             url: ''
           }
         },

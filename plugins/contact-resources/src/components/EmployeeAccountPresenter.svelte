@@ -27,7 +27,7 @@
 
   async function onClick () {
     if (employee !== undefined) {
-      showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'full')
+      showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
     }
   }
   const client = getClient()

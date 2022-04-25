@@ -105,7 +105,7 @@ async function getAttributePresenter (
     _class: attrClass,
     label: preserveKey.label ?? attribute.label,
     presenter,
-    props: { attributeType: attribute.type },
+    props: { },
     icon: presenterMixin.icon,
     attribute
   }

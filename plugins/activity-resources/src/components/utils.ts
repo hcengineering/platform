@@ -10,6 +10,7 @@ import activity from '../plugin'
 export type TxDisplayViewlet =
   | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent' | 'labelParams'> & {
     component?: AnyComponent | AnySvelteComponent
+    pseudo: boolean
   })
   | undefined
 
@@ -41,13 +42,14 @@ async function createPseudoViewlet (
       icon: docClass.icon ?? activity.icon.Activity,
       label: label,
       labelParams: { _class: trLabel, collection: dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : '' },
-      component: presenter.presenter
+      component: presenter.presenter,
+      pseudo: true
     }
   }
 }
 
 export function getDTxProps (dtx: DisplayTx): any {
-  return { tx: dtx.tx, value: dtx.doc, dtx }
+  return { tx: dtx.tx, value: dtx.doc }
 }
 
 function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxDisplayViewlet | undefined {
@@ -57,7 +59,10 @@ function getViewlet (viewlets: Map<ActivityKey, TxViewlet>, dtx: DisplayTx): TxD
   } else {
     key = activityKey(dtx.tx.objectClass, dtx.tx._class)
   }
-  return viewlets.get(key)
+  const vl = viewlets.get(key)
+  if (vl !== undefined) {
+    return { ...vl, pseudo: false }
+  }
 }
 
 export async function updateViewlet (
@@ -73,12 +78,14 @@ export async function updateViewlet (
   }> {
   let viewlet = getViewlet(viewlets, dtx)
 
-  const props = getDTxProps(dtx)
+  let props = getDTxProps(dtx)
   let model: AttributeModel[] = []
   let modelIcon: Asset | undefined
 
   if (viewlet === undefined) {
     ;({ viewlet, model } = await checkInlineViewlets(dtx, viewlet, client, model))
+    // Only value is necessary for inline viewlets
+    props = { value: dtx.doc }
     if (model !== undefined) {
       // Check for State attribute
       for (const a of model) {

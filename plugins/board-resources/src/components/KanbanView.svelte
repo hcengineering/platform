@@ -21,7 +21,7 @@
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, Menu, selectionStore } from '@anticrm/view-resources'
+  import { ActionContext, focusStore, ListSelectionProvider, Menu, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
   import KanbanCard from './KanbanCard.svelte'
@@ -74,21 +74,8 @@
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider(
-    (pos, dir) => {
-      if (dir === 'vertical') {
-        // Select next
-        kanbanUI.selectStatePosition(pos, 'down')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'right')
-      }
-    },
-    (pos, dir) => {
-      // Select prev
-      if (dir === 'vertical') {
-        kanbanUI.selectStatePosition(pos, 'up')
-      } else {
-        kanbanUI.selectStatePosition(pos, 'left')
-      }
+    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+      kanbanUI.select(offset, of, dir)
     }
   )
   onMount(() => {
@@ -133,8 +120,8 @@
   on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   selection={listProvider.current($focusStore)}
 >
-  <svelte:fragment slot="card" let:object let:dragged>
-    <KanbanCard object={castObject(object)} {dragged} />
+  <svelte:fragment slot="card" let:object>
+    <KanbanCard object={castObject(object)} />
   </svelte:fragment>
 
   <svelte:fragment slot="additionalPanel">

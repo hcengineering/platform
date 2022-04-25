@@ -329,6 +329,12 @@ export function createModel (builder: Builder): void {
             label: chunter.string.SavedMessages,
             icon: chunter.icon.Bookmark,
             component: chunter.component.SavedMessages
+          },
+          {
+            id: 'fileBrowser',
+            label: attachment.string.FileBrowser,
+            icon: attachment.icon.FileBrowser,
+            component: attachment.component.FileBrowser
           }
         ],
         spaces: [

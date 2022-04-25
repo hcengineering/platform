@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
   import { Tooltip, IconAttachment } from '@anticrm/ui'
@@ -26,9 +25,13 @@
 </script>
 
 {#if value && value.attachments && value.attachments > 0}
-  <Tooltip label={attachment.string.Attachments} component={AttachmentPopup} props={{ objectId: value._id, attachments: value.attachments }}>
+  <Tooltip
+    label={attachment.string.Attachments}
+    component={AttachmentPopup}
+    props={{ objectId: value._id, attachments: value.attachments }}
+  >
     <div class="sm-tool-icon ml-1 mr-1">
-      <span class="icon"><IconAttachment {size}/></span>
+      <span class="icon"><IconAttachment {size} /></span>
       {#if showCounter}
         &nbsp;{value.attachments}
       {/if}

@@ -16,7 +16,7 @@
   import type { Asset } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import { AnySvelteComponent } from '../types'
-  import ActionIcon from './ActionIcon.svelte'
+  import Button from './Button.svelte'
   import Icon from './Icon.svelte'
   import IconClose from './icons/Close.svelte'
 
@@ -26,16 +26,31 @@
   export let rightSection: boolean = false
   export let reverseCommands = false
   export let showHeader = true
+  export let innerWidth: number = 0
 
   const dispatch = createEventDispatcher()
 
 </script>
 
-<div class="antiPanel antiComponent">
-  <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>
+<div class="antiPanel antiComponent" bind:clientWidth={innerWidth}>  
+  <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>    
     {#if showHeader}
-      <div class="ac-header short mirror divide">
-        <div class="ac-header__wrap-title">
+      <div class="ac-header short mirror divide highlight">
+        <div class="ml-2 mr-2">
+          <Button
+            icon={IconClose}
+            size={'medium'}
+            kind={'transparent'}
+            on:click={() => {
+              dispatch('close')
+            }} />
+        </div>
+        {#if $$slots['navigate-actions']}
+          <div class="buttons-group xxsmall-gap">
+            <slot name="navigate-actions" />
+          </div>
+        {/if}
+        <div class="ml-4 ac-header__wrap-title flex-grow">
           {#if icon}
             <div class="ac-header__icon">
               <Icon {icon} size={'large'} />
@@ -47,8 +62,26 @@
           </div>
         </div>
         {#if rightSection}
-          <div class="flex">
+          <div class="buttons-group xsmall-gap mr-4">
             <slot name="commands" />
+          </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="ac-header short mirror divide">
+        <div class="ml-2 mr-2">
+          <Button
+            icon={IconClose}
+            size={'medium'}
+            kind={'transparent'}
+            on:click={() => {
+              dispatch('close')
+            }}
+          />
+        </div>
+        {#if $$slots['navigate-actions']}
+          <div class="buttons-group xxsmall-gap">
+            <slot name="navigate-actions" />
           </div>
         {/if}
       </div>
@@ -69,21 +102,11 @@
     <slot name="rightSection" />
   {/if}
 
-  <div class="ad-tools" class:grow-reverse={reverseCommands}>
+  <div class="ad-tools buttons-group xsmall-gap h-4" class:grow-reverse={reverseCommands}>
     {#if !rightSection && $$slots.commands}
-      <div class="flex">
-        <slot name="commands" />
-      </div>
+      <slot name="commands" />
     {/if}
     <slot name="actions" />
-    <div class="tool">
-      <ActionIcon
-        icon={IconClose}
-        size={'medium'}
-        action={() => {
-          dispatch('close')
-        }} />
-    </div>
   </div>
 </div>
 
@@ -94,5 +117,4 @@
     flex-direction: column;
     align-content: stretch;
   }
-
 </style>

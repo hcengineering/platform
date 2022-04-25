@@ -42,7 +42,7 @@ export interface AnySvelteComponentWithProps {
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
-  action: (props: any, ev?: Event) => Promise<void>
+  action: (props: any, ev: Event) => Promise<void>
 }
 
 export interface IPopupItem {
@@ -96,4 +96,9 @@ export interface ListItem {
 export interface DropdownTextItem {
   id: string
   label: string
+}
+
+export interface DropdownIntlItem {
+  id: string
+  label: IntlString
 }

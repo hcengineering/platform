@@ -62,13 +62,16 @@
         _class={contact.class.Employee}
         items={object.participants}
         label={calendar.string.Participants}
+        noItems={calendar.string.NoParticipants}
         on:open={(evt) => {
           client.update(object, { $push: { participants: evt.detail._id } })
         }}
         on:delete={(evt) => {
           client.update(object, { $pull: { participants: evt.detail._id } })
         }}
-        noItems={calendar.string.NoParticipants}
+        on:update={(evt) => {
+          client.update(object, { participants: evt.detail })
+        }}
       />
     </div>
   </div>

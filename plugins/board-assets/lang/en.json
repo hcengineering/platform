@@ -88,6 +88,9 @@
     "Edit": "Edit",
     "Update": "Update",
     "DeleteAttachment": "Deleting an attachment is permanent. There is no undo.",
-    "SearchMembers": "Search members"
+    "DeleteCard": "All actions will be removed from the activity feed and you won’t be able to re-open the card. There is no undo.",
+    "SearchMembers": "Search members",
+    "Menu": "Menu",
+    "ToArchive": "Archive"
   }
 }

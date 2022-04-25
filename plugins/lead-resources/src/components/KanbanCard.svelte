@@ -26,14 +26,13 @@
   import notification from '@anticrm/notification'
 
   export let object: WithLookup<Lead>
-  export let dragged: boolean
 
   function showMenu (ev?: Event): void {
     showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
   }
 
   function showLead () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'full')
+    showPanel(view.component.EditDoc, object._id, object._class, 'content')
   }
 </script>
 

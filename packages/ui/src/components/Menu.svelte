@@ -23,7 +23,7 @@
   export let ctx: any = undefined
 
   const dispatch = createEventDispatcher()
-  let btns: HTMLButtonElement[] = []
+  const btns: HTMLButtonElement[] = []
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
     if (ev.key === 'ArrowDown') {
@@ -66,7 +66,7 @@
           }}
           on:click={(evt) => {
             dispatch('close')
-            action.action(evt, ctx)
+            action.action(ctx, evt)
           }}
         >
           {#if action.icon}

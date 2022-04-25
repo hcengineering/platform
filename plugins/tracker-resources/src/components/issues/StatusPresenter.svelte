@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
+  import { Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
@@ -21,13 +21,14 @@
   import StatusSelector from '../StatusSelector.svelte'
 
   export let value: Issue
+  export let statuses: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
 
   const client = getClient()
 
-  const handleStatusChanged = async (newStatus: IssueStatus | undefined) => {
+  const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
     if (!isEditable || newStatus === undefined) {
       return
     }
@@ -49,7 +50,8 @@
         kind={'icon'}
         {isEditable}
         {shouldShowLabel}
-        status={value.status}
+        {statuses}
+        selectedStatusId={value.status}
         onStatusChange={handleStatusChanged}
       />
     </Tooltip>
@@ -58,7 +60,8 @@
       kind={'icon'}
       {isEditable}
       {shouldShowLabel}
-      status={value.status}
+      {statuses}
+      selectedStatusId={value.status}
       onStatusChange={handleStatusChanged}
     />
   {/if}

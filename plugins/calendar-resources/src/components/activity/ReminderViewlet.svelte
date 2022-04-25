@@ -29,7 +29,7 @@
   }
 
   function click (event: Event): void {
-    showPanel(view.component.EditDoc, event._id, event._class, 'full')
+    showPanel(view.component.EditDoc, event._id, event._class, 'content')
   }
 </script>
 

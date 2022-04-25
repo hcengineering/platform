@@ -21,7 +21,7 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { selectionStore } from '../selection'
+import { SelectDirection } from '../selection'
   import { buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
@@ -132,14 +132,20 @@
     dispatch('row-focus', object)
   }
 
-  export function scrollSelection (pos: number): void {
-    if (pos !== -1) {
-      const r = refs[pos]
-      if (r !== undefined) {
-        selection = pos
-        onRow(objects[pos])
-        r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
-      }
+  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection): void {
+    let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
+    pos += offset
+    if (pos < 0) {
+      pos = 0
+    }
+    if (pos >= objects.length) {
+      pos = objects.length - 1
+    }
+    const r = refs[pos]
+    selection = pos
+    onRow(objects[pos])
+    if (r !== undefined) {
+      r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
 </script>

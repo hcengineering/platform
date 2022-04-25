@@ -1,7 +1,5 @@
 <script lang="ts">
   import { Card, CardLabel } from '@anticrm/board'
-  import { createEventDispatcher } from 'svelte'
-
   import CardLabelsEditor from './CardLabelsEditor.svelte'
   import CardLabelsPicker from './CardLabelsPicker.svelte'
 
@@ -12,15 +10,11 @@
     object?: CardLabel
   } = {}
   let search: string | undefined = undefined
-  const dispatch = createEventDispatcher()
 
   function setEditMode (isEdit: boolean, object?: CardLabel) {
     editMode = { isEdit, object }
   }
 
-  function close () {
-    dispatch('close')
-  }
 </script>
 
 {#if editMode.isEdit}

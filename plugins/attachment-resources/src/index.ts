@@ -22,17 +22,28 @@ import AttachmentList from './components/AttachmentList.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
+import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
 import { Resources } from '@anticrm/platform'
 import { uploadFile, deleteFile } from './utils'
 
-export { AddAttachment, AttachmentDroppable, Attachments, AttachmentsPresenter, AttachmentPresenter, AttachmentRefInput, AttachmentList, AttachmentDocList }
+export {
+  AddAttachment,
+  AttachmentDroppable,
+  Attachments,
+  AttachmentsPresenter,
+  AttachmentPresenter,
+  AttachmentRefInput,
+  AttachmentList,
+  AttachmentDocList
+}
 
 export default async (): Promise<Resources> => ({
   component: {
     AttachmentsPresenter,
     AttachmentPresenter,
     Attachments,
+    FileBrowser,
     Photos
   },
   activity: {
