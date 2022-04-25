@@ -43,6 +43,9 @@ function extractBacklinks (
   return result
 }
 
+/**
+ * @public
+ */
 export function getBacklinks (
   backlinkId: Ref<Doc>,
   backlinkClass: Ref<Class<Doc>>,
@@ -54,6 +57,9 @@ export function getBacklinks (
   return extractBacklinks(backlinkId, backlinkClass, attachedDocId, content, doc.childNodes as NodeListOf<HTMLElement>)
 }
 
+/**
+ * @public
+ */
 export async function createBacklinks (
   client: TxOperations,
   backlinkId: Ref<Doc>,
@@ -74,6 +80,10 @@ export async function createBacklinks (
     )
   }
 }
+
+/**
+ * @public
+ */
 export async function updateBacklinks (
   client: TxOperations,
   backlinkId: Ref<Doc>,
