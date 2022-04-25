@@ -109,7 +109,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (ctx:any, evt: MouseEvent) => {
+            action: async (ctx: any, evt: MouseEvent) => {
               const impl = await getResource(a.action)
               await impl(message, evt)
             }
@@ -195,12 +195,7 @@
       <div class="text"><MessageViewer message={message.content} /></div>
       {#if message.attachments}
         <div class="attachments">
-          <AttachmentList
-            {attachments}
-            {saveAttachmentAction}
-            {unsaveAttachmentAction}
-            {savedAttachmentsIds}
-          />
+          <AttachmentList {attachments} {saveAttachmentAction} {unsaveAttachmentAction} {savedAttachmentsIds} />
         </div>
       {/if}
     {/if}
