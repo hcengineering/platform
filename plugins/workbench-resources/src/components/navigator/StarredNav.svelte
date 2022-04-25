@@ -24,7 +24,7 @@
   import view from '@anticrm/view'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { classIcon } from '../../utils'
+  import { classIcon, getSpaceName } from '../../utils'
   import TreeItem from './TreeItem.svelte'
   import TreeNode from './TreeNode.svelte'
 
@@ -52,15 +52,19 @@
       const ids = spaces.map((space) => space._id)
       const current = await client.findAll(preference.class.SpacePreference, { attachedTo: { $in: ids } })
 
-      await Promise.all(current.map(async (item) => { await client.remove(item) }))
+      await Promise.all(
+        current.map(async (item) => {
+          await client.remove(item)
+        })
+      )
     }
   }
 
-  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
+  function selectSpace(id: Ref<Space>, spaceSpecial?: string) {
     dispatch('space', { space: id, spaceSpecial })
   }
 
-  async function getActions (space: Space): Promise<Action[]> {
+  async function getActions(space: Space): Promise<Action[]> {
     const result = [unStarSpace]
 
     const extraActions = await getContributedActions(client, space, core.class.Space)
@@ -81,7 +85,7 @@
   const lastViews = notificationClient.getLastViews()
   const hierarchy = client.getHierarchy()
 
-  function isChanged (space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
+  function isChanged(space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
     const clazz = hierarchy.getClass(space._class)
     const lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
     const field = lastEditMixin?.lastEditField
@@ -95,19 +99,21 @@
   }
 </script>
 
-<TreeNode label={label} parent actions={async () => [unStarAll]} indent={'ml-2'}>
+<TreeNode {label} parent actions={async () => [unStarAll]} indent={'ml-2'}>
   {#each spaces as space (space._id)}
-    <TreeItem
-      indent={'ml-4'}
-      _id={space._id}
-      title={space.name}
-      icon={classIcon(client, space._class)}
-      selected={currentSpace === space._id}
-      actions={() => getActions(space)}
-      bold={isChanged(space, $lastViews)}
-      on:click={() => {
-        selectSpace(space._id)
-      }}
+    {#await getSpaceName(client, space) then name}
+      <TreeItem
+        indent={'ml-4'}
+        _id={space._id}
+        title={name}
+        icon={classIcon(client, space._class)}
+        selected={currentSpace === space._id}
+        actions={() => getActions(space)}
+        bold={isChanged(space, $lastViews)}
+        on:click={() => {
+          selectSpace(space._id)
+        }}
       />
+    {/await}
   {/each}
 </TreeNode>
