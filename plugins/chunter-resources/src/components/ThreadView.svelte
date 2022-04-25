@@ -132,7 +132,7 @@
 
   const savedAttachmentsQuery = createQuery()
   let savedAttachmentsIds: Ref<Attachment>[] = []
-  savedAttachmentsQuery.query(chunter.class.SavedAttachments, {}, (res) => {
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
     savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
 

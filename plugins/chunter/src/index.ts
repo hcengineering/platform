@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Attachment } from '@anticrm/attachment'
 import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Employee } from '@anticrm/contact'
 import type { Asset, Plugin } from '@anticrm/platform'
@@ -105,13 +104,6 @@ export interface SavedMessages extends Preference {
 /**
  * @public
  */
-export interface SavedAttachments extends Preference {
-  attachedTo: Ref<Attachment>
-}
-
-/**
- * @public
- */
 export const chunterId = 'chunter' as Plugin
 
 export default plugin(chunterId, {
@@ -135,7 +127,6 @@ export default plugin(chunterId, {
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
     SavedMessages: '' as Ref<Class<SavedMessages>>,
-    SavedAttachments: '' as Ref<Class<SavedAttachments>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>
   },
   space: {

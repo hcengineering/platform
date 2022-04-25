@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { Attachment } from '@anticrm/attachment'
 import core from '@anticrm/core'
 import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -153,23 +152,6 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
   }
 }
 
-export async function AddAttachmentToSaved (attachment: Attachment): Promise<void> {
-  const client = getClient()
-
-  await client.createDoc(chunter.class.SavedAttachments, preference.space.Preference, {
-    attachedTo: attachment._id
-  })
-}
-
-export async function DeleteAttachmentFromSaved (attachment: Attachment): Promise<void> {
-  const client = getClient()
-
-  const current = await client.findOne(chunter.class.SavedAttachments, { attachedTo: attachment._id })
-  if (current !== undefined) {
-    await client.remove(current)
-  }
-}
-
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -203,8 +185,6 @@ export default async (): Promise<Resources> => ({
     PinMessage,
     UnpinMessage,
     ArchiveChannel,
-    UnarchiveChannel,
-    AddAttachmentToSaved,
-    DeleteAttachmentFromSaved
+    UnarchiveChannel
   }
 })

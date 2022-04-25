@@ -36,6 +36,8 @@
     "FileBrowserTypeFilterImages": "Изображения",
     "FileBrowserTypeFilterAudio": "Звук",
     "FileBrowserTypeFilterVideos": "Видео",
-    "FileBrowserTypeFilterPDFs": "PDF-файлы"
+    "FileBrowserTypeFilterPDFs": "PDF-файлы",
+    "AddAttachmentToSaved": "Добавить вложение в сохраненные",
+    "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных"
   }
 }

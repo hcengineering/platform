@@ -2,10 +2,9 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { ChunterMessage } from '@anticrm/chunter'
-  import core, { Account, Ref, WithLookup } from '@anticrm/core'
+  import core, { Ref, WithLookup } from '@anticrm/core'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentLocation, Label, navigate, Scroller } from '@anticrm/ui'
-  import { Action } from '@anticrm/view'
   import AttachmentPreview from '@anticrm/attachment-resources/src/components/AttachmentPreview.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import Message from './Message.svelte'
@@ -16,7 +15,7 @@
   let savedMessagesIds: Ref<ChunterMessage>[] = []
   let savedMessages: WithLookup<ChunterMessage>[] = []
   let savedAttachmentsIds: Ref<Attachment>[] = []
-  let savedAttachments: Attachment[] = []
+  let savedAttachments: WithLookup<Attachment>[] = []
 
   const messagesQuery = createQuery()
   const attachmentsQuery = createQuery()
@@ -27,7 +26,7 @@
     savedMessagesIds = res.map((r) => r.attachedTo)
   })
 
-  savedAttachmentsQuery.query(chunter.class.SavedAttachments, {}, (res) => {
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
     savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
 
@@ -47,9 +46,18 @@
     )
 
   $: savedAttachmentsIds &&
-    attachmentsQuery.query(attachment.class.Attachment, { _id: { $in: savedAttachmentsIds } }, (res) => {
-      savedAttachments = res
-    })
+    attachmentsQuery.query(
+      attachment.class.Attachment,
+      { _id: { $in: savedAttachmentsIds } },
+      (res) => {
+        savedAttachments = res
+      },
+      {
+        lookup: {
+          modifiedBy: core.class.Account
+        }
+      }
+    )
 
   let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
   const employeeQuery = createQuery()
@@ -98,33 +106,12 @@
     })
   }
 
-  async function getMessage (att: Attachment): Promise<WithLookup<ChunterMessage> | undefined | null> {
-    const messageId: Ref<ChunterMessage> = att.attachedTo as Ref<ChunterMessage>
-    return await client.findOne(
-      chunter.class.ChunterMessage,
-      { _id: messageId },
-      {
-        lookup: {
-          _id: { attachments: attachment.class.Attachment },
-          createBy: contact.class.EmployeeAccount
-        }
-      }
-    )
+  function getName (a: WithLookup<Attachment>): string | undefined {
+    const name = (a.$lookup?.modifiedBy as EmployeeAccount).name
+    if (name !== undefined) {
+      return formatName(name)
+    }
   }
-
-  function getName (e?: Account): string {
-    const employeeAccount = e as EmployeeAccount
-    return formatName(employeeAccount.name)
-  }
-
-  const saveAttachmentAction = {
-    label: chunter.string.AddToSaved,
-    action: chunter.actionImpl.AddAttachmentToSaved
-  } as Action
-  const unsaveAttachmentAction = {
-    label: chunter.string.RemoveFromSaved,
-    action: chunter.actionImpl.DeleteAttachmentFromSaved
-  } as Action
 </script>
 
 <Scroller>
@@ -144,17 +131,10 @@
     {/each}
     {#each savedAttachments as att}
       <div class="attachmentContainer" on:click={() => openAttachment(att)}>
-        <AttachmentPreview value={att} isSaved={true} {saveAttachmentAction} {unsaveAttachmentAction} />
-        {#await getMessage(att) then message}
-          {#if message}
-            <div class="label">
-              <Label
-                label={chunter.string.SharedBy}
-                params={{ name: getName(message.$lookup?.createBy), time: getTime(message.createOn) }}
-              />
-            </div>
-          {/if}
-        {/await}
+        <AttachmentPreview value={att} isSaved={true} />
+        <div class="label">
+          <Label label={chunter.string.SharedBy} params={{ name: getName(att), time: getTime(att.modifiedOn) }} />
+        </div>
       </div>
     {/each}
   {:else}

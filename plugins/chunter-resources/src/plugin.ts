@@ -38,9 +38,7 @@ export default mergeIds(chunterId, chunter, {
     PinMessage: '' as ViewAction,
     UnpinMessage: '' as ViewAction,
     SubscribeComment: '' as ViewAction,
-    UnsubscribeComment: '' as ViewAction,
-    AddAttachmentToSaved: '' as ViewAction,
-    DeleteAttachmentFromSaved: '' as ViewAction
+    UnsubscribeComment: '' as ViewAction
   },
   string: {
     Channel: '' as IntlString,

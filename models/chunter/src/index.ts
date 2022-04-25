@@ -14,7 +14,6 @@
 //
 
 import activity from '@anticrm/activity'
-import { Attachment } from '@anticrm/attachment'
 import type {
   Backlink,
   Channel,
@@ -22,7 +21,6 @@ import type {
   ChunterSpace,
   Comment,
   Message,
-  SavedAttachments,
   SavedMessages,
   ThreadMessage,
   DirectMessage
@@ -138,12 +136,6 @@ export class TSavedMessages extends TPreference implements SavedMessages {
   attachedTo!: Ref<ChunterMessage>
 }
 
-@Model(chunter.class.SavedAttachments, preference.class.Preference)
-export class TSavedAttachments extends TPreference implements SavedAttachments {
-  @Prop(TypeRef(attachment.class.Attachment), chunter.string.SavedAttachments)
-  attachedTo!: Ref<Attachment>
-}
-
 export function createModel (builder: Builder): void {
   builder.createModel(
     TChunterSpace,
@@ -154,8 +146,7 @@ export function createModel (builder: Builder): void {
     TComment,
     TBacklink,
     TDirectMessage,
-    TSavedMessages,
-    TSavedAttachments
+    TSavedMessages
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

@@ -13,40 +13,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
-  import { getResource } from '@anticrm/platform';
+  import { getResource } from '@anticrm/platform'
   import { getFileUrl, PDFViewer } from '@anticrm/presentation'
   import { showPopup, closeTooltip, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getType } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
+  import attachment from '../plugin'
 
   export let value: Attachment
-  export let isSaved: boolean = false 
-  export let saveAttachmentAction: Action | undefined
-  export let unsaveAttachmentAction: Action | undefined
+  export let isSaved: boolean = false
 
   $: type = getType(value.type)
 
-  const showMenu = (ev: Event) => {
-    if (!saveAttachmentAction || !unsaveAttachmentAction)
-      return
-    const savedAction = isSaved ? unsaveAttachmentAction : saveAttachmentAction
+  $: saveAttachmentAction = isSaved
+    ? ({
+        label: attachment.string.RemoveAttachmentFromSaved,
+        action: attachment.actionImpl.DeleteAttachmentFromSaved
+      } as Action)
+    : ({
+        label: attachment.string.AddAttachmentToSaved,
+        action: attachment.actionImpl.AddAttachmentToSaved
+      } as Action)
 
+  const showMenu = (ev: Event) => {
     showPopup(
       Menu,
       {
-        actions: [{
-          label: savedAction.label,
-          icon: savedAction.icon,
-          action: async (evt: MouseEvent) => {
-            const impl = await getResource(savedAction.action)
-            await impl(value, evt)
+        actions: [
+          {
+            label: saveAttachmentAction.label,
+            icon: saveAttachmentAction.icon,
+            action: async (evt: MouseEvent) => {
+              const impl = await getResource(saveAttachmentAction.action)
+              await impl(value, evt)
+            }
           }
-        }]
+        ]
       },
       ev.target as HTMLElement
     )
@@ -55,73 +61,68 @@
 
 <div class="flex-row-center">
   {#if type === 'image'}
-    <div class='content flex-center buttonContainer cursor-pointer' on:click={() => {
-      closeTooltip()
-      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
-    }}>
+    <div
+      class="content flex-center buttonContainer cursor-pointer"
+      on:click={() => {
+        closeTooltip()
+        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+      }}
+    >
       <img src={getFileUrl(value.file)} alt={value.name} />
-      {#if saveAttachmentAction && unsaveAttachmentAction}
-        <div class='more'>
-          <ActionIcon
-            icon={IconMoreH}
-            size={'small'}
-            action={(e) => {
-              showMenu(e)
-            }}
-          />
-        </div>
-      {/if}
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {:else if type === 'audio'}
     <div class="buttonContainer">
       <AudioPlayer {value} />
-      {#if saveAttachmentAction && unsaveAttachmentAction}
-        <div class='more'>
-          <ActionIcon
-            icon={IconMoreH}
-            size={'small'}
-            action={(e) => {
-              showMenu(e)
-            }}
-          />
-        </div>
-      {/if}
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {:else if type === 'video'}
-    <div class='content buttonContainer flex-center'>
+    <div class="content buttonContainer flex-center">
       <video controls>
-        <source src={getFileUrl(value.file)} type={value.type}>
+        <source src={getFileUrl(value.file)} type={value.type} />
         <track kind="captions" label={value.name} />
-        <div class='container'>
+        <div class="container">
           <AttachmentPresenter {value} />
         </div>
       </video>
-      {#if saveAttachmentAction && unsaveAttachmentAction}
-        <div class='more'>
-          <ActionIcon
-            icon={IconMoreH}
-            size={'small'}
-            action={(e) => {
-              showMenu(e)
-            }}
-          />
-        </div>
-      {/if}
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {:else}
-    <div class='flex container buttonContainer'>
+    <div class="flex container buttonContainer">
       <AttachmentPresenter {value} />
-      {#if saveAttachmentAction && unsaveAttachmentAction}
-        <div class='more'>
-          <ActionIcon
-            icon={IconMoreH}
-            size={'small'}
-            action={(e) => {
-              showMenu(e)
-            }}
-          />
-        </div>
-      {/if}
+      <div class="more">
+        <ActionIcon
+          icon={IconMoreH}
+          size={'small'}
+          action={(e) => {
+            showMenu(e)
+          }}
+        />
+      </div>
     </div>
   {/if}
 </div>
@@ -152,7 +153,8 @@
     max-width: 20rem;
     max-height: 20rem;
 
-    img, video {
+    img,
+    video {
       max-width: 20rem;
       max-height: 20rem;
       border-radius: 0.75rem;

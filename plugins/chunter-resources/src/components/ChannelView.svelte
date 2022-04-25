@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { ChunterMessage, Message } from '@anticrm/chunter'
   import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
@@ -85,7 +85,7 @@
 
   const savedAttachmentsQuery = createQuery()
   let savedAttachmentsIds: Ref<Attachment>[] = []
-  savedAttachmentsQuery.query(chunter.class.SavedAttachments, {}, (res) => {
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
     savedAttachmentsIds = res.map((r) => r.attachedTo)
   })
 </script>

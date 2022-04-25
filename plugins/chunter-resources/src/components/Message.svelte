@@ -152,15 +152,6 @@
 
   $: parentMessage = message as Message
   $: hasReplies = (parentMessage?.replies?.length ?? 0) > 0
-
-  const saveAttachmentAction: Action = {
-    label: chunter.string.AddToSaved,
-    action: chunter.actionImpl.AddAttachmentToSaved
-  } as Action
-  const unsaveAttachmentAction: Action = {
-    label: chunter.string.RemoveFromSaved,
-    action: chunter.actionImpl.DeleteAttachmentFromSaved
-  } as Action
 </script>
 
 <div class="container">
@@ -195,7 +186,7 @@
       <div class="text"><MessageViewer message={message.content} /></div>
       {#if message.attachments}
         <div class="attachments">
-          <AttachmentList {attachments} {saveAttachmentAction} {unsaveAttachmentAction} {savedAttachmentsIds} />
+          <AttachmentList {attachments} {savedAttachmentsIds} />
         </div>
       {/if}
     {/if}
