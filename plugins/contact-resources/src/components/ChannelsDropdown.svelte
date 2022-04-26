@@ -272,12 +272,8 @@
     <Button
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
-<<<<<<< HEAD
       highlight={editMode}
       label={editMode ? presentation.string.AddSocialLinks : presentation.string.EditSocialLinks}
-=======
-      label={displayItems.length > 0 ? undefined : presentation.string.AddSocialLinks}
->>>>>>> Update fullSize for Panel
       {kind} {size} {shape}
       on:click={editMode ? showMenu : enableEdit}
     />
