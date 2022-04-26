@@ -32,6 +32,8 @@
   }
 
   const msInDay = 24 * 60 * 60 * 1000
+  const myAccId = getCurrentAccount()._id
+
   const getBeginningOfToday = () => {
     const date = new Date()
     date.setUTCHours(0, 0, 0, 0)
@@ -210,7 +212,7 @@
 
   $: fetch(selectedSort, selectedFileTypeId, selectedDateId)
 
-  async function fetch (selectedSort_: SortMode, selectedFileTypeId_: string, selectedDateId_: string) {
+  async function fetch(selectedSort_: SortMode, selectedFileTypeId_: string, selectedDateId_: string) {
     const spaceQuery = space && { space: space._id }
     const fileType = fileTypeObjects.find((o) => o.id === selectedFileTypeId_)?.getType()
     const typeQuery = fileType && { type: fileType }
@@ -282,11 +284,17 @@
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
           </div>
-          <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-            <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
-              <IconMoreV size={'small'} />
+          {#if attachment.modifiedBy !== myAccId}
+            <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
+              <div
+                id="context-menu"
+                class="eAttachmentRowMenu"
+                on:click={(event) => showFileMenu(event, attachment, i)}
+              >
+                <IconMoreV size={'small'} />
+              </div>
             </div>
-          </div>
+          {/if}
         </div>
       {/each}
     </div>

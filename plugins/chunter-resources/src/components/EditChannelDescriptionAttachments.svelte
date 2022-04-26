@@ -17,12 +17,13 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
   import { ChunterSpace } from '@anticrm/chunter'
-  import { Doc, SortingOrder } from '@anticrm/core'
+  import { Doc, SortingOrder, getCurrentAccount } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
   import { getCurrentLocation, showPopup, IconMoreV, Label, navigate } from '@anticrm/ui'
 
   export let channel: ChunterSpace | undefined
+  const myAccId = getCurrentAccount()._id
 
   const query = createQuery()
   let visibleAttachments: Attachment[] | undefined
@@ -64,11 +65,13 @@
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
           </div>
-          <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
-            <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
-              <IconMoreV size={'small'} />
+          {#if attachment.modifiedBy !== myAccId}
+            <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
+              <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
+                <IconMoreV size={'small'} />
+              </div>
             </div>
-          </div>
+          {/if}
         </div>
       {/each}
       {#if visibleAttachments.length < totalAttachments}
