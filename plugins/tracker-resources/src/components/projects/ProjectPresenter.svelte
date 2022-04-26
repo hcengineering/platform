@@ -27,6 +27,7 @@
   export let space: Ref<Team>
 
   const client = getClient()
+  const lead = value.$lookup?.lead
 
   async function updateStatus(status: ProjectStatus) {
     await client.updateDoc(
@@ -43,11 +44,14 @@
     <Icon icon={plugin.icon.Project} size="small" />
   </div>
   <span class="label nowrap project-label">{value.label}</span>
-  {#if value.lead}
+  {#if lead}
     <div class="lead-container">
-      <ObjectPresenter value={value.$lookup?.lead} props={{
-        shouldShowName: false
-      }} />
+      <ObjectPresenter
+        value={lead}
+        objectId={lead._id}
+        _class={lead._class}
+        props={{shouldShowName: false}}
+      />
     </div>
   {:else}
     <div class="lead-placeholder">

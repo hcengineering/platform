@@ -19,8 +19,8 @@
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '../utils'
 
-  export let objectId: Ref<Doc> | null = null
-  export let _class: Ref<Class<Doc>> | null = null
+  export let objectId: Ref<Doc>
+  export let _class: Ref<Class<Doc>>
   export let value: Doc | undefined
   export let props: Record<string, any> = {}
 
@@ -31,7 +31,11 @@
   let doc: Doc | null
 
   $: if (value === undefined) {
-    docQuery.query(_class!, { _id: objectId! }, (r) => { doc = r.shift() ?? null })
+    docQuery.query(
+      _class,
+      { _id: objectId },
+      r => { doc = r.shift() ?? null }
+    )
   } else {
     doc = value
   }
