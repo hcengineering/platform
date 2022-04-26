@@ -21,7 +21,7 @@
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, Menu, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import { ActionContext, focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
   import CardInlineActions from './editor/CardInlineActions.svelte'
@@ -33,7 +33,6 @@
   export let space: Ref<SpaceWithStates>
   export let search: string
   export let options: FindOptions<Card> | undefined
-  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
   let kanban: Kanban
   let states: State[] = []
