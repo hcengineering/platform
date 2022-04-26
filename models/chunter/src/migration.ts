@@ -14,8 +14,9 @@
 //
 
 import { Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
+import core, { Backlink, Class, Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { DOMAIN_BACKLINK } from '@anticrm/model-core'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 
@@ -158,10 +159,32 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
   }
 }
 
+export async function migrateBacklinks (client: MigrationClient): Promise<void> {
+  const backlinks = await client.find(DOMAIN_COMMENT, {
+    _class: 'chunter:class:Backlink' as Ref<Class<Backlink>>
+  })
+  for (const backlink of backlinks) {
+    await client.delete(DOMAIN_COMMENT, backlink._id)
+    await client.create<Backlink>(DOMAIN_BACKLINK, {
+      _id: backlink._id as Ref<Backlink>,
+      _class: core.class.Backlink,
+      space: core.space.Backlinks,
+      attachedTo: backlink.attachedTo,
+      attachedToClass: backlink.attachedToClass,
+      collection: backlink.collection,
+      message: backlink.message,
+      backlinkId: backlink.backlinkId,
+      backlinkClass: backlink.backlinkId,
+      attachedDocId: backlink.attachedDocId,
+      modifiedBy: backlink.modifiedBy,
+      modifiedOn: backlink.modifiedOn
+    })
+  }
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await migrateMessages(client)
-    await migrateThreadMessages(client)
+    await Promise.all([migrateMessages(client), migrateThreadMessages(client), migrateBacklinks(client)])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
