@@ -18,7 +18,7 @@
   const tasksQuery = createQuery()
   tasksQuery.query(
     board.class.Card,
-    { state },
+    { state, isArchived: { $nin: [true] } },
     async (result) => {
       const filteredResult = isCopying ? result : result.filter((t) => t._id !== object._id)
 

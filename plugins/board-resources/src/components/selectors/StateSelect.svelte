@@ -17,7 +17,7 @@
   const statesQuery = createQuery()
   statesQuery.query(
     task.class.State,
-    { space },
+    { space, isArchived: { $nin: [true] } },
     async (result) => {
       if (!result) return
       states = result.map(({ _id, title }) => ({ id: _id, label: title }))
