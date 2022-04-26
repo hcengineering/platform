@@ -24,6 +24,7 @@
   import { onMount } from 'svelte'
 
   export let value: WithLookup<Issue>
+  export let employees: (WithLookup<Employee> | undefined)[] = []
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -32,14 +33,12 @@
   const client = getClient()
 
   let defaultNameString: string = ''
-  let assignee: Employee | undefined = undefined
 
-  $: employee = (value?.$lookup?.assignee ?? assignee) as Employee | undefined
+  $: employee = (value?.$lookup?.assignee ?? employees.find(x => x?._id === value?.assignee)) as Employee | undefined
   $: avatar = employee?.avatar
   $: formattedName = employee?.name ? formatName(employee.name) : defaultNameString
   $: label = employee ? tracker.string.AssignedTo : tracker.string.AssignTo
 
-  $: findEmployeeById(value.assignee)
   $: getDefaultNameString = async () => {
     if (!defaultName) {
       return
@@ -57,20 +56,6 @@
   onMount(() => {
     getDefaultNameString()
   })
-
-  const findEmployeeById = async (id: Ref<Employee> | null) => {
-    if (!id) {
-      return undefined
-    }
-
-    const current = await client.findOne(contact.class.Employee, { _id: id })
-
-    if (current === undefined) {
-      return
-    }
-
-    assignee = current
-  }
 
   const handleAssigneeChanged = async (result: Employee | null | undefined) => {
     if (!isEditable || result === undefined) {

@@ -98,10 +98,6 @@ export const issuesGroupPresenterMap: Record<IssuesGroupByKeys, AnyComponent | u
   assignee: tracker.component.AssigneePresenter
 }
 
-export const defaultIssueCategories: Partial<Record<IssuesGroupByKeys, Array<Issue[IssuesGroupByKeys]> | undefined>> = {
-  priority: [IssuePriority.NoPriority, IssuePriority.Urgent, IssuePriority.High, IssuePriority.Medium, IssuePriority.Low]
-}
-
 export const getIssuesModificationDatePeriodTime = (
   period: IssuesDateModificationPeriod | null
 ): number => {
@@ -118,4 +114,16 @@ export const getIssuesModificationDatePeriodTime = (
       return 0
     }
   }
+}
+
+export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
+  return data.reduce((storage: { [key: string]: any[] }, item: any) => {
+    const group = item[key]
+
+    storage[group] = storage[group] ?? []
+
+    storage[group].push(item)
+
+    return storage
+  }, {})
 }
