@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Class, Ref } from '@anticrm/core'
+  import { Class, Ref, updateBacklinks } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
@@ -69,6 +69,15 @@
     }
   }
 
+  function updateDescription (event: CustomEvent<string>) {
+    if (object) {
+      const value = event.detail
+      change('description', value)
+      object.description = value
+      updateBacklinks(client, object._id, object._class, undefined, value)
+    }
+  }
+
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
@@ -119,8 +128,9 @@
                 <ReferenceInput
                   showSend={false}
                   actions={[]}
-                  bind:content={object.description}
-                  on:value={(evt) => change('description', evt.detail)}
+                  content={object.description}
+                  clearContent={false}
+                  on:message={updateDescription}
                 />
               </div>
             </div>
