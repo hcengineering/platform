@@ -18,6 +18,7 @@
 
   export let padding: boolean = false
   export let autoscroll: boolean = false
+  export let correctPadding: number = 0
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
 
@@ -65,8 +66,8 @@
 
   const checkTHeadSizes = (): void => {
     if (elTHead && divTHead && divScroll) {
-      const elements = divTHead.querySelectorAll('div')
-      elements.forEach((el, i) => {
+      const elems = divTHead.querySelectorAll('div')
+      elems.forEach((el, i) => {
         const th = elTHead.children.item(i)
         if (th) el.style.width = th.clientWidth + 'px'
       })
@@ -105,7 +106,7 @@
   const findTHeaders = (): void => {
     if (divBox) {
       const elements = divBox.querySelectorAll('.scroller-thead')
-      if (elements.length > 0 && divScroll) {
+      if (elements && elements.length > 0 && divScroll) {
         const rectScroll = divScroll.getBoundingClientRect()
         hasTHeads = true
         elements.forEach((el, i) => {
@@ -117,7 +118,7 @@
               if (!isTHead && divTHead)
                 if (fillTHead(el)) visibleEl = i
               if (isTHead) {
-                if (rect.width > rectScroll.width) divTHead.style.width = rectScroll.width + 'px'
+                if (rect.width > rectScroll.width) divTHead.style.width = rectScroll.width - correctPadding + 'px'
                 else divTHead.style.width = rect.width + 'px'
                 divTHead.style.height = rect.height + 'px'
                 divTHead.style.left = rect.left + 'px'

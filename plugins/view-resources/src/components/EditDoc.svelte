@@ -43,7 +43,7 @@
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
-  let fullSize: boolean = false
+  let fullSize: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -243,6 +243,8 @@
   const _update = (result: any): void => {
     dispatch('update', result)
   }
+  let panelWidth: number = 0
+  let innerWidth: number = 0
 </script>
 
 <ActionContext context={{
@@ -257,6 +259,8 @@
     {fullSize}
     {object}
     {position}
+    bind:panelWidth
+    bind:innerWidth
     on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')
@@ -265,7 +269,7 @@
     <svelte:fragment slot="navigate-actions">
       <UpDownNavigator element={object}/>
     </svelte:fragment>
-    <div class="w-full" slot="subtitle">
+    <svelte:fragment slot="subtitle">
       {#if !headerLoading}
         {#if headerEditor !== undefined}
           <Component is={headerEditor} props={{ object, keys }} />
@@ -273,7 +277,16 @@
           <AttributesBar {object} {keys} />
         {/if}
       {/if}
-    </div>
+    </svelte:fragment>
+    <svelte:fragment slot="properties">
+      {#if !headerLoading}
+        {#if headerEditor !== undefined}
+          <Component is={headerEditor} props={{ object, keys }} />
+        {:else}
+          <AttributesBar {object} {keys} />
+        {/if}
+      {/if}
+    </svelte:fragment>
     <div class="main-editor">
       {#if mainEditor}
         <Component

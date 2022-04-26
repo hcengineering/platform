@@ -85,6 +85,7 @@
 {#if issue !== undefined}
   <Panel
     reverseCommands={true}
+    showHeader={false}
     rightSection={rightSection !== undefined}
     on:close={() => {
       dispatch('close')

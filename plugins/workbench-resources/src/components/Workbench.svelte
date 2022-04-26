@@ -298,12 +298,12 @@
     }
   }
 
-  let navFloat: boolean = window.innerWidth < 900 ? false : true
+  let navFloat: boolean = window.innerWidth < 1100 ? false : true
   const windowResize = (): void => {
-    if (window.innerWidth < 900 && !navFloat) {
+    if (window.innerWidth < 1100 && !navFloat) {
       visibileNav = false
       navFloat = true
-    } else if (window.innerWidth >= 900 && navFloat) navFloat = false
+    } else if (window.innerWidth >= 1100 && navFloat) navFloat = false
   }
   const checkOnHide = (): void => {
     if (visibileNav && navFloat) visibileNav = false
