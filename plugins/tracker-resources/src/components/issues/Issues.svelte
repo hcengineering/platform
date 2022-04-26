@@ -248,7 +248,7 @@
     return existingCategories
   }
 
-  function filterIssueStatuses(
+  function filterIssueStatuses (
     issueStatuses: IssueStatus[],
     issueStatusCategories: Ref<IssueStatusCategory>[]
   ): Ref<IssueStatus>[] {

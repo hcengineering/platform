@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
+import { Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import {
   IssuePriority,
@@ -21,8 +21,7 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   Issue,
-  IssuesDateModificationPeriod,
-  IssueStatus
+  IssuesDateModificationPeriod
 } from '@anticrm/tracker'
 import { AnyComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
