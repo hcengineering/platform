@@ -94,6 +94,10 @@
     "ToArchive": "Archive",
     "CopyCard": "Copy card",
     "AlsoCopy": "Keep...",
-    "CopyTo": "Copy to..."
+    "CopyTo": "Copy to...",
+    "NoResults": "No results",
+    "SwitchToLists": "Switch to lists",
+    "SwitchToCards": "Switch to cards",
+    "SearchArchive": "Search archive..."
   }
 }
