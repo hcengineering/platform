@@ -8,11 +8,11 @@
     let ref: HTMLElement
 
     function onArchive () {
-        showPopup(
-            ListInlineActions,
-            { value: state },
-            getElementPopupAlignment(ref, { h: 'right', v: 'bottom' })
-        )
+      showPopup(
+        ListInlineActions,
+        { value: state },
+        getElementPopupAlignment(ref, { h: 'right', v: 'bottom' })
+      )
     }
 </script>
 
