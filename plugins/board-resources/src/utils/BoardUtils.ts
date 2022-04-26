@@ -34,11 +34,11 @@ export async function createBoard(
   return boardRef
 }
 
-export async function getBoardLabels(client: TxOperations, boardRef: Ref<Board>): Promise<CardLabel[]> {
+export async function getBoardLabels (client: TxOperations, boardRef: Ref<Board>): Promise<CardLabel[]> {
   return await client.findAll(board.class.CardLabel, { attachedTo: boardRef })
 }
 
-export function getBoardAvailableColors(): string[] {
+export function getBoardAvailableColors (): string[] {
   return [
     FernColor,
     SeaBuckthornColor,
@@ -53,7 +53,7 @@ export function getBoardAvailableColors(): string[] {
   ]
 }
 
-export async function createBoardLabels(client: TxOperations, boardRef: Ref<Board>): Promise<void> {
+export async function createBoardLabels (client: TxOperations, boardRef: Ref<Board>): Promise<void> {
   await Promise.all([
     createCardLabel(client, boardRef, hexColorToNumber(FernColor)),
     createCardLabel(client, boardRef, hexColorToNumber(SeaBuckthornColor)),
@@ -63,7 +63,7 @@ export async function createBoardLabels(client: TxOperations, boardRef: Ref<Boar
   ])
 }
 
-export async function createCardLabel(
+export async function createCardLabel (
   client: TxOperations,
   boardRef: Ref<Board>,
   color: number,
@@ -81,18 +81,18 @@ export async function createCardLabel(
 }
 
 const isEqualLabel = (l1: CardLabel, l2: CardLabel): boolean =>
-  l1.title === l2.title && l1.color === l2.color && !l1.isHidden === !l2.isHidden
+  l1.title === l2.title && l1.color === l2.color && (l1.isHidden ?? false) === (l2.isHidden ?? false)
 
-export async function createMissingLabels(
+export async function createMissingLabels (
   client: TxOperations,
   object: Card,
   targetBoard: Ref<Space>
-): Promise<Ref<CardLabel>[] | undefined> {
+): Promise<Array<Ref<CardLabel>> | undefined> {
   const sourceBoardLabels = await getBoardLabels(client, object.space)
   const targetBoardLabels = await getBoardLabels(client, targetBoard)
 
   const missingLabels = sourceBoardLabels.filter((srcLabel) => {
-    if (!object.labels?.includes(srcLabel._id)) return false
+    if (object.labels?.includes(srcLabel._id) === false) return false
 
     return targetBoardLabels.findIndex((targetLabel) => isEqualLabel(targetLabel, srcLabel)) === -1
   })
@@ -105,15 +105,15 @@ export async function createMissingLabels(
     ?.map((srcLabelId) => {
       const srcLabel = sourceBoardLabels.find((l) => l._id === srcLabelId)
 
-      if (!srcLabel) return null
+      if (srcLabel === undefined) return null
 
       const targetLabel = updatedTargetBoardLabels.find((l) => isEqualLabel(l, srcLabel))
 
-      if (!targetLabel) return null
+      if (targetLabel === undefined) return null
 
       return targetLabel._id
     })
-    .filter((l) => l !== null) as Ref<CardLabel>[] | undefined
+    .filter((l) => l !== null) as Array<Ref<CardLabel>> | undefined
 
   return labelsUpdate
 }
