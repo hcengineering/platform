@@ -9,12 +9,18 @@
     "NotSelected": "Не выбрано",
     "Deselect": "Снять выделение",
     "AddSocialLinks": "Добавить контактную информацию",
+    "EditSocialLinks": "Редактировать контактную информацию",
     "Change": "Изменить",
     "Remove": "Удалить",
     "Members": "Участники",
     "Search": "Поиск...",
     "Unassigned": "Не назначен",
     "CreateMore": "Создать еще",
-    "NumberMembers": "{count, plural, =0 {нет участников} =1 {1 участник} other {# участника}}"
+    "NumberMembers": "{count, plural, =0 {нет участников} =1 {1 участник} other {# участника}}",
+    "InThis": "В этом {space}",
+    "NoMatchesInThis": "В этом {space} совпадения не обнаружены",
+    "NoMatchesFound": "Не найдено соответсвий",
+    "NotInThis": "Не в этом {space}",
+    "Add": "Добавить"
   }
 }

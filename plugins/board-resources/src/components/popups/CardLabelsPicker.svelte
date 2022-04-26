@@ -78,9 +78,11 @@
 </script>
 
 <div class="antiPopup w-85 pb-2">
-  <div class="relative fs-title flex-center h-9">
-    <Label label={board.string.Labels} />
-    <div class="absolute flex-center mr-2 h-full" style:top="0" style:right="0">
+  <div class="relative flex-row-center w-full">
+    <div class="flex-center flex-grow fs-title mt-1 mb-1">
+      <Label label={board.string.Labels} />
+    </div>
+    <div class="absolute mr-1 mt-1 mb-1" style:top="0" style:right="0">
       <Button
         icon={IconClose}
         kind="transparent"

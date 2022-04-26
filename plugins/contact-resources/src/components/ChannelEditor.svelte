@@ -30,7 +30,7 @@
   onMount(() => { if (input) input.focus() })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup relative">
   <div class="header no-border">
     <div class="flex-between flex-grow pr-2">
       <div class="flex-grow">
@@ -43,15 +43,16 @@
           on:keypress={(ev) => {
             if (ev.key === 'Enter') dispatch('close', value)
           }}
+          on:keydown={(ev) => {
+            if (ev.key === 'ArrowLeft' && ev.altKey) dispatch('update', 'left')
+            if (ev.key === 'ArrowRight' && ev.altKey) dispatch('update', 'right')
+          }}
           on:change
         />
       </div>
       <div class="buttons-group small-gap">
-        <div class="clear-btn" class:show={value !== ''} on:click={() => {
-          value = ''
-          input.focus()
-        }}>
-          {#if value !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
+        <div class="clear-btn show" on:click={() => { dispatch('close', value) }}>
+          <div class="icon"><Icon icon={IconClose} size={'inline'} /></div>
         </div>
         <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => dispatch('close', value)} />
       </div>

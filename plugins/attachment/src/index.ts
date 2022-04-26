@@ -17,6 +17,7 @@
 import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin, Resource } from '@anticrm/platform'
+import type { Preference } from '@anticrm/preference'
 import { AnyComponent } from '@anticrm/ui'
 
 /**
@@ -38,6 +39,13 @@ export interface Photo extends Attachment {}
 /**
  * @public
  */
+export interface SavedAttachments extends Preference {
+  attachedTo: Ref<Attachment>
+}
+
+/**
+ * @public
+ */
 export const attachmentId = 'attachment' as Plugin
 
 export default plugin(attachmentId, {
@@ -47,11 +55,13 @@ export default plugin(attachmentId, {
     AttachmentsPresenter: '' as AnyComponent
   },
   icon: {
-    Attachment: '' as Asset
+    Attachment: '' as Asset,
+    FileBrowser: '' as Asset
   },
   class: {
     Attachment: '' as Ref<Class<Attachment>>,
-    Photo: '' as Ref<Class<Photo>>
+    Photo: '' as Ref<Class<Photo>>,
+    SavedAttachments: '' as Ref<Class<SavedAttachments>>
   },
   helper: {
     UploadFile: '' as Resource<(file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }) => Promise<string>>,
@@ -60,6 +70,7 @@ export default plugin(attachmentId, {
   string: {
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
+    NoParticipants: '' as IntlString,
     ShowMoreAttachments: '' as IntlString
   }
 })

@@ -9,6 +9,11 @@
     "Open": "Open",
     "General": "General",
     "Members": "Members",
-    "Application": "Application"
+    "Application": "Application",
+    "View": "View",
+    "Leave": "Leave",
+    "Joined": "Joined",
+    "Join": "Join",
+    "BrowseSpaces": "Browse spaces"
   }
 }

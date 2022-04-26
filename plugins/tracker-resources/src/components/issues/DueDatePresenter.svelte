@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Timestamp } from '@anticrm/core'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Ref, Timestamp, WithLookup } from '@anticrm/core'
+  import { Issue, Team } from '@anticrm/tracker'
   import { DatePresenter, Tooltip, getDaysDifference } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import DueDatePopup from './DueDatePopup.svelte'
   import tracker from '../../plugin'
 
-  export let value: Issue
+  export let value: WithLookup<Issue>
   export let currentSpace: Ref<Team> | undefined = undefined
 
   const WARNING_DAYS = 7
@@ -64,7 +64,10 @@
     }
   }
 
-  $: shouldRenderPresenter = dueDateMs && value.status !== IssueStatus.Done && value.status !== IssueStatus.Canceled
+  $: shouldRenderPresenter =
+    dueDateMs &&
+    value.$lookup?.status?.category !== tracker.issueStatusCategory.Completed &&
+    value.$lookup?.status?.category !== tracker.issueStatusCategory.Canceled
 </script>
 
 {#if shouldRenderPresenter}

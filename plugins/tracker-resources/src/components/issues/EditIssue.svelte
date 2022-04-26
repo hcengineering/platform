@@ -19,7 +19,7 @@
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, Team } from '@anticrm/tracker'
-  import { AnyComponent, Button, EditBox, Grid, IconDown, IconUp } from '@anticrm/ui'
+  import { AnyComponent, Button, EditBox, Grid, IconDownOutline, IconUpOutline } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   // import Card from '../Card.svelte'
@@ -73,11 +73,9 @@
         <IssuePresenter value={object} {currentTeam} />
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="actions">
-      <div class="tool flex gap-1">
-        <Button icon={IconDown}/>
-        <Button icon={IconUp}/>
-      </div>
+    <svelte:fragment slot="navigate-actions">
+      <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} />
+      <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} />
     </svelte:fragment>
     <div class="p-10">
       <Grid column={1} rowGap={1.5}>

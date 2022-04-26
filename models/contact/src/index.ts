@@ -26,7 +26,7 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
-import view from '@anticrm/model-view'
+import view, { actionTarget } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
 import contact from './plugin'
@@ -265,6 +265,8 @@ export function createModel (builder: Builder): void {
     label: contact.string.SearchOrganization,
     query: contact.completion.OrganizationQuery
   }, contact.completion.OrganizationCategory)
+
+  actionTarget(builder, view.action.Open, contact.class.Contact, { mode: ['browser', 'context'] })
 }
 
 export { contactOperation } from './migration'

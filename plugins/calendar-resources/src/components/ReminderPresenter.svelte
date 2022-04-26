@@ -22,7 +22,7 @@
   export let value: Reminder
 
   function click (): void {
-    showPanel(view.component.EditDoc, value._id, value._class, 'full')
+    showPanel(view.component.EditDoc, value._id, value._class, 'content')
   }
 
   const objectPresenter = getResource(view.component.ObjectPresenter)

@@ -25,7 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { UnpinMessage } from '../index'
+  import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -37,8 +37,10 @@
 
   export let message: WithLookup<ChunterMessage>
   export let employees: Map<Ref<Employee>, Employee>
+  export let savedAttachmentsIds: Ref<Attachment>[]
   export let thread: boolean = false
   export let isPinned: boolean = false
+  export let isSaved: boolean = false
 
   let refInput: AttachmentRefInput
 
@@ -85,6 +87,7 @@
     action: async () => {
       ;(await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach((c) => {
         UnpinMessage(c)
+        DeleteMessageFromSaved(c)
       })
       UnpinMessage(message)
       await client.removeDoc(message._class, message.space, message._id)
@@ -106,7 +109,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (evt: MouseEvent) => {
+            action: async (ctx: any, evt: MouseEvent) => {
               const impl = await getResource(a.action)
               await impl(message, evt)
             }
@@ -142,6 +145,11 @@
     dispatch('openThread', message._id)
   }
 
+  function addToSaved () {
+    if (isSaved) DeleteMessageFromSaved(message)
+    else AddMessageToSaved(message)
+  }
+
   $: parentMessage = message as Message
   $: hasReplies = (parentMessage?.replies?.length ?? 0) > 0
 </script>
@@ -153,9 +161,9 @@
       {#if employee}{formatName(employee.name)}{/if}
       <span>{getTime(message.createOn)}</span>
       {#if message.editedOn}
-        <span>    
+        <span>
           <Tooltip label={ui.string.TimeTooltip} props={{ value: getTime(message.editedOn) }}>
-            <Label label={chunter.string.Edited}/>
+            <Label label={chunter.string.Edited} />
           </Tooltip>
         </span>
       {/if}
@@ -171,15 +179,16 @@
         on:message={onMessageEdit}
       />
       <div class="flex-row-reverse gap-2 reverse">
-        <Button
-          label={chunter.string.EditCancel}
-          on:click={() => isEditing = false}
-        />
+        <Button label={chunter.string.EditCancel} on:click={() => (isEditing = false)} />
         <Button label={chunter.string.EditUpdate} on:click={() => refInput.submit()} />
       </div>
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
-      {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+      {#if message.attachments}
+        <div class="attachments">
+          <AttachmentList {attachments} {savedAttachmentsIds} />
+        </div>
+      {/if}
     {/if}
     {#if reactions || (!thread && hasReplies)}
       <div class="footer flex-col">
@@ -203,7 +212,14 @@
     {#if !thread}
       <div class="tool"><ActionIcon icon={Thread} size={'medium'} action={openThread} /></div>
     {/if}
-    <div class="tool"><ActionIcon icon={Bookmark} size={'medium'} /></div>
+    <div class="tool book">
+      <ActionIcon
+        icon={Bookmark}
+        size={'medium'}
+        action={addToSaved}
+        label={isSaved ? chunter.string.RemoveFromSaved : chunter.string.AddToSaved}
+      />
+    </div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
     <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
   </div>

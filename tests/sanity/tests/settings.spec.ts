@@ -22,13 +22,14 @@ test.describe('contact tests', () => {
     // Fill [placeholder="Location"]
     await page.fill('[placeholder="Location"]', 'LoPlaza')
     // Click .flex-center.icon-button
-    await page.click('#channels-edit >> .flex-center.icon-button')
+    await page.click('button:has-text("Edit social links")')
+    await page.click('button:has-text("Add social links")')
     // Click [placeholder="john\.appleseed\@apple\.com"]
-    await page.click('[placeholder="john\\.appleseed\\@apple\\.com"]')
+    await page.click('button:has-text("Email")')
     // Fill [placeholder="john\.appleseed\@apple\.com"]
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
     // Click text=Apply
-    await page.click('text=Apply')
+    await page.click('.button.transparent')
   })
   test('create-template', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp

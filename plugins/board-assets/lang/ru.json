@@ -2,6 +2,7 @@
   "string": {
     "Name": "Название",
     "CreateBoard": "Создать",
+    "OpenCard": "Открыть",
     "CreateCard": "Создать",
     "CardName": "Название",
     "Cards": "Cards",
@@ -41,6 +42,9 @@
     "Attachments": "Прикрепленное",
     "AddAttachment": "Прикрепить",
     "DropFileToUpload": "Добавьте файлы.",
+    "AttachFrom": "Добавить из...",
+    "AttachmentTip": "Совет: Вы можете перетаскивать файлы на карточки, чтобы прикрепить их.",
+    "Computer": "Компьютер",
     "CustomFields": "Дополнительно",
     "Automation": "Автоматизация",
     "AddButton": "Добавить",
@@ -52,7 +56,7 @@
     "MakeTemplate": "Шаблон",
     "Watch": "Отслеживать",
     "Unwatch": "Не отслеживать",
-    "Archive": "Архивировать",
+    "Archive": "Архив",
     "SendToBoard": "Вернуть",
     "Delete": "Удалить",
     "HideDetails": "Спрятать",
@@ -84,6 +88,16 @@
     "Edit": "Изменить",
     "Update": "Обновить",
     "DeleteAttachment": "Удаление вложения необратимо. Отмена невозможна.",
-    "SearchMembers": "Поиск участников"
+    "DeleteCard": "Все действия будут удалены из ленты, и вы не сможете повторно открыть карточку. Отмена невозможна.",
+    "SearchMembers": "Поиск участников",
+    "Menu": "Меню",
+    "ToArchive": "Архивировать",
+    "CopyCard": "Копировать карточку",
+    "AlsoCopy": "Также копировать...",
+    "CopyTo": "Копировать в...",
+    "NoResults": "Нет результатов",
+    "SwitchToLists": "К спискам",
+    "SwitchToCards": "К карточкам",
+    "SearchArchive": "Поиск в архиве..."
   }
 }

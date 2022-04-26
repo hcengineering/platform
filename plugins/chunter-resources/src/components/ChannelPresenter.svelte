@@ -14,26 +14,16 @@
 -->
 <script lang="ts">
   import type { Channel } from '@anticrm/chunter'
-  import { Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { getCurrentLocation, Icon, locationToUrl } from '@anticrm/ui'
-  import chunter from '../plugin'
+  import { Icon } from '@anticrm/ui'
+
+  import { getSpaceLink } from '../utils'
 
   export let value: Channel
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
-
-  function getLink (id: Ref<Space>): string {
-    const loc = getCurrentLocation()
-    loc.path[1] = chunter.app.Chunter
-    loc.path[2] = id
-    loc.path.length = 3
-    loc.fragment = undefined
-    return locationToUrl(loc)
-  }
-
-  $: link = getLink(value._id)
+  $: link = getSpaceLink(value._id)
 </script>
 
 {#if value}

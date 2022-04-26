@@ -17,6 +17,7 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 import { TagCategory, tagsId } from '@anticrm/tags'
 import tags from '@anticrm/tags-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
+import { ViewAction } from '@anticrm/model-view'
 
 export default mergeIds(tagsId, tags, {
   // Without it, CLI version is failed with some svelte dependency exception.
@@ -44,5 +45,8 @@ export default mergeIds(tagsId, tags, {
   },
   category: {
     Category: '' as Ref<TagCategory>
+  },
+  actionImpl: {
+    Open: '' as ViewAction
   }
 })

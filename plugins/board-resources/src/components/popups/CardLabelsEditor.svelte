@@ -82,15 +82,15 @@
 </script>
 
 <div class="antiPopup w-85">
-  <div class="relative fs-title flex-center h-9">
-    <div class="absolute flex-center ml-2 h-full" style:top="0" style:left="0">
+  <div class="relative flex-row-center w-full ">
+    <div class="absolute ml-1 mt-1 mb-1" style:top="0" style:left="0">
       <Button icon={IconBack} kind="transparent" size="small" on:click={onBack} />
     </div>
-    <div>
+    <div class="flex-center flex-grow fs-title mt-1 mb-1">
       <Label label={board.string.Labels} />
     </div>
 
-    <div class="absolute flex-center mr-2 h-full" style:top="0" style:right="0">
+    <div class="absolute mr-1 mt-1 mb-1" style:top="0" style:right="0">
       <Button
         icon={IconClose}
         kind="transparent"

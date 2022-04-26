@@ -25,7 +25,7 @@
 
   const maxLenght: number = 30
   const trimFilename = (fname: string): string =>
-    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
+    fname.length > maxLenght ? fname.substring(0, (maxLenght - 1) / 2) + '...' + fname.substring(-(maxLenght - 1) / 2) : fname
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -37,40 +37,48 @@
     return contentType.includes('application/pdf') || contentType.startsWith('image/')
   }
 
-  const handleClick = openEmbedded(value.type)
-    ? () => {
-        closeTooltip()
-        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
-      }
-    : undefined
+  function showPreview (contentType: string) {
+    return contentType.startsWith('image/')
+  }
+
+  function handleClick () {
+    closeTooltip()
+    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+  }
 </script>
 
 <div class="flex-row-center">
   {#if openEmbedded(value.type)}
-    <div class="flex-center content mr-2 cursor-pointer" on:click={handleClick}>
-      <img src={getFileUrl(value.file)} alt={value.name} />
+    <div class="flex-center cursor-pointer icon" on:click={handleClick}>
+      {#if showPreview(value.type)}
+        <img src={getFileUrl(value.file)} alt={value.name}/>
+      {:else}
+        {iconLabel(value.name)}
+      {/if}
     </div>
   {:else}
-    <a class="no-line" href={getFileUrl(value.file)} download={value.name}><div class="flex-center icon">
+    <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+      <div class="flex-center icon">
         {iconLabel(value.name)}
-      </div></a>
+      </div>
+    </a>
   {/if}
   <div class="flex-col-centre info">
     <div class="fs-title">{trimFilename(value.name)}</div>
     <div class="flex-row-center flex-gap-1">
-      <TimeSince value={value.lastModified} />
+      <TimeSince value={value.lastModified}/>
       <Button
         label={board.string.Edit}
         on:click={(e) => {
           showPopup(EditAttachment, { object: value }, getPopupAlignment(e))
         }}
-        kind="transparent" />
+        kind="transparent"/>
       <Button
         label={board.string.Delete}
         on:click={(e) => {
           showPopup(RemoveAttachment, { object: value }, getPopupAlignment(e))
         }}
-        kind="transparent" />
+        kind="transparent"/>
     </div>
   </div>
 </div>
@@ -84,13 +92,10 @@
     font-weight: 500;
     font-size: 1rem;
     color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    background-color: var(--grayscale-grey-03);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.5rem;
-  }
-  .content {
-    width: 8rem;
-    max-height: 6rem;
+    overflow: hidden;
 
     img {
       max-width: 8rem;

@@ -21,7 +21,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{id: number | string, icon: Asset, label: IntlString}>
+  export let value: Array<{id: number | string, icon: Asset, label?: IntlString, text?: string}>
 
   let search: string = ''
 
@@ -39,10 +39,16 @@
   {/if}
   <div class="scroll">
     <div class="box">
-      {#each value.filter(el => el.label.toLowerCase().includes(search.toLowerCase())) as item}
+      {#each value.filter(el => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())) as item}
         <button class="menu-item" on:click={() => { dispatch('close', item.id) }}>
           <div class="icon"><Icon icon={item.icon} size={'small'} /></div>
-          <span class="label"><Label label={item.label} /></span>
+          <span class="label">
+            {#if item.label}
+              <Label label={item.label} />
+            {:else if item.text}
+              <span>{item.text}</span>
+            {/if}
+          </span>
         </button>
       {/each}
     </div>

@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { ChunterMessage, Message } from '@anticrm/chunter'
+  import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
   import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { createBacklinks } from '../backlinks'
@@ -25,6 +27,7 @@
   import PinnedMessages from './PinnedMessages.svelte'
 
   export let space: Ref<Space>
+  let chunterSpace: ChunterSpace
 
   const client = getClient()
   const _class = chunter.class.Message
@@ -40,7 +43,7 @@
       space,
       {
         attachedTo: space,
-        attachedToClass: chunter.class.Channel,
+        attachedToClass: chunter.class.ChunterSpace,
         collection: 'messages',
         content: message,
         createOn: 0,
@@ -50,11 +53,31 @@
       _id
     )
     tx.attributes.createOn = tx.modifiedOn
-    await notificationClient.updateLastView(space, chunter.class.Channel, tx.modifiedOn, true)
+
+    if (
+      chunterSpace._class === chunter.class.DirectMessage &&
+      !chunterSpace.lastMessage &&
+      chunterSpace.members.length !== 1
+    ) {
+      await Promise.all(
+        chunterSpace.members
+          .filter((accId) => accId !== me)
+          .map((accId) =>
+            client.createDoc(notification.class.LastView, space, {
+              user: accId,
+              lastView: 0,
+              attachedTo: space,
+              attachedToClass: chunterSpace._class,
+              collection: 'lastViews'
+            })
+          )
+      )
+    }
+    await notificationClient.updateLastView(space, chunter.class.ChunterSpace, tx.modifiedOn, true)
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, space, chunter.class.Channel, _id, message)
+    await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
 
     _id = generateId()
   }
@@ -68,13 +91,26 @@
   const pinnedQuery = createQuery()
   let pinnedIds: Ref<ChunterMessage>[] = []
   pinnedQuery.query(
-    chunter.class.Channel,
+    chunter.class.ChunterSpace,
     { _id: space },
     (res) => {
       pinnedIds = res[0]?.pinned ?? []
+      chunterSpace = res[0]
     },
     { limit: 1 }
   )
+
+  const savedMessagesQuery = createQuery()
+  let savedMessagesIds: Ref<ChunterMessage>[] = []
+  savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedMessagesIds = res.map((r) => r.attachedTo)
+  })
+
+  const savedAttachmentsQuery = createQuery()
+  let savedAttachmentsIds: Ref<Attachment>[] = []
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
+    savedAttachmentsIds = res.map((r) => r.attachedTo)
+  })
 </script>
 
 <PinnedMessages {space} {pinnedIds} />
@@ -84,6 +120,8 @@
     openThread(e.detail)
   }}
   {pinnedIds}
+  {savedMessagesIds}
+  {savedAttachmentsIds}
 />
 <div class="reference">
   <AttachmentRefInput {space} {_class} objectId={_id} on:message={onMessage} />

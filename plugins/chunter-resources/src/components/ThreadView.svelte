@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
@@ -100,7 +100,7 @@
     )
 
     pinnedQuery.query(
-      chunter.class.Channel,
+      chunter.class.ChunterSpace,
       { _id: currentSpace },
       (res) => {
         pinnedIds = res[0]?.pinned ?? []
@@ -122,6 +122,19 @@
         })
       ))
   )
+
+  const savedMessagesQuery = createQuery()
+  let savedMessagesIds: Ref<ChunterMessage>[] = []
+
+  savedMessagesQuery.query(chunter.class.SavedMessages, {}, (res) => {
+    savedMessagesIds = res.map((r) => r.attachedTo)
+  })
+
+  const savedAttachmentsQuery = createQuery()
+  let savedAttachmentsIds: Ref<Attachment>[] = []
+  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
+    savedAttachmentsIds = res.map((r) => r.attachedTo)
+  })
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
@@ -146,7 +159,7 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, currentSpace, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }
@@ -185,7 +198,7 @@
 </div>
 <div class="flex-col vScroll content" bind:this={div}>
   {#if message}
-    <MsgView {message} {employees} thread />
+    <MsgView {message} {employees} thread isSaved={savedMessagesIds.includes(message._id)} {savedAttachmentsIds} />
     {#if comments.length}
       <ChannelSeparator title={chunter.string.RepliesCount} line params={{ replies: comments.length }} />
     {/if}
@@ -193,7 +206,14 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MsgView message={comment} {employees} thread isPinned={pinnedIds.includes(comment._id)} />
+      <MsgView
+        message={comment}
+        {employees}
+        thread
+        isPinned={pinnedIds.includes(comment._id)}
+        isSaved={savedMessagesIds.includes(comment._id)}
+        {savedAttachmentsIds}
+      />
     {/each}
   {/if}
 </div>

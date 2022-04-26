@@ -31,7 +31,6 @@
   export let label: IntlString
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Contact> | null | undefined
-  export let show: boolean = false
   export let allowDeselect = false
   export let titleDeselect: IntlString | undefined = undefined
   export let readonly = false

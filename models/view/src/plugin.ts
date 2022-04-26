@@ -34,7 +34,10 @@ export default mergeIds(viewId, view, {
     SelectDown: '' as Ref<Action>,
 
     ShowPreview: '' as Ref<Action>,
-    ShowActions: '' as Ref<Action>
+    ShowActions: '' as Ref<Action>,
+
+    // Edit document
+    Open: '' as Ref<Action>
   },
   actionImpl: {
     Delete: '' as ViewAction,
@@ -51,7 +54,9 @@ export default mergeIds(viewId, view, {
     SelectDown: '' as ViewAction,
 
     ShowPreview: '' as ViewAction,
-    ShowActions: '' as ViewAction
+    ShowActions: '' as ViewAction,
+
+    Open: '' as ViewAction
   },
   component: {
     StringEditor: '' as AnyComponent,
@@ -84,6 +89,7 @@ export default mergeIds(viewId, view, {
     SelectUp: '' as IntlString,
     SelectDown: '' as IntlString,
     ShowPreview: '' as IntlString,
-    ShowActions: '' as IntlString
+    ShowActions: '' as IntlString,
+    Open: '' as IntlString
   }
 })

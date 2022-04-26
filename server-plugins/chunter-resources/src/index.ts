@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { Channel, Comment, Message, ThreadMessage } from '@anticrm/chunter'
+import chunter, { ChunterSpace, Comment, Message, ThreadMessage } from '@anticrm/chunter'
 import { EmployeeAccount } from '@anticrm/contact'
 import core, {
   Class,
@@ -39,7 +39,7 @@ import workbench from '@anticrm/workbench'
  * @public
  */
 export function channelHTMLPresenter (doc: Doc): string {
-  const channel = doc as Channel
+  const channel = doc as ChunterSpace
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
   return `<a href="${front}/${workbench.component.WorkbenchApp}/${chunter.app.Chunter}/${channel._id}">${channel.name}</a>`
 }
@@ -48,7 +48,7 @@ export function channelHTMLPresenter (doc: Doc): string {
  * @public
  */
 export function channelTextPresenter (doc: Doc): string {
-  const channel = doc as Channel
+  const channel = doc as ChunterSpace
   return `${channel.name}`
 }
 
@@ -109,6 +109,10 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
     objectId: rmTx.objectId
   }, { limit: 1 }))[0]
 
+  if (createTx === undefined) {
+    return []
+  }
+
   const comment = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<ThreadMessage>)
 
   const comments = await control.findAll(chunter.class.ThreadMessage, {
@@ -145,12 +149,12 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
 
   const message = doc as Message
 
-  const channel = (await control.findAll(chunter.class.Channel, {
+  const channel = (await control.findAll(chunter.class.ChunterSpace, {
     _id: message.space
   }, { limit: 1 }))[0]
 
-  if (channel.lastMessage === undefined || channel.lastMessage < message.createOn) {
-    const res = control.txFactory.createTxUpdateDoc<Channel>(channel._class, channel.space, channel._id, {
+  if (channel?.lastMessage === undefined || channel.lastMessage < message.createOn) {
+    const res = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
       lastMessage: message.createOn
     })
     return [res]
@@ -165,7 +169,7 @@ export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<T
   const hierarchy = control.hierarchy
   if (tx._class !== core.class.TxCollectionCUD) return []
 
-  const rmTx = (tx as TxCollectionCUD<Channel, Message>).tx
+  const rmTx = (tx as TxCollectionCUD<ChunterSpace, Message>).tx
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.Message)) {
     return []
   }
@@ -173,19 +177,23 @@ export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<T
     objectId: rmTx.objectId
   }, { limit: 1 }))[0]
 
+  if (createTx === undefined) {
+    return []
+  }
+
   const message = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Message>)
 
-  const channel = (await control.findAll(chunter.class.Channel, {
+  const channel = (await control.findAll(chunter.class.ChunterSpace, {
     _id: message.space
   }, { limit: 1 }))[0]
 
-  if (channel.lastMessage === message.createOn) {
+  if (channel?.lastMessage === message.createOn) {
     const messages = await control.findAll(chunter.class.Message, {
       attachedTo: channel._id
     })
     const lastMessageDate = messages.reduce((maxDate, mess) => mess.createOn > maxDate ? mess.createOn : maxDate, 0)
 
-    const updateTx = control.txFactory.createTxUpdateDoc<Channel>(channel._class, channel.space, channel._id, {
+    const updateTx = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
       lastMessage: lastMessageDate > 0 ? lastMessageDate : undefined
     })
 

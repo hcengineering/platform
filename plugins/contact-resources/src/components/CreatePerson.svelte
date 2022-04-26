@@ -115,6 +115,6 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} />
+    <ChannelsDropdown bind:value={channels} kind={'no-border'} editable />
   </svelte:fragment>
 </Card>

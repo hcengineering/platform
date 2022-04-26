@@ -1,7 +1,21 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { DocumentQuery, FindOptions, Ref, WithLookup } from '@anticrm/core'
+  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { Component, Button, eventToHTMLElement, IconAdd, Scroller, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
@@ -12,13 +26,15 @@
   export let query: DocumentQuery<Issue>
   export let groupBy: { key: IssuesGroupByKeys | undefined; group: Issue[IssuesGroupByKeys] | undefined }
   export let orderBy: IssuesOrderByKeys
+  export let statuses: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
   export let currentTeam: Team
 
   const dispatch = createEventDispatcher()
   const options: FindOptions<Issue> = {
     lookup: {
-      assignee: contact.class.Employee
+      assignee: contact.class.Employee,
+      status: tracker.class.IssueStatus
     }
   }
 
@@ -36,7 +52,7 @@
   }
 </script>
 
-<div class="category" class:visible={issuesAmount > 0}>
+<div class="category">
   {#if headerComponent}
     <div class="header categoryHeader flex-between label">
       <div class="flex-row-center gap-2">
@@ -46,7 +62,8 @@
             isEditable: false,
             shouldShowLabel: true,
             value: grouping,
-            defaultName: groupBy.key === 'assignee' ? tracker.string.NoAssignee : undefined
+            defaultName: groupBy.key === 'assignee' ? tracker.string.NoAssignee : undefined,
+            statuses: groupBy.key === 'status' ? statuses : undefined
           }}
         />
         <span class="eLabelCounter ml-2">{issuesAmount}</span>
@@ -64,7 +81,7 @@
       itemsConfig={[
         { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-        { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace } },
+        { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace, statuses } },
         { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
@@ -81,13 +98,6 @@
 </div>
 
 <style lang="scss">
-  .category {
-    display: none;
-    &.visible {
-      display: block;
-    }
-  }
-
   .categoryHeader {
     height: 2.5rem;
     background-color: var(--theme-table-bg-hover);

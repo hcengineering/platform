@@ -13,9 +13,20 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxResult } from '@anticrm/core'
-import { Pipeline, Middleware, MiddlewareCreator, SessionContext } from './types'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  ModelDb,
+  Ref,
+  ServerStorage,
+  Tx,
+  TxResult
+} from '@anticrm/core'
 import { createServerStorage, DbConfiguration } from './storage'
+import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
 
 /**
  * @public
@@ -27,8 +38,10 @@ export async function createPipeline (conf: DbConfiguration, constructors: Middl
 
 class TPipeline implements Pipeline {
   private readonly head: Middleware | undefined
+  readonly modelDb: ModelDb
   constructor (private readonly storage: ServerStorage, constructors: MiddlewareCreator[]) {
     this.head = this.buildChain(constructors)
+    this.modelDb = storage.modelDb
   }
 
   private buildChain (constructors: MiddlewareCreator[]): Middleware | undefined {
@@ -40,13 +53,14 @@ class TPipeline implements Pipeline {
     return current
   }
 
-  async findAll <T extends Doc>(
+  async findAll<T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const [session, resClass, resQuery, resOptions] = this.head === undefined ? [ctx, _class, query, options] : await this.head.findAll(ctx, _class, query, options)
+    const [session, resClass, resQuery, resOptions] =
+      this.head === undefined ? [ctx, _class, query, options] : await this.head.findAll(ctx, _class, query, options)
     return await this.storage.findAll(session, resClass, resQuery, resOptions)
   }
 

@@ -3,7 +3,7 @@
   import { ViewContext } from '@anticrm/view'
   import { onDestroy } from 'svelte'
   import { contextStore } from '../context'
-import { previewDocument } from '../selection';
+  import { previewDocument } from '../selection'
 
   export let context: ViewContext
 

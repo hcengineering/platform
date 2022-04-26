@@ -127,7 +127,7 @@
       margin-right: .75rem;
     }
     .check-right { margin: 0 0 0 2rem; }
-    &:hover {
+    &:focus {
       background-color: var(--popup-bg-hover);
 
       .icon { color: var(--accent-color); }
@@ -232,7 +232,12 @@
     }
     &.withCheck { justify-content: space-between; }
 
-    &:hover, &:focus { background-color: var(--popup-bg-hover); }
+    // &:hover { background-color: var(--popup-bg-hover); }
+    &:focus {
+      background-color: var(--popup-bg-hover);
+      outline: none;
+      // box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color);
+    }
 
     &.redlight {
       color: var(--highlight-red);

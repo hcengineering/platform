@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import type { Class, Doc, Ref, Type } from '@anticrm/core'
+  import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '../utils'
@@ -22,7 +22,6 @@
   export let objectId: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let value: Doc | undefined
-  export let attributeType: Type<any>
   export let props: Record<string, any> = {}
 
   const client = getClient()
@@ -45,5 +44,5 @@
 </script>
 
 {#if presenter}  
-  <svelte:component this={presenter.presenter} value={doc} {attributeType} {...props} inline />
+  <svelte:component this={presenter.presenter} value={doc} {...props} inline />
 {/if}

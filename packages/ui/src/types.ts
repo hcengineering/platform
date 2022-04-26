@@ -42,7 +42,7 @@ export interface AnySvelteComponentWithProps {
 export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
-  action: (props: any, ev?: Event) => Promise<void>
+  action: (props: any, ev: Event) => Promise<void>
 }
 
 export interface IPopupItem {
@@ -67,9 +67,15 @@ export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' |
 export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
+  position?: {
+    v: VerticalAlignment
+    h: HorizontalAlignment
+  }
 }
 export type PopupAlignment = PopupPositionElement | null | 'right' | 'top' | 'account' | 'full' | 'content' | 'middle'
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
+export type VerticalAlignment = 'top' | 'bottom'
+export type HorizontalAlignment = 'left' | 'right'
 
 export interface LabelAndProps {
   label: IntlString | undefined
@@ -90,4 +96,9 @@ export interface ListItem {
 export interface DropdownTextItem {
   id: string
   label: string
+}
+
+export interface DropdownIntlItem {
+  id: string
+  label: IntlString
 }

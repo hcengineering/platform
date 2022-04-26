@@ -18,12 +18,41 @@ import { mergeIds } from '@anticrm/platform'
 import type { IntlString } from '@anticrm/platform'
 
 import attachment, { attachmentId } from '@anticrm/attachment'
+import { ViewAction } from '@anticrm/view'
 
 export default mergeIds(attachmentId, attachment, {
   string: {
     NoAttachments: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,
     Attachments: '' as IntlString,
-    Photos: '' as IntlString
+    Photos: '' as IntlString,
+    FileBrowser: '' as IntlString,
+    FileBrowserFileCounter: '' as IntlString,
+    FileBrowserFilterFrom: '' as IntlString,
+    FileBrowserFilterIn: '' as IntlString,
+    FileBrowserFilterDate: '' as IntlString,
+    FileBrowserFilterFileType: '' as IntlString,
+    FileBrowserSortNewest: '' as IntlString,
+    FileBrowserSortOldest: '' as IntlString,
+    FileBrowserSortAZ: '' as IntlString,
+    FileBrowserSortZA: '' as IntlString,
+    FileBrowserDateFilterAny: '' as IntlString,
+    FileBrowserDateFilterToday: '' as IntlString,
+    FileBrowserDateFilterYesterday: '' as IntlString,
+    FileBrowserDateFilter7Days: '' as IntlString,
+    FileBrowserDateFilter30Days: '' as IntlString,
+    FileBrowserDateFilter3Months: '' as IntlString,
+    FileBrowserDateFilter12Months: '' as IntlString,
+    FileBrowserTypeFilterAny: '' as IntlString,
+    FileBrowserTypeFilterImages: '' as IntlString,
+    FileBrowserTypeFilterAudio: '' as IntlString,
+    FileBrowserTypeFilterVideos: '' as IntlString,
+    FileBrowserTypeFilterPDFs: '' as IntlString,
+    AddAttachmentToSaved: '' as IntlString,
+    RemoveAttachmentFromSaved: '' as IntlString
+  },
+  actionImpl: {
+    AddAttachmentToSaved: '' as ViewAction,
+    DeleteAttachmentFromSaved: '' as ViewAction
   }
 })

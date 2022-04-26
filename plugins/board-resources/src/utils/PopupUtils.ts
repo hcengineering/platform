@@ -1,13 +1,20 @@
 import { PopupAlignment } from '@anticrm/ui'
+import { HorizontalAlignment, VerticalAlignment } from '@anticrm/ui/src/types'
 
-export function getPopupAlignment (e?: Event): PopupAlignment | undefined {
+export function getPopupAlignment (e?: Event, position?: {v: VerticalAlignment, h: HorizontalAlignment}): PopupAlignment | undefined {
   if (!e || !e.target) {
     return undefined
   }
   const target = e.target as HTMLElement
-  if (target.getBoundingClientRect) {
+  return getElementPopupAlignment(target, position)
+}
+
+export function getElementPopupAlignment (el: HTMLElement, position?: {v: VerticalAlignment, h: HorizontalAlignment}): PopupAlignment | undefined {
+  if (el?.getBoundingClientRect) {
+    const result = el.getBoundingClientRect()
     return {
-      getBoundingClientRect: () => target.getBoundingClientRect()
+      getBoundingClientRect: () => result,
+      position
     }
   }
 

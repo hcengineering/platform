@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { Channel, Message, ThreadMessage } from '@anticrm/chunter'
+  import type { ChunterSpace, Message, ThreadMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
@@ -24,12 +24,14 @@
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import ChannelPresenter from './ChannelPresenter.svelte'
+  import DmPresenter from './DmPresenter.svelte'
   import MsgView from './Message.svelte'
 
   const client = getClient()
   const query = createQuery()
   const messageQuery = createQuery()
 
+  export let savedAttachmentsIds: Ref<Attachment>[]
   export let _id: Ref<Message>
   let parent: Message | undefined
   let commentId = generateId() as Ref<ThreadMessage>
@@ -152,22 +154,24 @@
     await client.tx(tx)
 
     // Create an backlink to document
-    await createBacklinks(client, parent.space, chunter.class.Channel, commentId, message)
+    await createBacklinks(client, parent.space, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }
   let comments: ThreadMessage[] = []
 
-  async function getChannel (_id: Ref<Channel>): Promise<Channel | undefined> {
-    return await client.findOne(chunter.class.Channel, { _id })
+  async function getChannel (_id: Ref<ChunterSpace>): Promise<ChunterSpace | undefined> {
+    return await client.findOne(chunter.class.ChunterSpace, { _id })
   }
 </script>
 
 <div class="ml-8 mt-4">
   {#if parent}
     {#await getChannel(parent.space) then channel}
-      {#if channel}
+      {#if channel?._class === chunter.class.Channel}
         <ChannelPresenter value={channel} />
+      {:else if channel}
+        <DmPresenter dm={channel} />
       {/if}
     {/await}
     {#await getParticipants(comments, parent, employees) then participants}
@@ -178,7 +182,7 @@
 </div>
 <div class="flex-col content">
   {#if parent}
-    <MsgView message={parent} {employees} thread />
+    <MsgView message={parent} {employees} thread {savedAttachmentsIds} />
     {#if total > comments.length}
       <div
         class="label pb-2 pt-2 pl-8 over-underline"
@@ -190,7 +194,7 @@
       </div>
     {/if}
     {#each comments as comment (comment._id)}
-      <MsgView message={comment} {employees} thread />
+      <MsgView message={comment} {employees} thread {savedAttachmentsIds} />
     {/each}
     <div class="mr-4 ml-4 mb-4 mt-2">
       <AttachmentRefInput
@@ -208,7 +212,7 @@
     overflow: hidden;
     margin: 1rem 1rem 0px;
     background-color: var(--theme-border-modal);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--theme-zone-border);
   }
 

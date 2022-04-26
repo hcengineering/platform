@@ -4,8 +4,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let value: CardDate
-  export let isInline: boolean = false
-  export let size: 'x-small' | 'small' = 'small' 
+  export let size: 'x-small' | 'small' = 'small'
 
   let isChecked = value?.isChecked
   const dispatch = createEventDispatcher()

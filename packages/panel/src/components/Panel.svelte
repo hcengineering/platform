@@ -19,7 +19,7 @@
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import { ActionIcon, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
+  import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
   import { PopupAlignment } from '@anticrm/ui'
 
   export let title: string
@@ -32,17 +32,21 @@
 
   let innerWidth = 0
 
-  $: allowFullSize = innerWidth > 900 && position === 'full'
+  $: allowFullSize = innerWidth > 900 && (position === 'full' || position === 'content')
   $: isFullSize = allowFullSize && fullSize
 </script>
-<svelte:window bind:innerWidth />
-<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize}>
+
+<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize} bind:innerWidth>
   <svelte:fragment slot="subtitle">
     <slot name="subtitle" />
   </svelte:fragment>
+  <svelte:fragment slot="navigate-actions">
+    <slot name="navigate-actions" />
+  </svelte:fragment>
   <svelte:fragment slot="commands">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-    <div class="ml-2">
+    <div class="buttons-group xsmall-gap">
+      <slot name="actions" />
+      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
       <Component is={notification.component.LastViewEditor} props={{ value: object }} />
     </div>
   </svelte:fragment>
@@ -56,16 +60,15 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if allowFullSize}
-      <div class="tool">
-        <ActionIcon
-          icon={IconExpand}
-          size={'medium'}
-          action={() => {
-            fullSize = !fullSize
-          }}
-        />
-      </div>
-    {/if}
+      <Button
+        icon={IconExpand}
+        size={'medium'}
+        kind={'transparent'}
+        on:click={() => {
+          fullSize = !fullSize
+        }}
+      />
+    {/if}    
   </svelte:fragment>
   {#if isFullSize}
     <Scroller>
@@ -77,4 +80,3 @@
     </Component>
   {/if}
 </Panel>
-

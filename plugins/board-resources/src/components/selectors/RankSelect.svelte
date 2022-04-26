@@ -12,6 +12,7 @@
   export let label: IntlString
   export let state: Ref<State>
   export let selected: string
+  export let isCopying: boolean = false
 
   let ranks: DropdownTextItem[] = []
   const tasksQuery = createQuery()
@@ -19,22 +20,29 @@
     board.class.Card,
     { state },
     async (result) => {
-      ;[ranks] = [...result.filter((t) => t._id !== object._id), undefined].reduce<
-        [DropdownTextItem[], Card | undefined]
-      >(
+      const filteredResult = isCopying ? result : result.filter((t) => t._id !== object._id)
+
+      ;[ranks] = [...filteredResult, undefined].reduce<[DropdownTextItem[], Card | undefined]>(
         ([arr, prev], next) => [[...arr, { id: calcRank(prev, next), label: `${arr.length + 1}` }], next],
         [[], undefined]
       )
-      ;[{ id: selected = object.rank }] = ranks.slice(-1)
+
+      let selectedRank = ranks.slice(-1)[0].id
 
       if (object.state === state) {
         const index = result.findIndex((t) => t._id === object._id)
-        ranks[index] = {
-          id: object.rank,
-          label: await translate(board.string.Current, { label: ranks[index].label })
+
+        if (index !== -1) {
+          selectedRank = isCopying ? ranks[index].id : object.rank
+
+          ranks[index] = {
+            id: selectedRank,
+            label: await translate(board.string.Current, { label: ranks[index].label })
+          }
         }
-        selected = object.rank
       }
+
+      selected = selectedRank
     },
     { sort: { rank: SortingOrder.Ascending } }
   )

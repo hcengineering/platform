@@ -38,13 +38,19 @@ export default plugin(presentationId, {
     NotSelected: '' as IntlString,
     Deselect: '' as IntlString,
     AddSocialLinks: '' as IntlString,
+    EditSocialLinks: '' as IntlString,
     Change: '' as IntlString,
     Remove: '' as IntlString,
     Members: '' as IntlString,
     Search: '' as IntlString,
     Unassigned: '' as IntlString,
     CreateMore: '' as IntlString,
-    NumberMembers: '' as IntlString
+    NumberMembers: '' as IntlString,
+    InThis: '' as IntlString,
+    NoMatchesInThis: '' as IntlString,
+    NoMatchesFound: '' as IntlString,
+    NotInThis: '' as IntlString,
+    Add: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

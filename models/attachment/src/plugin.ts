@@ -23,7 +23,8 @@ import type { TxViewlet } from '@anticrm/activity'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
-    AttachmentPresenter: '' as AnyComponent
+    AttachmentPresenter: '' as AnyComponent,
+    FileBrowser: '' as AnyComponent
   },
   string: {
     AddAttachment: '' as IntlString,
@@ -32,7 +33,8 @@ export default mergeIds(attachmentId, attachment, {
     Size: '' as IntlString,
     Type: '' as IntlString,
     Photo: '' as IntlString,
-    Date: '' as IntlString
+    Date: '' as IntlString,
+    SavedAttachments: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>

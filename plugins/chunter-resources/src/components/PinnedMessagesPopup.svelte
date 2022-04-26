@@ -13,7 +13,7 @@
   const pinnedQuery = createQuery()
   let pinnedIds: Ref<ChunterMessage>[] = []
   pinnedQuery.query(
-    chunter.class.Channel,
+    chunter.class.ChunterSpace,
     { _id: space },
     (res) => {
       pinnedIds = res[0]?.pinned ?? []

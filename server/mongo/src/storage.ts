@@ -357,7 +357,8 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
     }
     const domain = this.hierarchy.getDomain(_class)
-    let cursor = this.db.collection(domain).find<T>(this.translateQuery(_class, query))
+    const coll = this.db.collection(domain)
+    let cursor = coll.find<T>(this.translateQuery(_class, query))
 
     if (options?.projection !== undefined) {
       cursor = cursor.project(options.projection)
@@ -374,7 +375,7 @@ abstract class MongoAdapterBase extends TxProcessor {
         cursor = cursor.sort(sort)
       }
       if (options.limit !== undefined) {
-        total = await cursor.count()
+        total = await coll.estimatedDocumentCount()
         cursor = cursor.limit(options.limit)
       }
     }

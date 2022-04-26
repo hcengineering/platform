@@ -20,7 +20,8 @@ import core, { TClass, TDoc } from '@anticrm/model-core'
 import type { Asset, IntlString, Resource, Status } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import type {
-  Action, ActionTarget,
+  Action,
+  ActionTarget,
   AttributeEditor,
   AttributePresenter,
   HTMLPresenter,
@@ -32,15 +33,18 @@ import type {
   ObjectValidator,
   PreviewPresenter,
   SpaceHeader,
+  SpaceName,
   TextPresenter,
   ViewAction,
   ViewContext,
+  ViewContextType,
   Viewlet,
   ViewletDescriptor
 } from '@anticrm/view'
 import view from './plugin'
 
 export { viewOperation } from './migration'
+export { ViewAction }
 
 export function createAction (
   builder: Builder,
@@ -67,11 +71,26 @@ export function createAction (
   )
 }
 
-export function actionTarget (builder: Builder, action: Ref<Action>, target: Ref<Class<Doc>>, context: ViewContext): void {
+export function actionTarget (
+  builder: Builder,
+  action: Ref<Action>,
+  target: Ref<Class<Doc>>,
+  options: {
+    mode: ViewContextType | ViewContextType[]
+    application?: Ref<Doc>
+    group?: string
+    override?: ViewAction
+  }
+): void {
   builder.createDoc(view.class.ActionTarget, core.space.Model, {
     target,
     action,
-    context
+    context: {
+      mode: options.mode,
+      application: options.application,
+      group: options.group
+    },
+    override: options.override
   })
 }
 
@@ -114,6 +133,11 @@ export class TObjectEditorHeader extends TClass implements ObjectEditorHeader {
 @Mixin(view.mixin.SpaceHeader, core.class.Class)
 export class TSpaceHeader extends TClass implements SpaceHeader {
   header!: AnyComponent
+}
+
+@Mixin(view.mixin.SpaceName, core.class.Class)
+export class TSpaceName extends TClass implements SpaceName {
+  getName!: Resource<(client: Client, space: Space) => Promise<string>>
 }
 
 @Mixin(view.mixin.ObjectValidator, core.class.Class)
@@ -189,6 +213,7 @@ export function createModel (builder: Builder): void {
     TObjectEditorHeader,
     THTMLPresenter,
     TSpaceHeader,
+    TSpaceName,
     TTextPresenter,
     TIgnoreActions,
     TPreviewPresenter
@@ -214,20 +239,34 @@ export function createModel (builder: Builder): void {
     view.viewlet.Table
   )
 
-  createAction(builder, view.action.Delete, view.string.Delete, view.actionImpl.Delete, { icon: view.icon.Delete, keyBinding: ['Meta + Backspace'] })
+  createAction(builder, view.action.Delete, view.string.Delete, view.actionImpl.Delete, {
+    icon: view.icon.Delete,
+    keyBinding: ['Meta + Backspace']
+  })
   actionTarget(builder, view.action.Delete, core.class.Doc, { mode: ['context', 'browser'], group: 'tools' })
 
-  createAction(builder, view.action.Move, view.string.Move, view.actionImpl.Move, { icon: view.icon.Move, singleInput: true })
+  createAction(builder, view.action.Move, view.string.Move, view.actionImpl.Move, {
+    icon: view.icon.Move,
+    singleInput: true
+  })
 
   // Keyboard actions.
-  createAction(builder, view.action.MoveUp, view.string.MoveUp, view.actionImpl.MoveUp, { keyBinding: ['ArrowUp', 'keyK'] })
+  createAction(builder, view.action.MoveUp, view.string.MoveUp, view.actionImpl.MoveUp, {
+    keyBinding: ['ArrowUp', 'keyK']
+  })
   actionTarget(builder, view.action.MoveUp, core.class.Doc, { mode: 'browser' })
-  createAction(builder, view.action.MoveDown, view.string.MoveDown, view.actionImpl.MoveDown, { keyBinding: ['ArrowDown', 'keyJ'] })
+  createAction(builder, view.action.MoveDown, view.string.MoveDown, view.actionImpl.MoveDown, {
+    keyBinding: ['ArrowDown', 'keyJ']
+  })
   actionTarget(builder, view.action.MoveDown, core.class.Doc, { mode: 'browser' })
 
-  createAction(builder, view.action.MoveLeft, view.string.MoveLeft, view.actionImpl.MoveLeft, { keyBinding: ['ArrowLeft'] })
+  createAction(builder, view.action.MoveLeft, view.string.MoveLeft, view.actionImpl.MoveLeft, {
+    keyBinding: ['ArrowLeft']
+  })
   actionTarget(builder, view.action.MoveLeft, core.class.Doc, { mode: 'browser' })
-  createAction(builder, view.action.MoveRight, view.string.MoveRight, view.actionImpl.MoveRight, { keyBinding: ['ArrowRight'] })
+  createAction(builder, view.action.MoveRight, view.string.MoveRight, view.actionImpl.MoveRight, {
+    keyBinding: ['ArrowRight']
+  })
   actionTarget(builder, view.action.MoveRight, core.class.Doc, { mode: 'browser' })
 
   builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
@@ -235,20 +274,42 @@ export function createModel (builder: Builder): void {
   })
 
   // Selection stuff
-  createAction(builder, view.action.SelectItem, view.string.SelectItem, view.actionImpl.SelectItem, { keyBinding: ['keyX'] })
+  createAction(builder, view.action.SelectItem, view.string.SelectItem, view.actionImpl.SelectItem, {
+    keyBinding: ['keyX']
+  })
   actionTarget(builder, view.action.SelectItem, core.class.Doc, { mode: 'browser' })
 
-  createAction(builder, view.action.SelectItemAll, view.string.SelectItemAll, view.actionImpl.SelectItemAll, { keyBinding: ['meta + keyA'] })
+  createAction(builder, view.action.SelectItemAll, view.string.SelectItemAll, view.actionImpl.SelectItemAll, {
+    keyBinding: ['meta + keyA']
+  })
   actionTarget(builder, view.action.SelectItemAll, core.class.Doc, { mode: 'browser' })
 
-  createAction(builder, view.action.SelectItemNone, view.string.SelectItemNone, view.actionImpl.SelectItemNone, { keyBinding: ['escape'] })
+  createAction(builder, view.action.SelectItemNone, view.string.SelectItemNone, view.actionImpl.SelectItemNone, {
+    keyBinding: ['escape']
+  })
   actionTarget(builder, view.action.SelectItemNone, core.class.Doc, { mode: 'browser' })
 
-  createAction(builder, view.action.ShowActions, view.string.ShowActions, view.actionImpl.ShowActions, { keyBinding: ['meta + keyk'] })
-  actionTarget(builder, view.action.ShowActions, core.class.Doc, { mode: ['workbench', 'browser', 'popup', 'panel', 'editor'] })
+  createAction(builder, view.action.ShowActions, view.string.ShowActions, view.actionImpl.ShowActions, {
+    keyBinding: ['meta + keyk']
+  })
+  actionTarget(builder, view.action.ShowActions, core.class.Doc, {
+    mode: ['workbench', 'browser', 'popup', 'panel', 'editor']
+  })
 
-  createAction(builder, view.action.ShowPreview, view.string.ShowPreview, view.actionImpl.ShowPreview, { keyBinding: ['Space'], singleInput: true })
+  createAction(builder, view.action.ShowPreview, view.string.ShowPreview, view.actionImpl.ShowPreview, {
+    keyBinding: ['Space'],
+    singleInput: true
+  })
   actionTarget(builder, view.action.ShowPreview, core.class.Doc, { mode: 'browser' })
+
+  createAction(builder, view.action.Open, view.string.Open, view.actionImpl.Open, {
+    icon: view.icon.Open,
+    keyBinding: ['Enter'],
+    singleInput: true
+  })
+
+  // Should be contributed via individual plugins.
+  // actionTarget(builder, view.action.Open, core.class.Doc, { mode: ['browser', 'context'] })
 }
 
 export default view

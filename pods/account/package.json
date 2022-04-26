@@ -36,7 +36,7 @@
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
     "ts-node": "~10.5.0",
-    "@rushstack/heft": "^0.41.1",
+    "@rushstack/heft": "^0.44.13",
     "typescript": "^4.3.5"
   },
   "dependencies": {

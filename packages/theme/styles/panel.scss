@@ -19,12 +19,16 @@
   min-width: 400px;
 
   background: var(--body-accent);
+  border: 1px solid var(--divider-color);
   border-radius: .5rem;
   flex-direction: row;
   box-shadow: var(--popup-shadow);
   // left: 1rem;
 
-  .ac-header.divide { border-bottom: 1px solid var(--theme-card-divider); }
+  .ac-header {
+    &.highlight { background-color: var(--accent-bg-color); }
+    &.divide { border-bottom: 1px solid var(--theme-card-divider); }
+  }
 
   .ad-section-50 {
     display: flex;
@@ -39,22 +43,15 @@
   .ad-tools {
     position: absolute;
     display: flex;
-    top: 1.375rem;
-    right: 2rem;
+    top: 1.25rem;
+    right: 1.25rem;
+
     &.grow-reverse {
-      left: 0px;
       display: flex;
       flex-direction: row-reverse;
       justify-content: flex-end;
       align-items: center;
     }
-  }
-  .tool {
-    margin-left: 1rem;
-    color: var(--theme-content-accent-color);
-    cursor: pointer;
-
-    &:hover { color: var(--theme-caption-color); }
   }
 }
 

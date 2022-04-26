@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
+  import attachment, { Attachment } from '@anticrm/attachment'
   import type { ChunterMessage, Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { Doc, Ref, Space, WithLookup } from '@anticrm/core'
@@ -26,6 +26,8 @@
 
   export let space: Ref<Space> | undefined
   export let pinnedIds: Ref<ChunterMessage>[]
+  export let savedMessagesIds: Ref<ChunterMessage>[]
+  export let savedAttachmentsIds: Ref<Attachment>[]
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -73,7 +75,7 @@
       (res) => {
         messages = res
         newMessagesPos = newMessagesStart(messages)
-        notificationClient.updateLastView(space, chunter.class.Channel)
+        notificationClient.updateLastView(space, chunter.class.ChunterSpace)
       },
       {
         lookup: {
@@ -113,7 +115,14 @@
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <MessageComponent {message} {employees} on:openThread isPinned={pinnedIds.includes(message._id)} />
+      <MessageComponent
+        {message}
+        {employees}
+        on:openThread
+        isPinned={pinnedIds.includes(message._id)}
+        isSaved={savedMessagesIds.includes(message._id)}
+        {savedAttachmentsIds}
+      />
     {/each}
   {/if}
 </div>

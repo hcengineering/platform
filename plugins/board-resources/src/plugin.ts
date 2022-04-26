@@ -24,6 +24,7 @@ export default mergeIds(boardId, board, {
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     CreateBoard: '' as IntlString,
+    OpenCard: '' as IntlString,
     CardName: '' as IntlString,
     More: '' as IntlString,
     SelectBoard: '' as IntlString,
@@ -62,6 +63,9 @@ export default mergeIds(boardId, board, {
     Attachments: '' as IntlString,
     AddAttachment: '' as IntlString,
     DropFileToUpload: '' as IntlString,
+    AttachFrom: '' as IntlString,
+    AttachmentTip: '' as IntlString,
+    Computer: '' as IntlString,
     CustomFields: '' as IntlString,
     Automation: '' as IntlString,
     AddButton: '' as IntlString,
@@ -105,12 +109,23 @@ export default mergeIds(boardId, board, {
     Edit: '' as IntlString,
     Update: '' as IntlString,
     DeleteAttachment: '' as IntlString,
-    SearchMembers: '' as IntlString
+    SearchMembers: '' as IntlString,
+    DeleteCard: '' as IntlString,
+    Menu: '' as IntlString,
+    ToArchive: '' as IntlString,
+    CopyCard: '' as IntlString,
+    AlsoCopy: '' as IntlString,
+    CopyTo: '' as IntlString,
+    NoResults: '' as IntlString,
+    SwitchToLists: '' as IntlString,
+    SwitchToCards: '' as IntlString,
+    SearchArchive: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Members: '' as AnyComponent,
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    BoardHeader: '' as AnyComponent
   }
 })

@@ -11,20 +11,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Doc, TxOperations } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { TagElement } from '@anticrm/tags'
+import { eventToHTMLElement, showPopup } from '@anticrm/ui'
+import TagsCategoryBar from './components/CategoryBar.svelte'
+import CategoryPresenter from './components/CategoryPresenter.svelte'
+import EditTagElement from './components/EditTagElement.svelte'
 import TagElementPresenter from './components/TagElementPresenter.svelte'
 import TagReferencePresenter from './components/TagReferencePresenter.svelte'
 import Tags from './components/Tags.svelte'
-import TagsPresenter from './components/TagsPresenter.svelte'
-import TagsItemPresenter from './components/TagsItemPresenter.svelte'
-import TagsView from './components/TagsView.svelte'
-import TagsEditor from './components/TagsEditor.svelte'
 import TagsDropdownEditor from './components/TagsDropdownEditor.svelte'
-import CategoryPresenter from './components/CategoryPresenter.svelte'
-import tags from './plugin'
-import TagsCategoryBar from './components/CategoryBar.svelte'
+import TagsEditor from './components/TagsEditor.svelte'
+import TagsItemPresenter from './components/TagsItemPresenter.svelte'
+import TagsPresenter from './components/TagsPresenter.svelte'
+import TagsView from './components/TagsView.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -38,5 +38,10 @@ export default async (): Promise<Resources> => ({
     TagsItemPresenter,
     CategoryPresenter,
     TagsCategoryBar
+  },
+  actionImpl: {
+    Open: (value: TagElement, evt: MouseEvent) => {
+      showPopup(EditTagElement, { value, keyTitle: '' }, eventToHTMLElement(evt))
+    }
   }
 })

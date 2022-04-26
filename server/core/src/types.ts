@@ -13,7 +13,24 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, ModelDb, Obj, Ref, ServerStorage, Space, Storage, Timestamp, Tx, TxResult } from '@anticrm/core'
+import type {
+  Account,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  MeasureContext,
+  ModelDb,
+  Obj,
+  Ref,
+  ServerStorage,
+  Space,
+  Storage,
+  Timestamp,
+  Tx,
+  TxResult
+} from '@anticrm/core'
 import { Hierarchy, TxFactory } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
 import type { Client as MinioClient } from 'minio'
@@ -30,7 +47,12 @@ export interface SessionContext extends MeasureContext {
  */
 export interface Middleware {
   tx: (ctx: SessionContext, tx: Tx) => Promise<TxMiddlewareResult>
-  findAll: <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindAllMiddlewareResult<T>>
+  findAll: <T extends Doc>(
+    ctx: SessionContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindAllMiddlewareResult<T>>
 }
 
 /**
@@ -46,12 +68,18 @@ export type TxMiddlewareResult = [SessionContext, Tx, string | undefined]
 /**
  * @public
  */
-export type FindAllMiddlewareResult<T extends Doc> = [SessionContext, Ref<Class<T>>, DocumentQuery<T>, FindOptions<T> | undefined]
+export type FindAllMiddlewareResult<T extends Doc> = [
+  SessionContext,
+  Ref<Class<T>>,
+  DocumentQuery<T>,
+  FindOptions<T> | undefined
+]
 
 /**
  * @public
  */
 export interface Pipeline {
+  modelDb: ModelDb
   findAll: <T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,
@@ -112,7 +140,12 @@ export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
   remove: (id: Ref<Doc>) => Promise<void>
-  search: (_classes: Ref<Class<Doc>>[], search: DocumentQuery<Doc>, size: number | undefined, from?: number) => Promise<IndexedDoc[]>
+  search: (
+    _classes: Ref<Class<Doc>>[],
+    search: DocumentQuery<Doc>,
+    size: number | undefined,
+    from?: number
+  ) => Promise<IndexedDoc[]>
   close: () => Promise<void>
 }
 
@@ -125,7 +158,12 @@ export type FullTextAdapterFactory = (url: string, workspace: string) => Promise
  * @public
  */
 export interface WithFind {
-  findAll: <T extends Doc> (ctx: MeasureContext, clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  findAll: <T extends Doc>(
+    ctx: MeasureContext,
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
 }
 
 /**
@@ -134,5 +172,15 @@ export interface WithFind {
  */
 export interface ObjectDDParticipant extends Class<Obj> {
   // Collect more items to be deleted if parent document is deleted.
-  collectDocs: Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
+  collectDocs: Resource<
+  (
+    doc: Doc,
+    hiearachy: Hierarchy,
+    findAll: <T extends Doc>(
+      clazz: Ref<Class<T>>,
+      query: DocumentQuery<T>,
+      options?: FindOptions<T>
+    ) => Promise<FindResult<T>>
+  ) => Promise<Doc[]>
+  >
 }

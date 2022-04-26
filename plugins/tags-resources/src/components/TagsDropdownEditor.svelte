@@ -26,7 +26,6 @@
   export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
-  export let elements: Map<Ref<TagElement>, TagElement>
   export let newElements: TagElement[] = []
   export let countLabel: IntlString
 

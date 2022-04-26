@@ -52,7 +52,7 @@
     {#if $$slots.cell}
       <slot name="header" date={day(weekMonday, 0)} days={displayedDaysCount} />
     {/if}
-    {#each [...Array(displayedHours).keys()] as hourOfDay, row}
+    {#each [...Array(displayedHours).keys()] as hourOfDay}
       <tr class="antiTable-body__row">
         <td style="width: 50px;" class="calendar-td">
           <div class="antiTable-cells__firstCell">
@@ -63,7 +63,7 @@
           <td
             class="antiTable-body__border calendar-td cell"
             style={`height: ${cellHeight};`}
-            on:click={(evt) => {
+            on:click={() => {
               onSelect(day(weekMonday, dayIndex))
             }}
           >
@@ -81,15 +81,6 @@
   .calendar-td {
     padding: 0;
     margin: 0;
-  }
-  .selected {
-    // border-radius: 3px;
-    background-color: var(--primary-button-enabled);
-    // border-color: var(--primary-button-focused-border);
-    color: var(--primary-button-color);
-    border-radius: 0.5rem;
-    height: calc(100% - 5px);
-    width: calc(100% - 5px);
   }
   .cell {
     width: 8rem;

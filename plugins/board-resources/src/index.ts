@@ -13,44 +13,52 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import board from './plugin'
-import { UsersPopup } from '@anticrm/presentation'
-import { Ref } from '@anticrm/core'
+import type { Card } from '@anticrm/board'
 import contact, { Employee } from '@anticrm/contact'
-import { showPopup } from '@anticrm/ui'
-import { Card } from '@anticrm/board'
-import type { TxOperations as Client } from '@anticrm/core'
+import type { TxOperations as Client, Ref } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-import { TxOperations } from '@anticrm/core'
-import CardPresenter from './components/CardPresenter.svelte'
+import { UsersPopup } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
+
 import BoardPresenter from './components/BoardPresenter.svelte'
+import CardPresenter from './components/CardPresenter.svelte'
 import CreateBoard from './components/CreateBoard.svelte'
 import CreateCard from './components/CreateCard.svelte'
 import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
-import TemplatesIcon from './components/TemplatesIcon.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
-import MoveView from './components/popups/MoveCard.svelte'
+import MoveCard from './components/popups/MoveCard.svelte'
+import DeleteCard from './components/popups/RemoveCard.svelte'
+import CopyCard from './components/popups/CopyCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import EditMembersView from './components/popups/EditMembers.svelte'
-import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
+import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
+import TemplatesIcon from './components/TemplatesIcon.svelte'
 import WatchCard from './components/WatchCard.svelte'
+import BoardHeader from './components/BoardHeader.svelte'
+import board from './plugin'
 import {
   addCurrentUser,
   canAddCurrentUser,
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard,
-  deleteCard
+  unarchiveCard
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
 
 async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
-  showPopup(MoveView, { object }, getPopupAlignment(e))
+  showPopup(MoveCard, { object }, getPopupAlignment(e))
+}
+
+async function showDeleteCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(DeleteCard, { object }, getPopupAlignment(e))
+}
+
+async function showCopyCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CopyCard, { object, client }, getPopupAlignment(e))
 }
 
 async function showDatePickerPopup (object: Card, client: Client, e?: Event): Promise<void> {
@@ -61,7 +69,7 @@ async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Pr
   showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
 }
 
-async function showEditMembersPopup(object: Card, client: TxOperations): Promise<void> {
+async function showEditMembersPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(
     UsersPopup,
     {
@@ -71,12 +79,16 @@ async function showEditMembersPopup(object: Card, client: TxOperations): Promise
       selectedUsers: object?.members ?? [],
       placeholder: board.string.SearchMembers
     },
+    getPopupAlignment(e),
     undefined,
-    () => {},
-    (result: Ref<Employee>[]) => {
+    (result: Array<Ref<Employee>>) => {
       client.update(object, { members: result })
     }
   )
+}
+
+async function showAttachmentsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
 }
 
 export default async (): Promise<Resources> => ({
@@ -91,17 +103,20 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     BoardPresenter,
-    WatchCard
+    WatchCard,
+    BoardHeader
   },
   cardActionHandler: {
     Join: addCurrentUser,
     Move: showMoveCardPopup,
     Dates: showDatePickerPopup,
     Labels: showCardLabelsPopup,
+    Attachments: showAttachmentsPopup,
     Archive: archiveCard,
     SendToBoard: unarchiveCard,
-    Delete: deleteCard,
-    Members: showEditMembersPopup
+    Delete: showDeleteCardPopup,
+    Members: showEditMembersPopup,
+    Copy: showCopyCardPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,

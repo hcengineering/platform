@@ -41,6 +41,7 @@
       icon={IconAdd}
       label={board.string.NewList}
       justify={'left'}
+      kind={'transparent'}
       on:click={() => {
         isAdding = true
       }}

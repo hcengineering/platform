@@ -26,8 +26,10 @@ export default mergeIds(chunterId, chunter, {
   component: {
     CommentPresenter: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
+    DmPresenter: '' as AnyComponent,
     Threads: '' as AnyComponent,
-    ThreadView: '' as AnyComponent
+    ThreadView: '' as AnyComponent,
+    SavedMessages: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -55,7 +57,8 @@ export default mergeIds(chunterId, chunter, {
     Edit: '' as IntlString,
     MarkUnread: '' as IntlString,
     LastMessage: '' as IntlString,
-    PinnedMessages: '' as IntlString
+    PinnedMessages: '' as IntlString,
+    SavedMessages: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>

@@ -22,12 +22,13 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
-    "@rushstack/heft": "^0.41.1",
+    "@rushstack/heft": "^0.44.13",
     "typescript": "^4.3.5"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/core": "~0.6.16"
+    "@anticrm/core": "~0.6.16",
+    "@anticrm/preference": "~0.6.0"
   }
 }

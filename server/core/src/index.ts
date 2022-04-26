@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+export * from './adapter'
 export * from './types'
 export * from './fulltext'
 export * from './storage'
