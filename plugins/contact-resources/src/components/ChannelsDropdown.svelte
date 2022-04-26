@@ -273,7 +273,7 @@
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
       highlight={editMode}
-      label={editMode ? presentation.string.AddSocialLinks : presentation.string.EditSocialLinks}
+      label={displayItems.length > 0 ? presentation.string.AddSocialLinks : undefined}
       {kind} {size} {shape}
       on:click={editMode ? showMenu : enableEdit}
     />

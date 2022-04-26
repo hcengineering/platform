@@ -167,7 +167,7 @@ function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElem
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement, fullSize?: boolean): boolean {
+export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
   let show = true
   const newProps: Record<string, string|number> = {}
   if (element != null) {
@@ -194,15 +194,14 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
-    } else if ((element === 'full' || (element === 'content' && fullSize === true)) && contentPanel !== undefined) {
+    } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `${rect.top}px`
-      newProps.bottom = '0'
-      newProps.left = '0'
-      newProps.right = '0'
+      newProps.top = `${rect.top + 1}px`
+      newProps.bottom = '.25rem'
+      newProps.left = '.25rem'
+      newProps.right = '.25rem'
       show = true
-      console.log('!!!!!!! Full + Content & FS !!! contentPanel:', contentPanel)
-    } else if (element === 'content' && fullSize !== true && contentPanel !== undefined) {
+    } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 1}px`
       newProps.bottom = `${Math.min(document.body.clientHeight - rect.bottom + 1, window.innerHeight - rect.top - 1)}px`
@@ -210,7 +209,6 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       newProps.left = `${rect.left + 1}px`
       newProps.right = `${Math.min(document.body.clientWidth - rect.right, window.innerWidth - rect.left - 1)}px`
       // newProps.width = `${Math.min(rect.width, window.innerWidth - rect.left)}px`
-      console.log('!!!!!!! Content & Not FS !!! contentPanel:', contentPanel)
     } else if (element === 'middle') {
       if (contentPanel !== undefined) {
         const rect = contentPanel.getBoundingClientRect()

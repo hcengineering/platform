@@ -21,7 +21,7 @@
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
   import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
-  import { PopupAlignment, panelsizestore } from '@anticrm/ui'
+  import { PopupAlignment } from '@anticrm/ui'
 
   export let title: string
   export let subtitle: string | undefined = undefined
@@ -33,16 +33,16 @@
 
   const dispatch = createEventDispatcher()
 
-  $: isFullSize = $panelsizestore.fullSize
+  let innerWidth: number = 0
+  $: allowFullSize = innerWidth > 1200 && (position === 'full' || position === 'content')
+  $: isFullSize = allowFullSize && fullSize
 
   const resizePanel = () => {
     isFullSize = !isFullSize
-    $panelsizestore.fullSize = isFullSize
-    dispatch('update', fullSize)
   }
 </script>
 
-<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize}>
+<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize} bind:innerWidth>
   <svelte:fragment slot="subtitle">
     <slot name="subtitle" />
   </svelte:fragment>
@@ -65,12 +65,14 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <Button
-      icon={IconExpand}
-      size={'medium'}
-      kind={'transparent'}
-      on:click={resizePanel}
-    />
+    {#if allowFullSize}
+      <Button
+        icon={IconExpand}
+        size={'medium'}
+        kind={'transparent'}
+        on:click={resizePanel}
+      />
+    {/if}
   </svelte:fragment>
   {#if isFullSize}
     <Scroller>

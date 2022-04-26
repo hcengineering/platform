@@ -12,7 +12,6 @@ export interface PanelProps {
 }
 
 export const panelstore = writable<{panel?: PanelProps|undefined}>({ panel: undefined })
-export const panelsizestore = writable<{fullSize: boolean}>({ fullSize: false })
 let currentLocation: string | undefined
 
 location.subscribe((loc) => {

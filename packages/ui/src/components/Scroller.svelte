@@ -223,6 +223,8 @@
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
       checkFade()
+      clearTHead()
+      findTHeaders()
       belowContent = divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop
     }
   })

@@ -17,7 +17,7 @@
   import { getResource } from '@anticrm/platform'
   import { afterUpdate } from 'svelte'
   import { AnySvelteComponent, Spinner } from '..'
-  import { closePanel, PanelProps, panelstore, panelsizestore } from '../panelup'
+  import { closePanel, PanelProps, panelstore } from '../panelup'
   import { fitPopupElement, popupstore } from '../popups'
 
   export let contentPanel: HTMLElement
@@ -58,7 +58,7 @@
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
-      show = fitPopupElement(modalHTML, props.element, contentPanel, $panelsizestore.fullSize)
+      show = fitPopupElement(modalHTML, props.element, contentPanel)
     }
   }
 
@@ -107,7 +107,7 @@
         />
       </div>
     </div>
-    {#if props.element !== 'content' || (props.element === 'content' && $panelsizestore.fullSize)}
+    {#if props.element !== 'content'}
       <div class="modal-overlay" class:show on:click={() => escapeClose()} />
     {/if}
   {/if}

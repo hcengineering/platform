@@ -29,7 +29,6 @@
   export let innerWidth: number = 0
 
   const dispatch = createEventDispatcher()
-
 </script>
 
 <div class="antiPanel antiComponent" bind:clientWidth={innerWidth}>  
