@@ -17,6 +17,7 @@
   import { afterUpdate, onDestroy, onMount } from 'svelte'
 
   export let padding: boolean = false
+  export let autoscroll: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
 
@@ -34,6 +35,8 @@
   let enabledChecking: boolean = false
   let dY: number
   let visibleEl: number | undefined = undefined
+  let belowContent: number | undefined = undefined
+  let scrolling: boolean = false
 
   const checkBack = (): void => {
     if (divBox) {
@@ -185,6 +188,7 @@
   
   const checkFade = (): void => {
     if (divScroll) {
+      scrolling = false
       const t = divScroll.scrollTop
       const b = divScroll.scrollHeight - divScroll.clientHeight - t
       if (t > 0 && b > 0) mask = 'both'
@@ -199,6 +203,10 @@
   }
 
   let observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: .1 })
+
+  $: if (autoscroll && belowContent && belowContent <= 5) scrolling = true
+  $: if (scrolling && belowContent && belowContent > 5)
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
 
   onMount(() => {
     if (divScroll && divBox) {
@@ -215,6 +223,7 @@
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
       checkFade()
+      belowContent = divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop
     }
   })
 </script>

@@ -14,13 +14,17 @@
 //
 
 /* Panels */
+* {
+  --app-panel-width: 4rem;
+}
 .antiPanel-application {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  min-width: 4rem;
-  width: 4rem;
+  min-width: var(--app-panel-width);
+  width: var(--app-panel-width);
   height: 100%;
 }
 .antiPanel-navigator,
@@ -39,6 +43,15 @@
   min-width: 18rem;
   max-width: 18rem;
   width: 18rem;
+
+  // &.float {
+  //   position: fixed;
+  //   top: var(--status-bar-height);
+  //   left: var(--app-panel-width);
+  //   background-color: var(--body-accent);
+  //   filter: drop-shadow(2px 0 1px rgba(0, 0, 0, .2));
+  //   z-index: 450;
+  // }
 }
 .antiPanel-component:not(.aside) { flex-grow: 1; }
 .antiPanel-component.aside {

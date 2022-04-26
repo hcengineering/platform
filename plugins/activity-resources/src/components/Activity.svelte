@@ -86,33 +86,31 @@
     {/if}
   </div>
 {:else}
-  <Scroller>
+  <Scroller autoscroll>
     <div class="p-10">
       <slot />
     </div>
-    <div class="scroller-back">
-      <div class="ac-header short mirror-tool">
-        <div class="ac-header__wrap-title">
-          <div class="flex-center icon"><IconActivity size={'small'} /></div>
-          <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
-        </div>
-      </div>
-      <div class="p-activity">
-        {#if txes}
-          <Grid column={1} rowGap={1.5}>
-            {#each txes as tx}
-              <TxView {tx} {viewlets} />
-            {/each}
-          </Grid>
-        {/if}
+    <div class="ac-header short mirror-tool">
+      <div class="ac-header__wrap-title">
+        <div class="flex-center icon"><IconActivity size={'small'} /></div>
+        <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
     </div>
+    <div class="p-activity">
+      {#if txes}
+        <Grid column={1} rowGap={1.5}>
+          {#each txes.reverse() as tx}
+            <TxView {tx} {viewlets} />
+          {/each}
+        </Grid>
+      {/if}
+    </div>
+    {#if showCommenInput}
+      <div class="ref-input">
+        <Component is={chunter.component.CommentInput} props={{ object }} />
+      </div>
+    {/if}
   </Scroller>
-  {#if showCommenInput}
-    <div class="ref-input">
-      <Component is={chunter.component.CommentInput} props={{ object }} />
-    </div>
-  {/if}
 {/if}
 
 <style lang="scss">
@@ -120,16 +118,17 @@
     margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--white-color);
+    background-color: var(--primary-bg-color);
     border-radius: 50%;
   }
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
+
   }
   .p-activity {
-    padding: 1.5rem 2.5rem 2.5rem;
+    padding: 1.5rem 2.5rem 0;
   }
   .scroller-back {
     background-color: var(--body-accent);

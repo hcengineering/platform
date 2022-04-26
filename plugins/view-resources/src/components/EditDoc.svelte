@@ -43,7 +43,7 @@
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
-  let fullSize: boolean = true
+  let fullSize: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -239,7 +239,12 @@
       headerLoading = false
     })
   }
+
+  const _update = (result: any): void => {
+    dispatch('update', result)
+  }
 </script>
+
 <ActionContext context={{
   mode: 'editor'
 }}/>
@@ -252,6 +257,7 @@
     {fullSize}
     {object}
     {position}
+    on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')
     }}
@@ -329,6 +335,7 @@
     {/each}
   </Panel>
 {/if}
+
 <style lang="scss">
   .main-editor {
     display: flex;

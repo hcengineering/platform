@@ -14,29 +14,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import calendar from '@anticrm/calendar'
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
   import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
-  import { PopupAlignment } from '@anticrm/ui'
+  import { PopupAlignment, panelsizestore } from '@anticrm/ui'
 
   export let title: string
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent
-  export let fullSize: boolean = true
+  export let fullSize: boolean = false
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
   export let position: PopupAlignment | undefined = undefined
 
-  let innerWidth = 0
+  const dispatch = createEventDispatcher()
 
-  $: allowFullSize = innerWidth > 900 && (position === 'full' || position === 'content')
-  $: isFullSize = allowFullSize && fullSize
+  $: isFullSize = $panelsizestore.fullSize
+
+  const resizePanel = () => {
+    isFullSize = !isFullSize
+    $panelsizestore.fullSize = isFullSize
+    dispatch('update', fullSize)
+  }
 </script>
 
-<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize} bind:innerWidth>
+<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize}>
   <svelte:fragment slot="subtitle">
     <slot name="subtitle" />
   </svelte:fragment>
@@ -59,16 +65,12 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    {#if allowFullSize}
-      <Button
-        icon={IconExpand}
-        size={'medium'}
-        kind={'transparent'}
-        on:click={() => {
-          fullSize = !fullSize
-        }}
-      />
-    {/if}    
+    <Button
+      icon={IconExpand}
+      size={'medium'}
+      kind={'transparent'}
+      on:click={resizePanel}
+    />
   </svelte:fragment>
   {#if isFullSize}
     <Scroller>
