@@ -26,7 +26,7 @@
   import ChannelsPopup from './ChannelsPopup.svelte'
   import ChannelEditor from './ChannelEditor.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-import { onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let editable = false
