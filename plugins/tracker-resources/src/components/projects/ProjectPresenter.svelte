@@ -28,19 +28,6 @@
 
   const client = getClient()
 
-  async function getLeadAvatar() {
-    if (!value.lead) {
-      return null
-    }
-
-    const lead = await client.findOne(
-      contact.class.Employee,
-      {_id: value.lead}
-    )
-
-    return lead?.avatar
-  }
-
   async function updateStatus(status: ProjectStatus) {
     await client.updateDoc(
       plugin.class.Project,
