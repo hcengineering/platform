@@ -160,13 +160,13 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
 }
 
 export async function migrateBacklinks (client: MigrationClient): Promise<void> {
-  const backlinks = await client.find(DOMAIN_COMMENT, {
+  const backlinks = await client.find<Backlink>(DOMAIN_COMMENT, {
     _class: 'chunter:class:Backlink' as Ref<Class<Backlink>>
   })
   for (const backlink of backlinks) {
     await client.delete(DOMAIN_COMMENT, backlink._id)
     await client.create<Backlink>(DOMAIN_BACKLINK, {
-      _id: backlink._id as Ref<Backlink>,
+      _id: backlink._id,
       _class: core.class.Backlink,
       space: core.space.Backlinks,
       attachedTo: backlink.attachedTo,
@@ -174,7 +174,7 @@ export async function migrateBacklinks (client: MigrationClient): Promise<void> 
       collection: backlink.collection,
       message: backlink.message,
       backlinkId: backlink.backlinkId,
-      backlinkClass: backlink.backlinkId,
+      backlinkClass: backlink.backlinkClass,
       attachedDocId: backlink.attachedDocId,
       modifiedBy: backlink.modifiedBy,
       modifiedOn: backlink.modifiedOn
