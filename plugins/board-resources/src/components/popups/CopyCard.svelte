@@ -12,6 +12,7 @@
   import type { TxOperations } from '@anticrm/core'
   import { generateId, AttachedData } from '@anticrm/core'
   import task from '@anticrm/task'
+  import { createMissingLabels } from '../../utils/BoardUtils';
 
   export let object: Card
   export let client: TxOperations
@@ -38,6 +39,10 @@
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
+    const labels = object.space !== selected.space
+      ? await createMissingLabels(client, object, selected.space)
+      : object.labels
+
     const value: AttachedData<Card> = {
       state: selected.state,
       doneState: null,
@@ -47,7 +52,8 @@
       assignee: null,
       description: '',
       members: [],
-      location: ''
+      location: '',
+      labels
     }
 
     await client.addCollection(
