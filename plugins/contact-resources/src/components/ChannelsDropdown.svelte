@@ -26,6 +26,7 @@
   import ChannelsPopup from './ChannelsPopup.svelte'
   import ChannelEditor from './ChannelEditor.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { onDestroy } from 'svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let editable = false
@@ -39,6 +40,8 @@
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
   const dispatch = createEventDispatcher()
+
+  let editMode = false
 
   interface Item {
     label: IntlString
@@ -159,8 +162,10 @@
         } else if (displayItems[n].value === '') dropItem(n)
         saveItems()
         if (actions.length > 0 && addBtn) {
-          if (result === undefined) addBtn.focus()
-          else addBtn.click()
+          if (result !== undefined) addBtn.click()
+          else disableEdit()
+        } else {
+          disableEdit()
         }
       },
       result => {
@@ -190,7 +195,11 @@
     )
   }
   const showMenu = (ev: MouseEvent): void => {
-    showPopup(Menu, { actions }, ev.target as HTMLElement, () => {}, result => {
+    showPopup(Menu, { actions }, ev.target as HTMLElement, (result) => {
+      if (result === undefined) {
+        disableEdit()
+      }
+    }, result => {
       if (result != undefined && displayItems.length > 0) {
         if (result === 'left') {
           closePopup()
@@ -203,9 +212,30 @@
     })
   }
   let copied: boolean = false
-</script>
+  let div: HTMLDivElement
 
+  function listener (e: MouseEvent): void {
+    if (e.target !== null && !div.contains(e.target as Node)) {
+      disableEdit()
+    }
+  }
+
+  function enableEdit () {
+    window.addEventListener('click', listener)
+    editMode = true
+  }
+
+  function disableEdit () {
+    window.removeEventListener('click', listener)
+    editMode = false
+  }
+
+  onDestroy(() => {
+    window.removeEventListener('click', listener)
+  })
+</script>
 <div
+  bind:this={div}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border' ? 'xsmall-gap' : 'xxsmall-gap'}"
   class:short={displayItems.length > 4 && length === 'short'}
 >
@@ -213,7 +243,7 @@
     {#if item.value === ''}
       <Button
         icon={item.icon} {kind} {size} {shape} click={item.value === ''}
-        on:click={(ev) => { if (editable) editChannel(item, i, ev) }}
+        on:click={(ev) => { if (editMode) editChannel(item, i, ev) }}
       />
     {:else}
       <div class="tooltip-container">
@@ -221,14 +251,17 @@
         <Button
           bind:input={btns[i]}
           icon={item.icon} {kind} {size} {shape}
-          highlight={item.integration || item.notification}
+          highlight={item.integration || item.notification || editMode}
           on:click={(ev) => {
-            if (item.integration || item.notification) dispatch('click', item)
-            if (editable) editChannel(item, i, ev)
-            if (!copied && !editable) {
-              navigator.clipboard.writeText(item.value)
-              copied = true
-              setTimeout(() => { copied = false }, 1000)
+            if (editMode) {
+              editChannel(item, i, ev)
+            } else {
+              dispatch('click', item)
+              if (!copied) {
+                navigator.clipboard.writeText(item.value)
+                copied = true
+                setTimeout(() => { copied = false }, 1000)
+              }
             }
           }}
         />
@@ -239,9 +272,10 @@
     <Button
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
-      label={presentation.string.AddSocialLinks}
+      highlight={editMode}
+      label={editMode ? presentation.string.AddSocialLinks : presentation.string.EditSocialLinks}
       {kind} {size} {shape}
-      on:click={showMenu}
+      on:click={editMode ? showMenu : enableEdit}
     />
   {/if}
 </div>

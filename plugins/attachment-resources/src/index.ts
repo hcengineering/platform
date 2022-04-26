@@ -26,6 +26,9 @@ import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
 import { Resources } from '@anticrm/platform'
 import { uploadFile, deleteFile } from './utils'
+import attachment, { Attachment } from '@anticrm/attachment'
+import preference from '@anticrm/preference'
+import { getClient } from '@anticrm/presentation'
 
 export {
   AddAttachment,
@@ -36,6 +39,23 @@ export {
   AttachmentRefInput,
   AttachmentList,
   AttachmentDocList
+}
+
+export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
+  const client = getClient()
+
+  await client.createDoc(attachment.class.SavedAttachments, preference.space.Preference, {
+    attachedTo: attach._id
+  })
+}
+
+export async function DeleteAttachmentFromSaved(attach: Attachment): Promise<void> {
+  const client = getClient()
+
+  const current = await client.findOne(attachment.class.SavedAttachments, { attachedTo: attach._id })
+  if (current !== undefined) {
+    await client.remove(current)
+  }
 }
 
 export default async (): Promise<Resources> => ({
@@ -52,5 +72,9 @@ export default async (): Promise<Resources> => ({
   helper: {
     UploadFile: uploadFile,
     DeleteFile: deleteFile
+  },
+  actionImpl: {
+    AddAttachmentToSaved,
+    DeleteAttachmentFromSaved
   }
 })

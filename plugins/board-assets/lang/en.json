@@ -2,6 +2,7 @@
   "string": {
     "Name": "Name",
     "CreateBoard": "Create board",
+    "OpenCard": "Open Card",
     "CreateCard": "Create card",
     "CardName": "Card name",
     "Cards": "Cards",
@@ -90,6 +91,13 @@
     "DeleteCard": "All actions will be removed from the activity feed and you won’t be able to re-open the card. There is no undo.",
     "SearchMembers": "Search members",
     "Menu": "Menu",
-    "ToArchive": "Archive"
+    "ToArchive": "Archive",
+    "CopyCard": "Copy card",
+    "AlsoCopy": "Keep...",
+    "CopyTo": "Copy to...",
+    "NoResults": "No results",
+    "SwitchToLists": "Switch to lists",
+    "SwitchToCards": "Switch to cards",
+    "SearchArchive": "Search archive..."
   }
 }

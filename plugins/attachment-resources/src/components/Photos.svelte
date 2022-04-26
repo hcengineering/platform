@@ -70,6 +70,7 @@
       const file = list.item(index)
       if (file !== null) create(file)
     }
+    inputFile.value = ''
   }
 
   function fileDrop (e: DragEvent) {

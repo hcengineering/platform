@@ -1,16 +1,28 @@
 import { Card } from '@anticrm/board'
 import { EmployeeAccount } from '@anticrm/contact'
-import { TxOperations as Client, getCurrentAccount } from '@anticrm/core'
+import { TxOperations as Client, TxResult, getCurrentAccount } from '@anticrm/core'
+import { showPanel } from '@anticrm/ui'
 
-export function updateCard (client: Client, card: Card, field: string, value: any): void {
+import board from '../plugin'
+
+export function updateCard (client: Client, card: Card, field: string, value: any): Promise<TxResult> | undefined {
   if (!card) {
     return
   }
-  client.update(card, { [field]: value })
+  return client.update(card, { [field]: value })
 }
 
-export function deleteCard (card: Card, client: Client): void {
-  client.remove(card)
+export function openCardPanel (card: Card): boolean {
+  if (!card) {
+    return false
+  }
+
+  showPanel(board.component.EditCard, card._id, card._class, 'middle')
+  return true
+}
+
+export function deleteCard (card: Card, client: Client): Promise<TxResult> {
+  return client.remove(card)
 }
 
 export function isArchived (card: Card): boolean {
@@ -38,20 +50,20 @@ export function hasDate (card: Card): boolean {
   return !!card.date && (!!card.date.dueDate || !!card.date.startDate)
 }
 
-export function addCurrentUser (card: Card, client: Client): void {
+export function addCurrentUser (card: Card, client: Client): Promise<TxResult> | undefined {
   const employee = (getCurrentAccount() as EmployeeAccount).employee
 
   if (card.members?.includes(employee)) {
     return
   }
 
-  client.update(card, { $push: { members: employee } })
+  return client.update(card, { $push: { members: employee } })
 }
 
-export function archiveCard (card: Card, client: Client): void {
-  updateCard(client, card, 'isArchived', true)
+export function archiveCard (card: Card, client: Client): Promise<TxResult> | undefined {
+  return updateCard(client, card, 'isArchived', true)
 }
 
-export function unarchiveCard (card: Card, client: Client): void {
-  updateCard(client, card, 'isArchived', false)
+export function unarchiveCard (card: Card, client: Client): Promise<TxResult> | undefined {
+  return updateCard(client, card, 'isArchived', false)
 }

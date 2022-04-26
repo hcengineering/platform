@@ -67,6 +67,7 @@
       const file = list.item(index)
       if (file !== null) createAttachment(file)
     }
+    inputFile.value = ''
   }
 
   function fileDrop (e: DragEvent) {

@@ -162,7 +162,7 @@
           />
           <span class="eLabelCounter ml-2">{(groupedIssues[category] ?? []).length}</span>
         </div>
-        <div class="flex mr-1">
+        <div class="flex">
           <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
             <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
           </Tooltip>
@@ -188,73 +188,77 @@
               on:focus={() => {}}
               on:mouseover={() => handleRowFocused(docObject)}
             >
-              {#each itemModels as attributeModel, attributeModelIndex}
-                {#if attributeModelIndex === 0}
-                  <div class="gridElement">
-                    <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                      <div class="eListGridCheckBox ml-2">
-                        <CheckBox
-                          checked={selectedObjectIdsSet.has(docObject._id)}
-                          on:value={(event) => {
-                            onObjectChecked([docObject], event.detail)
-                          }}
+              <div class="contentWrapper">
+                {#each itemModels as attributeModel, attributeModelIndex}
+                  {#if attributeModelIndex === 0}
+                    <div class="gridElement">
+                      <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
+                        <div class="eListGridCheckBox">
+                          <CheckBox
+                            checked={selectedObjectIdsSet.has(docObject._id)}
+                            on:value={(event) => {
+                              onObjectChecked([docObject], event.detail)
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                      <div class="priorityPresenter">
+                        <svelte:component
+                          this={attributeModel.presenter}
+                          value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                          {...attributeModel.props}
                         />
                       </div>
-                    </Tooltip>
-                    <div class="priorityPresenter">
+                    </div>
+                  {:else if attributeModelIndex === 1}
+                    <div class="issuePresenter">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        {...attributeModel.props}
+                      />
+                      <div
+                        id="context-menu"
+                        class="eIssuePresenterContextMenu"
+                        on:click={(event) =>
+                          handleMenuOpened(
+                            event,
+                            docObject,
+                            combinedGroupedIssues.findIndex((x) => x === docObject)
+                          )}
+                      >
+                        <IconMoreV size={'small'} />
+                      </div>
+                    </div>
+                  {:else if attributeModelIndex === 3}
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      {...attributeModel.props}
+                    />
+                    <div class="filler" />
+                  {:else}
+                    <div class="gridElement">
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         {...attributeModel.props}
                       />
                     </div>
-                  </div>
-                {:else if attributeModelIndex === 1}
-                  <div class="issuePresenter">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      {...attributeModel.props}
-                    />
-                    <div
-                      id="context-menu"
-                      class="eIssuePresenterContextMenu"
-                      on:click={(event) =>
-                        handleMenuOpened(
-                          event,
-                          docObject,
-                          combinedGroupedIssues.findIndex((x) => x === docObject)
-                        )}
-                    >
-                      <IconMoreV size={'small'} />
-                    </div>
-                  </div>
-                {:else if attributeModelIndex === 3}
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                  <div class="filler" />
-                {:else}
-                  <div class="gridElement">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      {...attributeModel.props}
-                    />
-                  </div>
-                {/if}
-              {/each}
+                  {/if}
+                {/each}
+              </div>
             </div>
           {/each}
         {:else if loadingProps !== undefined}
           {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-            <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
-              <div class="gridElement">
-                <CheckBox checked={false} />
-                <div class="ml-4">
-                  <Spinner size="small" />
+            <div class="listGrid" class:fixed={rowIndex === selectedRowIndex}>
+              <div class="contentWrapper">
+                <div class="gridElement">
+                  <CheckBox checked={false} />
+                  <div class="ml-4">
+                    <Spinner size="small" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -269,7 +273,8 @@
   .categoryHeader {
     height: 2.5rem;
     background-color: var(--theme-table-bg-hover);
-    padding-left: 2.3rem;
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
   }
 
   .label {
@@ -285,9 +290,16 @@
     width: 100%;
   }
 
-  .listGrid {
+  .contentWrapper {
     display: flex;
     align-items: center;
+    height: 100%;
+    padding-left: 0.75rem;
+    padding-right: 1.15rem;
+  }
+
+  .listGrid {
+    width: 100%;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
@@ -308,10 +320,6 @@
 
     &.mListGridSelected {
       background-color: var(--theme-table-bg-hover);
-    }
-
-    &.mListGridIsLoading {
-      justify-content: flex-start;
     }
 
     &:hover {
@@ -347,7 +355,7 @@
   }
 
   .priorityPresenter {
-    padding-left: 0.75rem;
+    padding-left: 0.65rem;
   }
 
   .issuePresenter {
