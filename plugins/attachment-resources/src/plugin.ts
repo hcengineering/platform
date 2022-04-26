@@ -32,6 +32,7 @@ export default mergeIds(attachmentId, attachment, {
     FileBrowserFilterIn: '' as IntlString,
     FileBrowserFilterDate: '' as IntlString,
     FileBrowserFilterFileType: '' as IntlString,
+    FileBrowserSort: '' as IntlString,
     FileBrowserSortNewest: '' as IntlString,
     FileBrowserSortOldest: '' as IntlString,
     FileBrowserSortAZ: '' as IntlString,

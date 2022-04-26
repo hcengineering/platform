@@ -16,27 +16,36 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Doc, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
+  import { Class, Doc, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
-  import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { DropdownLabelsIntl, IconMoreV, Label, Menu as UIMenu, showPopup } from '@anticrm/ui'
+  import { getClient, SpaceMultiBoxList, UserBoxList } from '@anticrm/presentation'
+  import ui, {
+    DropdownLabelsIntl,
+    getCurrentLocation,
+    location,
+    IconMoreV,
+    IconSearch,
+    Label,
+    Menu as UIMenu,
+    showPopup,
+    navigate,
+    EditWithIcon,
+    Spinner
+  } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
-  import { AttachmentPresenter } from '..'
+  import { onDestroy } from 'svelte'
+  import { AttachmentPresenter, SortMode } from '..'
   import attachment from '../plugin'
 
-  enum SortMode {
-    NewestFile,
-    OldestFile,
-    AscendingAlphabetical,
-    DescendingAlphabetical
+  const msInDay = 24 * 60 * 60 * 1000
+  const getBeginningOfDate = (customDate?: Date) => {
+    if (!customDate) {
+      customDate = new Date()
+    }
+    customDate.setUTCHours(0, 0, 0, 0)
+    return customDate.getTime()
   }
 
-  const msInDay = 24 * 60 * 60 * 1000
-  const getBeginningOfToday = () => {
-    const date = new Date()
-    date.setUTCHours(0, 0, 0, 0)
-    return date.getTime()
-  }
   const dateObjects = [
     {
       id: 'dateAny',
@@ -49,42 +58,46 @@
       id: 'dateToday',
       label: attachment.string.FileBrowserDateFilterToday,
       getDate: () => {
-        return { $gte: getBeginningOfToday() }
+        return { $gte: getBeginningOfDate() }
       }
     },
     {
       id: 'dateYesterday',
       label: attachment.string.FileBrowserDateFilterYesterday,
       getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay, $lt: getBeginningOfToday() }
+        return { $gte: getBeginningOfDate() - msInDay, $lt: getBeginningOfDate() }
       }
     },
     {
       id: 'date7Days',
       label: attachment.string.FileBrowserDateFilter7Days,
       getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 6 }
+        return { $gte: getBeginningOfDate() - msInDay * 6 }
       }
     },
     {
       id: 'date30Days',
       label: attachment.string.FileBrowserDateFilter30Days,
       getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 29 }
+        return { $gte: getBeginningOfDate() - msInDay * 29 }
       }
     },
     {
       id: 'date3Months',
       label: attachment.string.FileBrowserDateFilter3Months,
       getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 90 }
+        const now = new Date()
+        now.setMonth(now.getMonth() - 3)
+        return { $gte: getBeginningOfDate(now) }
       }
     },
     {
       id: 'date12Months',
       label: attachment.string.FileBrowserDateFilter12Months,
       getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 364 }
+        const now = new Date()
+        now.setMonth(now.getMonth() - 12)
+        return { $gte: getBeginningOfDate(now) }
       }
     }
   ]
@@ -129,9 +142,15 @@
 
   const client = getClient()
   export let space: Space | undefined
+  export let requestedSpaceClasses: Ref<Class<Space>>[] = []
   const currentUser = getCurrentAccount() as EmployeeAccount
-  let participants: Ref<Employee>[] = [currentUser.employee]
-  const assignee: Ref<Employee> | null = null
+  let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
+  let selectedSpaces: Ref<Space>[] = []
+  let searchQuery: string = ''
+  let isLoading = false
+
+  // TODO
+  const loc = getCurrentLocation()
 
   let attachments: Attachment[] = []
   let selectedFileNumber: number | undefined
@@ -208,46 +227,78 @@
     }
   }
 
-  $: fetch(selectedSort, selectedFileTypeId, selectedDateId)
+  $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
-  async function fetch (selectedSort_: SortMode, selectedFileTypeId_: string, selectedDateId_: string) {
-    const spaceQuery = space && { space: space._id }
-    const fileType = fileTypeObjects.find((o) => o.id === selectedFileTypeId_)?.getType()
-    const typeQuery = fileType && { type: fileType }
+  async function fetch (
+    searchQuery_: string,
+    selectedSort_: SortMode,
+    selectedFileTypeId_: string,
+    selectedDateId_: string,
+    selectedParticipants_: Ref<Employee>[],
+    selectedSpaces_: Ref<Space>[]
+  ) {
+    isLoading = true
+
+    const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
+
+    const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: selectedParticipants_ } })
+    const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
+
+    const spaceQuery = selectedSpaces_.length ? { space: { $in: selectedSpaces_ } } : {}
+
     const date = dateObjects.find((o) => o.id === selectedDateId_)?.getDate()
     const dateQuery = date && { modifiedOn: date }
 
+    const fileType = fileTypeObjects.find((o) => o.id === selectedFileTypeId_)?.getType()
+    const fileTypeQuery = fileType && { type: fileType }
+
     attachments = await client.findAll(
       attachment.class.Attachment,
-      { ...spaceQuery, ...typeQuery, ...dateQuery },
+      { ...nameQuery, ...senderQuery, ...spaceQuery, ...dateQuery, ...fileTypeQuery },
       {
-        sort: sortModeToOptionObject(selectedSort_)
+        sort: sortModeToOptionObject(selectedSort_),
+        limit: 200
       }
     )
+    isLoading = false
   }
+
+  onDestroy(
+    location.subscribe(async (loc) => {
+      loc.query = undefined
+      navigate(loc)
+    })
+  )
 </script>
 
 <div class="ac-header full divide">
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
   </div>
+  <EditWithIcon icon={IconSearch} bind:value={searchQuery} placeholder={ui.string.SearchDots} />
 </div>
 <div class="filterBlockContainer">
   <div class="simpleFilterButton">
     <UserBoxList
       _class={contact.class.Employee}
-      items={participants}
+      items={selectedParticipants}
       label={attachment.string.FileBrowserFilterFrom}
       on:update={(evt) => {
-        participants = evt.detail
+        selectedParticipants = evt.detail
       }}
       noItems={attachment.string.NoParticipants}
     />
   </div>
-  <!-- TODO: wait for In filter -->
-  <!-- <div class="simpleFilterButton">
-    <UserBox _class={contact.class.Employee} label={attachment.string.FileBrowserFilterIn} bind:value={assignee} />
-  </div> -->
+  <div class="simpleFilterButton">
+    <SpaceMultiBoxList
+      _classes={requestedSpaceClasses}
+      label={attachment.string.FileBrowserFilterIn}
+      selectedItems={space ? [space._id] : []}
+      on:update={(evt) => {
+        selectedSpaces = evt.detail
+      }}
+    />
+  </div>
   <div class="simpleFilterButton">
     <DropdownLabelsIntl
       items={dateObjects}
@@ -271,11 +322,15 @@
       <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
     </div>
     <div class="eGroupHeaderSortMenu" on:click={(event) => showSortMenu(event)}>
-      {'Sort: '}
+      <Label label={attachment.string.FileBrowserSort} />
       <Label label={sortModeToString(selectedSort)} />
     </div>
   </div>
-  {#if attachments?.length}
+  {#if isLoading}
+    <div class="ml-4">
+      <Spinner />
+    </div>
+  {:else if attachments?.length}
     <div class="flex-col">
       {#each attachments as attachment, i}
         <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
@@ -299,9 +354,8 @@
 
 <style lang="scss">
   .group {
-    border: 1px solid var(--theme-bg-focused-border);
-    border-radius: 1rem;
     padding: 1rem 0;
+    overflow: auto;
   }
 
   .groupHeader {
@@ -368,7 +422,6 @@
     margin-bottom: 10px;
   }
   .simpleFilterButton {
-    min-width: 4rem;
     max-width: 12rem;
     margin-left: 0.75rem;
   }

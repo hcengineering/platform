@@ -334,7 +334,10 @@ export function createModel (builder: Builder): void {
             id: 'fileBrowser',
             label: attachment.string.FileBrowser,
             icon: attachment.icon.FileBrowser,
-            component: attachment.component.FileBrowser
+            component: attachment.component.FileBrowser,
+            componentProps: {
+              requestedSpaceClasses: [chunter.class.Channel]
+            }
           }
         ],
         spaces: [

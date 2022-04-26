@@ -41,7 +41,14 @@ export {
   AttachmentDocList
 }
 
-export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
+export enum SortMode {
+  NewestFile,
+  OldestFile,
+  AscendingAlphabetical,
+  DescendingAlphabetical
+}
+
+export async function AddAttachmentToSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   await client.createDoc(attachment.class.SavedAttachments, preference.space.Preference, {
@@ -49,7 +56,7 @@ export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
   })
 }
 
-export async function DeleteAttachmentFromSaved(attach: Attachment): Promise<void> {
+export async function DeleteAttachmentFromSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(attachment.class.SavedAttachments, { attachedTo: attach._id })
