@@ -26,16 +26,10 @@
     Component,
     Button,
     IconAdd,
-    Scroller,
     eventToHTMLElement
   } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
-  import {
-    buildModel,
-    LoadingProps,
-    Menu,
-    SelectDirection
-  } from '@anticrm/view-resources'
+  import { buildModel, LoadingProps, Menu, SelectDirection } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import CreateIssue from '../CreateIssue.svelte'
   import tracker from '../../plugin'
@@ -54,9 +48,9 @@
   export let selectedRowIndex: number | undefined = undefined
   export let groupedIssues: { [key: string | number | symbol]: Issue[] } = {}
   export let loadingProps: LoadingProps | undefined = undefined
-  
+
   const dispatch = createEventDispatcher()
-  
+
   const client = getClient()
   const objectRefs: HTMLElement[] = []
   const baseOptions: FindOptions<Issue> = {
@@ -65,7 +59,7 @@
       status: tracker.class.IssueStatus
     }
   }
-  
+
   $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
   $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
   $: headerComponent = groupByKey === undefined ? null : issuesGroupPresenterMap[groupByKey]
@@ -175,101 +169,99 @@
         </div>
       </div>
     {/if}
-    <Scroller>
-      {#await buildModel({ client, _class, keys: itemsConfig, options }) then itemModels}
-        <div class="listRoot">
-          {#if groupedIssues[category]}
-            {#each groupedIssues[category] as docObject (docObject._id)}
-              <div
-                bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-                class="listGrid"
-                class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
-                class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-                class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-                on:contextmenu|preventDefault={(event) =>
-                  handleMenuOpened(
-                    event,
-                    docObject,
-                    combinedGroupedIssues.findIndex((x) => x === docObject)
-                  )}
-                on:focus={() => {}}
-                on:mouseover={() => handleRowFocused(docObject)}
-              >
-                {#each itemModels as attributeModel, attributeModelIndex}
-                  {#if attributeModelIndex === 0}
-                    <div class="gridElement">
-                      <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                        <div class="eListGridCheckBox ml-2">
-                          <CheckBox
-                            checked={selectedObjectIdsSet.has(docObject._id)}
-                            on:value={(event) => {
-                              onObjectChecked([docObject], event.detail)
-                            }}
-                          />
-                        </div>
-                      </Tooltip>
-                      <div class="priorityPresenter">
-                        <svelte:component
-                          this={attributeModel.presenter}
-                          value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                          {...attributeModel.props}
+    {#await buildModel({ client, _class, keys: itemsConfig, options }) then itemModels}
+      <div class="listRoot">
+        {#if groupedIssues[category]}
+          {#each groupedIssues[category] as docObject (docObject._id)}
+            <div
+              bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
+              class="listGrid"
+              class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
+              class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              on:contextmenu|preventDefault={(event) =>
+                handleMenuOpened(
+                  event,
+                  docObject,
+                  combinedGroupedIssues.findIndex((x) => x === docObject)
+                )}
+              on:focus={() => {}}
+              on:mouseover={() => handleRowFocused(docObject)}
+            >
+              {#each itemModels as attributeModel, attributeModelIndex}
+                {#if attributeModelIndex === 0}
+                  <div class="gridElement">
+                    <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
+                      <div class="eListGridCheckBox ml-2">
+                        <CheckBox
+                          checked={selectedObjectIdsSet.has(docObject._id)}
+                          on:value={(event) => {
+                            onObjectChecked([docObject], event.detail)
+                          }}
                         />
                       </div>
-                    </div>
-                  {:else if attributeModelIndex === 1}
-                    <div class="issuePresenter">
+                    </Tooltip>
+                    <div class="priorityPresenter">
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         {...attributeModel.props}
                       />
-                      <div
-                        id="context-menu"
-                        class="eIssuePresenterContextMenu"
-                        on:click={(event) =>
-                          handleMenuOpened(
-                            event,
-                            docObject,
-                            combinedGroupedIssues.findIndex((x) => x === docObject)
-                          )}
-                      >
-                        <IconMoreV size={'small'} />
-                      </div>
                     </div>
-                  {:else if attributeModelIndex === 3}
+                  </div>
+                {:else if attributeModelIndex === 1}
+                  <div class="issuePresenter">
                     <svelte:component
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
                       {...attributeModel.props}
                     />
-                    <div class="filler" />
-                  {:else}
-                    <div class="gridElement">
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        {...attributeModel.props}
-                      />
+                    <div
+                      id="context-menu"
+                      class="eIssuePresenterContextMenu"
+                      on:click={(event) =>
+                        handleMenuOpened(
+                          event,
+                          docObject,
+                          combinedGroupedIssues.findIndex((x) => x === docObject)
+                        )}
+                    >
+                      <IconMoreV size={'small'} />
                     </div>
-                  {/if}
-                {/each}
-              </div>
-            {/each}
-          {:else if loadingProps !== undefined}
-            {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-              <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
-                <div class="gridElement">
-                  <CheckBox checked={false} />
-                  <div class="ml-4">
-                    <Spinner size="small" />
                   </div>
+                {:else if attributeModelIndex === 3}
+                  <svelte:component
+                    this={attributeModel.presenter}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    {...attributeModel.props}
+                  />
+                  <div class="filler" />
+                {:else}
+                  <div class="gridElement">
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      {...attributeModel.props}
+                    />
+                  </div>
+                {/if}
+              {/each}
+            </div>
+          {/each}
+        {:else if loadingProps !== undefined}
+          {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
+            <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
+              <div class="gridElement">
+                <CheckBox checked={false} />
+                <div class="ml-4">
+                  <Spinner size="small" />
                 </div>
               </div>
-            {/each}
-          {/if}
-        </div>
-      {/await}
-    </Scroller>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    {/await}
   {/each}
 </div>
 
