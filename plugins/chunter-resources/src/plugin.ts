@@ -55,7 +55,6 @@ export default mergeIds(chunterId, chunter, {
     About: '' as IntlString,
     Members: '' as IntlString,
     NoMembers: '' as IntlString,
-    In: '' as IntlString,
     Replies: '' as IntlString,
     Topic: '' as IntlString,
     Thread: '' as IntlString,

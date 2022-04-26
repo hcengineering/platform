@@ -111,9 +111,6 @@ export default plugin(chunterId, {
     SavedMessages: '' as Ref<Class<SavedMessages>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>
   },
-  space: {
-    Backlinks: '' as Ref<Space>
-  },
   string: {
     EditUpdate: '' as IntlString,
     EditCancel: '' as IntlString,
