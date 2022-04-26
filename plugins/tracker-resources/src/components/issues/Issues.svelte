@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import contact, { Employee } from '@anticrm/contact'
+  import { DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import {
     Issue,
@@ -23,10 +23,10 @@
     IssuesOrdering,
     IssuesDateModificationPeriod,
     IssueStatus,
-    IssueStatusCategory
+    IssueStatusCategory,
+    IssuePriority
   } from '@anticrm/tracker'
   import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import CategoryPresenter from './CategoryPresenter.svelte'
   import tracker from '../../plugin'
   import { IntlString } from '@anticrm/platform'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
@@ -34,9 +34,11 @@
     IssuesGroupByKeys,
     issuesGroupKeyMap,
     issuesOrderKeyMap,
-    defaultIssueCategories,
-    getIssuesModificationDatePeriodTime
+    getIssuesModificationDatePeriodTime,
+    groupBy,
+    issuesSortOrderMap
   } from '../../utils'
+  import IssuesListBrowser from './IssuesListBrowser.svelte'
 
   export let currentSpace: Ref<Team>
   export let title: IntlString = tracker.string.AllIssues
@@ -51,13 +53,22 @@
   const ENTRIES_LIMIT = 200
   const spaceQuery = createQuery()
   const issuesQuery = createQuery()
+  const resultIssuesQuery = createQuery()
   const statusesQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
   let currentTeam: Team | undefined
   let issues: Issue[] = []
+  let resultIssues: Issue[] = []
   let statusesById: ReadonlyMap<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
+  let employees: (WithLookup<Employee> | undefined)[] = []
 
-  $: totalIssues = getTotalIssues(issuesMap)
+  $: totalIssues = issues.length
+
+  const options: FindOptions<Issue> = {
+    sort: { [issuesOrderKeyMap[orderingKey]]: issuesSortOrderMap[issuesOrderKeyMap[orderingKey]] },
+    limit: ENTRIES_LIMIT,
+    lookup: { assignee: contact.class.Employee, status: tracker.class.IssueStatus }
+  }
 
   $: baseQuery = {
     space: currentSpace,
@@ -73,7 +84,8 @@
   })
 
   $: groupByKey = issuesGroupKeyMap[groupingKey]
-  $: categories = getCategories(groupByKey, issues, !!shouldShowEmptyGroups)
+  $: categories = getCategories(groupByKey, resultIssues, !!shouldShowEmptyGroups)
+  $: groupedIssues = getGroupedIssues(groupByKey, resultIssues, categories)
   $: displayedCategories = (categories as any[]).filter((x) => {
     if (groupByKey === undefined || includedGroups[groupByKey] === undefined) {
       return true
@@ -134,8 +146,21 @@
     { ...includedIssuesQuery },
     (result) => {
       issues = result
+
+      employees = result.map((x) => x.$lookup?.assignee)
     },
-    { limit: ENTRIES_LIMIT, lookup: { assignee: contact.class.Employee } }
+    options
+  )
+
+  $: resultIssuesQuery.query<Issue>(
+    tracker.class.Issue,
+    { ...resultQuery },
+    (result) => {
+      resultIssues = result
+
+      employees = result.map((x) => x.$lookup?.assignee)
+    },
+    options
   )
 
   $: statusesQuery.query(
@@ -150,10 +175,39 @@
     }
   )
 
+  const getGroupedIssues = (key: IssuesGroupByKeys | undefined, elements: Issue[], orderedCategories: any[]) => {
+    if (!groupByKey) {
+      return { [undefined as any]: issues }
+    }
+
+    const unorderedIssues = groupBy(elements, key)
+
+    return Object.keys(unorderedIssues)
+      .sort((o1, o2) => {
+        const i1 = orderedCategories.findIndex((x) => x === o1)
+        const i2 = orderedCategories.findIndex((x) => x === o2)
+
+        return i1 - i2
+      })
+      .reduce((obj: { [p: string]: any[] }, objKey) => {
+        obj[objKey] = unorderedIssues[objKey]
+        return obj
+      }, {})
+  }
+
   const getCategories = (key: IssuesGroupByKeys | undefined, elements: Issue[], shouldShowAll: boolean) => {
     if (!key) {
       return [undefined] // No grouping
     }
+
+    const defaultPriorities = [
+      IssuePriority.NoPriority,
+      IssuePriority.Urgent,
+      IssuePriority.High,
+      IssuePriority.Medium,
+      IssuePriority.Low
+    ]
+    const defaultStatuses = Object.values(statuses).map((x) => x._id)
 
     const existingCategories = Array.from(
       new Set(
@@ -163,26 +217,44 @@
       )
     )
 
-    return shouldShowAll ? defaultIssueCategories[key] ?? existingCategories : existingCategories
+    if (shouldShowAll) {
+      if (key === 'status') {
+        return defaultStatuses
+      }
+
+      if (key === 'priority') {
+        return defaultPriorities
+      }
+    }
+
+    if (key === 'status') {
+      existingCategories.sort((s1, s2) => {
+        const i1 = defaultStatuses.findIndex((x) => x === s1)
+        const i2 = defaultStatuses.findIndex((x) => x === s2)
+
+        return i1 - i2
+      })
+    }
+
+    if (key === 'priority') {
+      existingCategories.sort((p1, p2) => {
+        const i1 = defaultPriorities.findIndex((x) => x === p1)
+        const i2 = defaultPriorities.findIndex((x) => x === p2)
+
+        return i1 - i2
+      })
+    }
+
+    return existingCategories
   }
 
-  function filterIssueStatuses (
+  function filterIssueStatuses(
     issueStatuses: IssueStatus[],
     issueStatusCategories: Ref<IssueStatusCategory>[]
   ): Ref<IssueStatus>[] {
     const statusCategories = new Set(issueStatusCategories)
 
     return issueStatuses.filter((status) => statusCategories.has(status.category)).map((s) => s._id)
-  }
-
-  const getTotalIssues = (map: { [status: string]: number }) => {
-    let total = 0
-
-    for (const amount of Object.values(map)) {
-      total += amount
-    }
-
-    return total
   }
 
   const handleOptionsUpdated = (
@@ -235,19 +307,25 @@
       <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
     <div class="mt-4">
-      {#each displayedCategories as category}
-        <CategoryPresenter
-          groupBy={{ key: groupByKey, group: category }}
-          orderBy={issuesOrderKeyMap[orderingKey]}
-          query={resultQuery}
-          {statuses}
-          {currentSpace}
-          {currentTeam}
-          on:content={(event) => {
-            issuesMap[category] = event.detail
-          }}
-        />
-      {/each}
+      <IssuesListBrowser
+        _class={tracker.class.Issue}
+        {currentSpace}
+        {groupByKey}
+        orderBy={issuesOrderKeyMap[orderingKey]}
+        {statuses}
+        {employees}
+        categories={displayedCategories}
+        itemsConfig={[
+          { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
+          { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+          { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace, statuses } },
+          { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+          { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
+          { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+          { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
+        ]}
+        {groupedIssues}
+      />
     </div>
   </ScrollBox>
 {/if}
