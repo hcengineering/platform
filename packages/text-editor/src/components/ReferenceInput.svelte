@@ -111,13 +111,13 @@
                 }
               })
             },
-            onUpdate(props: any) {
+            onUpdate (props: any) {
               component.updateProps(props)
             },
-            onKeyDown(props: any) {
+            onKeyDown (props: any) {
               return component.onKeyDown(props)
             },
-            onExit() {
+            onExit () {
               component.destroy()
             }
           }
@@ -135,8 +135,42 @@
     console.log('handle event', a.label)
     a.action(evt?.target as HTMLElement, editorHandler)
   }
-
 </script>
+
+<div class="ref-container">
+  <div class="textInput" class:withoutTopBorder>
+    <div class="inputMsg">
+      <TextEditor
+        bind:content
+        bind:this={textEditor}
+        on:content={(ev) => {
+          dispatch('message', ev.detail)
+          if (clearContent) {
+            content = ''
+            textEditor.clear()
+          }
+        }}
+        extensions={editorExtensions}
+      />
+    </div>
+    {#if showSend}
+      <button class="sendButton" on:click={submit}
+        ><div class="icon">
+          <Send size={'medium'} />
+        </div></button
+      >
+    {/if}
+  </div>
+  {#if actions}
+    <div class="buttons">
+      {#each actions as a}
+        <div class="tool" on:click={(evt) => handleAction(a, evt)}>
+          <Icon icon={a.icon} size={'large'} />
+        </div>
+      {/each}
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .ref-container {
@@ -254,37 +288,4 @@
       }
     }
   }
-
 </style>
-
-<div class="ref-container">
-  <div class="textInput" class:withoutTopBorder>
-    <div class="inputMsg">
-      <TextEditor
-        bind:content
-        bind:this={textEditor}
-        on:content={(ev) => {
-          dispatch('message', ev.detail)
-          if (clearContent) {
-            content = ''
-            textEditor.clear()
-          }
-        }}
-        extensions={editorExtensions} />
-    </div>
-    {#if showSend}
-      <button class="sendButton" on:click={submit}><div class="icon">
-          <Send size={'medium'} />
-        </div></button>
-    {/if}
-  </div>
-  {#if actions}
-  <div class="buttons">
-    {#each actions as a}
-      <div class="tool" on:click={(evt) => handleAction(a, evt)}>
-        <Icon icon={a.icon} size={'large'} />
-      </div>
-    {/each}
-  </div>
-  {/if}
-</div>

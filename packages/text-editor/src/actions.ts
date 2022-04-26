@@ -5,7 +5,7 @@ import TextStyle from './components/icons/TextStyle.svelte'
 import textEditorPlugin from './plugin'
 import { RefAction, RefInputAction } from './types'
 
-export function getDefaultAttachRefAction(action: RefInputAction): RefAction {
+export function getDefaultAttachRefAction (action: RefInputAction): RefAction {
   return {
     label: textEditorPlugin.string.Attach,
     icon: Attach,
@@ -14,7 +14,7 @@ export function getDefaultAttachRefAction(action: RefInputAction): RefAction {
   }
 }
 
-export function getDefaultTextStyleRefAction(): RefAction {
+export function getDefaultTextStyleRefAction (): RefAction {
   return {
     label: textEditorPlugin.string.TextStyle,
     icon: TextStyle,
@@ -23,7 +23,7 @@ export function getDefaultTextStyleRefAction(): RefAction {
   }
 }
 
-export function getDefaultEmojiRefAction(): RefAction {
+export function getDefaultEmojiRefAction (): RefAction {
   return {
     label: textEditorPlugin.string.Emoji,
     icon: Emoji,
@@ -32,7 +32,7 @@ export function getDefaultEmojiRefAction(): RefAction {
   }
 }
 
-export function getDefaultGIFRefAction(): RefAction {
+export function getDefaultGIFRefAction (): RefAction {
   return {
     label: textEditorPlugin.string.GIF,
     icon: GIF,
