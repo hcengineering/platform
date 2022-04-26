@@ -26,6 +26,7 @@
   import ChannelsPopup from './ChannelsPopup.svelte'
   import ChannelEditor from './ChannelEditor.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+import { onDestroy } from 'svelte';
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let editable = false
@@ -228,8 +229,11 @@
     window.removeEventListener('click', listener)
     editMode = false
   }
-</script>
 
+  onDestroy(() => {
+    window.removeEventListener('click', listener)
+  })
+</script>
 <div
   bind:this={div}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border' ? 'xsmall-gap' : 'xxsmall-gap'}"
