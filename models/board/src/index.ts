@@ -14,9 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/board'
+import type { Board, Card, CardAction, CardChecklist, CardChecklistItem, CardDate, CardLabel } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp } from '@anticrm/core'
+import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
 import {
   Builder,
   Collection,
@@ -52,6 +52,7 @@ export function TypeCardDate (): Type<CardDate> {
 export class TBoard extends TSpaceWithStates implements Board {
   color!: number
   background!: string
+  isLabelsCompactMode?: boolean
 }
 
 @Model(board.class.CardDate, core.class.Obj, DOMAIN_MODEL)
@@ -70,6 +71,22 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   isHidden?: boolean
 }
 
+
+@Model(board.class.CardChecklistItem, core.class.Obj, DOMAIN_MODEL)
+@UX(board.string.Checklist)
+export class TCardChecklist extends TObj implements CardChecklist {
+  items!: Ref<CardChecklistItem>[]
+}
+
+@Model(board.class.CardChecklist, core.class.Doc, DOMAIN_MODEL)
+@UX(board.string.ChecklistItem)
+export class TCardChecklistItem extends TDoc implements CardChecklistItem {
+  assignee?: Ref<Employee>
+  dueDate?: Timestamp
+  isChecked!: boolean
+  name!: Markup
+}
+
 @Model(board.class.Card, task.class.Task)
 @UX(board.string.Card, board.icon.Card, undefined, 'title')
 export class TCard extends TTask implements Card {
@@ -85,7 +102,7 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)
-  description!: string
+  description!: Markup
 
   @Prop(Collection(board.class.CardLabel), board.string.Labels)
   labels?: Ref<CardLabel>[]
@@ -105,6 +122,9 @@ export class TCard extends TTask implements Card {
 
   @Prop(Collection(contact.class.Employee), board.string.Members)
   members?: Ref<Employee>[]
+
+  @Prop(Collection(board.class.CardChecklist), board.string.Checklist)
+  checklists!: CardChecklist[]
 }
 
 @Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)

@@ -27,6 +27,7 @@ import type { AnyComponent } from '@anticrm/ui'
 export interface Board extends SpaceWithStates {
   color?: number
   background?: string
+  isLabelsCompactMode?: boolean
 }
 
 /**
@@ -59,6 +60,23 @@ export interface CardDate extends Obj {
 /**
  * @public
  */
+export interface CardChecklistItem extends Doc {
+  assignee?: Ref<Employee>
+  dueDate?: Timestamp
+  isChecked: boolean
+  name: Markup
+}
+
+/**
+ * @public
+ */
+export interface CardChecklist extends Obj {
+  items: Ref<CardChecklistItem>[]
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
@@ -78,6 +96,7 @@ export interface Card extends Task {
 
   comments?: number
   attachments?: number
+  checklists: CardChecklist[]
 }
 /**
  * @public
@@ -112,7 +131,9 @@ const boards = plugin(boardId, {
     Card: '' as Ref<Class<Card>>,
     CardAction: '' as Ref<Class<CardAction>>,
     CardDate: '' as Ref<Class<CardDate>>,
-    CardLabel: '' as Ref<Class<CardLabel>>
+    CardLabel: '' as Ref<Class<CardLabel>>,
+    CardChecklist: '' as Ref<Class<CardChecklist>>,
+    CardChecklistItem: '' as Ref<Class<CardChecklistItem>>
   },
   icon: {
     Board: '' as Asset,
