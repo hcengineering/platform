@@ -37,6 +37,7 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
+import ActionsPopup from './components/ActionsPopup.svelte'
 
 export { getActions } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -69,6 +70,7 @@ export default async (): Promise<Resources> => ({
     HTMLPresenter,
     IntlStringPresenter,
     GithubPresenter,
-    YoutubePresenter
+    YoutubePresenter,
+    ActionsPopup
   }
 })

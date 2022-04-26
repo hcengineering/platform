@@ -61,7 +61,7 @@
   const hierarchy = client.getHierarchy()
 
   export function canClose (): boolean {
-    return candidate === undefined && assignee === undefined
+    return (preserveCandidate || candidate === undefined) && assignee === undefined
   }
 
   async function createApplication () {
@@ -179,23 +179,6 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <!-- <div class="flex-between mt-2 mb-2">
-    <div class="card" class:empty={!selectedCandidate}>
-      {#if selectedCandidate}
-        <CandidateCard candidate={selectedCandidate} disabled />
-      {:else}
-        <Label label={recruit.status.CandidateRequired} />
-      {/if}
-    </div>
-    <div class="arrows"><ExpandRightDouble /></div>
-    <div class="card" class:empty={!selectedVacancy}>
-      {#if selectedVacancy}
-        <VacancyCard vacancy={selectedVacancy} disabled />
-      {:else}
-        <Label label={recruit.status.VacancyRequired} />
-      {/if}
-    </div>
-  </div> -->
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox

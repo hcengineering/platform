@@ -24,7 +24,13 @@ import { Application } from '@anticrm/workbench'
 export default mergeIds(trackerId, tracker, {
   string: {
     TrackerApplication: '' as IntlString,
-    Teams: '' as IntlString
+    Teams: '' as IntlString,
+    GotoIssues: '' as IntlString,
+    GotoActive: '' as IntlString,
+    GotoBacklog: '' as IntlString,
+    GotoBoard: '' as IntlString,
+    GotoProjects: '' as IntlString,
+    GotoTrackerApplication: '' as IntlString
   },
   team: {
     DefaultTeam: '' as Ref<Team>

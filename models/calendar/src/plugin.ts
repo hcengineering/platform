@@ -20,7 +20,7 @@ import { Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
+import { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {
@@ -31,6 +31,9 @@ export default mergeIds(calendarId, calendar, {
   },
   action: {
     SaveEventReminder: '' as Ref<Action>
+  },
+  category: {
+    Calendar: '' as Ref<ActionCategory>
   },
   actionImpl: {
     SaveEventReminder: '' as ViewAction

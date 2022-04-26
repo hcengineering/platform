@@ -92,6 +92,11 @@ export default mergeIds(viewId, view, {
     SelectDown: '' as IntlString,
     ShowPreview: '' as IntlString,
     ShowActions: '' as IntlString,
-    Open: '' as IntlString
+    Open: '' as IntlString,
+    // Action categories
+    General: '' as IntlString,
+    Navigation: '' as IntlString,
+    Editor: '' as IntlString,
+    MarkdownFormatting: '' as IntlString
   }
 })

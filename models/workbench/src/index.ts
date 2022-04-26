@@ -14,13 +14,16 @@
 //
 
 import type { IntlString, Asset } from '@anticrm/platform'
-import { DOMAIN_MODEL } from '@anticrm/core'
+import { Class, DOMAIN_MODEL, Ref, Space } from '@anticrm/core'
 import { Model, Mixin, Builder, UX } from '@anticrm/model'
 import type { Application, SpaceView, ViewConfiguration } from '@anticrm/workbench'
-import view from '@anticrm/view'
+import view, { KeyBinding } from '@anticrm/view'
+import { createAction } from '@anticrm/model-view'
 
 import core, { TDoc, TClass } from '@anticrm/model-core'
 import workbench from './plugin'
+
+export { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)
 @UX(workbench.string.Application)
@@ -43,3 +46,32 @@ export function createModel (builder: Builder): void {
 }
 
 export default workbench
+
+export function createNavigateAction (
+  builder: Builder,
+  key: KeyBinding,
+  label: IntlString,
+  config: {
+    mode: 'app' | 'special' | 'space'
+    application: Ref<Application>
+    special?: string
+    space?: Ref<Space>
+    spaceClass?: Ref<Class<Space>>
+    spaceSpecial?: string
+  }
+): void {
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: config,
+    label,
+    icon: view.icon.ArrowRight,
+    keyBinding: [key],
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup'],
+      application: config.application
+    }
+  })
+}

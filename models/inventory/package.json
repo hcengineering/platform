@@ -35,6 +35,7 @@
     "@anticrm/inventory": "~0.6.0",
     "@anticrm/inventory-resources": "~0.6.0",
     "@anticrm/view": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/model-view": "~0.6.0"
   }
 }

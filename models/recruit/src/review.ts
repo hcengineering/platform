@@ -3,8 +3,8 @@ import { Builder } from '@anticrm/model'
 import calendar from '@anticrm/model-calendar'
 import contact from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
-import task from '@anticrm/model-task'
-import view from '@anticrm/model-view'
+import { actionTemplates } from '@anticrm/model-task'
+import view, { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Review } from '@anticrm/recruit'
 import { BuildModelKey } from '@anticrm/view'
@@ -49,25 +49,21 @@ export function createReviewModel (builder: Builder): void {
 
   createTableViewlet(builder)
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
+  createAction(
+    builder,
     {
       label: recruit.string.CreateOpinion,
       icon: recruit.icon.Create,
       action: recruit.actionImpl.CreateOpinion,
-      singleInput: true
+      input: 'focus',
+      category: recruit.category.Recruit,
+      target: recruit.class.Review,
+      context: {
+        mode: ['context', 'browser']
+      }
     },
     recruit.action.CreateOpinion
   )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Review,
-    action: recruit.action.CreateOpinion,
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
 
   builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditReview
@@ -89,35 +85,29 @@ export function createReviewModel (builder: Builder): void {
     editor: recruit.component.EditReview
   })
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: recruit.string.CreateReview,
-      icon: recruit.icon.Create,
-      action: recruit.actionImpl.CreateReview,
-      singleInput: true
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateReview,
+      _id: 'candidate',
+      _space: 'space',
+      element: 'top',
+      props: {
+        preserveCandidate: true
+      }
     },
-    recruit.action.CreateReview
-  )
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Applicant,
-    action: recruit.action.CreateReview,
+    label: recruit.string.CreateReview,
+    icon: recruit.icon.Create,
+    input: 'focus',
+    category: recruit.category.Recruit,
+    target: recruit.mixin.Candidate,
     context: {
       mode: ['context', 'browser']
     }
   })
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.ReviewCategory,
-    action: task.action.ArchiveSpace,
-    query: {
-      archived: false
-    },
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
+  createAction(builder, { ...actionTemplates.archiveSpace, target: recruit.class.ReviewCategory })
+  createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.ReviewCategory })
 
   const reviewOptions: FindOptions<Review> = {
     lookup: {

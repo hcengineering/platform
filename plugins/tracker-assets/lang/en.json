@@ -94,7 +94,14 @@
     "PastWeek": "Past week",
     "PastMonth": "Past month",
     "CopyIssueUrl": "Copy Issue URL to clipboard",
-    "CopyIssueId": "Copy Issue ID to clipboard"
+    "CopyIssueId": "Copy Issue ID to clipboard",
+
+    "GotoIssues": "Go to issues",
+    "GotoActive": "Go to active issues",
+    "GotoBacklog": "Go to backlog",
+    "GotoBoard": "Go to issue board",
+    "GotoProjects": "Go to projects",
+    "GotoTrackerApplication": "Switch to Tracker Application"
   },
   "status": {}
 }

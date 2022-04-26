@@ -75,7 +75,7 @@ function identify (result: Record<string, any>, prefix: string, namespace: Recor
   for (const key in namespace) {
     const value = namespace[key]
     if (typeof result[key] === 'string') {
-      throw new Error(`'identify' overwrites '${key}'.`)
+      throw new Error(`'identify' overwrites '${key}' for ${prefix}`)
     }
     const ident = prefix + _ID_SEPARATOR + key
     result[key] = typeof value === 'string' ? ident : identify(result[key] ?? {}, ident, value)

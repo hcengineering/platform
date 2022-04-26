@@ -21,29 +21,27 @@ import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ViewAction } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(taskId, task, {
   action: {
-    CreateTask: '' as Ref<Action>,
     EditStatuses: '' as Ref<Action>,
-    TodoItemMarkDone: '' as Ref<Action>,
-    TodoItemMarkUnDone: '' as Ref<Action>,
     ArchiveSpace: '' as Ref<Action>,
     UnarchiveSpace: '' as Ref<Action>
   },
   actionImpl: {
-    CreateTask: '' as ViewAction,
     EditStatuses: '' as ViewAction,
     TodoItemMarkDone: '' as ViewAction,
     TodoItemMarkUnDone: '' as ViewAction,
     ArchiveSpace: '' as ViewAction,
     UnarchiveSpace: '' as ViewAction
   },
+  category: {
+    Task: '' as Ref<ActionCategory>
+  },
   component: {
     ProjectView: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
-    CreateTask: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     TaskPresenter: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,

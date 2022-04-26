@@ -72,7 +72,6 @@
   /* eslint-disable no-undef */
 
   let kanbanUI: KanbanUI
-  let objects: Doc[] = []
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     kanbanUI.select(offset, of, dir)
   })
@@ -114,7 +113,6 @@
     rankFieldName={'rank'}
     on:content={(evt) => {
       listProvider.update(evt.detail)
-      objects = evt.detail
     }}
     on:obj-focus={(evt) => {
       listProvider.updateFocus(evt.detail)

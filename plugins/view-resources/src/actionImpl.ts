@@ -1,9 +1,11 @@
 import { Doc, Hierarchy } from '@anticrm/core'
 import { getClient, MessageBox } from '@anticrm/presentation'
-import { showPanel, showPopup } from '@anticrm/ui'
+import { AnyComponent, closeTooltip, PopupPositionElement, showPanel, showPopup } from '@anticrm/ui'
+import { ViewContext } from '@anticrm/view'
 import MoveView from './components/Move.svelte'
+import { contextStore } from './context'
 import view from './plugin'
-import { FocusSelection, focusStore, SelectDirection, selectionStore, previewDocument } from './selection'
+import { FocusSelection, focusStore, previewDocument, SelectDirection, selectionStore } from './selection'
 import { deleteObject } from './utils'
 
 function Delete (object: Doc): void {
@@ -31,12 +33,17 @@ async function Move (object: Doc): Promise<void> {
 }
 
 let $focusStore: FocusSelection
-
 focusStore.subscribe((it) => {
   $focusStore = it
 })
 
+let $contextStore: ViewContext[]
+contextStore.subscribe((it) => {
+  $contextStore = it
+})
+
 export function select (evt: Event | undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+  closeTooltip()
   if ($focusStore.provider?.select !== undefined) {
     $focusStore.provider?.select(offset, of, direction)
     evt?.preventDefault()
@@ -81,6 +88,8 @@ const MoveRight = (doc: Doc | undefined, evt: Event): void => select(evt, 1, doc
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
   evt.preventDefault()
+
+  showPopup(view.component.ActionsPopup, { viewContext: $contextStore[$contextStore.length - 1] }, 'top')
 }
 
 function ShowPreview (doc: Doc | undefined, evt: Event): void {
@@ -99,6 +108,111 @@ function Open (doc: Doc, evt: Event): void {
 }
 
 /**
+ * Quick action for show panel
+ * Require props:
+ * - component - view.component.EditDoc or another component
+ * - element - position
+ * - right - some right component
+ */
+function ShowPanel (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    component?: AnyComponent
+    element: PopupPositionElement
+    rightSection?: AnyComponent
+  }
+): void {
+  if (Array.isArray(doc)) {
+    console.error('Wrong show Panel parameters')
+    return
+  }
+  evt.preventDefault()
+  showPanel(
+    props.component ?? view.component.EditDoc,
+    doc._id,
+    Hierarchy.mixinOrClass(doc),
+    props.element ?? 'content',
+    props.rightSection
+  )
+}
+
+/**
+ * Quick action for show popup
+ * Props:
+ * - _id - object id will be placed into
+ * - _class - object _class will be placed into
+ * - value - object itself will be placed into
+ * - values - all docs will be placed into
+ * - props - some basic props, will be merged with key, _class, value, values
+ */
+function ShowPopup (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    component: AnyComponent
+    element: PopupPositionElement
+    _id?: string
+    _class?: string
+    _space?: string
+    value?: string
+    values?: string
+    props?: Record<string, any>
+  }
+): void {
+  const docs = Array.isArray(doc) ? doc : [doc]
+  evt.preventDefault()
+  let cprops = {
+    ...(props?.props ?? {})
+  }
+  if (docs.length > 0) {
+    cprops = {
+      ...cprops,
+      ...{
+        [props._id ?? '_id']: docs[0]._id,
+        [props._class ?? '_class']: docs[0]._class,
+        [props._space ?? 'space']: docs[0].space,
+        [props.value ?? 'value']: docs[0],
+        [props.values ?? 'values']: docs
+      }
+    }
+  }
+
+  showPopup(props.component, cprops, props.element)
+}
+
+function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any>): void {
+  async function update (): Promise<void> {
+    if (props?.key !== undefined && props?.value !== undefined) {
+      if (Array.isArray(doc)) {
+        for (const d of doc) {
+          await getClient().update(d, { [props.key]: props.value })
+        }
+      } else {
+        await getClient().update(doc, { [props.key]: props.value })
+      }
+    }
+  }
+  if (props?.ask === true) {
+    showPopup(
+      MessageBox,
+      {
+        label: props.label ?? view.string.LabelYes,
+        message: props.message ?? view.string.LabelYes
+      },
+      undefined,
+      (result: boolean) => {
+        if (result) {
+          void update()
+        }
+      }
+    )
+  } else {
+    void update()
+  }
+}
+
+/**
  * @public
  */
 export const actionImpl = {
@@ -113,5 +227,8 @@ export const actionImpl = {
   SelectItemAll,
   ShowActions,
   ShowPreview,
-  Open
+  Open,
+  UpdateDocument,
+  ShowPanel,
+  ShowPopup
 }

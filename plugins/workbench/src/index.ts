@@ -17,6 +17,7 @@ import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { ViewAction } from '@anticrm/view'
 
 /**
  * @public
@@ -113,5 +114,16 @@ export default plugin(workbenchId, {
   metadata: {
     PlatformTitle: '' as Metadata<string>,
     ExcludedApplications: '' as Metadata<Ref<Application>[]>
+  },
+  actionImpl: {
+    Navigate: '' as ViewAction<{
+      mode: 'app' | 'special' | 'space'
+      application?: Ref<Application>
+      special?: string
+      space?: Ref<Space>
+      // If no space is selected, select first space from list
+      spaceClass?: Ref<Class<Space>>
+      spaceSpecial?: string
+    }>
   }
 })

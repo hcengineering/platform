@@ -94,9 +94,6 @@ function getId (d: Doc): Ref<Doc> {
   } else if (d._class === ('workbench:class:Application' as Ref<Doc>)) {
     const cr = d as any
     return ('workbench.app.' + (cr.label as string)) as Ref<Doc>
-  } else if (d._class === ('view:class:ActionTarget' as Ref<Doc>)) {
-    const cr = d as any
-    return ((cr.target as string) + '.' + (cr.action as string)) as Ref<Doc>
   } else if (d._class === ('server-core:class:Trigger' as Ref<Doc>)) {
     const cr = d as any
     return cr.trigger as string as Ref<Doc>

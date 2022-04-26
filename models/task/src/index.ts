@@ -36,9 +36,9 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
-import view from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
+import view, { actionTemplates as viewTemplates, createAction, template } from '@anticrm/model-view'
 import { IntlString } from '@anticrm/platform'
+import { ViewAction } from '@anticrm/view'
 import type {
   DoneState,
   DoneStateTemplate,
@@ -59,10 +59,9 @@ import type {
   WonStateTemplate
 } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
-import type { ActionTarget } from '@anticrm/view'
 import task from './plugin'
 
-export { taskOperation, createKanbanTemplate, createSequence } from './migration'
+export { createKanbanTemplate, createSequence, taskOperation } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
@@ -240,6 +239,59 @@ export class TDocWithRank extends TDoc {
   rank!: string
 }
 
+/**
+ * @public
+ */
+export const actionTemplates = template({
+  editStatus: {
+    label: task.string.EditStates,
+    icon: view.icon.Statuses,
+    action: task.actionImpl.EditStatuses,
+    input: 'focus',
+    category: task.category.Task
+  },
+  archiveSpace: {
+    label: task.string.Archive,
+    icon: view.icon.Archive,
+    action: view.actionImpl.UpdateDocument as ViewAction,
+    actionProps: {
+      key: 'archived',
+      value: true,
+      ask: true,
+      label: task.string.Archive,
+      message: task.string.ArchiveConfirm
+    },
+    input: 'focus',
+    category: task.category.Task,
+    query: {
+      archived: false
+    },
+    context: {
+      mode: ['context', 'browser']
+    }
+  },
+  unarchiveSpace: {
+    label: task.string.Unarchive,
+    icon: view.icon.Archive,
+    action: view.actionImpl.UpdateDocument as ViewAction,
+    actionProps: {
+      key: 'archived',
+      ask: true,
+      value: false,
+      label: task.string.Unarchive,
+      message: task.string.UnarchiveConfirm
+    },
+    input: 'focus',
+    category: task.category.Task,
+    query: {
+      archived: true
+    },
+    context: {
+      mode: ['context', 'browser']
+    }
+  }
+})
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TDocWithRank,
@@ -262,13 +314,6 @@ export function createModel (builder: Builder): void {
     TIssue,
     TTodoItem
   )
-  builder.mixin(task.class.Project, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: task.class.Issue,
-      createItemDialog: task.component.CreateTask,
-      createItemLabel: task.string.TaskCreateLabel
-    }
-  })
 
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -280,36 +325,6 @@ export function createModel (builder: Builder): void {
     },
     task.viewlet.StatusTable
   )
-
-  // builder.createDoc(
-  //   workbench.class.Application,
-  //   core.space.Model,
-  //   {
-  //     label: task.string.ApplicationLabelTask,
-  //     icon: task.icon.Task,
-  //     hidden: false,
-  //     navigatorModel: {
-  //       spaces: [
-  //         {
-  //           label: task.string.Projects,
-  //           spaceClass: task.class.Project,
-  //           addSpaceLabel: task.string.CreateProject,
-  //           createComponent: task.component.CreateProject
-  //         }
-  //       ],
-  //       specials: [
-  //         {
-  //           id: 'assigned',
-  //           label: task.string.Assigned,
-  //           icon: task.icon.Task,
-  //           component: task.component.AssignedTasks,
-  //           position: 'top'
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   task.app.Tasks
-  // )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
@@ -385,61 +400,26 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    view.class.Action,
+    view.class.ActionCategory,
     core.space.Model,
-    {
-      label: task.string.CreateTask,
-      icon: task.icon.Task,
-      action: task.actionImpl.CreateTask,
-      singleInput: true
-    },
-    task.action.CreateTask
+    { label: task.string.Task, visible: true },
+    task.category.Task
   )
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      label: task.string.EditStates,
-      icon: view.icon.Statuses,
-      action: task.actionImpl.EditStatuses,
-      singleInput: true
+      ...actionTemplates.editStatus,
+      target: task.class.SpaceWithStates,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser']
+      }
     },
     task.action.EditStatuses
   )
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: task.string.Archive,
-      icon: view.icon.Archive,
-      action: task.actionImpl.ArchiveSpace
-    },
-    task.action.ArchiveSpace
-  )
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: task.string.Unarchive,
-      icon: view.icon.Archive,
-      action: task.actionImpl.UnarchiveSpace
-    },
-    task.action.UnarchiveSpace
-  )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: task.class.SpaceWithStates,
-    action: task.action.EditStatuses,
-    query: {
-      archived: false
-    },
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
 
   builder.mixin(task.class.State, core.class.Class, view.mixin.AttributeEditor, {
     editor: task.component.StateEditor
@@ -476,47 +456,42 @@ export function createModel (builder: Builder): void {
     presenter: task.component.TodoItemPresenter
   })
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: task.string.MarkAsDone,
-      icon: task.icon.TodoCheck,
-      action: task.actionImpl.TodoItemMarkDone
+  createAction(builder, {
+    label: task.string.MarkAsDone,
+    icon: task.icon.TodoCheck,
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'done',
+      value: true
     },
-    task.action.TodoItemMarkDone
-  )
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: task.string.MarkAsUndone,
-      icon: task.icon.TodoUnCheck,
-      action: task.actionImpl.TodoItemMarkUnDone
-    },
-    task.action.TodoItemMarkUnDone
-  )
-
-  builder.createDoc<ActionTarget<TodoItem>>(view.class.ActionTarget, core.space.Model, {
-    target: task.class.TodoItem,
-    action: task.action.TodoItemMarkDone,
+    input: 'focus',
+    category: task.category.Task,
     query: {
       done: false
     },
+    target: task.class.TodoItem,
     context: {
       mode: ['context', 'browser']
     }
   })
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: task.class.TodoItem,
-    action: task.action.TodoItemMarkUnDone,
+
+  createAction(builder, {
+    label: task.string.MarkAsUndone,
+    icon: task.icon.TodoUnCheck,
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'done',
+      value: false
+    },
+    input: 'focus',
+    category: task.category.Task,
     query: {
       done: true
     },
     context: {
       mode: ['context', 'browser']
-    }
+    },
+    target: task.class.TodoItem
   })
 
   builder.createDoc(
@@ -530,9 +505,9 @@ export function createModel (builder: Builder): void {
     task.completion.IssueCategory
   )
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+  createAction(builder, {
+    ...viewTemplates.move,
     target: task.class.Task,
-    action: view.action.Move,
     context: {
       mode: ['context', 'browser']
     }

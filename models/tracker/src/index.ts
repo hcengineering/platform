@@ -34,18 +34,20 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import { createAction } from '@anticrm/model-view'
+import workbench, { createNavigateAction } from '@anticrm/model-workbench'
+import { Asset, IntlString } from '@anticrm/platform'
+import view, { KeyBinding } from '@anticrm/view'
 import {
   Document,
   Issue,
   IssuePriority,
   IssueStatus,
-  Project,
   IssueStatusCategory,
+  Project,
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
-import workbench from '@anticrm/model-workbench'
-import { Asset, IntlString } from '@anticrm/platform'
 import tracker from './plugin'
 
 export { trackerOperation } from './migration'
@@ -292,6 +294,12 @@ export function createModel (builder: Builder): void {
     tracker.issueStatusCategory.Canceled
   )
 
+  const issuesId = 'issues'
+  const activeId = 'active'
+  const backlogId = 'backlog'
+  const boardId = 'board'
+  const projectsId = 'projects'
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -332,31 +340,31 @@ export function createModel (builder: Builder): void {
             icon: tracker.icon.Home,
             specials: [
               {
-                id: 'issues',
+                id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues
               },
               {
-                id: 'active',
+                id: activeId,
                 label: tracker.string.Active,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Active
               },
               {
-                id: 'backlog',
+                id: backlogId,
                 label: tracker.string.Backlog,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Backlog
               },
               {
-                id: 'board',
+                id: boardId,
                 label: tracker.string.Board,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Board
               },
               {
-                id: 'projects',
+                id: projectsId,
                 label: tracker.string.Projects,
                 icon: tracker.icon.Projects,
                 component: tracker.component.Projects
@@ -369,4 +377,35 @@ export function createModel (builder: Builder): void {
     },
     tracker.app.Tracker
   )
+
+  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+    createNavigateAction(builder, key, label, {
+      application: tracker.app.Tracker,
+      mode: 'space',
+      spaceSpecial: id,
+      spaceClass: tracker.class.Team
+    })
+  }
+
+  createGotoSpecialAction(builder, issuesId, 'g->e', tracker.string.GotoIssues)
+  createGotoSpecialAction(builder, activeId, 'g->a', tracker.string.GotoActive)
+  createGotoSpecialAction(builder, backlogId, 'g->b', tracker.string.GotoBacklog)
+  createGotoSpecialAction(builder, boardId, 'g->d', tracker.string.GotoBoard)
+  createGotoSpecialAction(builder, projectsId, 'g->p', tracker.string.GotoProjects)
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: tracker.app.Tracker
+    },
+    label: tracker.string.GotoTrackerApplication,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
 }

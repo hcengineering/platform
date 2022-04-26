@@ -523,6 +523,10 @@ a.no-line {
 .text-xs { font-size: .625rem; }
 .text-sm { font-size: .75rem; }
 .text-md { font-size: .8125rem; }
+.text-base {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+}
 .text-lg { font-size: 1.125rem; }
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
