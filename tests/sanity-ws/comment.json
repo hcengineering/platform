@@ -1,8 +1,8 @@
 [
   {
     "_id": "61f1049a25355d019917dbde",
-    "_class": "chunter:class:Backlink",
-    "space": "chunter:space:Backlinks",
+    "_class": "core:class:Backlink",
+    "space": "core:space:Backlinks",
     "modifiedBy": "61f1031c1badffab2bb33861",
     "modifiedOn": 1643185306184,
     "backlinkId": "chunter:space:Random",
@@ -37,8 +37,8 @@
   },
   {
     "_id": "61f1097f3a1b1a24cfdef420",
-    "_class": "chunter:class:Backlink",
-    "space": "chunter:space:Backlinks",
+    "_class": "core:class:Backlink",
+    "space": "core:space:Backlinks",
     "modifiedBy": "61f1031c1badffab2bb33861",
     "modifiedOn": 1643186559571,
     "backlinkId": "61f104eb25355d019917dc0a",
