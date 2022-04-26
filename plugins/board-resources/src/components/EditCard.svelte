@@ -76,7 +76,7 @@
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
 
-  let fullSize: boolean = true
+  let fullSize: boolean = false
   let rightSection: AnyComponent | undefined = undefined
 </script>
 

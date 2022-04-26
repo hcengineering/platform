@@ -23,15 +23,18 @@
   import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
   import { PopupAlignment } from '@anticrm/ui'
 
-  export let title: string
+  export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let fullSize: boolean = true
+  export let showHeader: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
   export let position: PopupAlignment | undefined = undefined
   export let panelWidth: number = 0
   export let innerWidth: number = 0
+  export let isSubtitle: boolean = false
+  export let isProperties: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -47,8 +50,8 @@
   {title} {subtitle} {icon}
   rightSection={isFullSize}
   bind:panelWidth bind:innerWidth
-  isProperties={innerWidth >= 900}
-  isSubtitle={innerWidth < 900}
+  isProperties={innerWidth >= 900 || isProperties}
+  isSubtitle={innerWidth < 900 || isSubtitle}
   on:close
 >
   <svelte:fragment slot="subtitle">

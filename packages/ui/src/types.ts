@@ -72,7 +72,7 @@ export interface PopupPositionElement {
     h: HorizontalAlignment
   }
 }
-export type PopupAlignment = PopupPositionElement | null | 'right' | 'top' | 'account' | 'full' | 'content' | 'full-content' | 'middle'
+export type PopupAlignment = PopupPositionElement | null | 'right' | 'top' | 'account' | 'full' | 'content' | 'middle'
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
