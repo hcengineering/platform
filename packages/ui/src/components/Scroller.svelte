@@ -229,12 +229,20 @@
       belowContent = divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop
     }
   })
+
+  let divWidth: number = 0
+  const _resize = (): void => {
+    clearTHead()
+    checkFade()
+  }
+  $: if (divWidth) _resize()
 </script>
 
-<svelte:window on:resize={checkFade} />
+<svelte:window on:resize={_resize} />
 <div class="scroller-container">
   <div
     bind:this={divScroll}
+    bind:clientWidth={divWidth}
     class="scroll relative"
     class:antiNav-topFade={mask === 'top'}
     class:antiNav-bottomFade={mask === 'bottom'}

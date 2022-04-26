@@ -90,26 +90,26 @@
     <div class="p-10">
       <slot />
     </div>
-    <div class="ac-header short mirror-tool">
+    <div class="ac-header short mirror-tool background-over">
       <div class="ac-header__wrap-title">
         <div class="flex-center icon"><IconActivity size={'small'} /></div>
         <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
     </div>
-    <div class="p-activity">
+    {#if showCommenInput}
+      <div class="ref-input background-accent-bg-color">
+        <Component is={chunter.component.CommentInput} props={{ object }} />
+      </div>
+    {/if}
+    <div class="p-activity background-accent-bg-color">
       {#if txes}
         <Grid column={1} rowGap={1.5}>
-          {#each txes.reverse() as tx}
+          {#each txes as tx}
             <TxView {tx} {viewlets} />
           {/each}
         </Grid>
       {/if}
     </div>
-    {#if showCommenInput}
-      <div class="ref-input">
-        <Component is={chunter.component.CommentInput} props={{ object }} />
-      </div>
-    {/if}
   </Scroller>
 {/if}
 
@@ -122,13 +122,28 @@
     background-color: var(--primary-bg-color);
     border-radius: 50%;
   }
+  .background-over {
+    position: relative;
+    // background-color: var(--accent-bg-color);
+
+    &::before {
+      position: absolute;
+      content: '';
+      top: -1rem;
+      left: 0;
+      width: 100%;
+      height: 4.5rem;
+      background: linear-gradient(0deg, var(--accent-bg-color) 0%, transparent 100%);
+      z-index: -1;
+    }
+  }
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
 
   }
   .p-activity {
-    padding: 1.5rem 2.5rem 0;
+    padding: 1.5rem 2.5rem;
   }
   .scroller-back {
     background-color: var(--body-accent);

@@ -280,11 +280,13 @@
     </svelte:fragment>
     <svelte:fragment slot="properties">
       {#if !headerLoading}
-        {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys }} />
-        {:else}
-          <AttributesBar {object} {keys} />
-        {/if}
+        <div class="p-4">
+          {#if headerEditor !== undefined}
+            <Component is={headerEditor} props={{ object, keys, vertical: true }} />
+          {:else}
+            <AttributesBar {object} {keys} vertical />
+          {/if}
+        </div>
       {/if}
     </svelte:fragment>
     <div class="main-editor">

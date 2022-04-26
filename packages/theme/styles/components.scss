@@ -39,7 +39,7 @@
     }
     &.mirror {
       justify-content: space-between;
-      padding: 0 .5rem;
+      padding: 0 1rem;
 
       &-tool {
         justify-content: space-between;
@@ -125,6 +125,7 @@
     align-items: center;
     overflow-x: auto;
     flex-shrink: 0;
+    margin: 0 2.5rem;
     min-height: 0;
     height: 3.5rem;
     border-bottom: 1px solid var(--theme-zone-bg);
@@ -144,10 +145,11 @@
     }
 
     .ac-subtitle-content {
+      overflow-x: auto;
+      overflow-y: hidden;
       flex-grow: 1;
       display: flex;
-      align-items: center;
-      margin: 0 2.5rem;
+      // align-items: center;
     }
   }
 

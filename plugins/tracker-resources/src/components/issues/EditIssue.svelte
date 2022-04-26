@@ -91,6 +91,14 @@
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="custom-title">
+      Custom Title
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      {#if currentTeam}
+        <IssuePresenter value={issue} {currentTeam} />
+      {/if}
+    </svelte:fragment>
     <svelte:fragment slot="navigate-actions">
       <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} />
       <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} />

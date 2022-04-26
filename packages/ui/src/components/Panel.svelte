@@ -32,15 +32,13 @@
   export let isProperties: boolean = true
 
   const dispatch = createEventDispatcher()
-  let rightToTop: boolean = false
-  $: rightToTop = innerWidth < 900
 </script>
 
 <div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>  
   <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>    
     {#if showHeader}
       <div class="ac-header short mirror divide highlight">
-        <div class="ml-2 mr-2">
+        <div class="buttons-group">
           <Button
             icon={IconClose}
             size={'medium'}
@@ -48,12 +46,12 @@
             on:click={() => {
               dispatch('close')
             }} />
+          {#if $$slots['navigate-actions']}
+            <div class="buttons-group xsmall-gap">
+              <slot name="navigate-actions" />
+            </div>
+          {/if}
         </div>
-        {#if $$slots['navigate-actions']}
-          <div class="buttons-group xxsmall-gap">
-            <slot name="navigate-actions" />
-          </div>
-        {/if}
         <div class="ml-4 ac-header__wrap-title flex-grow">
           {#if icon}
             <div class="ac-header__icon">
@@ -71,9 +69,9 @@
           </div>
         {/if}
       </div>
-    <!-- {:else}
-      <div class="ac-header short mirror divide">
-        <div class="ml-2 mr-2">
+    {:else}
+      <div class="ac-header short mirror divide highlight">
+        <div class="buttons-group">
           <Button
             icon={IconClose}
             size={'medium'}
@@ -82,13 +80,18 @@
               dispatch('close')
             }}
           />
+          {#if $$slots['navigate-actions']}
+            <div class="buttons-group xsmall-gap">
+              <slot name="navigate-actions" />
+            </div>
+          {/if}
         </div>
-        {#if $$slots['navigate-actions']}
-          <div class="buttons-group xxsmall-gap">
-            <slot name="navigate-actions" />
+        {#if $$slots['custom-title']}
+          <div class="ml-4 flex-row-center flex-grow">
+            <slot name="custom-title" />
           </div>
         {/if}
-      </div> -->
+      </div>
     {/if}
     <div class="main-content" class:withProperties={$$slots.properties} bind:clientWidth={innerWidth}>
       {#if $$slots.subtitle && $$slots.properties && isSubtitle}
@@ -152,8 +155,8 @@
       flex-shrink: 0;
       min-width: 20rem;
       width: 25%;
-      border-left: 1px solid var(--divide-color);
-      // background-color: var(--accent-bg-color);
+      border-left: 1px solid var(--divider-color);
+      // background-color: var(--board-card-bg-color);
     }
   }
 </style>
