@@ -241,7 +241,7 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, view.action.Delete, view.string.Delete, view.actionImpl.Delete, {
     icon: view.icon.Delete,
-    keyBinding: ['Meta + Backspace']
+    keyBinding: ['Meta + Backspace', 'Ctrl + Backspace']
   })
   actionTarget(builder, view.action.Delete, core.class.Doc, { mode: ['context', 'browser'], group: 'tools' })
 
@@ -280,7 +280,7 @@ export function createModel (builder: Builder): void {
   actionTarget(builder, view.action.SelectItem, core.class.Doc, { mode: 'browser' })
 
   createAction(builder, view.action.SelectItemAll, view.string.SelectItemAll, view.actionImpl.SelectItemAll, {
-    keyBinding: ['meta + keyA']
+    keyBinding: ['meta + keyA', 'ctrl + keyA']
   })
   actionTarget(builder, view.action.SelectItemAll, core.class.Doc, { mode: 'browser' })
 
@@ -290,7 +290,7 @@ export function createModel (builder: Builder): void {
   actionTarget(builder, view.action.SelectItemNone, core.class.Doc, { mode: 'browser' })
 
   createAction(builder, view.action.ShowActions, view.string.ShowActions, view.actionImpl.ShowActions, {
-    keyBinding: ['meta + keyk']
+    keyBinding: ['meta + keyK', 'ctrl + keyK']
   })
   actionTarget(builder, view.action.ShowActions, core.class.Doc, {
     mode: ['workbench', 'browser', 'popup', 'panel', 'editor']
