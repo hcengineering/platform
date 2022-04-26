@@ -20,8 +20,6 @@ import { Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient, MessageBox } from '@anticrm/presentation'
 import { getCurrentLocation, navigate, showPopup } from '@anticrm/ui'
-import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
-import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
@@ -173,9 +171,7 @@ export default async (): Promise<Resources> => ({
     GetDmName: getDmName
   },
   activity: {
-    TxCommentCreate,
-    TxBacklinkCreate,
-    TxBacklinkReference
+    TxCommentCreate
   },
   actionImpl: {
     MarkUnread,

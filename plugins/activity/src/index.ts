@@ -57,7 +57,9 @@ export default plugin(activityId, {
     Delete: '' as IntlString,
     Edit: '' as IntlString,
     Edited: '' as IntlString,
-    Activity: '' as IntlString
+    Activity: '' as IntlString,
+    MentionedIn: '' as IntlString,
+    In: '' as IntlString
   },
   icon: {
     Activity: '' as Asset
@@ -66,6 +68,12 @@ export default plugin(activityId, {
     TxViewlet: '' as Ref<Class<TxViewlet>>
   },
   component: {
-    Activity: '' as AnyComponent
+    Activity: '' as AnyComponent,
+    TxBacklinkCreate: '' as AnyComponent,
+    TxBacklinkReference: '' as AnyComponent
+  },
+  ids: {
+    TxBacklinkCreate: '' as Ref<TxViewlet>,
+    TxBacklinkRemove: '' as Ref<TxViewlet>
   }
 })

@@ -38,4 +38,35 @@ export class TTxViewlet extends TDoc implements TxViewlet {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TTxViewlet)
+
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      icon: activity.icon.Activity,
+      objectClass: core.class.Backlink,
+      txClass: core.class.TxCreateDoc,
+      component: activity.component.TxBacklinkCreate,
+      label: activity.string.MentionedIn,
+      labelComponent: activity.component.TxBacklinkReference,
+      display: 'emphasized',
+      editable: false,
+      hideOnRemove: true
+    },
+    activity.ids.TxBacklinkCreate
+  )
+
+  // We need to define this one, to hide default attached object removed case
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      icon: activity.icon.Activity,
+      objectClass: core.class.Backlink,
+      txClass: core.class.TxRemoveDoc,
+      display: 'inline',
+      hideOnRemove: true
+    },
+    activity.ids.TxBacklinkRemove
+  )
 }

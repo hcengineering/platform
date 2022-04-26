@@ -10,6 +10,8 @@
     "To": "to",
     "Unset": "unset",
     "System": "System",
-    "CollectionUpdated": "Update {collection}"
+    "CollectionUpdated": "Update {collection}",
+    "MentionedIn": "mentioned this ",
+    "In": "In"
   }
 }

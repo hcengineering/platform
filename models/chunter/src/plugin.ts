@@ -46,7 +46,6 @@ export default mergeIds(chunterId, chunter, {
   string: {
     ApplicationLabelChunter: '' as IntlString,
     LeftComment: '' as IntlString,
-    MentionedIn: '' as IntlString,
     Content: '' as IntlString,
     Comment: '' as IntlString,
     Message: '' as IntlString,
@@ -69,9 +68,7 @@ export default mergeIds(chunterId, chunter, {
     TxBacklinkRemove: '' as Ref<TxViewlet>
   },
   activity: {
-    TxCommentCreate: '' as AnyComponent,
-    TxBacklinkCreate: '' as AnyComponent,
-    TxBacklinkReference: '' as AnyComponent
+    TxCommentCreate: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@anticrm/chunter'
+  import type { Backlink } from '@anticrm/core'
   import { MessageViewer } from '@anticrm/presentation'
 
   // export let tx: TxCreateDoc<Backlink>

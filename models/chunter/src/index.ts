@@ -381,37 +381,6 @@ export function createModel (builder: Builder): void {
     },
     chunter.ids.TxCommentRemove
   )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: core.class.Backlink,
-      icon: chunter.icon.Chunter,
-      txClass: core.class.TxCreateDoc,
-      component: chunter.activity.TxBacklinkCreate,
-      label: chunter.string.MentionedIn,
-      labelComponent: chunter.activity.TxBacklinkReference,
-      display: 'emphasized',
-      editable: false,
-      hideOnRemove: true
-    },
-    chunter.ids.TxCommentCreate
-  )
-
-  // We need to define this one, to hide default attached object removed case
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: core.class.Backlink,
-      icon: chunter.icon.Chunter,
-      txClass: core.class.TxRemoveDoc,
-      display: 'inline',
-      hideOnRemove: true
-    },
-    chunter.ids.TxBacklinkRemove
-  )
 }
 
 export { chunterOperation } from './migration'

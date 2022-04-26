@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
+  import activity from '@anticrm/activity'
+  import type { Backlink, Doc } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '@anticrm/view-resources'
-  import chunter from '../../plugin'
 
   // export let tx: TxCreateDoc<Backlink>
   export let value: Backlink
@@ -61,7 +60,7 @@
       <svelte:component this={targetPresenter.presenter} value={target} />
     </div>
   {/if}
-  <span class="lower">&nbsp; <Label label={chunter.string.In} /></span>
+  <span class="lower">&nbsp; <Label label={activity.string.In} /></span>
   <div class="ml-2">
     <svelte:component this={presenter.presenter} value={doc} />
   </div>

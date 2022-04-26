@@ -30,6 +30,8 @@ import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp 
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 
+export const DOMAIN_BACKLINK = 'backlink' as Domain
+
 // C O R E
 @Model(core.class.Obj, core.class.Obj)
 export class TObj implements Obj {
@@ -69,7 +71,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   collection!: string
 }
 
-@Model(core.class.Backlink, core.class.AttachedDoc, DOMAIN_MODEL)
+@Model(core.class.Backlink, core.class.AttachedDoc, DOMAIN_BACKLINK)
 export class TBacklink extends TAttachedDoc implements Backlink {
   message!: string
   backlinkId!: Ref<Doc>
