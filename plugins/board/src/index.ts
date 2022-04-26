@@ -60,6 +60,7 @@ export interface CardDate extends Obj {
  * @public
  */
 export interface Card extends Task {
+  space: Ref<Board>
   title: string
 
   date?: CardDate

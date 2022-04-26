@@ -105,6 +105,10 @@ export class TCard extends TTask implements Card {
 
   @Prop(Collection(contact.class.Employee), board.string.Members)
   members?: Ref<Employee>[]
+
+  @Prop(TypeRef(board.class.Board), board.string.Board)
+  @Index(IndexKind.Indexed)
+  space!: Ref<Board>
 }
 
 @Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)
