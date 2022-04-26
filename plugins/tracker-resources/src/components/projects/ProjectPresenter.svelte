@@ -14,15 +14,16 @@
 -->
 
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Avatar, getClient } from '@anticrm/presentation'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import { Icon } from '@anticrm/ui'
   import contact from '@anticrm/contact'
+  import ObjectPresenter from '@anticrm/view-resources/src/components/ObjectPresenter.svelte'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
   import plugin from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'
 
-  export let value: Project
+  export let value: WithLookup<Project>
   export let space: Ref<Team>
 
   const client = getClient()
@@ -55,15 +56,17 @@
     <Icon icon={plugin.icon.Project} size="small" />
   </div>
   <span class="label nowrap project-label">{value.label}</span>
-  <div class="icon lead">
-    {#await getLeadAvatar() then avatar}
-      {#if avatar}
-        <Avatar avatar={avatar} size="small"/>
-      {:else}
-        <Icon icon={contact.icon.Person} size="small" />
-      {/if}
-    {/await}
-  </div>
+  {#if value.lead}
+    <div class="lead-container">
+      <ObjectPresenter value={value.$lookup?.lead} props={{
+        shouldShowName: false
+      }} />
+    </div>
+  {:else}
+    <div class="lead-placeholder">
+      <Icon icon={contact.icon.Person} size="large" />
+    </div>
+  {/if}
   <div class="icon">
     <ProjectStatusSelector
       kind="icon"
@@ -79,7 +82,12 @@
     width: 250px;
   }
 
-  .lead {
-    width: 35px;
+  .lead-container {
+    padding-bottom: 5px;
+    margin-right: 12px;
+  }
+
+  .lead-placeholder {
+    margin-right: 20px;
   }
 </style>

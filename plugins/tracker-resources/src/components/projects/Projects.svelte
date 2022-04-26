@@ -17,6 +17,7 @@
   import { FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
+  import contact from '@anticrm/contact'
   import { Project, Team } from '@anticrm/tracker'
   import NewProject from './NewProject.svelte'
   import plugin from '../../plugin'
@@ -26,6 +27,9 @@
   const options: FindOptions<Project> = {
     sort: {
       startDate: SortingOrder.Ascending
+    },
+    lookup: {
+      lead: contact.class.Employee,
     }
   }
 

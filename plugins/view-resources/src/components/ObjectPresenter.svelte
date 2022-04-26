@@ -19,24 +19,24 @@
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '../utils'
 
-  export let objectId: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
+  export let objectId: Ref<Doc> | null = null
+  export let _class: Ref<Class<Doc>> | null = null
   export let value: Doc | undefined
   export let props: Record<string, any> = {}
 
   const client = getClient()
-  let presenter: AttributeModel | undefined
+  let presenter: AttributeModel | null = null
 
   const docQuery = createQuery()
-  let doc: Doc | undefined
+  let doc: Doc | null
 
   $: if (value === undefined) {
-    docQuery.query(_class, { _id: objectId }, (r) => { doc = r.shift() })
+    docQuery.query(_class!, { _id: objectId! }, (r) => { doc = r.shift() ?? null })
   } else {
     doc = value
   }
 
-  $: if (doc !== undefined) {
+  $: if (doc !== null) {
     getObjectPresenter(client, doc._class, { key: '' }).then(p => {
       presenter = p
     })
