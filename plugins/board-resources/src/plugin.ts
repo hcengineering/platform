@@ -59,7 +59,6 @@ export default mergeIds(boardId, board, {
     NoColor: '' as IntlString,
     NoColorInfo: '' as IntlString,
     Checklist: '' as IntlString,
-    ChecklistItem: '' as IntlString,
     Dates: '' as IntlString,
     Attachments: '' as IntlString,
     AddAttachment: '' as IntlString,

@@ -76,15 +76,6 @@ export class TCardChecklist extends TObj implements CardChecklist {
   items!: CardChecklistItem[]
 }
 
-@Model(board.class.CardChecklistItem, core.class.Obj, DOMAIN_MODEL)
-@UX(board.string.ChecklistItem)
-export class TCardChecklistItem extends TObj implements CardChecklistItem {
-  assignee?: Ref<Employee>
-  dueDate?: Timestamp
-  isChecked!: boolean
-  name!: Markup
-}
-
 @Model(board.class.Card, task.class.Task)
 @UX(board.string.Card, board.icon.Card, undefined, 'title')
 export class TCard extends TTask implements Card {
@@ -140,7 +131,7 @@ export class TCardAction extends TDoc implements CardAction {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardChecklist, TCardAction)
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
