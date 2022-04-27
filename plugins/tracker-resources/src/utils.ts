@@ -21,7 +21,8 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   Issue,
-  IssuesDateModificationPeriod
+  IssuesDateModificationPeriod,
+  ProjectStatus
 } from '@anticrm/tracker'
 import { AnyComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
@@ -114,6 +115,15 @@ export const getIssuesModificationDatePeriodTime = (
       return 0
     }
   }
+}
+
+// TODO: update icons
+export const projectStatuses: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
+  [ProjectStatus.Planned]: { icon: tracker.icon.CategoryBacklog, label: tracker.string.Planned },
+  [ProjectStatus.InProgress]: { icon: tracker.icon.CategoryStarted, label: tracker.string.InProgress },
+  [ProjectStatus.Paused]: { icon: tracker.icon.CategoryUnstarted, label: tracker.string.Paused },
+  [ProjectStatus.Completed]: { icon: tracker.icon.CategoryCompleted, label: tracker.string.Completed },
+  [ProjectStatus.Canceled]: { icon: tracker.icon.CategoryCanceled, label: tracker.string.Canceled }
 }
 
 export const groupBy = (data: any, key: any): { [key: string]: any[] } => {

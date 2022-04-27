@@ -33,9 +33,9 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import { Document, Issue, IssuePriority, IssueStatus, Project, IssueStatusCategory, ProjectStatus, Team } from '@anticrm/tracker'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
-import { Document, Issue, IssuePriority, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
 import tracker from './plugin'
 
 export { trackerOperation } from './migration'
@@ -174,8 +174,48 @@ export class TDocument extends TDoc implements Document {
   declare space: Ref<Team>
 }
 
+/**
+ * @public
+ */
+@Model(tracker.class.Project, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.Project, tracker.icon.Project, tracker.string.Project)
+export class TProject extends TDoc implements Project {
+  @Prop(TypeString(), tracker.string.Title)
+  // @Index(IndexKind.FullText)
+  label!: string
+
+  @Prop(TypeMarkup(), tracker.string.Project)
+  description?: Markup
+
+  @Prop(TypeNumber(), tracker.string.Status)
+  status!: ProjectStatus
+
+  @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
+  lead!: Ref<Employee> | null
+
+  @Prop(Collection(contact.class.Employee), tracker.string.Members)
+  members!: Ref<Employee>[]
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  comments!: number
+
+  @Prop(Collection(tracker.class.Document), tracker.string.Document)
+  documents!: number
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  attachments?: number;
+
+  @Prop(TypeDate(true), tracker.string.Project)
+  startDate!: Timestamp | null
+
+  @Prop(TypeDate(true), tracker.string.Project)
+  targetDate!: Timestamp | null
+
+  declare space: Ref<Team>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTeam, TIssue, TIssueStatus, TIssueStatusCategory)
+  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory)
 
   builder.createDoc(
     tracker.class.IssueStatusCategory,
