@@ -29,6 +29,9 @@
     "CategoryTargetClass": "Категория",
     "CategoryTagsLabel": "Теги категории",
     "OtherCategoryLabel": "Другое",
-    "AllCategories": "Все категории"
+    "AllCategories": "Все категории",
+    "SelectAll": "Выбрать все",
+    "SelectNone": "Выбрать ничего",
+    "ApplyTags": "Применить"
   }
 }
