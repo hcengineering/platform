@@ -14,9 +14,10 @@
 -->
 
 <script lang="ts">
-  import { IconFolder } from '@anticrm/ui'
+  import { IconFolder, Label } from '@anticrm/ui'
 
   import type { Space } from '@anticrm/core'
+  import presentation from '..'
 
   export let value: Space
   export let subtitle: string | undefined = undefined
@@ -27,7 +28,12 @@
   <div class="flex-center {size} caption-color flex-no-shrink"><IconFolder size={'small'} /></div>
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="content-accent-color overflow-label">{value.name}</div>
+    <div class="content-accent-color overflow-label">
+      {value.name}
+      {#if value.archived}
+        <Label label={presentation.string.Archived}/>
+      {/if}
+    </div>
   </div>
 </div>
 
