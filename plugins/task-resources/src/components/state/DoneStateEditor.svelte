@@ -43,7 +43,7 @@
 </script>
 
 <div
-  class="flex-row-center cursor-pointer"
+  class="flex-row-center cursor-pointer p-4"
   bind:this={container}
   on:click|preventDefault={() => {
     if (!opened) {

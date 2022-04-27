@@ -18,7 +18,17 @@
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { AnyComponent, Button, EditBox, IconDownOutline, IconUpOutline, Label, Scroller, IconMoreH, IconEdit } from '@anticrm/ui'
+  import {
+    AnyComponent,
+    Button,
+    EditBox,
+    IconDownOutline,
+    IconUpOutline,
+    Label,
+    Scroller,
+    IconMoreH,
+    IconEdit
+  } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   // import Card from '../Card.svelte'
@@ -38,7 +48,7 @@
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  let fullSize: boolean = false
+  const fullSize: boolean = false
   let innerWidth: number
 
   $: _id &&
@@ -95,9 +105,7 @@
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="custom-title">
-      Custom Title
-    </svelte:fragment>
+    <svelte:fragment slot="custom-title">Custom Title</svelte:fragment>
     <svelte:fragment slot="subtitle">
       <div class="flex-between flex-grow">
         {#if currentTeam}
@@ -227,22 +235,16 @@
 {/if}
 
 <style lang="scss">
-  // .main-panel {
-  //   flex-grow: 2;
-  //   flex-basis: 47.5rem;
+  .header {
+    max-width: 56.25rem;
+    width: calc(100% - 5rem);
+    justify-content: space-between;
+    padding: 0 1.25rem;
+  }
 
-    .header {
-      max-width: 56.25rem;
-      width: calc(100% - 5rem);
-      justify-content: space-between;
-      padding: 0 1.25rem;
-    }
-
-    .content {
-      max-width: 53.75rem;
-      width: calc(100% - 7.5rem);
-    }
-  // }
+  .content {
+    width: 100%;
+  }
 
   .right-panel {
     .header {

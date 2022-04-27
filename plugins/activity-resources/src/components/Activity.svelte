@@ -64,7 +64,7 @@
       </div>
     </div>
   {/if}
-  <div class="flex-col h-full min-h-0" class:background-accent-bg-color={!transparent}>
+  <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text">
         {#if txes}
