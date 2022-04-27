@@ -130,9 +130,6 @@
   .p-activity {
     padding: 1.5rem 2.5rem;
   }
-  .scroller-back {
-    background-color: var(--body-accent);
-  }
 
   :global(.grid .msgactivity-container:last-child::after) {
     content: none;

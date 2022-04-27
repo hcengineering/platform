@@ -49,6 +49,7 @@
 <Panel
   {title} {subtitle} {icon}
   rightSection={isFullSize}
+  {showHeader}
   bind:panelWidth bind:innerWidth
   isProperties={innerWidth >= 900 || isProperties}
   isSubtitle={innerWidth < 900 || isSubtitle}

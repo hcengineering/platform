@@ -29,7 +29,6 @@
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
-  export let rightSection: AnyComponent | undefined = undefined
 
   const query = createQuery()
   const statusesQuery = createQuery()
@@ -228,9 +227,9 @@
 {/if}
 
 <style lang="scss">
-  .main-panel {
-    flex-grow: 2;
-    flex-basis: 47.5rem;
+  // .main-panel {
+  //   flex-grow: 2;
+  //   flex-basis: 47.5rem;
 
     .header {
       max-width: 56.25rem;
@@ -243,7 +242,7 @@
       max-width: 53.75rem;
       width: calc(100% - 7.5rem);
     }
-  }
+  // }
 
   .right-panel {
     .header {
