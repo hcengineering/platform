@@ -141,16 +141,14 @@
   ]
 
   const client = getClient()
-  export let space: Space | undefined
+  const loc = getCurrentLocation()
+  const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
   const currentUser = getCurrentAccount() as EmployeeAccount
   let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
   let selectedSpaces: Ref<Space>[] = []
   let searchQuery: string = ''
   let isLoading = false
-
-  // TODO
-  const loc = getCurrentLocation()
 
   let attachments: Attachment[] = []
   let selectedFileNumber: number | undefined
@@ -293,7 +291,7 @@
     <SpaceMultiBoxList
       _classes={requestedSpaceClasses}
       label={attachment.string.FileBrowserFilterIn}
-      selectedItems={space ? [space._id] : []}
+      selectedItems={spaceId ? [spaceId] : []}
       on:update={(evt) => {
         selectedSpaces = evt.detail
       }}

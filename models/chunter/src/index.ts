@@ -336,7 +336,7 @@ export function createModel (builder: Builder): void {
             icon: attachment.icon.FileBrowser,
             component: attachment.component.FileBrowser,
             componentProps: {
-              requestedSpaceClasses: [chunter.class.Channel]
+              requestedSpaceClasses: [chunter.class.Channel, chunter.class.DirectMessage]
             }
           }
         ],

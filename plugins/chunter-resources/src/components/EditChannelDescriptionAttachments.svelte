@@ -77,7 +77,7 @@
           on:click={() => {
             const loc = getCurrentLocation()
             loc.path[2] = 'fileBrowser'
-            loc.query = channel ? {space: channel._id} : {}
+            loc.query = channel ? { spaceId: channel._id } : {}
             navigate(loc)
           }}
         >

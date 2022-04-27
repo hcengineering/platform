@@ -17,39 +17,50 @@
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import core, { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { Tooltip, CheckBox } from '@anticrm/ui'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { Tooltip, CheckBox, Label } from '@anticrm/ui'
 
   import { createQuery } from '../utils'
   import presentation from '..'
   import SpaceInfo from './SpaceInfo.svelte';
 
-  export let selected: Ref<Space> | undefined
   export let _classes: Ref<Class<Space>>[] = []
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
+  export let selected: Ref<Space> | undefined
   export let selectedSpaces: Ref<Space>[] = []
-  export let ignoreSpaces: Ref<Space>[] = []
 
-  let search: string = ''
-  let objects: Space[] = []
+  let searchQuery: string = ''
+  let spaces: Space[] = []
+  let shownSpaces: Space[] = []
   let input: HTMLInputElement
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
+  const myAccId = getCurrentAccount()._id
+
   $: query.query<Space>(
     core.class.Space,
     {
-      name: { $like: '%' + search + '%' },
+      name: { $like: '%' + searchQuery + '%' },
       _class: { $in: _classes },
-      _id: { $nin: ignoreSpaces }
+      private: false,
     },
     result => {
-      objects = result
+      spaces = result
     },
     { limit: 200 }
   )
+
+  $: update(spaces)
+  const update = (spaces_: Space[]) => {
+    shownSpaces = spaces_.filter((sp) => {
+      // don't show archived unless search is specified
+      // show private only if it includes the current user
+      return (!sp.archived || searchQuery) && (!sp.private || sp.members.includes(myAccId))
+    })
+  }
 
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
@@ -58,25 +69,27 @@
     if (selectedSpaces.filter(s => s === space._id).length > 0) return true
     return false
   }
+
   const checkSelected = (space: Space): void => {
     if (isSelected(space)) {
       selectedSpaces = selectedSpaces.filter(s => s !== space._id)
     } else {
       selectedSpaces.push(space._id)
     }
-    objects = objects
+    spaces = spaces
     dispatch('update', selectedSpaces)
   }
+
   onMount(() => { if (input) input.focus() })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:change/>
+    <input bind:this={input} type='text' bind:value={searchQuery} placeholder={phTraslate} on:change/>
   </div>
   <div class="scroll">
     <div class="box">
-      {#each objects as space}
+      {#each shownSpaces as space}
         <button class="menu-item" on:click={() => {
           checkSelected(space)
         }}>
@@ -84,6 +97,9 @@
             <CheckBox checked={isSelected(space)} primary />
           </div>
           <SpaceInfo size={'medium'} value={space} />
+          {#if space.archived}
+            &nbsp;<Label label={presentation.string.Archived}/>
+          {/if}
           {#if allowDeselect && space._id === selected}
             <div class="check-right pointer-events-none">
               {#if titleDeselect}

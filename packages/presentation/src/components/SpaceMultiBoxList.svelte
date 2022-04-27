@@ -53,7 +53,6 @@
       {
         _classes,
         label,
-        allowDeselect: false,
         selectedSpaces: selectedItems
       },
       evt.target as HTMLElement,
