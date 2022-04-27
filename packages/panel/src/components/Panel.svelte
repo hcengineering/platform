@@ -47,19 +47,22 @@
 </script>
 
 <Panel
-  {title} {subtitle} {icon}
+  {title}
+  {subtitle}
+  {icon}
   rightSection={isFullSize}
   {showHeader}
-  bind:panelWidth bind:innerWidth
-  isProperties={innerWidth >= 900 || isProperties}
+  bind:panelWidth
+  bind:innerWidth
+  isProperties={innerWidth >= 500 || isProperties}
   isSubtitle={innerWidth < 900 || isSubtitle}
   on:close
 >
   <svelte:fragment slot="subtitle">
-    {#if $$slots['subtitle']}<slot name="subtitle" />{/if}
+    {#if $$slots.subtitle}<slot name="subtitle" />{/if}
   </svelte:fragment>
   <svelte:fragment slot="properties">
-    {#if $$slots['properties']}<slot name="properties" />{/if}
+    {#if $$slots.properties}<slot name="properties" />{/if}
   </svelte:fragment>
   <svelte:fragment slot="navigate-actions">
     <slot name="navigate-actions" />
@@ -81,12 +84,7 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if allowFullSize}
-      <Button
-        icon={IconExpand}
-        size={'medium'}
-        kind={'transparent'}
-        on:click={resizePanel}
-      />
+      <Button icon={IconExpand} size={'medium'} kind={'transparent'} on:click={resizePanel} />
     {/if}
   </svelte:fragment>
   {#if isFullSize}

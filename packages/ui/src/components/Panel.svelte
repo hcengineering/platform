@@ -34,8 +34,8 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>  
-  <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>    
+<div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>
+  <div class='panel-content-container'>
     {#if showHeader}
       <div class="ac-header short mirror divide highlight">
         <div class="buttons-group">
@@ -45,7 +45,8 @@
             kind={'transparent'}
             on:click={() => {
               dispatch('close')
-            }} />
+            }}
+          />
           {#if $$slots['navigate-actions']}
             <div class="buttons-group xsmall-gap">
               <slot name="navigate-actions" />
@@ -63,11 +64,10 @@
             {#if subtitle}<span class="ac-header__description">{subtitle}</span>{/if}
           </div>
         </div>
-        {#if rightSection}
-          <div class="buttons-group xsmall-gap mr-4">
-            <slot name="commands" />
-          </div>
-        {/if}
+        <div class="buttons-group xsmall-gap mr-4">
+          <slot name="commands" />
+          <slot name="actions" />
+        </div>
       </div>
     {:else}
       <div class="ac-header short mirror divide highlight">
@@ -110,6 +110,9 @@
           <slot />
         </div>
       {/if}
+      {#if rightSection}
+        <slot name="rightSection" />
+      {/if}
       {#if $$slots.properties && isProperties}
         <div class="properties-container">
           <slot name="properties" />
@@ -117,25 +120,13 @@
       {/if}
     </div>
   </div>
-
-  {#if rightSection}
-    <slot name="rightSection" />
-  {/if}
-
-  <div class="ad-tools buttons-group xsmall-gap h-4" class:grow-reverse={reverseCommands}>
-    {#if !rightSection && $$slots.commands}
-      <slot name="commands" />
-    {/if}
-    <slot name="actions" />
-  </div>
 </div>
 
-<style lang="scss">
-  .panel-content {
+<style lang="scss"> 
+  .panel-content-container {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
-    align-content: stretch;
   }
   .main-content {
     display: flex;
@@ -143,7 +134,8 @@
     flex-wrap: nowrap;
     min-width: 0;
     min-height: 0;
-    height: 100%;
+    flex-grow: 1;
+    // height: 100%;
 
     &.withProperties {
       flex-direction: row;
@@ -155,7 +147,7 @@
       flex-direction: column;
       flex-shrink: 0;
       min-width: 20rem;
-      width: 25%;
+      width: 20rem;
       // background-color: var(--board-card-bg-color);
 
       &::before {
