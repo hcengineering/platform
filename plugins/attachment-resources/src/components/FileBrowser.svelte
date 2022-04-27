@@ -83,7 +83,7 @@
     const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: selectedParticipants_ } })
     const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
 
-    const spaceQuery = selectedSpaces_.length ? { space: { $in: selectedSpaces_ } } : {}
+    const spaceQuery = selectedSpaces_.length ? { space: { $in: selectedSpaces_ } } : { space: { private: false } }
 
     const date = dateFileBrowserFilters.find((o) => o.id === selectedDateId_)?.getDate()
     const dateQuery = date && { modifiedOn: date }

@@ -45,7 +45,6 @@
     {
       name: { $like: '%' + searchQuery + '%' },
       _class: { $in: _classes },
-      private: false,
     },
     result => {
       spaces = result
@@ -97,9 +96,6 @@
             <CheckBox checked={isSelected(space)} primary />
           </div>
           <SpaceInfo size={'medium'} value={space} />
-          {#if space.archived}
-            &nbsp;<Label label={presentation.string.Archived}/>
-          {/if}
           {#if allowDeselect && space._id === selected}
             <div class="check-right pointer-events-none">
               {#if titleDeselect}
