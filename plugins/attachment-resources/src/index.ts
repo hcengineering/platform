@@ -24,6 +24,7 @@ import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
 import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
+import FileDownload from './components/icons/FileDownload.svelte'
 import { uploadFile, deleteFile } from './utils'
 import attachment, { Attachment } from '@anticrm/attachment'
 import { SortingOrder, SortingQuery } from '@anticrm/core'
@@ -39,7 +40,8 @@ export {
   AttachmentPresenter,
   AttachmentRefInput,
   AttachmentList,
-  AttachmentDocList
+  AttachmentDocList,
+  FileDownload
 }
 
 export enum FileBrowserSortMode {

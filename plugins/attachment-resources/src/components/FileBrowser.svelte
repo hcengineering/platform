@@ -17,7 +17,7 @@
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
   import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient, getFileUrl } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
     location,
@@ -27,7 +27,8 @@
     showPopup,
     navigate,
     EditWithIcon,
-    Spinner
+    Spinner,
+    Icon
   } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
   import { onDestroy } from 'svelte'
@@ -39,6 +40,7 @@
     sortModeToOptionObject
   } from '..'
   import attachment from '../plugin'
+  import FileDownload from './icons/FileDownload.svelte'
   import FileBrowserFilters from './FileBrowserFilters.svelte'
   import FileBrowserSortMenu from './FileBrowserSortMenu.svelte'
 
@@ -156,6 +158,9 @@
             <AttachmentPresenter value={attachment} />
           </div>
           <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
+            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
@@ -195,6 +200,7 @@
     padding: 0.25rem 0;
 
     .eAttachmentRowActions {
+      display: flex;
       visibility: hidden;
       border: 1px solid var(--theme-bg-focused-border);
       padding: 0.2rem;

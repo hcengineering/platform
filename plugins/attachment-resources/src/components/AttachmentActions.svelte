@@ -16,10 +16,12 @@
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { getResource } from '@anticrm/platform'
-  import { showPopup, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
+  import { showPopup, ActionIcon, IconMoreH, Menu, Icon } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
+  import { getFileUrl } from '@anticrm/presentation'
 
   import attachmentPlugin from '../plugin'
+  import FileDownload from './icons/FileDownload.svelte'
 
   export let attachment: Attachment
   export let isSaved = false
@@ -55,6 +57,9 @@
 </script>
 
 <div class="actions">
+  <a href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
+    <Icon icon={FileDownload} size={'small'} />
+  </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
 </div>
 
