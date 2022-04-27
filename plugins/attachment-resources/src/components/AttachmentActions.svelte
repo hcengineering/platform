@@ -1,5 +1,4 @@
 <!--
-// Copyright © 2022 Anticrm Platform Contributors.
 // Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
