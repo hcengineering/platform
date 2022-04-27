@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 // 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,10 +19,14 @@
   import PersonContent from './PersonContent.svelte'
 
   export let value: Person
-  export let inline: boolean = false
+  export let inline = false
+  export let isInteractive = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
+  export let defaultName: IntlString | undefined = undefined
   export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
+  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
 </script>
 
 {#if value || shouldShowPlaceholder}
@@ -32,9 +35,27 @@
       label={value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel}
       props={{ value: formatName(value?.name) }}
     >
-      <PersonContent {inline} {value} {shouldShowName} {shouldShowPlaceholder} />
+      <PersonContent
+        {value}
+        {inline}
+        {onEdit}
+        {avatarSize}
+        {defaultName}
+        {isInteractive}
+        {shouldShowName}
+        {shouldShowPlaceholder}
+      />
     </Tooltip>
   {:else}
-    <PersonContent {inline} {value} {shouldShowName} {shouldShowPlaceholder} />
+    <PersonContent
+      {value}
+      {inline}
+      {onEdit}
+      {avatarSize}
+      {defaultName}
+      {isInteractive}
+      {shouldShowName}
+      {shouldShowPlaceholder}
+    />
   {/if}
 {/if}

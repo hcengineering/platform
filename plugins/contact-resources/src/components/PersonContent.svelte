@@ -15,35 +15,125 @@
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
   import { Hierarchy } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { Avatar } from '@anticrm/presentation'
-  import { getPanelURI } from '@anticrm/ui'
+  import { getPanelURI, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Person | undefined
   export let inline: boolean = false
+  export let isInteractive = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
-
-  const avatarSize = 'x-small'
+  export let defaultName: IntlString | undefined = undefined
+  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
 </script>
 
-{#if value || shouldShowPlaceholder}
+{#if !isInteractive}
   {#if value}
+    <div class="contentPresenter mContentPresenterNotInteractive">
+      <div class="eContentPresenterIcon">
+        <Avatar size={avatarSize} avatar={value.avatar} />
+      </div>
+      {#if shouldShowName}
+        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
+      {/if}
+    </div>
+  {:else}
+    <div class="contentPresenter mContentPresenterNotInteractive">
+      <div class="eContentPresenterIcon">
+        <Avatar size={avatarSize} avatar={undefined} />
+      </div>
+      {#if defaultName}
+        <div class="eContentPresenterLabel">
+          <Label label={defaultName} />
+        </div>
+      {/if}
+    </div>
+  {/if}
+{:else if value || shouldShowPlaceholder}
+  {#if onEdit}
+    <div class="contentPresenter" class:inline-presenter={inline} on:click={onEdit}>
+      <div class="eContentPresenterIcon">
+        <Avatar size={avatarSize} avatar={value?.avatar} />
+      </div>
+      {#if value && shouldShowName}
+        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
+      {/if}
+    </div>
+  {:else if value}
     <a
-      class="flex-presenter"
+      class="contentPresenter"
       class:inline-presenter={inline}
       href="#{getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}"
     >
-      <div class="icon">
-        <Avatar size={avatarSize} avatar={value?.avatar} />
+      <div class="eContentPresenterIcon">
+        <Avatar size={avatarSize} avatar={value.avatar} />
       </div>
       {#if shouldShowName}
-        <span class="label">{formatName(value.name)}</span>
+        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
       {/if}
     </a>
-  {:else}
-    <div class="icon">
+  {/if}
+{:else}
+  <div class="contentPresenter" on:click={onEdit}>
+    <div class="eContentPresenterIcon">
       <Avatar size={avatarSize} avatar={undefined} />
     </div>
-  {/if}
+    {#if defaultName}
+      <Label label={defaultName} />
+    {/if}
+  </div>
 {/if}
+
+<style lang="scss">
+  .contentPresenter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    cursor: pointer;
+
+    &.mContentPresenterNotInteractive {
+      cursor: default;
+
+      &:hover {
+        .eContentPresenterIcon {
+          color: var(--theme-content-dark-color);
+        }
+        .eContentPresenterLabel {
+          text-decoration: none;
+          color: var(--theme-content-accent-color);
+        }
+      }
+    }
+    .eContentPresenterIcon {
+      margin-right: 0.5rem;
+      color: var(--theme-content-dark-color);
+    }
+    .eContentPresenterLabel {
+      min-width: 0;
+      font-weight: 500;
+      text-align: left;
+      color: var(--theme-content-accent-color);
+
+      overflow: hidden;
+      visibility: visible;
+      display: -webkit-box;
+      /* autoprefixer: ignore next */
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      user-select: none;
+    }
+    &:hover {
+      .eContentPresenterIcon {
+        color: var(--theme-caption-color);
+      }
+      .eContentPresenterLabel {
+        text-decoration: underline;
+        color: var(--theme-caption-color);
+      }
+    }
+  }
+</style>
