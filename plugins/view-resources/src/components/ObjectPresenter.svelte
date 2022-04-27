@@ -25,22 +25,18 @@
   export let props: Record<string, any> = {}
 
   const client = getClient()
-  let presenter: AttributeModel | null = null
+  let presenter: AttributeModel | undefined
 
   const docQuery = createQuery()
-  let doc: Doc | null
+  let doc: Doc | undefined
 
   $: if (value === undefined) {
-    docQuery.query(
-      _class,
-      { _id: objectId },
-      r => { doc = r.shift() ?? null }
-    )
+    docQuery.query(_class, { _id: objectId }, (r) => { doc = r.shift() })
   } else {
     doc = value
   }
 
-  $: if (doc !== null) {
+  $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then(p => {
       presenter = p
     })
