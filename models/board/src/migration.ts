@@ -16,7 +16,7 @@
 import { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
+import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@anticrm/model-task'
 import task, { createKanban, KanbanTemplate } from '@anticrm/task'
 import board from './plugin'
 
@@ -76,8 +76,40 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultKanban(tx)
 }
 
+async function migrateLabels (client: MigrationClient): Promise<void> {
+  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, labels: { $exists: false } })
+  for (const card of cards) {
+    await client.update(
+      DOMAIN_TASK,
+      {
+        _id: card._id
+      },
+      {
+        labels: []
+      }
+    )
+  }
+}
+
+async function migrateChecklists (client: MigrationClient): Promise<void> {
+  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, checklists: { $exists: false } })
+  for (const card of cards) {
+    await client.update(
+      DOMAIN_TASK,
+      {
+        _id: card._id
+      },
+      {
+        checklists: []
+      }
+    )
+  }
+}
+
 export const boardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await Promise.all([migrateLabels(client), migrateChecklists(client)])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)
