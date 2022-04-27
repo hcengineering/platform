@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
     import { Ref, Space } from '@anticrm/core'
-    import { Label, ActionIcon, IconClose, Button, EditBox } from '@anticrm/ui'
+    import { Label, ActionIcon, IconClose, Button } from '@anticrm/ui'
     import board from '../../plugin'
     import CardsArchive from '../CardArchive.svelte'
     import ListArchive from '../ListArchive.svelte'

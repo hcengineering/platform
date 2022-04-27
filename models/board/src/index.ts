@@ -94,7 +94,7 @@ export class TCard extends TTask implements Card {
   description!: Markup
 
   @Prop(Collection(board.class.CardLabel), board.string.Labels)
-  labels?: Ref<CardLabel>[]
+  labels!: Ref<CardLabel>[]
 
   @Prop(TypeString(), board.string.Location)
   @Index(IndexKind.FullText)

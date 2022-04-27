@@ -77,7 +77,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 }
 
 async function migrateLabels (client: MigrationClient): Promise<void> {
-  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, labels: { $exists: false } })
+  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, labels: { $exists: false, $in: [null] } })
   for (const card of cards) {
     await client.update(
       DOMAIN_TASK,
@@ -92,7 +92,7 @@ async function migrateLabels (client: MigrationClient): Promise<void> {
 }
 
 async function migrateChecklists (client: MigrationClient): Promise<void> {
-  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, checklists: { $exists: false } })
+  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, checklists: { $exists: false, $in: [null] } })
   for (const card of cards) {
     await client.update(
       DOMAIN_TASK,

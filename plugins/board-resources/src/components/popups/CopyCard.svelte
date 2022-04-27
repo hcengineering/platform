@@ -52,8 +52,9 @@
       assignee: null,
       description: '',
       members: [],
+      checklists: [],
       location: '',
-      labels
+      labels: labels ?? []
     }
 
     await client.addCollection(
