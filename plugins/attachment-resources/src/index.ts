@@ -17,6 +17,7 @@ import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
+import AttachmentGalleryPresenter from './components/AttachmentGalleryPresenter.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentList from './components/AttachmentList.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
@@ -37,6 +38,7 @@ export {
   Attachments,
   AttachmentsPresenter,
   AttachmentPresenter,
+  AttachmentGalleryPresenter,
   AttachmentRefInput,
   AttachmentList,
   AttachmentDocList
@@ -70,18 +72,18 @@ export const sortModeToOptionObject = (sortMode: FileBrowserSortMode): SortingQu
 
 const msInDay = 24 * 60 * 60 * 1000
 const getBeginningOfDate = (customDate?: Date) => {
-  if (!customDate) {
+  if (customDate == null) {
     customDate = new Date()
   }
   customDate.setUTCHours(0, 0, 0, 0)
   return customDate.getTime()
 }
 
-export const dateFileBrowserFilters: {
+export const dateFileBrowserFilters: Array<{
   id: string
   label: IntlString<{}>
   getDate: () => any
-}[] = [
+}> = [
   {
     id: 'dateAny',
     label: attachment.string.FileBrowserDateFilterAny,
@@ -137,11 +139,11 @@ export const dateFileBrowserFilters: {
   }
 ]
 
-export const fileTypeFileBrowserFilters: {
+export const fileTypeFileBrowserFilters: Array<{
   id: string
   label: IntlString<{}>
   getType: () => any
-}[] = [
+}> = [
   {
     id: 'typeAny',
     label: attachment.string.FileBrowserTypeFilterAny,
@@ -179,7 +181,7 @@ export const fileTypeFileBrowserFilters: {
   }
 ]
 
-export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
+export async function AddAttachmentToSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   await client.createDoc(attachment.class.SavedAttachments, preference.space.Preference, {
@@ -187,7 +189,7 @@ export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
   })
 }
 
-export async function DeleteAttachmentFromSaved(attach: Attachment): Promise<void> {
+export async function DeleteAttachmentFromSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(attachment.class.SavedAttachments, { attachedTo: attach._id })
@@ -200,6 +202,7 @@ export default async (): Promise<Resources> => ({
   component: {
     AttachmentsPresenter,
     AttachmentPresenter,
+    AttachmentGalleryPresenter,
     Attachments,
     FileBrowser,
     Photos

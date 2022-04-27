@@ -17,6 +17,8 @@
     "Name": "Name",
     "FileBrowser": "File browser",
     "FileBrowserFileCounter": "{results, plural, =1 {# result} other {# results}}",
+    "FileBrowserListView": "View as list",
+    "FileBrowserGridView": "View as grid",
     "FileBrowserFilterFrom": "From",
     "FileBrowserFilterIn": "In",
     "FileBrowserFilterDate": "Date",

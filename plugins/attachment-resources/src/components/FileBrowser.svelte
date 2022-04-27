@@ -27,7 +27,9 @@
     showPopup,
     navigate,
     EditWithIcon,
-    Spinner
+    Spinner,
+    Tooltip,
+    Icon
   } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
   import { onDestroy } from 'svelte'
@@ -36,7 +38,8 @@
     FileBrowserSortMode,
     dateFileBrowserFilters,
     fileTypeFileBrowserFilters,
-    sortModeToOptionObject
+    sortModeToOptionObject,
+    AttachmentGalleryPresenter
   } from '..'
   import attachment from '../plugin'
   import FileBrowserFilters from './FileBrowserFilters.svelte'
@@ -58,6 +61,7 @@
   let selectedSort: FileBrowserSortMode = FileBrowserSortMode.NewestFile
   let selectedDateId = 'dateAny'
   let selectedFileTypeId = 'typeAny'
+  let isListDisplayMode = true
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
     selectedFileNumber = fileNumber
@@ -68,7 +72,7 @@
 
   $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
-  async function fetch(
+  async function fetch (
     searchQuery_: string,
     selectedSort_: FileBrowserSortMode,
     selectedFileTypeId_: string,
@@ -129,14 +133,40 @@
   </div>
   <EditWithIcon icon={IconSearch} bind:value={searchQuery} placeholder={ui.string.SearchDots} />
 </div>
-<FileBrowserFilters
-  {requestedSpaceClasses}
-  {spaceId}
-  bind:selectedParticipants
-  bind:selectedSpaces
-  bind:selectedDateId
-  bind:selectedFileTypeId
-/>
+<div class="ac-header full">
+  <FileBrowserFilters
+    {requestedSpaceClasses}
+    {spaceId}
+    bind:selectedParticipants
+    bind:selectedSpaces
+    bind:selectedDateId
+    bind:selectedFileTypeId
+  />
+  <div class="flex">
+    <Tooltip label={attachment.string.FileBrowserListView} direction={'bottom'}>
+      <button
+        class="ac-header__icon-button"
+        class:selected={isListDisplayMode}
+        on:click={() => {
+          isListDisplayMode = true
+        }}
+      >
+        <Icon icon={contact.icon.Person} size={'small'} />
+      </button>
+    </Tooltip>
+    <Tooltip label={attachment.string.FileBrowserGridView} direction={'bottom'}>
+      <button
+        class="ac-header__icon-button"
+        class:selected={!isListDisplayMode}
+        on:click={() => {
+          isListDisplayMode = false
+        }}
+      >
+        <Icon icon={contact.icon.Edit} size={'small'} />
+      </button>
+    </Tooltip>
+  </div>
+</div>
 <div class="group">
   <div class="groupHeader">
     <div class="eGroupHeaderCount">
@@ -149,20 +179,46 @@
       <Spinner />
     </div>
   {:else if attachments?.length}
-    <div class="flex-col">
-      {#each attachments as attachment, i}
-        <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
-          <div class="item flex">
-            <AttachmentPresenter value={attachment} />
-          </div>
-          <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-            <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
-              <IconMoreV size={'small'} />
+    {#if isListDisplayMode}
+      <div class="flex-col">
+        {#each attachments as attachment, i}
+          <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
+            <div class="item flex">
+              <AttachmentPresenter value={attachment} />
+            </div>
+            <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
+              <div
+                id="context-menu"
+                class="eAttachmentRowMenu"
+                on:click={(event) => showFileMenu(event, attachment, i)}
+              >
+                <IconMoreV size={'small'} />
+              </div>
             </div>
           </div>
-        </div>
-      {/each}
-    </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="galleryGrid">
+        {#each attachments as attachment, i}
+          <div class="attachmentCell" class:fixed={i === selectedFileNumber}>
+            <AttachmentGalleryPresenter value={attachment}>
+              <svelte:fragment slot="rowMenu">
+                <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
+                  <div
+                    id="context-menu2"
+                    class="eAttachmentCellMenu"
+                    on:click={(event) => showFileMenu(event, attachment, i)}
+                  >
+                    <IconMoreV size={'small'} />
+                  </div>
+                </div></svelte:fragment
+              >
+            </AttachmentGalleryPresenter>
+          </div>
+        {/each}
+      </div>
+    {/if}
   {:else}
     <div class="flex-between attachmentRow">
       <Label label={attachment.string.NoFiles} />
@@ -190,7 +246,6 @@
   .attachmentRow {
     display: flex;
     align-items: center;
-    padding-right: 1rem;
     margin: 0 1.5rem;
     padding: 0.25rem 0;
 
@@ -225,6 +280,48 @@
       }
       .eAttachmentRowMenu {
         visibility: visible;
+      }
+    }
+  }
+
+  .galleryGrid {
+    display: grid;
+    margin: 0 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+
+    .attachmentCell {
+      .eAttachmentCellActions {
+        visibility: hidden;
+        border: 1px solid var(--theme-bg-focused-border);
+        padding: 0.2rem;
+        border-radius: 0.375rem;
+      }
+
+      .eAttachmentCellMenu {
+        visibility: hidden;
+        opacity: 0.6;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      &:hover {
+        .eAttachmentCellActions {
+          visibility: visible;
+        }
+        .eAttachmentCellMenu {
+          visibility: visible;
+        }
+      }
+      &.fixed {
+        .eAttachmentCellActions {
+          visibility: visible;
+        }
+        .eAttachmentCellMenu {
+          visibility: visible;
+        }
       }
     }
   }
