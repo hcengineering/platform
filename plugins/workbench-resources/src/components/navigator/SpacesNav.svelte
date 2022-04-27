@@ -36,7 +36,7 @@
   import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { classIcon } from '../../utils'
+  import { classIcon, getSpaceName } from '../../utils'
   import SpecialElement from './SpecialElement.svelte'
   import TreeItem from './TreeItem.svelte'
   import TreeNode from './TreeNode.svelte'
@@ -53,7 +53,8 @@
     label: model.addSpaceLabel,
     icon: IconAdd,
     action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
-      showPopup(model.createComponent, {}, ev?.target as HTMLElement)
+      dispatch('open')
+      showPopup(model.createComponent, {}, 'top')
     }
   }
 
@@ -63,6 +64,7 @@
     action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
       const loc = getCurrentLocation()
       loc.path[2] = 'spaceBrowser'
+      dispatch('open')
       navigate(loc)
     }
   }
@@ -72,6 +74,7 @@
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
       const editor = await getEditor(model.spaceClass)
+      dispatch('open')
       showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
     }
   }
@@ -132,20 +135,6 @@
     return lastView < value
   }
 
-  async function getName (space: Space) {
-    const clazz = hierarchy.getClass(space._class)
-    const nameMixin = hierarchy.as(clazz, view.mixin.SpaceName)
-
-    if (nameMixin.getName) {
-      const getSpaceName = await getResource(nameMixin.getName);
-      const name = await getSpaceName(client, space)
-
-      return name
-    }
-
-    return space.name
-  }
-  
   function getParentActions(): Action[] {
     return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
   }
@@ -169,7 +158,7 @@
         {/each}
       </TreeNode>
     {:else}
-      {#await getName(space) then name}
+      {#await getSpaceName(client, space) then name}
         <TreeItem
           indent={'ml-4'}
           _id={space._id}

@@ -18,6 +18,7 @@ import { mergeIds } from '@anticrm/platform'
 import type { IntlString } from '@anticrm/platform'
 
 import attachment, { attachmentId } from '@anticrm/attachment'
+import { ViewAction } from '@anticrm/view'
 
 export default mergeIds(attachmentId, attachment, {
   string: {
@@ -46,6 +47,12 @@ export default mergeIds(attachmentId, attachment, {
     FileBrowserTypeFilterImages: '' as IntlString,
     FileBrowserTypeFilterAudio: '' as IntlString,
     FileBrowserTypeFilterVideos: '' as IntlString,
-    FileBrowserTypeFilterPDFs: '' as IntlString
+    FileBrowserTypeFilterPDFs: '' as IntlString,
+    AddAttachmentToSaved: '' as IntlString,
+    RemoveAttachmentFromSaved: '' as IntlString
+  },
+  actionImpl: {
+    AddAttachmentToSaved: '' as ViewAction,
+    DeleteAttachmentFromSaved: '' as ViewAction
   }
 })

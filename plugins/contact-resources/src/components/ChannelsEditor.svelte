@@ -19,6 +19,8 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
+  import { showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import contact from '../plugin'
   import Channels from './Channels.svelte'
   import ChannelsView from './ChannelsView.svelte'
@@ -116,5 +118,4 @@
   on:change={(e) => {
     if (editable) save(e.detail)
   }}
-  on:click
 />

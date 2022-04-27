@@ -67,6 +67,11 @@
       escapeClose()
     }
   }
+
+  const _update = (): void  => {
+    if (props) fitPopup(props, contentPanel)
+  }
+
   afterUpdate(() => {
     if (props) fitPopup(props, contentPanel)
   })
@@ -98,11 +103,7 @@
           rightSection={props.rightSection}
           position={props.element}
           on:close={_close}
-          on:update={() => {
-            if (props) {
-              fitPopup(props, contentPanel)
-            }
-          }}
+          on:update={_update}
         />
       </div>
     </div>

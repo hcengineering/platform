@@ -92,7 +92,9 @@
     "DueDate": "Due date",
     "All": "All",
     "PastWeek": "Past week",
-    "PastMonth": "Past month"
+    "PastMonth": "Past month",
+    "CopyIssueUrl": "Copy Issue URL to clipboard",
+    "CopyIssueId": "Copy Issue ID to clipboard"
   },
   "status": {}
 }

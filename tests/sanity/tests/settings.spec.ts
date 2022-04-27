@@ -22,7 +22,9 @@ test.describe('contact tests', () => {
     // Fill [placeholder="Location"]
     await page.fill('[placeholder="Location"]', 'LoPlaza')
     // Click .flex-center.icon-button
-    await page.click('button:has-text("Add social links")')
+    await page.click('text=Edit profile John Appleseed LoPlaza >> button')
+    await page.click('text=Edit profile John Appleseed LoPlaza >> button')
+    // await page.click('button:has-text("Add social links")')
     // Click [placeholder="john\.appleseed\@apple\.com"]
     await page.click('button:has-text("Email")')
     // Fill [placeholder="john\.appleseed\@apple\.com"]

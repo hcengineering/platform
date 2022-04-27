@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label, Button, Status as StatusControl } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
-  import { Class, Client, Doc, DocumentUpdate, Ref } from '@anticrm/core'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { Label, Button, Status as StatusControl, TextArea } from '@anticrm/ui'
+  import { Class, Client, Doc, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
   import { Card } from '@anticrm/board'
   import view from '@anticrm/view'
@@ -10,13 +9,19 @@
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
-  import { createMissingLabels } from '../../utils/BoardUtils'
+  import type { TxOperations } from '@anticrm/core'
+  import { generateId, AttachedData } from '@anticrm/core'
+  import task from '@anticrm/task'
+  import { createMissingLabels } from '../../utils/BoardUtils';
 
   export let object: Card
+  export let client: TxOperations
 
-  const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+
+  let inputRef: TextArea
+  let title = object.title
   let status: Status = OK
   const selected = {
     space: object.space,
@@ -24,28 +29,53 @@
     rank: object.rank
   }
 
-  async function move(): Promise<void> {
-    const update: DocumentUpdate<Card> = {}
+  async function copyCard(): Promise<void> {
+    const newCardId = generateId() as Ref<Card>
 
-    if (selected.space !== object.space) {
-      update.labels = await createMissingLabels(client, object, selected.space)
-      update.space = selected.space
+    const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
+    if (sequence === undefined) {
+      throw new Error('sequence object not found')
     }
 
-    if (selected.state !== object.state) update.state = selected.state
-    if (selected.rank !== object.rank) update.rank = selected.rank
-    client.update(object, update)
+    const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+
+    const labels = object.space !== selected.space
+      ? await createMissingLabels(client, object, selected.space)
+      : object.labels
+
+    const value: AttachedData<Card> = {
+      state: selected.state,
+      doneState: null,
+      number: (incResult as any).object.sequence,
+      title: title,
+      rank: selected.rank,
+      assignee: null,
+      description: '',
+      members: [],
+      location: '',
+      labels
+    }
+
+    await client.addCollection(
+      board.class.Card,
+      selected.space,
+      selected.space,
+      board.class.Board,
+      'cards',
+      value,
+      newCardId
+    )
     dispatch('close')
   }
 
-  async function invokeValidate (
+  async function invokeValidate(
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
     return await impl(object, client)
   }
 
-  async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
+  async function validate(doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {
@@ -58,17 +88,25 @@
   }
 
   $: validate({ ...object, ...selected }, object._class)
+
+  onMount(() => inputRef.focus())
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
   <div class="ap-space" />
   <div class="fs-title ap-header flex-row-center">
-    <Label label={board.string.MoveCard} />
+    <Label label={board.string.CopyCard} />
   </div>
   <div class="ap-space bottom-divider" />
   <StatusControl {status} />
   <div class="ap-title">
-    <Label label={board.string.SelectDestination} />
+    <Label label={board.string.Title} />
+  </div>
+  <div class="mr-4 ml-4 mt-2">
+    <TextArea bind:this={inputRef} bind:value={title} />
+  </div>
+  <div class="ap-title">
+    <Label label={board.string.CopyTo} />
   </div>
   <div class="ap-category">
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
@@ -83,7 +121,13 @@
     </div>
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
       {#key selected.state}
-        <RankSelect label={board.string.Position} {object} state={selected.state} bind:selected={selected.rank} />
+        <RankSelect
+          label={board.string.Position}
+          {object}
+          state={selected.state}
+          bind:selected={selected.rank}
+          isCopying={true}
+        />
       {/key}
     </div>
   </div>
@@ -96,11 +140,11 @@
       }}
     />
     <Button
-      label={board.string.Move}
+      label={board.string.CreateCard}
       size={'small'}
-      disabled={status !== OK || (object.state === selected.state && object.rank === selected.rank)}
+      disabled={status !== OK}
       kind={'primary'}
-      on:click={move}
+      on:click={copyCard}
     />
   </div>
 </div>

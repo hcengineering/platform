@@ -239,7 +239,14 @@
       headerLoading = false
     })
   }
+
+  const _update = (result: any): void => {
+    dispatch('update', result)
+  }
+  let panelWidth: number = 0
+  let innerWidth: number = 0
 </script>
+
 <ActionContext context={{
   mode: 'editor'
 }}/>
@@ -252,6 +259,9 @@
     {fullSize}
     {object}
     {position}
+    bind:panelWidth
+    bind:innerWidth
+    on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')
     }}
@@ -259,7 +269,7 @@
     <svelte:fragment slot="navigate-actions">
       <UpDownNavigator element={object}/>
     </svelte:fragment>
-    <div class="w-full" slot="subtitle">
+    <svelte:fragment slot="subtitle">
       {#if !headerLoading}
         {#if headerEditor !== undefined}
           <Component is={headerEditor} props={{ object, keys }} />
@@ -267,7 +277,18 @@
           <AttributesBar {object} {keys} />
         {/if}
       {/if}
-    </div>
+    </svelte:fragment>
+    <svelte:fragment slot="properties">
+      {#if !headerLoading}
+        <div class="p-4">
+          {#if headerEditor !== undefined}
+            <Component is={headerEditor} props={{ object, keys, vertical: true }} />
+          {:else}
+            <AttributesBar {object} {keys} vertical />
+          {/if}
+        </div>
+      {/if}
+    </svelte:fragment>
     <div class="main-editor">
       {#if mainEditor}
         <Component
@@ -329,6 +350,7 @@
     {/each}
   </Panel>
 {/if}
+
 <style lang="scss">
   .main-editor {
     display: flex;

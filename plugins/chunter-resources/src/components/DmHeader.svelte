@@ -15,21 +15,33 @@
 <script lang="ts">
   import { DirectMessage } from '@anticrm/chunter'
   import type { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { getCurrentAccount } from '@anticrm/core'
+  import { createQuery, getClient, CombineAvatars } from '@anticrm/presentation'
+  import contact, { EmployeeAccount } from '@anticrm/contact'
   import { showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
-  import { classIcon, getDmName } from '../utils'
-  import Header from './Header.svelte'
+  import { getDmName } from '../utils'
 
   export let spaceId: Ref<DirectMessage> | undefined
 
   const client = getClient()
   const query = createQuery()
+  const myAccId = getCurrentAccount()._id
   let dm: DirectMessage | undefined
 
   $: query.query(chunter.class.DirectMessage, { _id: spaceId }, (result) => {
     dm = result[0]
   })
+
+  async function getEmpolyeeIds () {
+    const empAccIds = dm?.members.length !== 1 ? dm?.members.filter((accId) => accId !== myAccId) : dm?.members
+
+    const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, {
+      _id: { $in: empAccIds as Ref<EmployeeAccount>[] }
+    })
+
+    return employeeAccounts.map((ea) => ea.employee)
+  }
 
   async function onSpaceEdit (): Promise<void> {
     if (dm === undefined) return
@@ -40,7 +52,23 @@
 <div class="ac-header divide full">
   {#if dm}
     {#await getDmName(client, dm) then name}
-      <Header icon={classIcon(client, dm._class)} label={name} description={''} on:click={onSpaceEdit} />
+      {#await getEmpolyeeIds() then empolyeeIds}
+        <div class="ac-header__wrap-title" on:click={onSpaceEdit}>
+          <div class="ac-header__icon">
+            <CombineAvatars _class={contact.class.Employee} items={empolyeeIds} size={'x-small'} />
+          </div>
+          <span class="ac-header__title">{name}</span>
+        </div>
+      {/await}
     {/await}
   {/if}
 </div>
+
+<style lang="scss">
+  .ac-header__wrap-title:hover {
+    cursor: pointer;
+    span {
+      text-decoration: underline;
+    }
+  }
+</style>

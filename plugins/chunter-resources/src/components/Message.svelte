@@ -25,7 +25,7 @@
   import { Action } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { AddToSaved, DeleteFromSaved, UnpinMessage } from '../index'
+  import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
   import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
@@ -37,6 +37,7 @@
 
   export let message: WithLookup<ChunterMessage>
   export let employees: Map<Ref<Employee>, Employee>
+  export let savedAttachmentsIds: Ref<Attachment>[]
   export let thread: boolean = false
   export let isPinned: boolean = false
   export let isSaved: boolean = false
@@ -86,7 +87,7 @@
     action: async () => {
       ;(await client.findAll(chunter.class.ThreadMessage, { attachedTo: message._id as Ref<Message> })).forEach((c) => {
         UnpinMessage(c)
-        DeleteFromSaved(c)
+        DeleteMessageFromSaved(c)
       })
       UnpinMessage(message)
       await client.removeDoc(message._class, message.space, message._id)
@@ -108,7 +109,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (ctx:any, evt: MouseEvent) => {
+            action: async (ctx: any, evt: MouseEvent) => {
               const impl = await getResource(a.action)
               await impl(message, evt)
             }
@@ -145,8 +146,8 @@
   }
 
   function addToSaved () {
-    if (isSaved) DeleteFromSaved(message)
-    else AddToSaved(message)
+    if (isSaved) DeleteMessageFromSaved(message)
+    else AddMessageToSaved(message)
   }
 
   $: parentMessage = message as Message
@@ -183,7 +184,11 @@
       </div>
     {:else}
       <div class="text"><MessageViewer message={message.content} /></div>
-      {#if message.attachments}<div class="attachments"><AttachmentList {attachments} /></div>{/if}
+      {#if message.attachments}
+        <div class="attachments">
+          <AttachmentList {attachments} {savedAttachmentsIds} />
+        </div>
+      {/if}
     {/if}
     {#if reactions || (!thread && hasReplies)}
       <div class="footer flex-col">
@@ -224,7 +229,7 @@
   .container {
     position: relative;
     display: flex;
-    padding: 2rem;
+    padding: .5rem 2rem;
 
     .avatar {
       min-width: 2.25rem;

@@ -24,6 +24,7 @@ export default mergeIds(boardId, board, {
     MakePrivate: '' as IntlString,
     MakePrivateDescription: '' as IntlString,
     CreateBoard: '' as IntlString,
+    OpenCard: '' as IntlString,
     CardName: '' as IntlString,
     More: '' as IntlString,
     SelectBoard: '' as IntlString,
@@ -111,7 +112,14 @@ export default mergeIds(boardId, board, {
     SearchMembers: '' as IntlString,
     DeleteCard: '' as IntlString,
     Menu: '' as IntlString,
-    ToArchive: '' as IntlString
+    ToArchive: '' as IntlString,
+    CopyCard: '' as IntlString,
+    AlsoCopy: '' as IntlString,
+    CopyTo: '' as IntlString,
+    NoResults: '' as IntlString,
+    SwitchToLists: '' as IntlString,
+    SwitchToCards: '' as IntlString,
+    SearchArchive: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

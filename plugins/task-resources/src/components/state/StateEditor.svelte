@@ -18,12 +18,16 @@
   import { Ref } from '@anticrm/core'
   import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { showPopup, Button, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
   export let value: Ref<State>
   export let onChange: (value: any) => void
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+
   let state: State
   let container: HTMLElement
   let opened: boolean = false
@@ -36,9 +40,7 @@
 
 {#if state}
   <Button
-    width="min-content"
-    size="small"
-    kind="no-border"
+    width="min-content" {kind} {size}
     on:click={(ev) => {
       if (!opened) {
         opened = true
