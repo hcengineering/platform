@@ -17,7 +17,7 @@ export function openCardPanel (card: Card): boolean {
     return false
   }
 
-  showPanel(board.component.EditCard, card._id, card._class, 'middle')
+  showPanel(board.component.EditCard, card._id, card._class, 'content')
   return true
 }
 

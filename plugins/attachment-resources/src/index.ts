@@ -24,9 +24,10 @@ import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
 import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
-import { Resources } from '@anticrm/platform'
 import { uploadFile, deleteFile } from './utils'
 import attachment, { Attachment } from '@anticrm/attachment'
+import { SortingOrder, SortingQuery } from '@anticrm/core'
+import { IntlString, Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient } from '@anticrm/presentation'
 
@@ -40,6 +41,143 @@ export {
   AttachmentList,
   AttachmentDocList
 }
+
+export enum FileBrowserSortMode {
+  NewestFile,
+  OldestFile,
+  AscendingAlphabetical,
+  DescendingAlphabetical,
+  SmallestSize,
+  BiggestSize
+}
+
+export const sortModeToOptionObject = (sortMode: FileBrowserSortMode): SortingQuery<Attachment> => {
+  switch (sortMode) {
+    case FileBrowserSortMode.NewestFile:
+      return { modifiedOn: SortingOrder.Descending }
+    case FileBrowserSortMode.OldestFile:
+      return { modifiedOn: SortingOrder.Ascending }
+    case FileBrowserSortMode.AscendingAlphabetical:
+      return { name: SortingOrder.Ascending }
+    case FileBrowserSortMode.DescendingAlphabetical:
+      return { name: SortingOrder.Descending }
+    case FileBrowserSortMode.SmallestSize:
+      return { size: SortingOrder.Ascending }
+    case FileBrowserSortMode.BiggestSize:
+      return { size: SortingOrder.Descending }
+  }
+}
+
+const msInDay = 24 * 60 * 60 * 1000
+const getBeginningOfDate = (customDate?: Date) => {
+  if (!customDate) {
+    customDate = new Date()
+  }
+  customDate.setUTCHours(0, 0, 0, 0)
+  return customDate.getTime()
+}
+
+export const dateFileBrowserFilters: {
+  id: string
+  label: IntlString<{}>
+  getDate: () => any
+}[] = [
+  {
+    id: 'dateAny',
+    label: attachment.string.FileBrowserDateFilterAny,
+    getDate: () => {
+      return undefined
+    }
+  },
+  {
+    id: 'dateToday',
+    label: attachment.string.FileBrowserDateFilterToday,
+    getDate: () => {
+      return { $gte: getBeginningOfDate() }
+    }
+  },
+  {
+    id: 'dateYesterday',
+    label: attachment.string.FileBrowserDateFilterYesterday,
+    getDate: () => {
+      return { $gte: getBeginningOfDate() - msInDay, $lt: getBeginningOfDate() }
+    }
+  },
+  {
+    id: 'date7Days',
+    label: attachment.string.FileBrowserDateFilter7Days,
+    getDate: () => {
+      return { $gte: getBeginningOfDate() - msInDay * 6 }
+    }
+  },
+  {
+    id: 'date30Days',
+    label: attachment.string.FileBrowserDateFilter30Days,
+    getDate: () => {
+      return { $gte: getBeginningOfDate() - msInDay * 29 }
+    }
+  },
+  {
+    id: 'date3Months',
+    label: attachment.string.FileBrowserDateFilter3Months,
+    getDate: () => {
+      const now = new Date()
+      now.setMonth(now.getMonth() - 3)
+      return { $gte: getBeginningOfDate(now) }
+    }
+  },
+  {
+    id: 'date12Months',
+    label: attachment.string.FileBrowserDateFilter12Months,
+    getDate: () => {
+      const now = new Date()
+      now.setMonth(now.getMonth() - 12)
+      return { $gte: getBeginningOfDate(now) }
+    }
+  }
+]
+
+export const fileTypeFileBrowserFilters: {
+  id: string
+  label: IntlString<{}>
+  getType: () => any
+}[] = [
+  {
+    id: 'typeAny',
+    label: attachment.string.FileBrowserTypeFilterAny,
+    getType: () => {
+      return undefined
+    }
+  },
+  {
+    id: 'typeImage',
+    label: attachment.string.FileBrowserTypeFilterImages,
+    getType: () => {
+      return { $like: '%image/%' }
+    }
+  },
+  {
+    id: 'typeAudio',
+    label: attachment.string.FileBrowserTypeFilterAudio,
+    getType: () => {
+      return { $like: '%audio/%' }
+    }
+  },
+  {
+    id: 'typeVideo',
+    label: attachment.string.FileBrowserTypeFilterVideos,
+    getType: () => {
+      return { $like: '%video/%' }
+    }
+  },
+  {
+    id: 'typePDF',
+    label: attachment.string.FileBrowserTypeFilterPDFs,
+    getType: () => {
+      return 'application/pdf'
+    }
+  }
+]
 
 export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
   const client = getClient()
