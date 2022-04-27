@@ -56,7 +56,6 @@
   $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
     ?.sortingFunction
 
-  let qindex = 0
   async function update (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -64,9 +63,7 @@
     sortOrder: SortingOrder,
     options?: FindOptions<Doc>
   ) {
-    loading = true
-    objects = []
-    q.query(
+    const update = q.query(
       _class,
       query,
       (result) => {
@@ -80,6 +77,10 @@
       },
       { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
+    if (update) {
+      objects = []
+      loading = true
+    }
   }
   $: update(_class, query, sortKey, sortOrder, options)
 

@@ -76,9 +76,9 @@ export class LiveQuery {
     query: DocumentQuery<T>,
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
-  ): void {
+  ): boolean {
     if (!this.needUpdate(_class, query, callback, options)) {
-      return
+      return false
     }
     this.oldCallback = callback
     this.oldClass = _class
@@ -90,6 +90,7 @@ export class LiveQuery {
       unsub()
       this.unsubscribe = () => {}
     }
+    return true
   }
 
   private needUpdate<T extends Doc>(
