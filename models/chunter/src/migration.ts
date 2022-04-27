@@ -14,7 +14,7 @@
 //
 
 import { Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import core, { Backlink, Class, Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
+import core, { Backlink, Class, Doc, DOMAIN_TX, Ref, Space, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_BACKLINK } from '@anticrm/model-core'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
@@ -160,9 +160,8 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
 }
 
 export async function migrateBacklinks (client: MigrationClient): Promise<void> {
-  const backlinks = await client.find<Backlink>(DOMAIN_COMMENT, {
-    _class: 'chunter:class:Backlink' as Ref<Class<Backlink>>
-  })
+  const _class = 'chunter:class:Backlink' as Ref<Class<Backlink>>
+  const backlinks = await client.find<Backlink>(DOMAIN_COMMENT, { _class })
   for (const backlink of backlinks) {
     await client.delete(DOMAIN_COMMENT, backlink._id)
     await client.create<Backlink>(DOMAIN_BACKLINK, {
@@ -179,6 +178,38 @@ export async function migrateBacklinks (client: MigrationClient): Promise<void> 
       modifiedBy: backlink.modifiedBy,
       modifiedOn: backlink.modifiedOn
     })
+  }
+
+  const classTxes = await client.find<TxCreateDoc<Comment>>(DOMAIN_TX, {
+    _class: { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc, core.class.TxCollectionCUD] },
+    objectClass: _class
+  })
+  for (const tx of classTxes) {
+    await client.update(
+      DOMAIN_TX,
+      {
+        _id: tx._id
+      },
+      {
+        objectClass: core.class.Backlink
+      }
+    )
+  }
+
+  const spaceTxes = await client.find<TxCreateDoc<Comment>>(DOMAIN_TX, {
+    _class: { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc, core.class.TxCollectionCUD] },
+    objectSpace: 'chunter:space:Backlinks' as Ref<Space>
+  })
+  for (const tx of spaceTxes) {
+    await client.update(
+      DOMAIN_TX,
+      {
+        _id: tx._id
+      },
+      {
+        objectSpace: core.space.Backlinks
+      }
+    )
   }
 }
 
