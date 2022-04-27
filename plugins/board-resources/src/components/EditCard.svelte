@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Class, Ref, updateBacklinks } from '@anticrm/core'
+  import { Class, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
@@ -69,15 +69,6 @@
   function change (field: string, value: any) {
     if (object) {
       updateCard(client, object, field, value)
-    }
-  }
-
-  function updateDescription (event: CustomEvent<string>) {
-    if (object) {
-      const value = event.detail
-      change('description', value)
-      object.description = value
-      updateBacklinks(client, object._id, object._class, undefined, value)
     }
   }
 
