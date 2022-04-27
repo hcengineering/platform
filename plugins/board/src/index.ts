@@ -60,7 +60,7 @@ export interface CardDate extends Obj {
 /**
  * @public
  */
-export interface CardChecklistItem extends Doc {
+export interface CardChecklistItem extends Obj {
   assignee?: Ref<Employee>
   dueDate?: Timestamp
   isChecked: boolean
@@ -71,7 +71,7 @@ export interface CardChecklistItem extends Doc {
  * @public
  */
 export interface CardChecklist extends Obj {
-  items: Ref<CardChecklistItem>[]
+  items: CardChecklistItem[]
 }
 
 /**

@@ -71,16 +71,15 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   isHidden?: boolean
 }
 
-
-@Model(board.class.CardChecklistItem, core.class.Obj, DOMAIN_MODEL)
+@Model(board.class.CardChecklist, core.class.Obj, DOMAIN_MODEL)
 @UX(board.string.Checklist)
 export class TCardChecklist extends TObj implements CardChecklist {
-  items!: Ref<CardChecklistItem>[]
+  items!: CardChecklistItem[]
 }
 
-@Model(board.class.CardChecklist, core.class.Doc, DOMAIN_MODEL)
+@Model(board.class.CardChecklistItem, core.class.Obj, DOMAIN_MODEL)
 @UX(board.string.ChecklistItem)
-export class TCardChecklistItem extends TDoc implements CardChecklistItem {
+export class TCardChecklistItem extends TObj implements CardChecklistItem {
   assignee?: Ref<Employee>
   dueDate?: Timestamp
   isChecked!: boolean
