@@ -56,7 +56,7 @@
 </script>
 
 <div class="actions">
-  <a href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
+  <a class="downloadButton" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
     <Icon icon={FileDownload} size={'small'} />
   </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
@@ -65,5 +65,9 @@
 <style lang="scss">
   .actions {
     display: flex;
+  }
+
+  .downloadButton {
+    margin-right: 0.2rem;
   }
 </style>

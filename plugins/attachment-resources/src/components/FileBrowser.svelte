@@ -208,6 +208,7 @@
     }
 
     .eAttachmentRowMenu {
+      margin-left: 0.2rem;
       visibility: hidden;
       opacity: 0.6;
       cursor: pointer;
