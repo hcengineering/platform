@@ -21,8 +21,11 @@
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Icon, Label, Panel, Scroller } from '@anticrm/ui'
+  import type { AnyComponent } from '@anticrm/ui'
+  import { EditBox, Icon, Label, Scroller } from '@anticrm/ui'
+  import { Panel } from '@anticrm/panel'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { UpDownNavigator } from '@anticrm/view-resources'
 
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -72,68 +75,81 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
+
+  let fullSize: boolean = false
+  let rightSection: AnyComponent | undefined = undefined
 </script>
 
 {#if object !== undefined}
-  <Panel showHeader={false} on:close={() => dispatch('close')}>
-    <Scroller>
-      <div class="flex-col-stretch h-full w-165 p-6">
-        <!-- TODO cover -->
-        <div class="flex-row-stretch">
-          <div class="w-9">
-            <Icon icon={board.icon.Card} size="large" />
-          </div>
-          <div class="fs-title text-lg">
-            <EditBox
-              bind:value={object.title}
-              maxWidth="39rem"
-              focus
-              on:change={() => change('title', object?.title)}
-            />
-          </div>
-        </div>
-        <div class="flex-row-stretch">
-          <div class="w-9" />
-          <div>
-            <Label label={board.string.InList} />
-            <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
-          </div>
-        </div>
-        <div class="flex-row-stretch">
-          <div class="flex-grow mr-4">
-            <div class="flex-row-stretch">
-              <div class="w-9" />
-              <CardDetails bind:value={object} />
-            </div>
-            <div class="flex-row-stretch mt-4 mb-2">
-              <div class="w-9">
-                <Icon icon={board.icon.Card} size="large" />
-              </div>
-              <div class="fs-title">
-                <Label label={board.string.Description} />
-              </div>
-            </div>
-            <div class="flex-row-stretch">
-              <div class="w-9" />
-              <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
-                <StyledTextBox
-                  alwaysEdit={true}
-                  showButtons={false}
-                  placeholder={board.string.DescriptionPlaceholder}
-                  bind:content={object.description}
-                  on:value={(evt) => change('description', evt.detail)}
-                />
-              </div>
-            </div>
-            <CardAttachments value={object} />
-            <!-- TODO checklists -->
-            <CardActivity bind:value={object} />
-          </div>
+  <Panel
+    icon={board.icon.Card}
+    title={object?.title}
+    {object}
+    {rightSection}
+    {fullSize}
+    position={'content'}
+    on:close={() => dispatch('close')}
+  >
+    <svelte:fragment slot="navigate-actions">
+      <UpDownNavigator element={object}/>
+    </svelte:fragment>
 
-          <CardActions bind:value={object} />
+      <!-- TODO cover -->
+      <div class="flex-row-stretch">
+        <div class="w-9">
+          <Icon icon={board.icon.Card} size="large" />
+        </div>
+        <div class="fs-title text-lg">
+          <EditBox
+            bind:value={object.title}
+            maxWidth="39rem"
+            focus
+            on:change={() => change('title', object?.title)}
+          />
         </div>
       </div>
-    </Scroller>
+      <div class="flex-row-stretch">
+        <div class="w-9" />
+        <div>
+          <Label label={board.string.InList} />
+          <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
+        </div>
+      </div>
+      <div class="flex-row-stretch">
+        <div class="flex-grow mr-4">
+          <div class="flex-row-stretch">
+            <div class="w-9" />
+            <CardDetails bind:value={object} />
+          </div>
+          <div class="flex-row-stretch mt-4 mb-2">
+            <div class="w-9">
+              <Icon icon={board.icon.Card} size="large" />
+            </div>
+            <div class="fs-title">
+              <Label label={board.string.Description} />
+            </div>
+          </div>
+          <div class="flex-row-stretch">
+            <div class="w-9" />
+            <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
+              <StyledTextBox
+                alwaysEdit={true}
+                showButtons={false}
+                placeholder={board.string.DescriptionPlaceholder}
+                bind:content={object.description}
+                on:value={(evt) => change('description', evt.detail)}
+              />
+            </div>
+          </div>
+          <CardAttachments value={object} />
+          <!-- TODO checklists -->
+          <!-- <CardActivity bind:value={object} /> -->
+        </div>
+      </div>
+
+    <svelte:fragment slot="properties">
+      <div class="p-4"><CardActions bind:value={object} /></div>
+    </svelte:fragment>
   </Panel>
 {/if}
 

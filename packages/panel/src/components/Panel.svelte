@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import calendar from '@anticrm/calendar'
   import type { Doc } from '@anticrm/core'
@@ -22,23 +23,46 @@
   import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
   import { PopupAlignment } from '@anticrm/ui'
 
-  export let title: string
+  export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
-  export let icon: Asset | AnySvelteComponent
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let fullSize: boolean = true
+  export let showHeader: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
   export let position: PopupAlignment | undefined = undefined
+  export let panelWidth: number = 0
+  export let innerWidth: number = 0
+  export let isSubtitle: boolean = false
+  export let isProperties: boolean = false
 
-  let innerWidth = 0
+  const dispatch = createEventDispatcher()
 
-  $: allowFullSize = innerWidth > 900 && (position === 'full' || position === 'content')
+  $: allowFullSize = panelWidth > 1200 && (position === 'full' || position === 'content')
   $: isFullSize = allowFullSize && fullSize
+
+  const resizePanel = () => {
+    isFullSize = !isFullSize
+  }
 </script>
 
-<Panel {title} {subtitle} {icon} on:close rightSection={isFullSize} bind:innerWidth>
+<Panel
+  {title}
+  {subtitle}
+  {icon}
+  rightSection={isFullSize}
+  {showHeader}
+  bind:panelWidth
+  bind:innerWidth
+  isProperties={innerWidth >= 500 || isProperties}
+  isSubtitle={innerWidth < 900 || isSubtitle}
+  on:close
+>
   <svelte:fragment slot="subtitle">
-    <slot name="subtitle" />
+    {#if $$slots.subtitle}<slot name="subtitle" />{/if}
+  </svelte:fragment>
+  <svelte:fragment slot="properties">
+    {#if $$slots.properties}<slot name="properties" />{/if}
   </svelte:fragment>
   <svelte:fragment slot="navigate-actions">
     <slot name="navigate-actions" />
@@ -60,19 +84,12 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#if allowFullSize}
-      <Button
-        icon={IconExpand}
-        size={'medium'}
-        kind={'transparent'}
-        on:click={() => {
-          fullSize = !fullSize
-        }}
-      />
-    {/if}    
+      <Button icon={IconExpand} size={'medium'} kind={'transparent'} on:click={resizePanel} />
+    {/if}
   </svelte:fragment>
   {#if isFullSize}
-    <Scroller>
-      <div class="p-10"><slot /></div>
+    <Scroller correctPadding={40}>
+      <div class="p-10 clear-mins"><slot /></div>
     </Scroller>
   {:else}
     <Component is={activity.component.Activity} props={{ object, fullSize: isFullSize }}>

@@ -22,28 +22,71 @@
   export let object: Doc
   export let keys: (string|KeyedAttribute)[]
   export let showHeader: boolean = true
+  export let vertical: boolean = false
 </script>
 
-<div class="flex-row-center h-full text-sm">
+<div class="attributes-bar-container {vertical ? 'vertical' : 'horizontal'}">
   {#each keys as key}
-    <div class="flex-center h-9 column">
-      <AttributeBarEditor {key} {object} {showHeader} />
-    </div>
+    {#if !vertical}
+      <div class="flex-center column">
+        <AttributeBarEditor {key} {object} {showHeader} />
+      </div>
+    {:else}
+      <AttributeBarEditor {key} {object} {showHeader} vertical />
+    {/if}
   {/each}
 </div>
 
 <style lang="scss">
   .column + .column {
     position: relative;
-    margin-left: 3rem;
     &::before {
       content: '';
       position: absolute;
-      top: 0;
-      bottom: 0;
-      left: -1.5rem;
-      width: 1px;
-      background-color: var(--theme-bg-accent-hover);
+      background-color: var(--board-card-bg-hover);
+    }
+  }
+
+  .attributes-bar-container {
+    height: 100%;
+
+    &.horizontal {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      min-width: 0;
+      font-size: .75rem;
+
+      .column + .column {
+        margin-left: 3rem;
+        &::before {
+          top: 0;
+          bottom: 0;
+          left: -1.5rem;
+          width: 1px;
+        }
+      }
+    }
+    &.vertical {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      grid-template-rows: minmax(2rem, auto);
+      grid-auto-flow: row;
+      justify-content: start;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      height: min-content;
+
+      .column + .column {
+        margin-top: 1rem;
+        &::before {
+          top: -.5rem;
+          left: 0;
+          right: 0;
+          height: 1px;
+        }
+      }
     }
   }
 </style>

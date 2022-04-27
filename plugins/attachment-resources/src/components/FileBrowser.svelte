@@ -16,129 +16,46 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Doc, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { DropdownLabelsIntl, IconMoreV, Label, Menu as UIMenu, showPopup } from '@anticrm/ui'
+  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import ui, {
+    getCurrentLocation,
+    location,
+    IconMoreV,
+    IconSearch,
+    Label,
+    showPopup,
+    navigate,
+    EditWithIcon,
+    Spinner
+  } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
-  import { AttachmentPresenter } from '..'
+  import { onDestroy } from 'svelte'
+  import {
+    AttachmentPresenter,
+    FileBrowserSortMode,
+    dateFileBrowserFilters,
+    fileTypeFileBrowserFilters,
+    sortModeToOptionObject
+  } from '..'
   import attachment from '../plugin'
-
-  enum SortMode {
-    NewestFile,
-    OldestFile,
-    AscendingAlphabetical,
-    DescendingAlphabetical
-  }
-
-  const msInDay = 24 * 60 * 60 * 1000
-  const myAccId = getCurrentAccount()._id
-
-  const getBeginningOfToday = () => {
-    const date = new Date()
-    date.setUTCHours(0, 0, 0, 0)
-    return date.getTime()
-  }
-  const dateObjects = [
-    {
-      id: 'dateAny',
-      label: attachment.string.FileBrowserDateFilterAny,
-      getDate: () => {
-        return undefined
-      }
-    },
-    {
-      id: 'dateToday',
-      label: attachment.string.FileBrowserDateFilterToday,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() }
-      }
-    },
-    {
-      id: 'dateYesterday',
-      label: attachment.string.FileBrowserDateFilterYesterday,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay, $lt: getBeginningOfToday() }
-      }
-    },
-    {
-      id: 'date7Days',
-      label: attachment.string.FileBrowserDateFilter7Days,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 6 }
-      }
-    },
-    {
-      id: 'date30Days',
-      label: attachment.string.FileBrowserDateFilter30Days,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 29 }
-      }
-    },
-    {
-      id: 'date3Months',
-      label: attachment.string.FileBrowserDateFilter3Months,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 90 }
-      }
-    },
-    {
-      id: 'date12Months',
-      label: attachment.string.FileBrowserDateFilter12Months,
-      getDate: () => {
-        return { $gte: getBeginningOfToday() - msInDay * 364 }
-      }
-    }
-  ]
-
-  const fileTypeObjects = [
-    {
-      id: 'typeAny',
-      label: attachment.string.FileBrowserTypeFilterAny,
-      getType: () => {
-        return undefined
-      }
-    },
-    {
-      id: 'typeImage',
-      label: attachment.string.FileBrowserTypeFilterImages,
-      getType: () => {
-        return { $like: '%image/%' }
-      }
-    },
-    {
-      id: 'typeAudio',
-      label: attachment.string.FileBrowserTypeFilterAudio,
-      getType: () => {
-        return { $like: '%audio/%' }
-      }
-    },
-    {
-      id: 'typeVideo',
-      label: attachment.string.FileBrowserTypeFilterVideos,
-      getType: () => {
-        return { $like: '%video/%' }
-      }
-    },
-    {
-      id: 'typePDF',
-      label: attachment.string.FileBrowserTypeFilterPDFs,
-      getType: () => {
-        return 'application/pdf'
-      }
-    }
-  ]
+  import FileBrowserFilters from './FileBrowserFilters.svelte'
+  import FileBrowserSortMenu from './FileBrowserSortMenu.svelte'
 
   const client = getClient()
-  export let space: Space | undefined
+  const loc = getCurrentLocation()
+  const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
+  export let requestedSpaceClasses: Ref<Class<Space>>[] = []
   const currentUser = getCurrentAccount() as EmployeeAccount
-  let participants: Ref<Employee>[] = [currentUser.employee]
-  const assignee: Ref<Employee> | null = null
+  let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
+  let selectedSpaces: Ref<Space>[] = []
+  let searchQuery: string = ''
+  let isLoading = false
 
   let attachments: Attachment[] = []
   let selectedFileNumber: number | undefined
 
-  let selectedSort: SortMode = SortMode.NewestFile
+  let selectedSort: FileBrowserSortMode = FileBrowserSortMode.NewestFile
   let selectedDateId = 'dateAny'
   let selectedFileTypeId = 'typeAny'
 
@@ -149,142 +66,96 @@
     })
   }
 
-  const showSortMenu = async (ev: Event): Promise<void> => {
-    showPopup(
-      UIMenu,
-      {
-        actions: [
-          {
-            label: sortModeToString(SortMode.NewestFile),
-            action: () => {
-              selectedSort = SortMode.NewestFile
-            }
-          },
-          {
-            label: sortModeToString(SortMode.OldestFile),
-            action: () => {
-              selectedSort = SortMode.OldestFile
-            }
-          },
-          {
-            label: sortModeToString(SortMode.AscendingAlphabetical),
-            action: () => {
-              selectedSort = SortMode.AscendingAlphabetical
-            }
-          },
-          {
-            label: sortModeToString(SortMode.DescendingAlphabetical),
-            action: () => {
-              selectedSort = SortMode.DescendingAlphabetical
-            }
-          }
-        ]
-      },
-      ev.target as HTMLElement
-    )
-  }
+  $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
-  const sortModeToString = (sortMode: SortMode): IntlString<{}> => {
-    switch (sortMode) {
-      case SortMode.NewestFile:
-        return attachment.string.FileBrowserSortNewest
-      case SortMode.OldestFile:
-        return attachment.string.FileBrowserSortOldest
-      case SortMode.AscendingAlphabetical:
-        return attachment.string.FileBrowserSortAZ
-      case SortMode.DescendingAlphabetical:
-        return attachment.string.FileBrowserSortZA
+  async function fetch(
+    searchQuery_: string,
+    selectedSort_: FileBrowserSortMode,
+    selectedFileTypeId_: string,
+    selectedDateId_: string,
+    selectedParticipants_: Ref<Employee>[],
+    selectedSpaces_: Ref<Space>[]
+  ) {
+    isLoading = true
+
+    const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
+
+    const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: selectedParticipants_ } })
+    const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
+
+    let spaceQuery: { space: any }
+    if (selectedSpaces_.length) {
+      spaceQuery = { space: { $in: selectedSpaces_ } }
+    } else {
+      // nothing is selected in space filter - show all available attachments (except for the archived channels)
+      const allSpaces = await client.findAll(core.class.Space, {
+        archived: false,
+        _class: { $in: requestedSpaceClasses }
+      })
+      const availableSpaces = allSpaces
+        .filter((sp) => !sp.private || sp.members.includes(currentUser._id))
+        .map((sp) => sp._id)
+      spaceQuery = { space: { $in: availableSpaces } }
     }
-  }
 
-  const sortModeToOptionObject = (sortMode: SortMode): SortingQuery<Attachment> => {
-    switch (sortMode) {
-      case SortMode.NewestFile:
-        return { modifiedOn: SortingOrder.Descending }
-      case SortMode.OldestFile:
-        return { modifiedOn: SortingOrder.Ascending }
-      case SortMode.AscendingAlphabetical:
-        return { name: SortingOrder.Ascending }
-      case SortMode.DescendingAlphabetical:
-        return { name: SortingOrder.Descending }
-    }
-  }
-
-  $: fetch(selectedSort, selectedFileTypeId, selectedDateId)
-
-  async function fetch(selectedSort_: SortMode, selectedFileTypeId_: string, selectedDateId_: string) {
-    const spaceQuery = space && { space: space._id }
-    const fileType = fileTypeObjects.find((o) => o.id === selectedFileTypeId_)?.getType()
-    const typeQuery = fileType && { type: fileType }
-    const date = dateObjects.find((o) => o.id === selectedDateId_)?.getDate()
+    const date = dateFileBrowserFilters.find((o) => o.id === selectedDateId_)?.getDate()
     const dateQuery = date && { modifiedOn: date }
+
+    const fileType = fileTypeFileBrowserFilters.find((o) => o.id === selectedFileTypeId_)?.getType()
+    const fileTypeQuery = fileType && { type: fileType }
 
     attachments = await client.findAll(
       attachment.class.Attachment,
-      { ...spaceQuery, ...typeQuery, ...dateQuery },
+      { ...nameQuery, ...senderQuery, ...spaceQuery, ...dateQuery, ...fileTypeQuery },
       {
-        sort: sortModeToOptionObject(selectedSort_)
+        sort: sortModeToOptionObject(selectedSort_),
+        limit: 200
       }
     )
+    isLoading = false
   }
+
+  onDestroy(
+    location.subscribe(async (loc) => {
+      loc.query = undefined
+      navigate(loc)
+    })
+  )
 </script>
 
 <div class="ac-header full divide">
   <div class="ac-header__wrap-title">
     <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
   </div>
+  <EditWithIcon icon={IconSearch} bind:value={searchQuery} placeholder={ui.string.SearchDots} />
 </div>
-<div class="filterBlockContainer">
-  <div class="simpleFilterButton">
-    <UserBoxList
-      _class={contact.class.Employee}
-      items={participants}
-      label={attachment.string.FileBrowserFilterFrom}
-      on:update={(evt) => {
-        participants = evt.detail
-      }}
-      noItems={attachment.string.NoParticipants}
-    />
-  </div>
-  <!-- TODO: wait for In filter -->
-  <!-- <div class="simpleFilterButton">
-    <UserBox _class={contact.class.Employee} label={attachment.string.FileBrowserFilterIn} bind:value={assignee} />
-  </div> -->
-  <div class="simpleFilterButton">
-    <DropdownLabelsIntl
-      items={dateObjects}
-      placeholder={attachment.string.FileBrowserFilterDate}
-      label={attachment.string.FileBrowserFilterDate}
-      bind:selected={selectedDateId}
-    />
-  </div>
-  <div class="simpleFilterButton">
-    <DropdownLabelsIntl
-      items={fileTypeObjects}
-      placeholder={attachment.string.FileBrowserFilterFileType}
-      label={attachment.string.FileBrowserFilterFileType}
-      bind:selected={selectedFileTypeId}
-    />
-  </div>
-</div>
+<FileBrowserFilters
+  {requestedSpaceClasses}
+  {spaceId}
+  bind:selectedParticipants
+  bind:selectedSpaces
+  bind:selectedDateId
+  bind:selectedFileTypeId
+/>
 <div class="group">
   <div class="groupHeader">
     <div class="eGroupHeaderCount">
       <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
     </div>
-    <div class="eGroupHeaderSortMenu" on:click={(event) => showSortMenu(event)}>
-      {'Sort: '}
-      <Label label={sortModeToString(selectedSort)} />
-    </div>
+    <FileBrowserSortMenu bind:selectedSort />
   </div>
-  {#if attachments?.length}
+  {#if isLoading}
+    <div class="ml-4">
+      <Spinner />
+    </div>
+  {:else if attachments?.length}
     <div class="flex-col">
       {#each attachments as attachment, i}
         <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
           </div>
-          {#if attachment.modifiedBy !== myAccId}
+          {#if attachment.modifiedBy !== currentUser._id}
             <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
               <div
                 id="context-menu"
@@ -307,9 +178,8 @@
 
 <style lang="scss">
   .group {
-    border: 1px solid var(--theme-bg-focused-border);
-    border-radius: 1rem;
     padding: 1rem 0;
+    overflow: auto;
   }
 
   .groupHeader {
@@ -320,10 +190,6 @@
     .eGroupHeaderCount {
       font-size: 0.75rem;
       color: var(--theme-caption-color);
-    }
-
-    .eGroupHeaderSortMenu {
-      cursor: pointer;
     }
   }
 
@@ -367,17 +233,5 @@
         visibility: visible;
       }
     }
-  }
-
-  .filterBlockContainer {
-    display: flex;
-    flex-flow: row wrap;
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-  .simpleFilterButton {
-    min-width: 4rem;
-    max-width: 12rem;
-    margin-left: 0.75rem;
   }
 </style>

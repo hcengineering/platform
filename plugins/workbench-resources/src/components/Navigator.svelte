@@ -146,6 +146,7 @@
         hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
         model={m}
         on:space
+        on:open
         {currentSpecial}
       />
     {/each}

@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@anticrm/platform': ~0.6.6
   '@anticrm/skillset': ^0.6.0
   '@elastic/elasticsearch': ^7.14.0
   '@koa/cors': ^3.1.0
@@ -274,6 +275,7 @@ specifiers:
   xml2js: ~0.4.23
 
 dependencies:
+  '@anticrm/platform': 0.6.6
   '@anticrm/skillset': 0.6.0
   '@elastic/elasticsearch': 7.16.0
   '@koa/cors': 3.1.0
@@ -547,6 +549,12 @@ dependencies:
   xml2js: 0.4.23
 
 packages:
+
+  /@anticrm/platform/0.6.6:
+    resolution: {integrity: sha512-URykmQOvhIjpVFmr6aqETEioQt7ucadTI3262Wrrm8cLmc3iG456INwhg7HvYnQL0n2DHQpcPw3a1f9t80hmAg==}
+    dependencies:
+      intl-messageformat: 9.10.0
+    dev: false
 
   /@anticrm/skillset/0.6.0:
     resolution: {integrity: sha512-k5/57q9ie73oCFKAxZrKy/BSnakiaVZsJmfjzmqhoko+3dZq2M2o/h1r+RSZrQ6re51iMqFdsVZAtfdPL15hjA==}
@@ -8279,7 +8287,7 @@ packages:
     resolution: {integrity: sha512-f2s8kEdy15cv9r7q4KkzGXvlY0JTcmCbMHZBfSQDwW77REr45IDWwd0lksDFeVHH2jJ5pqb90T77XscrjeGzzg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 17.0.0
+      '@types/node': 17.0.10
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: false
@@ -12780,7 +12788,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-39iTw1MmHsLnmWumW6YqQKE9Rus+Xdbbl6oXImRMZTcqJBZmt7FrLTN07RZK/+lZJa9H+j8PpXtXTYEedfMpJA==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-3T2h16c4vg6KLP0qXyibXAwi6XizFGC3fsSzzOAmSau78/wdr556iB8yHjb7Tt0bMFMnrLcG6jqKoe2LG9skaw==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -12816,7 +12824,7 @@ packages:
     dev: false
 
   file:projects/attachment.tgz:
-    resolution: {integrity: sha512-FQPEvwVXDupADQShfJQ4iquoIjA3ckymCDNEoW/JGDrqnCNwbytMw5/Mf8Texo4rPI2EEqUeRhs13O35dzIRkg==, tarball: file:projects/attachment.tgz}
+    resolution: {integrity: sha512-d5BtyRAy4X2HX19a2ERPRZYF6x6pyTYbY1wDri1/6Z5VUsSb+oCO11u897h82u6Fbz7YZdYgUuM6gjhFV9ikWQ==, tarball: file:projects/attachment.tgz}
     name: '@rush-temp/attachment'
     version: 0.0.0
     dependencies:
@@ -13012,7 +13020,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_096c09b0b673a57c275d9767a12070b1:
-    resolution: {integrity: sha512-K7m5ywTEPryaCV3zRBfwDRzSMGsWK/OW8xlNEqsjdelE0FIqeGNwZUDcc9rss/Iu2VgK/XZNQmHdlLpc4lkNzw==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-TTAbAdjuO73KpxUiLbI9Tp1mtwXKIRdjKG1tkEFahdv0i7fGY4lV9iVDKB7KZ3Cy7i0XIS2H6DTCCTS9kwYX5g==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -13067,11 +13075,12 @@ packages:
     dev: false
 
   file:projects/client-resources.tgz_ac194b5590200ebf8338e0f86ec190f4:
-    resolution: {integrity: sha512-Q6Z5aBrzLbRjre8RBftyz6SJr4dvEVvyC5QKnKfXNYEBcvkC4utxl1AlpSsvV++NI1tdGj+3dbzDe0eDcJmQdg==, tarball: file:projects/client-resources.tgz}
+    resolution: {integrity: sha512-nwv9zNEGsaR1LmsITLutQfjyFbB/dVJSM99JtkUNhb8G7zdbGB+35MW8ROi2e0J47GZ1hB3XWnUvWUU4gXL8eA==, tarball: file:projects/client-resources.tgz}
     id: file:projects/client-resources.tgz
     name: '@rush-temp/client-resources'
     version: 0.0.0
     dependencies:
+      '@anticrm/platform': 0.6.6
       '@rushstack/heft': 0.44.13
       '@types/heft-jest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
@@ -13959,7 +13968,7 @@ packages:
     dev: false
 
   file:projects/model-attachment.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-3cp6lAsRVDot0IdHvP5PuiwaiAlrWtfQOwBzU/c6sqEDQq0Bb5s+l9B2zcMpdNy92xScTgpD08Vc1Lk9L8dq5A==, tarball: file:projects/model-attachment.tgz}
+    resolution: {integrity: sha512-9uw+gLsiNlRU/N9jhl8IWi72HyEfJhVbAyNVpz+5VUaXxtBVfFPrNilt0rIddVQIXb2dq5KYGh2NuK6l/8OiwQ==, tarball: file:projects/model-attachment.tgz}
     id: file:projects/model-attachment.tgz
     name: '@rush-temp/model-attachment'
     version: 0.0.0

@@ -53,7 +53,8 @@
     label: model.addSpaceLabel,
     icon: IconAdd,
     action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
-      showPopup(model.createComponent, {}, ev?.target as HTMLElement)
+      dispatch('open')
+      showPopup(model.createComponent, {}, 'top')
     }
   }
 
@@ -63,6 +64,7 @@
     action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
       const loc = getCurrentLocation()
       loc.path[2] = 'spaceBrowser'
+      dispatch('open')
       navigate(loc)
     }
   }
@@ -72,6 +74,7 @@
     icon: IconEdit,
     action: async (_id: Ref<Doc>): Promise<void> => {
       const editor = await getEditor(model.spaceClass)
+      dispatch('open')
       showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
     }
   }

@@ -14,16 +14,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@anticrm/board'
+  import board, { Card } from '@anticrm/board'
   import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban as KanbanUI } from '@anticrm/kanban'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, Menu, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import { ActionContext, focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
+  import CardInlineActions from './editor/CardInlineActions.svelte'
   import KanbanCard from './KanbanCard.svelte'
   import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
   import ListHeader from './ListHeader.svelte'
@@ -32,7 +33,6 @@
   export let space: Ref<SpaceWithStates>
   export let search: string
   export let options: FindOptions<Card> | undefined
-  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
   let kanban: Kanban
   let states: State[] = []
@@ -83,12 +83,14 @@
     (document.activeElement as HTMLElement)?.blur()
   })
 
-  const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
+  const showMenu = async (ev: MouseEvent, object: Doc): Promise<void> => {
     ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, {
+    if (object._class !== board.class.Card) {
+      return
+    }
+
+    showPopup(CardInlineActions, { value: object }, {
       getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    }, () => {
-      // selection = undefined
     })
   }
 </script>

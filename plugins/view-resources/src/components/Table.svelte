@@ -21,7 +21,7 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-import { SelectDirection } from '../selection'
+  import { SelectDirection } from '../selection'
   import { buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
@@ -56,7 +56,6 @@ import { SelectDirection } from '../selection'
   $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
     ?.sortingFunction
 
-  let qindex = 0
   async function update (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -64,16 +63,10 @@ import { SelectDirection } from '../selection'
     sortOrder: SortingOrder,
     options?: FindOptions<Doc>
   ) {
-    const c = ++qindex
-    loading = true
-    objects = []
-    q.query(
+    const update = q.query(
       _class,
       query,
       (result) => {
-        if (c !== qindex) {
-          return // our data is invalid.
-        }
         objects = result
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -82,8 +75,12 @@ import { SelectDirection } from '../selection'
         dispatch('content', objects)
         loading = false
       },
-      { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
+      { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
+    if (update) {
+      objects = []
+      loading = true
+    }
   }
   $: update(_class, query, sortKey, sortOrder, options)
 
