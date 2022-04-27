@@ -27,9 +27,8 @@
     IssuePriority
   } from '@anticrm/tracker'
   import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import tracker from '../../plugin'
   import { IntlString } from '@anticrm/platform'
-  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
+  import tracker from '../../plugin'
   import {
     IssuesGroupByKeys,
     issuesGroupKeyMap,
@@ -38,6 +37,7 @@
     groupBy,
     issuesSortOrderMap
   } from '../../utils'
+  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
 
   export let currentSpace: Ref<Team>
@@ -322,7 +322,11 @@
           { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
           { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
           { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-          { key: '', presenter: tracker.component.AssigneePresenter, props: { currentSpace } }
+          {
+            key: '$lookup.assignee',
+            presenter: tracker.component.AssigneePresenter,
+            props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+          }
         ]}
         {groupedIssues}
       />

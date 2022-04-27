@@ -43,7 +43,7 @@
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
-      issuesList.onElementSelected(offset, of, dir)
+      issuesList.onElementSelected(offset, of)
     }
   })
 
@@ -52,7 +52,7 @@
   $: listProvider.update(Object.values(groupedIssues).flat(1))
 
   onMount(() => {
-    ;(document.activeElement as HTMLElement)?.blur()
+    (document.activeElement as HTMLElement)?.blur()
   })
 </script>
 
