@@ -1,5 +1,5 @@
-import board, { Board, CardLabel } from '@anticrm/board'
-import core, { Ref, TxOperations } from '@anticrm/core'
+import board, { Board, CardLabel, Card } from '@anticrm/board'
+import core, { Ref, TxOperations, Space } from '@anticrm/core'
 import type { KanbanTemplate } from '@anticrm/task'
 import { createKanban } from '@anticrm/task'
 import {
@@ -16,7 +16,7 @@ import {
   SeagullColor
 } from '@anticrm/ui'
 
-export async function createBoard (
+export async function createBoard(
   client: TxOperations,
   name: string,
   description: string,
@@ -78,4 +78,42 @@ export async function createCardLabel (
     title: title ?? '',
     isHidden: isHidden ?? false
   })
+}
+
+const isEqualLabel = (l1: CardLabel, l2: CardLabel): boolean =>
+  l1.title === l2.title && l1.color === l2.color && (l1.isHidden ?? false) === (l2.isHidden ?? false)
+
+export async function createMissingLabels (
+  client: TxOperations,
+  object: Card,
+  targetBoard: Ref<Space>
+): Promise<Array<Ref<CardLabel>> | undefined> {
+  const sourceBoardLabels = await getBoardLabels(client, object.space)
+  const targetBoardLabels = await getBoardLabels(client, targetBoard)
+
+  const missingLabels = sourceBoardLabels.filter((srcLabel) => {
+    if (object.labels?.includes(srcLabel._id) === false) return false
+
+    return targetBoardLabels.findIndex((targetLabel) => isEqualLabel(targetLabel, srcLabel)) === -1
+  })
+
+  await Promise.all(missingLabels.map((l) => createCardLabel(client, targetBoard, l.color, l.title, l.isHidden)))
+
+  const updatedTargetBoardLabels = await getBoardLabels(client, targetBoard)
+
+  const labelsUpdate = object.labels
+    ?.map((srcLabelId) => {
+      const srcLabel = sourceBoardLabels.find((l) => l._id === srcLabelId)
+
+      if (srcLabel === undefined) return null
+
+      const targetLabel = updatedTargetBoardLabels.find((l) => isEqualLabel(l, srcLabel))
+
+      if (targetLabel === undefined) return null
+
+      return targetLabel._id
+    })
+    .filter((l) => l !== null) as Array<Ref<CardLabel>> | undefined
+
+  return labelsUpdate
 }

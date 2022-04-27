@@ -34,6 +34,7 @@ import RolePresenter from './components/RolePresenter.svelte'
 import Table from './components/Table.svelte'
 import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
+import UpDownNavigator from './components/UpDownNavigator.svelte'
 
 export { getActions } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -43,7 +44,7 @@ export { default as TableBrowser } from './components/TableBrowser.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter }
+export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNavigator }
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,

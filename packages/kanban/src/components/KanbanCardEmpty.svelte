@@ -30,14 +30,6 @@
     border-radius: .75rem;
     cursor: pointer;
 
-    .icon {
-      margin-bottom: .25rem;
-      opacity: .4;
-    }
-
-    &:hover {
-      color: var(--theme-caption-color);
-      .icon { opacity: 1; }
-    }
+    &:hover { color: var(--theme-caption-color); }
   }
 </style>

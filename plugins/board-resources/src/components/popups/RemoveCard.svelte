@@ -3,7 +3,7 @@
   import { Label, Button, ActionIcon, IconClose } from '@anticrm/ui'
   import board from '../../plugin'
   import { getClient } from '@anticrm/presentation'
-  import { Card } from '@anticrm/board';
+  import { Card } from '@anticrm/board'
 
   export let object: Card
 

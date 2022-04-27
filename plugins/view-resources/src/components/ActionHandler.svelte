@@ -20,9 +20,9 @@
   addTxListener((tx) => {
     if (tx._class === core.class.TxRemoveDoc) {
       const docId = (tx as TxRemoveDoc<Doc>).objectId
-      if ($selectionStore.find(it => it._id === docId) !== undefined) {
+      if ($selectionStore.find((it) => it._id === docId) !== undefined) {
         selectionStore.update((old) => {
-          return old.filter(it => it._id !== docId)
+          return old.filter((it) => it._id !== docId)
         })
       }
     }
@@ -30,7 +30,11 @@
 
   let lastKey: KeyboardEvent | undefined
 
-  async function updateActions (context: ViewContext, selectionClass: Ref<Class<Doc>> | undefined, multiSelection: boolean): Promise<void> {
+  async function updateActions (
+    context: ViewContext,
+    selectionClass: Ref<Class<Doc>> | undefined,
+    multiSelection: boolean
+  ): Promise<void> {
     const t = ++q
     const r = await getContextActions(client, selectionClass ?? core.class.Doc, context, multiSelection)
     if (t === q) {
@@ -41,8 +45,20 @@
   $: if (ctx !== undefined) updateActions(ctx, selectionClass, $selectionStore.length > 1)
 
   function matchKey (key: KeyboardEvent, pattern: string): boolean {
-    const fp = ((key.altKey ? 'Alt + ' : '') + (key.shiftKey ? 'Shift + ' : '') + (key.metaKey ? 'Meta + ' : '') + key.key).toLowerCase()
-    const fp2 = ((key.altKey ? 'Alt + ' : '') + (key.shiftKey ? 'Shift + ' : '') + (key.metaKey ? 'Meta + ' : '') + key.code).toLowerCase()
+    const fp = (
+      (key.altKey ? 'Alt + ' : '') +
+      (key.shiftKey ? 'Shift + ' : '') +
+      (key.metaKey ? 'Meta + ' : '') +
+      (key.ctrlKey ? 'Ctrl + ' : '') +
+      key.key
+    ).toLowerCase()
+    const fp2 = (
+      (key.altKey ? 'Alt + ' : '') +
+      (key.shiftKey ? 'Shift + ' : '') +
+      (key.metaKey ? 'Meta + ' : '') +
+      (key.ctrlKey ? 'Ctrl + ' : '') +
+      key.code
+    ).toLowerCase()
     return fp === pattern.toLowerCase() || fp2 === pattern.toLowerCase()
   }
 
@@ -55,7 +71,7 @@
     lastKey = evt
     for (const a of actions) {
       // TODO: Handle multiple keys here
-      if (a.keyBinding?.find(it => matchKey(evt, it)) !== undefined) {
+      if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {
         const action = await getResource(a.action)
         if (action !== undefined) {
           action($focusStore.focus, evt)
@@ -68,15 +84,15 @@
   async function updatePreviewPresenter (doc?: Doc): Promise<void> {
     presenter = doc !== undefined ? await getObjectPreview(client, doc._class) : undefined
   }
-  
+
   $: updatePreviewPresenter($previewDocument)
 </script>
 
 <svelte:window on:keydown={handleKeys} />
 
-{#if $previewDocument !== undefined && presenter }
+{#if $previewDocument !== undefined && presenter}
   <div transition:fly|local style:position="fixed" style:right={'0'} style:top={'10rem'} style:z-index={'50000'}>
-    <div class='antiPanel p-10'>
+    <div class="antiPanel p-10">
       <Component is={presenter} props={{ object: $previewDocument }} />
     </div>
   </div>

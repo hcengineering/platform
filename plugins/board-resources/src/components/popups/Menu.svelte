@@ -1,21 +1,21 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
-    import { Label, Button, ActionIcon, IconClose, Icon } from '@anticrm/ui'
-    import { createQuery, getClient } from '@anticrm/presentation'
-    import { Card } from '@anticrm/board'
+    import { Ref, Space } from '@anticrm/core'
+    import { Label, ActionIcon, IconClose, Button, EditBox } from '@anticrm/ui'
     import board from '../../plugin'
-    import KanbanCard from '../KanbanCard.svelte'
-    import { SortingOrder } from '@anticrm/core'
-    import { getResource } from '@anticrm/platform'
+    import CardsArchive from '../CardArchive.svelte'
+    import ListArchive from '../ListArchive.svelte'
+    import TextArea from '@anticrm/ui/src/components/TextArea.svelte'
 
-    let archivedCards: Card[]
-    const client = getClient()
+    export let space: Ref<Space>
     const dispatch = createEventDispatcher()
-    const cardQuery = createQuery()
-    $: cardQuery.query(board.class.Card, {isArchived: true},
-        result => { archivedCards = result },
-        { sort: { rank: SortingOrder.Descending } }
-    )
+
+    let isCardArchive = true
+    let search: string = ''
+    $: query = { space, title: { $like: '%' + search + '%' } }
+    $: label = isCardArchive
+      ? board.string.SwitchToLists
+      : board.string.SwitchToCards
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withCategory w-60">
@@ -29,22 +29,17 @@
         </div>
     </div>
     <div class="ap-space bottom-divider"/>
-    {#if archivedCards}
-        {#each archivedCards as card}
-            <KanbanCard object={card}/>
-            <div class="flex-center flex-gap-2 w-full">
-                <Button label={board.string.SendToBoard}
-                    on:click={async (e) => {
-                        const deleteAction = await getResource(board.cardActionHandler.SendToBoard)
-                        deleteAction(card, client, e)
-                    }}/>
-                <Button label={board.string.Delete}
-                    on:click={async (e) => {
-                        const deleteAction = await getResource(board.cardActionHandler.Delete)
-                        deleteAction(card, client, e)
-                    }}/>
+    <div class="ap-scroll">
+        <div class="p-4">
+            <Button {label} width={'100%'}  on:click={() => { isCardArchive = !isCardArchive }} />
+            <div class="pt-4">
+                <TextArea bind:value={search} placeholder={board.string.SearchArchive}/>
             </div>
-        {/each}
-    {/if}
-    <div class="ap-space"/>
+        </div>
+        {#if isCardArchive}
+            <CardsArchive {query}/>
+        {:else}
+            <ListArchive {query}/>
+        {/if}
+    </div>
 </div>

@@ -147,8 +147,13 @@ export enum ProjectStatus {
  * @public
  */
 export interface Project extends Doc {
-  label: IntlString
+  label: string
   description?: Markup
+
+  status: ProjectStatus
+
+  lead: Ref<Employee> | null
+  members: Ref<Employee>[]
 
   space: Ref<Team>
 

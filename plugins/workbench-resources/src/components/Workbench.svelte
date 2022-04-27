@@ -195,6 +195,7 @@
     const loc = getCurrentLocation()
     loc.path[2] = id
     loc.path.length = 3
+    checkOnHide()
     navigate(loc)
   }
 
@@ -209,12 +210,14 @@
         loc.path[3] = special
       }
     }
+    checkOnHide()
     navigate(loc)
   }
 
   function closeAside (): void {
     const loc = getCurrentLocation()
     loc.path.length = 3
+    checkOnHide()
     navigate(loc)
   }
 
@@ -294,8 +297,21 @@
       isResizing = true
     }
   }
+
+  let navFloat: boolean = window.innerWidth < 1100 ? false : true
+  const windowResize = (): void => {
+    if (window.innerWidth < 1100 && !navFloat) {
+      visibileNav = false
+      navFloat = true
+    } else if (window.innerWidth >= 1100 && navFloat) navFloat = false
+  }
+  const checkOnHide = (): void => {
+    if (visibileNav && navFloat) visibileNav = false
+  }
+  windowResize()
 </script>
 
+<svelte:window on:resize={windowResize} />
 {#if client}
   <ActionHandler/>
   <svg class="svg-mask">
@@ -378,7 +394,11 @@
       }}
     />
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
+      <div
+        class="antiPanel-navigator"
+        class:float={navFloat}
+        style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
+      >
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}
@@ -391,6 +411,7 @@
           model={navigatorModel}
           on:special={(evt) => selectSpecial(evt.detail)}
           on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
+          on:open={checkOnHide}
         />
         {#if currentApplication.navFooterComponent}
           <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
@@ -441,6 +462,7 @@
 
 <style lang="scss">
   .workbench-container {
+    // position: relative;
     display: flex;
     height: 100%;
   }

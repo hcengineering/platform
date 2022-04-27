@@ -71,6 +71,18 @@ export default plugin(attachmentId, {
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
     NoParticipants: '' as IntlString,
-    ShowMoreAttachments: '' as IntlString
+    ShowMoreAttachments: '' as IntlString,
+    FileBrowserDateFilterAny: '' as IntlString,
+    FileBrowserDateFilterToday: '' as IntlString,
+    FileBrowserDateFilterYesterday: '' as IntlString,
+    FileBrowserDateFilter7Days: '' as IntlString,
+    FileBrowserDateFilter30Days: '' as IntlString,
+    FileBrowserDateFilter3Months: '' as IntlString,
+    FileBrowserDateFilter12Months: '' as IntlString,
+    FileBrowserTypeFilterAny: '' as IntlString,
+    FileBrowserTypeFilterImages: '' as IntlString,
+    FileBrowserTypeFilterAudio: '' as IntlString,
+    FileBrowserTypeFilterVideos: '' as IntlString,
+    FileBrowserTypeFilterPDFs: '' as IntlString
   }
 })
