@@ -321,7 +321,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     const cursor = this.db.collection(domain).aggregate(pipeline)
     const res = (await cursor.toArray())[0]
     const result = res.results as WithLookup<T>[]
-    const total = res.totalCount[0].count
+    const total = res.totalCount?.shift()?.count
     for (const row of result) {
       row.$lookup = {}
       await this.fillLookupValue(options.lookup, row)
