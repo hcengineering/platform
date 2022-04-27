@@ -8,9 +8,10 @@ export interface PanelProps {
   _class: string
   element?: PopupAlignment
   rightSection?: AnyComponent
+  fullSize?: boolean
 }
 
-export const panelstore = writable < {panel?: PanelProps|undefined}>({ panel: undefined })
+export const panelstore = writable<{panel?: PanelProps|undefined}>({ panel: undefined })
 let currentLocation: string | undefined
 
 location.subscribe((loc) => {

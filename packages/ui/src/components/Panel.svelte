@@ -24,19 +24,21 @@
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let rightSection: boolean = false
-  export let reverseCommands = false
-  export let showHeader = true
+  export let reverseCommands: boolean = false
+  export let showHeader: boolean = true
   export let innerWidth: number = 0
+  export let panelWidth: number = 0
+  export let isSubtitle: boolean = true
+  export let isProperties: boolean = true
 
   const dispatch = createEventDispatcher()
-
 </script>
 
-<div class="antiPanel antiComponent" bind:clientWidth={innerWidth}>  
+<div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>  
   <div class:panel-content={!rightSection} class:ad-section-50={rightSection} class:divide={rightSection}>    
     {#if showHeader}
       <div class="ac-header short mirror divide highlight">
-        <div class="ml-2 mr-2">
+        <div class="buttons-group">
           <Button
             icon={IconClose}
             size={'medium'}
@@ -44,12 +46,12 @@
             on:click={() => {
               dispatch('close')
             }} />
+          {#if $$slots['navigate-actions']}
+            <div class="buttons-group xsmall-gap">
+              <slot name="navigate-actions" />
+            </div>
+          {/if}
         </div>
-        {#if $$slots['navigate-actions']}
-          <div class="buttons-group xxsmall-gap">
-            <slot name="navigate-actions" />
-          </div>
-        {/if}
         <div class="ml-4 ac-header__wrap-title flex-grow">
           {#if icon}
             <div class="ac-header__icon">
@@ -68,8 +70,8 @@
         {/if}
       </div>
     {:else}
-      <div class="ac-header short mirror divide">
-        <div class="ml-2 mr-2">
+      <div class="ac-header short mirror divide highlight">
+        <div class="buttons-group">
           <Button
             icon={IconClose}
             size={'medium'}
@@ -78,23 +80,41 @@
               dispatch('close')
             }}
           />
+          {#if $$slots['navigate-actions']}
+            <div class="buttons-group xsmall-gap">
+              <slot name="navigate-actions" />
+            </div>
+          {/if}
         </div>
-        {#if $$slots['navigate-actions']}
-          <div class="buttons-group xxsmall-gap">
-            <slot name="navigate-actions" />
+        {#if $$slots['custom-title']}
+          <div class="ml-4 flex-row-center flex-grow">
+            <slot name="custom-title" />
           </div>
         {/if}
       </div>
     {/if}
-    {#if $$slots.subtitle}
-      <div class="ac-subtitle">
-        <div class="ac-subtitle-content">
-          <slot name="subtitle" />
+    <div class="main-content" class:withProperties={$$slots.properties} bind:clientWidth={innerWidth}>
+      {#if $$slots.subtitle && $$slots.properties && isSubtitle}
+        <div class="flex-col flex-grow clear-mins">
+          <div class="ac-subtitle">
+            <div class="ac-subtitle-content">
+              <slot name="subtitle" />
+            </div>
+          </div>
+          <div class="flex-col flex-grow clear-mins">
+            <slot />
+          </div>
         </div>
-      </div>
-    {/if}
-    <div class="flex-col flex-grow">
-      <slot />
+      {:else}
+        <div class="flex-col flex-grow clear-mins">
+          <slot />
+        </div>
+      {/if}
+      {#if $$slots.properties && isProperties}
+        <div class="properties-container">
+          <slot name="properties" />
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -116,5 +136,37 @@
     flex-grow: 1;
     flex-direction: column;
     align-content: stretch;
+  }
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+
+    &.withProperties {
+      flex-direction: row;
+    }
+
+    .properties-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-width: 20rem;
+      width: 25%;
+      // background-color: var(--board-card-bg-color);
+
+      &::before {
+        position: absolute;
+        content: '';
+        top: 1.5rem;
+        bottom: 1.5rem;
+        left: 0;
+        width: 1px;
+        background-color: var(--divider-color);
+      }
+    }
   }
 </style>

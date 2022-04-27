@@ -72,6 +72,7 @@
 <style lang="scss">
   .color {
     margin-right: .75rem;
+    min-width: .5rem;
     width: .5rem;
     height: .5rem;
     border-radius: .5rem;

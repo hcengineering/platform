@@ -18,18 +18,17 @@
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { AnyComponent, Button, EditBox, IconDownOutline, IconUpOutline, Label, Scroller } from '@anticrm/ui'
+  import { AnyComponent, Button, EditBox, IconDownOutline, IconUpOutline, Label, Scroller, IconMoreH, IconEdit } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   // import Card from '../Card.svelte'
-  import { Panel } from '@anticrm/ui'
+  import { Panel } from '@anticrm/panel'
   import IssuePresenter from './IssuePresenter.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   import PriorityPresenter from './PriorityPresenter.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
-  export let rightSection: AnyComponent | undefined = undefined
 
   const query = createQuery()
   const statusesQuery = createQuery()
@@ -39,6 +38,8 @@
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  let fullSize: boolean = false
+  let innerWidth: number
 
   $: _id &&
     _class &&
@@ -84,48 +85,59 @@
 
 {#if issue !== undefined}
   <Panel
-    reverseCommands={true}
-    rightSection={rightSection !== undefined}
+    object={issue}
+    {fullSize}
+    showHeader={false}
+    isSubtitle={true}
+    position={'content'}
+    bind:innerWidth
     on:close={() => {
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="custom-title">
+      Custom Title
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      <div class="flex-between flex-grow">
+        {#if currentTeam}
+          <IssuePresenter value={issue} {currentTeam} />
+        {/if}
+        <div class="buttons-group xsmall-gap">
+          <Button icon={IconEdit} kind={'transparent'} size={'medium'} />
+          {#if innerWidth < 900}
+            <Button icon={IconMoreH} kind={'transparent'} size={'medium'} />
+          {/if}
+        </div>
+      </div>
+    </svelte:fragment>
     <svelte:fragment slot="navigate-actions">
       <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} />
       <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} />
     </svelte:fragment>
 
-    <div class="flex w-full h-full">
-      <div class="flex-col main-panel">
-        <div class="ac-header short divide mx-auto header">
-          {#if currentTeam}
-            <IssuePresenter value={issue} {currentTeam} />
-          {/if}
-        </div>
-        <Scroller>
-          <div class="flex-col flex-grow flex-no-shrink h-full mx-auto content">
-            <div class="mt-6">
-              <EditBox
-                label={tracker.string.Title}
-                bind:value={issue.title}
-                placeholder={tracker.string.IssueTitlePlaceholder}
-                maxWidth={'16rem'}
-                focus
-                on:change={() => change('title', issue?.title)}
-              />
-            </div>
-            <div class="mt-6">
-              <StyledTextBox
-                alwaysEdit
-                bind:content={issue.description}
-                placeholder={tracker.string.IssueDescriptionPlaceholder}
-                on:value={(evt) => change('description', evt.detail)}
-              />
-            </div>
-          </div>
-        </Scroller>
+    <div class="flex-col flex-grow flex-no-shrink h-full mx-auto content">
+      <div class="mt-6">
+        <EditBox
+          label={tracker.string.Title}
+          bind:value={issue.title}
+          placeholder={tracker.string.IssueTitlePlaceholder}
+          maxWidth={'16rem'}
+          focus
+          on:change={() => change('title', issue?.title)}
+        />
       </div>
+      <div class="mt-6">
+        <StyledTextBox
+          alwaysEdit
+          bind:content={issue.description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+          on:value={(evt) => change('description', evt.detail)}
+        />
+      </div>
+    </div>
 
+    <svelte:fragment slot="properties">
       {#if issue && currentTeam && issueStatuses}
         <div class="flex-grow relative min-w-80 right-panel">
           <div class="ac-header short divide header">
@@ -210,14 +222,14 @@
           </div>
         </div>
       {/if}
-    </div>
+    </svelte:fragment>
   </Panel>
 {/if}
 
 <style lang="scss">
-  .main-panel {
-    flex-grow: 2;
-    flex-basis: 47.5rem;
+  // .main-panel {
+  //   flex-grow: 2;
+  //   flex-basis: 47.5rem;
 
     .header {
       max-width: 56.25rem;
@@ -230,7 +242,7 @@
       max-width: 53.75rem;
       width: calc(100% - 7.5rem);
     }
-  }
+  // }
 
   .right-panel {
     .header {

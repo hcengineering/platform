@@ -81,7 +81,9 @@
 </Theme>
 
 <style lang="scss">
-  $status-bar-height: 32px;
+  * {
+    --status-bar-height: 32px;
+  }
 
   #ui-root {
     position: relative;
@@ -90,8 +92,8 @@
     height: 100vh;
 
     .status-bar {
-      min-height: $status-bar-height;
-      height: $status-bar-height;
+      min-height: var(--status-bar-height);
+      height: var(--status-bar-height);
       min-width: 1200px;
       font-size: 12px;
       line-height: 150%;
@@ -115,7 +117,7 @@
     }
 
     .app {
-      height: calc(100vh - #{$status-bar-height});
+      height: calc(100vh - var(--status-bar-height));
       min-width: 1200px;
       min-height: 480px;
 
