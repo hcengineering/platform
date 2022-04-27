@@ -55,9 +55,9 @@
   $: update(spaces)
   const update = (spaces_: Space[]) => {
     shownSpaces = spaces_.filter((sp) => {
-      // don't show archived unless search is specified
+      // don't show archived unless search is specified or this space is selected
       // show private only if it includes the current user
-      return (!sp.archived || searchQuery) && (!sp.private || sp.members.includes(myAccId))
+      return (!sp.archived || searchQuery || selectedSpaces.includes(sp._id)) && (!sp.private || sp.members.includes(myAccId))
     })
   }
 

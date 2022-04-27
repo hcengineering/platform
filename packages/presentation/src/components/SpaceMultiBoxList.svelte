@@ -20,7 +20,6 @@
   import { Tooltip, showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { SpacesMultiPopup } from '..'
-  import { createQuery } from '../utils'
 
   export let selectedItems: Ref<Space>[] = []
   export let _classes: Ref<Class<Space>>[] = []
@@ -31,19 +30,6 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
-
-  let selectedSpaces: Space[] = []
-  const query = createQuery()
-
-  $: query.query<Space>(
-    core.class.Space,
-    {
-      _id: { $in: selectedItems }
-    },
-    (result) => {
-      selectedSpaces = result
-    }
-  )
 
   const dispatch = createEventDispatcher()
 
@@ -69,15 +55,15 @@
 
 <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
   <Button
-    label={selectedSpaces.length === 0 ? presentation.string.Spaces : undefined}
+    label={selectedItems.length === 0 ? presentation.string.Spaces : undefined}
     width={width ?? 'min-content'}
     {kind} {size} {justify}
     on:click={addSpace}
   >
     <svelte:fragment slot="content">
-      {#if selectedSpaces.length > 0}
+      {#if selectedItems.length > 0}
         <div class="flex-row-center flex-nowrap">
-          {#await translate(presentation.string.NumberSpaces, { count: selectedSpaces.length }) then text}
+          {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }) then text}
             <span class="ml-1-5">{text}</span>
           {/await}
         </div>

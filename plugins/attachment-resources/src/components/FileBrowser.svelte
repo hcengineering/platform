@@ -16,7 +16,7 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
@@ -83,7 +83,20 @@
     const accounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: selectedParticipants_ } })
     const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
 
-    const spaceQuery = selectedSpaces_.length ? { space: { $in: selectedSpaces_ } } : { space: { private: false } }
+    let spaceQuery: { space: any }
+    if (selectedSpaces_.length) {
+      spaceQuery = { space: { $in: selectedSpaces_ } }
+    } else {
+      // nothing is selected in space filter - show all available attachments (except for the archived channels)
+      const allSpaces = await client.findAll(core.class.Space, {
+        archived: false,
+        _class: { $in: requestedSpaceClasses }
+      })
+      const availableSpaces = allSpaces
+        .filter((sp) => !sp.private || sp.members.includes(currentUser._id))
+        .map((sp) => sp._id)
+      spaceQuery = { space: { $in: availableSpaces } }
+    }
 
     const date = dateFileBrowserFilters.find((o) => o.id === selectedDateId_)?.getDate()
     const dateQuery = date && { modifiedOn: date }
