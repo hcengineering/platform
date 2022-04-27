@@ -119,7 +119,8 @@ export default mergeIds(boardId, board, {
     NoResults: '' as IntlString,
     SwitchToLists: '' as IntlString,
     SwitchToCards: '' as IntlString,
-    SearchArchive: '' as IntlString
+    SearchArchive: '' as IntlString,
+    Comments: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

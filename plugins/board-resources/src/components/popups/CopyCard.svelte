@@ -1,7 +1,9 @@
 <script lang="ts">
+  import attachment, { Attachment } from '@anticrm/attachment'
+  import chunter, { Comment } from '@anticrm/chunter'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Label, Button, Status as StatusControl, TextArea } from '@anticrm/ui'
-  import { Class, Client, Doc, Ref } from '@anticrm/core'
+  import { Label, Button, Status as StatusControl, TextArea, CheckBox } from '@anticrm/ui'
+  import { Class, Client, Doc, FindResult, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
   import { Card } from '@anticrm/board'
   import view from '@anticrm/view'
@@ -12,7 +14,7 @@
   import type { TxOperations } from '@anticrm/core'
   import { generateId, AttachedData } from '@anticrm/core'
   import task from '@anticrm/task'
-  import { createMissingLabels } from '../../utils/BoardUtils';
+  import { createMissingLabels } from '../../utils/BoardUtils'
 
   export let object: Card
   export let client: TxOperations
@@ -29,6 +31,11 @@
     rank: object.rank
   }
 
+  let keepLabels = (object.labels?.length ?? 0) > 0 ? true : undefined
+  let keepMembers = (object.members?.length ?? 0) > 0 ? true : undefined
+  let keepAttachments = (object.attachments ?? 0) > 0 ? true : undefined
+  let keepComments = (object.comments ?? 0) > 0 ? true : undefined
+
   async function copyCard(): Promise<void> {
     const newCardId = generateId() as Ref<Card>
 
@@ -39,9 +46,11 @@
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-    const labels = object.space !== selected.space
-      ? await createMissingLabels(client, object, selected.space)
-      : object.labels
+    let labels = undefined
+    if (keepLabels) {
+      labels =
+        object.space !== selected.space ? await createMissingLabels(client, object, selected.space) : object.labels
+    }
 
     const value: AttachedData<Card> = {
       state: selected.state,
@@ -51,9 +60,10 @@
       rank: selected.rank,
       assignee: null,
       description: '',
-      members: [],
+      members: keepMembers !== true ? undefined : object.members,
       location: '',
-      labels
+      labels,
+      date: object.date
     }
 
     await client.addCollection(
@@ -65,6 +75,83 @@
       value,
       newCardId
     )
+
+    if (keepAttachments) {
+      const sourceAttachments = await client.findAll(attachment.class.Attachment, {
+        space: object.space,
+        attachedTo: object._id
+      })
+
+      for (let i = 0; i < sourceAttachments.total; i++) {
+        const a = sourceAttachments[i]
+
+        await client.addCollection(
+          attachment.class.Attachment,
+          selected.space,
+          newCardId,
+          board.class.Card,
+          'attachments',
+          {
+            name: a.name,
+            file: a.file,
+            type: a.type,
+            size: a.size,
+            lastModified: a.lastModified
+          }
+        )
+      }
+    }
+
+    if (keepComments) {
+      const sourceComments = await client.findAll(chunter.class.Comment, {
+        space: object.space,
+        attachedTo: object._id
+      })
+
+      for (let i = 0; i < sourceComments.total; i++) {
+        const comment = sourceComments[i]
+
+        const commentAttachments =
+          (comment.attachments ?? 0) > 0
+            ? await client.findAll(attachment.class.Attachment, { space: object.space, attachedTo: comment._id })
+            : ({ total: 0 } as FindResult<Attachment>)
+
+        const newCommentId = generateId() as Ref<Comment>
+
+        await client.addCollection(
+          chunter.class.Comment,
+          selected.space,
+          newCardId,
+          board.class.Card,
+          'comments',
+          {
+            message: comment.message,
+            attachments: comment.attachments
+          },
+          newCommentId
+        )
+
+        for (let j = 0; j < commentAttachments.total; j++) {
+          const ca = commentAttachments[j]
+
+          await client.addCollection(
+            attachment.class.Attachment,
+            selected.space,
+            newCommentId,
+            chunter.class.Comment,
+            'attachments',
+            {
+              name: ca.name,
+              file: ca.file,
+              type: ca.type,
+              size: ca.size,
+              lastModified: ca.lastModified
+            }
+          )
+        }
+      }
+    }
+
     dispatch('close')
   }
 
@@ -105,6 +192,49 @@
   <div class="mr-4 ml-4 mt-2">
     <TextArea bind:this={inputRef} bind:value={title} />
   </div>
+  {#if [keepLabels, keepMembers, keepAttachments, keepComments].some((keep) => keep !== undefined)}
+    <div class="ap-title">
+      <Label label={board.string.AlsoCopy} />
+    </div>
+    <div class="mr-4 ml-4 mt-2">
+      {#if keepLabels !== undefined}
+        <div class="flex-row-center">
+          <CheckBox bind:checked={keepLabels} primary={true} />
+          <div class="ml-2">
+            <Label label={board.string.Labels} />
+            {`(${object.labels?.length})`}
+          </div>
+        </div>
+      {/if}
+      {#if keepMembers !== undefined}
+        <div class="flex-row-center">
+          <CheckBox bind:checked={keepMembers} primary={true} />
+          <div class="ml-2">
+            <Label label={board.string.Members} />
+            {`(${object.members?.length})`}
+          </div>
+        </div>
+      {/if}
+      {#if keepAttachments !== undefined}
+        <div class="flex-row-center">
+          <CheckBox bind:checked={keepAttachments} primary={true} />
+          <div class="ml-2">
+            <Label label={board.string.Attachments} />
+            {`(${object.attachments})`}
+          </div>
+        </div>
+      {/if}
+      {#if keepComments !== undefined}
+        <div class="flex-row-center">
+          <CheckBox bind:checked={keepComments} primary={true} />
+          <div class="ml-2">
+            <Label label={board.string.Comments} />
+            {`(${object.comments})`}
+          </div>
+        </div>
+      {/if}
+    </div>
+  {/if}
   <div class="ap-title">
     <Label label={board.string.CopyTo} />
   </div>
