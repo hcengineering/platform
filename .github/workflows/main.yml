@@ -242,6 +242,7 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+          docker logs sanity_transactor_1
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
