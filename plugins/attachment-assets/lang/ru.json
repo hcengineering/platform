@@ -26,6 +26,8 @@
     "FileBrowserSortOldest": "Самый старый файл",
     "FileBrowserSortAZ": "От А до Я",
     "FileBrowserSortZA": "От Я до А",
+    "FileBrowserSortSmallest": "Самый маленький файл",
+    "FileBrowserSortBiggest": "Самый большой файл",
     "FileBrowserDateFilterAny": "В любое время",
     "FileBrowserDateFilterToday": "Сегодня",
     "FileBrowserDateFilterYesterday": "Вчера",
