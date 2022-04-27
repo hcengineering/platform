@@ -115,7 +115,11 @@ export default mergeIds(boardId, board, {
     ToArchive: '' as IntlString,
     CopyCard: '' as IntlString,
     AlsoCopy: '' as IntlString,
-    CopyTo: '' as IntlString
+    CopyTo: '' as IntlString,
+    NoResults: '' as IntlString,
+    SwitchToLists: '' as IntlString,
+    SwitchToCards: '' as IntlString,
+    SearchArchive: '' as IntlString
   },
   component: {
     Boards: '' as AnyComponent,

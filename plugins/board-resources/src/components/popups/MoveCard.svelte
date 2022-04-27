@@ -10,6 +10,7 @@
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
+  import { createMissingLabels } from '../../utils/BoardUtils'
 
   export let object: Card
 
@@ -23,9 +24,14 @@
     rank: object.rank
   }
 
-  function move () {
+  async function move(): Promise<void> {
     const update: DocumentUpdate<Card> = {}
-    if (selected.space !== object.space) update.space = selected.space
+
+    if (selected.space !== object.space) {
+      update.labels = await createMissingLabels(client, object, selected.space)
+      update.space = selected.space
+    }
+
     if (selected.state !== object.state) update.state = selected.state
     if (selected.rank !== object.rank) update.rank = selected.rank
     client.update(object, update)

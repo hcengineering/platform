@@ -104,7 +104,10 @@ export default mergeIds(trackerId, tracker, {
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
     Unassigned: '' as IntlString,
-    AddIssueTooltip: '' as IntlString
+    AddIssueTooltip: '' as IntlString,
+
+    CopyIssueUrl: '' as IntlString,
+    CopyIssueId: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

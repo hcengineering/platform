@@ -21,7 +21,7 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-import { SelectDirection } from '../selection'
+  import { SelectDirection } from '../selection'
   import { buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
