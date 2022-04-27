@@ -64,16 +64,12 @@
     sortOrder: SortingOrder,
     options?: FindOptions<Doc>
   ) {
-    const c = ++qindex
     loading = true
     objects = []
     q.query(
       _class,
       query,
       (result) => {
-        if (c !== qindex) {
-          return // our data is invalid.
-        }
         objects = result
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -82,7 +78,7 @@
         dispatch('content', objects)
         loading = false
       },
-      { sort: { [sortKey]: sortOrder }, ...options, limit: 200 }
+      { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
   }
   $: update(_class, query, sortKey, sortOrder, options)

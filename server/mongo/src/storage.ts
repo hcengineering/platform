@@ -46,6 +46,13 @@ function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
+function isLookupQuery <T extends Doc> (query: DocumentQuery<T>): boolean {
+  for (const key in query) {
+    if (key.includes('$lookup.')) return true
+  }
+  return false
+}
+
 interface LookupStep {
   from: string
   localField: string
@@ -270,49 +277,51 @@ abstract class MongoAdapterBase extends TxProcessor {
     options: FindOptions<T>
   ): Promise<FindResult<T>> {
     const pipeline = []
-    pipeline.push({ $match: this.translateQuery(clazz, query) })
+    const match = { $match: this.translateQuery(clazz, query) }
+    const slowPipeline = isLookupQuery(query)
     const steps = await this.getLookups(options.lookup)
-    for (const step of steps) {
-      pipeline.push({ $lookup: step })
+    if (slowPipeline) {
+      for (const step of steps) {
+        pipeline.push({ $lookup: step })
+      }
     }
+    pipeline.push(match)
+    const resultPipeline: any[] = []
     if (options.sort !== undefined) {
       const sort = {} as any
       for (const _key in options.sort) {
-        let key = _key as string
-        const arr = key.split('.').filter((p) => p)
-        key = ''
-        for (let i = 0; i < arr.length; i++) {
-          const element = arr[i]
-          if (element === '$lookup') {
-            key += arr[++i] + '_lookup'
-          } else {
-            if (!key.endsWith('.') && i > 0) {
-              key += '.'
-            }
-            key += arr[i]
-            if (i !== arr.length - 1) {
-              key += '.'
-            }
-          }
-          // Check if key is belong to mixin class, we need to add prefix.
-          key = this.checkMixinKey<T>(key, clazz)
-        }
+        // Check if key is belong to mixin class, we need to add prefix.
+        const key = this.checkMixinKey<T>(_key, clazz)
         sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
       }
-      pipeline.push({ $sort: sort })
+      resultPipeline.push({ $sort: sort })
     }
-    const domain = this.hierarchy.getDomain(clazz)
-    let cursor = this.db.collection(domain).aggregate(pipeline)
-    if (options?.projection !== undefined) {
-      cursor = cursor.project(options.projection)
-    }
-    let result = (await cursor.toArray()) as WithLookup<T>[]
-
-    const total = result.length
     if (options.limit !== undefined) {
-      result = result.slice(0, options.limit)
+      resultPipeline.push({ $limit: options.limit })
     }
-
+    if (!slowPipeline) {
+      for (const step of steps) {
+        resultPipeline.push({ $lookup: step })
+      }
+    }
+    if (options?.projection !== undefined) {
+      resultPipeline.push({ $project: options.projection })
+    }
+    pipeline.push({
+      $facet: {
+        results: resultPipeline,
+        totalCount: [
+          {
+            $count: 'count'
+          }
+        ]
+      }
+    })
+    const domain = this.hierarchy.getDomain(clazz)
+    const cursor = this.db.collection(domain).aggregate(pipeline)
+    const res = (await cursor.toArray())[0]
+    const result = res.results as WithLookup<T>[]
+    const total = res.totalCount[0].count
     for (const row of result) {
       row.$lookup = {}
       await this.fillLookupValue(options.lookup, row)
