@@ -27,7 +27,6 @@ import type { AnyComponent } from '@anticrm/ui'
 export interface Board extends SpaceWithStates {
   color?: number
   background?: string
-  isLabelsCompactMode?: boolean
 }
 
 /**

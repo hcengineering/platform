@@ -52,7 +52,6 @@ export function TypeCardDate (): Type<CardDate> {
 export class TBoard extends TSpaceWithStates implements Board {
   color!: number
   background!: string
-  isLabelsCompactMode?: boolean
 }
 
 @Model(board.class.CardDate, core.class.Obj, DOMAIN_MODEL)
