@@ -14,11 +14,18 @@
 //
 
 import { Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import core, { Backlink, Class, Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
+import core, { AttachedDoc, Backlink, Class, Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_BACKLINK } from '@anticrm/model-core'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
+
+interface ChunterBacklink extends AttachedDoc {
+  message: string
+  backlinkId: Ref<Doc>
+  backlinkClass: Ref<Class<Doc>>
+  attachedDocId?: Ref<Doc>
+}
 
 export async function createGeneral (tx: TxOperations): Promise<void> {
   const createTx = await tx.findOne(core.class.TxCreateDoc, {
@@ -160,8 +167,8 @@ export async function migrateThreadMessages (client: MigrationClient): Promise<v
 }
 
 export async function migrateBacklinks (client: MigrationClient): Promise<void> {
-  const _class = 'chunter:class:Backlink' as Ref<Class<Backlink>>
-  const backlinks = await client.find<Backlink>(DOMAIN_COMMENT, { _class })
+  const _class = 'chunter:class:Backlink' as Ref<Class<ChunterBacklink>>
+  const backlinks = await client.find<ChunterBacklink>(DOMAIN_COMMENT, { _class })
   for (const backlink of backlinks) {
     await client.delete(DOMAIN_COMMENT, backlink._id)
     await client.create<Backlink>(DOMAIN_BACKLINK, {
