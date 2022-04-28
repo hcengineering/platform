@@ -43,6 +43,7 @@
     "FileBrowserTypeFilterVideos": "Видео",
     "FileBrowserTypeFilterPDFs": "PDF-файлы",
     "AddAttachmentToSaved": "Добавить вложение в сохраненные",
-    "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных"
+    "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных",
+    "DeleteFile": "Удалить файл"
   }
 }

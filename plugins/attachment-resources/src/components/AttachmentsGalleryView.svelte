@@ -13,22 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { Doc } from '@anticrm/core'
-  import { getFileUrl } from '@anticrm/presentation'
-  import { Icon, IconMoreV, showPopup } from '@anticrm/ui'
-  import { Menu } from '@anticrm/view-resources'
+  import attachment, { Attachment } from '@anticrm/attachment'
+  import { Doc, getCurrentAccount } from '@anticrm/core'
+  import { getFileUrl, getClient } from '@anticrm/presentation'
+  import { Icon, IconMoreV, showPopup, Menu } from '@anticrm/ui'
   import FileDownload from './icons/FileDownload.svelte'
   import { AttachmentGalleryPresenter } from '..'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
+  const myAccId = getCurrentAccount()._id
+  const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
     selectedFileNumber = fileNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedFileNumber = undefined
-    })
+    showPopup(
+      Menu,
+      {
+        actions: [
+          ...(myAccId === object.modifiedBy
+            ? [
+                {
+                  label: attachment.string.DeleteFile,
+                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                }
+              ]
+            : [])
+        ]
+      },
+      ev.target as HTMLElement,
+      () => {
+        selectedFileNumber = undefined
+      }
+    )
   }
 </script>
 

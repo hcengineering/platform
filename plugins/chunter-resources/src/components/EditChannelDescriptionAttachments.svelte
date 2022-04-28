@@ -17,12 +17,13 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter, FileDownload } from '@anticrm/attachment-resources'
   import { ChunterSpace } from '@anticrm/chunter'
-  import { Doc, SortingOrder } from '@anticrm/core'
-  import { createQuery, getFileUrl } from '@anticrm/presentation'
-  import { Menu } from '@anticrm/view-resources'
-  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon } from '@anticrm/ui'
+  import { Doc, SortingOrder, getCurrentAccount } from '@anticrm/core'
+  import { createQuery, getFileUrl, getClient } from '@anticrm/presentation'
+  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon, Menu } from '@anticrm/ui'
 
   export let channel: ChunterSpace | undefined
+  const myAccId = getCurrentAccount()._id
+  const client = getClient()
 
   const query = createQuery()
   let visibleAttachments: Attachment[] | undefined
@@ -33,9 +34,25 @@
 
   const showMenu = async (ev: MouseEvent, object: Doc, rowNumber: number): Promise<void> => {
     selectedRowNumber = rowNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedRowNumber = undefined
-    })
+    showPopup(
+      Menu,
+      {
+        actions: [
+          ...(myAccId === object.modifiedBy
+            ? [
+                {
+                  label: attachment.string.DeleteFile,
+                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                }
+              ]
+            : [])
+        ]
+      },
+      ev.target as HTMLElement,
+      () => {
+        selectedRowNumber = undefined
+      }
+    )
   }
 
   $: channel &&
