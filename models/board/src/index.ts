@@ -18,6 +18,7 @@ import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/boar
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp } from '@anticrm/core'
 import {
+  ArrOf,
   Builder,
   Collection,
   Index,
@@ -103,7 +104,7 @@ export class TCard extends TTask implements Card {
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)
   declare assignee: Ref<Employee> | null
 
-  @Prop(Collection(contact.class.Employee), board.string.Members)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
   members?: Ref<Employee>[]
 }
 
