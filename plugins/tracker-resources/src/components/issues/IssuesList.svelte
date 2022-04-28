@@ -305,7 +305,7 @@
     border-bottom: 1px solid var(--theme-button-border-hovered);
 
     &.mListGridChecked {
-      background-color: var(--menu-bg-select);
+      background-color: var(--theme-table-bg-hover);
 
       .eListGridCheckBox {
         opacity: 1;
