@@ -49,7 +49,6 @@
             _class={spaceClass}
             {spaceQuery}
             label={spaceLabel}
-            placeholder={spacePlaceholder}
             bind:value={space}
           />
         {/if}
