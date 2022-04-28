@@ -27,6 +27,7 @@ import type {
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
+  LinkPresenter,
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
@@ -199,6 +200,13 @@ export class TPreviewPresenter extends TClass implements PreviewPresenter {
   presenter!: AnyComponent
 }
 
+@Model(view.class.LinkPresenter, core.class.Doc, DOMAIN_MODEL)
+export class TLinkPresenter extends TDoc implements LinkPresenter {
+  pattern!: string
+
+  component!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAttributeEditor,
@@ -216,7 +224,8 @@ export function createModel (builder: Builder): void {
     TSpaceName,
     TTextPresenter,
     TIgnoreActions,
-    TPreviewPresenter
+    TPreviewPresenter,
+    TLinkPresenter
   )
 
   classPresenter(builder, core.class.TypeString, view.component.StringPresenter, view.component.StringEditor)
@@ -306,6 +315,16 @@ export function createModel (builder: Builder): void {
     icon: view.icon.Open,
     keyBinding: ['Enter'],
     singleInput: true
+  })
+
+  builder.createDoc(view.class.LinkPresenter, core.space.Model, {
+    pattern: '(www.)?youtube.(com|ru)',
+    component: view.component.YoutubePresenter
+  })
+
+  builder.createDoc(view.class.LinkPresenter, core.space.Model, {
+    pattern: '(www.)?github.com/',
+    component: view.component.GithubPresenter
   })
 
   // Should be contributed via individual plugins.
