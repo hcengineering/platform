@@ -266,7 +266,7 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
   const channelsQuery = createQuery()
   $: _id && integrations && channelProviders && channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
     const channels = res
-    currentProviders = channelProviders?.filter(provider => integrations.has(provider.integrationType as IntegrationType))
+    currentProviders = channelProviders?.filter(provider => provider.integrationType ? integrations.has(provider.integrationType) : false)
     displayedIntegrations = []
     currentProviders?.forEach(provider => {
       displayedIntegrations?.push({

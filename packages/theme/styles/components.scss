@@ -412,8 +412,8 @@
   }
 
   &.highlightRows .antiTable-body__row {
-    &.checking { background-color: var(--theme-table-bg-hover); }
-    &.selected { background-color: var(--menu-bg-select); }
+    &.checking { background-color: var(--highlight-select); } // --theme-table-bg-hover
+    &.selected { background-color: var(--highlight-hover); } // --menu-bg-select
   }
 }
 

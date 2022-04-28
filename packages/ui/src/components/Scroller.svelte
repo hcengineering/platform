@@ -39,6 +39,7 @@
   let visibleEl: number | undefined = undefined
   let belowContent: number | undefined = undefined
   let scrolling: boolean = false
+  let firstScroll: boolean = autoscroll
 
   const checkBack = (): void => {
     if (divBox) {
@@ -207,8 +208,12 @@
 
   let observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: .1 })
 
-  $: if (autoscroll && belowContent && belowContent <= 5) scrolling = true
-  $: if (scrolling && belowContent && belowContent > 5)
+  $: if (firstScroll && divScroll && divScroll.clientHeight !== divScroll.scrollHeight) {
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+    firstScroll = false
+  }
+  $: if (autoscroll && belowContent && belowContent <= 50) scrolling = true
+  $: if (scrolling && belowContent && belowContent > 50)
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
 
   onMount(() => {
@@ -225,6 +230,7 @@
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
+      if (scrolling) divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
       checkFade()
       clearTHead()
       findTHeaders()

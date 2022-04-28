@@ -267,14 +267,5 @@
       border-bottom: 1px solid var(--divider-color);
       margin: 0.75rem 1.5rem 1.25rem 0;
     }
-
-    &::before {
-      content: '';
-      position: absolute;
-      border-left: 1px solid var(--divider-color);
-      top: 1.125rem;
-      bottom: 1.125rem;
-      width: 0px;
-    }
   }
 </style>
