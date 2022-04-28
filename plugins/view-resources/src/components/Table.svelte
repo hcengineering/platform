@@ -42,7 +42,7 @@
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
-  let loading = false
+  let loading = 0
 
   let objects: Doc[] = []
   const refs: HTMLElement[] = []
@@ -73,13 +73,12 @@
           objects.sort((a, b) => -1 * sortOrder * sf(a, b))
         }
         dispatch('content', objects)
-        loading = false
+        loading--
       },
       { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
-    if (update) {
+    if (update && ++loading > 0) {
       objects = []
-      loading = true
     }
   }
   $: update(_class, query, sortKey, sortOrder, options)
@@ -290,6 +289,6 @@
   </table>
 {/await}
 
-{#if loading}
+{#if loading > 0}
   <Loading />
 {/if}
