@@ -36,7 +36,7 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/calendar": "~0.6.0",
-    "svelte": "^3.46",
+    "svelte": "^3.47",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.2",
     "@anticrm/contact-resources": "~0.6.0",
