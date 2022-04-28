@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName, ChannelProvider, Channel } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Hierarchy, Mixin, Obj, Ref, getCurrentAccount, Space } from '@anticrm/core'
+  import contact, { ChannelProvider, formatName } from '@anticrm/contact'
+  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Hierarchy, Mixin, Obj, Ref, Space } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, IntlString, translate } from '@anticrm/platform'
@@ -26,14 +26,14 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, IconActivity, Label, PopupAlignment, Button } from '@anticrm/ui'
+  import setting, { IntegrationType } from '@anticrm/setting'
+  import { AnyComponent, Button, Component, IconActivity } from '@anticrm/ui'
+  import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { getCollectionCounter, getMixinStyle } from '../utils'
+  import { getCollectionCounter } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
-  import setting, { IntegrationType } from '@anticrm/setting'
-import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -80,7 +80,7 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
   let prevSelected = selectedClass
 
   let keys: KeyedAttribute[] = []
-  let collectionEditors: {key: KeyedAttribute, editor: AnyComponent} [] = []
+  let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
 
@@ -119,14 +119,11 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const filtredKeys = getFiltredKeys(
-      selectedClass ?? object._class,
-      ignoreKeys
-    )
+    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys)
     keys = collectionsFilter(filtredKeys, false)
 
     const collectionKeys = collectionsFilter(filtredKeys, true)
-    const editors: {key: KeyedAttribute, editor: AnyComponent}[] = []
+    const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
       editors.push({ key: k, editor })
@@ -250,38 +247,52 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
   let channelProviders: ChannelProvider[] | undefined
   let currentProviders: ChannelProvider[] | undefined
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
-  let channels: Channel[] = []
-  let displayedIntegrations: {
-    icon: Asset | undefined,
-    label: IntlString,
-    presenter: AnyComponent | undefined,
-    value: string
-  }[] | undefined = []
+  let displayedIntegrations:
+    | {
+        icon: Asset | undefined
+        label: IntlString
+        presenter: AnyComponent | undefined
+        value: string
+      }[]
+    | undefined = []
 
-  client.findAll(contact.class.ChannelProvider, {}).then(res => channelProviders = res)
-  const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space>, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
+  client.findAll(contact.class.ChannelProvider, {}).then((res) => {
+    channelProviders = res
   })
+  const settingsQuery = createQuery()
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { space: accountId as string as Ref<Space>, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
   const channelsQuery = createQuery()
-  $: _id && integrations && channelProviders && channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
-    const channels = res
-    currentProviders = channelProviders?.filter(provider => provider.integrationType ? integrations.has(provider.integrationType) : false)
-    displayedIntegrations = []
-    currentProviders?.forEach(provider => {
-      displayedIntegrations?.push({
-        icon: provider.icon,
-        label: provider.label,
-        presenter: provider.presenter,
-        value: channels.filter(ch => ch.provider === provider._id)[0].value
+  $: _id &&
+    integrations &&
+    channelProviders &&
+    channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
+      const channels = res
+      currentProviders = channelProviders?.filter((provider) =>
+        provider.integrationType ? integrations.has(provider.integrationType as Ref<IntegrationType>) : false
+      )
+      displayedIntegrations = []
+      currentProviders?.forEach((provider) => {
+        displayedIntegrations?.push({
+          icon: provider.icon,
+          label: provider.label,
+          presenter: provider.presenter,
+          value: channels.filter((ch) => ch.provider === provider._id)[0].value
+        })
       })
     })
-  })
 </script>
 
-<ActionContext context={{
-  mode: 'editor'
-}}/>
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if object !== undefined && title !== undefined}
   <Panel
@@ -297,7 +308,7 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
     }}
   >
     <svelte:fragment slot="navigate-actions">
-      <UpDownNavigator element={object}/>
+      <UpDownNavigator element={object} />
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
       {#if !headerLoading}
@@ -377,7 +388,7 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
               [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
             }}
           />
-          </div>
+        </div>
       {/if}
     {/each}
   </Panel>
@@ -391,7 +402,7 @@ import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte';
   }
 
   .actions-divider {
-    margin: 0 .25rem;
+    margin: 0 0.25rem;
     min-width: 1px;
     width: 1px;
     height: 1.5rem;

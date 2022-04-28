@@ -28,7 +28,7 @@
     }
   })
 
-  let lastKey: KeyboardEvent | undefined
+  // let lastKey: KeyboardEvent | undefined
 
   async function updateActions (
     context: ViewContext,
@@ -68,7 +68,7 @@
       console.log('no keyboard because', targetTagName, evt.target)
       return
     }
-    lastKey = evt
+    // lastKey = evt
     for (const a of actions) {
       // TODO: Handle multiple keys here
       if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {

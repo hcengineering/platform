@@ -21,7 +21,6 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { SelectDirection } from '../selection'
   import { buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
@@ -129,7 +128,7 @@
     dispatch('row-focus', object)
   }
 
-  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection): void {
+  export function select (offset: 1 | -1 | 0, of?: Doc): void {
     let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
     pos += offset
     if (pos < 0) {

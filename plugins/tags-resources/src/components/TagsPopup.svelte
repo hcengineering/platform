@@ -75,7 +75,7 @@
     }
     objects = objects
     categories = categories
-    dispatch('update', { action: 'selected', selected: selected})
+    dispatch('update', { action: 'selected', selected: selected })
   }
   const toggleGroup = (ev: MouseEvent): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
@@ -102,7 +102,7 @@
         }}>
           {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
-        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => show = !show} />
+        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => { show = !show }} />
         {#if !hideAdd}<Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />{/if}
       </div>
     </div>
