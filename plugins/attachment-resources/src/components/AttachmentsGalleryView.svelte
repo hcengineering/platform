@@ -55,7 +55,7 @@
   .galleryGrid {
     display: grid;
     margin: 0 1.5rem;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 
   .attachmentCell {
