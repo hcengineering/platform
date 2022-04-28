@@ -229,7 +229,7 @@
   .container {
     position: relative;
     display: flex;
-    padding: .5rem 2rem;
+    padding: 0.5rem 2rem;
 
     .avatar {
       min-width: 2.25rem;

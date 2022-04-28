@@ -16,31 +16,24 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getClient, getFileUrl } from '@anticrm/presentation'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
     location,
-    IconMoreV,
     IconSearch,
     Label,
-    showPopup,
     navigate,
     EditWithIcon,
     Spinner,
+    Tooltip,
     Icon
   } from '@anticrm/ui'
-  import { Menu } from '@anticrm/view-resources'
   import { onDestroy } from 'svelte'
-  import {
-    AttachmentPresenter,
-    FileBrowserSortMode,
-    dateFileBrowserFilters,
-    fileTypeFileBrowserFilters,
-    sortModeToOptionObject
-  } from '..'
+  import { FileBrowserSortMode, dateFileBrowserFilters, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
-  import FileDownload from './icons/FileDownload.svelte'
+  import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
+  import AttachmentsListView from './AttachmentsListView.svelte'
   import FileBrowserFilters from './FileBrowserFilters.svelte'
   import FileBrowserSortMenu from './FileBrowserSortMenu.svelte'
 
@@ -55,22 +48,15 @@
   let isLoading = false
 
   let attachments: Attachment[] = []
-  let selectedFileNumber: number | undefined
 
   let selectedSort: FileBrowserSortMode = FileBrowserSortMode.NewestFile
   let selectedDateId = 'dateAny'
   let selectedFileTypeId = 'typeAny'
-
-  const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
-    selectedFileNumber = fileNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedFileNumber = undefined
-    })
-  }
+  let isListDisplayMode = true
 
   $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
-  async function fetch(
+  async function fetch (
     searchQuery_: string,
     selectedSort_: FileBrowserSortMode,
     selectedFileTypeId_: string,
@@ -131,14 +117,40 @@
   </div>
   <EditWithIcon icon={IconSearch} bind:value={searchQuery} placeholder={ui.string.SearchDots} />
 </div>
-<FileBrowserFilters
-  {requestedSpaceClasses}
-  {spaceId}
-  bind:selectedParticipants
-  bind:selectedSpaces
-  bind:selectedDateId
-  bind:selectedFileTypeId
-/>
+<div class="ac-header full">
+  <FileBrowserFilters
+    {requestedSpaceClasses}
+    {spaceId}
+    bind:selectedParticipants
+    bind:selectedSpaces
+    bind:selectedDateId
+    bind:selectedFileTypeId
+  />
+  <div class="flex">
+    <Tooltip label={attachment.string.FileBrowserListView} direction={'bottom'}>
+      <button
+        class="ac-header__icon-button"
+        class:selected={isListDisplayMode}
+        on:click={() => {
+          isListDisplayMode = true
+        }}
+      >
+        <Icon icon={contact.icon.Person} size={'small'} />
+      </button>
+    </Tooltip>
+    <Tooltip label={attachment.string.FileBrowserGridView} direction={'bottom'}>
+      <button
+        class="ac-header__icon-button"
+        class:selected={!isListDisplayMode}
+        on:click={() => {
+          isListDisplayMode = false
+        }}
+      >
+        <Icon icon={contact.icon.Edit} size={'small'} />
+      </button>
+    </Tooltip>
+  </div>
+</div>
 <div class="group">
   <div class="groupHeader">
     <div class="eGroupHeaderCount">
@@ -151,23 +163,11 @@
       <Spinner />
     </div>
   {:else if attachments?.length}
-    <div class="flex-col">
-      {#each attachments as attachment, i}
-        <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
-          <div class="item flex">
-            <AttachmentPresenter value={attachment} />
-          </div>
-          <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-            <a href={getFileUrl(attachment.file)} download={attachment.name}>
-              <Icon icon={FileDownload} size={'small'} />
-            </a>
-            <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
-              <IconMoreV size={'small'} />
-            </div>
-          </div>
-        </div>
-      {/each}
-    </div>
+    {#if isListDisplayMode}
+      <AttachmentsListView {attachments} />
+    {:else}
+      <AttachmentsGalleryView {attachments} />
+    {/if}
   {:else}
     <div class="flex-between attachmentRow">
       <Label label={attachment.string.NoFiles} />
@@ -189,50 +189,6 @@
     .eGroupHeaderCount {
       font-size: 0.75rem;
       color: var(--theme-caption-color);
-    }
-  }
-
-  .attachmentRow {
-    display: flex;
-    align-items: center;
-    padding-right: 1rem;
-    margin: 0 1.5rem;
-    padding: 0.25rem 0;
-
-    .eAttachmentRowActions {
-      display: flex;
-      visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
-      padding: 0.2rem;
-      border-radius: 0.375rem;
-    }
-
-    .eAttachmentRowMenu {
-      margin-left: 0.2rem;
-      visibility: hidden;
-      opacity: 0.6;
-      cursor: pointer;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-
-    &:hover {
-      .eAttachmentRowActions {
-        visibility: visible;
-      }
-      .eAttachmentRowMenu {
-        visibility: visible;
-      }
-    }
-    &.fixed {
-      .eAttachmentRowActions {
-        visibility: visible;
-      }
-      .eAttachmentRowMenu {
-        visibility: visible;
-      }
     }
   }
 </style>

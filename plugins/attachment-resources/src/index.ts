@@ -17,6 +17,7 @@ import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
+import AttachmentGalleryPresenter from './components/AttachmentGalleryPresenter.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentList from './components/AttachmentList.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
@@ -27,7 +28,7 @@ import Photos from './components/Photos.svelte'
 import FileDownload from './components/icons/FileDownload.svelte'
 import { uploadFile, deleteFile } from './utils'
 import attachment, { Attachment } from '@anticrm/attachment'
-import { SortingOrder, SortingQuery } from '@anticrm/core'
+import { ObjQueryType, SortingOrder, SortingQuery } from '@anticrm/core'
 import { IntlString, Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient } from '@anticrm/presentation'
@@ -38,6 +39,7 @@ export {
   Attachments,
   AttachmentsPresenter,
   AttachmentPresenter,
+  AttachmentGalleryPresenter,
   AttachmentRefInput,
   AttachmentList,
   AttachmentDocList,
@@ -72,18 +74,27 @@ export const sortModeToOptionObject = (sortMode: FileBrowserSortMode): SortingQu
 
 const msInDay = 24 * 60 * 60 * 1000
 const getBeginningOfDate = (customDate?: Date) => {
-  if (!customDate) {
+  if (customDate == null) {
     customDate = new Date()
   }
   customDate.setUTCHours(0, 0, 0, 0)
   return customDate.getTime()
 }
 
-export const dateFileBrowserFilters: {
+interface Filter {
   id: string
-  label: IntlString<{}>
-  getDate: () => any
-}[] = [
+  label: IntlString
+}
+
+interface DateFilter extends Filter {
+  getDate: () => ObjQueryType<number> | undefined
+}
+
+interface TypeFilter extends Filter {
+  getType: () => ObjQueryType<string> | undefined
+}
+
+export const dateFileBrowserFilters: DateFilter[] = [
   {
     id: 'dateAny',
     label: attachment.string.FileBrowserDateFilterAny,
@@ -139,11 +150,7 @@ export const dateFileBrowserFilters: {
   }
 ]
 
-export const fileTypeFileBrowserFilters: {
-  id: string
-  label: IntlString<{}>
-  getType: () => any
-}[] = [
+export const fileTypeFileBrowserFilters: TypeFilter[] = [
   {
     id: 'typeAny',
     label: attachment.string.FileBrowserTypeFilterAny,
@@ -181,7 +188,7 @@ export const fileTypeFileBrowserFilters: {
   }
 ]
 
-export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
+export async function AddAttachmentToSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   await client.createDoc(attachment.class.SavedAttachments, preference.space.Preference, {
@@ -189,7 +196,7 @@ export async function AddAttachmentToSaved(attach: Attachment): Promise<void> {
   })
 }
 
-export async function DeleteAttachmentFromSaved(attach: Attachment): Promise<void> {
+export async function DeleteAttachmentFromSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(attachment.class.SavedAttachments, { attachedTo: attach._id })
@@ -202,6 +209,7 @@ export default async (): Promise<Resources> => ({
   component: {
     AttachmentsPresenter,
     AttachmentPresenter,
+    AttachmentGalleryPresenter,
     Attachments,
     FileBrowser,
     Photos
