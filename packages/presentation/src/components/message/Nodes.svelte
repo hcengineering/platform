@@ -42,6 +42,8 @@ export let nodes: NodeListOf<any>
         <br/>
       {:else if node.nodeName === 'HR'}
         <hr/>
+      {:else if node.nodeName === 'IMG'}
+        <div class="max-h-60 max-w-60 img">{@html node.outerHTML}</div>
       {:else if node.nodeName === 'H1'}
         <h1><svelte:self nodes={node.childNodes}/></h1>
       {:else if node.nodeName === 'H2'}
@@ -70,3 +72,13 @@ export let nodes: NodeListOf<any>
     {/if}
   {/each}
 {/if}
+
+<style lang="scss">
+  .img { 
+    :global(img) {
+      object-fit: contain;
+      height: 100%;
+      width: 100%
+    }
+  }
+</style>

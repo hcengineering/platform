@@ -99,6 +99,14 @@ export interface Viewlet extends Doc {
 
 /**
  * @public
+ */
+export interface LinkPresenter extends Doc {
+  pattern: string
+  component: AnyComponent
+}
+
+/**
+ * @public
  *
  *  "Alt + K" =\> Alt and K should be pressed together
  *  "J T" - J and then T shold be pressed.
@@ -264,7 +272,8 @@ const view = plugin(viewId, {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
-    ActionTarget: '' as Ref<Class<ActionTarget>>
+    ActionTarget: '' as Ref<Class<ActionTarget>>,
+    LinkPresenter: '' as Ref<Class<LinkPresenter>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
