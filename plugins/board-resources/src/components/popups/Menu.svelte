@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte'
     import { Ref, Space } from '@anticrm/core'
-    import { Label, ActionIcon, IconClose, Button, EditBox } from '@anticrm/ui'
+    import { ActionIcon, Button, IconClose, Label } from '@anticrm/ui'
+    import TextArea from '@anticrm/ui/src/components/TextArea.svelte'
+    import { createEventDispatcher } from 'svelte'
     import board from '../../plugin'
     import CardsArchive from '../CardArchive.svelte'
     import ListArchive from '../ListArchive.svelte'
-    import TextArea from '@anticrm/ui/src/components/TextArea.svelte'
 
     export let space: Ref<Space>
     const dispatch = createEventDispatcher()

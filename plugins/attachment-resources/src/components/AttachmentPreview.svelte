@@ -15,48 +15,17 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
-  import { getResource } from '@anticrm/platform'
   import { getFileUrl, PDFViewer } from '@anticrm/presentation'
-  import { showPopup, closeTooltip, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
-  import { Action } from '@anticrm/view'
+  import { showPopup, closeTooltip } from '@anticrm/ui'
   import { getType } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import AttachmentActions from './AttachmentActions.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
-  import attachment from '../plugin'
 
   export let value: Attachment
   export let isSaved: boolean = false
 
   $: type = getType(value.type)
-
-  $: saveAttachmentAction = isSaved
-    ? ({
-        label: attachment.string.RemoveAttachmentFromSaved,
-        action: attachment.actionImpl.DeleteAttachmentFromSaved
-      } as Action)
-    : ({
-        label: attachment.string.AddAttachmentToSaved,
-        action: attachment.actionImpl.AddAttachmentToSaved
-      } as Action)
-
-  const showMenu = (ev: Event) => {
-    showPopup(
-      Menu,
-      {
-        actions: [
-          {
-            label: saveAttachmentAction.label,
-            icon: saveAttachmentAction.icon,
-            action: async (evt: MouseEvent) => {
-              const impl = await getResource(saveAttachmentAction.action)
-              await impl(value, evt)
-            }
-          }
-        ]
-      },
-      ev.target as HTMLElement
-    )
-  }
 </script>
 
 <div class="flex-row-center">
@@ -69,27 +38,15 @@
       }}
     >
       <img src={getFileUrl(value.file)} alt={value.name} />
-      <div class="more">
-        <ActionIcon
-          icon={IconMoreH}
-          size={'small'}
-          action={(e) => {
-            showMenu(e)
-          }}
-        />
+      <div class="actions">
+        <AttachmentActions attachment={value} {isSaved} />
       </div>
     </div>
   {:else if type === 'audio'}
     <div class="buttonContainer">
       <AudioPlayer {value} />
-      <div class="more">
-        <ActionIcon
-          icon={IconMoreH}
-          size={'small'}
-          action={(e) => {
-            showMenu(e)
-          }}
-        />
+      <div class="actions">
+        <AttachmentActions attachment={value} {isSaved} />
       </div>
     </div>
   {:else if type === 'video'}
@@ -101,27 +58,15 @@
           <AttachmentPresenter {value} />
         </div>
       </video>
-      <div class="more">
-        <ActionIcon
-          icon={IconMoreH}
-          size={'small'}
-          action={(e) => {
-            showMenu(e)
-          }}
-        />
+      <div class="actions">
+        <AttachmentActions attachment={value} {isSaved} />
       </div>
     </div>
   {:else}
     <div class="flex container buttonContainer">
       <AttachmentPresenter {value} />
-      <div class="more">
-        <ActionIcon
-          icon={IconMoreH}
-          size={'small'}
-          action={(e) => {
-            showMenu(e)
-          }}
-        />
+      <div class="actions">
+        <AttachmentActions attachment={value} {isSaved} />
       </div>
     </div>
   {/if}
@@ -137,14 +82,14 @@
 
   .buttonContainer {
     align-items: flex-start;
-    .more {
+    .actions {
       margin-left: 0.5rem;
       visibility: hidden;
     }
   }
 
   .buttonContainer:hover {
-    .more {
+    .actions {
       visibility: visible;
     }
   }

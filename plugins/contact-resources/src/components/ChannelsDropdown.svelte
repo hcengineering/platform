@@ -234,6 +234,7 @@
     window.removeEventListener('click', listener)
   })
 </script>
+
 <div
   bind:this={div}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border' ? 'xsmall-gap' : 'xxsmall-gap'}"

@@ -1,7 +1,25 @@
-<script lang='ts'>
-  import tags from '@anticrm/tags'
-  import { Component } from '@anticrm/ui'
+<script lang="ts">
+  import tags, { selectedTagElements, TagElement } from '@anticrm/tags'
+  import { Component, getCurrentLocation, navigate } from '@anticrm/ui'
   import recruit from '../plugin'
+
+  function onTag (tag: TagElement):void {
+    selectedTagElements.set([tag._id])
+    const loc = getCurrentLocation()
+    loc.path[2] = 'candidates'
+    loc.path.length = 3
+    navigate(loc)
+  }
 </script>
 
-<Component is={tags.component.TagsView} props={{ targetClass: recruit.mixin.Candidate, title: recruit.string.SkillsLabel, item: recruit.string.SkillLabel, key: 'skills', сreateItemLabel: recruit.string.SkillCreateLabel }}/>
+<Component
+  is={tags.component.TagsView}
+  props={{
+    targetClass: recruit.mixin.Candidate,
+    title: recruit.string.SkillsLabel,
+    item: recruit.string.SkillLabel,
+    key: 'skills',
+    сreateItemLabel: recruit.string.SkillCreateLabel,
+    onTag: onTag
+  }}
+/>

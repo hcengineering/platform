@@ -53,7 +53,7 @@ test.describe('recruit tests', () => {
 
     await page.click('text=Candidates')
     await page.click('text=Andrey P.')
-    await page.locator('.mixin-selector').locator('text="Candidate"').click()
+    // await page.locator('.mixin-selector').locator('text="Candidate"').click()
 
     // Click on Add button
     await page.click('.applications-container .flex-row-center .flex-center')

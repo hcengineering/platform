@@ -24,7 +24,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: ButtonKind = 'secondary'
   export let size: ButtonSize = 'medium'
-  export let shape: 'circle' | undefined = undefined
+  export let shape: 'circle' | 'round' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -56,7 +56,8 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
-  class:border-radius-1={shape !== 'circle'}
+  class:border-radius-1={shape !== 'circle' && shape !== 'round'}
+  class:border-radius-2={shape === 'round'}
   class:border-radius-4={shape === 'circle'}
   class:highlight
   disabled={disabled || loading}
@@ -128,7 +129,11 @@
       transition: color .15s;
       pointer-events: none;
     }
-    &.highlight { box-shadow: inset 0 0 0 1px var(--primary-bg-color); }
+    &.highlight {
+      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+
+      &:hover { box-shadow: inset 0 0 1px 1px var(--primary-bg-hover); }
+    }
     &:hover {
       color: var(--accent-color);
       transition-duration: 0;

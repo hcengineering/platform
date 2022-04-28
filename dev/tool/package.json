@@ -67,6 +67,8 @@
     "@anticrm/dev-storage": "~0.6.6",
     "@anticrm/server-attachment": "~0.6.1",
     "@anticrm/server-attachment-resources": "~0.6.0",
+    "@anticrm/server-board": "~0.6.0",
+    "@anticrm/server-board-resources": "~0.6.0",
     "xml2js": "~0.4.23",
     "@anticrm/model-recruit": "~0.6.0",
     "@anticrm/recruit": "~0.6.3",

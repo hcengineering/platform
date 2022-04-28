@@ -119,7 +119,7 @@
     position: fixed;
     background-color: transparent;
 
-    &.bg { background-color: var(--body-color); }
+    &.bg { background-color: var(--board-bg-color); }
     .panel-container {
       padding: .5rem;
       width: 100%;

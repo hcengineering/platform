@@ -13,18 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, formatName } from '@anticrm/contact'
-  import { Ref, WithLookup } from '@anticrm/core'
+  import contact, { Employee } from '@anticrm/contact'
+  import { Class, Doc, Ref } from '@anticrm/core'
   import { Issue, Team } from '@anticrm/tracker'
-  import { Avatar, UsersPopup, getClient } from '@anticrm/presentation'
-  import { eventToHTMLElement, showPopup, Tooltip } from '@anticrm/ui'
-
+  import { UsersPopup, getClient } from '@anticrm/presentation'
+  import { AttributeModel } from '@anticrm/view'
+  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { getObjectPresenter } from '@anticrm/view-resources'
+  import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
-  import { IntlString, translate } from '@anticrm/platform'
-  import { onMount } from 'svelte'
 
-  export let value: WithLookup<Issue>
-  export let employees: (WithLookup<Employee> | undefined)[] = []
+  export let value: Employee | null
+  export let issueId: Ref<Issue>
+  export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -32,37 +33,26 @@
 
   const client = getClient()
 
-  let defaultNameString: string = ''
+  let presenter: AttributeModel | undefined
 
-  $: employee = (value?.$lookup?.assignee ?? employees.find(x => x?._id === value?.assignee)) as Employee | undefined
-  $: avatar = employee?.avatar
-  $: formattedName = employee?.name ? formatName(employee.name) : defaultNameString
-  $: label = employee ? tracker.string.AssignedTo : tracker.string.AssignTo
-
-  $: getDefaultNameString = async () => {
-    if (!defaultName) {
-      return
+  $: if (value || defaultClass) {
+    if (value) {
+      getObjectPresenter(client, value._class, { key: '' }).then((p) => {
+        presenter = p
+      })
+    } else if (defaultClass) {
+      getObjectPresenter(client, defaultClass, { key: '' }).then((p) => {
+        presenter = p
+      })
     }
-
-    const result = await translate(defaultName, {})
-
-    if (!result) {
-      return
-    }
-
-    defaultNameString = result
   }
-
-  onMount(() => {
-    getDefaultNameString()
-  })
 
   const handleAssigneeChanged = async (result: Employee | null | undefined) => {
     if (!isEditable || result === undefined) {
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
+    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: issueId })
 
     if (currentIssue === undefined) {
       return
@@ -81,7 +71,7 @@
       UsersPopup,
       {
         _class: contact.class.Employee,
-        selected: employee?._id,
+        selected: value?._id,
         allowDeselect: true,
         placeholder: tracker.string.AssignTo
       },
@@ -91,36 +81,16 @@
   }
 </script>
 
-{#if isEditable}
-  <Tooltip {label} props={{ value: formattedName }}>
-    <div class="flex-presenter" on:click={handleAssigneeEditorOpened}>
-      <div class="icon">
-        <Avatar size={'tiny'} {avatar} />
-      </div>
-      {#if shouldShowLabel}
-        <div class="label nowrap ml-2">
-          {formattedName}
-        </div>
-      {/if}
-    </div>
-  </Tooltip>
-{:else}
-  <div class="presenter">
-    <div class="icon">
-      <Avatar size={'tiny'} {avatar} />
-    </div>
-    {#if shouldShowLabel}
-      <div class="label nowrap ml-2">
-        {formattedName}
-      </div>
-    {/if}
-  </div>
+{#if presenter}
+  <svelte:component
+    this={presenter.presenter}
+    {value}
+    {defaultName}
+    avatarSize={'tiny'}
+    isInteractive={true}
+    shouldShowPlaceholder={true}
+    shouldShowName={shouldShowLabel}
+    onEdit={handleAssigneeEditorOpened}
+    tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
+  />
 {/if}
-
-<style lang="scss">
-  .presenter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-</style>

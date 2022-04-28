@@ -15,14 +15,15 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter } from '@anticrm/attachment-resources'
+  import { AttachmentPresenter, FileDownload } from '@anticrm/attachment-resources'
   import { ChunterSpace } from '@anticrm/chunter'
-  import { Doc, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Menu } from '@anticrm/view-resources'
-  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate } from '@anticrm/ui'
+  import { Doc, SortingOrder, getCurrentAccount } from '@anticrm/core'
+  import { createQuery, getFileUrl, getClient } from '@anticrm/presentation'
+  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon, Menu } from '@anticrm/ui'
 
   export let channel: ChunterSpace | undefined
+  const myAccId = getCurrentAccount()._id
+  const client = getClient()
 
   const query = createQuery()
   let visibleAttachments: Attachment[] | undefined
@@ -33,9 +34,25 @@
 
   const showMenu = async (ev: MouseEvent, object: Doc, rowNumber: number): Promise<void> => {
     selectedRowNumber = rowNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedRowNumber = undefined
-    })
+    showPopup(
+      Menu,
+      {
+        actions: [
+          ...(myAccId === object.modifiedBy
+            ? [
+                {
+                  label: attachment.string.DeleteFile,
+                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                }
+              ]
+            : [])
+        ]
+      },
+      ev.target as HTMLElement,
+      () => {
+        selectedRowNumber = undefined
+      }
+    )
   }
 
   $: channel &&
@@ -65,6 +82,9 @@
             <AttachmentPresenter value={attachment} />
           </div>
           <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
+            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
@@ -126,6 +146,7 @@
     padding: 5px 0;
 
     .eAttachmentRowActions {
+      display: flex;
       visibility: hidden;
       border: 1px solid var(--theme-bg-focused-border);
       padding: 0.2rem;
@@ -133,6 +154,7 @@
     }
 
     .eAttachmentRowMenu {
+      margin-left: 0.2rem;
       visibility: hidden;
       opacity: 0.6;
       cursor: pointer;

@@ -23,7 +23,7 @@
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
   import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip, Button } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
-  import { getActions } from '@anticrm/view-resources'
+  import { getActions, LinkPresenter } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -152,6 +152,27 @@
 
   $: parentMessage = message as Message
   $: hasReplies = (parentMessage?.replies?.length ?? 0) > 0
+
+  $: links = getLinks(message.content)
+
+  function getLinks (content: string): HTMLLinkElement[] {
+    const parser = new DOMParser()
+    const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
+    return parseLinks(parent.childNodes)
+  }
+
+  function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
+    const res: HTMLLinkElement[] = []
+    nodes.forEach((p) => {
+      if (p.nodeType !== Node.TEXT_NODE) {
+        if (p.nodeName === 'A') {
+          res.push(p as HTMLLinkElement)
+        }
+        res.push(...parseLinks(p.childNodes))
+      }
+    })
+    return res
+  }
 </script>
 
 <div class="container">
@@ -189,6 +210,9 @@
           <AttachmentList {attachments} {savedAttachmentsIds} />
         </div>
       {/if}
+      {#each links as link}
+        <LinkPresenter {link}/>
+      {/each}
     {/if}
     {#if reactions || (!thread && hasReplies)}
       <div class="footer flex-col">
@@ -229,7 +253,7 @@
   .container {
     position: relative;
     display: flex;
-    padding: .5rem 2rem;
+    padding: 0.5rem 2rem;
 
     .avatar {
       min-width: 2.25rem;
