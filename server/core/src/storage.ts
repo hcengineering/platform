@@ -15,15 +15,20 @@
 //
 
 import core, {
+  AnyAttribute,
   AttachedDoc,
+  Backlink,
+  BACKLINK_COLLECTION,
   Class,
   ClassifierKind,
   Collection,
+  Data,
   Doc,
   DocumentQuery,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  extractBacklinks,
   FindOptions,
   FindResult,
   Hierarchy,
@@ -201,21 +206,21 @@ class TServerStorage implements ServerStorage {
     )
   }
 
-  async buildRemovedDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
+  async buildDoc <T extends Doc> (ctx: MeasureContext, tx: TxRemoveDoc<T> | TxUpdateDoc<T>): Promise<T | undefined> {
     const txes = await this.findAll(ctx, core.class.TxCUD, { objectId: tx.objectId }, { sort: { modifiedOn: 1 } })
-    let doc: Doc
+    let doc: T
     let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) {
-      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<Doc, AttachedDoc>[]
+      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<T, AttachedDoc>[]
       createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
     }
     if (createTx === undefined) return
-    doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+    doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<T>)
     for (const tx of txes) {
       if (tx._class === core.class.TxUpdateDoc) {
-        doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
+        doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<T>)
       } else if (tx._class === core.class.TxMixin) {
-        const mixinTx = tx as TxMixin<Doc, Doc>
+        const mixinTx = tx as TxMixin<T, T>
         doc = TxProcessor.updateMixin4Doc(doc, mixinTx.mixin, mixinTx.attributes)
       }
     }
@@ -237,7 +242,7 @@ class TServerStorage implements ServerStorage {
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
     const rtx = actualTx as TxRemoveDoc<Doc>
     const result: Tx[] = []
-    const object = await this.buildRemovedDoc(ctx, rtx)
+    const object = await this.buildDoc(ctx, rtx)
     if (object === undefined) return []
     result.push(...await this.deleteClassCollections(ctx, object._class, rtx.objectId))
     const mixins = this.getMixins(object._class, object)
@@ -306,6 +311,7 @@ class TServerStorage implements ServerStorage {
   }
 
   async processMove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+    console.log('processMove')
     const actualTx = this.extractTx(tx)
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
     const rtx = actualTx as TxUpdateDoc<Doc>
@@ -320,6 +326,70 @@ class TServerStorage implements ServerStorage {
         factory.createTxUpdateDoc(_class, space, _id, { space: rtx.operations.space })
       )
       result.push(...allTx)
+    }
+    return result
+  }
+
+  async processBacklinks (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+    const actualTx = this.extractTx(tx)
+    const result: Tx[] = []
+    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc) || !this.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return result
+    const rtx = actualTx as (TxCreateDoc<Doc> | TxUpdateDoc<Doc>)
+    if (!this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)) return result
+    const attributes = this.hierarchy.getAllAttributes(rtx.objectClass)
+    const markupAttributes: AnyAttribute[] = []
+    for (const [, attribute] of attributes) {
+      if (this.hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)) {
+        markupAttributes.push(attribute)
+      }
+    }
+    if (markupAttributes.length <= 0) return result
+    let attachedDoc: AttachedDoc | undefined
+    let isNew = false
+    if (this.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) {
+      isNew = true
+      attachedDoc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<AttachedDoc>)
+    }
+    if (this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
+      attachedDoc = await this.buildDoc(ctx, actualTx as TxUpdateDoc<AttachedDoc>)
+    }
+    if (attachedDoc === undefined) return []
+    const backlinkId = attachedDoc.attachedTo
+    const backlinkClass = attachedDoc.attachedToClass
+    const attachedDocId = attachedDoc._id ?? rtx.objectId
+
+    if (backlinkId === undefined || backlinkClass === undefined) return []
+    const existingBacklinks = isNew ? [] : await this.findAll<Backlink>(ctx, core.class.Backlink, { backlinkId, backlinkClass, attachedDocId })
+    const factory = new TxFactory(tx.modifiedBy)
+
+    for (const attribute of markupAttributes) {
+      const attrValue = (attachedDoc as Data<any>)[attribute.name]
+      const backlinks: Array<Data<Backlink>> = extractBacklinks(backlinkId, backlinkClass, rtx.objectId, attrValue)
+      if (backlinks.length <= 0) continue
+      for (const backlink of backlinks) {
+        const { attachedTo, attachedToClass, message } = backlink
+        let exists = false
+        let withDiffMessage: Backlink | undefined
+        for (const existingBacklink of existingBacklinks) {
+          if (existingBacklink.attachedTo === attachedTo && existingBacklink.attachedToClass === attachedToClass) {
+            if (existingBacklink.message === message) {
+              exists = true
+            } else {
+              withDiffMessage = existingBacklink
+            }
+          }
+        }
+        if (!exists) {
+          if (withDiffMessage !== undefined) {
+            // update existing backlink message
+            result.push(factory.createTxUpdateDoc(withDiffMessage._class, withDiffMessage.space, withDiffMessage._id, { message }))
+          } else {
+            // create a new
+            const newBacklink = factory.createTxCreateDoc<Backlink>(core.class.Backlink, core.space.Backlinks, { ...backlink, attachedDocId })
+            result.push(factory.createTxCollectionCUD(attachedToClass, attachedTo, core.space.Backlinks, BACKLINK_COLLECTION, newBacklink))
+          }
+        }
+      }
     }
     return result
   }
@@ -355,6 +425,7 @@ class TServerStorage implements ServerStorage {
         ...(await ctx.with('process-collection', { _class }, () => this.processCollection(ctx, tx))),
         ...(await ctx.with('process-remove', { _class }, () => this.processRemove(ctx, tx))),
         ...(await ctx.with('process-move', { _class }, () => this.processMove(ctx, tx))),
+        ...(await ctx.with('process-backlinks', { _class }, () => this.processBacklinks(ctx, tx))),
         ...(await ctx.with('process-triggers', {}, (ctx) =>
           this.triggers.apply(tx.modifiedBy, tx, {
             fx: triggerFx.fx,
