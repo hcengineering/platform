@@ -28,64 +28,53 @@
   export let defaultName: IntlString | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+
+  $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
+
+  const getElement = (
+    person: Person | undefined,
+    onEdit: Function | undefined,
+    shouldShowEmpty: boolean,
+    isInteractive: boolean
+  ) => {
+    if (!person && !shouldShowEmpty) {
+      return undefined
+    }
+
+    if (!isInteractive) {
+      return 'div'
+    }
+
+    if (person && !onEdit) {
+      return 'a'
+    }
+
+    return 'div'
+  }
 </script>
 
-{#if !isInteractive}
-  {#if value}
-    <div class="contentPresenter mContentPresenterNotInteractive">
-      <div class="eContentPresenterIcon">
-        <Avatar size={avatarSize} avatar={value.avatar} />
-      </div>
-      {#if shouldShowName}
-        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
-      {/if}
-    </div>
-  {:else}
-    <div class="contentPresenter mContentPresenterNotInteractive">
-      <div class="eContentPresenterIcon">
-        <Avatar size={avatarSize} avatar={undefined} />
-      </div>
-      {#if defaultName}
-        <div class="eContentPresenterLabel">
-          <Label label={defaultName} />
-        </div>
-      {/if}
-    </div>
-  {/if}
-{:else if value || shouldShowPlaceholder}
-  {#if onEdit}
-    <div class="contentPresenter" class:inline-presenter={inline} on:click={onEdit}>
-      <div class="eContentPresenterIcon">
-        <Avatar size={avatarSize} avatar={value?.avatar} />
-      </div>
-      {#if value && shouldShowName}
-        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
-      {/if}
-    </div>
-  {:else if value}
-    <a
-      class="contentPresenter"
-      class:inline-presenter={inline}
-      href="#{getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}"
-    >
-      <div class="eContentPresenterIcon">
-        <Avatar size={avatarSize} avatar={value.avatar} />
-      </div>
-      {#if shouldShowName}
-        <span class="eContentPresenterLabel">{formatName(value.name)}</span>
-      {/if}
-    </a>
-  {/if}
-{:else}
-  <div class="contentPresenter" on:click={onEdit}>
-    <div class="eContentPresenterIcon">
-      <Avatar size={avatarSize} avatar={undefined} />
-    </div>
-    {#if defaultName}
-      <Label label={defaultName} />
-    {/if}
+<svelte:element
+  this={element}
+  class="contentPresenter"
+  class:inline-presenter={inline}
+  class:mContentPresenterNotInteractive={!isInteractive}
+  on:click={onEdit}
+  href={!isInteractive || onEdit || !value
+    ? undefined
+    : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
+>
+  <div class="eContentPresenterIcon">
+    <Avatar size={avatarSize} avatar={value?.avatar} />
   </div>
-{/if}
+  {#if value && shouldShowName}
+    <span class="eContentPresenterLabel">{formatName(value.name)}</span>
+  {/if}
+  {#if !value && shouldShowName && defaultName}
+    <div class="eContentPresenterLabel">
+      <Label label={defaultName} />
+    </div>
+  {/if}
+</svelte:element>
 
 <style lang="scss">
   .contentPresenter {
