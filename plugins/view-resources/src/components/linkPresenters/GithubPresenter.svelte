@@ -39,7 +39,6 @@
   async function getData (href: string): Promise<Data> {
     const params = href.replace(/(http.:\/\/)?(www.)?github.com\//, '')
     const res = await (await fetch(`https://api.github.com/repos/${params}`)).json()
-    console.log(res)
     return {
       number: res.number,
       body: format(res.body),
