@@ -36,7 +36,7 @@
           view.component.EditDoc,
           channel.attachedTo,
           channel.attachedToClass,
-          'full',
+          'content',
           ev.detail.presenter
         )
       }

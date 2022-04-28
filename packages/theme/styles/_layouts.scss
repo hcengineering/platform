@@ -343,6 +343,7 @@ p:last-child { margin-block-end: 0; }
 .mx-1 { margin: 0 .25rem; }
 .mx-2 { margin: 0 .5rem; }
 .mx-3 { margin: 0 .75rem; }
+.mx-10 { margin: 0 2.5rem; }
 .mx-auto { margin: 0 auto; }
 .my-4 { margin: 1rem 0; }
 
@@ -593,6 +594,7 @@ a.no-line {
 /* Backgrounds & Colors */
 .background-body-color { background-color: var(--body-color); }
 .background-accent-bg-color { background-color: var(--accent-bg-color); }
+.background-highlight-select { background-color: var(--highlight-select); }
 
 .background-theme-content-accent { background-color: var(--theme-content-accent-color); }
 .background-theme-bg-color { background-color: var(--theme-bg-color); }
@@ -624,3 +626,4 @@ a.no-line {
 .border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }
 
 .bottom-divider { border-bottom: 1px solid var(--divider-color); }
+.bottom-highlight-select { border-bottom: 1px solid var(--highlight-select); }

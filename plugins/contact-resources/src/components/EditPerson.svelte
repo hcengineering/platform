@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import { combineName,getFirstName,getLastName,Person } from '@anticrm/contact'
-  import { getCurrentAccount,Ref,Space } from '@anticrm/core'
+  import { combineName, getFirstName, getLastName, Person } from '@anticrm/contact'
+  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import { AttributeEditor,Avatar,createQuery,EditableAvatar,getClient } from '@anticrm/presentation'
-  import setting,{ IntegrationType } from '@anticrm/setting'
-  import { CircleButton,EditBox,IconActivity,Label } from '@anticrm/ui'
-  import { afterUpdate,createEventDispatcher,onMount } from 'svelte'
+  import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
+  import setting, { IntegrationType } from '@anticrm/setting'
+  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
