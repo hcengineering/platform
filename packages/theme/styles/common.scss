@@ -26,6 +26,7 @@
   min-width: var(--app-panel-width);
   width: var(--app-panel-width);
   height: 100%;
+  background-color: var(--board-bg-color);
 }
 .antiPanel-navigator,
 .antiPanel-component {
@@ -53,7 +54,10 @@
     z-index: 450;
   }
 }
-.antiPanel-component:not(.aside) { flex-grow: 1; }
+.antiPanel-component:not(.aside) {
+  flex-grow: 1;
+  background-color: var(--board-bg-color);
+}
 .antiPanel-component.aside {
   min-width: 30rem;
   width: 30rem;

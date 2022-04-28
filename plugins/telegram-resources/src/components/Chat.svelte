@@ -22,7 +22,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { ActionIcon, Button, eventToHTMLElement, IconShare, ScrollBox, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -171,7 +171,7 @@
   }
 </script>
 
-<div class="ac-header short mirror-tool divide">
+<div class="telegram-header">
   <div class="ac-header__wrap-title">
     <div class="flex-center icon"><TelegramIcon size={'small'} /></div>
     <div class="ac-header__wrap-description">
@@ -179,22 +179,23 @@
       <span class="ac-header__description">You and {formatName(object.name)}</span>
     </div>
   </div>
-  <ActionIcon
-    icon={IconShare}
-    size={'medium'}
-    label={telegram.string.Share}
-    direction={'bottom'}
-    action={async () => {
-      selectable = !selectable
-    }}
-  />
+  <Tooltip label={telegram.string.Share}>
+    <Button
+      icon={IconShare}
+      kind={'transparent'}
+      size={'medium'}
+      on:click={async () => {
+        selectable = !selectable
+      }}
+    />
+  </Tooltip>
 </div>
-<div class="h-full right-content">
-  <ScrollBox vertical stretch autoscrollable>
+<div class="telegram-content" class:selectable>
+  <Scroller bottomStart autoscroll>
     {#if messages && accounts}
       <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
     {/if}
-  </ScrollBox>
+  </Scroller>
 </div>
 
 <div class="ref-input" class:selectable>
@@ -203,12 +204,12 @@
       <span>{selected.size} messages selected</span>
       <div class="flex">
         <div>
-          <Button label={telegram.string.Cancel} size={'small'} on:click={clear} />
+          <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
         </div>
         <div class="ml-3">
           <Button
             label={telegram.string.PublishSelected}
-            size={'small'}
+            size={'medium'}
             kind={'primary'}
             disabled={!selected.size}
             on:click={share}
@@ -247,12 +248,23 @@
 </div>
 
 <style lang="scss">
+  .telegram-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 0 2.5rem;
+    padding: 0;
+    height: 4rem;
+    min-height: 4rem;
+    border-bottom: 1px solid var(--divider-color);
+  }
   .icon {
     margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--white-color);
+    background-color: var(--primary-bg-color);
     border-radius: 50%;
   }
 
@@ -260,14 +272,18 @@
     padding: 0 2.5rem 1.5rem;
 
     &.selectable {
-      padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+      padding: 1rem 2.5rem;
       color: var(--theme-caption-color);
+      background-color: var(--accent-bg-color);
       border-top: 1px solid var(--theme-card-divider);
     }
   }
 
-  .right-content {
-    flex-grow: 1;
-    padding: 1.5rem 1rem;
+  .telegram-content {
+    padding-bottom: 1.5rem;
+    min-height: 0;
+    height: 100%;
+
+    &.selectable { padding-bottom: 0; }
   }
 </style>

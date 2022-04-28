@@ -18,6 +18,7 @@ import type { Board, Card, CardAction, CardDate, CardLabel } from '@anticrm/boar
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp } from '@anticrm/core'
 import {
+  ArrOf,
   Builder,
   Collection,
   Index,
@@ -103,7 +104,7 @@ export class TCard extends TTask implements Card {
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)
   declare assignee: Ref<Employee> | null
 
-  @Prop(Collection(contact.class.Employee), board.string.Members)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
   members?: Ref<Employee>[]
 }
 
@@ -143,29 +144,6 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Board,
       hidden: false,
       navigatorModel: {
-        specials: [
-          {
-            id: 'boards',
-            label: board.string.Boards,
-            icon: board.icon.Board,
-            component: board.component.Boards,
-            position: 'top'
-          },
-          {
-            id: 'members',
-            label: board.string.Members,
-            icon: board.icon.Board,
-            component: board.component.Members,
-            position: 'top'
-          },
-          {
-            id: 'settings',
-            label: board.string.Settings,
-            icon: board.icon.Board,
-            component: board.component.Settings,
-            position: 'top'
-          }
-        ],
         spaces: [
           {
             label: board.string.MyBoards,

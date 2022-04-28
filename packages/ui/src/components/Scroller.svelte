@@ -19,6 +19,7 @@
   export let padding: boolean = false
   export let autoscroll: boolean = false
   export let correctPadding: number = 0
+  export let bottomStart: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
 
@@ -38,6 +39,7 @@
   let visibleEl: number | undefined = undefined
   let belowContent: number | undefined = undefined
   let scrolling: boolean = false
+  let firstScroll: boolean = autoscroll
 
   const checkBack = (): void => {
     if (divBox) {
@@ -149,6 +151,7 @@
       divBar.style.top = procTop * (divScroll.clientHeight - 4) + 2 + 'px'
       if (mask === 'none') divBar.style.visibility = 'hidden'
       else divBar.style.visibility = 'visible'
+      if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
     }
   }
 
@@ -205,8 +208,12 @@
 
   let observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: .1 })
 
-  $: if (autoscroll && belowContent && belowContent <= 5) scrolling = true
-  $: if (scrolling && belowContent && belowContent > 5)
+  $: if (firstScroll && divScroll && divScroll.clientHeight !== divScroll.scrollHeight) {
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+    firstScroll = false
+  }
+  $: if (autoscroll && belowContent && belowContent <= 50) scrolling = true
+  $: if (scrolling && belowContent && belowContent > 50)
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
 
   onMount(() => {
@@ -223,6 +230,7 @@
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
+      if (scrolling) divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
       checkFade()
       clearTHead()
       findTHeaders()
@@ -239,7 +247,7 @@
 </script>
 
 <svelte:window on:resize={_resize} />
-<div class="scroller-container">
+<div class="scroller-container" class:bottomStart>
   <div
     bind:this={divScroll}
     bind:clientWidth={divWidth}
@@ -289,6 +297,14 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+  }
+  .scroller-container.bottomStart {
+    justify-content: flex-end;
+    .scroll {
+      flex-grow: 0;
+      height: min-content;
+      .box { height: min-content; }
+    }
   }
 
   .track {

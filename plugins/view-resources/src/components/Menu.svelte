@@ -38,7 +38,7 @@
     actions = result.map(a => ({
       label: a.label,
       icon: a.icon as Asset,
-      action: async (props:any, evt: Event) => { invokeAction(evt, a.action) }
+      action: async (_:any, evt: Event) => { invokeAction(evt, a.action) }
     }))
     loaded = 1
   })

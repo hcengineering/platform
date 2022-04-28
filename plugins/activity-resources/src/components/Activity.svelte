@@ -23,7 +23,7 @@
   import TxView from './TxView.svelte'
 
   export let object: Doc
-  export let fullSize: boolean = false
+  export let integrate: boolean = false
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
 
@@ -55,7 +55,7 @@
 
 </script>
 
-{#if fullSize || transparent}
+{#if !integrate || transparent}
   {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
@@ -86,11 +86,11 @@
     {/if}
   </div>
 {:else}
-  <Scroller autoscroll>
-    <div class="p-10">
+  <Scroller>
+    <div class="p-10 bottom-highlight-select">
       <slot />
     </div>
-    <div class="ac-header short mirror-tool">
+    <div class="ac-header short mirror-tool mt-2">
       <div class="ac-header__wrap-title">
         <div class="flex-center icon"><IconActivity size={'small'} /></div>
         <span class="ac-header__title"><Label label={activity.string.Activity} /></span>

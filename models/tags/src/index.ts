@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Class, Doc, Domain, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { ArrOf, Builder, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import { Asset, IntlString } from '@anticrm/platform'
@@ -74,7 +74,7 @@ export class TTagCategory extends TDoc implements TagCategory {
   @Prop(TypeString(), tags.string.CategoryTargetClass)
   targetClass!: Ref<Class<Doc>>
 
-  @Prop(Collection(core.class.TypeString), tags.string.CategoryTagsLabel)
+  @Prop(ArrOf(TypeRef(core.class.TypeString)), tags.string.CategoryTagsLabel)
   tags!: string[]
 
   @Prop(TypeString(), tags.string.DefaultLabel)

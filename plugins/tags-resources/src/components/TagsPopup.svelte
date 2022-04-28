@@ -17,8 +17,8 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { TagCategory, TagElement, TagReference } from '@anticrm/tags'
-  import { CheckBox, Button, Icon, IconAdd, IconClose, Label, showPopup, getPlatformColor } from '@anticrm/ui'
+  import { TagCategory, TagElement } from '@anticrm/tags'
+  import { Button, CheckBox, getPlatformColor, Icon, IconAdd, IconClose, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
@@ -75,7 +75,7 @@
     }
     objects = objects
     categories = categories
-    dispatch('update', { action: 'selected', selected: selected})
+    dispatch('update', { action: 'selected', selected: selected })
   }
   const toggleGroup = (ev: MouseEvent): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement
@@ -102,7 +102,7 @@
         }}>
           {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
-        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => show = !show} />
+        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => { show = !show }} />
         {#if !hideAdd}<Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />{/if}
       </div>
     </div>

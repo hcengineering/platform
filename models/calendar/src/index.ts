@@ -18,7 +18,7 @@ import { Calendar, Event, Reminder } from '@anticrm/calendar'
 import { Employee } from '@anticrm/contact'
 import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
+import { ArrOf, Builder, Collection, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -64,7 +64,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  @Prop(Collection(contact.class.Employee), calendar.string.Participants)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), calendar.string.Participants)
   participants!: Ref<Employee>[]
 }
 

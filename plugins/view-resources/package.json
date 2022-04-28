@@ -39,6 +39,7 @@
     "@anticrm/ui": "~0.6.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/notification": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2"
+    "@anticrm/presentation": "~0.6.2",
+    "@anticrm/setting": "~0.6.1"
   }
 }
