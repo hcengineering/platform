@@ -312,11 +312,7 @@
     }
 
     &.mListGridSelected {
-      background-color: var(--theme-table-bg-hover);
-    }
-
-    &:hover {
-      background-color: var(--theme-table-bg-hover);
+      background-color: var(--menu-bg-select);
     }
 
     .eListGridCheckBox {

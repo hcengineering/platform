@@ -135,7 +135,7 @@
                 icon={IconAdd}
                 kind={'transparent'}
                 on:click={(evt) => {
-                  showPopup(CreateIssue, { space: currentSpace, issueStatus: state._id }, eventToHTMLElement(evt))
+                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, eventToHTMLElement(evt))
                 }}
               />
             </Tooltip>
