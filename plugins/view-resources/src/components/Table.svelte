@@ -73,7 +73,7 @@
           objects.sort((a, b) => -1 * sortOrder * sf(a, b))
         }
         dispatch('content', objects)
-        loading--
+        loading = loading === 1 ? 0 : -1
       },
       { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
