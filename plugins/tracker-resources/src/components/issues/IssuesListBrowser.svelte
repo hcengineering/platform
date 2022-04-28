@@ -43,7 +43,7 @@
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
-      issuesList.onElementSelected(offset, of, dir)
+      issuesList.onElementSelected(offset, of)
     }
   })
 

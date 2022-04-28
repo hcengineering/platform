@@ -105,6 +105,21 @@
     }
     Promise.all(promises)
   }
+
+  function click (ev: any) {
+    if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
+      const channel = channels[0]
+      if (channel !== undefined) {
+        showPanel(
+          view.component.EditDoc,
+          channel.attachedTo,
+          channel.attachedToClass,
+          'content',
+          ev.detail.presenter
+        )
+      }
+    }
+  }
 </script>
 
 <ChannelsDropdown
@@ -118,4 +133,5 @@
   on:change={(e) => {
     if (editable) save(e.detail)
   }}
+  on:click={click}
 />

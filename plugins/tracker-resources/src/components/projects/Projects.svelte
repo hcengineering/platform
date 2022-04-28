@@ -29,11 +29,11 @@
       startDate: SortingOrder.Ascending
     },
     lookup: {
-      lead: contact.class.Employee,
+      lead: contact.class.Employee
     }
   }
 
-  async function showCreateDialog (ev: Event) {
+  async function showCreateDialog () {
     showPopup(NewProject, { space, targetElement: null }, null)
   }
 </script>

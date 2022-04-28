@@ -15,27 +15,22 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { Class, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  // import Card from '../Card.svelte'
+  import { Panel } from '@anticrm/panel'
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
-    AnyComponent,
     Button,
     EditBox,
-    IconDownOutline,
-    IconUpOutline,
-    Label,
-    Scroller,
-    IconMoreH,
-    IconEdit
+    IconDownOutline, IconEdit, IconMoreH, IconUpOutline,
+    Label
   } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
-  // import Card from '../Card.svelte'
-  import { Panel } from '@anticrm/panel'
   import IssuePresenter from './IssuePresenter.svelte'
-  import StatusPresenter from './StatusPresenter.svelte'
   import PriorityPresenter from './PriorityPresenter.svelte'
+  import StatusPresenter from './StatusPresenter.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -48,7 +43,6 @@
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  const fullSize: boolean = false
   let innerWidth: number
 
   $: _id &&
@@ -96,10 +90,8 @@
 {#if issue !== undefined}
   <Panel
     object={issue}
-    {fullSize}
     showHeader={false}
     isSubtitle={true}
-    position={'content'}
     bind:innerWidth
     on:close={() => {
       dispatch('close')
@@ -266,15 +258,6 @@
       height: 1px;
       border-bottom: 1px solid var(--divider-color);
       margin: 0.75rem 1.5rem 1.25rem 0;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      border-left: 1px solid var(--divider-color);
-      top: 1.125rem;
-      bottom: 1.125rem;
-      width: 0px;
     }
   }
 </style>

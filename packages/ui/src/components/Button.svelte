@@ -129,7 +129,11 @@
       transition: color .15s;
       pointer-events: none;
     }
-    &.highlight { box-shadow: inset 0 0 0 1px var(--primary-bg-color); }
+    &.highlight {
+      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+
+      &:hover { box-shadow: inset 0 0 1px 1px var(--primary-bg-hover); }
+    }
     &:hover {
       color: var(--accent-color);
       transition-duration: 0;

@@ -64,7 +64,7 @@
             {#if subtitle}<span class="ac-header__description">{subtitle}</span>{/if}
           </div>
         </div>
-        <div class="buttons-group xsmall-gap mr-4">
+        <div class="buttons-group xsmall-gap">
           <slot name="commands" />
           <slot name="actions" />
         </div>
@@ -148,17 +148,18 @@
       flex-shrink: 0;
       min-width: 20rem;
       width: 20rem;
+      border-left: 1px solid var(--divider-color);
       // background-color: var(--board-card-bg-color);
 
-      &::before {
-        position: absolute;
-        content: '';
-        top: 1.5rem;
-        bottom: 1.5rem;
-        left: 0;
-        width: 1px;
-        background-color: var(--divider-color);
-      }
+      // &::before {
+      //   position: absolute;
+      //   content: '';
+      //   top: 1.5rem;
+      //   bottom: 1.5rem;
+      //   left: 0;
+      //   width: 1px;
+      //   background-color: var(--divider-color);
+      // }
     }
   }
 </style>
