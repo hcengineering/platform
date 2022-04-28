@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { Doc } from '@anticrm/core'
-  import {IconMoreV, showPopup} from '@anticrm/ui'
+  import { IconMoreV, showPopup } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
-  import {AttachmentGalleryPresenter} from '..'
+  import { AttachmentGalleryPresenter } from '..'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
@@ -36,10 +36,7 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            <div
-              class="eAttachmentCellMenu"
-              on:click={(event) => showFileMenu(event, attachment, i)}
-            >
+            <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
           </div></svelte:fragment

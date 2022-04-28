@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { Doc } from '@anticrm/core'
-  import {IconMoreV, showPopup} from '@anticrm/ui'
+  import { IconMoreV, showPopup } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
-  import {AttachmentPresenter} from '..'
+  import { AttachmentPresenter } from '..'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
@@ -37,10 +37,7 @@
         <AttachmentPresenter value={attachment} />
       </div>
       <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-        <div
-          class="eAttachmentRowMenu"
-          on:click={(event) => showFileMenu(event, attachment, i)}
-        >
+        <div class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
           <IconMoreV size={'small'} />
         </div>
       </div>

@@ -30,12 +30,7 @@
     Icon
   } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
-  import {
-    FileBrowserSortMode,
-    dateFileBrowserFilters,
-    fileTypeFileBrowserFilters,
-    sortModeToOptionObject,
-  } from '..'
+  import { FileBrowserSortMode, dateFileBrowserFilters, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
   import AttachmentsListView from './AttachmentsListView.svelte'

@@ -24,14 +24,20 @@
   const trimFilename = (fname: string): string =>
     fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
 
-  function iconLabel (name: string): string {
+  function extensionIconLabel (name: string): string {
     const parts = name.split('.')
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
 
-  function openEmbedded (contentType: string) {
-    return contentType.includes('application/pdf') || contentType.startsWith('image/')
+  function isPDF (contentType: string) {
+    return contentType.includes('application/pdf')
+  }
+  function isImage (contentType: string) {
+    return contentType.startsWith('image/')
+  }
+  function isEmbedded (contentType: string) {
+    return isPDF(contentType) || isImage(contentType)
   }
 
   function openAttachment () {
@@ -42,39 +48,48 @@
 
 <div class="gridCellOverlay">
   <div class="gridCell">
-    <div class="cellInfo">
-      {#if openEmbedded(value.type)}
-        <div class="flex-center icon" on:click={openAttachment}>
-          {iconLabel(value.name)}
-        </div>
-      {:else}
-        <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
-          <div class="flex-center icon">{iconLabel(value.name)}</div>
-        </a>
-      {/if}
-      <div class="eCellInfoData">
-        {#if openEmbedded(value.type)}
-          <div class="name" on:click={openAttachment}>
-            {trimFilename(value.name)}
-          </div>
-        {:else}
-          <div class="name">
-            <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a>
-          </div>
-        {/if}
-        <div class="type">{filesize(value.size)}</div>
-      </div>
-      <div class="eCellMenu"><slot name="rowMenu" /></div>
-    </div>
-    {#if value.type.startsWith('image/')}
-      <div class="cellImagePreview">
-        <img class={'img-vertical-fit'} src={getFileUrl(value.file)} alt={value.name} />
+    {#if isImage(value.type)}
+      <div class="cellImagePreview" on:click={openAttachment}>
+        <img class={'img-fit'} src={getFileUrl(value.file)} alt={value.name} />
       </div>
     {:else}
       <div class="cellMiscPreview">
-        <div class="flex-center icon">{iconLabel(value.name)}</div>
+        {#if isPDF(value.type)}
+          <div class="flex-center extensionIcon" on:click={openAttachment}>
+            {extensionIconLabel(value.name)}
+          </div>
+        {:else}
+          <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+            <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
+          </a>
+        {/if}
       </div>
     {/if}
+
+    <div class="cellInfo">
+      {#if isEmbedded(value.type)}
+        <div class="flex-center extensionIcon" on:click={openAttachment}>
+          {extensionIconLabel(value.name)}
+        </div>
+      {:else}
+        <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+          <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
+        </a>
+      {/if}
+      <div class="eCellInfoData">
+        {#if isEmbedded(value.type)}
+          <div class="eCellInfoFilename" on:click={openAttachment}>
+            {trimFilename(value.name)}
+          </div>
+        {:else}
+          <div class="eCellInfoFilename">
+            <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a>
+          </div>
+        {/if}
+        <div class="eCellInfoFilesize">{filesize(value.size)}</div>
+      </div>
+      <div class="eCellInfoMenu"><slot name="rowMenu" /></div>
+    </div>
   </div>
 </div>
 
@@ -92,7 +107,31 @@
     border-radius: 12px;
     justify-content: space-between;
     overflow: hidden;
-    box-shadow: 0 0 0 1px var(--theme-content-accent-color);
+    box-shadow: 0 0 0 1px var(--theme-bg-focused-border);
+  }
+
+  .cellImagePreview {
+    display: flex;
+    justify-content: center;
+    height: 160px;
+    overflow: hidden;
+    margin: 0 1.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--theme-menu-color);
+    cursor: pointer;
+  }
+
+  .cellMiscPreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+  }
+
+  .img-fit {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
   }
 
   .cellInfo {
@@ -105,33 +144,28 @@
     .eCellInfoData {
       display: flex;
       flex-direction: column;
+      margin-left: 1rem;
     }
 
-    .eCellMenu {
+    .eCellInfoMenu {
       margin-left: auto;
     }
+
+    .eCellInfoFilename {
+      font-weight: 500;
+      color: var(--theme-content-accent-color);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .eCellInfoFilesize {
+      font-size: 0.75rem;
+      color: var(--theme-content-dark-color);
+    }
   }
 
-  .cellImagePreview {
-    display: flex;
-    justify-content: center;
-    height: 160px;
-    overflow: auto;
-    margin: 0 1.5rem;
-    border-radius: 0.5rem;
-    background-color: var(--theme-menu-color);
-  }
-
-  .cellMiscPreview {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 160px;
-  }
-
-  .icon {
+  .extensionIcon {
     flex-shrink: 0;
-    margin-right: 1rem;
     width: 2rem;
     height: 2rem;
     font-weight: 500;
@@ -143,27 +177,23 @@
     cursor: pointer;
   }
 
-  .name {
-    font-weight: 500;
-    color: var(--theme-content-accent-color);
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .type {
-    font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
-  }
-
-  .name:hover,
-  .icon:hover + .eCellInfoData > .name,
-  .no-line:hover + .eCellInfoData > .name a {
+  .eCellInfoFilename:hover,
+  .extensionIcon:hover + .eCellInfoData > .eCellInfoFilename, // embedded on extension hover
+  .no-line:hover + .eCellInfoData > .eCellInfoFilename a, // not embedded on extension hover
+  .cellImagePreview:hover + .cellInfo .eCellInfoFilename, // image on preview hover
+  .cellMiscPreview:hover + .cellInfo .eCellInfoFilename, // PDF on preview hover
+  .cellMiscPreview:hover + .cellInfo .eCellInfoFilename a // not embedded on preview hover
+  {
     text-decoration: underline;
     color: var(--theme-caption-color);
   }
-  .name:active,
-  .icon:active + .eCellInfoData > .name,
-  .no-line:active + .eCellInfoData > .name a {
+  .eCellInfoFilename:active,
+  .extensionIcon:active + .eCellInfoData > .eCellInfoFilename, // embedded on extension hover
+  .no-line:active + .eCellInfoData > .eCellInfoFilename a, // not embedded on extension hover
+  .cellImagePreview:active + .cellInfo .eCellInfoFilename, // image on preview hover
+  .cellMiscPreview:active + .cellInfo .eCellInfoFilename, // PDF on preview hover
+  .cellMiscPreview:active + .cellInfo .eCellInfoFilename a // not embedded on preview hover
+  {
     text-decoration: underline;
     color: var(--theme-content-accent-color);
   }
