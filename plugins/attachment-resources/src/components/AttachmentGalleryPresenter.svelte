@@ -20,7 +20,7 @@
 
   export let value: Attachment
 
-  const maxLength: number = 20
+  const maxLength: number = 18
   const trimFilename = (fname: string): string =>
     fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
 

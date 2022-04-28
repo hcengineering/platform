@@ -16,8 +16,8 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getClient, getFileUrl } from '@anticrm/presentation'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
     location,
@@ -32,7 +32,6 @@
   import { onDestroy } from 'svelte'
   import { FileBrowserSortMode, dateFileBrowserFilters, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
-  import FileDownload from './icons/FileDownload.svelte'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
   import AttachmentsListView from './AttachmentsListView.svelte'
   import FileBrowserFilters from './FileBrowserFilters.svelte'

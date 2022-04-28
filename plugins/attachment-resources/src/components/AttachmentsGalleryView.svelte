@@ -15,8 +15,10 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { Doc } from '@anticrm/core'
-  import { IconMoreV, showPopup } from '@anticrm/ui'
+  import { getFileUrl } from '@anticrm/presentation'
+  import { Icon, IconMoreV, showPopup } from '@anticrm/ui'
   import { Menu } from '@anticrm/view-resources'
+  import FileDownload from './icons/FileDownload.svelte'
   import { AttachmentGalleryPresenter } from '..'
 
   export let attachments: Attachment[]
@@ -36,11 +38,14 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
+            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
             <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>
-          </div></svelte:fragment
-        >
+          </div>
+        </svelte:fragment>
       </AttachmentGalleryPresenter>
     </div>
   {/each}
@@ -55,6 +60,7 @@
 
   .attachmentCell {
     .eAttachmentCellActions {
+      display: flex;
       visibility: hidden;
       border: 1px solid var(--theme-bg-focused-border);
       padding: 0.2rem;
@@ -63,6 +69,7 @@
 
     .eAttachmentCellMenu {
       visibility: hidden;
+      margin-left: 0.2rem;
       opacity: 0.6;
       cursor: pointer;
 
