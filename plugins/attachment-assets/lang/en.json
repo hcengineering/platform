@@ -43,6 +43,7 @@
     "FileBrowserTypeFilterVideos": "Videos",
     "FileBrowserTypeFilterPDFs": "PDFs",
     "AddAttachmentToSaved": "Add attachment to saved",
-    "RemoveAttachmentFromSaved": "Remove attachment from saved"
+    "RemoveAttachmentFromSaved": "Remove attachment from saved",
+    "DeleteFile": "Delete file"
   }
 }
