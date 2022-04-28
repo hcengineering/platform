@@ -36,7 +36,7 @@
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
       if (dir === 'vertical') {
         // Select next
-        table.select(offset, of, dir)
+        table.select(offset, of)
       }
     }
   )

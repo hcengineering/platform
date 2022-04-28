@@ -28,6 +28,8 @@ export default mergeIds(attachmentId, attachment, {
     Photos: '' as IntlString,
     FileBrowser: '' as IntlString,
     FileBrowserFileCounter: '' as IntlString,
+    FileBrowserListView: '' as IntlString,
+    FileBrowserGridView: '' as IntlString,
     FileBrowserFilterFrom: '' as IntlString,
     FileBrowserFilterIn: '' as IntlString,
     FileBrowserFilterDate: '' as IntlString,

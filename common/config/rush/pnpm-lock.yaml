@@ -1,7 +1,6 @@
 lockfileVersion: 5.3
 
 specifiers:
-  '@anticrm/platform': ~0.6.6
   '@anticrm/skillset': ^0.6.0
   '@elastic/elasticsearch': ^7.14.0
   '@koa/cors': ^3.1.0
@@ -74,6 +73,7 @@ specifiers:
   '@rush-temp/model-recruit': file:./projects/model-recruit.tgz
   '@rush-temp/model-rig': file:./projects/model-rig.tgz
   '@rush-temp/model-server-attachment': file:./projects/model-server-attachment.tgz
+  '@rush-temp/model-server-board': file:./projects/model-server-board.tgz
   '@rush-temp/model-server-calendar': file:./projects/model-server-calendar.tgz
   '@rush-temp/model-server-chunter': file:./projects/model-server-chunter.tgz
   '@rush-temp/model-server-contact': file:./projects/model-server-contact.tgz
@@ -117,6 +117,8 @@ specifiers:
   '@rush-temp/server': file:./projects/server.tgz
   '@rush-temp/server-attachment': file:./projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:./projects/server-attachment-resources.tgz
+  '@rush-temp/server-board': file:./projects/server-board.tgz
+  '@rush-temp/server-board-resources': file:./projects/server-board-resources.tgz
   '@rush-temp/server-calendar': file:./projects/server-calendar.tgz
   '@rush-temp/server-calendar-resources': file:./projects/server-calendar-resources.tgz
   '@rush-temp/server-chunter': file:./projects/server-chunter.tgz
@@ -275,7 +277,6 @@ specifiers:
   xml2js: ~0.4.23
 
 dependencies:
-  '@anticrm/platform': 0.6.6
   '@anticrm/skillset': 0.6.0
   '@elastic/elasticsearch': 7.16.0
   '@koa/cors': 3.1.0
@@ -348,6 +349,7 @@ dependencies:
   '@rush-temp/model-recruit': file:projects/model-recruit.tgz_typescript@4.5.4
   '@rush-temp/model-rig': file:projects/model-rig.tgz_37f79b97d0d86442e45d380c86f520c5
   '@rush-temp/model-server-attachment': file:projects/model-server-attachment.tgz_typescript@4.5.4
+  '@rush-temp/model-server-board': file:projects/model-server-board.tgz_typescript@4.5.4
   '@rush-temp/model-server-calendar': file:projects/model-server-calendar.tgz_typescript@4.5.4
   '@rush-temp/model-server-chunter': file:projects/model-server-chunter.tgz_typescript@4.5.4
   '@rush-temp/model-server-contact': file:projects/model-server-contact.tgz_typescript@4.5.4
@@ -391,6 +393,8 @@ dependencies:
   '@rush-temp/server': file:projects/server.tgz
   '@rush-temp/server-attachment': file:projects/server-attachment.tgz
   '@rush-temp/server-attachment-resources': file:projects/server-attachment-resources.tgz
+  '@rush-temp/server-board': file:projects/server-board.tgz
+  '@rush-temp/server-board-resources': file:projects/server-board-resources.tgz
   '@rush-temp/server-calendar': file:projects/server-calendar.tgz
   '@rush-temp/server-calendar-resources': file:projects/server-calendar-resources.tgz
   '@rush-temp/server-chunter': file:projects/server-chunter.tgz
@@ -1514,7 +1518,7 @@ packages:
       chalk: 4.1.2
       emittery: 0.8.1
       exit: 0.1.2
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jest-changed-files: 27.5.1
       jest-config: 27.4.7_ts-node@10.5.0
       jest-haste-map: 27.5.1
@@ -1652,7 +1656,7 @@ packages:
       collect-v8-coverage: 1.0.1
       exit: 0.1.2
       glob: 7.2.0
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       istanbul-lib-coverage: 3.2.0
       istanbul-lib-instrument: 5.1.0
       istanbul-lib-report: 3.0.0
@@ -1795,7 +1799,7 @@ packages:
       chalk: 4.1.2
       convert-source-map: 1.8.0
       fast-json-stable-stringify: 2.1.0
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jest-haste-map: 27.5.1
       jest-regex-util: 27.4.0
       jest-util: 27.5.1
@@ -1847,7 +1851,7 @@ packages:
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.3
       '@types/istanbul-reports': 3.0.1
-      '@types/node': 17.0.0
+      '@types/node': 17.0.10
       '@types/yargs': 16.0.4
       chalk: 4.1.2
     dev: false
@@ -2546,7 +2550,7 @@ packages:
   /@types/accepts/1.3.5:
     resolution: {integrity: sha512-jOdnI/3qTpHABjM5cx1Hc0sKsPoYCp+DP/GJRGtDlPd7fiV9oXGGIcjW/ZOxLIvjGz8MA+uMZI9metHlgqbgwQ==}
     dependencies:
-      '@types/node': 17.0.0
+      '@types/node': 17.0.10
     dev: false
 
   /@types/argparse/1.0.38:
@@ -2634,7 +2638,7 @@ packages:
       '@types/connect': 3.4.35
       '@types/express': 4.17.13
       '@types/keygrip': 1.0.2
-      '@types/node': 17.0.0
+      '@types/node': 17.0.10
     dev: false
 
   /@types/cors/2.8.12:
@@ -4974,7 +4978,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       globby: 11.0.4
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       is-glob: 4.0.3
       is-path-cwd: 2.2.0
       is-path-inside: 3.0.3
@@ -5304,7 +5308,7 @@ packages:
     resolution: {integrity: sha512-EGAbGvH7j7Xt2nc0E7D99La1OiEs8LnyimkRgwExpUMScN6O+3x9tIWs7PLQZVNx4YD+00skHXPXi1yQHpAmZA==}
     engines: {node: '>=10.13.0'}
     dependencies:
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       tapable: 2.2.1
     dev: false
 
@@ -6323,7 +6327,7 @@ packages:
     resolution: {integrity: sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==}
     engines: {node: '>=6 <7 || >=8'}
     dependencies:
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jsonfile: 4.0.0
       universalify: 0.1.2
     dev: false
@@ -7480,7 +7484,7 @@ packages:
       ci-info: 3.3.0
       deepmerge: 4.2.2
       glob: 7.2.0
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jest-circus: 27.5.1
       jest-environment-jsdom: 27.5.1
       jest-environment-node: 27.5.1
@@ -7802,7 +7806,7 @@ packages:
       '@jest/types': 27.4.2
       '@types/stack-utils': 2.0.1
       chalk: 4.1.2
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       micromatch: 4.0.4
       pretty-format: 27.4.6
       slash: 3.0.0
@@ -7931,7 +7935,7 @@ packages:
     dependencies:
       '@jest/types': 27.4.2
       chalk: 4.1.2
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jest-haste-map: 27.5.1
       jest-pnp-resolver: 1.2.2_jest-resolve@27.4.6
       jest-util: 27.5.1
@@ -8159,7 +8163,7 @@ packages:
       babel-preset-current-node-syntax: 1.0.1_@babel+core@7.16.5
       chalk: 4.1.2
       expect: 27.5.1
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       jest-diff: 27.5.1
       jest-get-type: 27.4.0
       jest-haste-map: 27.5.1
@@ -9871,7 +9875,7 @@ packages:
   /proper-lockfile/4.1.2:
     resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
     dependencies:
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       retry: 0.12.0
       signal-exit: 3.0.6
     dev: false
@@ -10425,7 +10429,7 @@ packages:
     resolution: {integrity: sha1-dB4kXiMfB8r7b98PEzrfohalAq0=}
     dependencies:
       es6-promise: 3.3.1
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
       mkdirp: 0.5.5
       rimraf: 2.7.1
     dev: false
@@ -12177,7 +12181,7 @@ packages:
     engines: {node: '>=10.13.0'}
     dependencies:
       glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.8
+      graceful-fs: 4.2.10
     dev: false
 
   /wbuf/1.7.3:
@@ -13075,7 +13079,7 @@ packages:
     dev: false
 
   file:projects/client-resources.tgz_ac194b5590200ebf8338e0f86ec190f4:
-    resolution: {integrity: sha512-nwv9zNEGsaR1LmsITLutQfjyFbB/dVJSM99JtkUNhb8G7zdbGB+35MW8ROi2e0J47GZ1hB3XWnUvWUU4gXL8eA==, tarball: file:projects/client-resources.tgz}
+    resolution: {integrity: sha512-JuRnENm51wjubrmUPfbSGjyzbXh9OEkYwbKZT/MFQp3tPlLPNLTJQP4kqKNKr+LiFAWA5CNjPKSMb6VmUhiQwQ==, tarball: file:projects/client-resources.tgz}
     id: file:projects/client-resources.tgz
     name: '@rush-temp/client-resources'
     version: 0.0.0
@@ -13943,7 +13947,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.5.4:
-    resolution: {integrity: sha512-oZv+eWtLk2+Ob4FSPKWX+er/NOIOsE11NvX98h9tVghc+fUgDjWpNiGXyXI7QT7gImg6BvM3QgwZFFO2y2JZig==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-us5oab1ZLRTtB5eKcSATpbe7fIoH9YWT5CHYi42M0Nhn/mLqh50pS1lf2kDkZuGHtolK/Q/G/FkTpZwJ1duDHQ==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -14285,6 +14289,27 @@ packages:
     resolution: {integrity: sha512-JpIjeO+mC7iGMXxVkQIXNuqC3mh8Y06uFlXiMXlXp4XwxRm+AZD9ryCY5m9G5+Sf+DDOVMCN9daQ892RAhYTDw==, tarball: file:projects/model-server-attachment.tgz}
     id: file:projects/model-server-attachment.tgz
     name: '@rush-temp/model-server-attachment'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.44.13
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-server-board.tgz_typescript@4.5.4:
+    resolution: {integrity: sha512-9Wh2M5ZVQTr3QV3Ll1Mj9zAzIV2T4tFj1jr0hK2K2fAEX2Aw/sYfnudX2G4lNPYt76xCrIo921IcoG9sGc3CqQ==, tarball: file:projects/model-server-board.tgz}
+    id: file:projects/model-server-board.tgz
+    name: '@rush-temp/model-server-board'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.44.13
@@ -15084,7 +15109,7 @@ packages:
     dev: false
 
   file:projects/prod-tracker.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-DegdZVFP21HUwqbhSqazxR2nu9OqSlJ8QxOn1S3IOD9AGi7H5OOSvw6E/RItOlGAts0bi261Z81Dgi9EJvTtvA==, tarball: file:projects/prod-tracker.tgz}
+    resolution: {integrity: sha512-CXoZBlh1kEQXQ96e8INaZnbze29VJjyeKkHGkepnOh6iuOHQR3/c1Q53kIw7f0rHXiPzjGSgFgBogAJq4vYFNw==, tarball: file:projects/prod-tracker.tgz}
     id: file:projects/prod-tracker.tgz
     name: '@rush-temp/prod-tracker'
     version: 0.0.0
@@ -15130,7 +15155,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_a07ec81d4d975778878ca12202ea119e:
-    resolution: {integrity: sha512-WaWihWZzBZ9WDVbJtB+fFusKyv8pR4hbBAZGkpcZ0yiOQL4tL5R0ZFsh0TxDy1TD68XKFqF2FnM3ngNQQr8bKA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-+xxBB7gdcbI1Fgjt8KUwFHzgtyDJHlXDdivDghTuT0SPUYQ758ZxlvFr4aXJAjzFRSuir1dtBbwzlFhvl5ml5w==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -15327,6 +15352,47 @@ packages:
   file:projects/server-attachment.tgz:
     resolution: {integrity: sha512-ii2/T9suSCPFqOntCHSC7K9G2Zb3PK79dO8KgZd9lMaY3ZPgDLcGtOWtdGgQAvL2WI/KRpffK7/upytUUz0YNA==, tarball: file:projects/server-attachment.tgz}
     name: '@rush-temp/server-attachment'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.44.13
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.14
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-board-resources.tgz:
+    resolution: {integrity: sha512-40wcvMBRSSXcRc/GN/sjOYx7CcneCcFUp9BrieLQAjOOa34/RmuwnlBkxGmSr1t4bwwLcB1rX9mI+hYURm2v4w==, tarball: file:projects/server-board-resources.tgz}
+    name: '@rush-temp/server-board-resources'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.44.13
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.7.0_c25e8c1f4f4f7aaed27aa6f9ce042237
+      '@typescript-eslint/parser': 5.7.0_eslint@7.32.0+typescript@4.5.4
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_ce2fa0c4dfa1c256100cababd749a13a
+      eslint-plugin-import: 2.25.3_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.5.1
+      typescript: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/server-board.tgz:
+    resolution: {integrity: sha512-3SiZfjze5LDrZ+l9DfK85TL+e4RAHPddnSAwy9RomjxrHZ64zIO6wcQEeI30E+obQtlFAzGEkSyFKXcvWscR5w==, tarball: file:projects/server-board.tgz}
+    name: '@rush-temp/server-board'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.44.13
@@ -15961,7 +16027,7 @@ packages:
     dev: false
 
   file:projects/server.tgz:
-    resolution: {integrity: sha512-QGkRW1mGSE2Ea5tck0CmcMaaPKIW75KM4EelumP9j4JU/cw74rvB4EFYExoVZo4vSlH/vpmKLy/ArHswa1uqYg==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-7bMozTdtookHF/N7rxCajviO/2OFCWfqNKgNe45uZJh+gf2n0q0dqatG91GP7690/eMFVoRmFU/laEr6Tf8oTg==, tarball: file:projects/server.tgz}
     name: '@rush-temp/server'
     version: 0.0.0
     dependencies:
@@ -16480,7 +16546,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-dpLTm3pciJoonDmNZIn9//Y3flBEkwWX0fsDcuUZd2uxvCRynA7sdA0x8ax74iIeHe/ucShMia+kXmUEQD1bNQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-SVQmUfFM7cJwp/KuOZ522wyXyYYMe2YzFIYrHu5S1S8z2btbBAZzP1nH1gkU1GC5Vh8LVrL9NIhw6jTHWoJylA==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:

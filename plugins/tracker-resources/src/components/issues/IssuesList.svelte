@@ -13,27 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindOptions, Ref, getObjectValue, WithLookup } from '@anticrm/core'
   import contact, { Employee } from '@anticrm/contact'
+  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
-    CheckBox,
-    showPopup,
-    Spinner,
-    IconMoreV,
-    Tooltip,
-    Component,
-    Button,
-    IconAdd,
-    eventToHTMLElement
+    Button, CheckBox, Component, eventToHTMLElement, IconAdd, IconMoreV, showPopup,
+    Spinner, Tooltip
   } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
-  import { buildModel, LoadingProps, Menu, SelectDirection } from '@anticrm/view-resources'
+  import { buildModel, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import CreateIssue from '../CreateIssue.svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupPresenterMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
+  import CreateIssue from '../CreateIssue.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -97,7 +90,7 @@
     dispatch('row-focus', object)
   }
 
-  export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc, dir?: SelectDirection) => {
+  export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
     let position =
       (docObject !== undefined ? combinedGroupedIssues.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ??
       -1

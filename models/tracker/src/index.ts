@@ -17,6 +17,7 @@ import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
 import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
 import {
+  ArrOf,
   Builder,
   Collection,
   Hidden,
@@ -126,10 +127,10 @@ export class TIssue extends TDoc implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   parentIssue!: Ref<Issue>
 
-  @Prop(Collection(tracker.class.Issue), tracker.string.BlockedBy)
+  @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.BlockedBy)
   blockedBy!: Ref<Issue>[]
 
-  @Prop(Collection(tracker.class.Issue), tracker.string.RelatedTo)
+  @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
   relatedIssue!: Ref<Issue>[]
 
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
@@ -193,7 +194,7 @@ export class TProject extends TDoc implements Project {
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
   lead!: Ref<Employee> | null
 
-  @Prop(Collection(contact.class.Employee), tracker.string.Members)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
   members!: Ref<Employee>[]
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

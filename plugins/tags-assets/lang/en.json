@@ -30,6 +30,9 @@
     "CategoryTagsLabel": "Category Items",
     "OtherCategoryLabel": "Other",
     "AllCategories": "All Categories",
-    "DefaultLabel": "Default category"
+    "DefaultLabel": "Default category",
+    "SelectAll": "Select all",
+    "SelectNone": "Select none",
+    "ApplyTags": "Apply"
   }
 }

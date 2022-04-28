@@ -303,7 +303,10 @@
     if (window.innerWidth < 1100 && !navFloat) {
       visibileNav = false
       navFloat = true
-    } else if (window.innerWidth >= 1100 && navFloat) navFloat = false
+    } else if (window.innerWidth >= 1100 && navFloat) {
+      navFloat = false
+      visibileNav = true
+    }
   }
   const checkOnHide = (): void => {
     if (visibileNav && navFloat) visibileNav = false

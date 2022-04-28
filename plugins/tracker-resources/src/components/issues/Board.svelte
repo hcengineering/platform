@@ -25,9 +25,9 @@
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
-import AssigneePresenter from './AssigneePresenter.svelte'
+  import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
-import PriorityPresenter from './PriorityPresenter.svelte'
+  import PriorityPresenter from './PriorityPresenter.svelte'
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined

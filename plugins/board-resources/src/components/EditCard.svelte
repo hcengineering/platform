@@ -16,22 +16,19 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import { Class, Ref } from '@anticrm/core'
+  import { Panel } from '@anticrm/panel'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import type { AnyComponent } from '@anticrm/ui'
-  import { EditBox, Icon, Label, Scroller } from '@anticrm/ui'
-  import { Panel } from '@anticrm/panel'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { EditBox, Icon, Label } from '@anticrm/ui'
   import { UpDownNavigator } from '@anticrm/view-resources'
-
+  import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
-  import CardActivity from './editor/CardActivity.svelte'
   import CardAttachments from './editor/CardAttachments.svelte'
   import CardDetails from './editor/CardDetails.svelte'
 
@@ -76,8 +73,6 @@
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
 
-  let fullSize: boolean = false
-  let rightSection: AnyComponent | undefined = undefined
 </script>
 
 {#if object !== undefined}
@@ -85,9 +80,6 @@
     icon={board.icon.Card}
     title={object?.title}
     {object}
-    {rightSection}
-    {fullSize}
-    position={'content'}
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigate-actions">

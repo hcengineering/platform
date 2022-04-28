@@ -28,6 +28,8 @@ export default mergeIds(viewId, view, {
     LabelNA: '' as IntlString,
     ChooseAColor: '' as IntlString,
     DeleteObject: '' as IntlString,
-    DeleteObjectConfirm: '' as IntlString
+    DeleteObjectConfirm: '' as IntlString,
+    Assignees: '' as IntlString,
+    Labels: '' as IntlString
   }
 })

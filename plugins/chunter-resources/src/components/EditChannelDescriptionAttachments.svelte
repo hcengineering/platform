@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter } from '@anticrm/attachment-resources'
+  import { AttachmentPresenter, FileDownload } from '@anticrm/attachment-resources'
   import { ChunterSpace } from '@anticrm/chunter'
-  import { Doc, SortingOrder, getCurrentAccount } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { Doc, SortingOrder } from '@anticrm/core'
+  import { createQuery, getFileUrl } from '@anticrm/presentation'
   import { Menu } from '@anticrm/view-resources'
-  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate } from '@anticrm/ui'
+  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon } from '@anticrm/ui'
 
   export let channel: ChunterSpace | undefined
   const myAccId = getCurrentAccount()._id
@@ -65,13 +65,14 @@
           <div class="item flex">
             <AttachmentPresenter value={attachment} />
           </div>
-          {#if attachment.modifiedBy !== myAccId}
-            <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
-              <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
-                <IconMoreV size={'small'} />
-              </div>
+          <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
+            <a href={getFileUrl(attachment.file)} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
+            <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>
+              <IconMoreV size={'small'} />
             </div>
-          {/if}
+          </div>
         </div>
       {/each}
       {#if visibleAttachments.length < totalAttachments}
@@ -129,6 +130,7 @@
     padding: 5px 0;
 
     .eAttachmentRowActions {
+      display: flex;
       visibility: hidden;
       border: 1px solid var(--theme-bg-focused-border);
       padding: 0.2rem;
@@ -136,6 +138,7 @@
     }
 
     .eAttachmentRowMenu {
+      margin-left: 0.2rem;
       visibility: hidden;
       opacity: 0.6;
       cursor: pointer;
