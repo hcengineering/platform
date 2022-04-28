@@ -152,29 +152,6 @@ export function createModel (builder: Builder): void {
       icon: board.icon.Board,
       hidden: false,
       navigatorModel: {
-        specials: [
-          {
-            id: 'boards',
-            label: board.string.Boards,
-            icon: board.icon.Board,
-            component: board.component.Boards,
-            position: 'top'
-          },
-          {
-            id: 'members',
-            label: board.string.Members,
-            icon: board.icon.Board,
-            component: board.component.Members,
-            position: 'top'
-          },
-          {
-            id: 'settings',
-            label: board.string.Settings,
-            icon: board.icon.Board,
-            component: board.component.Settings,
-            position: 'top'
-          }
-        ],
         spaces: [
           {
             label: board.string.MyBoards,

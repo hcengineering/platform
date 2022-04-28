@@ -1,4 +1,3 @@
-
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
 //
@@ -44,15 +43,20 @@
   const query = createQuery()
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
-  let newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
-  let removedAttachments: Set<Attachment> = new Set<Attachment>()
+  const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
+  const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
-  $: objectId && query.query(attachment.class.Attachment, {
-    attachedTo: objectId
-  }, (res) => {
-    originalAttachments = new Set(res.map((p) => p._id))
-    attachments = new Map(res.map((p) => [p._id, p]))
-  })
+  $: objectId &&
+    query.query(
+      attachment.class.Attachment,
+      {
+        attachedTo: objectId
+      },
+      (res) => {
+        originalAttachments = new Set(res.map((p) => p._id))
+        attachments = new Map(res.map((p) => [p._id, p]))
+      }
+    )
 
   async function createAttachment (file: File) {
     try {
@@ -82,7 +86,15 @@
   }
 
   async function saveAttachment (doc: Attachment) {
-    const res = await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    const res = await client.addCollection(
+      attachment.class.Attachment,
+      space,
+      objectId,
+      _class,
+      'attachments',
+      doc,
+      doc._id
+    )
   }
 
   function fileSelected () {
@@ -112,7 +124,14 @@
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
     if (originalAttachments.has(attachment._id)) {
-      await client.removeCollection(attachment._class, attachment.space, attachment._id, attachment.attachedTo, attachment.attachedToClass, 'attachments')
+      await client.removeCollection(
+        attachment._class,
+        attachment.space,
+        attachment._id,
+        attachment.attachedTo,
+        attachment.attachedToClass,
+        'attachments'
+      )
     } else {
       await deleteFile(attachment.file)
     }
@@ -144,7 +163,6 @@
     await Promise.all(promises)
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
-
 </script>
 
 <input
@@ -155,25 +173,41 @@
   id="file"
   style="display: none"
   on:change={fileSelected}
-  />
-<div class="container"
+/>
+<div
+  class="container"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
-  >
+>
   {#if attachments.size}
-    <div class='flex-row-center list'>
+    <div class="flex-row-center list">
       {#each Array.from(attachments.values()) as attachment}
-        <div class='item flex'>
+        <div class="item flex">
           <AttachmentPresenter value={attachment} />
-          <div class='remove'>
-            <ActionIcon icon={IconClose} action={() => { removeAttachment(attachment) }} size='small' />
+          <div class="remove">
+            <ActionIcon
+              icon={IconClose}
+              action={() => {
+                removeAttachment(attachment)
+              }}
+              size="small"
+            />
           </div>
         </div>
       {/each}
     </div>
   {/if}
-  <ReferenceInput bind:this={refInput} {content} {showSend} on:message={onMessage} withoutTopBorder={attachments.size > 0} on:attach={() => { inputFile.click() }} />
+  <ReferenceInput
+    bind:this={refInput}
+    {content}
+    {showSend}
+    on:message={onMessage}
+    withoutTopBorder={attachments.size > 0}
+    on:attach={() => {
+      inputFile.click()
+    }}
+  />
 </div>
 
 <style lang="scss">
@@ -183,7 +217,7 @@
     overflow-x: auto;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 
