@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
-    "svelte": "^3.46",
+    "svelte": "^3.47",
     "@anticrm/lead": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",

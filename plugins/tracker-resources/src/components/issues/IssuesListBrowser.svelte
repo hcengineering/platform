@@ -52,7 +52,7 @@
   $: listProvider.update(Object.values(groupedIssues).flat(1))
 
   onMount(() => {
-    ;(document.activeElement as HTMLElement)?.blur()
+    (document.activeElement as HTMLElement)?.blur()
   })
 </script>
 

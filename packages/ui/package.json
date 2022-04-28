@@ -33,6 +33,6 @@
   "dependencies": {
     "@anticrm/platform": "~0.6.5",
     "@anticrm/theme": "~0.6.0",
-    "svelte": "^3.46"
+    "svelte": "^3.47"
   }
 }

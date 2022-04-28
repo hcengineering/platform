@@ -18,11 +18,18 @@
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
-    Button, CheckBox, Component, eventToHTMLElement, IconAdd, IconMoreV, showPopup,
-    Spinner, Tooltip
+    Button,
+    CheckBox,
+    Component,
+    eventToHTMLElement,
+    IconAdd,
+    IconMoreV,
+    showPopup,
+    Spinner,
+    Tooltip
   } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
-  import { buildModel, LoadingProps, Menu } from '@anticrm/view-resources'
+  import { AttributeModel, BuildModelKey } from '@anticrm/view'
+  import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupPresenterMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
@@ -53,11 +60,18 @@
     }
   }
 
+  let personPresenter: AttributeModel
+
   $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
   $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
-  $: headerComponent = groupByKey === undefined ? null : issuesGroupPresenterMap[groupByKey]
+  $: headerComponent =
+    groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupPresenterMap[groupByKey]
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   $: objectRefs.length = combinedGroupedIssues.length
+
+  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
+    personPresenter = p
+  })
 
   const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
     selectedRowIndex = rowIndex
@@ -139,20 +153,30 @@
 
 <div>
   {#each categories as category}
-    {#if headerComponent}
+    {#if headerComponent || groupByKey === 'assignee'}
       <div class="header categoryHeader flex-between label">
         <div class="flex-row-center gap-2">
-          <Component
-            is={headerComponent}
-            props={{
-              isEditable: false,
-              shouldShowLabel: true,
-              value: groupByKey ? { [groupByKey]: category } : {},
-              defaultName: groupByKey === 'assignee' ? tracker.string.NoAssignee : undefined,
-              statuses: groupByKey === 'status' ? statuses : undefined,
-              employees: groupByKey === 'assignee' ? employees : undefined
-            }}
-          />
+          {#if groupByKey === 'assignee' && personPresenter}
+            <svelte:component
+              this={personPresenter.presenter}
+              shouldShowLabel={true}
+              value={employees.find((x) => x?._id === category)}
+              defaultName={tracker.string.NoAssignee}
+              shouldShowPlaceholder={true}
+              isInteractive={false}
+              avatarSize={'tiny'}
+            />
+          {:else if headerComponent}
+            <Component
+              is={headerComponent}
+              props={{
+                isEditable: false,
+                shouldShowLabel: true,
+                value: groupByKey ? { [groupByKey]: category } : {},
+                statuses: groupByKey === 'status' ? statuses : undefined
+              }}
+            />
+          {/if}
           <span class="eLabelCounter ml-2">{(groupedIssues[category] ?? []).length}</span>
         </div>
         <div class="flex">
@@ -235,6 +259,7 @@
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        issueId={docObject._id}
                         {...attributeModel.props}
                       />
                     </div>

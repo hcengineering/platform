@@ -43,16 +43,21 @@
   })
 
   let states: TypeState[] | undefined
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: currentSpace }, (issueStatuses) => {
-    states = issueStatuses.map((status) => ({
-      _id: status._id,
-      title: status.name,
-      color: status.color ?? status.$lookup?.category?.color ?? 0
-    }))
-  }, {
-    lookup: { category: tracker.class.IssueStatusCategory },
-    sort: { rank: SortingOrder.Ascending }
-  })
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    { attachedTo: currentSpace },
+    (issueStatuses) => {
+      states = issueStatuses.map((status) => ({
+        _id: status._id,
+        title: status.name,
+        color: status.color ?? status.$lookup?.category?.color ?? 0
+      }))
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   /* eslint-disable prefer-const */
   /* eslint-disable no-unused-vars */
@@ -69,22 +74,25 @@
   }
 
   let kanbanUI: Kanban
-  const listProvider = new ListSelectionProvider(
-    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-      kanbanUI.select(offset, of, dir)
-    }
-  )
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    kanbanUI.select(offset, of, dir)
+  })
   onMount(() => {
     (document.activeElement as HTMLElement)?.blur()
   })
 
   const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
     ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, {
-      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    }, () => {
-      // selection = undefined
-    })
+    showPopup(
+      Menu,
+      { object: items, baseMenuClass },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      },
+      () => {
+        // selection = undefined
+      }
+    )
   }
 </script>
 
@@ -94,9 +102,7 @@
       mode: 'browser'
     }}
   />
-  <div class="flex-between label font-medium w-full p-4">
-    Board
-  </div>
+  <div class="flex-between label font-medium w-full p-4">Board</div>
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}
@@ -114,7 +120,6 @@
       listProvider.updateFocus(evt.detail)
     }}
     selection={listProvider.current($focusStore)}
-
     checked={$selectionStore ?? []}
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
@@ -149,14 +154,14 @@
         <div class="flex-between mb-2">
           <IssuePresenter value={object} {currentTeam} />
           {#if issue.$lookup?.assignee}
-          <AssigneePresenter value={issue} {currentSpace} isEditable={true}/>
+            <AssigneePresenter value={issue.$lookup.assignee} issueId={issue._id} {currentSpace} isEditable={true} />
           {/if}
         </div>
         <span class="fs-bold title">
           {object.title}
         </span>
-        <div class='flex gap-2 mt-2 mb-2'>
-          <PriorityPresenter value={issue} {currentSpace} isEditable={true}/>
+        <div class="flex gap-2 mt-2 mb-2">
+          <PriorityPresenter value={issue} {currentSpace} isEditable={true} />
         </div>
       </div>
     </svelte:fragment>

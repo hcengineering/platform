@@ -52,7 +52,7 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/workbench": "~0.6.1",
-    "svelte": "^3.46",
+    "svelte": "^3.47",
     "@anticrm/kanban": "~0.6.0"
   }
 }
