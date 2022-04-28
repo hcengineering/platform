@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import type { AnyComponent } from '../types'
-  
+
   // import Icon from './Icon.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
@@ -25,12 +24,12 @@
   export let is: AnyComponent
   export let props = {}
 
-  $: component = (is != null) ? getResource(is) : Promise.reject(new Error('is not defined'))
+  $: component = is != null ? getResource(is) : Promise.reject(new Error('is not defined'))
 </script>
 
 {#if is}
   {#await component}
-    <Loading/>
+    <Loading />
   {:then Ctor}
     <ErrorBoundary>
       <Ctor {...props} on:change on:close on:open on:click on:delete>
@@ -40,8 +39,8 @@
       </Ctor>
     </ErrorBoundary>
   {:catch err}
-    <pre style='max-height: 140px; overflow: auto;'>
-      <ErrorPresenter error={err}/>
+    <pre style="max-height: 140px; overflow: auto;">
+      <ErrorPresenter error={err} />
     </pre>
     <!-- <Icon icon={ui.icon.Error} size="32" /> -->
   {/await}

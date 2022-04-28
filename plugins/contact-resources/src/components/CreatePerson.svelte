@@ -1,15 +1,14 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -19,11 +18,10 @@
   import { AttachedData, Data, generateId } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, showPopup } from '@anticrm/ui'
+  import { EditBox, IconInfo, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import contact from '../plugin'
   import { ChannelsDropdown } from '..'
-  import ChannelsView from './ChannelsView.svelte'
+  import contact from '../plugin'
   import PersonPresenter from './PersonPresenter.svelte'
 
   let firstName = ''
@@ -104,10 +102,26 @@
   </svelte:fragment>
   <div class="flex-row-center">
     <div class="flex-grow flex-col">
-      <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
-      <EditBox placeholder={contact.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
+      <EditBox
+        placeholder={contact.string.PersonFirstNamePlaceholder}
+        bind:value={firstName}
+        kind={'large-style'}
+        maxWidth={'32rem'}
+        focus
+      />
+      <EditBox
+        placeholder={contact.string.PersonLastNamePlaceholder}
+        bind:value={lastName}
+        kind={'large-style'}
+        maxWidth={'32rem'}
+      />
       <div class="mt-1">
-        <EditBox placeholder={contact.string.PersonLocationPlaceholder} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
+        <EditBox
+          placeholder={contact.string.PersonLocationPlaceholder}
+          bind:value={object.city}
+          kind={'small-style'}
+          maxWidth={'32rem'}
+        />
       </div>
     </div>
     <div class="ml-4">

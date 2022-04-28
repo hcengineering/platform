@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import { translate } from '@anticrm/platform'
   import { ticker } from '..'
   import ui from '../plugin'
@@ -44,10 +42,15 @@
 
   $: formatTime($ticker)
 
-  $: tooltip = new Date(value).toLocaleString('default', { minute: '2-digit', hour: 'numeric', day: '2-digit', month: 'short', year: 'numeric' })
-
+  $: tooltip = new Date(value).toLocaleString('default', {
+    minute: '2-digit',
+    hour: 'numeric',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
 </script>
 
 <Tooltip label={ui.string.TimeTooltip} props={{ value: tooltip }}>
-  <span style="white-space: nowrap;" >{time}</span>
+  <span style="white-space: nowrap;">{time}</span>
 </Tooltip>

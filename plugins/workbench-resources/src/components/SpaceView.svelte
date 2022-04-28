@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { AnyComponent,Component } from '@anticrm/ui'
-  import view,{ Viewlet } from '@anticrm/view'
+  import { AnyComponent, Component } from '@anticrm/ui'
+  import view, { Viewlet } from '@anticrm/view'
   import type { ViewConfiguration } from '@anticrm/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
@@ -52,11 +51,15 @@
       header = await getHeader(space._class)
     }
     if (attachTo) {
-      viewlets = await client.findAll(view.class.Viewlet, { attachTo }, {
-        lookup: {
-          descriptor: core.class.Class
+      viewlets = await client.findAll(
+        view.class.Viewlet,
+        { attachTo },
+        {
+          lookup: {
+            descriptor: core.class.Class
+          }
         }
-      })
+      )
       if (header !== undefined) {
         viewlet = viewlets[0]
       }
@@ -71,13 +74,13 @@
     if (headerMixin?.header == null && clazz.extends != null) return getHeader(clazz.extends)
     return headerMixin.header
   }
-
 </script>
+
 {#if _class && space}
   {#if header}
     <Component is={header} props={{ spaceId: space._id, viewlets, createItemDialog, createItemLabel }} />
   {:else}
-    <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search={search} bind:viewlet={viewlet} />
+    <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search bind:viewlet />
   {/if}
   <SpaceContent space={space._id} {_class} {search} {viewlet} />
 {/if}

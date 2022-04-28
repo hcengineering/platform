@@ -298,7 +298,7 @@
     }
   }
 
-  let navFloat: boolean = window.innerWidth < 1100 ? false : true
+  let navFloat: boolean = !(window.innerWidth < 1100)
   const windowResize = (): void => {
     if (window.innerWidth < 1100 && !navFloat) {
       visibileNav = false
@@ -316,7 +316,7 @@
 
 <svelte:window on:resize={windowResize} />
 {#if client}
-  <ActionHandler/>
+  <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path
@@ -341,13 +341,13 @@
     <div class="antiPanel-application">
       <div class="flex-col mt-1">
         <!-- <ActivityStatus status="active" /> -->
-          <AppItem
-            icon={TopMenu}
-            label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-            selected={!visibileNav}
-            action={toggleNav}
-            notify={false}
-          />
+        <AppItem
+          icon={TopMenu}
+          label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
+          selected={!visibileNav}
+          action={toggleNav}
+          notify={false}
+        />
       </div>
       <Applications
         {apps}
@@ -397,11 +397,7 @@
       }}
     />
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div
-        class="antiPanel-navigator"
-        class:float={navFloat}
-        style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
-      >
+      <div class="antiPanel-navigator" class:float={navFloat} style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}
@@ -421,7 +417,11 @@
         {/if}
       </div>
     {/if}
-    <div class="antiPanel-component antiComponent border-left" bind:this={contentPanel} bind:clientWidth={componentWidth}>
+    <div
+      class="antiPanel-component antiComponent border-left"
+      bind:this={contentPanel}
+      bind:clientWidth={componentWidth}
+    >
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} props={{ currentSpace }} />
       {:else if specialComponent}
@@ -443,18 +443,14 @@
     {/if}
   </div>
   <div bind:this={cover} class="cover" />
-  <PanelInstance bind:this={panelInstance} {contentPanel} >
-    <svelte:fragment slot='panel-header'>
-      <ActionContext
-        context={{ mode: 'panel' }}
-      />
+  <PanelInstance bind:this={panelInstance} {contentPanel}>
+    <svelte:fragment slot="panel-header">
+      <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
   </PanelInstance>
   <Popup>
-    <svelte:fragment slot='popup-header'>
-      <ActionContext
-        context={{ mode: 'popup' }}
-      />
+    <svelte:fragment slot="popup-header">
+      <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
   <TooltipInstance />
@@ -486,21 +482,22 @@
     max-width: 1px;
     height: 100%;
     background-color: var(--divider-color);
-    transition: background-color .15s ease-in-out;
+    transition: background-color 0.15s ease-in-out;
 
     &::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
-      width: .5rem;
+      width: 0.5rem;
       height: 100%;
       border-left: 2px solid transparent;
       cursor: col-resize;
       z-index: 1;
-      transition: border-color .15s ease-in-out;
+      transition: border-color 0.15s ease-in-out;
     }
-    &:hover, &.hovered {
+    &:hover,
+    &.hovered {
       transition-duration: 0;
       background-color: var(--primary-bg-color);
       &::before {

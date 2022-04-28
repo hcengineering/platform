@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,13 +18,11 @@ import contact, { ChannelProvider } from '@anticrm/contact'
 import { Ref } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
 
-let channelProviders: Promise<ChannelProvider[]> | undefined
-
 const client = getClient()
-channelProviders = client.findAll(contact.class.ChannelProvider, {})
+const channelProviders = client.findAll(contact.class.ChannelProvider, {})
 
 export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, ChannelProvider>> {
-  const cp = (await channelProviders) ?? []
+  const cp = await channelProviders
   const map = new Map<Ref<ChannelProvider>, ChannelProvider>()
   for (const provider of cp) {
     map.set(provider._id, provider)

@@ -27,9 +27,13 @@
 
   let search: string = ''
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, {}).then((res) => {
+      phTraslate = res
+    })
+  }
   const dispatch = createEventDispatcher()
-  let btns: HTMLButtonElement[] = []
+  const btns: HTMLButtonElement[] = []
   let searchInput: HTMLInputElement
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
@@ -42,12 +46,21 @@
     } else searchInput.focus()
   }
 
-  onMount(() => { if (searchInput) searchInput.focus() })
+  onMount(() => {
+    if (searchInput) searchInput.focus()
+  })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={searchInput} type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      placeholder={phTraslate}
+      on:input={(ev) => {}}
+      on:change
+    />
   </div>
   <div class="scroll">
     <div class="box">
@@ -58,17 +71,17 @@
           class="menu-item flex-between"
           on:mouseover={(ev) => ev.currentTarget.focus()}
           on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => { dispatch('close', item) }}
+          on:click={() => {
+            dispatch('close', item)
+          }}
         >
           <div class="flex-center img" class:image={item.image}>
             {#if item.image}
               <img src={item.image} alt={item.label} />
+            {:else if typeof icon === 'string'}
+              <Icon {icon} size={'small'} />
             {:else}
-              {#if typeof (icon) === 'string'}
-                <Icon {icon} size={'small'} />
-              {:else}
-                <svelte:component this={icon} size={'small'} />
-              {/if}
+              <svelte:component this={icon} size={'small'} />
             {/if}
           </div>
           <div class="flex-grow caption-color">{item.label}</div>
@@ -80,7 +93,7 @@
 
 <style lang="scss">
   .img {
-    margin-right: .75rem;
+    margin-right: 0.75rem;
     flex-shrink: 0;
     width: 1.5rem;
     height: 1.5rem;
@@ -92,6 +105,8 @@
   }
   .image {
     border-color: transparent;
-    img { max-width: fit-content; }
+    img {
+      max-width: fit-content;
+    }
   }
 </style>

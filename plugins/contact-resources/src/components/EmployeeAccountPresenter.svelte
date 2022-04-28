@@ -33,10 +33,10 @@
   const client = getClient()
 
   $: if (value._class === contact.class.EmployeeAccount) {
-    client.findOne(contact.class.Employee, { _id: (value as EmployeeAccount).employee }).then(r => {
+    client.findOne(contact.class.Employee, { _id: (value as EmployeeAccount).employee }).then((r) => {
       employee = r
     })
-}
+  }
 </script>
 
 {#if value}

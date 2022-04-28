@@ -1,10 +1,4 @@
-import {
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  isOperator, Ref, SortingOrder
-} from '@anticrm/core'
+import { Doc, DocumentQuery, Domain, FindOptions, isOperator, Ref, SortingOrder } from '@anticrm/core'
 import { MigrationClient, MigrateUpdate, MigrationResult } from '@anticrm/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
@@ -12,8 +6,7 @@ import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
-  constructor (readonly db: Db) {
-  }
+  constructor (readonly db: Db) {}
 
   private translateQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
@@ -57,7 +50,11 @@ export class MigrateClientImpl implements MigrationClient {
     return await cursor.toArray()
   }
 
-  async update<T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: MigrateUpdate<T>): Promise<MigrationResult> {
+  async update<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: MigrateUpdate<T>
+  ): Promise<MigrationResult> {
     if (isOperator(operations)) {
       const result = await this.db
         .collection(domain)
@@ -70,7 +67,11 @@ export class MigrateClientImpl implements MigrationClient {
     }
   }
 
-  async move <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain): Promise<MigrationResult> {
+  async move<T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain
+  ): Promise<MigrationResult> {
     const q = this.translateQuery(query)
     const cursor = this.db.collection(sourceDomain).find<T>(q)
     const target = this.db.collection(targetDomain)
@@ -88,11 +89,11 @@ export class MigrateClientImpl implements MigrationClient {
     return result
   }
 
-  async create <T extends Doc>(domain: Domain, doc: T): Promise<void> {
+  async create<T extends Doc>(domain: Domain, doc: T): Promise<void> {
     await this.db.collection(domain).insertOne(doc as Document)
   }
 
-  async delete <T extends Doc>(domain: Domain, _id: Ref<T>): Promise<void> {
+  async delete<T extends Doc>(domain: Domain, _id: Ref<T>): Promise<void> {
     await this.db.collection(domain).deleteOne({ _id })
   }
 }

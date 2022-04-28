@@ -37,7 +37,7 @@
 
   const today: Date = new Date(Date.now())
   let currentDate: Date | null = null
-  if (value != undefined) currentDate = new Date(value)
+  if (value != null) currentDate = new Date(value)
   let opened: boolean = false
 
   const onChange = (result: Date | null): void => {
@@ -115,7 +115,7 @@
     width: auto;
     white-space: nowrap;
     color: var(--accent-color);
-    
+
     cursor: default;
 
     &.primary {

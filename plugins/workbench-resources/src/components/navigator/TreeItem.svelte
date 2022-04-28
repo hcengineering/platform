@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import TreeElement from './TreeElement.svelte'
   import type { Asset } from '@anticrm/platform'
@@ -21,7 +20,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>
-  export let icon: Asset | undefined 
+  export let icon: Asset | undefined
   export let title: string
   export let notifications = 0
   export let actions: () => Promise<Action[]> = async () => []
@@ -30,7 +29,19 @@
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
 
   const dispatch = createEventDispatcher()
-
 </script>
 
-<TreeElement {_id} {icon} {title} {notifications} {selected} {actions} {bold} collapsed {indent} on:click={() => { dispatch('click') }}/>
+<TreeElement
+  {_id}
+  {icon}
+  {title}
+  {notifications}
+  {selected}
+  {actions}
+  {bold}
+  collapsed
+  {indent}
+  on:click={() => {
+    dispatch('click')
+  }}
+/>

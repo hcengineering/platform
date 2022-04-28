@@ -1,5 +1,4 @@
-<script lang='ts'>
-  
+<script lang="ts">
   export let content: any
 </script>
 
@@ -8,8 +7,8 @@
 </pre>
 
 <style lang="scss">
-  pre { 
+  pre {
     overflow: auto;
     max-height: 500px;
-  }  
+  }
 </style>

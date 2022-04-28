@@ -5,10 +5,7 @@ import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
-  renderLabel: (props: {
-    options: CompletionOptions
-    node: ProseMirrorNode
-  }) => string
+  renderLabel: (props: { options: CompletionOptions, node: ProseMirrorNode }) => string
   suggestion: Omit<SuggestionOptions, 'editor'>
 }
 
@@ -75,8 +72,8 @@ export const Completion = Node.create<CompletionOptions>({
     return {
       id: {
         default: null,
-        parseHTML: element => element.getAttribute('data-id'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute('data-id'),
+        renderHTML: (attributes) => {
           // eslint-disable-next-line
           if (!attributes.id) {
             return {}
@@ -90,8 +87,8 @@ export const Completion = Node.create<CompletionOptions>({
 
       label: {
         default: null,
-        parseHTML: element => element.getAttribute('data-label'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute('data-label'),
+        renderHTML: (attributes) => {
           // eslint-disable-next-line
           if (!attributes.label) {
             return {}
@@ -104,8 +101,8 @@ export const Completion = Node.create<CompletionOptions>({
       },
       objectclass: {
         default: null,
-        parseHTML: element => element.getAttribute('data-objectclass'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute('data-objectclass'),
+        renderHTML: (attributes) => {
           // eslint-disable-next-line
           if (!attributes.objectclass) {
             return {}
@@ -149,28 +146,29 @@ export const Completion = Node.create<CompletionOptions>({
 
   addKeyboardShortcuts () {
     return {
-      Backspace: () => this.editor.commands.command(({ tr, state }) => {
-        let isMention = false
-        const { selection } = state
-        const { empty, anchor } = selection
+      Backspace: () =>
+        this.editor.commands.command(({ tr, state }) => {
+          let isMention = false
+          const { selection } = state
+          const { empty, anchor } = selection
 
-        if (!empty) {
-          return false
-        }
-
-        state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
-          if (node.type.name === this.name) {
-            isMention = true
-
-            // eslint-disable-next-line
-            tr.insertText(this.options.suggestion.char || '', pos, pos + node.nodeSize)
-
+          if (!empty) {
             return false
           }
-        })
 
-        return isMention
-      })
+          state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
+            if (node.type.name === this.name) {
+              isMention = true
+
+              // eslint-disable-next-line
+              tr.insertText(this.options.suggestion.char || '', pos, pos + node.nodeSize)
+
+              return false
+            }
+          })
+
+          return isMention
+        })
     }
   },
 

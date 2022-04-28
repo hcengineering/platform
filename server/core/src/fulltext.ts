@@ -189,7 +189,8 @@ export class FullTextIndex implements WithFind {
     }
   }
 
-  private async getResult <T extends Doc>(ctx: MeasureContext,
+  private async getResult<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     ids: Ref<Doc>[],
     mainQuery: DocumentQuery<T>,

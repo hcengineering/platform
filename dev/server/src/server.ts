@@ -17,7 +17,13 @@
 import type { Doc, Ref, TxResult } from '@anticrm/core'
 import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
 import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import { createInMemoryAdapter, createPipeline, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import {
+  createInMemoryAdapter,
+  createPipeline,
+  DbConfiguration,
+  FullTextAdapter,
+  IndexedDoc
+} from '@anticrm/server-core'
 import { start as startJsonRpc } from '@anticrm/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {
@@ -33,9 +39,7 @@ class NullFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async remove (id: Ref<Doc>): Promise<void> {
-
-  }
+  async remove (id: Ref<Doc>): Promise<void> {}
 
   async close (): Promise<void> {}
 }
@@ -48,28 +52,33 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
  * @public
  */
 export async function start (port: number, host?: string): Promise<void> {
-  startJsonRpc(new MeasureMetricsContext('server', {}), () => {
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'InMemoryTx'
-      },
-      defaultAdapter: 'InMemory',
-      adapters: {
-        InMemoryTx: {
-          factory: createInMemoryTxAdapter,
+  startJsonRpc(
+    new MeasureMetricsContext('server', {}),
+    () => {
+      const conf: DbConfiguration = {
+        domains: {
+          [DOMAIN_TX]: 'InMemoryTx'
+        },
+        defaultAdapter: 'InMemory',
+        adapters: {
+          InMemoryTx: {
+            factory: createInMemoryTxAdapter,
+            url: ''
+          },
+          InMemory: {
+            factory: createInMemoryAdapter,
+            url: ''
+          }
+        },
+        fulltextAdapter: {
+          factory: createNullFullTextAdapter,
           url: ''
         },
-        InMemory: {
-          factory: createInMemoryAdapter,
-          url: ''
-        }
-      },
-      fulltextAdapter: {
-        factory: createNullFullTextAdapter,
-        url: ''
-      },
-      workspace: ''
-    }
-    return createPipeline(conf, [])
-  }, port, host)
+        workspace: ''
+      }
+      return createPipeline(conf, [])
+    },
+    port,
+    host
+  )
 }

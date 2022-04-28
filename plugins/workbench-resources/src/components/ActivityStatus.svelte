@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   // status: 'active', 'dnd', 'busy', 'away'
   export let status: string = 'away'
 </script>
 
-<div class="flex-center {status}" style="min-height: 2rem;" on:click|stopPropagation={() => { }}>
-  <div class="status"/>
+<div class="flex-center {status}" style="min-height: 2rem;" on:click|stopPropagation={() => {}}>
+  <div class="status" />
 </div>
 
 <style lang="scss">
   .status {
-    width: .5rem;
-    height: .5rem;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
   }
   .active .status {

@@ -14,7 +14,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import ui, { Button, EditWithIcon, Icon, IconSearch, Label, Scroller, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
+  import ui, {
+    Button,
+    EditWithIcon,
+    Icon,
+    IconSearch,
+    Label,
+    Scroller,
+    showPopup,
+    IconAdd,
+    eventToHTMLElement
+  } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
   import { Table } from '@anticrm/view-resources'

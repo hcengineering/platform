@@ -26,7 +26,7 @@
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   $: issueName = `${currentTeam.identifier}-${value.number}`
-  
+
   const handleIssueEditorOpened = () => {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }

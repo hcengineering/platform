@@ -32,19 +32,24 @@ export async function OnLabelDelete (tx: Tx, { findAll, hierarchy, txFactory }: 
     return []
   }
 
-  const createTx = (await findAll(core.class.TxCreateDoc, {
-    objectId: rmTx.objectId
-  }, { limit: 1 }))[0]
+  const createTx = (
+    await findAll(
+      core.class.TxCreateDoc,
+      {
+        objectId: rmTx.objectId
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (createTx === undefined) {
     return []
   }
 
   const label = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<CardLabel>)
   const cards = await findAll<Card>(board.class.Card, { space: label.attachedTo as any, labels: label._id })
-  return cards.map(card =>
-    txFactory.createTxUpdateDoc<Card>(card._class, card.space, card._id,
-      { $pull: { labels: label._id as any } }
-    ))
+  return cards.map((card) =>
+    txFactory.createTxUpdateDoc<Card>(card._class, card.space, card._id, { $pull: { labels: label._id as any } })
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

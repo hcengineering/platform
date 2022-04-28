@@ -1,9 +1,21 @@
-import { Client, Doc, DocumentQuery, Domain, FindOptions, IncOptions, ObjQueryType, PushOptions, Ref } from '@anticrm/core'
+import {
+  Client,
+  Doc,
+  DocumentQuery,
+  Domain,
+  FindOptions,
+  IncOptions,
+  ObjQueryType,
+  PushOptions,
+  Ref
+} from '@anticrm/core'
 
 /**
  * @public
  */
-export type MigrateUpdate<T extends Doc> = Partial<T> & Omit<PushOptions<T>, '$move'> & IncOptions<T> & {
+export type MigrateUpdate<T extends Doc> = Partial<T> &
+Omit<PushOptions<T>, '$move'> &
+IncOptions<T> & {
   // For any other mongo stuff
   [key: string]: any
 }
@@ -36,10 +48,18 @@ export interface MigrationClient {
   // Raw collection operations
 
   // Raw FIND, allow to find documents inside domain.
-  find: <T extends Doc>(domain: Domain, query: MigrationDocumentQuery<T>, options?: Omit<FindOptions<T>, 'lookup'>) => Promise<T[]>
+  find: <T extends Doc>(
+    domain: Domain,
+    query: MigrationDocumentQuery<T>,
+    options?: Omit<FindOptions<T>, 'lookup'>
+  ) => Promise<T[]>
 
   // Allow to raw update documents inside domain.
-  update: <T extends Doc>(domain: Domain, query: MigrationDocumentQuery<T>, operations: MigrateUpdate<T>) => Promise<MigrationResult>
+  update: <T extends Doc>(
+    domain: Domain,
+    query: MigrationDocumentQuery<T>,
+    operations: MigrateUpdate<T>
+  ) => Promise<MigrationResult>
 
   // Move documents per domain
   move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>

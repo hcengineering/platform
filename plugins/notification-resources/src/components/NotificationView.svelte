@@ -52,11 +52,7 @@
         read(notification)
       }}
     >
-      <TxView
-        tx={displayTx}
-        {viewlets}
-        showIcon={false}
-      />
+      <TxView tx={displayTx} {viewlets} showIcon={false} />
     </div>
   {/if}
 {/await}

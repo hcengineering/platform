@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery } from '../utils'
@@ -26,7 +25,14 @@
 
   let persons: Person[] = []
   const query = createQuery()
-  $: query.query<Person>(_class, { _id: { $in: items } }, result => { persons = result }, { limit })
+  $: query.query<Person>(
+    _class,
+    { _id: { $in: items } },
+    (result) => {
+      persons = result
+    },
+    { limit }
+  )
 </script>
 
 <div class="avatars-container">
@@ -42,12 +48,26 @@
     display: flex;
     align-items: center;
 
-    .combine-avatar.inline:not(:first-child) { margin-left: calc(1px - (.875rem / 2)); }
-    .combine-avatar.x-small:not(:first-child) { margin-left: calc(1px - (1.5rem / 2)); }
-    .combine-avatar.small:not(:first-child) { margin-left: calc(1px - 1rem); }
-    .combine-avatar.medium:not(:first-child) { margin-left: calc(1px - (2.25rem / 2)); }
-    .combine-avatar.large:not(:first-child) { margin-left: calc(1px - (4.5rem / 2)); }
-    .combine-avatar.x-large:not(:first-child) { margin-left: calc(1px - (7.5rem / 2)); }
-    .combine-avatar:not(:last-child) { mask: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, 0) 48.5%, rgb(0, 0, 0) 50%); }
+    .combine-avatar.inline:not(:first-child) {
+      margin-left: calc(1px - (0.875rem / 2));
+    }
+    .combine-avatar.x-small:not(:first-child) {
+      margin-left: calc(1px - (1.5rem / 2));
+    }
+    .combine-avatar.small:not(:first-child) {
+      margin-left: calc(1px - 1rem);
+    }
+    .combine-avatar.medium:not(:first-child) {
+      margin-left: calc(1px - (2.25rem / 2));
+    }
+    .combine-avatar.large:not(:first-child) {
+      margin-left: calc(1px - (4.5rem / 2));
+    }
+    .combine-avatar.x-large:not(:first-child) {
+      margin-left: calc(1px - (7.5rem / 2));
+    }
+    .combine-avatar:not(:last-child) {
+      mask: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, 0) 48.5%, rgb(0, 0, 0) 50%);
+    }
   }
 </style>

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Button, Component, eventToHTMLElement, Label, Link } from '@anticrm/ui'
   import { getResource } from '@anticrm/platform'
@@ -29,7 +28,7 @@
   const onDisconnectP = getResource(integrationType.onDisconnect)
   const space = accountId as string as Ref<Space>
 
-  async function close(res: any): Promise<void> {
+  async function close (res: any): Promise<void> {
     if (res?.value) {
       await client.createDoc(setting.class.Integration, space, {
         type: integrationType._id,
@@ -52,9 +51,11 @@
     }
   }
 
-  async function disconnect(): Promise<void> {
+  async function disconnect (): Promise<void> {
     if (integration !== undefined) {
-      await (await onDisconnectP)()
+      await (
+        await onDisconnectP
+      )()
     }
   }
 </script>

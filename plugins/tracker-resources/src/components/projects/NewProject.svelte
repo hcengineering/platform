@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Data, Ref } from '@anticrm/core'
   import { DatePresenter, EditBox } from '@anticrm/ui'
-  import {  Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
-  import {  IntlString } from '@anticrm/platform'
+  import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
+  import { IntlString } from '@anticrm/platform'
   import contact from '@anticrm/contact'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
   import { createEventDispatcher } from 'svelte'
@@ -41,7 +40,7 @@
     documents: 0
   }
 
-  async function onSave(){
+  async function onSave () {
     await client.createDoc(plugin.class.Project, space, object)
   }
 </script>
@@ -54,7 +53,7 @@
   spaceClass={plugin.class.Team}
   spaceLabel={plugin.string.Team}
   spacePlaceholder={plugin.string.SelectTeam}
-  bind:space={space}
+  bind:space
   on:close={() => dispatch('close')}
 >
   <div class="label">
@@ -77,7 +76,9 @@
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
     <ProjectStatusSelector
       bind:status={object.status}
-      onStatusChange={newStatus => {newStatus !== undefined && (object.status = newStatus)}}
+      onStatusChange={(newStatus) => {
+        newStatus !== undefined && (object.status = newStatus)
+      }}
     />
     <UserBox
       _class={contact.class.Employee}
@@ -91,19 +92,10 @@
       _class={contact.class.Employee}
       bind:items={object.members}
       label={plugin.string.ProjectStatusPlaceholder}
-      noItems={plugin.string.ProjectStatusPlaceholder}
     />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
-    <DatePresenter
-      bind:value={object.startDate}
-      labelNull={plugin.string.StartDate}
-      editable
-    />
-    <DatePresenter
-      bind:value={object.targetDate}
-      labelNull={plugin.string.TargetDate}
-      editable
-    />
+    <DatePresenter bind:value={object.startDate} labelNull={plugin.string.StartDate} editable />
+    <DatePresenter bind:value={object.targetDate} labelNull={plugin.string.TargetDate} editable />
   </div>
 </Card>
 

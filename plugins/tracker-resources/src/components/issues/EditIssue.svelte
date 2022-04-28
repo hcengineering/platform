@@ -20,12 +20,7 @@
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import {
-    Button,
-    EditBox,
-    IconDownOutline, IconEdit, IconMoreH, IconUpOutline,
-    Label
-  } from '@anticrm/ui'
+  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline, Label } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'

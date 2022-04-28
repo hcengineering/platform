@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event,Reminder } from '@anticrm/calendar'
-  import { Ref,TxMixin } from '@anticrm/core'
+  import { Event, Reminder } from '@anticrm/calendar'
+  import { Ref, TxMixin } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { DateTimePresenter,showPanel } from '@anticrm/ui'
+  import { DateTimePresenter, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import calendar from '../../plugin'
 
@@ -33,10 +33,15 @@
   }
 </script>
 
-<div class='flex'>
+<div class="flex">
   {#await getEvent(tx.objectId) then event}
     {#if event}
-      <span class="over-underline caption-color" on:click={() => { click(event) }}>{event.title}</span>&nbsp
+      <span
+        class="over-underline caption-color"
+        on:click={() => {
+          click(event)
+        }}>{event.title}</span
+      >&nbsp
       <DateTimePresenter value={event.date} />
     {/if}
   {/await}

@@ -32,8 +32,8 @@
   }
 </script>
 
-{#if value} 
-  <div class='flex persons'>
+{#if value}
+  <div class="flex persons">
     {#each persons as p}
       <Tooltip label={calendar.string.PersonsLabel} props={{ name: formatName(p.name) }}>
         <div class="flex-presenter" class:inline-presenter={inline} on:click={() => onClick(p)}>
@@ -45,6 +45,7 @@
     {/each}
   </div>
 {/if}
+
 <style lang="scss">
   .persons {
     display: grid;

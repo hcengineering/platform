@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { createEventDispatcher,onMount } from 'svelte'
-  import { Label,showPopup } from '..'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { Label, showPopup } from '..'
   import Calendar from './icons/Calendar.svelte'
   import Close from './icons/Close.svelte'
   import TimeShiftPopup from './TimeShiftPopup.svelte'
@@ -47,7 +47,8 @@
   })
 </script>
 
-<div class="antiSelect"
+<div
+  class="antiSelect"
   bind:this={container}
   on:click|preventDefault={() => {
     btn.focus()
@@ -60,11 +61,7 @@
     }
   }}
 >
-  <button
-    bind:this={btn}
-    class="button round-2"
-    class:selected={value}
-  >
+  <button bind:this={btn} class="button round-2" class:selected={value}>
     <div class="icon">
       {#if show}<Close size={'small'} />{:else}<Calendar size={'medium'} />{/if}
     </div>

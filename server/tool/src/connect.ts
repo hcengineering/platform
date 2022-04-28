@@ -23,8 +23,17 @@ import { generateToken } from '@anticrm/server-token'
 /**
  * @public
  */
-export async function connect (transactorUrl: string, workspace: string, reloadModel: boolean, email?: string): Promise<Client> {
-  const token = generateToken(email ?? 'anticrm@hc.engineering', workspace, reloadModel ? { model: 'reload' } : undefined)
+export async function connect (
+  transactorUrl: string,
+  workspace: string,
+  reloadModel: boolean,
+  email?: string
+): Promise<Client> {
+  const token = generateToken(
+    email ?? 'anticrm@hc.engineering',
+    workspace,
+    reloadModel ? { model: 'reload' } : undefined
+  )
 
   // We need to override default factory with 'ws' one.
   // eslint-disable-next-line

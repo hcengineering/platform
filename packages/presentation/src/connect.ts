@@ -14,7 +14,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
   if (token === null || endpoint === null || email === null) {
-    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
+    navigate({
+      path: [login.component.LoginApp],
+      query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
+    })
     return
   }
 
@@ -32,7 +35,10 @@ export async function connect (title: string): Promise<Client | undefined> {
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
-    navigate({ path: [login.component.LoginApp], query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) } })
+    navigate({
+      path: [login.component.LoginApp],
+      query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
+    })
     return
   }
 
@@ -62,7 +68,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   // Update window title
-  document.title = [(fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)), title].filter(it => it).join(' - ')
+  document.title = [fetchMetadataLocalStorage(login.metadata.CurrentWorkspace), title].filter((it) => it).join(' - ')
 
   return instance
 }

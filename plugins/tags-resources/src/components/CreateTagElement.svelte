@@ -16,7 +16,16 @@
   import { Class, Data, Doc, generateId, Ref } from '@anticrm/core'
   import { Card, createQuery, getClient } from '@anticrm/presentation'
   import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, DropdownLabels, EditBox, eventToHTMLElement, getColorNumberByText, getPlatformColor, IconFolder, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    DropdownLabels,
+    EditBox,
+    eventToHTMLElement,
+    getColorNumberByText,
+    getPlatformColor,
+    IconFolder,
+    showPopup
+  } from '@anticrm/ui'
   import { DropdownTextItem } from '@anticrm/ui/src/types'
   import { ColorsPopup } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -117,13 +126,16 @@
         bind:value={title}
         placeholder={tags.string.TagName}
         placeholderParam={{ word: keyTitle }}
-        maxWidth={'35rem'} kind={'large-style'} focus
+        maxWidth={'35rem'}
+        kind={'large-style'}
+        focus
       />
       <div class="mt-2">
         <EditBox
           bind:value={description}
           placeholder={tags.string.TagDescriptionPlaceholder}
-          maxWidth={'35rem'} kind={'small-style'}
+          maxWidth={'35rem'}
+          kind={'small-style'}
         />
       </div>
     </div>
@@ -147,6 +159,6 @@
   .color {
     width: 1rem;
     height: 1rem;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
   }
 </style>

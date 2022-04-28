@@ -28,6 +28,16 @@ export const serverCalendarId = 'server-calendar' as Plugin
  */
 export default plugin(serverCalendarId, {
   function: {
-    FindReminders: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
+    FindReminders: '' as Resource<
+    (
+      doc: Doc,
+      hiearachy: Hierarchy,
+      findAll: <T extends Doc>(
+        clazz: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ) => Promise<FindResult<T>>
+    ) => Promise<Doc[]>
+    >
   }
 })

@@ -31,7 +31,7 @@
   const today: Date = new Date(Date.now())
   const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1)
 
-  if (viewDate == undefined) viewDate = currentDate ?? today
+  if (viewDate === undefined) viewDate = currentDate ?? today
   afterUpdate(() => {
     if (currentDate && viewUpdate) viewDate = currentDate
     if (viewDate) {
@@ -46,16 +46,22 @@
     {#if viewDate}
       <div class="monthYear">{monthYear}</div>
       <div class="group" class:hideNavigator>
-        <div class="btn" on:click={() => {
-          if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
-          dispatch('navigation', '-m')
-        }}>
+        <div
+          class="btn"
+          on:click={() => {
+            if (viewUpdate) viewDate.setMonth(viewDate.getMonth() - 1)
+            dispatch('navigation', '-m')
+          }}
+        >
           <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
         </div>
-        <div class="btn" on:click={() => {
-          if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
-          dispatch('navigation', '+m')
-        }}>
+        <div
+          class="btn"
+          on:click={() => {
+            if (viewUpdate) viewDate.setMonth(viewDate.getMonth() + 1)
+            dispatch('navigation', '+m')
+          }}
+        >
           <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
         </div>
       </div>
@@ -65,7 +71,9 @@
   {#if viewDate}
     <div class="calendar">
       {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="caption">{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span>
+        <span class="caption"
+          >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
+        >
       {/each}
 
       {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
@@ -74,10 +82,10 @@
             class="day"
             class:weekend={isWeekend(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
             class:today={areDatesEqual(today, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-            class:selected={currentDate && weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() ===
-              currentDate.getMonth() && areDatesEqual(currentDate, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-            class:wrongMonth={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !==
-              viewDate.getMonth()}
+            class:selected={currentDate &&
+              weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() === currentDate.getMonth() &&
+              areDatesEqual(currentDate, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
+            class:wrongMonth={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !== viewDate.getMonth()}
             style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 2};`}
             on:click|stopPropagation={() => {
               viewDate = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)
@@ -109,19 +117,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1rem .75rem;
+      padding: 1rem 1rem 0.75rem;
       color: var(--caption-color);
 
       .monthYear {
         font-weight: 500;
         font-size: 1rem;
-        &::first-letter { text-transform: capitalize; }
+        &::first-letter {
+          text-transform: capitalize;
+        }
       }
       .group {
         display: flex;
         align-items: center;
 
-        &.hideNavigator { visibility: hidden; }
+        &.hideNavigator {
+          visibility: hidden;
+        }
         .btn {
           display: flex;
           justify-content: center;
@@ -131,8 +143,12 @@
           color: var(--dark-color);
           cursor: pointer;
 
-          .icon-btn { height: .75rem; }
-          &:hover { color: var(--accent-color); }
+          .icon-btn {
+            height: 0.75rem;
+          }
+          &:hover {
+            color: var(--accent-color);
+          }
         }
       }
     }
@@ -142,10 +158,11 @@
     position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: .5rem;
+    gap: 0.5rem;
     padding: 0 1rem 1rem;
 
-    .caption, .day {
+    .caption,
+    .day {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -158,25 +175,32 @@
       align-items: start;
       height: 2rem;
       color: var(--dark-color);
-      &::first-letter { text-transform: capitalize; }
+      &::first-letter {
+        text-transform: capitalize;
+      }
     }
     .day {
       position: relative;
       color: var(--accent-color);
-      background-color: rgba(var(--accent-color), .05);
+      background-color: rgba(var(--accent-color), 0.05);
       border: 1px solid transparent;
       border-radius: 50%;
       cursor: pointer;
 
-      &.weekend { color: var(--content-color); }
-      &.wrongMonth { color: var(--dark-color); }
+      &.weekend {
+        color: var(--content-color);
+      }
+      &.wrongMonth {
+        color: var(--dark-color);
+      }
       &.today {
         font-weight: 500;
         color: var(--caption-color);
         background-color: var(--button-bg-color);
         border-color: var(--dark-color);
       }
-      &.selected, &:hover {
+      &.selected,
+      &:hover {
         color: var(--caption-color);
         background-color: var(--primary-bg-color);
       }
@@ -184,7 +208,7 @@
       &:before {
         content: '';
         position: absolute;
-        inset: -.625rem;
+        inset: -0.625rem;
       }
     }
 

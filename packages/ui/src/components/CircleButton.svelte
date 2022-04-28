@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
@@ -25,14 +24,20 @@
   export let primary: boolean = false
 </script>
 
-<div class="flex-center icon-button icon-{size}" class:selected class:transparent class:primary on:click|stopPropagation on:mousemove>
+<div
+  class="flex-center icon-button icon-{size}"
+  class:selected
+  class:transparent
+  class:primary
+  on:click|stopPropagation
+  on:mousemove
+>
   <div class="content">
     {#if $$slots.content}
       <slot name="content" />
-    {:else if icon} 
+    {:else if icon}
       <Icon {icon} size={'full'} />
     {/if}
-    
   </div>
 </div>
 
@@ -44,31 +49,41 @@
     border-radius: 50%;
     cursor: pointer;
 
-    .content { pointer-events: none; }
-    &.selected { background-color: var(--theme-circle-select); }
-    &.transparent { background-color: var(--theme-circle-trans); }
+    .content {
+      pointer-events: none;
+    }
+    &.selected {
+      background-color: var(--theme-circle-select);
+    }
+    &.transparent {
+      background-color: var(--theme-circle-trans);
+    }
     &.primary {
       color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);
       border-color: var(--primary-button-border);
-      &:hover { background-color: var(--primary-button-hovered); }
-      &:active { background-color: var(--primary-button-pressed); }
+      &:hover {
+        background-color: var(--primary-button-hovered);
+      }
+      &:active {
+        background-color: var(--primary-button-pressed);
+      }
     }
   }
   .icon-small {
     width: 1.5rem;
     height: 1.5rem;
     .content {
-      width: .75rem;
-      height: .75rem;
+      width: 0.75rem;
+      height: 0.75rem;
     }
   }
   .icon-medium {
     width: 1.75rem;
     height: 1.75rem;
     .content {
-      width: .875rem;
-      height: .875rem;
+      width: 0.875rem;
+      height: 0.875rem;
     }
   }
   .icon-large {

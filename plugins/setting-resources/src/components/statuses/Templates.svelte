@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc, Ref, Space } from '@anticrm/core'
   import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
@@ -39,7 +38,7 @@
     selectedId = templates[0]._id
   }
 
-  $: templateMap = new Map(templates.map(x => [x._id, x]))
+  $: templateMap = new Map(templates.map((x) => [x._id, x]))
   $: template = selectedId !== undefined ? templateMap.get(selectedId) : undefined
 
   const client = getClient()
@@ -70,19 +69,21 @@
       }
     ]
 
-    await Promise.all(doneStates.map(async (ds) => {
-      await client.addCollection(
-        ds.class,
-        space as Ref<Doc> as Ref<Space>,
-        template,
-        task.class.KanbanTemplate,
-        'doneStatesC',
-        {
-          title: ds.title,
-          rank: ds.rank
-        }
-      )
-    }))
+    await Promise.all(
+      doneStates.map(async (ds) => {
+        await client.addCollection(
+          ds.class,
+          space as Ref<Doc> as Ref<Space>,
+          template,
+          task.class.KanbanTemplate,
+          'doneStatesC',
+          {
+            title: ds.title,
+            rank: ds.rank
+          }
+        )
+      })
+    )
   }
 
   function select (item: KanbanTemplate) {
@@ -90,15 +91,16 @@
   }
 </script>
 
-<div id='create-template' class="flex-between trans-title mb-3">
-  <Label label={setting.string.Templates}/>
+<div id="create-template" class="flex-between trans-title mb-3">
+  <Label label={setting.string.Templates} />
   <CircleButton icon={IconAdd} size="medium" on:click={createTemplate} />
 </div>
-<div id='templates' class="flex-col overflow-y-auto">
+<div id="templates" class="flex-col overflow-y-auto">
   {#each templates as t (t._id)}
     <div class="ac-column__list-item" class:selected={t._id === template?._id} on:click={() => select(t)}>
-      <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title"/>
-      <div class="hover-trans"
+      <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title" />
+      <div
+        class="hover-trans"
         on:click|stopPropagation={(ev) => {
           showPopup(ContextMenu, { object: t }, eventToHTMLElement(ev), () => {})
         }}

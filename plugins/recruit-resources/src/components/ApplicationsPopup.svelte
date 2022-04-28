@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import core, { FindOptions } from '@anticrm/core'
   import type { Applicant, Candidate } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
@@ -32,10 +30,10 @@
   }
 </script>
 
-<Table 
+<Table
   _class={recruit.class.Applicant}
   config={['', '$lookup.space.name', '$lookup.state', '$lookup.doneState']}
-  options={options}
-  query={ { attachedTo: value._id } }
+  {options}
+  query={{ attachedTo: value._id }}
   loadingProps={{ length: value.applications ?? 0 }}
 />

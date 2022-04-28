@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Vacancy } from '@anticrm/recruit'
   import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@anticrm/ui'
@@ -44,17 +43,23 @@
     <VacancyIcon size={'large'} />
   </div>
   {#if vacancy}
-    <div class="name lines-limit-2" class:over-underline={!disabled} on:click={() => {
-      if (!disabled) {
-        closeTooltip()
-        closePopup()
-        closePanel()
-        const loc = getCurrentLocation()
-        loc.path[2] = vacancy._id
-        loc.path.length = 3
-        navigate(loc)
-      }
-    }}>{vacancy.name}</div>
+    <div
+      class="name lines-limit-2"
+      class:over-underline={!disabled}
+      on:click={() => {
+        if (!disabled) {
+          closeTooltip()
+          closePopup()
+          closePanel()
+          const loc = getCurrentLocation()
+          loc.path[2] = vacancy._id
+          loc.path.length = 3
+          navigate(loc)
+        }
+      }}
+    >
+      {vacancy.name}
+    </div>
     {#if company}
       <span class="label">{company.name}</span>
     {/if}
@@ -67,10 +72,10 @@
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--board-card-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
-    transition-duration: .15s;
+    transition-duration: 0.15s;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
@@ -88,17 +93,17 @@
     .label {
       margin-bottom: 1.75rem;
       font-weight: 500;
-      font-size: .625rem;
+      font-size: 0.625rem;
       color: var(--theme-content-dark-color);
     }
     .name {
-      margin: 1rem 0 .25rem;
+      margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
     }
     .description {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-dark-color);
     }
   }

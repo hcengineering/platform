@@ -57,7 +57,7 @@
     if (Object.keys(ops).length === 0) {
       return
     }
-  
+
     await client.update(item, ops)
   }
 </script>

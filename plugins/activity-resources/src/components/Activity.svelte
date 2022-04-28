@@ -41,7 +41,7 @@
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
-    editable = new Map(result.map(it => [it.objectClass, it.editable ?? false]))
+    editable = new Map(result.map((it) => [it.objectClass, it.editable ?? false]))
   })
 
   $: activityQuery.update(
@@ -52,7 +52,6 @@
     SortingOrder.Descending,
     editable
   )
-
 </script>
 
 {#if !integrate || transparent}
@@ -70,10 +69,7 @@
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx (tx.tx._id)}
-              <TxView
-                {tx}
-                {viewlets}
-              />
+              <TxView {tx} {viewlets} />
             {/each}
           </Grid>
         {/if}
@@ -125,7 +121,6 @@
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 2.5rem;
-
   }
   .p-activity {
     padding: 1.5rem 2.5rem;

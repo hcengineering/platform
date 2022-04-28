@@ -42,10 +42,16 @@
   const query = createQuery()
 
   const client = getClient()
-  client.findAll(tags.class.TagCategory, { targetClass }).then((res) => { categories = res })
+  client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
+    categories = res
+  })
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   // TODO: Add $not: {$in: []} query
   $: query.query(
@@ -62,12 +68,12 @@
   }
 
   const isSelected = (element: TagElement): boolean => {
-    if (selected.filter(p => p === element._id).length > 0) return true
+    if (selected.filter((p) => p === element._id).length > 0) return true
     return false
   }
   const checkSelected = (element: TagElement): void => {
     if (isSelected(element)) {
-      selected = selected.filter(p => p !== element._id)
+      selected = selected.filter((p) => p !== element._id)
       dispatch('update', { action: 'remove', tag: element })
     } else {
       selected = [...selected, element._id]
@@ -82,27 +88,47 @@
     el.classList.toggle('show')
   }
   const getCount = (cat: TagCategory): string => {
-    const count = objects.filter(el => el.category === cat._id).filter((it) => selected.includes(it._id)).length
+    const count = objects.filter((el) => el.category === cat._id).filter((it) => selected.includes(it._id)).length
     if (count > 0) return count.toString()
     return ''
   }
-  onMount(() => { if (searchElement) searchElement.focus() })
+  onMount(() => {
+    if (searchElement) searchElement.focus()
+  })
 </script>
 
 <div class="selectPopup maxHeight">
   <div class="header no-border">
     <div class="flex-between flex-grow pr-2">
       <div class="flex-grow">
-        <input bind:this={searchElement} type="text" bind:value={search} placeholder={phTraslate} style="width: 100%;" on:change/>
+        <input
+          bind:this={searchElement}
+          type="text"
+          bind:value={search}
+          placeholder={phTraslate}
+          style="width: 100%;"
+          on:change
+        />
       </div>
       <div class="buttons-group small-gap">
-        <div class="clear-btn" class:show={search !== ''} on:click={() => {
-          search = ''
-          searchElement.focus()
-        }}>
+        <div
+          class="clear-btn"
+          class:show={search !== ''}
+          on:click={() => {
+            search = ''
+            searchElement.focus()
+          }}
+        >
           {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
-        <Button kind={'transparent'} size={'small'} icon={show ? IconView : IconViewHide} on:click={() => { show = !show }} />
+        <Button
+          kind={'transparent'}
+          size={'small'}
+          icon={show ? IconView : IconViewHide}
+          on:click={() => {
+            show = !show
+          }}
+        />
         {#if !hideAdd}<Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={createTagElement} />{/if}
       </div>
     </div>
@@ -110,7 +136,7 @@
   <div class="scroll">
     <div class="box">
       {#each categories as cat}
-        {#if objects.filter(el => el.category === cat._id).length > 0}
+        {#if objects.filter((el) => el.category === cat._id).length > 0}
           <div class="sticky-wrapper">
             <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
               <div class="flex-row-center">
@@ -122,15 +148,18 @@
                 </div>
               </div>
               <div class="flex-row-center text-xs">
-                <span class="content-color mr-1">({objects.filter(el => el.category === cat._id).length})</span>
+                <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
                 <span class="counter">{getCount(cat)}</span>
               </div>
             </button>
             <div class="menu-group">
-              {#each objects.filter(el => el.category === cat._id) as element}
-                <button class="menu-item" on:click={() => {
-                  checkSelected(element)
-                }}>
+              {#each objects.filter((el) => el.category === cat._id) as element}
+                <button
+                  class="menu-item"
+                  on:click={() => {
+                    checkSelected(element)
+                  }}
+                >
                   <div class="check pointer-events-none">
                     <CheckBox checked={isSelected(element)} primary />
                   </div>
@@ -153,10 +182,10 @@
 
 <style lang="scss">
   .counter {
-    padding-right: .125rem;
+    padding-right: 0.125rem;
     min-width: 1.5rem;
     text-align: right;
-    font-size: .8125rem;
+    font-size: 0.8125rem;
     color: var(--caption-color);
   }
   .empty {
@@ -164,7 +193,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--dark-color);
     border-top: 1px solid var(--popup-divider);
   }

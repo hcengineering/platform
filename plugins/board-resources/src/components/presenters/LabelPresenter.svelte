@@ -5,7 +5,6 @@
   export let value: CardLabel
   export let isHovered: boolean = false
   export let size: 'tiny' | 'x-small' | 'small' | 'medium' | 'large' = 'medium'
-
 </script>
 
 {#if value}

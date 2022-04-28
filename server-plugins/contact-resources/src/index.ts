@@ -63,7 +63,9 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 export function personHTMLPresenter (doc: Doc): string {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${person._id}|${person._class}">${formatName(person.name)}</a>`
+  return `<a href="${front}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${
+    person._id
+  }|${person._class}">${formatName(person.name)}</a>`
 }
 
 /**

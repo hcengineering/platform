@@ -29,8 +29,12 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, result => { objects = result })
-  afterUpdate(() => { dispatch('update', Date.now()) })
+  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, (result) => {
+    objects = result
+  })
+  afterUpdate(() => {
+    dispatch('update', Date.now())
+  })
 </script>
 
 <div class="antiPopup antiPopup-withHeader">
@@ -43,7 +47,12 @@
   <div class="ap-scroll">
     <div class="ap-box">
       {#each objects as space}
-        <button class="ap-menuItem" on:click={() => { dispatch('close', space) }}>
+        <button
+          class="ap-menuItem"
+          on:click={() => {
+            dispatch('close', space)
+          }}
+        >
           <SpaceInfo size={'large'} value={space} />
         </button>
       {/each}

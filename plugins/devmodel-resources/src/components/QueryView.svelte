@@ -22,41 +22,46 @@
 </script>
 
 <ScrollBox vertical>
-  <div class='query-content'>
-  <table class='table'>
-    <thead>
-      <tr>
-        <th>Index</th>
-        <th>Class</th>
-        <th>Query</th>
-        <th>Options</th>
-        <th>Result Count</th>
-        <th>Result</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-    {#each queries as q}
-      <tr class='tr-body'>
-        <td>{queries.indexOf(q)}</td>
-        <td>{q._class}</td>
-        <td>{JSON.stringify(q.query)}</td>
-        <td>{JSON.stringify(q.options ?? {})}</td>
-        <td>{q.result.length}</td>
-        <td>
-          <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: q.result }}>
-            Results
-          </Tooltip>          
-        </td>
-        <td>
-            <ActionIcon direction={undefined} size='small' icon={view.icon.MoreH} label={toIntl('Perform Class Query')} action={() => {
-          }}/>
-        </td>
+  <div class="query-content">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Index</th>
+          <th>Class</th>
+          <th>Query</th>
+          <th>Options</th>
+          <th>Result Count</th>
+          <th>Result</th>
+          <th>Actions</th>
         </tr>
-      {/each}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {#each queries as q}
+          <tr class="tr-body">
+            <td>{queries.indexOf(q)}</td>
+            <td>{q._class}</td>
+            <td>{JSON.stringify(q.query)}</td>
+            <td>{JSON.stringify(q.options ?? {})}</td>
+            <td>{q.result.length}</td>
+            <td>
+              <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: q.result }}>
+                Results
+              </Tooltip>
+            </td>
+            <td>
+              <ActionIcon
+                direction={undefined}
+                size="small"
+                icon={view.icon.MoreH}
+                label={toIntl('Perform Class Query')}
+                action={() => {}}
+              />
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 </ScrollBox>
 
 <style lang="scss">
@@ -65,23 +70,24 @@
     margin: 20px;
   }
 
-th, td {
-  padding: .5rem 1.5rem;
-  text-align: left;
-}
+  th,
+  td {
+    padding: 0.5rem 1.5rem;
+    text-align: left;
+  }
 
-th {
-  height: 2.5rem;
-  font-weight: 500;
-  font-size: .75rem;
-  color: var(--theme-content-dark-color);
-  box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
-  user-select: none;
-}
+  th {
+    height: 2.5rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--theme-content-dark-color);
+    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    user-select: none;
+  }
 
-.tr-body {
-  height: 3.25rem;
-  color: var(--theme-caption-color);
-  border-bottom: 1px solid var(--theme-button-border-hovered);
-}  
+  .tr-body {
+    height: 3.25rem;
+    color: var(--theme-caption-color);
+    border-bottom: 1px solid var(--theme-button-border-hovered);
+  }
 </style>

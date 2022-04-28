@@ -50,7 +50,7 @@
           label: recruit.string.Opinions,
           sortingKey: 'opinions'
         },
-        { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' },
+        { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' }
       ]}
       options={{
         lookup: {
@@ -67,7 +67,7 @@
         <Label label={recruit.string.NoReviewForCandidate} />
       </div>
       <div class="text-sm">
-        <div class='over-underline' on:click={createApp}><Label label={recruit.string.CreateAnReview} /></div>
+        <div class="over-underline" on:click={createApp}><Label label={recruit.string.CreateAnReview} /></div>
       </div>
     </div>
   {/if}

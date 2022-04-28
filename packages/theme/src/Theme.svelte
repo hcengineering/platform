@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { setContext, onMount } from 'svelte'
   import platform, { loadPluginStrings, setMetadata } from '@anticrm/platform'
@@ -62,4 +61,4 @@
   })
 </script>
 
-<slot/>
+<slot />

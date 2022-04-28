@@ -21,7 +21,12 @@ import contact from '@anticrm/contact'
 import serverTelegram from '@anticrm/server-telegram'
 
 export function createModel (builder: Builder): void {
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(contact.class.Channel, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
-    collectDocs: serverTelegram.function.FindMessages
-  })
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(
+    contact.class.Channel,
+    core.class.Class,
+    serverCore.mixin.ObjectDDParticipant,
+    {
+      collectDocs: serverTelegram.function.FindMessages
+    }
+  )
 }

@@ -158,9 +158,11 @@ export async function restoreWorkspace (
     for (const d of workspaceInfo.minioData) {
       const file = await open(join(minioDbLocation, d.name), 'r')
       const stream = file.createReadStream()
-      promises.push(minio.putObject(dbName, d.name, stream, d.size, d.metaData).then(async () => {
-        await file.close()
-      }))
+      promises.push(
+        minio.putObject(dbName, d.name, stream, d.size, d.metaData).then(async () => {
+          await file.close()
+        })
+      )
       if (promises.length > 10) {
         await Promise.all(promises)
         promises = []

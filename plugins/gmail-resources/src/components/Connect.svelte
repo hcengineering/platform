@@ -74,8 +74,8 @@
     max-width: 20rem;
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
 
     .header {
       flex-shrink: 0;

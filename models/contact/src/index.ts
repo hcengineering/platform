@@ -15,8 +15,13 @@
 
 import type {
   Channel,
-  ChannelProvider, Contact, Employee, EmployeeAccount, Organization,
-  Organizations, Person,
+  ChannelProvider,
+  Contact,
+  Employee,
+  EmployeeAccount,
+  Organization,
+  Organizations,
+  Person,
   Persons
 } from '@anticrm/contact'
 import type { Domain, Ref } from '@anticrm/core'
@@ -146,7 +151,11 @@ export function createModel (builder: Builder): void {
     config: [
       '',
       'city',
-      { presenter: attachment.component.AttachmentsPresenter, label: attachment.string.Files, sortingKey: 'attachments' },
+      {
+        presenter: attachment.component.AttachmentsPresenter,
+        label: attachment.string.Files,
+        sortingKey: 'attachments'
+      },
       'modifiedOn',
       { presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'
@@ -248,23 +257,38 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
 
-  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
-    icon: contact.icon.Person,
-    label: contact.string.SearchEmployee,
-    query: contact.completion.EmployeeQuery
-  }, contact.completion.EmployeeCategory)
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: contact.icon.Person,
+      label: contact.string.SearchEmployee,
+      query: contact.completion.EmployeeQuery
+    },
+    contact.completion.EmployeeCategory
+  )
 
-  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
-    icon: contact.icon.Person,
-    label: contact.string.SearchPerson,
-    query: contact.completion.PersonQuery
-  }, contact.completion.PersonCategory)
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: contact.icon.Person,
+      label: contact.string.SearchPerson,
+      query: contact.completion.PersonQuery
+    },
+    contact.completion.PersonCategory
+  )
 
-  builder.createDoc(presentation.class.ObjectSearchCategory, core.space.Model, {
-    icon: contact.icon.Company,
-    label: contact.string.SearchOrganization,
-    query: contact.completion.OrganizationQuery
-  }, contact.completion.OrganizationCategory)
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: contact.icon.Company,
+      label: contact.string.SearchOrganization,
+      query: contact.completion.OrganizationQuery
+    },
+    contact.completion.OrganizationCategory
+  )
 
   actionTarget(builder, view.action.Open, contact.class.Contact, { mode: ['browser', 'context'] })
 }

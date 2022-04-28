@@ -18,6 +18,4 @@ import { mergeIds } from '@anticrm/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
 import textEditor, { textEditorId } from '@anticrm/text-editor/src/plugin'
 
-export default mergeIds(textEditorId, textEditor, {
-
-})
+export default mergeIds(textEditorId, textEditor, {})

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { showPopup } from '@anticrm/ui'
@@ -53,7 +52,6 @@
     })
   }
 
-
   function onSelect (e: any) {
     const file = e.target?.files[0] as File | undefined
     if (file === undefined || !targetMimes.includes(file.type)) {
@@ -78,5 +76,5 @@
 
 <div class="cursor-pointer" on:click={onClick}>
   <Avatar {avatar} {direct} {size} />
-  <input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')}/>
+  <input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')} />
 </div>

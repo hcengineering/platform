@@ -29,12 +29,16 @@ export class SvelteRenderer {
   }
 
   onKeyDown (props: Record<string, any>): boolean {
-    if (this.component.onKeyDown !== undefined) { return this.component.onKeyDown(props.event) }
+    if (this.component.onKeyDown !== undefined) {
+      return this.component.onKeyDown(props.event)
+    }
     return false
   }
 
   destroy (): void {
-    if (this.component.done !== undefined) { this.component.done() }
+    if (this.component.done !== undefined) {
+      this.component.done()
+    }
     this.component.$destroy()
   }
 }

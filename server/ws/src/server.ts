@@ -23,7 +23,8 @@ import core, {
   ModelDb,
   Ref,
   Space,
-  Tx, TxFactory,
+  Tx,
+  TxFactory,
   TxResult
 } from '@anticrm/core'
 import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
@@ -146,8 +147,7 @@ class SessionManager {
         tx.space = core.space.DerivedTx
         await session.tx(ctx, tx)
       }
-    } catch {
-    }
+    } catch {}
   }
 
   private async createWorkspace (

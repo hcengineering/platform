@@ -27,19 +27,19 @@
   export let selected: Ref<TagElement>[] = []
   export let gap: 'small' | 'big' = 'small'
   export let mode: 'item' | 'category' = 'category'
-  
+
   let categories: TagCategory[] = []
   let visibleCategories: TagCategory[] = []
-  
+
   const stepStyle = gap === 'small' ? 'gap-1' : 'gap-2'
-  
+
   const dispatch = createEventDispatcher()
-  
+
   let elements: TagElement[] = []
-  
+
   let categoryCounts = new Map<Ref<TagCategory>, TagElement[]>()
   let categoryKeys: Ref<TagCategory>[] = []
-  
+
   const elementsQuery = createQuery()
   $: elementsQuery.query(
     tags.class.TagElement,
@@ -88,7 +88,7 @@
     } else {
       category = item._id
     }
-    selected = (category !== undefined ? categoryCounts.get(category) ?? [] : []).map(it => it._id)
+    selected = (category !== undefined ? categoryCounts.get(category) ?? [] : []).map((it) => it._id)
     dispatch('change', { category, elements: selected })
   }
 
@@ -116,7 +116,7 @@
   $: visibleCategoriesRef.length = visibleCategories.length
 
   $: if (category !== undefined && visibleCategories.length > 0 && visibleCategoriesRef.length > 0) {
-    const idx = visibleCategories.findIndex(it => it._id === category)
+    const idx = visibleCategories.findIndex((it) => it._id === category)
     if (idx !== -1) {
       visibleCategoriesRef[idx]?.scrollIntoView({ block: 'nearest' })
     }
@@ -139,7 +139,8 @@
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
         {#each visibleCategories as item, i}
-          <div bind:this={visibleCategoriesRef[i]}
+          <div
+            bind:this={visibleCategoriesRef[i]}
             class="categoryElement flex-center"
             label={item.label}
             style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
@@ -151,7 +152,7 @@
               }
             }}
           >
-            {item.label} 
+            {item.label}
             {#if item._id === category && mode === 'item'}
               ({selected.length}/{categoryCounts.get(item._id)?.length ?? ''})
             {:else}
@@ -166,15 +167,15 @@
 
 <style lang="scss">
   .categoryElement {
-    padding: .375rem .75rem;
+    padding: 0.375rem 0.75rem;
     // height: 2.5rem;
     white-space: nowrap;
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     cursor: pointer;
   }
   .categoryElement + .categoryElement {
-    margin-left: .125rem;
+    margin-left: 0.125rem;
   }
 
   .header {

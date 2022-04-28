@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { getPlatformColors } from '@anticrm/ui'
@@ -29,7 +28,13 @@
 <PopupDialog label={view.string.ChooseAColor}>
   <div class="color-grid" style="grid-template-columns: repeat({columns}, 1.5rem)">
     {#each colors as color, i}
-      <div class="color" style="background-color: {color}" on:click={() => { dispatch('close', i) }} />
+      <div
+        class="color"
+        style="background-color: {color}"
+        on:click={() => {
+          dispatch('close', i)
+        }}
+      />
     {/each}
   </div>
 </PopupDialog>
@@ -45,7 +50,9 @@
       border-radius: 50%;
       cursor: pointer;
 
-      &:hover { border-color: var(--theme-button-border-focused); }
+      &:hover {
+        border-color: var(--theme-button-border-focused);
+      }
     }
   }
 </style>

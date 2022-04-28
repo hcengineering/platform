@@ -17,70 +17,70 @@
   import core, { Doc, TxCUD } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { ScrollBox, Tooltip } from '@anticrm/ui'
-import { toIntl } from '..'
+  import { toIntl } from '..'
   import ContentPopup from './ContentPopup.svelte'
 
-  let txes: (TxCUD<Doc> & {index:number})[] = []
+  let txes: (TxCUD<Doc> & { index: number })[] = []
 
   const activityQuery = createQuery()
 
   $: activityQuery.query(core.class.TxCUD, { objectSpace: core.space.Model }, (result) => {
     let c = 0
-    txes = result.map(t => ({ ...t, index: c++ }))
+    txes = result.map((t) => ({ ...t, index: c++ }))
   })
 </script>
 
 <ScrollBox vertical>
-  <div class='model-content'>
-  <table class='table'>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Class</th>
-        <th>ObjectID</th>
-        <th>Body</th>
-      </tr>
-    </thead>
-    <tbody>
-    {#each txes as tx}
-      <tr class='tr-body'>
-        <td>{tx.index}</td>
-        <td>{tx._class}</td>
-        <td>{tx.objectId}</td>
-        <td>{tx.objectClass}</td>
-        <td>
-          <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: tx }}>
-            Content
-          </Tooltip>
-        </td>
+  <div class="model-content">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Class</th>
+          <th>ObjectID</th>
+          <th>Body</th>
         </tr>
-      {/each}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {#each txes as tx}
+          <tr class="tr-body">
+            <td>{tx.index}</td>
+            <td>{tx._class}</td>
+            <td>{tx.objectId}</td>
+            <td>{tx.objectClass}</td>
+            <td>
+              <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: tx }}>Content</Tooltip>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 </ScrollBox>
+
 <style lang="scss">
   .model-content {
     display: flex;
     margin: 20px;
   }
-  th, td {
-  padding: .5rem 1.5rem;
-  text-align: left;
-}
+  th,
+  td {
+    padding: 0.5rem 1.5rem;
+    text-align: left;
+  }
 
-th {
-  height: 2.5rem;
-  font-weight: 500;
-  font-size: .75rem;
-  color: var(--theme-content-dark-color);
-  box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
-  user-select: none;
-}
+  th {
+    height: 2.5rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--theme-content-dark-color);
+    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    user-select: none;
+  }
 
-.tr-body {
-  height: 3.25rem;
-  color: var(--theme-caption-color);
-  border-bottom: 1px solid var(--theme-button-border-hovered);
-}  
+  .tr-body {
+    height: 3.25rem;
+    color: var(--theme-caption-color);
+    border-bottom: 1px solid var(--theme-button-border-hovered);
+  }
 </style>

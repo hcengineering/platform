@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
@@ -33,14 +32,14 @@
     display: flex;
     flex-direction: column;
     padding: 32px 1.5rem 1.25rem;
-    border-radius: .75rem;
+    border-radius: 0.75rem;
 
     .label {
       flex-shrink: 0;
       margin-bottom: 1.25rem;
       text-transform: uppercase;
       font-weight: 600;
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-trans-color);
     }
 
@@ -57,7 +56,7 @@
       left: 0;
       right: 0;
       background-color: var(--theme-card-bg);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
       backdrop-filter: blur(24px);
       box-shadow: var(--theme-card-shadow);
       z-index: -1;

@@ -26,7 +26,8 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="antiNav-element" class:selected
+  class="antiNav-element"
+  class:selected
   on:click|stopPropagation={() => {
     dispatch('click')
   }}

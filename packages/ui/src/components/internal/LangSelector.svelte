@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getContext } from 'svelte'
   import { showPopup } from '../..'
@@ -22,17 +21,18 @@
   import Flags from './icons/Flags.svelte'
 
   const { currentLanguage, setLanguage } = getContext('lang')
-  const langs
-          = [{ id: 'en', label: ui.string.English },
-             { id: 'ru', label: ui.string.Russian }]
+  const langs = [
+    { id: 'en', label: ui.string.English },
+    { id: 'ru', label: ui.string.Russian }
+  ]
 
-  $: selected = langs.find(item => item.id === currentLanguage)
+  $: selected = langs.find((item) => item.id === currentLanguage)
   let trigger: HTMLElement
 
   const selectLanguage = (): void => {
     showPopup(LangPopup, { langs }, trigger, (result) => {
       if (result) {
-        selected = langs.find(item => item.id === result)
+        selected = langs.find((item) => item.id === result)
         setLanguage(result)
       }
     })

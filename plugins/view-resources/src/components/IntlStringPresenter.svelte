@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
   import { Label } from '@anticrm/ui'
@@ -22,5 +21,5 @@
 </script>
 
 <span class="lines-limit-2">
-  <Label label={value}/>
+  <Label label={value} />
 </span>

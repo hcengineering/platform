@@ -22,7 +22,7 @@
   import { calcRank } from '../utils'
 
   type Item = DocWithRank & { state: StateType; doneState: StateType | null }
-  type ExtItem = { prev?: Item; it: Item; next?: Item, pos: number }
+  type ExtItem = { prev?: Item; it: Item; next?: Item; pos: number }
   type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
 
   export let _class: Ref<Class<Item>>
@@ -65,7 +65,12 @@
   ): ExtItem[] {
     const stateCards = objects.filter((it) => (it as any)[fieldName] === state._id)
     stateCards.sort((a, b) => (a as any)[rankFieldName]?.localeCompare((b as any)[rankFieldName]))
-    return stateCards.map((it, idx, arr) => ({ it, prev: arr[idx - 1], next: arr[idx + 1], pos: objects.findIndex(pi => pi._id === it._id) }))
+    return stateCards.map((it, idx, arr) => ({
+      it,
+      prev: arr[idx - 1],
+      next: arr[idx + 1],
+      pos: objects.findIndex((pi) => pi._id === it._id)
+    }))
   }
 
   async function updateItem (item: Item, update: DocumentUpdate<Item>) {
@@ -187,12 +192,12 @@
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
-    let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
+    let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     if (pos === -1) {
       for (const st of states) {
         const stateObjs = getStateObjects(objects, st)
         if (stateObjs.length > 0) {
-          pos = objects.findIndex(it => it._id === stateObjs[0].it._id)
+          pos = objects.findIndex((it) => it._id === stateObjs[0].it._id)
           console.log('SELECT', '#1', pos)
           break
         }
@@ -220,7 +225,7 @@
     if (statePos === undefined) {
       return
     }
-  
+
     if (offset === -1) {
       if (dir === undefined || dir === 'vertical') {
         scrollInto(objState)
@@ -261,8 +266,8 @@
     }
   }
 
-  $: checkedSet = new Set<Ref<Doc>>(checked.map(it => it._id))
-  
+  $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
+
   export function check (docs: Doc[], value: boolean) {
     dispatch('check', { docs, value })
   }
@@ -309,11 +314,11 @@
                 <slot name="beforeCard" {state} />
                 {#each stateObjects as object}
                   {@const dragged = isDragging && object.it._id === dragCard?._id}
-                  <div                                               
+                  <div
                     transition:slideD|local={{ isDragging }}
                     class="step-tb75"
                     on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-                    on:drop|preventDefault={(evt) => cardDrop(evt, object)}                    
+                    on:drop|preventDefault={(evt) => cardDrop(evt, object)}
                   >
                     <div
                       class="card-container"
@@ -370,14 +375,13 @@
     border-radius: 0.25rem;
     user-select: none;
 
-    &.checked { 
+    &.checked {
       background-color: var(--theme-bg-checked);
     }
 
     &.selection {
-      background-color: var(--theme-bg-checked-hover); 
+      background-color: var(--theme-bg-checked-hover);
     }
-
 
     &.draggable {
       cursor: grab;
