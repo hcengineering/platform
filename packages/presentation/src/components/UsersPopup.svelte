@@ -34,6 +34,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selectedUsers: Ref<Person>[] = []
   export let ignoreUsers: Ref<Person>[] = []
+  export let shadows: boolean = true
 
   let search: string = ''
   let objects: Person[] = []
@@ -41,7 +42,16 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } }, result => { objects = result }, { limit: 200 })
+  $: if (search.length)
+    query.query<Person>(
+      _class,
+      { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } },
+      (result) => {
+        objects = result
+      },
+      { limit: 200 }
+    )
+  else objects = []
 
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
@@ -59,7 +69,7 @@
   onMount(() => { if (input) input.focus() })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup {!shadows && "plainContainer"}">
   <div class="header">
     <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:change/>
   </div>
@@ -94,3 +104,13 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .plainContainer {
+    color: var(--caption-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: .25rem;
+    box-shadow: none;
+  }
+</style>

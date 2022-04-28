@@ -57,6 +57,7 @@
     "SharedBy": "Shared by {name} {time}",
     "LeaveChannel": "Leave channel",
     "ChannelBrowser": "Channel browser",
-    "SavedItems": "Saved items"
+    "SavedItems": "Saved items",
+    "AddMembersHeader": "Add members to {channel}:"
   }
 }

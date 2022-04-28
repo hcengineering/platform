@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
-  import { Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon } from '@anticrm/ui'
 
-  export let icon: Asset | undefined
+  export let icon: Asset | AnySvelteComponent | undefined
   export let label: string
   export let description: string | undefined
 </script>

@@ -17,13 +17,17 @@
   import contact,{ Employee,EmployeeAccount } from '@anticrm/contact'
   import { Account,DocumentQuery,Ref,SortingOrder,Space } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
-  import { Label,Scroller,SearchEdit } from '@anticrm/ui'
+  import { IconAdd, Label, Scroller, SearchEdit } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { getClient } from '../utils'
   import UserInfo from './UserInfo.svelte'
 
   export let space: Space
+  export let withAddButton: boolean = false
+
   const client = getClient()
+  const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
@@ -71,6 +75,16 @@
               <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
             </div>
           {/if}
+        {/if}
+        {#if !isSearch && withAddButton}
+          <div class="item fs-title">
+            <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
+              <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
+              <div class="flex-col ml-2 min-w-0 content-accent-color">
+                  <Label label={presentation.string.Add} />
+              </div>
+            </div>
+          </div>
         {/if}
         {#each current as person}
           <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>

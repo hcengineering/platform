@@ -23,6 +23,7 @@
 
   const dispatch = createEventDispatcher()
 
+  let isPrivate: boolean = false
   let name: string = ''
   export function canClose (): boolean {
     return name === ''
@@ -33,7 +34,7 @@
     client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
       description: '',
-      private: false,
+      private: isPrivate,
       archived: false,
       members: [getCurrentAccount()._id]
     })
@@ -57,6 +58,10 @@
       maxWidth={'16rem'}
       focus
     />
-    <ToggleWithLabel label={chunter.string.MakePrivate} description={chunter.string.MakePrivateDescription} />
+    <ToggleWithLabel
+      label={chunter.string.MakePrivate}
+      description={chunter.string.MakePrivateDescription}
+      bind:on={isPrivate}
+    />
   </Grid>
 </SpaceCreateCard>
