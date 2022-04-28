@@ -27,7 +27,7 @@ import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
 import { uploadFile, deleteFile } from './utils'
 import attachment, { Attachment } from '@anticrm/attachment'
-import { SortingOrder, SortingQuery } from '@anticrm/core'
+import { ObjQueryType, SortingOrder, SortingQuery } from '@anticrm/core'
 import { IntlString, Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient } from '@anticrm/presentation'
@@ -79,11 +79,20 @@ const getBeginningOfDate = (customDate?: Date) => {
   return customDate.getTime()
 }
 
-export const dateFileBrowserFilters: Array<{
+interface Filter {
   id: string
-  label: IntlString<{}>
-  getDate: () => any
-}> = [
+  label: IntlString
+}
+
+interface DateFilter extends Filter {
+  getDate: () => ObjQueryType<number> | undefined
+}
+
+interface TypeFilter extends Filter {
+  getType: () => ObjQueryType<string> | undefined
+}
+
+export const dateFileBrowserFilters: DateFilter[] = [
   {
     id: 'dateAny',
     label: attachment.string.FileBrowserDateFilterAny,
@@ -139,11 +148,7 @@ export const dateFileBrowserFilters: Array<{
   }
 ]
 
-export const fileTypeFileBrowserFilters: Array<{
-  id: string
-  label: IntlString<{}>
-  getType: () => any
-}> = [
+export const fileTypeFileBrowserFilters: TypeFilter[] = [
   {
     id: 'typeAny',
     label: attachment.string.FileBrowserTypeFilterAny,

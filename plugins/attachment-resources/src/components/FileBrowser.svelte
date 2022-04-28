@@ -16,32 +16,29 @@
   import { Attachment } from '@anticrm/attachment'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
     location,
-    IconMoreV,
     IconSearch,
     Label,
-    showPopup,
     navigate,
     EditWithIcon,
     Spinner,
     Tooltip,
     Icon
   } from '@anticrm/ui'
-  import { Menu } from '@anticrm/view-resources'
   import { onDestroy } from 'svelte'
   import {
-    AttachmentPresenter,
     FileBrowserSortMode,
     dateFileBrowserFilters,
     fileTypeFileBrowserFilters,
     sortModeToOptionObject,
-    AttachmentGalleryPresenter
   } from '..'
   import attachment from '../plugin'
+  import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
+  import AttachmentsListView from './AttachmentsListView.svelte'
   import FileBrowserFilters from './FileBrowserFilters.svelte'
   import FileBrowserSortMenu from './FileBrowserSortMenu.svelte'
 
@@ -56,19 +53,11 @@
   let isLoading = false
 
   let attachments: Attachment[] = []
-  let selectedFileNumber: number | undefined
 
   let selectedSort: FileBrowserSortMode = FileBrowserSortMode.NewestFile
   let selectedDateId = 'dateAny'
   let selectedFileTypeId = 'typeAny'
   let isListDisplayMode = true
-
-  const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
-    selectedFileNumber = fileNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedFileNumber = undefined
-    })
-  }
 
   $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
@@ -180,44 +169,9 @@
     </div>
   {:else if attachments?.length}
     {#if isListDisplayMode}
-      <div class="flex-col">
-        {#each attachments as attachment, i}
-          <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
-            <div class="item flex">
-              <AttachmentPresenter value={attachment} />
-            </div>
-            <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-              <div
-                id="context-menu"
-                class="eAttachmentRowMenu"
-                on:click={(event) => showFileMenu(event, attachment, i)}
-              >
-                <IconMoreV size={'small'} />
-              </div>
-            </div>
-          </div>
-        {/each}
-      </div>
+      <AttachmentsListView {attachments} />
     {:else}
-      <div class="galleryGrid">
-        {#each attachments as attachment, i}
-          <div class="attachmentCell" class:fixed={i === selectedFileNumber}>
-            <AttachmentGalleryPresenter value={attachment}>
-              <svelte:fragment slot="rowMenu">
-                <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-                  <div
-                    id="context-menu2"
-                    class="eAttachmentCellMenu"
-                    on:click={(event) => showFileMenu(event, attachment, i)}
-                  >
-                    <IconMoreV size={'small'} />
-                  </div>
-                </div></svelte:fragment
-              >
-            </AttachmentGalleryPresenter>
-          </div>
-        {/each}
-      </div>
+      <AttachmentsGalleryView {attachments} />
     {/if}
   {:else}
     <div class="flex-between attachmentRow">
@@ -240,89 +194,6 @@
     .eGroupHeaderCount {
       font-size: 0.75rem;
       color: var(--theme-caption-color);
-    }
-  }
-
-  .attachmentRow {
-    display: flex;
-    align-items: center;
-    margin: 0 1.5rem;
-    padding: 0.25rem 0;
-
-    .eAttachmentRowActions {
-      visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
-      padding: 0.2rem;
-      border-radius: 0.375rem;
-    }
-
-    .eAttachmentRowMenu {
-      visibility: hidden;
-      opacity: 0.6;
-      cursor: pointer;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-
-    &:hover {
-      .eAttachmentRowActions {
-        visibility: visible;
-      }
-      .eAttachmentRowMenu {
-        visibility: visible;
-      }
-    }
-    &.fixed {
-      .eAttachmentRowActions {
-        visibility: visible;
-      }
-      .eAttachmentRowMenu {
-        visibility: visible;
-      }
-    }
-  }
-
-  .galleryGrid {
-    display: grid;
-    margin: 0 1.5rem;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-
-    .attachmentCell {
-      .eAttachmentCellActions {
-        visibility: hidden;
-        border: 1px solid var(--theme-bg-focused-border);
-        padding: 0.2rem;
-        border-radius: 0.375rem;
-      }
-
-      .eAttachmentCellMenu {
-        visibility: hidden;
-        opacity: 0.6;
-        cursor: pointer;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-
-      &:hover {
-        .eAttachmentCellActions {
-          visibility: visible;
-        }
-        .eAttachmentCellMenu {
-          visibility: visible;
-        }
-      }
-      &.fixed {
-        .eAttachmentCellActions {
-          visibility: visible;
-        }
-        .eAttachmentCellMenu {
-          visibility: visible;
-        }
-      }
     }
   }
 </style>
