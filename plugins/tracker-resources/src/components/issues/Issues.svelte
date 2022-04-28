@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
+  import contact, { Employee, formatName } from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import {
@@ -184,8 +184,11 @@
 
     return Object.keys(unorderedIssues)
       .sort((o1, o2) => {
-        const i1 = orderedCategories.findIndex((x) => x === o1)
-        const i2 = orderedCategories.findIndex((x) => x === o2)
+        const key1 = o1 === 'null' ? null : o1
+        const key2 = o2 === 'null' ? null : o2
+
+        const i1 = orderedCategories.findIndex((x) => x === key1)
+        const i2 = orderedCategories.findIndex((x) => x === key2)
 
         return i1 - i2
       })
@@ -242,6 +245,36 @@
         const i2 = defaultPriorities.findIndex((x) => x === p2)
 
         return i1 - i2
+      })
+    }
+
+    if (key === 'assignee') {
+      existingCategories.sort((a1, a2) => {
+        const employeeId1 = a1 as Ref<Employee> | null
+        const employeeId2 = a2 as Ref<Employee> | null
+
+        if (employeeId1 === null && employeeId2 !== null) {
+          return 1
+        }
+
+        if (employeeId1 !== null && employeeId2 === null) {
+          return -1
+        }
+
+        if (employeeId1 !== null && employeeId2 !== null) {
+          const name1 = formatName(employees.find((x) => x?._id === employeeId1)?.name ?? '')
+          const name2 = formatName(employees.find((x) => x?._id === employeeId2)?.name ?? '')
+
+          if (name1 > name2) {
+            return 1
+          } else if (name2 > name1) {
+            return -1
+          }
+
+          return 0
+        }
+
+        return 0
       })
     }
 
