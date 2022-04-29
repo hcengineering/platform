@@ -342,7 +342,7 @@ class TServerStorage implements ServerStorage {
     const actualTx = this.extractTx(tx)
     const result: Tx[] = []
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc) && !this.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return result
-    const rtx = actualTx as (TxCreateDoc<Doc> | TxUpdateDoc<Doc> | TxCollectionCUD<Doc, AttachedDoc>)
+    const rtx = actualTx as (TxCreateDoc<Doc> | TxUpdateDoc<Doc>)
     if (!this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)) return result
     const attributes = this.hierarchy.getAllAttributes(rtx.objectClass)
     const markupAttributes: AnyAttribute[] = []
