@@ -18,8 +18,7 @@ import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anti
 import gmail from './plugin'
 
 export const gmailOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     const current = await tx.findOne(core.class.Space, {

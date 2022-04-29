@@ -34,20 +34,34 @@
   const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
-  $: statesQ.query(task.class.State, { space: kanban.space }, result => { states = result }, {
-    sort: {
-      rank: SortingOrder.Ascending
+  $: statesQ.query(
+    task.class.State,
+    { space: kanban.space },
+    (result) => {
+      states = result
+    },
+    {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
     }
-  })
+  )
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => { doneStates = result }, {
-    sort: {
-      rank: SortingOrder.Ascending
+  $: doneStatesQ.query(
+    task.class.DoneState,
+    { space: kanban.space },
+    (result) => {
+      doneStates = result
+    },
+    {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
     }
-  })
+  )
 
-  async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<State>, position: number } }) {
+  async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<State>; position: number } }) {
     const [prev, next] = [states[position - 1], states[position + 1]]
     const state = states.find((x) => x._id === stateID)
 
@@ -55,22 +69,13 @@
       return
     }
 
-    await client.updateDoc(
-      state._class,
-      state.space,
-      state._id,
-      {
-        rank: calcRank(prev, next)
-      }
-    )
+    await client.updateDoc(state._class, state.space, state._id, {
+      rank: calcRank(prev, next)
+    })
   }
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
-    const lastOne = await client.findOne(
-      _class,
-      { space: kanban.space },
-      { sort: { rank: SortingOrder.Descending } }
-    )
+    const lastOne = await client.findOne(_class, { space: kanban.space }, { sort: { rank: SortingOrder.Descending } })
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       await client.createDoc(_class, kanban.space, {
         title: 'New Done State',
@@ -86,4 +91,13 @@
   }
 </script>
 
-<StatesEditor {states} {wonStates} {lostStates} on:add={(e) => { onAdd(e.detail) }} on:delete on:move={onMove}/>
+<StatesEditor
+  {states}
+  {wonStates}
+  {lostStates}
+  on:add={(e) => {
+    onAdd(e.detail)
+  }}
+  on:delete
+  on:move={onMove}
+/>

@@ -20,7 +20,7 @@
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox } from '@anticrm/presentation'
   import task, { calcRank } from '@anticrm/task'
-  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import { EditBox, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -113,7 +113,8 @@
       label={lead.string.Customer}
       placeholder={lead.string.SelectCustomer}
       bind:value={customer}
-      kind={'no-border'} size={'small'}
+      kind={'no-border'}
+      size={'small'}
     />
   </svelte:fragment>
 </Card>

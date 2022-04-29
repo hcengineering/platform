@@ -36,15 +36,15 @@ export async function getActions (
   const targets = await client.findAll(view.class.ActionTarget, {
     'context.mode': 'context'
   })
-  const tmap = new Map(targets.map(it => ([it.action, it.context?.group])))
+  const tmap = new Map(targets.map((it) => [it.action, it.context?.group]))
 
   const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
 
-  let filter = targets.map(it => it.action)
+  let filter = targets.map((it) => it.action)
   if (Array.isArray(doc)) {
     for (const d of doc) {
       const b = filterActions(client, d, targets, derived)
-      filter = filter.filter(it => b.includes(it))
+      filter = filter.filter((it) => b.includes(it))
     }
   } else {
     filter = filterActions(client, doc, targets, derived)

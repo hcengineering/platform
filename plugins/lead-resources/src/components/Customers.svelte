@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
@@ -26,10 +25,13 @@
   let resultQuery: DocumentQuery<Doc> = {}
 
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, { attachTo: lead.mixin.Customer, descriptor: view.viewlet.Table })
+  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
+    attachTo: lead.mixin.Customer,
+    descriptor: view.viewlet.Table
+  })
 
   function updateResultQuery (search: string): void {
-    resultQuery = (search === '') ? { } : { $search: search }
+    resultQuery = search === '' ? {} : { $search: search }
   }
 </script>
 
@@ -39,9 +41,12 @@
     <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
   </div>
 
-  <SearchEdit bind:value={search} on:change={() => {
-    updateResultQuery(search)
-  }}/>
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search)
+    }}
+  />
 </div>
 
 <Scroller>
@@ -51,7 +56,7 @@
         _class={lead.mixin.Customer}
         config={descr.config}
         options={descr.options}
-        query={ resultQuery }
+        query={resultQuery}
         showNotification
         highlightRows
       />

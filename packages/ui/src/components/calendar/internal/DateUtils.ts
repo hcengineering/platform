@@ -21,9 +21,7 @@ export function firstDay (date: Date, mondayStart: boolean): Date {
   const firstDayOfMonth = new Date(date)
   firstDayOfMonth.setDate(1) // First day of month
   const result = new Date(firstDayOfMonth)
-  result.setDate(
-    result.getDate() - result.getDay() + (mondayStart ? 1 : 0)
-  )
+  result.setDate(result.getDate() - result.getDay() + (mondayStart ? 1 : 0))
   // Check if we need add one more week
   if (result.getTime() > firstDayOfMonth.getTime()) {
     result.setDate(result.getDate() - DAYS_IN_WEEK)
@@ -37,7 +35,7 @@ export function firstDay (date: Date, mondayStart: boolean): Date {
 
 export function getWeek (date: Date): number {
   const onejan = new Date(date.getFullYear(), 0, 1)
-  return Math.ceil((((date.getTime() - onejan.getTime()) / MILLISECONDS_IN_DAY) + onejan.getDay() + 1) / DAYS_IN_WEEK)
+  return Math.ceil(((date.getTime() - onejan.getTime()) / MILLISECONDS_IN_DAY + onejan.getDay() + 1) / DAYS_IN_WEEK)
 }
 
 export function daysInMonth (date: Date): number {

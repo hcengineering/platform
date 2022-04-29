@@ -145,20 +145,14 @@
         bind:this={textEditor}
         on:content={(ev) => {
           dispatch('message', ev.detail)
-          if (clearContent) {
-            content = ''
-            textEditor.clear()
-          }
+          content = ''
+          textEditor.clear()
         }}
         extensions={editorExtensions}
       />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit}
-        ><div class="icon">
-          <Send size={'medium'} />
-        </div></button
-      >
+      <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
     {/if}
   </div>
   {#if actions}

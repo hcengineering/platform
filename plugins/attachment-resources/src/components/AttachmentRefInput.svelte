@@ -85,16 +85,8 @@
     }
   }
 
-  async function saveAttachment (doc: Attachment) {
-    const res = await client.addCollection(
-      attachment.class.Attachment,
-      space,
-      objectId,
-      _class,
-      'attachments',
-      doc,
-      doc._id
-    )
+  async function saveAttachment (doc: Attachment): Promise<void> {
+    await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
   function fileSelected () {

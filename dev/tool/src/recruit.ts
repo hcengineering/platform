@@ -32,20 +32,23 @@ import { readMinioData } from './workspace'
 
 async function recognize (rekoniUrl: string, data: string, token: string): Promise<ReconiDocument | undefined> {
   return await new Promise((resolve) => {
-    request.post({
-      url: rekoniUrl + '/recognize?format=pdf',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
+    request.post(
+      {
+        url: rekoniUrl + '/recognize?format=pdf',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        json: true,
+        body: { fileUrl: 'document.pdf', dataBlob: data }
       },
-      json: true,
-      body: { fileUrl: 'document.pdf', dataBlob: data }
-    }, function (error, response, body) {
-      if (error != null) {
-        console.error(error)
+      function (error, response, body) {
+        if (error != null) {
+          console.error(error)
+        }
+        resolve(body as ReconiDocument)
       }
-      resolve(body as ReconiDocument)
-    })
+    )
   })
 }
 
@@ -56,7 +59,13 @@ function isUndef (value?: string): boolean {
   return false
 }
 
-async function addChannel (client: TxOperations, channels: Channel[], c: Candidate, type: Ref<ChannelProvider>, value?: string): Promise<void> {
+async function addChannel (
+  client: TxOperations,
+  channels: Channel[],
+  c: Candidate,
+  type: Ref<ChannelProvider>,
+  value?: string
+): Promise<void> {
   if (value !== undefined) {
     const provider = channels.find((e) => e.provider === type)
     if (provider === undefined) {
@@ -74,12 +83,10 @@ async function addChannel (client: TxOperations, channels: Channel[], c: Candida
     } else {
       if (isUndef(provider.value)) {
         provider.value = value
-        await client.update(provider,
-          {
-            value: value,
-            provider: type
-          }
-        )
+        await client.update(provider, {
+          value: value,
+          provider: type
+        })
       }
     }
   }
@@ -151,10 +158,10 @@ export async function updateCandidates (
 
 async function updateSkills (client: TxOperations, c: Candidate, document: ReconiDocument): Promise<void> {
   const skills = await client.findAll(tags.class.TagReference, { attachedTo: c._id })
-  const namedSkills = new Set(Array.from(skills.map(it => (it.title.toLowerCase()))))
+  const namedSkills = new Set(Array.from(skills.map((it) => it.title.toLowerCase())))
 
   const elements = await client.findAll(tags.class.TagElement, { targetClass: recruit.mixin.Candidate })
-  const namedElements = new Map(Array.from(elements.map(it => ([it.title.toLowerCase(), it._id]))))
+  const namedElements = new Map(Array.from(elements.map((it) => [it.title.toLowerCase(), it._id])))
 
   const categories = await client.findAll(tags.class.TagCategory, {})
 
@@ -196,30 +203,49 @@ async function updateContacts (client: TxOperations, c: WithLookup<Candidate>, d
   await addChannel(client, channels, c, contact.channelProvider.Facebook, document.facebook)
 }
 
-async function updateAvatar (c: WithLookup<Candidate>, document: ReconiDocument, minio: Client, dbName: string, client: TxOperations, tool: ElasticTool): Promise<void> {
+async function updateAvatar (
+  c: WithLookup<Candidate>,
+  document: ReconiDocument,
+  minio: Client,
+  dbName: string,
+  client: TxOperations,
+  tool: ElasticTool
+): Promise<void> {
   if (document.format !== 'headhunter' && document.format !== 'podbor') {
     // Only update avatar for this kind of resume formats.
     return
   }
-  if (c.avatar === undefined && document.avatar !== undefined && document.avatarName !== undefined && document.avatarFormat !== undefined) {
-    const attachId = (`${c._id}.${document.avatarName}`) as Ref<Attachment>
+  if (
+    c.avatar === undefined &&
+    document.avatar !== undefined &&
+    document.avatarName !== undefined &&
+    document.avatarFormat !== undefined
+  ) {
+    const attachId = `${c._id}.${document.avatarName}` as Ref<Attachment>
     // Upload new avatar for candidate
     const data = Buffer.from(document.avatar, 'base64')
     await minio.putObject(dbName, attachId, data, data.length, {
       'Content-Type': document.avatarFormat
     })
 
-    const attachedDoc = await findOrUpdateAttached<Attachment>(client, recruit.space.CandidatesPublic, attachment.class.Photo, attachId, {
-      name: document.avatarName,
-      file: attachId,
-      type: document.avatarFormat,
-      size: data.length,
-      lastModified: Date.now()
-    }, {
-      attachedTo: c._id,
-      attachedClass: contact.class.Person,
-      collection: 'photos'
-    })
+    const attachedDoc = await findOrUpdateAttached<Attachment>(
+      client,
+      recruit.space.CandidatesPublic,
+      attachment.class.Photo,
+      attachId,
+      {
+        name: document.avatarName,
+        file: attachId,
+        type: document.avatarFormat,
+        size: data.length,
+        lastModified: Date.now()
+      },
+      {
+        attachedTo: c._id,
+        attachedClass: contact.class.Person,
+        collection: 'photos'
+      }
+    )
 
     await tool.indexAttachmentDoc(attachedDoc, data)
 

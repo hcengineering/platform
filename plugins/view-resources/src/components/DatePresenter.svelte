@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   // import { TypeDate } from '@anticrm/core'
   import { DateRangePresenter } from '@anticrm/ui'

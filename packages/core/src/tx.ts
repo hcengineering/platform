@@ -73,12 +73,16 @@ export interface TxBulkWrite extends Tx {
 /**
  * @public
  */
-export type MixinData<D extends Doc, M extends D> = Omit<M, keyof D> & PushOptions<Omit<M, keyof D>> & IncOptions<Omit<M, keyof D>>
+export type MixinData<D extends Doc, M extends D> = Omit<M, keyof D> &
+PushOptions<Omit<M, keyof D>> &
+IncOptions<Omit<M, keyof D>>
 
 /**
  * @public
  */
-export type MixinUpdate<D extends Doc, M extends D> = Partial<Omit<M, keyof D>> & PushOptions<Omit<M, keyof D>> & IncOptions<Omit<M, keyof D>>
+export type MixinUpdate<D extends Doc, M extends D> = Partial<Omit<M, keyof D>> &
+PushOptions<Omit<M, keyof D>> &
+IncOptions<Omit<M, keyof D>>
 
 /**
  * Define Create/Update for mixin attributes.
@@ -174,7 +178,11 @@ export interface SpaceUpdate {
 /**
  * @public
  */
-export type DocumentUpdate<T extends Doc> = Partial<Data<T>> & PushOptions<T> & PushMixinOptions<T> & IncOptions<T> & SpaceUpdate
+export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
+PushOptions<T> &
+PushMixinOptions<T> &
+IncOptions<T> &
+SpaceUpdate
 
 /**
  * @public
@@ -187,8 +195,7 @@ export interface TxUpdateDoc<T extends Doc> extends TxCUD<T> {
 /**
  * @public
  */
-export interface TxRemoveDoc<T extends Doc> extends TxCUD<T> {
-}
+export interface TxRemoveDoc<T extends Doc> extends TxCUD<T> {}
 
 /**
  * @public
@@ -246,7 +253,7 @@ export abstract class TxProcessor implements WithTx {
         const operator = _getOperator(key)
         operator(doc, ops[key])
       } else {
-        (doc as any)[key] = ops[key]
+        ;(doc as any)[key] = ops[key]
       }
     }
     doc.modifiedBy = tx.modifiedBy
@@ -254,7 +261,11 @@ export abstract class TxProcessor implements WithTx {
     return rawDoc
   }
 
-  static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, mixinClass: Ref<Class<M>>, operations: MixinUpdate<D, M>): D {
+  static updateMixin4Doc<D extends Doc, M extends D>(
+    rawDoc: D,
+    mixinClass: Ref<Class<M>>,
+    operations: MixinUpdate<D, M>
+  ): D {
     const ops = operations as any
     const doc = _toDoc(rawDoc)
     const mixin = (doc as any)[mixinClass] ?? {}
@@ -266,7 +277,7 @@ export abstract class TxProcessor implements WithTx {
         mixin[key] = ops[key]
       }
     }
-    (doc as any)[mixinClass] = mixin
+    ;(doc as any)[mixinClass] = mixin
     return rawDoc
   }
 
@@ -308,7 +319,12 @@ export abstract class TxProcessor implements WithTx {
 export class TxFactory {
   constructor (readonly account: Ref<Account>) {}
 
-  createTxCreateDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, attributes: Data<T>, objectId?: Ref<T>): TxCreateDoc<T> {
+  createTxCreateDoc<T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    attributes: Data<T>,
+    objectId?: Ref<T>
+  ): TxCreateDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxCreateDoc,
@@ -343,7 +359,7 @@ export class TxFactory {
     }
   }
 
-  createTxPutBag <P extends PropertyType>(
+  createTxPutBag<P extends PropertyType>(
     _class: Ref<Class<Doc>>,
     space: Ref<Space>,
     objectId: Ref<Doc>,
@@ -366,7 +382,7 @@ export class TxFactory {
     }
   }
 
-  createTxUpdateDoc <T extends Doc>(
+  createTxUpdateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
@@ -387,11 +403,7 @@ export class TxFactory {
     }
   }
 
-  createTxRemoveDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>
-  ): TxRemoveDoc<T> {
+  createTxRemoveDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): TxRemoveDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxRemoveDoc,
@@ -404,7 +416,13 @@ export class TxFactory {
     }
   }
 
-  createTxMixin<D extends Doc, M extends D>(objectId: Ref<D>, objectClass: Ref<Class<D>>, objectSpace: Ref<Space>, mixin: Ref<Mixin<M>>, attributes: MixinUpdate<D, M>): TxMixin<D, M> {
+  createTxMixin<D extends Doc, M extends D>(
+    objectId: Ref<D>,
+    objectClass: Ref<Class<D>>,
+    objectSpace: Ref<Space>,
+    mixin: Ref<Mixin<M>>,
+    attributes: MixinUpdate<D, M>
+  ): TxMixin<D, M> {
     return {
       _id: generateId(),
       _class: core.class.TxMixin,

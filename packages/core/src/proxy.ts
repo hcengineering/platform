@@ -40,6 +40,6 @@ export function _toDoc<D extends Doc> (doc: D): D {
 /**
  * @internal
  */
-export function _mixinClass<D extends Doc, M extends D> (doc: D): Ref<Mixin<M>>|undefined {
+export function _mixinClass<D extends Doc, M extends D> (doc: D): Ref<Mixin<M>> | undefined {
   return (doc as any)[PROXY_MIXIN_CLASS_KEY]
 }

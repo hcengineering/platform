@@ -35,9 +35,14 @@
   const query = createQuery()
   let attachments: Attachment[] = []
 
-  $: currentMessage._id && query.query(attachment.class.Attachment, {
-    attachedTo: currentMessage._id
-  }, (res) => attachments = res)
+  $: currentMessage._id &&
+    query.query(
+      attachment.class.Attachment,
+      {
+        attachedTo: currentMessage._id
+      },
+      (res) => (attachments = res)
+    )
 
   $: title = currentMessage.incoming ? currentMessage.sender : currentMessage.receiver
   $: user = currentMessage.incoming ? currentMessage.receiver : currentMessage.sender
@@ -77,9 +82,9 @@
     <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
   {/if}
   {#if attachments.length}
-    <div class='flex-row-center list mt-2'>
+    <div class="flex-row-center list mt-2">
       {#each attachments as attachment}
-        <div class='item flex'>
+        <div class="item flex">
           <AttachmentPresenter value={attachment} />
         </div>
       {/each}
@@ -120,7 +125,7 @@
       overflow-y: hidden;
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
 
       .item + .item {
         padding-left: 1rem;

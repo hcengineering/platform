@@ -36,6 +36,8 @@
     <div class="icon">
       <Icon icon={task.icon.Task} size={'small'} />
     </div>
-    <span class="label nowrap">{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span>
+    <span class="label nowrap"
+      >{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span
+    >
   </a>
 {/if}

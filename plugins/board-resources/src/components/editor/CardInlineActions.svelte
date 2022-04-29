@@ -72,7 +72,8 @@
               const handler = await getResource(action.handler)
               handler(value, client, e)
             }
-          }} />
+          }}
+        />
       {/if}
     {/each}
   </div>

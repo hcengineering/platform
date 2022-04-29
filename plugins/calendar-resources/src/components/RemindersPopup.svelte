@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentAccount, Lookup } from '@anticrm/core'
+  import { getCurrentAccount } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
   import calendar from '../plugin'
 
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
-<div class='antiPopup'>
+<div class="antiPopup">
   <Table
     _class={calendar.mixin.Reminder}
     config={['']}
     options={{}}
-    query={ { state: 'active', participants: currentUser.employee } }
-    />
+    query={{ state: 'active', participants: currentUser.employee }}
+  />
 </div>
 
 <style lang="scss">

@@ -34,21 +34,25 @@
   let membersHandler: (e: Event) => void
   let dateHandler: (e: Event) => void
 
-  $: membersIds = members?.map(m => m._id) ?? []
+  $: membersIds = members?.map((m) => m._id) ?? []
 
   const getMenuItems = (member: Employee) => {
     return [
-      [{
-        title: board.string.ViewProfile,
-        handler: () => console.log('TODO: implement')
-      }],
-      [{
-        title: board.string.RemoveFromCard,
-        handler: () => {
-          const newMembers = membersIds.filter((m) => m !== member._id)
-          client.update(value, { members: newMembers })
+      [
+        {
+          title: board.string.ViewProfile,
+          handler: () => console.log('TODO: implement')
         }
-      }]
+      ],
+      [
+        {
+          title: board.string.RemoveFromCard,
+          handler: () => {
+            const newMembers = membersIds.filter((m) => m !== member._id)
+            client.update(value, { members: newMembers })
+          }
+        }
+      ]
     ]
   }
 

@@ -23,7 +23,9 @@
 
   export let variants: number
 
-  const create = (ev: MouseEvent): void => { showPopup(CreateVariant, { product: objectId }, eventToHTMLElement(ev)) }
+  const create = (ev: MouseEvent): void => {
+    showPopup(CreateVariant, { product: objectId }, eventToHTMLElement(ev))
+  }
 </script>
 
 <div class="variants-container">
@@ -46,7 +48,7 @@
         <Label label={inventory.string.NoVariantsForProduct} />
       </div>
       <div class="text-sm">
-        <div class='over-underline' on:click={create}><Label label={inventory.string.CreateVariant} /></div>
+        <div class="over-underline" on:click={create}><Label label={inventory.string.CreateVariant} /></div>
       </div>
     </div>
   {/if}

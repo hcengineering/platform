@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
@@ -28,11 +26,11 @@
   export let config: string[]
 </script>
 
-<Table 
-  _class={_class}
-  config={config}
+<Table
+  {_class}
+  {config}
   {baseMenuClass}
-  options={ options }
-  query={ { ...query, _id: { $in: value.map(it => it._id) } } }
+  {options}
+  query={{ ...query, _id: { $in: value.map((it) => it._id) } }}
   loadingProps={{ length: value.length ?? 0 }}
 />

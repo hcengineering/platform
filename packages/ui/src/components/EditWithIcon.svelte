@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
@@ -32,7 +31,9 @@
   let textHTML: HTMLInputElement
   let phTraslate: string = ''
 
-  $: translate(placeholder, {}).then(res => { phTraslate = res })
+  $: translate(placeholder, {}).then((res) => {
+    phTraslate = res
+  })
   $: if (textHTML !== undefined) {
     if (focus) {
       textHTML.focus()
@@ -43,10 +44,16 @@
 
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
-  <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown/>
-  <slot name='extra'/>
+  <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />
+  <slot name="extra" />
   {#if value}
-    <div class="ml-2 btn" on:click={() => { value = ''; dispatch('change', '') }}>
+    <div
+      class="ml-2 btn"
+      on:click={() => {
+        value = ''
+        dispatch('change', '')
+      }}
+    >
       <Icon icon={IconClose} size={'x-small'} />
     </div>
   {/if}
@@ -54,32 +61,40 @@
 
 <style lang="scss">
   .editbox {
-    padding: 0 .5rem 0 .5rem;
+    padding: 0 0.5rem 0 0.5rem;
     min-width: 16.75rem;
     height: 2rem;
     color: var(--caption-color);
     background-color: var(--body-color);
     border: 1px solid var(--button-border-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 
     &:focus-within {
       border-color: var(--primary-edit-border-color);
-      .icon { color: var(--menu-icon-hover); }
+      .icon {
+        color: var(--menu-icon-hover);
+      }
     }
 
     input {
       width: 100%;
       border: none;
-      border-radius: .25rem;
+      border-radius: 0.25rem;
 
-      &::placeholder { color: var(--content-color); }
+      &::placeholder {
+        color: var(--content-color);
+      }
     }
 
     .btn {
       color: var(--content-color);
       cursor: pointer;
-      &:hover { color: var(--caption-color); }
+      &:hover {
+        color: var(--caption-color);
+      }
     }
-    .icon { color: var(--content-color); }
+    .icon {
+      color: var(--content-color);
+    }
   }
 </style>

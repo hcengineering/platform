@@ -64,7 +64,7 @@ export async function getObjectPresenter (
 /**
  * @public
  */
-export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent|undefined> {
+export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent | undefined> {
   const clazz = client.getHierarchy().getClass(_class)
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.PreviewPresenter)
   if (presenterMixin.presenter === undefined) {
@@ -105,7 +105,7 @@ async function getAttributePresenter (
     _class: attrClass,
     label: preserveKey.label ?? attribute.label,
     presenter,
-    props: { },
+    props: {},
     icon: presenterMixin.icon,
     attribute
   }

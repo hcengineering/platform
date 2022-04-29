@@ -50,7 +50,10 @@
       _class={contact.class.Contact}
       label={lead.string.Customer}
       placeholder={lead.string.SelectCustomer}
-      kind={'link'} size={'x-large'} justify={'left'} width={'100%'}
+      kind={'link'}
+      size={'x-large'}
+      justify={'left'}
+      width={'100%'}
       bind:value={object.attachedTo}
       on:change={() => {
         change('attachedTo', object.attachedTo)

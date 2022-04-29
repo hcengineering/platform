@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Nodes from './message/Nodes.svelte'
 
@@ -26,4 +25,4 @@
   $: dom = parser.parseFromString(message, 'text/html').firstChild?.childNodes[1] as HTMLElement
 </script>
 
-<Nodes nodes={dom.childNodes}/>
+<Nodes nodes={dom.childNodes} />

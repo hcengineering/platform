@@ -52,7 +52,7 @@
       return
     }
 
-    object = await client.findOne(object._class, { _id: object._id }) ?? object
+    object = (await client.findOne(object._class, { _id: object._id })) ?? object
   }
 
   async function toggle (label: CardLabel) {
@@ -74,7 +74,6 @@
   }
 
   $: object.space && fetchBoardLabels()
-
 </script>
 
 <div class="antiPopup w-85 pb-2">
@@ -89,7 +88,8 @@
         size="small"
         on:click={() => {
           dispatch('close')
-        }} />
+        }}
+      />
     </div>
   </div>
   <div class="ap-space bottom-divider" />
@@ -99,7 +99,8 @@
         bind:value={search}
         maxWidth="100%"
         placeholder={board.string.SearchLabels}
-        on:change={() => applySearch()} />
+        on:change={() => applySearch()}
+      />
     </div>
     <div class="text-md font-medium">
       <Label label={board.string.Labels} />
@@ -118,12 +119,14 @@
         }}
         on:blur={() => {
           hovered = undefined
-        }}>
+        }}
+      >
         <div
           class="relative flex-row-center justify-center border-radius-1 fs-title w-full h-8 mr-2"
           style:background-color={numberToHexColor(label.color)}
           style:box-shadow={hovered === label._id ? `-0.4rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
-          on:click={() => toggle(label)}>
+          on:click={() => toggle(label)}
+        >
           {label.title ?? ''}
           {#if object?.labels?.includes(label._id)}
             <div class="absolute flex-center h-full mr-2" style:top="0" style:right="0">

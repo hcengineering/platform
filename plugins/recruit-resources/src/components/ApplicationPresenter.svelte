@@ -37,6 +37,8 @@
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />
     </div>
-    <span class="label nowrap">{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span>
+    <span class="label nowrap"
+      >{#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}</span
+    >
   </a>
 {/if}

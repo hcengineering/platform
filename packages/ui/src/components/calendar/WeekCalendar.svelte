@@ -71,7 +71,7 @@
               <slot name="cell" date={day(weekMonday, dayIndex, hourOfDay * 60)} />
             {/if}
           </td>
-        {/each}        
+        {/each}
       </tr>
     {/each}
   </tbody>

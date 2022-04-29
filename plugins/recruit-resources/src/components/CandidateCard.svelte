@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact, { Channel, formatName } from '@anticrm/contact'
   import { ChannelsEditor } from '@anticrm/contact-resources'
@@ -44,19 +43,36 @@
   <div class="label uppercase"><Label label={recruit.string.Candidate} /></div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
-    <div class="name lines-limit-2" class:over-underline={!disabled} on:click={() => {
-      if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
-    }}>{formatName(candidate.name)}</div>
+    <div
+      class="name lines-limit-2"
+      class:over-underline={!disabled}
+      on:click={() => {
+        if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+      }}
+    >
+      {formatName(candidate.name)}
+    </div>
     <div class="description lines-limit-2">{candidate.title ?? ''}</div>
     <div class="description overflow-label">{candidate.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">
-      <div class='flex-center flex-wrap'>
-        <Component is={chunter.component.CommentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
-        <Component is={attachment.component.AttachmentsPresenter} props={{ value: candidate, size: 'medium', showCounter: true }}/>
+      <div class="flex-center flex-wrap">
+        <Component
+          is={chunter.component.CommentsPresenter}
+          props={{ value: candidate, size: 'medium', showCounter: true }}
+        />
+        <Component
+          is={attachment.component.AttachmentsPresenter}
+          props={{ value: candidate, size: 'medium', showCounter: true }}
+        />
       </div>
       {#if channels[0]}
-        <div class='flex flex-grow'>
-          <ChannelsEditor attachedTo={channels[0].attachedTo} attachedClass={channels[0].attachedToClass} length={'short'} editable={false} />
+        <div class="flex flex-grow">
+          <ChannelsEditor
+            attachedTo={channels[0].attachedTo}
+            attachedClass={channels[0].attachedToClass}
+            length={'short'}
+            editable={false}
+          />
         </div>
       {/if}
     </div>
@@ -68,10 +84,10 @@
     padding: 1rem 1.5rem 1.25rem;
     background-color: var(--board-card-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
-    transition-duration: .15s;
+    transition-duration: 0.15s;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
@@ -82,20 +98,20 @@
     .label {
       margin-bottom: 1.75rem;
       font-weight: 500;
-      font-size: .625rem;
+      font-size: 0.625rem;
       color: var(--theme-content-dark-color);
     }
     .name {
-      margin: 1rem 0 .25rem;
+      margin: 1rem 0 0.25rem;
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
     }
     .description {
-      font-size: .75rem;
+      font-size: 0.75rem;
       color: var(--theme-content-dark-color);
     }
-    .footer { 
+    .footer {
       margin-top: 1.5rem;
       // overflow: hidden;
     }

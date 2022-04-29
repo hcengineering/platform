@@ -58,9 +58,13 @@
   const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space>, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { space: accountId as string as Ref<Space>, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
@@ -104,14 +108,24 @@
       <div class="flex-grow flex-col">
         <div class="name">
           {#if editable}
-            <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={firstName} on:change={firstNameChange} />
+            <EditBox
+              placeholder={contact.string.PersonFirstNamePlaceholder}
+              maxWidth="20rem"
+              bind:value={firstName}
+              on:change={firstNameChange}
+            />
           {:else}
             {firstName}
           {/if}
         </div>
         <div class="name">
           {#if editable}
-            <EditBox placeholder={contact.string.PersonLastNamePlaceholder} maxWidth="20rem" bind:value={lastName} on:change={lastNameChange} />
+            <EditBox
+              placeholder={contact.string.PersonLastNamePlaceholder}
+              maxWidth="20rem"
+              bind:value={lastName}
+              on:change={lastNameChange}
+            />
           {:else}
             {lastName}
           {/if}

@@ -19,7 +19,15 @@
   import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment, eventToHTMLElement } from '@anticrm/ui'
+  import {
+    EditBox,
+    Button,
+    showPopup,
+    DatePresenter,
+    SelectPopup,
+    IconAttachment,
+    eventToHTMLElement
+  } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import StatusSelector from './StatusSelector.svelte'
@@ -54,12 +62,17 @@
   $: _space = space
   $: _parent = parent
   $: updateIssueStatusId(space, status)
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => {
-    issueStatuses = statuses
-  }, {
-    lookup: { category: tracker.class.IssueStatusCategory },
-    sort: { rank: SortingOrder.Ascending }
-  })
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    { attachedTo: space },
+    (statuses) => {
+      issueStatuses = statuses
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {

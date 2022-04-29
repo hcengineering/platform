@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import core from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
@@ -43,13 +42,22 @@
   }
 </script>
 
-<SpaceCreateCard 
-  label={recruit.string.CreateReviewCategory} 
+<SpaceCreateCard
+  label={recruit.string.CreateReviewCategory}
   okAction={createReviewCategory}
   canSave={!!name}
-  on:close={() => { dispatch('close') }}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={recruit.string.ReviewCategoryName} bind:value={name} icon={Review} placeholder={recruit.string.ReviewCategoryPlaceholder} maxWidth={'16rem'} focus/>
+    <EditBox
+      label={recruit.string.ReviewCategoryName}
+      bind:value={name}
+      icon={Review}
+      placeholder={recruit.string.ReviewCategoryPlaceholder}
+      maxWidth={'16rem'}
+      focus
+    />
   </Grid>
 </SpaceCreateCard>

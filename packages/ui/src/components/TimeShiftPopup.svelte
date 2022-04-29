@@ -27,13 +27,17 @@
   const HOUR = 60 * MINUTE
   const DAY = 24 * HOUR
   $: values = [...minutes.map((m) => m * MINUTE), ...hours.map((m) => m * HOUR), ...days.map((m) => m * DAY)]
-
 </script>
 
 <div class="antiPopup">
   {#each values as value}
-    <div class="ap-menuItem" on:click={() => { dispatch('close', value) }} >
-      <TimeShiftPresenter value={value * base}/>
+    <div
+      class="ap-menuItem"
+      on:click={() => {
+        dispatch('close', value)
+      }}
+    >
+      <TimeShiftPresenter value={value * base} />
     </div>
   {/each}
 </div>

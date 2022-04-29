@@ -59,7 +59,7 @@
     if (state === undefined) {
       throw new Error('create task: state not found')
     }
-  
+
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: task.class.Issue })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
@@ -90,7 +90,15 @@
       rank: calcRank(lastOne, undefined)
     }
 
-    await client.addCollection(task.class.Issue, _space, parent?._id ?? task.global.Task, parent?._class ?? task.class.Issue, 'tasks', value, taskId)
+    await client.addCollection(
+      task.class.Issue,
+      _space,
+      parent?._id ?? task.global.Task,
+      parent?._class ?? task.class.Issue,
+      'tasks',
+      value,
+      taskId
+    )
   }
 </script>
 

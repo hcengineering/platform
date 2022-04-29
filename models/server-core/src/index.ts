@@ -29,7 +29,17 @@ export class TTrigger extends TDoc implements Trigger {
 
 @Model(serverCore.mixin.ObjectDDParticipant, core.class.Class)
 export class TObjectDDParticipant extends TClass implements ObjectDDParticipant {
-  collectDocs!: Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
+  collectDocs!: Resource<
+  (
+    doc: Doc,
+    hiearachy: Hierarchy,
+    findAll: <T extends Doc>(
+      clazz: Ref<Class<T>>,
+      query: DocumentQuery<T>,
+      options?: FindOptions<T>
+    ) => Promise<FindResult<T>>
+  ) => Promise<Doc[]>
+  >
 }
 
 export function createModel (builder: Builder): void {

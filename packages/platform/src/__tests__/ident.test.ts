@@ -64,9 +64,7 @@ describe('ident', () => {
   })
 
   it('should fail to parse id', () => {
-    expect(() => _parseId('bad id' as Id)).toThrowError(
-      'ERROR: platform:status:InvalidId'
-    )
+    expect(() => _parseId('bad id' as Id)).toThrowError('ERROR: platform:status:InvalidId')
   })
 
   it('should parse id', () => {

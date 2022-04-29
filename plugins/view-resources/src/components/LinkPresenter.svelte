@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from "@anticrm/presentation"
-  import { AnyComponent, Component } from "@anticrm/ui"
+  import { getClient } from '@anticrm/presentation'
+  import { AnyComponent, Component } from '@anticrm/ui'
   import view from '../plugin'
 
   export let link: HTMLLinkElement
@@ -22,14 +22,12 @@
   const client = getClient()
 
   async function getPresenter (href: string): Promise<AnyComponent | undefined> {
-    const presenters = await client.findAll(view.class.LinkPresenter, {
-    })
+    const presenters = await client.findAll(view.class.LinkPresenter, {})
     for (const presenter of presenters) {
       if (new RegExp(presenter.pattern).test(href)) {
         return presenter.component
       }
     }
-    return
   }
 </script>
 

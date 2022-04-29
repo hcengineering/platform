@@ -28,13 +28,17 @@
   let integrationTypes: IntegrationType[] = []
 
   typeQuery.query(setting.class.IntegrationType, {}, (res) => (integrationTypes = res))
-  integrationQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space> }, (res) => (integrations = res))
+  integrationQuery.query(
+    setting.class.Integration,
+    { space: accountId as string as Ref<Space> },
+    (res) => (integrations = res)
+  )
 </script>
 
 <div class="antiComponent">
   <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={setting.icon.Integrations} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.Integrations}/></div>
+    <div class="ac-header__title"><Label label={setting.string.Integrations} /></div>
   </div>
   <div class="ac-body__cards-container">
     {#each integrationTypes as integrationType (integrationType._id)}

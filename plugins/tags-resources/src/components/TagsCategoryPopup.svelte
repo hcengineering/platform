@@ -37,7 +37,11 @@
   const query = createQuery()
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   $: query.query(
     tags.class.TagElement,
@@ -49,24 +53,27 @@
   )
 
   const isSelected = (element: TagElement, selected: Ref<TagElement>[]): boolean => {
-    if (selected.filter(p => p === element._id).length > 0) return true
+    if (selected.filter((p) => p === element._id).length > 0) return true
     return false
   }
   const checkSelected = (element: TagElement, _selected: Ref<TagElement>[]): void => {
     if (isSelected(element, _selected)) {
-      selected = selected.filter(p => p !== element._id)
+      selected = selected.filter((p) => p !== element._id)
     } else {
       selected = [...selected, element._id]
     }
   }
 
-  onMount(() => { if (searchElement) searchElement.focus() })
+  onMount(() => {
+    if (searchElement) searchElement.focus()
+  })
 
-  type TagElementInfo = { count: number, modifiedOn: number }
+  type TagElementInfo = { count: number; modifiedOn: number }
   let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined
   const refQuery = createQuery()
   $: refQuery.query(
-    tags.class.TagReference, { tag: { $in: elements.map(it => it._id) } },
+    tags.class.TagReference,
+    { tag: { $in: elements.map((it) => it._id) } },
     (res) => {
       const result = new Map<Ref<TagElement>, TagElementInfo>()
 
@@ -78,9 +85,12 @@
       }
 
       tagElements = result
-    }, {
+    },
+    {
       projection: {
-        _id: 1, tag: 1, modifiedOn: 1
+        _id: 1,
+        tag: 1,
+        modifiedOn: 1
       }
     }
   )
@@ -90,13 +100,24 @@
   <div class="header no-border">
     <div class="flex-between flex-grow pr-2">
       <div class="flex-grow">
-        <input bind:this={searchElement} type="text" bind:value={search} placeholder={phTraslate} style="width: 100%;" on:change/>
+        <input
+          bind:this={searchElement}
+          type="text"
+          bind:value={search}
+          placeholder={phTraslate}
+          style="width: 100%;"
+          on:change
+        />
       </div>
       <div class="buttons-group small-gap">
-        <div class="clear-btn" class:show={search !== ''} on:click={() => {
-          search = ''
-          searchElement.focus()
-        }}>
+        <div
+          class="clear-btn"
+          class:show={search !== ''}
+          on:click={() => {
+            search = ''
+            searchElement.focus()
+          }}
+        >
           {#if search !== ''}<div class="icon"><Icon icon={IconClose} size={'inline'} /></div>{/if}
         </div>
       </div>
@@ -104,26 +125,29 @@
   </div>
   <div class="scroll">
     <div class="box">
-        {#if elements.length > 0}
-          <div class="sticky-wrapper">            
-            <div class="menu-group" style:overflow='visible'>
-              {#each elements as element}
-                <button class="menu-item" on:click={() => {
+      {#if elements.length > 0}
+        <div class="sticky-wrapper">
+          <div class="menu-group" style:overflow="visible">
+            {#each elements as element}
+              <button
+                class="menu-item"
+                on:click={() => {
                   checkSelected(element, selected)
-                }}>
-                  <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(element, selected)} primary />
-                  </div>
-                  <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                  {element.title} 
-                  {#if (tagElements?.get(element._id)?.count ?? 0) > 0}
-                    ({tagElements?.get(element._id)?.count})
-                  {/if}
-                </button>
-              {/each}
-            </div>
+                }}
+              >
+                <div class="check pointer-events-none">
+                  <CheckBox checked={isSelected(element, selected)} primary />
+                </div>
+                <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
+                {element.title}
+                {#if (tagElements?.get(element._id)?.count ?? 0) > 0}
+                  ({tagElements?.get(element._id)?.count})
+                {/if}
+              </button>
+            {/each}
           </div>
-        {/if}
+        </div>
+      {/if}
       {#if elements.length === 0}
         <div class="empty">
           <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
@@ -131,23 +155,39 @@
       {/if}
     </div>
   </div>
-  <div class='flex-between p-2'>
-    <Button kind={'transparent'} label={tags.string.SelectAll} on:click={() => {
-      selected = elements.map(it => it._id)
-    }}/>
-    <Button kind={'transparent'} label={tags.string.SelectNone} on:click={() => {
-      selected = []
-    }}/>
+  <div class="flex-between p-2">
+    <Button
+      kind={'transparent'}
+      label={tags.string.SelectAll}
+      on:click={() => {
+        selected = elements.map((it) => it._id)
+      }}
+    />
+    <Button
+      kind={'transparent'}
+      label={tags.string.SelectNone}
+      on:click={() => {
+        selected = []
+      }}
+    />
   </div>
-  <Button shape={'round'} label={tags.string.ApplyTags} on:click={() => dispatch('close', elements.filter(it => selected.includes(it._id)))}/>
+  <Button
+    shape={'round'}
+    label={tags.string.ApplyTags}
+    on:click={() =>
+      dispatch(
+        'close',
+        elements.filter((it) => selected.includes(it._id))
+      )}
+  />
 </div>
 
 <style lang="scss">
   .counter {
-    padding-right: .125rem;
+    padding-right: 0.125rem;
     min-width: 1.5rem;
     text-align: right;
-    font-size: .8125rem;
+    font-size: 0.8125rem;
     color: var(--caption-color);
   }
   .empty {
@@ -155,7 +195,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--dark-color);
     border-top: 1px solid var(--popup-divider);
   }

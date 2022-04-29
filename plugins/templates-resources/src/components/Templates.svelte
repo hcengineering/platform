@@ -12,15 +12,14 @@
   let templates: MessageTemplate[] = []
   let selected: Ref<MessageTemplate> | undefined
   let newTemplate: Data<MessageTemplate> | undefined = undefined
-  
+
   query.query(templatesPlugin.class.MessageTemplate, {}, (t) => {
     templates = t
-    if (templates.findIndex(t => t._id === selected) === -1) {
+    if (templates.findIndex((t) => t._id === selected) === -1) {
       selected = undefined
       newTemplate = undefined
     }
   })
-
 
   const Mode = {
     View: 1,
@@ -42,11 +41,20 @@
     }
     if (mode === Mode.Create) {
       if (newTemplate.title.trim().length > 0) {
-        const ref = await client.createDoc(templatesPlugin.class.MessageTemplate, templatesPlugin.space.Templates, newTemplate)
+        const ref = await client.createDoc(
+          templatesPlugin.class.MessageTemplate,
+          templatesPlugin.space.Templates,
+          newTemplate
+        )
         selected = ref
       }
     } else if (selected !== undefined) {
-      await client.updateDoc(templatesPlugin.class.MessageTemplate, templatesPlugin.space.Templates, selected, newTemplate)
+      await client.updateDoc(
+        templatesPlugin.class.MessageTemplate,
+        templatesPlugin.space.Templates,
+        selected,
+        newTemplate
+      )
     }
     mode = Mode.View
   }
@@ -66,7 +74,7 @@
 
   <div class="ac-body columns">
     <div class="ac-column">
-      <div id='create-template' class="flex-between trans-title mb-3">
+      <div id="create-template" class="flex-between trans-title mb-3">
         <Label label={templatesPlugin.string.TemplatesHeader} />
         <CircleButton icon={IconAdd} on:click={addTemplate} />
       </div>
@@ -100,7 +108,11 @@
         </span>
         <div class="text-lg caption-color">
           {#if mode !== Mode.View}
-            <EditBox bind:value={newTemplate.title} maxWidth={'12rem'} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+            <EditBox
+              bind:value={newTemplate.title}
+              maxWidth={'12rem'}
+              placeholder={templatesPlugin.string.TemplatePlaceholder}
+            />
           {:else}
             {newTemplate.title}
           {/if}
@@ -112,10 +124,16 @@
             bind:this={textEditor}
             on:value={(evt) => {
               newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
-            }}>
+            }}
+          >
             <div class="flex flex-reverse flex-grow">
               <div class="ml-2">
-                <Button disabled={newTemplate.title.trim().length === 0 } kind={'primary'} label={templatesPlugin.string.SaveTemplate} on:click={saveNewTemplate} />
+                <Button
+                  disabled={newTemplate.title.trim().length === 0}
+                  kind={'primary'}
+                  label={templatesPlugin.string.SaveTemplate}
+                  on:click={saveNewTemplate}
+                />
               </div>
               <Button
                 label={templatesPlugin.string.Cancel}
@@ -130,10 +148,16 @@
           </StyledTextEditor>
         {:else}
           <div class="text">
-            <MessageViewer message={newTemplate.message}/>
+            <MessageViewer message={newTemplate.message} />
           </div>
           <div class="flex flex-reverse">
-            <Button kind={'primary'} label={templatesPlugin.string.EditTemplate} on:click={() => { mode = Mode.Edit }} />
+            <Button
+              kind={'primary'}
+              label={templatesPlugin.string.EditTemplate}
+              on:click={() => {
+                mode = Mode.Edit
+              }}
+            />
           </div>
         {/if}
       {/if}
@@ -142,7 +166,9 @@
 </div>
 
 <style lang="scss">
-  .template-container { padding: 2.25rem 2.5rem 1.75rem; }
+  .template-container {
+    padding: 2.25rem 2.5rem 1.75rem;
+  }
   .separator {
     flex-shrink: 0;
     margin: 1.5rem 0;

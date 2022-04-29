@@ -56,8 +56,8 @@
     <div class="arrows"><ExpandRightDouble /></div>
     <div class="card"><VacancyCard {vacancy} /></div>
   </div>
-  <div class='mt-6'>
-    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.CandidateReviews}  />
+  <div class="mt-6">
+    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.CandidateReviews} />
   </div>
 {/if}
 
@@ -67,5 +67,7 @@
     width: calc(50% - 3rem);
     min-height: 16rem;
   }
-  .arrows { width: 4rem; }
+  .arrows {
+    width: 4rem;
+  }
 </style>

@@ -9,7 +9,7 @@
 
   const id = generateId()
 
-  $: len = $contextStore.findIndex(it => (it as any).id === id)
+  $: len = $contextStore.findIndex((it) => (it as any).id === id)
 
   onDestroy(() => {
     contextStore.update((t) => {
@@ -19,7 +19,7 @@
 
   $: {
     contextStore.update((cur) => {
-      const pos = cur.findIndex(it => (it as any).id === id)
+      const pos = cur.findIndex((it) => (it as any).id === id)
       const newCur = {
         id,
         mode: context.mode,

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Button, CircleButton, IconClose, ActionIcon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -31,7 +30,12 @@
   let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-horizontal-fit'
 </script>
 
-<div class="antiOverlay" on:click={() => { dispatch('close') }} />
+<div
+  class="antiOverlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="antiDialogs antiComponent pdfviewer-container">
   <div class="ac-header short mirror">
     <div class="ac-header__wrap-title">
@@ -41,7 +45,7 @@
     <ActionIcon icon={IconClose} size={'medium'} action={() => dispatch('close')} />
   </div>
 
-  {#if contentType && contentType.startsWith('image/') }
+  {#if contentType && contentType.startsWith('image/')}
     <div class="pdfviewer-content">
       <img class={imgView} src={getFileUrl(file)} alt="" />
     </div>
@@ -51,37 +55,69 @@
 
   <div class="pdfviewer-footer">
     <div class="flex-row-reverse">
-      <a class="no-line ml-4" href={getFileUrl(file)} download={name}><Button label={presentation.string.Download} kind={'primary'} /></a>
-      <Button label={presentation.string.Close} on:click={() => { dispatch('close') }} />
+      <a class="no-line ml-4" href={getFileUrl(file)} download={name}
+        ><Button label={presentation.string.Download} kind={'primary'} /></a
+      >
+      <Button
+        label={presentation.string.Close}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
     </div>
-    {#if contentType && contentType.startsWith('image/') }
+    {#if contentType && contentType.startsWith('image/')}
       <div class="img-nav">
-        <CircleButton icon={MaximizeH} on:click={() => { imgView = 'img-horizontal-fit' }} selected={imgView === 'img-horizontal-fit'} />
-        <CircleButton icon={MaximizeV} on:click={() => { imgView = 'img-vertical-fit' }} selected={imgView === 'img-vertical-fit'} />
-        <CircleButton icon={MaximizeO} on:click={() => { imgView = 'img-original-fit' }} selected={imgView === 'img-original-fit'} />
+        <CircleButton
+          icon={MaximizeH}
+          on:click={() => {
+            imgView = 'img-horizontal-fit'
+          }}
+          selected={imgView === 'img-horizontal-fit'}
+        />
+        <CircleButton
+          icon={MaximizeV}
+          on:click={() => {
+            imgView = 'img-vertical-fit'
+          }}
+          selected={imgView === 'img-vertical-fit'}
+        />
+        <CircleButton
+          icon={MaximizeO}
+          on:click={() => {
+            imgView = 'img-original-fit'
+          }}
+          selected={imgView === 'img-original-fit'}
+        />
       </div>
     {/if}
   </div>
-
 </div>
 
 <style lang="scss">
-  .pdfviewer-container { left: 40%; }
+  .pdfviewer-container {
+    left: 40%;
+  }
   .pdfviewer-content {
     flex-grow: 1;
     overflow: auto;
     margin: 0 1.5rem;
     border-style: none;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     background-color: var(--theme-menu-color);
   }
-  .img-horizontal-fit, .img-vertical-fit, .img-original-fit {
+  .img-horizontal-fit,
+  .img-vertical-fit,
+  .img-original-fit {
     margin: 0 auto;
     width: auto;
     height: auto;
   }
-  .img-horizontal-fit { width: 100%; }
-  .img-vertical-fit { height: 100%; }
+  .img-horizontal-fit {
+    width: 100%;
+  }
+  .img-vertical-fit {
+    height: 100%;
+  }
   .pdfviewer-footer {
     flex-shrink: 0;
     display: flex;
@@ -96,7 +132,7 @@
     grid-template-columns: auto;
     grid-auto-flow: column;
     grid-auto-columns: min-content;
-    gap: .5rem;
+    gap: 0.5rem;
     align-items: center;
   }
 </style>

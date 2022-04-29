@@ -19,7 +19,15 @@ import tags, { TagElement } from '@anticrm/tags'
 /**
  * @public
  */
-export async function TagElementRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+export async function TagElementRemove (
+  doc: Doc,
+  hiearachy: Hierarchy,
+  findAll: <T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+): Promise<Doc[]> {
   if (!hiearachy.isDerived(doc._class, tags.class.TagElement)) return []
   return await findAll(tags.class.TagReference, { tag: doc._id as Ref<TagElement> })
 }

@@ -20,7 +20,14 @@
   import { Card, createQuery, getClient, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
-  import ui, { Button, ColorPopup, eventToHTMLElement, getPlatformColor, showPopup, Status as StatusControl } from '@anticrm/ui'
+  import ui, {
+    Button,
+    ColorPopup,
+    eventToHTMLElement,
+    getPlatformColor,
+    showPopup,
+    Status as StatusControl
+  } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -79,12 +86,21 @@
       throw new Error('contact not found')
     }
     if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
-      await client.createMixin<Contact, Candidate>(candidateInstance._id, candidateInstance._class, candidateInstance.space, recruit.mixin.Candidate, {})
+      await client.createMixin<Contact, Candidate>(
+        candidateInstance._id,
+        candidateInstance._class,
+        candidateInstance.space,
+        recruit.mixin.Candidate,
+        {}
+      )
     }
 
     await client.addCollection(
       recruit.class.Applicant,
-      doc.space, candidateInstance._id, recruit.mixin.Candidate, 'applications',
+      doc.space,
+      candidateInstance._id,
+      recruit.mixin.Candidate,
+      'applications',
       {
         state: state._id,
         doneState: null,
@@ -130,7 +146,7 @@
       selectedCandidate = result[0]
     })
   }
-  let states: Array<{id: number | string, color: number, label: string}> = []
+  let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State
   const statesQuery = createQuery()
   $: if (doc.space !== undefined) {
@@ -138,8 +154,10 @@
       task.class.State,
       { space: doc.space },
       (res) => {
-        states = res.map(s => { return { id: s._id, label: s.title, color: s.color } })
-        selectedState = res.filter(s => s._id === doc.state)[0] ?? res[0]
+        states = res.map((s) => {
+          return { id: s._id, label: s.title, color: s.color }
+        })
+        selectedState = res.filter((s) => s._id === doc.state)[0] ?? res[0]
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
@@ -185,7 +203,8 @@
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
-        kind={'no-border'} size={'small'}
+        kind={'no-border'}
+        size={'small'}
       />
     {/if}
     <UserBox
@@ -195,7 +214,8 @@
       bind:value={doc.assignee}
       allowDeselect
       titleDeselect={recruit.string.UnAssignRecruiter}
-      kind={'no-border'} size={'small'}
+      kind={'no-border'}
+      size={'small'}
     />
     {#if states && doc.space}
       <Button
@@ -245,11 +265,11 @@
   // }
   // .arrows { width: 4rem; }
   .color {
-    margin-right: .375rem;
-    width: .875rem;
-    height: .875rem;
-    border: 1px solid rgba(0, 0, 0, .1);
-    border-radius: .25rem;
+    margin-right: 0.375rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
   }
   .label {
     flex-grow: 1;

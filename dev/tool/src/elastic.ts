@@ -17,10 +17,16 @@ import { Attachment } from '@anticrm/attachment'
 import core, {
   AttachedDoc,
   Class,
-  Doc, DocumentQuery,
-  DOMAIN_TX, FindOptions, FindResult,
+  Doc,
+  DocumentQuery,
+  DOMAIN_TX,
+  FindOptions,
+  FindResult,
   generateId,
-  Hierarchy, MeasureMetricsContext, metricsToString, ModelDb,
+  Hierarchy,
+  MeasureMetricsContext,
+  metricsToString,
+  ModelDb,
   newMetrics,
   Ref,
   ServerStorage,
@@ -109,7 +115,7 @@ async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
 
 export class ElasticTool {
   mongoClient: MongoClient
-  elastic!: FullTextAdapter & {close: () => Promise<void>}
+  elastic!: FullTextAdapter & { close: () => Promise<void> }
   storage!: ServerStorage
   db!: Db
   fulltext!: FullTextIndex
@@ -147,9 +153,7 @@ export class ElasticTool {
     }
   }
 
-  async indexAttachment (
-    name: string
-  ): Promise<void> {
+  async indexAttachment (name: string): Promise<void> {
     const doc: Attachment | null = await this.db.collection<Attachment>(DOMAIN_ATTACHMENT).findOne({ file: name })
     if (doc == null) return
 
@@ -197,12 +201,14 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
   const done = await tool.connect()
   try {
-    const data = (await tool.db.collection<Tx>(DOMAIN_TX).find().toArray())
+    const data = await tool.db.collection<Tx>(DOMAIN_TX).find().toArray()
     const m = newMetrics()
     const metricsCtx = new MeasureMetricsContext('elastic', {}, m)
 
     const isCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCreateDoc
-    const isCollectionCreateTx = (tx: Tx): boolean => tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
+    const isCollectionCreateTx = (tx: Tx): boolean =>
+      tx._class === core.class.TxCollectionCUD &&
+      (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
 
     const createTxes = data.filter((tx) => isCreateTx(tx))
     const collectionTxes = data.filter((tx) => isCollectionCreateTx(tx))
@@ -210,57 +216,65 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
 
     const startCreate = Date.now()
     console.log('replay elastic create transactions', createTxes.length)
-    await Promise.all(createTxes.map(async (tx) => {
-      const createTx = tx as TxCreateDoc<Doc>
-      const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift()
-      if (docSnapshot !== undefined) {
-        // If there is no doc, then it is removed, not need to do something with elastic.
-        const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
-        try {
-          const newTx: TxCreateDoc<Doc> = {
-            ...createTx,
-            attributes: docData,
-            modifiedBy,
-            modifiedOn,
-            objectSpace: space // <- it could be moved, let's take actual one.
+    await Promise.all(
+      createTxes.map(async (tx) => {
+        const createTx = tx as TxCreateDoc<Doc>
+        const docSnapshot = (
+          await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })
+        ).shift()
+        if (docSnapshot !== undefined) {
+          // If there is no doc, then it is removed, not need to do something with elastic.
+          const { _class, _id, modifiedBy, modifiedOn, space, ...docData } = docSnapshot
+          try {
+            const newTx: TxCreateDoc<Doc> = {
+              ...createTx,
+              attributes: docData,
+              modifiedBy,
+              modifiedOn,
+              objectSpace: space // <- it could be moved, let's take actual one.
+            }
+            await tool.fulltext.tx(metricsCtx, newTx)
+          } catch (err: any) {
+            console.error('failed to replay tx', tx, err.message)
           }
-          await tool.fulltext.tx(metricsCtx, newTx)
-        } catch (err: any) {
-          console.error('failed to replay tx', tx, err.message)
+        } else {
+          removedDocument.add(createTx.objectId)
         }
-      } else {
-        removedDocument.add(createTx.objectId)
-      }
-    }))
+      })
+    )
     console.log('replay elastic create transactions done', Date.now() - startCreate)
 
     const startCollection = Date.now()
     console.log('replay elastic collection transactions', collectionTxes.length)
-    await Promise.all(collectionTxes.map(async (tx) => {
-      const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
-      const docSnapshot = (await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })).shift() as AttachedDoc
-      if (docSnapshot !== undefined) {
-        // If there is no doc, then it is removed, not need to do something with elastic.
-        const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
-        try {
-          const newTx: TxCreateDoc<AttachedDoc> = {
-            ...createTx,
-            attributes: data,
-            modifiedBy,
-            modifiedOn,
-            objectSpace: space // <- it could be moved, let's take actual one.
+    await Promise.all(
+      collectionTxes.map(async (tx) => {
+        const collTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+        const createTx = collTx.tx as unknown as TxCreateDoc<AttachedDoc>
+        const docSnapshot = (
+          await tool.storage.findAll(metricsCtx, createTx.objectClass, { _id: createTx.objectId }, { limit: 1 })
+        ).shift() as AttachedDoc
+        if (docSnapshot !== undefined) {
+          // If there is no doc, then it is removed, not need to do something with elastic.
+          const { _class, _id, modifiedBy, modifiedOn, space, ...data } = docSnapshot
+          try {
+            const newTx: TxCreateDoc<AttachedDoc> = {
+              ...createTx,
+              attributes: data,
+              modifiedBy,
+              modifiedOn,
+              objectSpace: space // <- it could be moved, let's take actual one.
+            }
+            collTx.tx = newTx
+            collTx.modifiedBy = modifiedBy
+            collTx.modifiedOn = modifiedOn
+            collTx.objectSpace = space
+            await tool.fulltext.tx(metricsCtx, collTx)
+          } catch (err: any) {
+            console.error('failed to replay tx', tx, err.message)
           }
-          collTx.tx = newTx
-          collTx.modifiedBy = modifiedBy
-          collTx.modifiedOn = modifiedOn
-          collTx.objectSpace = space
-          await tool.fulltext.tx(metricsCtx, collTx)
-        } catch (err: any) {
-          console.error('failed to replay tx', tx, err.message)
         }
-      }
-    }))
+      })
+    )
     console.log('replay elastic collection transactions done', Date.now() - startCollection)
 
     let apos = 0

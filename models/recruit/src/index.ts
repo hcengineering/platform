@@ -352,17 +352,29 @@ export function createModel (builder: Builder): void {
     validator: recruit.validator.ApplicantValidator
   })
 
-  createAction(builder, recruit.action.CreateApplication, recruit.string.CreateAnApplication, recruit.actionImpl.CreateApplication, {
-    icon: recruit.icon.Create,
-    singleInput: true
-  })
+  createAction(
+    builder,
+    recruit.action.CreateApplication,
+    recruit.string.CreateAnApplication,
+    recruit.actionImpl.CreateApplication,
+    {
+      icon: recruit.icon.Create,
+      singleInput: true
+    }
+  )
   actionTarget(builder, recruit.action.CreateApplication, contact.class.Person, { mode: ['context', 'browser'] })
 
-  createAction(builder, recruit.action.CreateCandidate, recruit.string.CreateCandidate, recruit.actionImpl.CreateCandidate, {
-    icon: recruit.icon.Create,
-    keyBinding: ['c'],
-    singleInput: true
-  })
+  createAction(
+    builder,
+    recruit.action.CreateCandidate,
+    recruit.string.CreateCandidate,
+    recruit.actionImpl.CreateCandidate,
+    {
+      icon: recruit.icon.Create,
+      keyBinding: ['c'],
+      singleInput: true
+    }
+  )
 
   actionTarget(builder, recruit.action.CreateCandidate, core.class.Doc, {
     mode: ['workbench', 'browser'],

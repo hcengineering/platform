@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { afterUpdate } from 'svelte'
   import type { AnySvelteComponent } from '../../types'
@@ -88,7 +87,9 @@
   const unfocus = (ev: FocusEvent): void => {
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
-    frendlyFocus?.forEach(edit => { if (edit === target) kl = true })
+    frendlyFocus?.forEach((edit) => {
+      if (edit === target) kl = true
+    })
     if (target === modalHTML) kl = true
     if (!kl || target === null) _close(null)
   }
@@ -104,8 +105,8 @@
 >
   {#if $dpstore.component}
     <svelte:component
-      bind:this={componentInstance}
       this={component}
+      bind:this={componentInstance}
       on:update={(ev) => _update(ev.detail)}
       on:change={(ev) => _change(ev.detail)}
       on:close={(ev) => _close(ev.detail)}
@@ -124,6 +125,8 @@
     background-color: transparent;
     outline: none;
     z-index: 11000;
-    &.visibility { visibility: visible; }
+    &.visibility {
+      visibility: visible;
+    }
   }
 </style>

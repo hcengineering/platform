@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import setting from '@anticrm/setting'
   import { Icon, Label } from '@anticrm/ui'
@@ -21,6 +20,6 @@
 <div class="antiComponent">
   <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={setting.icon.Support} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.Support}/></div>
+    <div class="ac-header__title"><Label label={setting.string.Support} /></div>
   </div>
 </div>

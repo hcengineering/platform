@@ -4,7 +4,10 @@ import core, {
   Data,
   generateId,
   MeasureContext,
-  MeasureMetricsContext, metricsToString, MixinUpdate, Ref,
+  MeasureMetricsContext,
+  metricsToString,
+  MixinUpdate,
+  Ref,
   TxOperations
 } from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
@@ -241,26 +244,33 @@ async function genCandidate (
   // Update or create candidate
   await ctx.with('find-update', {}, async () => {
     await findOrUpdate(ctx, client, recruit.space.CandidatesPublic, contact.class.Person, candidateId, candidate)
-    await findOrUpdateAttached(ctx, client, recruit.space.CandidatesPublic, contact.class.Channel, channelId, {
-      provider: contact.channelProvider.Email,
-      value: faker.internet.email(fName, lName)
-    }, {
-      attachedTo: candidateId,
-      attachedClass: contact.class.Person,
-      collection: 'channels'
-    })
-    await client.updateMixin(candidateId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateMixin)
+    await findOrUpdateAttached(
+      ctx,
+      client,
+      recruit.space.CandidatesPublic,
+      contact.class.Channel,
+      channelId,
+      {
+        provider: contact.channelProvider.Email,
+        value: faker.internet.email(fName, lName)
+      },
+      {
+        attachedTo: candidateId,
+        attachedClass: contact.class.Person,
+        collection: 'channels'
+      }
+    )
+    await client.updateMixin(
+      candidateId,
+      contact.class.Person,
+      recruit.space.CandidatesPublic,
+      recruit.mixin.Candidate,
+      candidateMixin
+    )
   })
 
   await ctx.with('add-comment', {}, () =>
-    addComments(
-      options.comments,
-      client,
-      recruit.space.CandidatesPublic,
-      candidateId,
-      contact.class.Person,
-      'comments'
-    )
+    addComments(options.comments, client, recruit.space.CandidatesPublic, candidateId, contact.class.Person, 'comments')
   )
 
   if (!options.lite) {

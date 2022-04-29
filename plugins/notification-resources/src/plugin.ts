@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-import type { Asset, IntlString } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 
 import notification, { notificationId } from '@anticrm/notification'

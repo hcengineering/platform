@@ -78,7 +78,7 @@
     kanbanUI.select(offset, of, dir)
   })
   onMount(() => {
-    (document.activeElement as HTMLElement)?.blur()
+    ;(document.activeElement as HTMLElement)?.blur()
   })
 
   const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {

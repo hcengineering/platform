@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref } from '@anticrm/core'
   import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { showPopup, Button, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { showPopup, Button, eventToHTMLElement } from '@anticrm/ui'
   import StatePresenter from './StatePresenter.svelte'
   import StatesPopup from './StatesPopup.svelte'
 
@@ -29,33 +28,34 @@
   export let size: ButtonSize = 'small'
 
   let state: State
-  let container: HTMLElement
   let opened: boolean = false
 
   const query = createQuery()
-  $: query.query(task.class.State, { _id: value }, (res) => {
-    state = res[0]
-  }, { limit: 1 })
+  $: query.query(
+    task.class.State,
+    { _id: value },
+    (res) => {
+      state = res[0]
+    },
+    { limit: 1 }
+  )
 </script>
 
 {#if state}
   <Button
-    width="min-content" {kind} {size}
+    width="min-content"
+    {kind}
+    {size}
     on:click={(ev) => {
       if (!opened) {
         opened = true
-        showPopup(
-          StatesPopup,
-          { space: state.space },
-          eventToHTMLElement(ev),
-          (result) => {
-            if (result && result._id !== value) {
-              value = result._id
-              onChange(value)
-            }
-            opened = false
+        showPopup(StatesPopup, { space: state.space }, eventToHTMLElement(ev), (result) => {
+          if (result && result._id !== value) {
+            value = result._id
+            onChange(value)
           }
-        )
+          opened = false
+        })
       }
     }}
   >

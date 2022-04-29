@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
@@ -37,7 +36,7 @@
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
   {#if opinions > 0}
-    <Table 
+    <Table
       _class={recruit.class.Opinion}
       config={['', 'value', 'description', '$lookup.modifiedBy']}
       options={{
@@ -45,8 +44,8 @@
           modifiedBy: core.class.Account
         }
       }}
-      query={ { attachedTo: objectId } }
-      loadingProps={ { length: opinions } }
+      query={{ attachedTo: objectId }}
+      loadingProps={{ length: opinions }}
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
@@ -55,7 +54,7 @@
         <Label label={recruit.string.NoReviewForCandidate} />
       </div>
       <div class="text-sm">
-        <div class='over-underline' on:click={createApp}>
+        <div class="over-underline" on:click={createApp}>
           <Label label={recruit.string.CreateAnReview} />
         </div>
       </div>
@@ -69,7 +68,7 @@
     flex-direction: column;
 
     .title {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
@@ -81,6 +80,6 @@
     color: var(--theme-caption-color);
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
   }
 </style>

@@ -37,8 +37,7 @@ if (apmUrl === undefined) {
       clearInterval(intTimer)
     }
     process.on('SIGINT', closeTimer)
-    process.on('SIGTERM', closeTimer
-    )
+    process.on('SIGTERM', closeTimer)
   }
 } else {
   console.log('using APM', apmUrl)

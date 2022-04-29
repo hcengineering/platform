@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Icon, Label } from '@anticrm/ui'
   import { Application } from '@anticrm/workbench'
-  
-  export let value: Application  
+
+  export let value: Application
 </script>
-  
+
 <div class="flex-row-center root">
   <Icon icon={value.icon} size="small" />
   <Label label={value.label} />
@@ -31,4 +30,3 @@
     gap: 10px;
   }
 </style>
-  

@@ -42,7 +42,12 @@
   <div class="scroll">
     <div class="box">
       {#each states as state}
-        <button class="menu-item" on:click={() => { dispatch('close', state) }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', state)
+          }}
+        >
           <div class="color" style="background-color: {getPlatformColor(state.color)}" />
           <span class="label">{state.title}</span>
         </button>
@@ -54,9 +59,9 @@
 <style lang="scss">
   .color {
     flex-shrink: 0;
-    margin-right: .75rem;
+    margin-right: 0.75rem;
     width: 1rem;
     height: 1rem;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
   }
 </style>

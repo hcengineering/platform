@@ -24,7 +24,6 @@
 
   export let value: number | null | undefined
   export let withTime: boolean = false
-  export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
@@ -51,15 +50,22 @@
   let datePresenter: HTMLElement
   let closeBtn: HTMLElement
 
-  let edits: IEdits[] = editsType.map(edit => { return { id: edit, value: -1 } })
+  let edits: IEdits[] = editsType.map((edit) => {
+    return { id: edit, value: -1 }
+  })
 
   const getValue = (date: Date | null | undefined = today, id: TEdits): number => {
     switch (id) {
-      case 'day': return date ? date.getDate() : today.getDate()
-      case 'month': return date ? date.getMonth() + 1 : today.getMonth() + 1
-      case 'year': return date ? date.getFullYear() : today.getFullYear()
-      case 'hour': return date ? date.getHours() : today.getHours()
-      case 'min': return date ? date.getMinutes() : today.getMinutes()
+      case 'day':
+        return date ? date.getDate() : today.getDate()
+      case 'month':
+        return date ? date.getMonth() + 1 : today.getMonth() + 1
+      case 'year':
+        return date ? date.getFullYear() : today.getFullYear()
+      case 'hour':
+        return date ? date.getHours() : today.getHours()
+      case 'min':
+        return date ? date.getMinutes() : today.getMinutes()
     }
   }
   const setValue = (val: number, date: Date, id: TEdits): Date => {
@@ -84,16 +90,21 @@
   }
   const getMaxValue = (date: Date, id: TEdits): number => {
     switch (id) {
-      case 'day': return daysInMonth(date)
-      case 'month': return 12
-      case 'year': return 3000
-      case 'hour': return 23
-      case 'min': return 59
+      case 'day':
+        return daysInMonth(date)
+      case 'month':
+        return 12
+      case 'year':
+        return 3000
+      case 'hour':
+        return 23
+      case 'min':
+        return 59
     }
   }
 
   const dateToEdits = (): void => {
-    edits.forEach(edit => {
+    edits.forEach((edit) => {
       edit.value = getValue(currentDate, edit.id)
     })
     edits = edits
@@ -109,7 +120,9 @@
   }
   if (value !== null && value !== undefined) dateToEdits()
   else if (value === null) {
-    edits.forEach((edit) => { edit.value = -1 })
+    edits.forEach((edit) => {
+      edit.value = -1
+    })
     currentDate = today
   }
 
@@ -176,9 +189,7 @@
     }
     if (ev.code === 'ArrowUp' || (ev.code === 'ArrowDown' && edits[index].el)) {
       if (edits[index].value !== -1) {
-        const val = (ev.code === 'ArrowUp')
-          ? edits[index].value + 1
-          : edits[index].value - 1
+        const val = ev.code === 'ArrowUp' ? edits[index].value + 1 : edits[index].value - 1
         if (currentDate) {
           currentDate = setValue(val, currentDate, ed)
           $dpstore.currentDate = currentDate
@@ -204,7 +215,9 @@
   const unfocus = (ev: FocusEvent, ed: TEdits | HTMLElement): void => {
     const target = ev.relatedTarget as HTMLElement
     let kl: boolean = false
-    edits.forEach(edit => { if (edit.el === target) kl = true })
+    edits.forEach((edit) => {
+      if (edit.el === target) kl = true
+    })
     if (target === popupComp || target === closeBtn) kl = true
     if (!kl || target === null) closeDP()
   }
@@ -256,68 +269,89 @@
   class="datetime-button"
   class:editable
   class:edit
-  on:click={() => { if (editable && !opened) openPopup() }}
+  on:click={() => {
+    if (editable && !opened) openPopup()
+  }}
 >
   {#if edit}
-    <span bind:this={edits[0].el} class="digit" tabindex="0"
+    <span
+      bind:this={edits[0].el}
+      class="digit"
+      tabindex="0"
       on:keydown={(ev) => keyDown(ev, edits[0].id)}
       on:focus={() => focused(edits[0].id)}
       on:blur={(ev) => unfocus(ev, edits[0].id)}
     >
-      {#if (edits[0].value > -1)}
+      {#if edits[0].value > -1}
         {edits[0].value.toString().padStart(2, '0')}
       {:else}ДД{/if}
     </span>
     <span class="separator">.</span>
-    <span bind:this={edits[1].el} class="digit" tabindex="0"
+    <span
+      bind:this={edits[1].el}
+      class="digit"
+      tabindex="0"
       on:keydown={(ev) => keyDown(ev, edits[1].id)}
       on:focus={() => focused(edits[1].id)}
       on:blur={(ev) => unfocus(ev, edits[1].id)}
     >
-      {#if (edits[1].value > -1)}
+      {#if edits[1].value > -1}
         {edits[1].value.toString().padStart(2, '0')}
       {:else}ММ{/if}
     </span>
     <span class="separator">.</span>
-    <span bind:this={edits[2].el} class="digit" tabindex="0"
+    <span
+      bind:this={edits[2].el}
+      class="digit"
+      tabindex="0"
       on:keydown={(ev) => keyDown(ev, edits[2].id)}
       on:focus={() => focused(edits[2].id)}
       on:blur={(ev) => unfocus(ev, edits[2].id)}
     >
-      {#if (edits[2].value > -1)}
+      {#if edits[2].value > -1}
         {edits[2].value.toString().padStart(4, '0')}
       {:else}ГГГГ{/if}
     </span>
     {#if withTime}
       <div class="time-divider" />
-      <span bind:this={edits[3].el} class="digit" tabindex="0"
+      <span
+        bind:this={edits[3].el}
+        class="digit"
+        tabindex="0"
         on:keydown={(ev) => keyDown(ev, edits[3].id)}
         on:focus={() => focused(edits[3].id)}
         on:blur={(ev) => unfocus(ev, edits[3].id)}
       >
-        {#if (edits[3].value > -1)}
+        {#if edits[3].value > -1}
           {edits[3].value.toString().padStart(2, '0')}
         {:else}ЧЧ{/if}
       </span>
       <span class="separator">:</span>
-      <span bind:this={edits[4].el} class="digit" tabindex="0"
+      <span
+        bind:this={edits[4].el}
+        class="digit"
+        tabindex="0"
         on:keydown={(ev) => keyDown(ev, edits[4].id)}
         on:focus={() => focused(edits[4].id)}
         on:blur={(ev) => unfocus(ev, edits[4].id)}
       >
-        {#if (edits[4].value > -1)}
+        {#if edits[4].value > -1}
           {edits[4].value.toString().padStart(2, '0')}
         {:else}ММ{/if}
       </span>
     {/if}
     {#if value}
       <div
-        bind:this={closeBtn} class="close-btn" tabindex="0"
+        bind:this={closeBtn}
+        class="close-btn"
+        tabindex="0"
         on:click={() => {
           selected = 'day'
           startTyping = true
           value = null
-          edits.forEach(edit => { edit.value = -1 })
+          edits.forEach((edit) => {
+            edit.value = -1
+          })
           if (edits[0].el) edits[0].el.focus()
         }}
         on:blur={(ev) => unfocus(ev, closeBtn)}
@@ -327,13 +361,14 @@
     {/if}
   {:else}
     <div class="btn-icon {icon}">
-      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'}/>
+      <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'} />
     </div>
     {#if value !== null && value !== undefined}
       {#if labelOver !== undefined}
         <Label label={labelOver} />
       {:else}
-        {new Date(value).getDate()} {getMonthName(new Date(value), 'short')}
+        {new Date(value).getDate()}
+        {getMonthName(new Date(value), 'short')}
         {#if new Date(value).getFullYear() !== today.getFullYear()}
           {new Date(value).getFullYear()}
         {/if}
@@ -356,7 +391,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
     font-weight: 400;
     min-width: 1.5rem;
     width: auto;
@@ -366,22 +401,28 @@
     color: var(--accent-color);
     background-color: var(--noborder-bg-color);
     border: 1px solid transparent;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     box-shadow: var(--button-shadow);
     transition-property: border, background-color, color, box-shadow;
-    transition-duration: .15s;
+    transition-duration: 0.15s;
     cursor: default;
 
     .btn-icon {
-      margin-right: .375rem;
-      width: .875rem;
-      height: .875rem;
-      transition: color .15s;
+      margin-right: 0.375rem;
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: color 0.15s;
       pointer-events: none;
 
-      &.normal { color: var(--content-color); }
-      &.warning { color: var(--warning-color); }
-      &.overdue { color: var(--error-color); }
+      &.normal {
+        color: var(--content-color);
+      }
+      &.warning {
+        color: var(--warning-color);
+      }
+      &.overdue {
+        color: var(--error-color);
+      }
     }
 
     &:hover {
@@ -394,16 +435,26 @@
       &:hover {
         background-color: var(--noborder-bg-hover);
         .btn-icon {
-          &.normal { color: var(--caption-color); }
-          &.warning { color: var(--warning-color); }
-          &.overdue { color: var(--error-color); }
+          &.normal {
+            color: var(--caption-color);
+          }
+          &.warning {
+            color: var(--warning-color);
+          }
+          &.overdue {
+            color: var(--error-color);
+          }
         }
-        .time-divider { background-color: var(--button-border-hover); }
+        .time-divider {
+          background-color: var(--button-border-hover);
+        }
       }
       &:focus-within {
         background-color: var(--button-bg-color);
         border-color: var(--primary-edit-border-color);
-        &:hover { background-color: var(--button-bg-color); }
+        &:hover {
+          background-color: var(--button-bg-color);
+        }
       }
     }
     &:disabled {
@@ -412,23 +463,27 @@
 
       &:hover {
         color: var(--content-color);
-        .btn-icon { color: var(--content-color); }
+        .btn-icon {
+          color: var(--content-color);
+        }
       }
     }
     &.edit {
-      padding: 0 .125rem;
+      padding: 0 0.125rem;
       background-color: transparent;
       border-color: var(--primary-edit-border-color);
-      &:hover { background-color: transparent; }
+      &:hover {
+        background-color: transparent;
+      }
     }
 
     .close-btn {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 .25rem;
-      width: .75rem;
-      height: .75rem;
+      margin: 0 0.25rem;
+      width: 0.75rem;
+      height: 0.75rem;
       color: var(--content-color);
       background-color: var(--button-bg-color);
       outline: none;
@@ -443,14 +498,16 @@
 
     .digit {
       position: relative;
-      padding: 0 .125rem;
+      padding: 0 0.125rem;
       height: 1.125rem;
       line-height: 1.125rem;
       color: var(--accent-color);
       outline: none;
-      border-radius: .125rem;
+      border-radius: 0.125rem;
 
-      &:focus { background-color: var(--primary-bg-color); }
+      &:focus {
+        background-color: var(--primary-bg-color);
+      }
       &::after {
         position: absolute;
         top: 0;
@@ -463,12 +520,14 @@
     }
     .time-divider {
       flex-shrink: 0;
-      margin: 0 .25rem;
+      margin: 0 0.25rem;
       width: 1px;
       min-width: 1px;
-      height: .75rem;
+      height: 0.75rem;
       background-color: var(--button-border-color);
     }
-    .separator { margin: 0 .1rem; }
+    .separator {
+      margin: 0 0.1rem;
+    }
   }
 </style>

@@ -54,15 +54,13 @@ export interface ClientSocket {
  */
 export type ClientFactory = (token: string, endpoint: string) => Promise<Client>
 
-export default plugin(clientId,
-  {
-    metadata: {
-      ClientHook: '' as Metadata<Resource<ClientHook>>,
-      ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
-      FilterModel: '' as Metadata<boolean>
-    },
-    function: {
-      GetClient: '' as Resource<ClientFactory>
-    }
+export default plugin(clientId, {
+  metadata: {
+    ClientHook: '' as Metadata<Resource<ClientHook>>,
+    ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
+    FilterModel: '' as Metadata<boolean>
+  },
+  function: {
+    GetClient: '' as Resource<ClientFactory>
   }
-)
+})

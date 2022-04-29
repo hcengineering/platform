@@ -25,7 +25,9 @@
 
   const maxLenght: number = 30
   const trimFilename = (fname: string): string =>
-    fname.length > maxLenght ? fname.substring(0, (maxLenght - 1) / 2) + '...' + fname.substring(-(maxLenght - 1) / 2) : fname
+    fname.length > maxLenght
+      ? fname.substring(0, (maxLenght - 1) / 2) + '...' + fname.substring(-(maxLenght - 1) / 2)
+      : fname
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -51,7 +53,7 @@
   {#if openEmbedded(value.type)}
     <div class="flex-center cursor-pointer icon" on:click={handleClick}>
       {#if showPreview(value.type)}
-        <img src={getFileUrl(value.file)} alt={value.name}/>
+        <img src={getFileUrl(value.file)} alt={value.name} />
       {:else}
         {iconLabel(value.name)}
       {/if}
@@ -66,19 +68,21 @@
   <div class="flex-col-centre info">
     <div class="fs-title">{trimFilename(value.name)}</div>
     <div class="flex-row-center flex-gap-1">
-      <TimeSince value={value.lastModified}/>
+      <TimeSince value={value.lastModified} />
       <Button
         label={board.string.Edit}
         on:click={(e) => {
           showPopup(EditAttachment, { object: value }, getPopupAlignment(e))
         }}
-        kind="transparent"/>
+        kind="transparent"
+      />
       <Button
         label={board.string.Delete}
         on:click={(e) => {
           showPopup(RemoveAttachment, { object: value }, getPopupAlignment(e))
         }}
-        kind="transparent"/>
+        kind="transparent"
+      />
     </div>
   </div>
 </div>

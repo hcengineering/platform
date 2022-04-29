@@ -34,21 +34,20 @@
   const client = getClient()
 
   async function createProject (): Promise<void> {
-    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (
+      templateId !== undefined &&
+      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
+    ) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(
-      task.class.Project,
-      core.space.Space,
-      {
-        name,
-        description,
-        private: false,
-        archived: false,
-        members: []
-      }
-    )
+    const id = await client.createDoc(task.class.Project, core.space.Space, {
+      name,
+      description,
+      private: false,
+      archived: false,
+      members: []
+    })
 
     await createKanban(client, id, templateId)
   }
@@ -63,8 +62,15 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={plugin.string.ProjectName} icon={IconFolder} bind:value={name} placeholder={plugin.string.ProjectNamePlaceholder} maxWidth={'16rem'} focus />
+    <EditBox
+      label={plugin.string.ProjectName}
+      icon={IconFolder}
+      bind:value={name}
+      placeholder={plugin.string.ProjectNamePlaceholder}
+      maxWidth={'16rem'}
+      focus
+    />
     <ToggleWithLabel label={plugin.string.MakePrivate} description={plugin.string.MakePrivateDescription} />
-    <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId}/>
+    <KanbanTemplateSelector folders={[task.space.ProjectTemplates]} bind:template={templateId} />
   </Grid>
 </SpaceCreateCard>

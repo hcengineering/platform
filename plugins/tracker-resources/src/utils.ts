@@ -98,9 +98,7 @@ export const issuesGroupPresenterMap: Record<'status' | 'priority', AnyComponent
   priority: tracker.component.PriorityPresenter
 }
 
-export const getIssuesModificationDatePeriodTime = (
-  period: IssuesDateModificationPeriod | null
-): number => {
+export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
   const today = new Date(Date.now())
 
   switch (period) {

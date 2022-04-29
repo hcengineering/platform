@@ -18,12 +18,18 @@
     label={board.string.Unwatch}
     kind={'no-border'}
     justify="left"
-    on:click={() => { notificationClient.unsubscribe(object._id) }}/>
+    on:click={() => {
+      notificationClient.unsubscribe(object._id)
+    }}
+  />
 {:else}
   <Button
     icon={board.icon.Card}
     label={board.string.Watch}
     kind={'no-border'}
     justify="left"
-    on:click={() => { notificationClient.updateLastView(object._id, object._class, undefined, true) }}/>
+    on:click={() => {
+      notificationClient.updateLastView(object._id, object._class, undefined, true)
+    }}
+  />
 {/if}

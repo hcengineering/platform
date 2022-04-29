@@ -22,8 +22,8 @@ import { plugin } from '@anticrm/platform'
 export const serverTokenId = 'server-token' as Plugin
 
 /**
-  * @public
-  */
+ * @public
+ */
 const serverToken = plugin(serverTokenId, {
   metadata: {
     Secret: '' as Metadata<string>

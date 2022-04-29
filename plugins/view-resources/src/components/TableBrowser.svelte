@@ -32,20 +32,17 @@
   export let loadingProps: LoadingProps | undefined = undefined
 
   let table: Table
-  const listProvider = new ListSelectionProvider(
-    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-      if (dir === 'vertical') {
-        // Select next
-        table.select(offset, of)
-      }
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    if (dir === 'vertical') {
+      // Select next
+      table.select(offset, of)
     }
-  )
-  
+  })
+
   onMount(() => {
-    (document.activeElement as HTMLElement)?.blur()
+    ;(document.activeElement as HTMLElement)?.blur()
   })
 </script>
-
 
 <ActionContext
   context={{

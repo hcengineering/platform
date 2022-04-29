@@ -56,10 +56,10 @@
       on:change={() => change('name', object.name)}
     />
 
-    <div class='description'>
-      <StyledTextBox      
-        bind:content={object.description}      
-        placeholder={plugin.string.TaskDescriptionPlaceholder}      
+    <div class="description">
+      <StyledTextBox
+        bind:content={object.description}
+        placeholder={plugin.string.TaskDescriptionPlaceholder}
         on:value={(evt) => change('description', evt.detail)}
       />
     </div>
@@ -71,7 +71,7 @@
     display: flex;
     padding: 1rem;
     height: 12rem;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
   }

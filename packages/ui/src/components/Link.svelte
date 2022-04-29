@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
@@ -23,21 +22,20 @@
   export let disabled: boolean = false
   export let maxLenght: number = 26
 
-  const trimFilename = (fname: string): string => (fname.length > maxLenght)
-    ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2)
-    : fname
+  const trimFilename = (fname: string): string =>
+    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 </script>
 
 <span class="container" class:disabled on:click>
   {#if icon}
     <span class="icon">
-      <Icon {icon} size={'small'}/>
+      <Icon {icon} size={'small'} />
     </span>
   {/if}
   {#if disabled}
     {trimFilename(label)}
   {:else}
-    <div class='over-underline'>{trimFilename(label)}</div>
+    <div class="over-underline">{trimFilename(label)}</div>
   {/if}
 </span>
 
@@ -49,17 +47,27 @@
     cursor: pointer;
 
     .icon {
-      margin-right: .25rem;
+      margin-right: 0.25rem;
       color: var(--content-color);
     }
-    &:hover .icon { color: var(--accent-color); }
-    &:active .icon { color: var(--caption-color); }
+    &:hover .icon {
+      color: var(--accent-color);
+    }
+    &:active .icon {
+      color: var(--caption-color);
+    }
   }
   .disabled {
     cursor: not-allowed;
     color: var(--dark-color);
-    .icon { color: var(--dark-color); }
-    &:hover .icon { color: var(--dark-color); }
-    &:active .icon { color: var(--dark-color); }
+    .icon {
+      color: var(--dark-color);
+    }
+    &:hover .icon {
+      color: var(--dark-color);
+    }
+    &:active .icon {
+      color: var(--dark-color);
+    }
   }
 </style>

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IconFolder, Label } from '@anticrm/ui'
 
@@ -31,7 +30,7 @@
     <div class="content-accent-color overflow-label">
       {value.name}
       {#if value.archived}
-        <Label label={presentation.string.Archived}/>
+        <Label label={presentation.string.Archived} />
       {/if}
     </div>
   </div>

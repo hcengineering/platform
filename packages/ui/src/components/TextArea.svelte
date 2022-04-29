@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import Label from './Label.svelte'
@@ -31,9 +30,11 @@
   let input: HTMLTextAreaElement
   let phTraslate: string = ''
 
-  $: translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
+  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
+    phTraslate = res
+  })
 
-  export function focus() {
+  export function focus () {
     input.focus()
   }
 
@@ -44,8 +45,8 @@
   }
 </script>
 
-<div class="textarea" class:no-focus-border={noFocusBorder} style:width={width} style:height={height}>
-  {#if label}<div class="label"><Label label={label} /></div>{/if}
+<div class="textarea" class:no-focus-border={noFocusBorder} style:width style:height>
+  {#if label}<div class="label"><Label {label} /></div>{/if}
   <textarea bind:value bind:this={input} on:keydown={onKeydown} placeholder={phTraslate} />
 </div>
 
@@ -57,8 +58,8 @@
     min-height: 2.25rem;
 
     .label {
-      margin-bottom: .25rem;
-      font-size: .75rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--theme-content-accent-color);
       pointer-events: none;
@@ -76,7 +77,7 @@
       color: var(--theme-caption-color);
       background-color: transparent;
       border: 2px solid transparent;
-      border-radius: .125rem;
+      border-radius: 0.125rem;
       outline: none;
       overflow-y: scroll;
       resize: none;

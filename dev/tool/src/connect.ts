@@ -1,4 +1,3 @@
-
 import client from '@anticrm/client'
 import clientResources from '@anticrm/client-resources'
 import { Client } from '@anticrm/core'
