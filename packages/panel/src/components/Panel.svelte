@@ -19,49 +19,108 @@
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import { AnyComponent, AnySvelteComponent, Component, Panel } from '@anticrm/ui'
+  import { AnyComponent, AnySvelteComponent, Component, Panel, Icon } from '@anticrm/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let showHeader: boolean = true
   export let rightSection: AnyComponent | undefined = undefined
   export let object: Doc
   export let panelWidth: number = 0
   export let innerWidth: number = 0
-  export let isSubtitle: boolean = false
-  export let isProperties: boolean = false
+  export let isHeader: boolean = true
+  export let isSub: boolean = true
+  export let isAside: boolean = true
+  export let minimize: boolean = false
+
+  let docWidth: number = 0
+  $: minimize = docWidth < 1280 && docWidth >= 1024
+  $: needHeader = $$slots.header || minimize || isHeader
 </script>
 
+<svelte:window bind:innerWidth={docWidth} />
 <Panel
-  {title}
-  {subtitle}
-  {icon}
   rightSection={rightSection !== undefined}
-  {showHeader}
+  bind:isAside
+  isHeader={needHeader}
   bind:panelWidth
   bind:innerWidth
-  isProperties={innerWidth >= 500 || isProperties}
-  isSubtitle={innerWidth < 900 || isSubtitle}
   on:close
 >
-  <svelte:fragment slot="subtitle">
-    {#if $$slots.subtitle}<slot name="subtitle" />{/if}
-  </svelte:fragment>
-  <svelte:fragment slot="properties">
-    {#if $$slots.properties}<slot name="properties" />{/if}
-  </svelte:fragment>
-  <svelte:fragment slot="navigate-actions">
-    <slot name="navigate-actions" />
-  </svelte:fragment>
-  <svelte:fragment slot="commands">
-    <div class="buttons-group xsmall-gap">
-      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+  <svelte:fragment slot="title">
+    <div class="popupPanel-title__content-container antiTitle">
+      {#if $$slots.navigator}
+        <div class="buttons-group xsmall-gap mr-4">
+          <slot name="navigator" />
+        </div>
+      {/if}
+      {#if $$slots.title}
+        <slot name="title" />
+      {:else}
+        <div class="icon-wrapper">
+          {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
+          <div class="title-wrapper">
+            {#if title}<span class="wrapped-title">{title}</span>{/if}
+            {#if subtitle}<span class="wrapped-subtitle">{subtitle}</span>{/if}
+          </div>
+        </div>
+      {/if}
     </div>
-    <slot name="actions" />
   </svelte:fragment>
-  <Component is={rightSection ?? activity.component.Activity} props={{ object, integrate: true }}>
+
+  <svelte:fragment slot="utils">
+    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+    {#if $$slots.utils}
+      <div class="buttons-divider" />
+      <slot name="utils" />
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="header">
+    {#if $$slots.header || ($$slots.actions && minimize)}
+      <div class="header-row between">
+        {#if $$slots.header}<slot name="header" />{/if}
+        <div class="buttons-group xsmall-gap ml-4">
+          <slot name="tools" />
+          {#if $$slots.actions && minimize}
+            <div class="buttons-divider" />
+            <slot name="actions" />
+          {/if}
+        </div>
+      </div>
+    {/if}
+    {#if $$slots['custom-attributes']}
+      {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
+    {:else}
+      {#if $$slots.attributes && minimize}<div class="header-row"><slot name="attributes" direction="row" /></div>{/if}
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="aside">
+    <div style="padding: .75rem 1.5rem">
+      {#if $$slots.actions}
+        <div class="flex-row-center pb-3 bottom-divider">
+          <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
+          <div class="buttons-group xsmall-gap">
+            <slot name="actions" />
+          </div>
+        </div>
+      {/if}
+      {#if $$slots['custom-attributes']}
+        <slot name="custom-attributes" direction="column" />
+      {:else}
+        {#if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
+      {/if}
+      {#if $$slots.aside}<slot name="aside" />{/if}
+    </div>
+  </svelte:fragment>
+
+  {#if rightSection != undefined}
     <slot />
-  </Component>
+  {:else}
+    <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+      <slot />
+    </Component>
+  {/if}
 </Panel>

@@ -195,6 +195,12 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       newProps.left = '50%'
       newProps.transform = 'translateX(-50%)'
       show = true
+    } else if (element === 'float') {
+      newProps.top = 'calc(var(--status-bar-height) + .25rem)'
+      newProps.bottom = '.25rem'
+      newProps.left = '60%'
+      newProps.right = '.25rem'
+      show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'

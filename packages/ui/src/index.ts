@@ -119,6 +119,7 @@ export { default as IconNavNext } from './components/icons/NavNext.svelte'
 export { default as IconDPCalendar } from './components/calendar/icons/DPCalendar.svelte'
 export { default as IconDPCalendarOver } from './components/calendar/icons/DPCalendarOver.svelte'
 export { default as IconOptions } from './components/icons/Options.svelte'
+export { default as IconDetails } from './components/icons/Details.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
