@@ -39,13 +39,17 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
+  let isScrollForced = false
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
-    if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+    if (div && (autoscroll || isScrollForced)) {
+      div.scrollTo(0, div.scrollHeight)
+      isScrollForced = false
+    }
   })
 
   const notificationClient = NotificationClientImpl.getClient()
@@ -162,6 +166,7 @@
     await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
+    isScrollForced = true
   }
   let comments: ThreadMessage[] = []
 

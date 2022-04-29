@@ -28,6 +28,7 @@
 
   export let space: Ref<Space>
   let chunterSpace: ChunterSpace
+  let isScrollForced = false
 
   const client = getClient()
   const _class = chunter.class.Message
@@ -80,6 +81,7 @@
     await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
 
     _id = generateId()
+    isScrollForced = true
   }
 
   function openThread (_id: Ref<Message>) {
@@ -115,6 +117,7 @@
 
 <PinnedMessages {space} {pinnedIds} />
 <Channel
+  bind:isScrollForced
   {space}
   on:openThread={(e) => {
     openThread(e.detail)
