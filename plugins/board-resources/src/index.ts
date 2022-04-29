@@ -38,6 +38,9 @@ import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import WatchCard from './components/WatchCard.svelte'
 import BoardHeader from './components/BoardHeader.svelte'
+import BoardMenu from './components/BoardMenu.svelte'
+import MenuMainPage from './components/MenuMainPage.svelte'
+import Archive from './components/Archive.svelte'
 import board from './plugin'
 import {
   addCurrentUser,
@@ -104,7 +107,10 @@ export default async (): Promise<Resources> => ({
     KanbanView,
     BoardPresenter,
     WatchCard,
-    BoardHeader
+    BoardHeader,
+    BoardMenu,
+    Archive,
+    MenuMainPage
   },
   cardActionHandler: {
     Join: addCurrentUser,
