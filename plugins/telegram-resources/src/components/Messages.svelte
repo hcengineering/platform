@@ -25,8 +25,8 @@
 
   function isNewDate (messages: SharedTelegramMessage[], i: number): boolean {
     if (i === 0) return true
-    const current = new Date(messages[i].modifiedOn).toLocaleDateString()
-    const prev = new Date(messages[i - 1].modifiedOn).toLocaleDateString()
+    const current = new Date(messages[i].sendOn).toLocaleDateString()
+    const prev = new Date(messages[i - 1].sendOn).toLocaleDateString()
     return current !== prev
   }
 

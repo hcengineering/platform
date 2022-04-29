@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection } from '@anticrm/model'
+import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'
@@ -24,7 +24,7 @@ import type {
   SharedTelegramMessage,
   SharedTelegramMessages
 } from '@anticrm/telegram'
-import { Domain, IndexKind, Type } from '@anticrm/core'
+import { Domain, IndexKind, Timestamp, Type } from '@anticrm/core'
 import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
 import attachment from '@anticrm/model-attachment'
@@ -46,6 +46,9 @@ export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
   attachments?: number
+
+  @Prop(TypeTimestamp(), core.string.Modified)
+  sendOn!: Timestamp
 }
 
 @Model(telegram.class.NewMessage, core.class.AttachedDoc, DOMAIN_TELEGRAM)

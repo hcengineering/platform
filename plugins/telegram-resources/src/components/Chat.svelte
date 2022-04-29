@@ -18,7 +18,7 @@
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
-  import contact, { Channel, EmployeeAccount, formatName } from '@anticrm/contact'
+  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Doc, Class } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -32,11 +32,11 @@
   import Messages from './Messages.svelte'
   import Reconnect from './Reconnect.svelte'
 
-  export let _id: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
+  export let _id: Ref<Contact>
+  export let _class: Ref<Class<Contact>>
   export let rightSection: AnyComponent | undefined = undefined
 
-  let object: any
+  let object: Contact
   let channel: Channel | undefined = undefined
   let objectId: Ref<NewTelegramMessage> = generateId()
 
@@ -85,7 +85,7 @@
         updateAccountsQuery(accountsIds)
       },
       {
-        sort: { modifiedOn: SortingOrder.Descending },
+        sort: { sendOn: SortingOrder.Descending },
         limit: 500,
         lookup: {
           _id: { attachments: attachment.class.Attachment }

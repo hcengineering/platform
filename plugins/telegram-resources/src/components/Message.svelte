@@ -54,7 +54,7 @@
       <div class="flex">
         <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
         <div class="time">
-          {new Date(message.modifiedOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
+          {new Date(message.sendOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
         </div>
       </div>
     </div>

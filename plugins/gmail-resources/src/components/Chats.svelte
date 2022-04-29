@@ -55,7 +55,7 @@
         const accountsIds = new Set(messages.map((p) => p.modifiedBy as Ref<EmployeeAccount>))
         updateAccountsQuery(accountsIds)
       },
-      { sort: { modifiedOn: SortingOrder.Descending } }
+      { sort: { sendOn: SortingOrder.Descending } }
     )
   }
 
