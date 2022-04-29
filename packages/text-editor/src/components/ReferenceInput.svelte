@@ -37,7 +37,6 @@
   export let showSend = true
   export let withoutTopBorder = false
   export let actions: RefAction[] | undefined = undefined
-  export let clearContent: boolean = true
   const client = getClient()
 
   let textEditor: TextEditor
