@@ -54,6 +54,6 @@
     color: var(--accent-color);
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
   }
 </style>

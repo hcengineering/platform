@@ -46,7 +46,8 @@
   })
 </script>
 
-<div class="flex-col cursor-pointer"
+<div
+  class="flex-col cursor-pointer"
   bind:this={btn}
   on:click|preventDefault={() => {
     showPopup(SpacesPopup, { _class, spaceQuery }, btn, (result) => {
@@ -71,9 +72,9 @@
 
 <style lang="scss">
   .label {
-    margin-bottom: .125rem;
+    margin-bottom: 0.125rem;
     font-weight: 500;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--theme-content-accent-color);
   }
 </style>

@@ -422,7 +422,9 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
           name,
           city: ''
         })
-        await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, { employee: employeeId })
+        await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, {
+          employee: employeeId
+        })
       }
     }
   } finally {

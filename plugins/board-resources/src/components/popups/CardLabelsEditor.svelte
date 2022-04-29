@@ -78,7 +78,6 @@
 
     onBack()
   }
-
 </script>
 
 <div class="antiPopup w-85">
@@ -97,7 +96,8 @@
         size="small"
         on:click={() => {
           dispatch('close')
-        }} />
+        }}
+      />
     </div>
   </div>
   <div class="ap-space bottom-divider" />

@@ -29,14 +29,17 @@ import core, {
   ModelDb,
   Ref,
   ReverseLookups,
-  SortingOrder, toFindResult, Tx,
+  SortingOrder,
+  toFindResult,
+  Tx,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
   TxPutBag,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc, WithLookup
+  TxUpdateDoc,
+  WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
@@ -46,7 +49,7 @@ function translateDoc (doc: Doc): Document {
   return doc as Document
 }
 
-function isLookupQuery <T extends Doc> (query: DocumentQuery<T>): boolean {
+function isLookupQuery<T extends Doc> (query: DocumentQuery<T>): boolean {
   for (const key in query) {
     if (key.includes('$lookup.')) return true
   }

@@ -25,7 +25,12 @@ class ElasticAdapter implements FullTextAdapter {
     await this.client.close()
   }
 
-  async search (_classes: Ref<Class<Doc>>[], query: DocumentQuery<Doc>, size: number | undefined, from: number | undefined): Promise<IndexedDoc[]> {
+  async search (
+    _classes: Ref<Class<Doc>>[],
+    query: DocumentQuery<Doc>,
+    size: number | undefined,
+    from: number | undefined
+  ): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
     const request: any = {
       bool: {

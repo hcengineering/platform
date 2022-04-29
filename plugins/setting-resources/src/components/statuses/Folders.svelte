@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createQuery } from '@anticrm/presentation'
   import { Label, Component } from '@anticrm/ui'
@@ -21,11 +20,12 @@
   import setting from '@anticrm/setting'
   import IconArrowRight from '../icons/ArrowRight.svelte'
 
-
   export let folder: KanbanTemplateSpace | undefined
   let folders: KanbanTemplateSpace[] = []
   const query = createQuery()
-  $: query.query(task.class.KanbanTemplateSpace, {}, (result) => { folders = result })
+  $: query.query(task.class.KanbanTemplateSpace, {}, (result) => {
+    folders = result
+  })
 
   $: if (folder === undefined && folders.length > 0) {
     folder = folders[0]
@@ -37,13 +37,13 @@
 </script>
 
 <div class="flex-between trans-title header mb-3">
-  <Label label={setting.string.Folders}/>
+  <Label label={setting.string.Folders} />
 </div>
 <div class="flex-col overflow-y-auto">
   {#each folders as f (f._id)}
     <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
       <div class="icon flex-no-shrink mr-4">
-        <Component is={f.icon}/>
+        <Component is={f.icon} />
       </div>
       <div class="flex-grow flex-col">
         <div class="fs-title overflow-label">
@@ -61,22 +61,28 @@
 </div>
 
 <style lang="scss">
-  .header { min-height: 1.75rem; }
+  .header {
+    min-height: 1.75rem;
+  }
   .item {
     padding: 1.25rem 1rem 1.25rem 1.25rem;
     background-color: var(--theme-button-bg-enabled);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     cursor: pointer;
 
-    &:hover { background-color: var(--theme-button-bg-hovered); }
+    &:hover {
+      background-color: var(--theme-button-bg-hovered);
+    }
     &.selected {
       background-color: var(--theme-button-bg-pressed);
       border-color: var(--theme-bg-accent-color);
       cursor: auto;
     }
   }
-  .item + .item { margin-top: .75rem; }
+  .item + .item {
+    margin-top: 0.75rem;
+  }
 
   .icon {
     width: 2.25rem;

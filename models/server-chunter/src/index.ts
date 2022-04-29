@@ -30,9 +30,14 @@ export function createModel (builder: Builder): void {
     presenter: serverChunter.function.ChannelTextPresenter
   })
 
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(chunter.class.Comment, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
-    collectDocs: serverChunter.function.CommentRemove
-  })
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(
+    chunter.class.Comment,
+    core.class.Class,
+    serverCore.mixin.ObjectDDParticipant,
+    {
+      collectDocs: serverChunter.function.CommentRemove
+    }
+  )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.ChunterTrigger

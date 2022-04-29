@@ -79,7 +79,9 @@
       if (!findNode(event.target, 'popup-menu')) show = false
     }
   }
-  const startScroll = (): void => { show = false }
+  const startScroll = (): void => {
+    show = false
+  }
 
   onDestroy(() => {
     if (elScroll) elScroll.removeEventListener('scroll', startScroll)
@@ -108,10 +110,12 @@
     color: var(--theme-caption-color);
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .75rem;
-    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, .6);
+    border-radius: 0.75rem;
+    box-shadow: 0px 1.25rem 3.75rem rgba(0, 0, 0, 0.6);
     user-select: none;
     z-index: 10;
   }
-  .scrolling { overflow-y: auto; }
+  .scrolling {
+    overflow-y: auto;
+  }
 </style>

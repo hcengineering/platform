@@ -18,11 +18,10 @@
   import DateRangePresenter from './DateRangePresenter.svelte'
 
   export let value: number | null | undefined
-  export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined
   export let labelNull: IntlString = ui.string.NoDate
 </script>
 
-<DateRangePresenter bind:value withTime {mondayStart} {editable} {icon} {labelOver} {labelNull} />
+<DateRangePresenter bind:value withTime {editable} {icon} {labelOver} {labelNull} />

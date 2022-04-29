@@ -31,7 +31,13 @@ function diffAttributes (doc: Data<Doc>, newDoc: Data<Doc>): DocumentUpdate<Doc>
  * Create or update document if modified only by system account.
  * @public
  */
-export async function createOrUpdate<T extends Doc> (client: TxOperations, _class: Ref<Class<T>>, space: Ref<Space>, data: Data<T>, _id: Ref<T>): Promise<void> {
+export async function createOrUpdate<T extends Doc> (
+  client: TxOperations,
+  _class: Ref<Class<T>>,
+  space: Ref<Space>,
+  data: Data<T>,
+  _id: Ref<T>
+): Promise<void> {
   const existingDoc = await client.findOne<Doc>(_class, { _id })
   if (existingDoc !== undefined) {
     const { _class: _oldClass, _id, space: _oldSpace, modifiedBy, modifiedOn, ...oldData } = existingDoc

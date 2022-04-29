@@ -23,7 +23,7 @@
   let emb: HTMLDivElement | undefined
 
   interface Data {
-    author_url: string
+    authorUrl: string
     author: string
     thumbnail: string
     title: string
@@ -33,10 +33,12 @@
   let played = false
 
   async function getData (href: string): Promise<Data> {
-    const res = await (await fetch(`https://www.youtube.com/oembed?url=${href}&format=json&maxwidth=${maxWidth}&maxheight=${maxHeight}`)).json()
+    const res = await (
+      await fetch(`https://www.youtube.com/oembed?url=${href}&format=json&maxwidth=${maxWidth}&maxheight=${maxHeight}`)
+    ).json()
     height = (res.thumbnail_height / res.thumbnail_width) * maxWidth
     return {
-      author_url: res.author_url,
+      authorUrl: res.author_url,
       author: res.author_name,
       thumbnail: res.thumbnail_url,
       title: res.title,
@@ -45,7 +47,7 @@
   }
 
   function setHeigh (emb: HTMLElement): void {
-    const child = (emb.firstElementChild as HTMLElement)
+    const child = emb.firstElementChild as HTMLElement
     child.style.height = `${height}px`
     child.setAttribute('height', `${height}px`)
   }
@@ -57,8 +59,8 @@
   <div class="line" style="background-color: {getPlatformColor(2)}" />
   {#await getData(href) then data}
     <div class="flex-col">
-      <div class="mb-1"><a class="fs-title" {href} >{data.title}</a></div>
-      <div class="mb-1"><a href={data.author_url} >{data.author}</a></div>
+      <div class="mb-1"><a class="fs-title" {href}>{data.title}</a></div>
+      <div class="mb-1"><a href={data.authorUrl}>{data.author}</a></div>
       {#if !played}
         <div
           class="container"
@@ -66,7 +68,7 @@
             played = true
           }}
         >
-          <img width="400px" src={data.thumbnail} alt={data.title}/>
+          <img width="400px" src={data.thumbnail} alt={data.title} />
           <div class="play-btn"><Play size={'full'} /></div>
         </div>
       {:else}

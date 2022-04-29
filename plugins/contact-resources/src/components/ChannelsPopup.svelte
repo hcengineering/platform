@@ -13,29 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import { CircleButton, closeTooltip, Label } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
 
   interface Item {
-    label: IntlString,
-    icon: Asset,
+    label: IntlString
+    icon: Asset
     value: string
   }
 
   export let value: Item
 
   const copyLink = (): void => {
-    navigator.clipboard
-      .writeText(value.value)
-      // .then(() => {
-      //   console.log('Copied!', value.value)
-      // })
-      // .catch((err) => {
-      //   console.log('Something went wrong', err)
-      // })
+    navigator.clipboard.writeText(value.value)
+    // .then(() => {
+    //   console.log('Copied!', value.value)
+    // })
+    // .catch((err) => {
+    //   console.log('Something went wrong', err)
+    // })
     closeTooltip()
   }
 </script>
@@ -47,7 +45,7 @@
     <div class="overflow-label">{value.value}</div>
   </div>
   <div class="button" on:click|preventDefault={copyLink}>
-    <IconCopy size={'small'}/>
+    <IconCopy size={'small'} />
   </div>
 </div>
 
@@ -57,6 +55,8 @@
     margin-left: 1.5rem;
     color: var(--theme-content-dark-color);
     cursor: pointer;
-    &:hover { color: var(--theme-caption-color); }
+    &:hover {
+      color: var(--theme-caption-color);
+    }
   }
 </style>

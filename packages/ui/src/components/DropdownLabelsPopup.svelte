@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
@@ -27,9 +26,11 @@
 
   let search: string = ''
   let phTraslate: string = ''
-  $: translate(placeholder, {}).then(res => { phTraslate = res })
+  $: translate(placeholder, {}).then((res) => {
+    phTraslate = res
+  })
   const dispatch = createEventDispatcher()
-  let btns: HTMLButtonElement[] = []
+  const btns: HTMLButtonElement[] = []
   let searchInput: HTMLInputElement
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
@@ -42,12 +43,21 @@
     } else searchInput.focus()
   }
 
-  onMount(() => { if (searchInput) searchInput.focus() })
+  onMount(() => {
+    if (searchInput) searchInput.focus()
+  })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={searchInput} type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      placeholder={phTraslate}
+      on:input={(ev) => {}}
+      on:change
+    />
   </div>
   <div class="scroll">
     <div class="box">
@@ -57,7 +67,9 @@
           class="menu-item flex-between"
           on:mouseover={(ev) => ev.currentTarget.focus()}
           on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => { dispatch('close', item.id) }}
+          on:click={() => {
+            dispatch('close', item.id)
+          }}
         >
           <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
           {#if item.id === selected}

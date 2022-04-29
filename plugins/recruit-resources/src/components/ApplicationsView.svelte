@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import chunter from '@anticrm/chunter'
@@ -60,11 +59,11 @@
   }
 
   function showCreateDialog () {
-    showPopup(CreateApplication, { }, 'top')
+    showPopup(CreateApplication, {}, 'top')
   }
 
   function updateResultQuery (search: string): void {
-    resultQuery = (search === '') ? baseQuery : { ...baseQuery, $search: search }
+    resultQuery = search === '' ? baseQuery : { ...baseQuery, $search: search }
   }
 </script>
 
@@ -74,16 +73,15 @@
     <span class="ac-header__title"><Label label={recruit.string.Applications} /></span>
   </div>
 
-  <SearchEdit bind:value={search} on:change={() => { updateResultQuery(search) }} />
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search)
+    }}
+  />
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
 <Scroller>
-  <TableBrowser
-    _class={recruit.class.Applicant}
-    {config}
-    {options}
-    query={ resultQuery }
-    showNotification
-  />
+  <TableBrowser _class={recruit.class.Applicant} {config} {options} query={resultQuery} showNotification />
 </Scroller>

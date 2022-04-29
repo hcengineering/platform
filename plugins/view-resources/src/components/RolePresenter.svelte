@@ -15,9 +15,7 @@
 -->
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Mixin, Ref } from '@anticrm/core'
-  import {
-    getClient
-  } from '@anticrm/presentation'
+  import { getClient } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
   import { getMixinStyle } from '../utils'
 
@@ -47,16 +45,17 @@
       .map((m) => hierarchy.getClass(m) as Mixin<Doc>)
   }
 </script>
+
 {#if mixins.length > 0}
   <div class="mixin-container">
     {#each mixins as mixin}
-      <div class="mixin-selector" 
-      style={getMixinStyle(mixin._id, true)}>
+      <div class="mixin-selector" style={getMixinStyle(mixin._id, true)}>
         <Label label={mixin.label} />
       </div>
     {/each}
   </div>
 {/if}
+
 <style lang="scss">
   .mixin-container {
     display: flex;
@@ -65,14 +64,14 @@
       cursor: pointer;
       height: 24px;
       min-width: 84px;
-      
+
       border-radius: 8px;
 
       font-weight: 500;
       font-size: 10px;
 
       text-transform: uppercase;
-      color: #FFFFFF;
+      color: #ffffff;
 
       display: flex;
       align-items: center;

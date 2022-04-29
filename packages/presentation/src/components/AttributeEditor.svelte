@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   // import core from '@anticrm/core'
   import type { Class, Doc, Ref } from '@anticrm/core'
@@ -35,7 +34,7 @@
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: typeClassId = (attribute !== undefined) ? getAttributePresenterClass(attribute) : undefined
+  $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
@@ -56,7 +55,14 @@
   {#await editor}
     ...
   {:then instance}
-    <svelte:component this={instance} label={attribute?.label} placeholder={attribute?.label} {maxWidth} value={getAttribute(client, object, { key: attributeKey, attr: attribute })} {onChange} {focus}/>
+    <svelte:component
+      this={instance}
+      label={attribute?.label}
+      placeholder={attribute?.label}
+      {maxWidth}
+      value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+      {onChange}
+      {focus}
+    />
   {/await}
 {/if}
-

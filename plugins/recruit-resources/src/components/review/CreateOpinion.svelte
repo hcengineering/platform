@@ -56,7 +56,7 @@
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
-  
+
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const reviewInstance = await client.findOne(recruit.class.Review, { _id: doc.attachedTo as Ref<Review> })
@@ -66,7 +66,10 @@
 
     await client.addCollection(
       recruit.class.Opinion,
-      reviewInstance.space, doc.attachedTo, doc.attachedToClass, 'opinions',
+      reviewInstance.space,
+      doc.attachedTo,
+      doc.attachedToClass,
+      'opinions',
       {
         number: (incResult as any).object.sequence,
         description: doc.description,
@@ -87,18 +90,24 @@
 >
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.75}>
-    <EditBox bind:value={doc.value} label={recruit.string.OpinionValue} placeholder={recruit.string.OpinionValuePlaceholder} focus maxWidth={'10rem'}/>   
-    <div class='mt-1 mb-1'>
-      <Label label={recruit.string.Description}/>:
+    <EditBox
+      bind:value={doc.value}
+      label={recruit.string.OpinionValue}
+      placeholder={recruit.string.OpinionValuePlaceholder}
+      focus
+      maxWidth={'10rem'}
+    />
+    <div class="mt-1 mb-1">
+      <Label label={recruit.string.Description} />:
     </div>
-    <div class='description flex'>
-      <StyledTextEditor bind:content={doc.description}/>
+    <div class="description flex">
+      <StyledTextEditor bind:content={doc.description} />
     </div>
   </Grid>
 </Card>
 
 <style lang="scss">
-  .description{
+  .description {
     height: 10rem;
     padding: 0.5rem;
     border: 1px solid var(--theme-menu-divider);

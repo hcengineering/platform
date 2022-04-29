@@ -64,13 +64,13 @@
   }
 </script>
 
-<svelte:window on:keydown={onKeyDown}/>
+<svelte:window on:keydown={onKeyDown} />
 <div class="antiPopup template-popup">
   <div class="mt-4 mb-4">
     <EditWithIcon icon={IconSearch} bind:value={query} placeholder={templates.string.SearchTemplate} />
   </div>
   <Label label={templates.string.Suggested} />
-  <div class='scroll mt-2'>
+  <div class="scroll mt-2">
     {#each items as item, i}
       <div
         class="item"
@@ -83,12 +83,14 @@
         }}
         on:mouseover={() => {
           selected = i
-        }}>
+        }}
+      >
         {item.title}
       </div>
     {/each}
-    </div>
+  </div>
 </div>
+
 <style lang="scss">
   .template-popup {
     width: 19.75rem;

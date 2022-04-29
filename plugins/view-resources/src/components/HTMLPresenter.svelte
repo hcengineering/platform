@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-import { MessageViewer } from '@anticrm/presentation'
+  import { MessageViewer } from '@anticrm/presentation'
 
-export let value: string
+  export let value: string
 </script>
 
 <span class="lines-limit-2">
-  <MessageViewer message={value}/>
+  <MessageViewer message={value} />
 </span>
-

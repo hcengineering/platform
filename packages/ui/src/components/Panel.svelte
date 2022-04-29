@@ -24,7 +24,6 @@
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let rightSection: boolean = false
-  export let reverseCommands: boolean = false
   export let showHeader: boolean = true
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -35,7 +34,7 @@
 </script>
 
 <div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>
-  <div class='panel-content-container'>
+  <div class="panel-content-container">
     {#if showHeader}
       <div class="ac-header short mirror divide highlight">
         <div class="buttons-group">
@@ -122,7 +121,7 @@
   </div>
 </div>
 
-<style lang="scss"> 
+<style lang="scss">
   .panel-content-container {
     display: flex;
     flex-grow: 1;

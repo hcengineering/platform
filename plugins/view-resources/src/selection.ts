@@ -48,10 +48,10 @@ export interface FocusSelection {
 /**
  * @public
  */
-export const focusStore = writable<FocusSelection>({ })
+export const focusStore = writable<FocusSelection>({})
 export const selectionStore = writable<Doc[]>([])
 
-export const previewDocument = writable<Doc|undefined>()
+export const previewDocument = writable<Doc | undefined>()
 
 /**
  * @public
@@ -63,7 +63,7 @@ export function updateFocus (selection?: FocusSelection): void {
       cur.focus = selection?.focus
       cur.provider = selection?.provider
       ;(cur as any).now = now
-      previewDocument.update(old => {
+      previewDocument.update((old) => {
         if (old !== undefined) {
           return selection?.focus
         }
@@ -74,9 +74,9 @@ export function updateFocus (selection?: FocusSelection): void {
 
   // We need to clear selection items not belong to passed provider.
   if (selection?.provider !== undefined) {
-    const docs = new Set(selection?.provider.docs().map(it => it._id))
+    const docs = new Set(selection?.provider.docs().map((it) => it._id))
     selectionStore.update((old) => {
-      return old.filter(it => docs.has(it._id))
+      return old.filter((it) => docs.has(it._id))
     })
   }
 }
@@ -89,9 +89,7 @@ export function updateFocus (selection?: FocusSelection): void {
 export class ListSelectionProvider implements SelectionFocusProvider {
   _docs: Doc[] = []
   _current?: FocusSelection
-  constructor (
-    private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void
-  ) {
+  constructor (private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void) {
     const unsubscribe = focusStore.subscribe((doc) => {
       this._current = doc
     })
@@ -129,11 +127,9 @@ export class ListSelectionProvider implements SelectionFocusProvider {
 
   updateSelection (docs: Doc[], value: boolean): void {
     selectionStore.update((selection) => {
-      const docsSet = new Set(docs.map(it => it._id))
+      const docsSet = new Set(docs.map((it) => it._id))
       const noDocs = selection.filter((it) => !docsSet.has(it._id))
-      return value
-        ? [...noDocs, ...docs]
-        : noDocs
+      return value ? [...noDocs, ...docs] : noDocs
     })
   }
 

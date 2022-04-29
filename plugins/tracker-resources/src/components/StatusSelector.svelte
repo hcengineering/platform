@@ -52,12 +52,12 @@
     kind="no-border"
     on:click={handleStatusEditorOpened}
   >
-  <svelte:fragment slot="content">
-    {#if selectedStatusLabel}
-      <span class="nowrap">{selectedStatusLabel}</span>
-    {/if}
-  </svelte:fragment>
-</Button>
+    <svelte:fragment slot="content">
+      {#if selectedStatusLabel}
+        <span class="nowrap">{selectedStatusLabel}</span>
+      {/if}
+    </svelte:fragment>
+  </Button>
 {:else if kind === 'icon'}
   <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
     {#if selectedStatusIcon}

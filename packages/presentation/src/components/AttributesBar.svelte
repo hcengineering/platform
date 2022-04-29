@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
   import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
   export let object: Doc
-  export let keys: (string|KeyedAttribute)[]
+  export let keys: (string | KeyedAttribute)[]
   export let showHeader: boolean = true
   export let vertical: boolean = false
 </script>
@@ -55,7 +54,7 @@
       flex-direction: row;
       align-items: center;
       min-width: 0;
-      font-size: .75rem;
+      font-size: 0.75rem;
 
       .column + .column {
         margin-left: 3rem;
@@ -81,7 +80,7 @@
       .column + .column {
         margin-top: 1rem;
         &::before {
-          top: -.5rem;
+          top: -0.5rem;
           left: 0;
           right: 0;
           height: 1px;

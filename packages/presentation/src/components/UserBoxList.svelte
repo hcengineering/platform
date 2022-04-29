@@ -27,7 +27,6 @@
   export let items: Ref<Person>[] = []
   export let _class: Ref<Class<Doc>>
   export let label: IntlString
-  export let noItems: IntlString
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -56,7 +55,7 @@
         selectedUsers: items
       },
       evt.target as HTMLElement,
-      () => { },
+      () => {},
       (result) => {
         if (result !== undefined) {
           items = result
@@ -72,7 +71,9 @@
     icon={persons.length === 0 ? Members : undefined}
     label={persons.length === 0 ? presentation.string.Members : undefined}
     width={width ?? 'min-content'}
-    {kind} {size} {justify}
+    {kind}
+    {size}
+    {justify}
     on:click={addPerson}
   >
     <svelte:fragment slot="content">

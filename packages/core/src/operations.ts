@@ -31,11 +31,19 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return await this.client.close()
   }
 
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
     return this.client.findAll(_class, query, options)
   }
 
-  findOne <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<WithLookup<T> | undefined> {
+  findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<WithLookup<T> | undefined> {
     return this.client.findOne(_class, query, options)
   }
 
@@ -43,7 +51,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.tx(tx)
   }
 
-  async createDoc<T extends Doc> (
+  async createDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     attributes: Data<T>,
@@ -114,7 +122,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return tx.objectId
   }
 
-  putBag <P extends PropertyType>(
+  putBag<P extends PropertyType>(
     _class: Ref<Class<Doc>>,
     space: Ref<Space>,
     objectId: Ref<Doc>,
@@ -126,7 +134,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.tx(tx)
   }
 
-  updateDoc <T extends Doc>(
+  updateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     objectId: Ref<T>,
@@ -137,11 +145,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.client.tx(tx)
   }
 
-  removeDoc<T extends Doc> (
-    _class: Ref<Class<T>>,
-    space: Ref<Space>,
-    objectId: Ref<T>
-  ): Promise<TxResult> {
+  removeDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): Promise<TxResult> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId)
     return this.client.tx(tx)
   }
@@ -171,7 +175,16 @@ export class TxOperations implements Omit<Client, 'notify'> {
   update<T extends Doc>(doc: T, update: DocumentUpdate<T>, retrieve?: boolean): Promise<TxResult> {
     if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
-      return this.updateCollection(doc._class, doc.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection, update, retrieve)
+      return this.updateCollection(
+        doc._class,
+        doc.space,
+        adoc._id,
+        adoc.attachedTo,
+        adoc.attachedToClass,
+        adoc.collection,
+        update,
+        retrieve
+      )
     }
     return this.updateDoc(doc._class, doc.space, doc._id, update, retrieve)
   }
@@ -179,7 +192,14 @@ export class TxOperations implements Omit<Client, 'notify'> {
   remove<T extends Doc>(doc: T): Promise<TxResult> {
     if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
-      return this.removeCollection(doc._class, doc.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
+      return this.removeCollection(
+        doc._class,
+        doc.space,
+        adoc._id,
+        adoc.attachedTo,
+        adoc.attachedToClass,
+        adoc.collection
+      )
     }
     return this.removeDoc(doc._class, doc.space, doc._id)
   }

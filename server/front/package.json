@@ -20,7 +20,7 @@
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
     "@types/node": "~16.11.12",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "^2.25.3",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@anticrm/core": "~0.6.16",
-    "@anticrm/platform": "~0.6.5",
+    "@anticrm/platform": "~0.6.6",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "uuid": "^8.3.2",

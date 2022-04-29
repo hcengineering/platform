@@ -12,10 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { Class,FindOptions,getCurrentAccount,Ref,SortingOrder,SortingQuery,Space } from '@anticrm/core'
-  import { AnyComponent, Button, getCurrentLocation, Icon, Label, navigate, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Class, FindOptions, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
+  import {
+    AnyComponent,
+    Button,
+    getCurrentLocation,
+    Icon,
+    Label,
+    navigate,
+    Scroller,
+    SearchEdit,
+    showPopup
+  } from '@anticrm/ui'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import plugin from '../plugin'
   import { SpacePresenter } from '@anticrm/view-resources'
@@ -31,8 +40,8 @@
   const client = getClient()
   const spaceQuery = createQuery()
   let search: string = ''
-  let sort: SortingQuery<Space> = {
-    name: SortingOrder.Ascending 
+  const sort: SortingQuery<Space> = {
+    name: SortingOrder.Ascending
   }
 
   let spaces: Space[] = []
@@ -40,18 +49,22 @@
   $: update(search, sort)
 
   async function update (search: string, sort: SortingQuery<Space>): Promise<void> {
-    const query = search.trim().length > 0 ? { name: { $like: '%' + search + '%' } }: {}
+    const query = search.trim().length > 0 ? { name: { $like: '%' + search + '%' } } : {}
     const options: FindOptions<Space> = {
       sort
     }
-    spaceQuery.query(_class, query, (res) => {
-      spaces =  res.filter((p) => !p.private || p.members.includes(me))
-    }, options)
+    spaceQuery.query(
+      _class,
+      query,
+      (res) => {
+        spaces = res.filter((p) => !p.private || p.members.includes(me))
+      },
+      options
+    )
   }
 
-
   function showCreateDialog (ev: Event) {
-    showPopup(createItemDialog as AnyComponent, { }, 'middle')
+    showPopup(createItemDialog as AnyComponent, {}, 'middle')
   }
 
   async function join (space: Space): Promise<void> {
@@ -84,48 +97,48 @@
     <span class="ac-header__title"><Label {label} /></span>
   </div>
   {#if createItemDialog}
-    <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)}/>
+    <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
   {/if}
 </div>
 <div class="ml-8 mr-8 mt-4"><SearchEdit bind:value={search} /></div>
 <Scroller padding>
   <div class="flex-col">
     {#each spaces as space (space._id)}
-    {@const icon = classIcon(client, space._class)}
-    {@const joined = space.members.includes(me)}
-    <div class="divider"></div>
-    <div class="item flex-between">
-      <div>
-        <div class="fs-title flex">
-          {#if icon}
-            <Icon {icon} size={'small'} />
-          {/if}
-          <SpacePresenter value={space} />
-        </div>
+      {@const icon = classIcon(client, space._class)}
+      {@const joined = space.members.includes(me)}
+      <div class="divider" />
+      <div class="item flex-between">
         <div>
-          {#if joined}
-            <Label label={plugin.string.Joined} />
+          <div class="fs-title flex">
+            {#if icon}
+              <Icon {icon} size={'small'} />
+            {/if}
+            <SpacePresenter value={space} />
+          </div>
+          <div>
+            {#if joined}
+              <Label label={plugin.string.Joined} />
+              &#183
+            {/if}
+            {space.members.length}
             &#183
+            {space.description}
+          </div>
+        </div>
+        <div class="tools flex">
+          {#if joined}
+            <Button size={'x-large'} label={plugin.string.Leave} on:click={() => leave(space)} />
+          {:else}
+            <div class="mr-2">
+              <Button size={'x-large'} label={plugin.string.View} on:click={() => view(space)} />
+            </div>
+            <Button size={'x-large'} kind={'primary'} label={plugin.string.Join} on:click={() => join(space)} />
           {/if}
-          {space.members.length}
-          &#183
-          {space.description}
         </div>
       </div>
-      <div class="tools flex">
-        {#if joined}
-          <Button size={'x-large'} label={plugin.string.Leave} on:click={() => leave(space)}/>
-        {:else}
-          <div class="mr-2">
-            <Button size={'x-large'} label={plugin.string.View} on:click={() => view(space)}/>
-          </div>
-          <Button size={'x-large'} kind={'primary'} label={plugin.string.Join} on:click={() => join(space)}/>
-        {/if}
-      </div>
-    </div>
     {/each}
     <div class="flex-center mt-10">
-      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
     </div>
   </div>
 </Scroller>
@@ -141,7 +154,8 @@
     cursor: pointer;
     padding: 1rem 0.75rem;
 
-    &:hover, &:focus { 
+    &:hover,
+    &:focus {
       background-color: var(--popup-bg-hover);
 
       .tools {

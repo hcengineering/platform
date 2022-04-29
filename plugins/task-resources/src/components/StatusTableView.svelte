@@ -19,7 +19,7 @@
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
   import { ScrollBox } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
-  import { Table, TableBrowser } from '@anticrm/view-resources'
+  import { TableBrowser } from '@anticrm/view-resources'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
@@ -135,16 +135,20 @@
       <Label label={task.string.DoneStates} />
     </div>
   </div>
-  <div class="flex-row-center caption-color states" class:antiStatesBar={doneStatusesView} class:justify-end={doneStatusesView} >
+  <div
+    class="flex-row-center caption-color states"
+    class:antiStatesBar={doneStatusesView}
+    class:justify-end={doneStatusesView}
+  >
     {#if doneStatusesView}
       <div
-          class="doneState withoutDone flex-center whitespace-nowrap"
-          class:disable={!withoutDone}
-          on:click={() => {
-            noDoneClick()
-          }}
-        >
-        <Label label={task.string.NoDoneState}/>
+        class="doneState withoutDone flex-center whitespace-nowrap"
+        class:disable={!withoutDone}
+        on:click={() => {
+          noDoneClick()
+        }}
+      >
+        <Label label={task.string.NoDoneState} />
       </div>
       {#each doneStates as state}
         <div
@@ -180,7 +184,7 @@
 <style lang="scss">
   .statustableview-container {
     flex-grow: 1;
-    margin-bottom: .75rem;
+    margin-bottom: 0.75rem;
     min-height: 0;
     height: 100%;
   }
@@ -188,15 +192,19 @@
   .header {
     margin-left: 2.5rem;
     margin-right: 1.75rem;
-    .buttons { padding: 0.125rem 0; }
-    .states { max-width: 75%; }
+    .buttons {
+      padding: 0.125rem 0;
+    }
+    .states {
+      max-width: 75%;
+    }
   }
 
   .button {
     height: 2.5rem;
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid transparent;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
 
     &:hover {
@@ -211,16 +219,26 @@
   }
 
   .doneState {
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     height: 2.5rem;
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
 
-    &.won { background-color: #60b96e; }
-    &.lost { background-color: #f06c63; }
-    &.withoutDone { background-color: var(--theme-bg-focused-color); }
-    &.disable { background-color: var(--theme-button-bg-enabled); }
+    &.won {
+      background-color: #60b96e;
+    }
+    &.lost {
+      background-color: #f06c63;
+    }
+    &.withoutDone {
+      background-color: var(--theme-bg-focused-color);
+    }
+    &.disable {
+      background-color: var(--theme-button-bg-enabled);
+    }
   }
-  .doneState + .doneState { margin-left: .75rem; }
+  .doneState + .doneState {
+    margin-left: 0.75rem;
+  }
 </style>

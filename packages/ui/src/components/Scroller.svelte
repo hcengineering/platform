@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte'
 
@@ -30,9 +29,9 @@
   let divTrack: HTMLElement
   let divTHead: HTMLElement
   let elTHead: Element
-  let isBack: boolean = false  // ?
+  let isBack: boolean = false // ?
   let isTHead: boolean = false
-  let hasTHeads: boolean = false  // ?
+  let hasTHeads: boolean = false // ?
   let isScrolling: boolean = false
   let enabledChecking: boolean = false
   let dY: number
@@ -91,11 +90,11 @@
         const th = tr.children.item(i)
         if (th) {
           let newStyle = `flex-shrink: 0; width: ${th.clientWidth}px; `
-          if ((i === 0 && !enabledChecking) || (i === 1 && enabledChecking)) newStyle += `padding-right: 1.5rem;`
-          else if (i === tr.children.length - 1) newStyle += `padding-left: 1.5rem;`
-          else if (i === 0 && enabledChecking) newStyle += `padding: 0 .75rem;`
-          else newStyle += `padding: 0 1.5rem;`
-          if (th.classList.contains('sorted')) newStyle += ` margin-right: .25rem;`
+          if ((i === 0 && !enabledChecking) || (i === 1 && enabledChecking)) newStyle += 'padding-right: 1.5rem;'
+          else if (i === tr.children.length - 1) newStyle += 'padding-left: 1.5rem;'
+          else if (i === 0 && enabledChecking) newStyle += 'padding: 0 .75rem;'
+          else newStyle += 'padding: 0 1.5rem;'
+          if (th.classList.contains('sorted')) newStyle += ' margin-right: .25rem;'
           divTHead.insertAdjacentHTML('beforeend', `<div style="${newStyle}">${tr.children.item(i)?.textContent}</div>`)
         }
       }
@@ -117,8 +116,7 @@
           const rectTable = el.parentElement?.getBoundingClientRect()
           if (rectTable) {
             if (rectTable.top < rectScroll.top && rectTable.bottom > rectScroll.top + rect.height) {
-              if (!isTHead && divTHead)
-                if (fillTHead(el)) visibleEl = i
+              if (!isTHead && divTHead) if (fillTHead(el)) visibleEl = i
               if (isTHead) {
                 if (rect.width > rectScroll.width) divTHead.style.width = rectScroll.width - correctPadding + 'px'
                 else divTHead.style.width = rect.width + 'px'
@@ -134,8 +132,13 @@
                   divTHead.style.opacity = '0'
                 }
               }
-            } else if ((rectTable.top > rectScroll.top + rect.height || rectTable.bottom < rectScroll.top + rect.height) && isTHead && visibleEl === i)
+            } else if (
+              (rectTable.top > rectScroll.top + rect.height || rectTable.bottom < rectScroll.top + rect.height) &&
+              isTHead &&
+              visibleEl === i
+            ) {
               clearTHead()
+            }
           }
         })
       } else hasTHeads = false
@@ -144,7 +147,7 @@
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
-      const proc = divScroll.clientHeight / divScroll.scrollHeight * 100
+      const proc = (divScroll.clientHeight / divScroll.scrollHeight) * 100
       const procScroll = (divScroll.clientHeight - 4) / 100
       const procTop = divScroll.scrollTop / divScroll.scrollHeight
       divBar.style.height = procScroll * proc + 'px'
@@ -189,7 +192,7 @@
       isScrolling = true
     }
   }
-  
+
   const checkFade = (): void => {
     if (divScroll) {
       scrolling = false
@@ -206,15 +209,16 @@
     if (!isScrolling) checkBar()
   }
 
-  let observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: .1 })
+  const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
 
   $: if (firstScroll && divScroll && divScroll.clientHeight !== divScroll.scrollHeight) {
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
     firstScroll = false
   }
   $: if (autoscroll && belowContent && belowContent <= 50) scrolling = true
-  $: if (scrolling && belowContent && belowContent > 50)
+  $: if (scrolling && belowContent && belowContent > 50) {
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+  }
 
   onMount(() => {
     if (divScroll && divBox) {
@@ -225,7 +229,9 @@
     }
     if (divBack) checkBack()
   })
-  onDestroy(() => { if (divScroll) divScroll.removeEventListener('scroll', checkFade) })
+  onDestroy(() => {
+    if (divScroll) divScroll.removeEventListener('scroll', checkFade)
+  })
   afterUpdate(() => {
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
@@ -262,17 +268,8 @@
     </div>
   </div>
   <div bind:this={divBack} class="back" />
-  <div
-    class="bar"
-    class:hovered={isScrolling}
-    bind:this={divBar}
-    on:mousedown={onScrollStart}
-  />
-  <div
-    class="track"
-    class:hovered={isScrolling}
-    bind:this={divTrack}
-  />
+  <div class="bar" class:hovered={isScrolling} bind:this={divBar} on:mousedown={onScrollStart} />
+  <div class="track" class:hovered={isScrolling} bind:this={divTrack} />
   <div bind:this={divTHead} class="fly-head thead-style" />
 </div>
 
@@ -291,7 +288,9 @@
     overflow-x: hidden;
     overflow-y: auto;
 
-    &::-webkit-scrollbar:vertical { width: 0; }
+    &::-webkit-scrollbar:vertical {
+      width: 0;
+    }
   }
   .box {
     display: flex;
@@ -303,7 +302,9 @@
     .scroll {
       flex-grow: 0;
       height: min-content;
-      .box { height: min-content; }
+      .box {
+        height: min-content;
+      }
     }
   }
 
@@ -316,9 +317,9 @@
     width: 8px;
     transform-origin: center;
     transform: scaleX(0);
-    transition: all .1s ease-in-out;
+    transition: all 0.1s ease-in-out;
     background-color: var(--theme-menu-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
   .bar {
     visibility: hidden;
@@ -329,18 +330,19 @@
     min-height: 2rem;
     max-height: calc(100% - 12px);
     transform-origin: center;
-    transform: scaleX(.5);
+    transform: scaleX(0.5);
     background-color: var(--theme-button-bg-focused);
-    border-radius: .125rem;
-    opacity: .5;
+    border-radius: 0.125rem;
+    opacity: 0.5;
     cursor: pointer;
     z-index: 1;
-    transition: all .1s;
+    transition: all 0.1s;
 
-    &:hover, &.hovered {
+    &:hover,
+    &.hovered {
       background-color: var(--theme-button-bg-hovered);
       transform: scaleX(1);
-      border-radius: .25rem;
+      border-radius: 0.25rem;
       opacity: 1;
       filter: drop-shadow(0 0 1px black);
 
@@ -350,7 +352,9 @@
         transform: scaleX(1);
       }
     }
-    &.hovered { transition: none; }
+    &.hovered {
+      transition: none;
+    }
   }
 
   .back {
@@ -367,7 +371,7 @@
     position: fixed;
     pointer-events: none;
     visibility: hidden;
-    transition: top .2s ease-out, opacity .2s;
+    transition: top 0.2s ease-out, opacity 0.2s;
   }
   .thead-style {
     display: flex;

@@ -34,7 +34,5 @@ export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TObjectSearchCategory
-  )
+  builder.createModel(TObjectSearchCategory)
 }

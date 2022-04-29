@@ -82,7 +82,7 @@ async function showEditMembersPopup (object: Card, client: Client, e?: Event): P
     getPopupAlignment(e),
     undefined,
     (result: Array<Ref<Employee>>) => {
-      client.update(object, { members: result })
+      void client.update(object, { members: result })
     }
   )
 }

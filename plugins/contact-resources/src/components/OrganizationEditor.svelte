@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
@@ -58,20 +57,27 @@
   let opened: boolean = false
   const icon = Company
   let container: HTMLElement
-
 </script>
-<div class="caption-color cursor-pointer" bind:this={container} class:empty={selected === undefined} on:click|preventDefault={() => {
-  if (!opened) {
-    opened = true
-    showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
-      if (result) setValue(result)
-      opened = false
-    })
-  }
-}}>
+
+<div
+  class="caption-color cursor-pointer"
+  bind:this={container}
+  class:empty={selected === undefined}
+  on:click|preventDefault={() => {
+    if (!opened) {
+      opened = true
+      showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
+        if (result) setValue(result)
+        opened = false
+      })
+    }
+  }}
+>
   {#if selected}{selected.label}{:else}<Label {label} />{/if}
 </div>
 
 <style lang="scss">
-  .empty { color: var(--theme-content-trans-color); }
+  .empty {
+    color: var(--theme-content-trans-color);
+  }
 </style>

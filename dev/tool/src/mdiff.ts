@@ -88,18 +88,18 @@ function getId (d: Doc): Ref<Doc> {
   if (d._class === core.class.Attribute) {
     const attr = d as Attribute<Type<any>>
     return (attr.attributeOf + '.' + attr.name) as Ref<Doc>
-  } else if (d._class === 'view:class:Viewlet' as Ref<Doc>) {
+  } else if (d._class === ('view:class:Viewlet' as Ref<Doc>)) {
     const cr = d as any
     return ((cr.attachTo as string) + '.' + (cr.open as string)) as Ref<Doc>
-  } else if (d._class === 'workbench:class:Application' as Ref<Doc>) {
+  } else if (d._class === ('workbench:class:Application' as Ref<Doc>)) {
     const cr = d as any
     return ('workbench.app.' + (cr.label as string)) as Ref<Doc>
-  } else if (d._class === 'view:class:ActionTarget' as Ref<Doc>) {
+  } else if (d._class === ('view:class:ActionTarget' as Ref<Doc>)) {
     const cr = d as any
     return ((cr.target as string) + '.' + (cr.action as string)) as Ref<Doc>
-  } else if (d._class === 'server-core:class:Trigger' as Ref<Doc>) {
+  } else if (d._class === ('server-core:class:Trigger' as Ref<Doc>)) {
     const cr = d as any
-    return ((cr.trigger as string)) as Ref<Doc>
+    return cr.trigger as string as Ref<Doc>
   }
   return d._id
 }

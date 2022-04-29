@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
@@ -29,13 +28,8 @@
   const client = getClient()
   const lead = value.$lookup?.lead
 
-  async function updateStatus(status: ProjectStatus) {
-    await client.updateDoc(
-      plugin.class.Project,
-      space,
-      value._id,
-      {status}
-    )
+  async function updateStatus (status: ProjectStatus) {
+    await client.updateDoc(plugin.class.Project, space, value._id, { status })
   }
 </script>
 
@@ -46,12 +40,7 @@
   <span class="label nowrap project-label">{value.label}</span>
   {#if lead}
     <div class="lead-container">
-      <ObjectPresenter
-        value={lead}
-        objectId={lead._id}
-        _class={lead._class}
-        props={{shouldShowName: false}}
-      />
+      <ObjectPresenter value={lead} objectId={lead._id} _class={lead._class} props={{ shouldShowName: false }} />
     </div>
   {:else}
     <div class="lead-placeholder">
@@ -63,7 +52,7 @@
       kind="icon"
       shouldShowLabel={false}
       status={value.status}
-      onStatusChange={status => status !== undefined && updateStatus(status)}
+      onStatusChange={(status) => status !== undefined && updateStatus(status)}
     />
   </div>
 </div>

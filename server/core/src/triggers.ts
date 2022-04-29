@@ -23,8 +23,8 @@ import type { Trigger, TriggerFunc, TriggerControl } from './types'
 import serverCore from './plugin'
 
 /**
-  * @public
-  */
+ * @public
+ */
 export class Triggers {
   private readonly triggers: TriggerFunc[] = []
 
@@ -43,8 +43,8 @@ export class Triggers {
   }
 
   async apply (account: Ref<Account>, tx: Tx, ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
-    const derived = this.triggers.map(trigger => trigger(tx, { ...ctrl, txFactory: new TxFactory(account) }))
+    const derived = this.triggers.map((trigger) => trigger(tx, { ...ctrl, txFactory: new TxFactory(account) }))
     const result = await Promise.all(derived)
-    return result.flatMap(x => x)
+    return result.flatMap((x) => x)
   }
 }

@@ -70,17 +70,25 @@
     &.selectable {
       cursor: pointer;
 
-      &:hover { background-color: var(--highlight-hover); }
+      &:hover {
+        background-color: var(--highlight-hover);
+      }
       &.selected-row {
         background-color: var(--highlight-select);
 
-        &:hover { background-color: var(--highlight-hover); }
+        &:hover {
+          background-color: var(--highlight-hover);
+        }
       }
-      .message { cursor: pointer; }
+      .message {
+        cursor: pointer;
+      }
       .selected {
         background-color: var(--primary-bg-color);
 
-        &:hover { background-color: var(--primary-bg-hover); }
+        &:hover {
+          background-color: var(--primary-bg-hover);
+        }
       }
     }
   }
@@ -97,23 +105,25 @@
     align-items: center;
     flex-grow: 1;
     margin-right: 2.5rem;
-    padding: .25rem 0;
+    padding: 0.25rem 0;
 
-    &.out { justify-content: flex-end; }
+    &.out {
+      justify-content: flex-end;
+    }
   }
   .message {
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     max-width: 66%;
     width: fit-content;
     background-color: var(--theme-incoming-msg);
-    border-radius: .75rem .75rem .75rem .25rem;
+    border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
     overflow-wrap: anywhere;
     user-select: text;
     cursor: default;
 
     &.outcoming {
       background-color: var(--theme-outcoming-msg);
-      border-radius: .75rem .75rem .25rem .75rem;
+      border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
     }
     .time {
       align-self: flex-end;

@@ -18,6 +18,7 @@
       justify="left"
       on:click={async () => {
         client.update(value, { isArchived: true })
-      }} />
+      }}
+    />
   </div>
 {/if}

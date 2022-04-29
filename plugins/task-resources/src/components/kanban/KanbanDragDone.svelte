@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
@@ -27,13 +26,10 @@
 
   const doneStatesQ = createQuery()
   $: if (kanban !== undefined) {
-    doneStatesQ.query(
-      task.class.DoneState,
-      { space: kanban.space },
-      (result) => {
-        wonStates = result.filter((x) => x._class === task.class.WonState)
-        lostStates = result.filter((x) => x._class === task.class.LostState)
-      })
+    doneStatesQ.query(task.class.DoneState, { space: kanban.space }, (result) => {
+      wonStates = result.filter((x) => x._class === task.class.WonState)
+      lostStates = result.filter((x) => x._class === task.class.LostState)
+    })
   }
 
   let hoveredDoneState: Ref<DoneState> | undefined
@@ -42,7 +38,6 @@
     hoveredDoneState = undefined
     dispatch('done', state)
   }
-
 </script>
 
 <div class="done-panel overflow-y-auto whitespace-nowrap">
@@ -59,8 +54,9 @@
         }
       }}
       on:dragover|preventDefault={() => {}}
-      on:drop={onDone(wonState)}>
-      <div class="done-icon won mr-2"/>
+      on:drop={onDone(wonState)}
+    >
+      <div class="done-icon won mr-2" />
       {wonState.title}
     </div>
   {/each}
@@ -77,8 +73,9 @@
         }
       }}
       on:dragover|preventDefault={() => {}}
-      on:drop={onDone(lostState)}>
-      <div class="done-icon lost mr-2"/>
+      on:drop={onDone(lostState)}
+    >
+      <div class="done-icon lost mr-2" />
       {lostState.title}
     </div>
   {/each}
@@ -94,7 +91,7 @@
     display: flex;
     align-items: center;
     justify-content: stretch;
-    padding: .5rem 2.5rem;
+    padding: 0.5rem 2.5rem;
     background-color: var(--theme-bg-color);
     border-top: 1px solid var(--theme-dialog-divider);
     border-radius: 0 0 1.25rem 1.25rem;
@@ -104,7 +101,7 @@
     height: 3rem;
     color: var(--theme-caption-color);
     border: 1px dashed transparent;
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     padding: 0.5rem;
 
     &.hovered {
@@ -114,11 +111,15 @@
   }
 
   .done-icon {
-    width: .5rem;
-    height: .5rem;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
 
-    &.won { background-color: #27B166; }
-    &.lost { background-color: #F96E50; }
+    &.won {
+      background-color: #27b166;
+    }
+    &.lost {
+      background-color: #f96e50;
+    }
   }
 </style>

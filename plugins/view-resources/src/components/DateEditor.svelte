@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   // import { TypeDate } from '@anticrm/core'
   // import { IntlString } from '@anticrm/platform'
@@ -24,4 +23,11 @@
   export let onChange: (value: any) => void
 </script>
 
-<DateRangePresenter {value} withTime editable on:change={(res) => { if (res.detail !== undefined) onChange(res.detail) }} />
+<DateRangePresenter
+  {value}
+  withTime
+  editable
+  on:change={(res) => {
+    if (res.detail !== undefined) onChange(res.detail)
+  }}
+/>

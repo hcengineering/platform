@@ -26,22 +26,23 @@
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
-  let person: Person| undefined
+  let person: Person | undefined
 
-  $: client.findOne(contact.class.Person, { _id: value.attachedTo as Ref<Person> }).then(p => {
+  $: client.findOne(contact.class.Person, { _id: value.attachedTo as Ref<Person> }).then((p) => {
     person = p
   })
 </script>
 
-<div class='flex item'>
-    <Icon icon={recruit.icon.Application} size={'large'} />
-    <div class='ml-2'>
-      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
-    </div>
-    {#if person}
-      <div class='ml-1'>{formatName(person.name)}</div>
-    {/if}
+<div class="flex item">
+  <Icon icon={recruit.icon.Application} size={'large'} />
+  <div class="ml-2">
+    {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+  </div>
+  {#if person}
+    <div class="ml-1">{formatName(person.name)}</div>
+  {/if}
 </div>
+
 <style lang="scss">
   .item {
     align-items: center;

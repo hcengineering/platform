@@ -20,7 +20,15 @@ import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } fr
 /**
  * @public
  */
-export async function FindMessages (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+export async function FindMessages (
+  doc: Doc,
+  hiearachy: Hierarchy,
+  findAll: <T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+): Promise<Doc[]> {
   const channel = doc as Channel
   if (channel.provider !== contact.channelProvider.Email) {
     return []

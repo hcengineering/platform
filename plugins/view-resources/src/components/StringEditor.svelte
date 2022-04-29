@@ -13,23 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
+  import type { IntlString } from '@anticrm/platform'
+  import { EditBox } from '@anticrm/ui'
 
-import type { IntlString } from '@anticrm/platform'
-import { EditBox } from '@anticrm/ui'
+  // export let label: IntlString
+  export let placeholder: IntlString
+  export let value: any
+  export let focus: boolean
+  export let maxWidth: string
+  export let onChange: (value: string) => void
 
-// export let label: IntlString
-export let placeholder: IntlString
-export let value: any
-export let focus: boolean
-export let maxWidth: string
-export let onChange: (value: string) => void
-
-function _onchange(ev: Event) {
-  onChange((ev.target as HTMLInputElement).value)
-}
-
+  function _onchange (ev: Event) {
+    onChange((ev.target as HTMLInputElement).value)
+  }
 </script>
 
-<EditBox {placeholder} {maxWidth} bind:value={value} {focus} on:change={ _onchange }/>
+<EditBox {placeholder} {maxWidth} bind:value {focus} on:change={_onchange} />

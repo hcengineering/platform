@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-import { Ref } from '@anticrm/core'
-import { Vacancy } from '@anticrm/recruit'
-import { TimeSince } from '@anticrm/ui'
+  import { Ref } from '@anticrm/core'
+  import { Vacancy } from '@anticrm/recruit'
+  import { TimeSince } from '@anticrm/ui'
 
-export let value: Vacancy
-export let applications: Map<Ref<Vacancy>, {count: number, modifiedOn: number}> | undefined
+  export let value: Vacancy
+  export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
 </script>
 
-<TimeSince value={Math.max(applications?.get(value._id)?.modifiedOn ?? 0, value.modifiedOn)}/>
+<TimeSince value={Math.max(applications?.get(value._id)?.modifiedOn ?? 0, value.modifiedOn)} />

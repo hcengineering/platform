@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import { Icon } from '@anticrm/ui'
@@ -24,13 +23,11 @@
 
 <div class="ac-header__wrap-description">
   <div class="ac-header__wrap-title" on:click>
-    {#if icon }<div class="ac-header__icon"><Icon {icon} size={'small'}/></div>{/if}
+    {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
     <span class="ac-header__title">{label}</span>
   </div>
-  {#if description }<span class="ac-header__description">{description}</span>{/if}
+  {#if description}<span class="ac-header__description">{description}</span>{/if}
 </div>
-
-
 
 <style lang="scss">
   .ac-header__wrap-title:hover {

@@ -29,14 +29,16 @@ export async function recognizeDocument (token: string, url: string): Promise<Re
     // We could try use recognition service to find some document properties.
     throw new PlatformError(unknownError('recognition framework is not configured'))
   }
-  return await (await fetch(rekoniUrl + '/recognize?format=pdf', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      fileUrl: url
+  return (await (
+    await fetch(rekoniUrl + '/recognize?format=pdf', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fileUrl: url
+      })
     })
-  })).json() as ReconiDocument
+  ).json()) as ReconiDocument
 }

@@ -41,8 +41,12 @@ import OrganizationSelector from './components/OrganizationSelector.svelte'
 
 export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector, ChannelsDropdown }
 
-async function queryContact (_class: Ref<Class<Contact>>, client: Client, search: string): Promise<ObjectSearchResult[]> {
-  return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map(e => ({
+async function queryContact (
+  _class: Ref<Class<Contact>>,
+  client: Client,
+  search: string
+): Promise<ObjectSearchResult[]> {
+  return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map((e) => ({
     doc: e,
     title: formatName(e.name),
     icon: Avatar,
@@ -72,6 +76,7 @@ export default async (): Promise<Resources> => ({
   completion: {
     EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),
     PersonQuery: async (client: Client, query: string) => await queryContact(contact.class.Person, client, query),
-    OrganizationQuery: async (client: Client, query: string) => await queryContact(contact.class.Organization, client, query)
+    OrganizationQuery: async (client: Client, query: string) =>
+      await queryContact(contact.class.Organization, client, query)
   }
 })

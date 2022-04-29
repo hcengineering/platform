@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class,Ref, Timestamp } from '@anticrm/core'
-  import presentation, { Card,createQuery,getClient } from '@anticrm/presentation'
+  import { Class, Ref, Timestamp } from '@anticrm/core'
+  import presentation, { Card, createQuery, getClient } from '@anticrm/presentation'
   import { Grid, TimeShiftPicker } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'

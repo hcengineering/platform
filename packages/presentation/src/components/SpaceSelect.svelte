@@ -24,7 +24,6 @@
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let label: IntlString
-  export let placeholder: IntlString
   export let value: Ref<Space> | undefined
 
   let selected: Space | undefined

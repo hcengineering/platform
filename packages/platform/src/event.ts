@@ -47,10 +47,7 @@ export function addEventListener (event: string, listener: EventListener): void 
  * @param event -
  * @param listener -
  */
-export function removeEventListener (
-  event: string,
-  listener: EventListener
-): void {
+export function removeEventListener (event: string, listener: EventListener): void {
   const listeners = eventListeners.get(event)
   if (listeners !== undefined) {
     listeners.splice(listeners.indexOf(listener), 1)
@@ -60,9 +57,7 @@ export function removeEventListener (
 async function broadcastEvent (event: string, data: any): Promise<void> {
   const listeners = eventListeners.get(event)
   if (listeners !== undefined) {
-    const promises = listeners.map(
-      async (listener) => await listener(event, data)
-    )
+    const promises = listeners.map(async (listener) => await listener(event, data))
     return await (Promise.all(promises) as unknown as Promise<void>)
   }
 }
@@ -83,10 +78,7 @@ export async function setPlatformStatus (status: Status): Promise<void> {
  * @param promise -
  * @returns
  */
-export async function monitor<T> (
-  status: Status,
-  promise: Promise<T>
-): Promise<T> {
+export async function monitor<T> (status: Status, promise: Promise<T>): Promise<T> {
   void setPlatformStatus(status) // eslint-disable-line no-void
   try {
     const result = await promise

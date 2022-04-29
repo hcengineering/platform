@@ -44,7 +44,7 @@
   }
 </script>
 
-<div class='flex-center'>
+<div class="flex-center">
   <Button
     label={setting.string.Reconnect}
     kind={'primary'}

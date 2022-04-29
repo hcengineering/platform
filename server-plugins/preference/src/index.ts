@@ -26,4 +26,4 @@ export const serverPreferenceId = 'server-preference' as Plugin
 /**
  * @public
  */
-export default plugin(serverPreferenceId, { })
+export default plugin(serverPreferenceId, {})

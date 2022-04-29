@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
 
@@ -28,7 +27,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard" on:submit|preventDefault={ () => {} }>
+<form class="antiCard" on:submit|preventDefault={() => {}}>
   <div class="antiCard-header">
     <div class="antiCard-header__title"><Label {label} /></div>
     {#if $$slots.error}
@@ -39,7 +38,20 @@
   </div>
   <div class="antiCard-content"><slot /></div>
   <div class="antiCard-footer">
-    <Button disabled={!canSave} label={presentation.string.Create} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
-    <Button label={presentation.string.Cancel} on:click={() => { dispatch('close') }} />
+    <Button
+      disabled={!canSave}
+      label={presentation.string.Create}
+      kind={'primary'}
+      on:click={() => {
+        okAction()
+        dispatch('close')
+      }}
+    />
+    <Button
+      label={presentation.string.Cancel}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
   </div>
 </form>

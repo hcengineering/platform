@@ -3,7 +3,7 @@
   import { Component, getCurrentLocation, navigate } from '@anticrm/ui'
   import recruit from '../plugin'
 
-  function onTag (tag: TagElement):void {
+  function onTag (tag: TagElement): void {
     selectedTagElements.set([tag._id])
     const loc = getCurrentLocation()
     loc.path[2] = 'candidates'

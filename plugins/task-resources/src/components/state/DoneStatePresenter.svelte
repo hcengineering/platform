@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { DoneState } from '@anticrm/task'
   import task from '@anticrm/task'
@@ -23,10 +22,9 @@
   export let showTitle: boolean = false
 
   $: color = value._class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
-
 </script>
 
-{#if value }
+{#if value}
   <div class="flex-center">
     <div class="state-container" class:state-container-title={showTitle} style="background-color: {color};" />
     {#if showTitle}
@@ -37,9 +35,9 @@
 
 <style lang="scss">
   .state-container {
-    width: .5rem;
-    height: .5rem;
-    border-radius: .5rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.5rem;
   }
   .state-container-title {
     margin-right: 0.75rem;

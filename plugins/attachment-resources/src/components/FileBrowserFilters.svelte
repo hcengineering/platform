@@ -37,7 +37,6 @@
       on:update={(evt) => {
         selectedParticipants = evt.detail
       }}
-      noItems={attachment.string.NoParticipants}
     />
   </div>
   <div class="simpleFilterButton">

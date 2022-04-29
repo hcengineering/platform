@@ -34,21 +34,20 @@
   const client = getClient()
 
   async function createFunnel (): Promise<void> {
-    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (
+      templateId !== undefined &&
+      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
+    ) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(
-      lead.class.Funnel,
-      core.space.Space,
-      {
-        name,
-        description,
-        private: false,
-        archived: false,
-        members: []
-      }
-    )
+    const id = await client.createDoc(lead.class.Funnel, core.space.Space, {
+      name,
+      description,
+      private: false,
+      archived: false,
+      members: []
+    })
 
     await createKanban(client, id, templateId)
   }
@@ -63,15 +62,25 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox label={lead.string.FunnelName} icon={IconFolder} bind:value={name} placeholder={lead.string.FunnelName} maxWidth={'16rem'} focus />
+    <EditBox
+      label={lead.string.FunnelName}
+      icon={IconFolder}
+      bind:value={name}
+      placeholder={lead.string.FunnelName}
+      maxWidth={'16rem'}
+      focus
+    />
     <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />
 
-    <Component is={task.component.KanbanTemplateSelector} props={{
-      folders: [lead.space.FunnelTemplates],
-      template: templateId
-    }} on:change={(evt) => {
-      templateId = evt.detail
-    }}/>
-
+    <Component
+      is={task.component.KanbanTemplateSelector}
+      props={{
+        folders: [lead.space.FunnelTemplates],
+        template: templateId
+      }}
+      on:change={(evt) => {
+        templateId = evt.detail
+      }}
+    />
   </Grid>
 </SpaceCreateCard>

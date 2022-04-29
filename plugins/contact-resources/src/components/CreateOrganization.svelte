@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,7 +16,7 @@
   import { Channel, Organization } from '@anticrm/contact'
   import { AttachedData, generateId } from '@anticrm/core'
   import { Card, getClient } from '@anticrm/presentation'
-  import { Button, EditBox, eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { Button, EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
@@ -39,10 +38,17 @@
   async function createOrganization () {
     await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
     for (const channel of channels) {
-      await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Organization, 'channels', {
-        value: channel.value,
-        provider: channel.provider
-      })
+      await client.addCollection(
+        contact.class.Channel,
+        contact.space.Contacts,
+        id,
+        contact.class.Organization,
+        'channels',
+        {
+          value: channel.value,
+          provider: channel.provider
+        }
+      )
     }
 
     dispatch('close')
@@ -67,7 +73,9 @@
     <EditBox
       placeholder={contact.string.OrganizationNamePlaceholder}
       bind:value={object.name}
-      maxWidth={'37.5rem'} kind={'large-style'} focus
+      maxWidth={'37.5rem'}
+      kind={'large-style'}
+      focus
     />
   </div>
   <svelte:fragment slot="pool">

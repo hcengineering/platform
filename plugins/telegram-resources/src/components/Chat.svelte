@@ -284,6 +284,8 @@
     min-height: 0;
     height: 100%;
 
-    &.selectable { padding-bottom: 0; }
+    &.selectable {
+      padding-bottom: 0;
+    }
   }
 </style>

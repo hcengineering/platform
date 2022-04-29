@@ -113,7 +113,11 @@ export function closeDatePopup (): void {
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: PopupPositionElement, newProps: Record<string, string|number>): boolean {
+export function fitPopupPositionedElement (
+  modalHTML: HTMLElement,
+  alignment: PopupPositionElement,
+  newProps: Record<string, string | number>
+): boolean {
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
@@ -151,11 +155,11 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
   return false
 }
 
-function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElement): void {
+function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
   for (const [k, v] of Object.entries(values)) {
     const old = (modalHTML.style as any)[k]
     if (old !== v) {
-      (modalHTML.style as any)[k] = v
+      ;(modalHTML.style as any)[k] = v
     }
   }
 }
@@ -169,7 +173,7 @@ function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElem
  */
 export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
   let show = true
-  const newProps: Record<string, string|number> = {}
+  const newProps: Record<string, string | number> = {}
   if (element != null) {
     show = false
     newProps.left = newProps.right = newProps.top = newProps.bottom = ''

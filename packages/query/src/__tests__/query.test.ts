@@ -13,7 +13,18 @@
 // limitations under the License.
 //
 
-import core, { createClient, Doc, generateId, Ref, SortingOrder, Space, Tx, TxCreateDoc, TxOperations, WithLookup } from '@anticrm/core'
+import core, {
+  createClient,
+  Doc,
+  generateId,
+  Ref,
+  SortingOrder,
+  Space,
+  Tx,
+  TxCreateDoc,
+  TxOperations,
+  WithLookup
+} from '@anticrm/core'
 import { LiveQuery } from '..'
 import { connect } from './connection'
 import { AttachedComment, genMinModel, ParticipantsHolder, test } from './minmodel'
@@ -22,11 +33,11 @@ interface Channel extends Space {
   x: number
 }
 
-async function getClient (): Promise<{liveQuery: LiveQuery, factory: TxOperations}> {
+async function getClient (): Promise<{ liveQuery: LiveQuery, factory: TxOperations }> {
   const storage = await createClient(connect)
   const liveQuery = new LiveQuery(storage)
   storage.notify = (tx: Tx) => {
-    liveQuery.tx(tx).catch(err => console.log(err))
+    liveQuery.tx(tx).catch((err) => console.log(err))
   }
   return { liveQuery, factory: new TxOperations(storage, core.account.System) }
 }
@@ -374,9 +385,16 @@ describe('query', () => {
       modifiedBy: core.account.System,
       modifiedOn: 0
     }
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace._id, futureSpace._id, core.class.Space, 'comments', {
-      message: 'test'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace._id,
+      futureSpace._id,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
@@ -398,9 +416,14 @@ describe('query', () => {
       )
     })
 
-    await factory.createDoc(core.class.Space, futureSpace.space, {
-      ...futureSpace
-    }, futureSpace._id)
+    await factory.createDoc(
+      core.class.Space,
+      futureSpace.space,
+      {
+        ...futureSpace
+      },
+      futureSpace._id
+    )
     await pp
   })
 
@@ -418,12 +441,26 @@ describe('query', () => {
       modifiedBy: core.account.System,
       modifiedOn: 0
     }
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace._id, futureSpace._id, core.class.Space, 'comments', {
-      message: 'test'
-    })
-    const childComment = await factory.addCollection(test.class.TestComment, futureSpace._id, comment, test.class.TestComment, 'comments', {
-      message: 'child'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace._id,
+      futureSpace._id,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
+    const childComment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace._id,
+      comment,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'child'
+      }
+    )
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
@@ -433,7 +470,9 @@ describe('query', () => {
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
-              expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(futureSpace._id)
+              expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(
+                futureSpace._id
+              )
               resolve(null)
             } else {
               expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
@@ -445,18 +484,30 @@ describe('query', () => {
       )
     })
 
-    await factory.createDoc(core.class.Space, futureSpace.space, {
-      ...futureSpace
-    }, futureSpace._id)
+    await factory.createDoc(
+      core.class.Space,
+      futureSpace.space,
+      {
+        ...futureSpace
+      },
+      futureSpace._id
+    )
     await pp
   })
 
   it('lookup reverse query add doc', async () => {
     const { liveQuery, factory } = await getClient()
     const spaces = await liveQuery.findAll(core.class.Space, {})
-    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
-      message: 'test'
-    })
+    const parentComment = await factory.addCollection(
+      test.class.TestComment,
+      spaces[0]._id,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     let attempt = 0
     const childLength = 3
     const pp = new Promise((resolve) => {
@@ -477,9 +528,16 @@ describe('query', () => {
     })
 
     for (let index = 0; index < childLength; index++) {
-      await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
-        message: index.toString()
-      })
+      await factory.addCollection(
+        test.class.TestComment,
+        spaces[0]._id,
+        parentComment,
+        test.class.TestComment,
+        'comments',
+        {
+          message: index.toString()
+        }
+      )
     }
     await pp
   })
@@ -493,9 +551,16 @@ describe('query', () => {
       private: false,
       members: []
     })
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
-      message: 'test'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      futureSpace,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
@@ -531,12 +596,26 @@ describe('query', () => {
       private: false,
       members: []
     })
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
-      message: 'test'
-    })
-    const childComment = await factory.addCollection(test.class.TestComment, futureSpace, comment, test.class.TestComment, 'comments', {
-      message: 'child'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      futureSpace,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
+    const childComment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      comment,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'child'
+      }
+    )
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
@@ -549,7 +628,9 @@ describe('query', () => {
               expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
               resolve(null)
             } else {
-              expect(((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id).toEqual(futureSpace)
+              expect(
+                ((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id
+              ).toEqual(futureSpace)
               attempt++
             }
           }
@@ -568,16 +649,32 @@ describe('query', () => {
     const spaces = await liveQuery.findAll(core.class.Space, {})
     const comments = await liveQuery.findAll(test.class.TestComment, {})
     expect(comments).toHaveLength(0)
-    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
-      message: 'test'
-    })
+    const parentComment = await factory.addCollection(
+      test.class.TestComment,
+      spaces[0]._id,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     let attempt = 0
     const childLength = 3
     const childs: Ref<AttachedComment>[] = []
     for (let index = 0; index < childLength; index++) {
-      childs.push(await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
-        message: index.toString()
-      }))
+      childs.push(
+        await factory.addCollection(
+          test.class.TestComment,
+          spaces[0]._id,
+          parentComment,
+          test.class.TestComment,
+          'comments',
+          {
+            message: index.toString()
+          }
+        )
+      )
     }
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
@@ -598,7 +695,14 @@ describe('query', () => {
     })
 
     for (const child of childs) {
-      await factory.removeCollection(test.class.TestComment, spaces[0]._id, child, parentComment, test.class.TestComment, 'comments')
+      await factory.removeCollection(
+        test.class.TestComment,
+        spaces[0]._id,
+        child,
+        parentComment,
+        test.class.TestComment,
+        'comments'
+      )
     }
     await pp
   })
@@ -614,9 +718,16 @@ describe('query', () => {
       members: []
     })
 
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
-      message: 'test'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      futureSpace,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
         test.class.TestComment,
@@ -652,12 +763,26 @@ describe('query', () => {
       private: false,
       members: []
     })
-    const comment = await factory.addCollection(test.class.TestComment, futureSpace, futureSpace, core.class.Space, 'comments', {
-      message: 'test'
-    })
-    const childComment = await factory.addCollection(test.class.TestComment, futureSpace, comment, test.class.TestComment, 'comments', {
-      message: 'child'
-    })
+    const comment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      futureSpace,
+      core.class.Space,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
+    const childComment = await factory.addCollection(
+      test.class.TestComment,
+      futureSpace,
+      comment,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'child'
+      }
+    )
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
         test.class.TestComment,
@@ -665,7 +790,9 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            expect(((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Space).name).toEqual(attempt.toString())
+            expect(
+              ((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Space).name
+            ).toEqual(attempt.toString())
           }
           if (attempt > 0) {
             resolve(null)
@@ -686,13 +813,27 @@ describe('query', () => {
   it('lookup reverse query update doc', async () => {
     const { liveQuery, factory } = await getClient()
     const spaces = await liveQuery.findAll(core.class.Space, {})
-    const parentComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, spaces[0]._id, spaces[0]._class, 'comments', {
-      message: 'test'
-    })
+    const parentComment = await factory.addCollection(
+      test.class.TestComment,
+      spaces[0]._id,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'test'
+      }
+    )
     let attempt = 0
-    const childComment = await factory.addCollection(test.class.TestComment, spaces[0]._id, parentComment, test.class.TestComment, 'comments', {
-      message: '0'
-    })
+    const childComment = await factory.addCollection(
+      test.class.TestComment,
+      spaces[0]._id,
+      parentComment,
+      test.class.TestComment,
+      'comments',
+      {
+        message: '0'
+      }
+    )
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
         test.class.TestComment,
@@ -712,9 +853,17 @@ describe('query', () => {
       )
     })
 
-    await factory.updateCollection(test.class.TestComment, spaces[0]._id, childComment, parentComment, test.class.TestComment, 'comments', {
-      message: '1'
-    })
+    await factory.updateCollection(
+      test.class.TestComment,
+      spaces[0]._id,
+      childComment,
+      parentComment,
+      test.class.TestComment,
+      'comments',
+      {
+        message: '1'
+      }
+    )
     await pp
   })
 

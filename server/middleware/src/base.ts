@@ -20,10 +20,14 @@ import { FindAllMiddlewareResult, Middleware, SessionContext, TxMiddlewareResult
  * @public
  */
 export abstract class BaseMiddleware {
-  constructor (protected readonly storage: ServerStorage, protected readonly next?: Middleware) {
-  }
+  constructor (protected readonly storage: ServerStorage, protected readonly next?: Middleware) {}
 
-  async findAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
+  async findAll<T extends Doc>(
+    ctx: SessionContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindAllMiddlewareResult<T>> {
     return await this.provideFindAll(ctx, _class, query, options)
   }
 
@@ -34,7 +38,12 @@ export abstract class BaseMiddleware {
     return [ctx, tx, undefined]
   }
 
-  protected async provideFindAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
+  protected async provideFindAll<T extends Doc>(
+    ctx: SessionContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindAllMiddlewareResult<T>> {
     if (this.next !== undefined) {
       return await this.next.findAll(ctx, _class, query, options)
     }

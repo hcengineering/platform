@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
   import { Component } from '@anticrm/ui'
@@ -28,13 +27,16 @@
 {#if viewlet}
   {#key space}
     {#if viewlet.$lookup?.descriptor?.component}
-      <Component is={viewlet.$lookup?.descriptor?.component} props={ {
-        _class,
-        space,
-        options: viewlet.options,
-        config: viewlet.config,
-        search
-      } } />
+      <Component
+        is={viewlet.$lookup?.descriptor?.component}
+        props={{
+          _class,
+          space,
+          options: viewlet.options,
+          config: viewlet.config,
+          search
+        }}
+      />
     {/if}
   {/key}
 {/if}

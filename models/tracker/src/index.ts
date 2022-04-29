@@ -34,7 +34,16 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
-import { Document, Issue, IssuePriority, IssueStatus, Project, IssueStatusCategory, ProjectStatus, Team } from '@anticrm/tracker'
+import {
+  Document,
+  Issue,
+  IssuePriority,
+  IssueStatus,
+  Project,
+  IssueStatusCategory,
+  ProjectStatus,
+  Team
+} from '@anticrm/tracker'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
 import tracker from './plugin'
@@ -204,7 +213,7 @@ export class TProject extends TDoc implements Project {
   documents!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
-  attachments?: number;
+  attachments?: number
 
   @Prop(TypeDate(true), tracker.string.Project)
   startDate!: Timestamp | null

@@ -50,7 +50,7 @@
   ): any | undefined {
     const provider = map.get(item.provider)
     if (provider) {
-      const notification = (item as Channel)._id !== undefined ? isNew((item as Channel), lastViews) : false
+      const notification = (item as Channel)._id !== undefined ? isNew(item as Channel, lastViews) : false
       return {
         label: provider.label,
         icon: provider.icon as Asset,
@@ -107,7 +107,7 @@
   class:normal-gap={size !== 'small'}
 >
   {#each displayItems as item}
-    <div class='channel-item'>
+    <div class="channel-item">
       <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
         <CircleButton
           icon={item.icon}
@@ -121,19 +121,30 @@
     </div>
   {/each}
 </div>
+
 <style lang="scss">
   .channels {
     display: grid;
     width: min-content;
-    
-    &.one { display: block; }
+
+    &.one {
+      display: block;
+    }
     &.short {
       grid-template-columns: repeat(4, min-content);
       grid-auto-rows: auto;
     }
-    &.full { grid-auto-flow: column; }
-    &.reverse { grid-auto-flow: dense; }
-    &.small-gap { gap: .25rem; }
-    &.normal-gap { gap: .5rem; }
+    &.full {
+      grid-auto-flow: column;
+    }
+    &.reverse {
+      grid-auto-flow: dense;
+    }
+    &.small-gap {
+      gap: 0.25rem;
+    }
+    &.normal-gap {
+      gap: 0.5rem;
+    }
   }
 </style>

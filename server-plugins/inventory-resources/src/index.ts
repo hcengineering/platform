@@ -24,7 +24,7 @@ import workbench from '@anticrm/workbench'
 
 const extractTx = (tx: Tx): Tx => {
   if (tx._class === core.class.TxCollectionCUD) {
-    const ctx = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
     if (ctx.tx._class === core.class.TxCreateDoc) {
       const create = ctx.tx as TxCreateDoc<AttachedDoc>
       create.attributes.attachedTo = ctx.objectId
@@ -55,7 +55,13 @@ export async function OnProductCreate (tx: Tx, control: TriggerControl): Promise
 
   const doc = TxProcessor.createDoc2Doc(createTx)
 
-  const lastViewTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy)
+  const lastViewTx = await getUpdateLastViewTx(
+    control.findAll,
+    doc._id,
+    doc._class,
+    createTx.modifiedOn,
+    createTx.modifiedBy
+  )
 
   return lastViewTx !== undefined ? [lastViewTx] : []
 }
@@ -75,7 +81,13 @@ export async function OnProductUpdate (tx: Tx, control: TriggerControl): Promise
     return []
   }
 
-  const lastViewTx = await getUpdateLastViewTx(control.findAll, updateTx.objectId, updateTx.objectClass, updateTx.modifiedOn, updateTx.modifiedBy)
+  const lastViewTx = await getUpdateLastViewTx(
+    control.findAll,
+    updateTx.objectId,
+    updateTx.objectClass,
+    updateTx.modifiedOn,
+    updateTx.modifiedBy
+  )
 
   return lastViewTx !== undefined ? [lastViewTx] : []
 }

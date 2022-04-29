@@ -28,7 +28,6 @@
 
     dispatch('value', isChecked)
   }
-
 </script>
 
 <label class="checkbox" class:circle class:primary class:checked>
@@ -50,10 +49,10 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: .875rem;
-    height: .875rem;
+    width: 0.875rem;
+    height: 0.875rem;
     border: 1px solid var(--dark-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 
     &.circle {
       width: 1rem;
@@ -96,8 +95,8 @@
       }
     }
     .checkSVG {
-      width: .875rem;
-      height: .875rem;
+      width: 0.875rem;
+      height: 0.875rem;
 
       .check {
         visibility: hidden;

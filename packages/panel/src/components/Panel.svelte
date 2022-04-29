@@ -61,7 +61,7 @@
     </div>
     <slot name="actions" />
   </svelte:fragment>
-    <Component is={rightSection ?? activity.component.Activity} props={{ object, integrate: true }}>
-      <slot />
-    </Component>
+  <Component is={rightSection ?? activity.component.Activity} props={{ object, integrate: true }}>
+    <slot />
+  </Component>
 </Panel>

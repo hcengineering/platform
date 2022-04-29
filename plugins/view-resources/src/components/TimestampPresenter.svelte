@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import { TimeSince } from '@anticrm/ui'
 
   export let value: number
-
 </script>
 
-<TimeSince {value}/>
+<TimeSince {value} />

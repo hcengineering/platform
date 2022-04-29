@@ -22,18 +22,23 @@ import WebSocket from 'ws'
  * @public
  */
 export class ContributingClient implements Storage {
-  constructor (private readonly websocket: WebSocket) {
-  }
+  constructor (private readonly websocket: WebSocket) {}
 
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T> | undefined): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
     throw new Error('findAll not implemeneted for contributing client')
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    this.websocket.send(serialize({
-      method: 'tx',
-      params: [tx]
-    }))
+    this.websocket.send(
+      serialize({
+        method: 'tx',
+        params: [tx]
+      })
+    )
     return {}
   }
 

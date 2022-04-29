@@ -17,7 +17,16 @@
 import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@anticrm/core'
 import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@anticrm/model-core'
-import type { EmailNotification, LastView, NotificationType, NotificationProvider, NotificationSetting, Notification, NotificationStatus, SpaceLastEdit } from '@anticrm/notification'
+import type {
+  EmailNotification,
+  LastView,
+  NotificationType,
+  NotificationProvider,
+  NotificationSetting,
+  Notification,
+  NotificationStatus,
+  SpaceLastEdit
+} from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
 import notification from './plugin'
 import setting from '@anticrm/setting'
@@ -87,29 +96,57 @@ export class TSpaceLastEdit extends TClass implements SpaceLastEdit {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TLastView, TNotification, TEmaiNotification, TNotificationType, TNotificationProvider, TNotificationSetting, TSpaceLastEdit)
+  builder.createModel(
+    TLastView,
+    TNotification,
+    TEmaiNotification,
+    TNotificationType,
+    TNotificationProvider,
+    TNotificationSetting,
+    TSpaceLastEdit
+  )
 
-  builder.createDoc(notification.class.NotificationType, core.space.Model, {
-    label: notification.string.MentionNotification
-  }, notification.ids.MentionNotification)
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: notification.string.MentionNotification
+    },
+    notification.ids.MentionNotification
+  )
 
-  builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
-    label: notification.string.PlatformNotification,
-    default: true
-  }, notification.ids.PlatformNotification)
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      label: notification.string.PlatformNotification,
+      default: true
+    },
+    notification.ids.PlatformNotification
+  )
 
-  builder.createDoc(notification.class.NotificationProvider, core.space.Model, {
-    label: notification.string.EmailNotification,
-    default: false
-  }, notification.ids.EmailNotification)
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      label: notification.string.EmailNotification,
+      default: false
+    },
+    notification.ids.EmailNotification
+  )
 
-  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
-    name: 'notifications',
-    label: notification.string.Notifications,
-    icon: notification.icon.Notifications,
-    component: notification.component.NotificationSettings,
-    order: 2500
-  }, notification.ids.NotificationSettings)
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'notifications',
+      label: notification.string.Notifications,
+      icon: notification.icon.Notifications,
+      component: notification.component.NotificationSettings,
+      order: 2500
+    },
+    notification.ids.NotificationSettings
+  )
 }
 
 export { notificationOperation } from './migration'
